@@ -1,8 +1,5 @@
-extends Node2D
+extends KinematicBody2D
 class_name Mecha
-
-
-onready var Body = $Body
 
 var max_speed = 200
 var friction = 0.1

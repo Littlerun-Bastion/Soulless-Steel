@@ -1,6 +1,6 @@
 extends Mecha
 
-onready var Cam = $Body/Camera2D
+onready var Cam = $Camera2D
 
 func _ready():
 	setup()
@@ -13,12 +13,12 @@ func _physics_process(_delta):
 	else:
 		velocity = lerp(velocity, Vector2.ZERO, friction)
 	
-	velocity = Body.move_and_slide(velocity)
+	velocity = move_and_slide(velocity)
 
 
 func _input(event):
 	if event.is_action_pressed("honk"):
-		AudioManager.play_sfx("test")
+		AudioManager.play_sfx("test", global_position)
 
 
 func setup():

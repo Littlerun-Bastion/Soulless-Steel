@@ -8,10 +8,25 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Node2D",
+"class": "Mecha",
+"language": "GDScript",
+"path": "res://game/mecha/Mecha.gd"
+} ]
+_global_script_class_icons={
+"Mecha": ""
+}
+
 [application]
 
 config/name="Project Mecha"
+run/main_scene="res://game/arena/Arena.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+AudioManager="*res://game/audio/AudioManager.tscn"
 
 [physics]
 

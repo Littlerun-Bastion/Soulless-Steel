@@ -4,11 +4,11 @@ extends Node
 enum {MASTER_BUS, BGM_BUS, SFX_BUS}
 
 #SFX
-const MAX_SFXS = 12
 const SFX_PATH = "res://database/audio/sfx/"
 onready var SFXS = {}
 
 var cur_sfx_player := 1
+var cur_positional_sfx_player := 1
 
 func _ready():
 	setup_sfxs()
@@ -26,20 +26,26 @@ func setup_sfxs():
 		push_error("An error occurred when trying to access sfxs path.")
 		assert(false)
 
-func get_sfx_player():
-	var player = $SFXS.get_node("Player"+str(cur_sfx_player))
-	cur_sfx_player = (cur_sfx_player%MAX_SFXS) + 1
+
+func get_sfx_player(positional = false):
+	var player
+	if positional:
+		player = $PositionalSFXS.get_node("Player"+str(cur_positional_sfx_player))
+		cur_positional_sfx_player = (cur_positional_sfx_player%$PositionalSFXS.get_child_count()) + 1
+	else:
+		player = $SFXS.get_node("Player"+str(cur_sfx_player))
+		cur_sfx_player = (cur_sfx_player%$SFXS.get_child_count()) + 1
 	return player
 
 func has_sfx(name: String):
 	return SFXS.has(name)
 
-func play_sfx(name: String, override_pitch = false):
+func play_sfx(name: String, pos = false, override_pitch = false):
 	if not SFXS.has(name):
 		push_error("Not a valid sfx name: " + name)
 		assert(false)
 	var sfx = SFXS[name]
-	var player = get_sfx_player()
+	var player = get_sfx_player(pos)
 	player.stop()
 	
 	player.stream.audio_stream = sfx.asset
@@ -54,7 +60,9 @@ func play_sfx(name: String, override_pitch = false):
 	else:
 		player.pitch_scale = sfx.base_pitch
 	player.stream.random_pitch = 1.0 + sfx.random_pitch_var
-
+	
+	if pos:
+		player.position = pos
 	player.play()
 
 

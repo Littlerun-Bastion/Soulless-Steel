@@ -16,6 +16,11 @@ func _physics_process(_delta):
 	velocity = Body.move_and_slide(velocity)
 
 
+func _input(event):
+	if event.is_action_pressed("honk"):
+		AudioManager.play_sfx("test")
+
+
 func setup():
 	#Add camera
 	Cam = Camera2D.new()

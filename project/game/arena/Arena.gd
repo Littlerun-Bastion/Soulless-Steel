@@ -1,7 +1,6 @@
 extends Node2D
 
-const MECHA = preload("res://game/mecha/Mecha.tscn")
-const PLAYER_SCRIPT = preload("res://game/mecha/Player.gd")
+const PLAYER = preload("res://game/mecha/Player.tscn")
 
 onready var Mechas = $Mechas 
 
@@ -13,8 +12,7 @@ func _ready():
 
 
 func add_player():
-	player = MECHA.instance()
-	player.script = PLAYER_SCRIPT
+	player = PLAYER.instance()
 	Mechas.add_child(player)
 	player.position = get_start_position(1)
 

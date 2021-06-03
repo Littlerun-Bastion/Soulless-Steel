@@ -1,6 +1,6 @@
 extends Mecha
 
-var Cam
+onready var Cam = $Body/Camera2D
 
 func _ready():
 	setup()
@@ -22,10 +22,7 @@ func _input(event):
 
 
 func setup():
-	#Add camera
-	Cam = Camera2D.new()
-	Cam.current = true
-	Body.add_child(Cam)
+	pass
 
 
 func get_input():

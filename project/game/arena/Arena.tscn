@@ -20,3 +20,11 @@ position = Vector2( 662, 148 )
 
 [node name="Pos4" type="Position2D" parent="StartPositions"]
 position = Vector2( 660, 444 )
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Hull" type="StaticBody2D" parent="Walls"]
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="Walls/Hull"]
+position = Vector2( -233.723, -318.035 )
+polygon = PoolVector2Array( 306.023, -77.8306, 961.724, -92.085, 1435.68, -49.3218, 1731.46, 214.384, 1749.28, 891.467, 1656.63, 1151.61, 922.525, 1336.92, 373.731, 1290.59, -53.9005, 1219.32, -271.28, 919.976, -292.661, 310.601, -153.681, 4.13208, 305.807, -77.9061, 398.673, 111.3, -89.5363, 182.312, -128.736, 478.09, -50.3369, 1073.21, 420.058, 1144.48, 1125.65, 1119.54, 1503.39, 955.612, 1592.48, 617.07, 1560.41, 196.566, 1268.19, 86.0948, 694.455, 57.586, 398.676, 111.04 )

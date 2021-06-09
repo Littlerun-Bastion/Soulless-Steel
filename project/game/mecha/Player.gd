@@ -16,13 +16,18 @@ func _input(event):
 
 
 func apply_movement(dt):
-	var direction = get_input()
-	if direction.length() > 0:
-		velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+	if movement_type == "free":
+		var direction = get_input()
+		if direction.length() > 0:
+			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+		else:
+			velocity = lerp(velocity, Vector2.ZERO, friction)
+		
+		velocity = move_and_slide(velocity)
+	elif movement_type == "tank":
+		pass
 	else:
-		velocity = lerp(velocity, Vector2.ZERO, friction)
-	
-	velocity = move_and_slide(velocity)
+		push_error("Not a valid movement type: " + str(movement_type))
 
 
 func apply_rotation(dt):

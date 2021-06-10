@@ -34,3 +34,23 @@ func load_parts(name, dict):
 	else:
 		push_error("An error occurred when trying to access sfxs path.")
 		assert(false)
+
+
+func get_part(type, name):
+	if type == "arm_weapon":
+		assert(ARM_WEAPONS.has(name), "Not a existent arm weapon part: " + str(name))
+		return ARM_WEAPONS[name]
+	elif type == "shoulder_weapon":
+		assert(SHOULDER_WEAPONS.has(name), "Not a existent shoulder weapon part: " + str(name))
+		return SHOULDER_WEAPONS[name]
+	elif type == "shoulder":
+		assert(SHOULDERS.has(name), "Not a existent shoulder part: " + str(name))
+		return SHOULDERS[name]
+	elif type == "core":
+		assert(CORES.has(name), "Not a existent core part: " + str(name))
+		return CORES[name]
+	elif type == "head":
+		assert(HEADS.has(name), "Not a existent head part: " + str(name))
+		return HEADS[name]
+	else:
+		push_error("Not a valid type of part: " + str(type))

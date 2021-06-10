@@ -1,7 +1,13 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
-[ext_resource path="res://icon.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/zh01-a_right.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/cores/zh01-c.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun1.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/shoulders/zh01-a_left.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/mechas/heads/zh01-h.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 37.0
@@ -9,15 +15,86 @@ radius = 37.0
 [node name="Mecha" type="KinematicBody2D"]
 script = ExtResource( 1 )
 
-[node name="Texture" type="TextureRect" parent="."]
-margin_left = -32.7579
-margin_top = -34.0179
-margin_right = 31.2421
-margin_bottom = 29.9821
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource( 1 )
+
+[node name="Core" type="TextureRect" parent="."]
+margin_left = -153.235
+margin_top = -154.126
+margin_right = 146.765
+margin_bottom = 145.874
+texture = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Head" type="TextureRect" parent="."]
+margin_left = -153.235
+margin_top = -153.235
+margin_right = 146.765
+margin_bottom = 146.765
+texture = ExtResource( 7 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ArmWeaponLeft" type="TextureRect" parent="."]
+margin_left = -251.234
+margin_top = -121.162
+margin_right = 48.7661
+margin_bottom = 178.838
+rect_rotation = -9.0
 texture = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Collision" type="CollisionShape2D" parent="."]
-shape = SubResource( 1 )
+[node name="ArmWeaponRight" type="TextureRect" parent="."]
+margin_left = -46.3268
+margin_top = -175.507
+margin_right = 253.673
+margin_bottom = 124.493
+rect_rotation = 9.0
+texture = ExtResource( 5 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ShoulderWeaponLeft" type="TextureRect" parent="."]
+margin_left = -204.016
+margin_top = -159.471
+margin_right = 95.9839
+margin_bottom = 140.529
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ShoulderWeaponRight" type="TextureRect" parent="."]
+margin_left = -102.453
+margin_top = -157.689
+margin_right = 197.547
+margin_bottom = 142.311
+texture = ExtResource( 8 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LeftShoulder" type="TextureRect" parent="."]
+margin_left = -228.07
+margin_top = -114.926
+margin_right = 71.9295
+margin_bottom = 185.074
+texture = ExtResource( 6 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RightShoulder" type="TextureRect" parent="."]
+margin_left = -72.163
+margin_top = -112.253
+margin_right = 227.837
+margin_bottom = 187.747
+texture = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}

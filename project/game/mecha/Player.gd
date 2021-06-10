@@ -1,5 +1,7 @@
 extends Mecha
 
+const ROTATION_DEADZONE = 10
+
 onready var Cam = $Camera2D
 
 func _ready():
@@ -31,8 +33,10 @@ func apply_movement(dt):
 
 
 func apply_rotation(dt):
-	var rot_eps = 5
 	var mouse_pos = get_global_mouse_position()
+	if mouse_pos.distance_to(global_position) <= ROTATION_DEADZONE:
+		return
+	
 	var target_rot = fmod(rad2deg(global_position.angle_to_point(mouse_pos)) + 270, 360)
 	var diff = target_rot - rotation_degrees
 	if diff > 180:
@@ -41,12 +45,10 @@ func apply_rotation(dt):
 		diff += 360
 	
 	#Rotate properly clock or counter-clockwise fastest to target rotation
-	if abs(diff) <= rot_eps:
-		rotation_degrees = target_rot
-	elif diff > 0:
-		rotation_degrees += rotation_acc*dt
+	if diff > 0:
+		rotation_degrees += abs(diff)*rotation_acc*dt
 	else:
-		rotation_degrees -= rotation_acc*dt
+		rotation_degrees -= abs(diff)*rotation_acc*dt
 
 
 func setup():

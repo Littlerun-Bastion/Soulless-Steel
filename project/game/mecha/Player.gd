@@ -1,6 +1,6 @@
 extends Mecha
 
-const ROTATION_DEADZONE = 10
+const ROTATION_DEADZONE = 20
 
 onready var Cam = $Camera2D
 

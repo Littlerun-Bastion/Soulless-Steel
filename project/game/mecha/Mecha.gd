@@ -98,6 +98,21 @@ func set_shoulder(part_name, side):
 
 #MOVEMENT METHODS
 
+
+func apply_movement(dt, direction):
+	if movement_type == "free":
+		if direction.length() > 0:
+			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+		else:
+			velocity = lerp(velocity, Vector2.ZERO, friction)
+		
+		velocity = move_and_slide(velocity)
+	elif movement_type == "tank":
+		pass
+	else:
+		push_error("Not a valid movement type: " + str(movement_type))
+
+
 func apply_rotation(dt, target_pos):
 	#Rotate Body
 	rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, rotation_acc)

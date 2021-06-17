@@ -8,7 +8,7 @@ func _ready():
 	setup()
 
 func _physics_process(delta):
-	apply_movement(delta)
+	apply_movement(delta, get_input())
 	
 	var target_pos = get_global_mouse_position()
 	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
@@ -30,6 +30,7 @@ func setup():
 	set_shoulder("shoulder_test_left", SIDE.LEFT)
 	set_shoulder("shoulder_test_right", SIDE.RIGHT)
 
+
 func get_input():
 	var mov_vec = Vector2()
 	if Input.is_action_pressed('right'):
@@ -42,18 +43,3 @@ func get_input():
 		mov_vec.y -= 1
 	
 	return mov_vec
-
-
-func apply_movement(dt):
-	if movement_type == "free":
-		var direction = get_input()
-		if direction.length() > 0:
-			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
-		else:
-			velocity = lerp(velocity, Vector2.ZERO, friction)
-		
-		velocity = move_and_slide(velocity)
-	elif movement_type == "tank":
-		pass
-	else:
-		push_error("Not a valid movement type: " + str(movement_type))

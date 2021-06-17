@@ -9,7 +9,10 @@ func _ready():
 
 func _physics_process(delta):
 	apply_movement(delta)
-	apply_rotation(delta)
+	
+	var target_pos = get_global_mouse_position()
+	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
+		apply_rotation(delta, target_pos)
 
 
 func _input(event):
@@ -19,9 +22,9 @@ func _input(event):
 
 func setup():
 	set_arm_weapon("test_weapon1", SIDE.LEFT)
-	set_arm_weapon("test_weapon1", SIDE.RIGHT)
-	set_shoulder_weapon("test_weapon1", SIDE.LEFT)
-	set_shoulder_weapon(false, SIDE.RIGHT)
+	set_arm_weapon("test_weapon2", SIDE.RIGHT)
+	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
+	set_shoulder_weapon(false, SIDE.LEFT)
 	set_head("head_test")
 	set_core("core_test")
 	set_shoulder("shoulder_test_left", SIDE.LEFT)
@@ -54,22 +57,3 @@ func apply_movement(dt):
 		pass
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
-
-
-func apply_rotation(dt):
-	var mouse_pos = get_global_mouse_position()
-	if mouse_pos.distance_to(global_position) <= ROTATION_DEADZONE:
-		return
-	
-	var target_rot = fmod(rad2deg(global_position.angle_to_point(mouse_pos)) + 270, 360)
-	var diff = target_rot - rotation_degrees
-	if diff > 180:
-		diff -= 360
-	elif diff < -180:
-		diff += 360
-	
-	#Rotate properly clock or counter-clockwise fastest to target rotation
-	if diff > 0:
-		rotation_degrees += abs(diff)*rotation_acc*dt
-	else:
-		rotation_degrees -= abs(diff)*rotation_acc*dt

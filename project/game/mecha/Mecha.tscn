@@ -18,83 +18,34 @@ script = ExtResource( 1 )
 [node name="Collision" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )
 
-[node name="Core" type="TextureRect" parent="."]
-margin_left = -153.235
-margin_top = -154.126
-margin_right = 146.765
-margin_bottom = 145.874
+[node name="Core" type="Sprite" parent="."]
 texture = ExtResource( 4 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="Head" type="TextureRect" parent="."]
-margin_left = -153.235
-margin_top = -153.235
-margin_right = 146.765
-margin_bottom = 146.765
+[node name="Head" type="Sprite" parent="."]
 texture = ExtResource( 7 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="ArmWeaponLeft" type="TextureRect" parent="."]
-margin_left = -251.234
-margin_top = -121.162
-margin_right = 48.7661
-margin_bottom = 178.838
-rect_rotation = -9.0
+[node name="ArmWeaponLeft" type="Sprite" parent="."]
+position = Vector2( -78, 0 )
+rotation = -0.15708
 texture = ExtResource( 2 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="ArmWeaponRight" type="TextureRect" parent="."]
-margin_left = -46.3268
-margin_top = -175.507
-margin_right = 253.673
-margin_bottom = 124.493
-rect_rotation = 9.0
+[node name="ArmWeaponRight" type="Sprite" parent="."]
+position = Vector2( 78, 0 )
+rotation = 0.15708
 texture = ExtResource( 5 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="ShoulderWeaponLeft" type="TextureRect" parent="."]
-margin_left = -204.016
-margin_top = -159.471
-margin_right = 95.9839
-margin_bottom = 140.529
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="ShoulderWeaponRight" type="TextureRect" parent="."]
-margin_left = -102.453
-margin_top = -157.689
-margin_right = 197.547
-margin_bottom = 142.311
+[node name="ShoulderWeaponLeft" type="Sprite" parent="."]
+position = Vector2( -50, 8 )
 texture = ExtResource( 8 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="LeftShoulder" type="TextureRect" parent="."]
-margin_left = -228.07
-margin_top = -114.926
-margin_right = 71.9295
-margin_bottom = 185.074
+[node name="ShoulderWeaponRight" type="Sprite" parent="."]
+position = Vector2( 50, 8 )
+texture = ExtResource( 8 )
+
+[node name="LeftShoulder" type="Sprite" parent="."]
+position = Vector2( -73, 40 )
 texture = ExtResource( 6 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="RightShoulder" type="TextureRect" parent="."]
-margin_left = -72.163
-margin_top = -112.253
-margin_right = 227.837
-margin_bottom = 187.747
+[node name="RightShoulder" type="Sprite" parent="."]
+position = Vector2( 76, 40 )
 texture = ExtResource( 3 )
-__meta__ = {
-"_edit_use_anchors_": false
-}

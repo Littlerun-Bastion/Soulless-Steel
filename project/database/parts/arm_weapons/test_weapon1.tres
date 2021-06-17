@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource( 1 )
 image = ExtResource( 2 )
+rotation_acc = 5
 rotation_range = 10.0

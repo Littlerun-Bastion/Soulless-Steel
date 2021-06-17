@@ -4,15 +4,17 @@ const ROTATION_DEADZONE = 10
 
 onready var Cam = $Camera2D
 
+
 func _ready():
 	setup()
+
 
 func _physics_process(delta):
 	apply_movement(delta, get_input())
 	
 	var target_pos = get_global_mouse_position()
 	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-		apply_rotation(delta, target_pos)
+		apply_rotation(delta, target_pos, Input.is_action_pressed("strafe"))
 
 
 func _input(event):

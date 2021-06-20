@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=1]
+[ext_resource path="res://game/mecha/Enemy.gd" type="Script" id=2]
+
+[node name="Enemy" instance=ExtResource( 1 )]
+modulate = Color( 0.713726, 0.286275, 0.286275, 1 )
+script = ExtResource( 2 )

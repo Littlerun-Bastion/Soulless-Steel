@@ -7,6 +7,7 @@ onready var SHOULDER_WEAPONS = {}
 onready var SHOULDERS = {}
 onready var CORES = {}
 onready var HEADS = {}
+onready var PROJECTILES = {}
 
 
 func _ready():
@@ -19,6 +20,7 @@ func setup_parts():
 	load_parts("shoulders", SHOULDERS)
 	load_parts("cores", CORES)
 	load_parts("heads", HEADS)
+	load_parts("projectiles", PROJECTILES)
 
 
 func load_parts(name, dict):
@@ -52,5 +54,8 @@ func get_part(type, name):
 	elif type == "head":
 		assert(HEADS.has(name), "Not a existent head part: " + str(name))
 		return HEADS[name]
+	elif type == "projectile":
+		assert(PROJECTILES.has(name), "Not a existent projectile: " + str(name))
+		return PROJECTILES[name]
 	else:
 		push_error("Not a valid type of part: " + str(type))

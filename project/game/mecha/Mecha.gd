@@ -95,9 +95,7 @@ func set_shoulder(part_name, side):
 	
 	node.texture = part_data.image
 
-
 #MOVEMENT METHODS
-
 
 func apply_movement(dt, direction):
 	if movement_type == "free":
@@ -113,9 +111,10 @@ func apply_movement(dt, direction):
 		push_error("Not a valid movement type: " + str(movement_type))
 
 
-func apply_rotation(dt, target_pos):
+func apply_rotation(dt, target_pos, stand_still):
 	#Rotate Body
-	rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, rotation_acc)
+	if not stand_still:
+		rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, rotation_acc)
 	
 	
 	#Rotate Arm Weapons
@@ -139,3 +138,8 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 		return abs(diff)*acc*dt
 	else:
 		return -abs(diff)*acc*dt
+
+#COMBAT METHODS
+
+func shoot():
+	pass

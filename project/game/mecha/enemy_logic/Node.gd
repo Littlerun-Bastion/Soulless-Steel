@@ -1,6 +1,6 @@
 extends Node
 
-var connections = []
+var connections = {}
 var id
 
 func _ready():
@@ -8,7 +8,7 @@ func _ready():
 
 
 func add_connection(origin, final, condition):
-	connections.push_back([final, condition])
+	connections[final] = condition
 	
 
 func get_connections():
@@ -16,10 +16,10 @@ func get_connections():
 
 	
 func get_valid_connections():
-	var valid_connections = []
+	var valid_connections = {}
 	for connection in connections:
-		if connection[1]:
-			valid_connections.append(connection)
+		if connections.get(connection):
+			valid_connections[connection] = true
 	return valid_connections
 
 

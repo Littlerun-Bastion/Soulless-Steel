@@ -29,7 +29,7 @@ func updateFiniteLogic():
 	var a_node = g.get_a_node(g.current_state)
 	var valid_connections = a_node.get_valid_connections()
 	for connection in valid_connections:
-		g.current_state = connection.node.id
+		g.current_state = connection.id
 		break
 
 ## STATE METHODS ##

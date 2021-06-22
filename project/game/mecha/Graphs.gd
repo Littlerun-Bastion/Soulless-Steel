@@ -3,6 +3,7 @@ extends Node
 onready var n = "res://game/mecha/Node.gd"
 
 var graph = []
+var current_state = "idle"
 
 func _ready():
 	pass
@@ -24,3 +25,8 @@ func add_connection(origin, final, condition):
 	origin_node.add_connection(origin_node, final_node, condition)
 	
 
+
+func set_state(state):
+	current_state = state
+	
+	

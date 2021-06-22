@@ -20,6 +20,14 @@ func _physics_process(delta):
 func _input(event):
 	if event.is_action_pressed("honk"):
 		AudioManager.play_sfx("test", global_position)
+	elif event.is_action_pressed("left_arm_weapon_shoot"):
+		shoot("left_arm_weapon")
+	elif event.is_action_pressed("right_arm_weapon_shoot"):
+		shoot("right_arm_weapon")
+	elif event.is_action_pressed("left_shoulder_weapon_shoot"):
+		shoot("left_shoulder_weapon")
+	elif event.is_action_pressed("right_shoulder_weapon_shoot"):
+		shoot("right_shoulder_weapon")
 
 
 func setup():

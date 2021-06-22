@@ -141,5 +141,21 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 
 #COMBAT METHODS
 
-func shoot():
-	pass
+func shoot(type):
+	var node
+	var weapon_ref
+	if type == "left_arm_weapon":
+		node = $ArmWeaponLeft
+		weapon_ref = arm_weapon_left
+	elif type ==  "right_arm_weapon":
+		node = $ArmWeaponRight
+		weapon_ref = arm_weapon_right
+	elif type == "left_shoulder_weapon":
+		node = $ShoulderWeaponLeft
+		weapon_ref = shoulder_weapon_left
+	elif type ==  "right_shoulder_weapon":
+		node = $ShoulderWeaponRight
+		weapon_ref = shoulder_weapon_right
+	else:
+		push_error("Not a valid type of weapon to shoot: " + str(type))
+	print(node, weapon_ref)

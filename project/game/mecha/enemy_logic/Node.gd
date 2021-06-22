@@ -1,7 +1,5 @@
 extends Node
 
-onready var g = "res://game/mecha/Graphs.gd"
-
 var connections = []
 var id
 
@@ -21,7 +19,7 @@ func get_valid_connections():
 	var valid_connections = []
 	for connection in connections:
 		if connection[1]:
-			valid_connections.insert(connection)
+			valid_connections.append(connection)
 	return valid_connections
 
 

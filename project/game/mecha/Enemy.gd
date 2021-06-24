@@ -21,7 +21,7 @@ func _process(delta):
 	if has_method("do_"+state):
 		call("do_"+state, delta)
 		
-	logic.updateFiniteLogic()
+	logic.updateFiniteLogic(self)
 
 
 func random_pos():
@@ -39,6 +39,17 @@ func do_roaming(delta):
 	if position.distance_to(final_pos) < REACH_RANGE:
 		final_pos = false
 	
+	
+func do_targeting():
+	pass
+
+
+func do_idle(delta):
+	pass
+
+
+
+
 
 
 

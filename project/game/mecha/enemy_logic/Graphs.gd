@@ -29,3 +29,4 @@ func add_connection(origin, final, condition):
 
 func set_state(state):
 	current_state = state
+

@@ -25,17 +25,17 @@ func get_current_state():
 	return g.current_state
 
 
-func updateFiniteLogic():
+func updateFiniteLogic(enemy):
 	var a_node = g.get_a_node(g.current_state)
-	var valid_connections = a_node.get_valid_connections()
+	var valid_connections = a_node.get_valid_connections(enemy)
 	for connection in valid_connections:
-		g.current_state = connection.id
+		g.set_state(connection.id)
 		break
 
 ## STATE METHODS ##
 
 func idle_to_roaming(_args):
-	return true
+	return false
 
 
 func idle_to_targeting(_args):

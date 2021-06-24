@@ -15,10 +15,10 @@ func get_connections():
 	return connections
 
 	
-func get_valid_connections():
+func get_valid_connections(arguments):
 	var valid_connections = {}
 	for connection in connections:
-		if connections.get(connection):
+		if connections[connection].call_func(arguments):
 			valid_connections[connection] = true
 	return valid_connections
 

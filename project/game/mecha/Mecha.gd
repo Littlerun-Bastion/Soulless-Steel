@@ -18,6 +18,7 @@ var arm_weapon_left = null
 var arm_weapon_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
+var head = null
 
 #PARTS SETTERS
 
@@ -85,6 +86,7 @@ func set_core(part_name):
 func set_head(part_name):
 	var part_data = PartManager.get_part("head", part_name)
 	$Head.texture = part_data.image
+	head = part_data
 
 
 func set_shoulder(part_name, side):
@@ -122,13 +124,15 @@ func apply_rotation(dt, target_pos, stand_still):
 	
 	
 	#Rotate Arm Weapons
-	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right]]:
-		var node = data[0]
-		var arm_ref = data[1]
-		var actual_rot = node.rotation_degrees + rotation_degrees
-		node.rotation_degrees += get_target_rotation_diff(dt, node.global_position, target_pos, actual_rot, arm_ref.rotation_acc)
-		node.rotation_degrees = clamp(node.rotation_degrees, -arm_ref.rotation_range, arm_ref.rotation_range)
-
+	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right],\
+				 [$Head, head]]:
+		var node_ref = data[1]
+		if node_ref:
+			var node = data[0]
+			var actual_rot = node.rotation_degrees + rotation_degrees
+			node.rotation_degrees += get_target_rotation_diff(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
+			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
+	
 
 func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 	var target_rot = fmod(rad2deg(origin.angle_to_point(target_pos)) + 270, 360)

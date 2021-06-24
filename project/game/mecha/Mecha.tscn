@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://assets/images/mechas/shoulders/zh01-a_left.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/heads/zh01-h.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/light.png" type="Texture" id=9]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 37.0
@@ -49,3 +50,8 @@ texture = ExtResource( 6 )
 [node name="RightShoulder" type="Sprite" parent="."]
 position = Vector2( 76, 40 )
 texture = ExtResource( 3 )
+
+[node name="Light2D" type="Light2D" parent="."]
+texture = ExtResource( 9 )
+energy = 2.0
+range_item_cull_mask = 2

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -9,6 +9,7 @@
 [ext_resource path="res://assets/images/mechas/heads/zh01-h.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=9]
+[ext_resource path="res://game/mecha/WeaponNode.gd" type="Script" id=10]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 37.0
@@ -29,19 +30,35 @@ texture = ExtResource( 7 )
 position = Vector2( -78, 0 )
 rotation = -0.15708
 texture = ExtResource( 2 )
+script = ExtResource( 10 )
+
+[node name="ShootingPos" type="Position2D" parent="ArmWeaponLeft"]
+position = Vector2( 6, -110 )
 
 [node name="ArmWeaponRight" type="Sprite" parent="."]
 position = Vector2( 78, 0 )
 rotation = 0.15708
 texture = ExtResource( 5 )
+script = ExtResource( 10 )
+
+[node name="ShootingPos" type="Position2D" parent="ArmWeaponRight"]
+position = Vector2( 6, -90 )
 
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 position = Vector2( -50, 8 )
 texture = ExtResource( 8 )
+script = ExtResource( 10 )
+
+[node name="ShootingPos" type="Position2D" parent="ShoulderWeaponLeft"]
+position = Vector2( 2, -75 )
 
 [node name="ShoulderWeaponRight" type="Sprite" parent="."]
 position = Vector2( 50, 8 )
 texture = ExtResource( 8 )
+script = ExtResource( 10 )
+
+[node name="ShootingPos" type="Position2D" parent="ShoulderWeaponRight"]
+position = Vector2( 2, -75 )
 
 [node name="LeftShoulder" type="Sprite" parent="."]
 position = Vector2( -73, 40 )

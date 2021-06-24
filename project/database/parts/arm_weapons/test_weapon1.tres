@@ -7,6 +7,7 @@
 [resource]
 script = ExtResource( 1 )
 image = ExtResource( 2 )
+shooting_pos = Vector2( 6, -90 )
 rotation_acc = 5
 rotation_range = 10.0
 projectile = ExtResource( 3 )

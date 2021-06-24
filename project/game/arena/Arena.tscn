@@ -1,7 +1,6 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
-[ext_resource path="res://game/mecha/Enemy.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 
@@ -20,10 +19,6 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Mechas" type="Node2D" parent="."]
-
-[node name="Enemy" parent="Mechas" instance=ExtResource( 2 )]
-
 [node name="Props" type="Node2D" parent="."]
 
 [node name="Rock1" parent="Props" instance=ExtResource( 3 )]
@@ -39,6 +34,10 @@ scale = Vector2( 0.4, 0.4 )
 position = Vector2( 685.758, 349.229 )
 rotation = -0.586431
 scale = Vector2( 0.45, 0.45 )
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Mechas" type="Node2D" parent="."]
 
 [node name="StartPositions" type="Node2D" parent="."]
 

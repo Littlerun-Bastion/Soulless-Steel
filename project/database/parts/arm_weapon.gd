@@ -1,6 +1,7 @@
 extends Resource
 
 export var image: Resource
+export var shooting_pos : Vector2
 export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource

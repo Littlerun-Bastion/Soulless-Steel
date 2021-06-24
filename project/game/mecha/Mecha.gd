@@ -5,6 +5,8 @@ enum SIDE {LEFT, RIGHT}
 
 const ARM_WEAPON_INITIAL_ROT = 9
 
+signal create_projectile
+
 var movement_type = "free"
 var velocity = Vector2()
 var max_speed = 200
@@ -45,6 +47,7 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.texture = part_data.image
+	node.set_shooting_pos(part_data.shooting_pos)
 
 
 func set_shoulder_weapon(part_name, side):
@@ -71,6 +74,7 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		shoulder_weapon_right = part_data
 	node.texture = part_data.image
+	node.set_shooting_pos(part_data.shooting_pos)
 
 
 func set_core(part_name):
@@ -158,4 +162,4 @@ func shoot(type):
 		weapon_ref = shoulder_weapon_right
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-	print(node, weapon_ref)
+	emit_signal("create_projectile", node.get_direction(), weapon_ref.projectile)

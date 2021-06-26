@@ -6,11 +6,11 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 onready var Mechas = $Mechas 
 
 var player
-
+var all_mechas = []
 
 func _ready():
 	add_player()
-	add_enemy()
+	add_enemy(1)
 
 
 func add_player():
@@ -20,12 +20,13 @@ func add_player():
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 
 
-func add_enemy():
+func add_enemy(id):
 	var enemy = ENEMY.instance()
 	Mechas.add_child(enemy)
 	enemy.position = get_start_position(2)
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
-
+	all_mechas.push_back(enemy)
+	enemy.set_id_and_enemies(all_mechas, id)
 
 func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position

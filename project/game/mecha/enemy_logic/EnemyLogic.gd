@@ -22,7 +22,7 @@ func setup():
 
 
 func get_current_state():
-	return g.current_state
+	return g.get_current_state()
 
 
 func updateFiniteLogic(enemy):
@@ -35,11 +35,18 @@ func updateFiniteLogic(enemy):
 ## STATE METHODS ##
 
 func idle_to_roaming(_args):
-	return false
-
+	if _args.valid_target:
+		return false
+	else:
+		return true
+	
 
 func idle_to_targeting(_args):
-	return false
+	if _args.valid_target:
+		print("wtf")
+		return true
+	else:
+		return false
 
 
 func roaming_to_idle(_args):
@@ -48,7 +55,6 @@ func roaming_to_idle(_args):
 
 func roaming_to_targeting(_args):
 	return false
-
 
 func targeting_to_idle(_args):
 	return false

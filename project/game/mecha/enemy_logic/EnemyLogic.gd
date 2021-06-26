@@ -43,7 +43,6 @@ func idle_to_roaming(_args):
 
 func idle_to_targeting(_args):
 	if _args.valid_target:
-		print("wtf")
 		return true
 	else:
 		return false

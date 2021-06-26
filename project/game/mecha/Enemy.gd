@@ -9,10 +9,9 @@ var moving = false
 var final_pos = false
 var REACH_RANGE = 10
 var logic
-var id
 var all_enemies
 var valid_target = false
-var engage_distance = 100
+var engage_distance = 500
 var shooting_distance = 50
 
 func _ready():
@@ -22,12 +21,14 @@ func _ready():
 
 func _process(delta):
 	var state = logic.get_current_state()
+	
+	check_for_targets()
+	
 	if has_method("do_"+state):
 		call("do_"+state, delta)
 		
 	logic.updateFiniteLogic(self)
 	
-	check_for_targets()
 
 func random_pos():
 	randomize()
@@ -50,8 +51,8 @@ func do_roaming(delta):
 	
 	
 func do_targeting(delta):
-	apply_movement(delta, Vector2(valid_target.x-position.x,\
-					   valid_target.y-position.y))
+	apply_movement(delta, Vector2(valid_target.position.x-self.position.x,\
+					   valid_target.position.y-self.position.y))
 
 
 func do_idle(delta):
@@ -64,16 +65,16 @@ func set_id_and_enemies(_all_enemies, _id):
 
 
 func check_for_targets():
-	var closest_target = all_enemies[0]
-	var shortest_distance = 1000000
+	var shortest_distance = 10000
 	var target_to_return
 	
 	for target in all_enemies:
-		shortest_distance = min(target.position.distance_to(self.position), shortest_distance)
-		if target.position.distance_to(self.position) == shortest_distance:
-			target_to_return = target
+		if target.id != self.id:
+			shortest_distance = min(target.position.distance_to(self.position), shortest_distance)
+			if target.position.distance_to(self.position) == shortest_distance:
+				target_to_return = target
 		
-	if shortest_distance < abs(engage_distance):
+	if abs(shortest_distance) < engage_distance:
 		valid_target = target_to_return
 	else:
 		valid_target = false

@@ -19,6 +19,7 @@ var arm_weapon_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
+var id
 
 #PARTS SETTERS
 

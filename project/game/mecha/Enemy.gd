@@ -41,10 +41,23 @@ func random_pos():
 
 func random_pos_targeting():
 	randomize()
-	return Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand),\
-							  min(get_viewport_rect().size.x-move_d_rand, valid_target.position.x+move_d_rand)),\
-				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand),\
-							  min(get_viewport_rect().size.y-move_d_rand, valid_target.position.y+move_d_rand)))
+	var v_closeness = Vector2()
+	
+	if position.x - valid_target.position.x < 0:
+		v_closeness.x = -100
+	else:
+		v_closeness.x = 100
+	
+	if position.x - valid_target.position.y < 0:
+		v_closeness.y = -100
+	else:
+		v_closeness.y = 100
+	
+	return Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
+				   min(get_viewport_rect().size.x-move_d_rand, valid_target.position.x+move_d_rand+v_closeness.x)),\
+				   
+				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
+				   min(get_viewport_rect().size.y-move_d_rand, valid_target.position.y+move_d_rand+v_closeness.y)))
 
 
 func do_roaming(delta):

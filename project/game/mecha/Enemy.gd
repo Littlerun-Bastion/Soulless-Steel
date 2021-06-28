@@ -43,6 +43,7 @@ func random_pos_targeting():
 	randomize()
 	var v_closeness = Vector2()
 	
+	## ifs to check where the enemy is and add the proper distance between them
 	if position.x - valid_target.position.x < 0:
 		v_closeness.x = -100
 	else:
@@ -65,7 +66,7 @@ func do_roaming(delta):
 		final_pos = random_pos()
 
 	apply_movement(delta, Vector2(final_pos.x-position.x,\
-					   final_pos.y-position.y))
+					   			  final_pos.y-position.y))
 	
 	if position.distance_to(final_pos) < REACH_RANGE:
 		final_pos = false
@@ -76,12 +77,12 @@ func do_roaming(delta):
 	
 func do_targeting(delta):
 	var enemy_area =  random_pos_targeting()
-	
-	self.apply_rotation(delta, valid_target.position, false)
+
+	apply_rotation(delta, valid_target.position, false)
 	
 	apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
 								  enemy_area.y-self.position.y))
-
+	
 
 func do_idle(delta):
 	pass

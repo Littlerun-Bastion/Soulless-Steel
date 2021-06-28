@@ -13,6 +13,9 @@ var all_enemies
 var valid_target = false
 var engage_distance = 500
 var shooting_distance = 50
+var current_state
+var move_d_rand = 100
+
 
 func _ready():
 	logic = LOGIC.new()
@@ -32,8 +35,16 @@ func _process(delta):
 
 func random_pos():
 	randomize()
-	return Vector2(rand_range(100, get_viewport_rect().size.x-100), \
-				   rand_range(100, get_viewport_rect().size.y-100))
+	return Vector2(rand_range(move_d_rand, get_viewport_rect().size.x-move_d_rand),\
+				   rand_range(move_d_rand, get_viewport_rect().size.y-move_d_rand))
+
+
+func random_pos_targeting():
+	randomize()
+	return Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand),\
+							  min(get_viewport_rect().size.x-move_d_rand, valid_target.position.x+move_d_rand)),\
+				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand),\
+							  min(get_viewport_rect().size.y-move_d_rand, valid_target.position.y+move_d_rand)))
 
 
 func do_roaming(delta):
@@ -51,8 +62,12 @@ func do_roaming(delta):
 	
 	
 func do_targeting(delta):
-	apply_movement(delta, Vector2(valid_target.position.x-self.position.x,\
-					   valid_target.position.y-self.position.y))
+	var enemy_area =  random_pos_targeting()
+	
+	self.apply_rotation(delta, valid_target.position, false)
+	
+	apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
+								  enemy_area.y-self.position.y))
 
 
 func do_idle(delta):

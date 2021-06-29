@@ -7,13 +7,12 @@ onready var Mechas = $Mechas
 
 var player
 var all_mechas = []
-var ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 func _ready():
 	add_player()
-	add_enemy(1)
-	
+	add_enemy()
+
 
 func add_player():
 	player = PLAYER.instance()
@@ -21,17 +20,24 @@ func add_player():
 	player.position = get_start_position(1)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	all_mechas.push_back(player)
-	player.id = ids.pop_front()
 
-func add_enemy(id):
+
+func add_enemy():
 	var enemy = ENEMY.instance()
 	Mechas.add_child(enemy)
-	enemy.position = get_start_position(2)
+	enemy.position = get_random_start_position([1])
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
 	all_mechas.push_back(enemy)
-	enemy.set_id_and_enemies(all_mechas, id)
-	enemy.id = ids.pop_front()
-	
+	enemy.setup(all_mechas)
+
+
+func get_random_start_position(exclude_idx := []):
+	var n_pos = $StartPositions.get_child_count()
+	var idx = randi()%n_pos + 1
+	while exclude_idx.has(idx):
+		idx = randi()%n_pos + 1
+	return $StartPositions.get_node("Pos"+str(idx)).position
+
 
 func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
@@ -39,3 +45,4 @@ func get_start_position(idx):
 
 func _on_mecha_create_projectile(_dir, _projectile):
 	pass
+

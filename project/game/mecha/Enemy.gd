@@ -9,7 +9,7 @@ var moving = false
 var final_pos = false
 var REACH_RANGE = 10
 var logic
-var all_enemies
+var all_mechas
 var valid_target = false
 var engage_distance = 500
 var shooting_distance = 50
@@ -31,7 +31,19 @@ func _process(delta):
 		call("do_"+state, delta)
 		
 	logic.updateFiniteLogic(self)
-	
+
+
+func setup(_all_mechas):
+	all_mechas = _all_mechas
+	set_arm_weapon("test_weapon1", SIDE.RIGHT)
+	set_arm_weapon("test_weapon2", SIDE.LEFT)
+	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
+	set_shoulder_weapon("test_weapon1", SIDE.LEFT)
+	set_head("head_test")
+	set_core("core_test")
+	set_shoulder("shoulder_test_left", SIDE.LEFT)
+	set_shoulder("shoulder_test_right", SIDE.RIGHT)
+
 
 func random_pos():
 	randomize()
@@ -84,21 +96,16 @@ func do_targeting(delta):
 								  enemy_area.y-self.position.y))
 	
 
-func do_idle(delta):
+func do_idle(_delta):
 	pass
-
-
-func set_id_and_enemies(_all_enemies, _id):
-	id = _id
-	all_enemies = _all_enemies
 
 
 func check_for_targets():
 	var shortest_distance = 10000
 	var target_to_return
 	
-	for target in all_enemies:
-		if target.id != self.id:
+	for target in all_mechas:
+		if target != self:
 			shortest_distance = min(target.position.distance_to(self.position), shortest_distance)
 			if target.position.distance_to(self.position) == shortest_distance:
 				target_to_return = target

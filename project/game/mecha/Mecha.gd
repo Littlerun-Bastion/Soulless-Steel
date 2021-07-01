@@ -6,6 +6,10 @@ enum SIDE {LEFT, RIGHT}
 const ARM_WEAPON_INITIAL_ROT = 9
 
 signal create_projectile
+signal died
+
+var max_hp = 10
+var hp = 10
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -19,6 +23,24 @@ var arm_weapon_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
+
+
+func set_max_life(value):
+	max_hp = value
+	hp = max_hp
+
+
+func take_damage(amount):
+	hp = max(hp - amount, 0)
+	
+	if hp <= 0:
+		die()
+
+
+func die():
+	emit_signal("died", self)
+	queue_free()
+
 
 #PARTS SETTERS
 

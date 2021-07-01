@@ -35,6 +35,7 @@ func _process(delta):
 
 func setup(_all_mechas):
 	all_mechas = _all_mechas
+	set_max_life(100)
 	set_arm_weapon("test_weapon1", SIDE.RIGHT)
 	set_arm_weapon("test_weapon2", SIDE.LEFT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)

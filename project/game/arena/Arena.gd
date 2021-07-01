@@ -21,6 +21,7 @@ func add_player():
 	Mechas.add_child(player)
 	player.position = get_start_position(1)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
+	player.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(player)
 
 
@@ -29,6 +30,7 @@ func add_enemy():
 	Mechas.add_child(enemy)
 	enemy.position = get_random_start_position([1])
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
+	enemy.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(enemy)
 	enemy.setup(all_mechas)
 
@@ -50,3 +52,7 @@ func _on_mecha_create_projectile(mecha, projectile, pos, dir):
 	if data.create_node:
 		Projectiles.add_child(data.node)
 
+
+func _on_mecha_died(mecha):
+	var idx = all_mechas.find(mecha)
+	all_mechas.remove(idx)

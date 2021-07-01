@@ -6,15 +6,16 @@ var damage = 0
 var original_mecha
 
 
-func setup(mecha, data, pos, direction):
+func setup(mecha, args):
+	var data = args.weapon_data
 	$Sprite.texture = data.image
 	$CollisionShape2D.shape.extents = data.collision_extents
 	original_mecha = mecha
 	speed = data.speed
-	damage = data.damage
+	damage = data.damage * args.damage_mod
 	apply_scaling(data.scale)
-	dir = direction.normalized()
-	position = pos
+	dir = args.dir.normalized()
+	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
 	apply_impulse(Vector2(), dir*speed)
 

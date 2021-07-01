@@ -47,8 +47,8 @@ func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
 
 
-func _on_mecha_create_projectile(mecha, projectile, pos, dir):
-	var data = ProjectileManager.create(mecha, projectile, pos, dir)
+func _on_mecha_create_projectile(mecha, args):
+	var data = ProjectileManager.create(mecha, args)
 	if data.create_node:
 		Projectiles.add_child(data.node)
 

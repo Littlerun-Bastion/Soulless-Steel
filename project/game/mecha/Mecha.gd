@@ -194,5 +194,10 @@ func shoot(type):
 			return
 		node.add_time(weapon_ref.fire_rate) 
 		
-	emit_signal("create_projectile", self, weapon_ref.projectile, \
-				node.get_shoot_position(), node.get_direction())
+	emit_signal("create_projectile", self, 
+				{
+					"weapon_data": weapon_ref.projectile,
+					"pos": node.get_shoot_position(),
+					"dir": node.get_direction(),
+					"damage_mod": weapon_ref.damage_modifier,
+				})

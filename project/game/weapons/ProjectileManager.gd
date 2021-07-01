@@ -4,7 +4,8 @@ enum TYPE {INSTANT, REGULAR}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 
-func create(mecha, projectile_data, pos, dir):
+func create(mecha, args):
+	var projectile_data = args.weapon_data
 	var data = {
 		"create_node": false,
 		"node": null,
@@ -15,7 +16,7 @@ func create(mecha, projectile_data, pos, dir):
 	
 	elif projectile_data.type == TYPE.REGULAR:
 		var projectile = REGULAR.instance()
-		projectile.setup(mecha, projectile_data, pos, dir)
+		projectile.setup(mecha, args)
 		data.create_node = true
 		data.node = projectile
 	

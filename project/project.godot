@@ -28,6 +28,7 @@ config/icon="res://icon.png"
 
 AudioManager="*res://game/audio/AudioManager.tscn"
 PartManager="*res://game/mecha/PartManager.gd"
+ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 
 [input]
 

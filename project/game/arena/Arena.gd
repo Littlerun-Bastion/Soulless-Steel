@@ -3,7 +3,9 @@ extends Node2D
 const PLAYER = preload("res://game/mecha/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
+
 onready var Mechas = $Mechas 
+onready var Projectiles = $Projectiles
 
 var player
 var all_mechas = []
@@ -43,6 +45,8 @@ func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
 
 
-func _on_mecha_create_projectile(_projectile, _pos, _dir):
-	pass
+func _on_mecha_create_projectile(mecha, projectile, pos, dir):
+	var data = ProjectileManager.create(mecha, projectile, pos, dir)
+	if data.create_node:
+		Projectiles.add_child(data.node)
 

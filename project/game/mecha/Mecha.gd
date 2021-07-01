@@ -166,4 +166,5 @@ func shoot(type):
 		weapon_ref = shoulder_weapon_right
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-	emit_signal("create_projectile", weapon_ref.projectile, node.get_shoot_position(), node.get_direction())
+	emit_signal("create_projectile", self, weapon_ref.projectile, \
+				node.get_shoot_position(), node.get_direction())

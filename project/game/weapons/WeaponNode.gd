@@ -8,7 +8,7 @@ func set_shooting_pos(pos):
 
 
 func get_direction():
-	return Vector2(cos(deg2rad(rotation_degrees)), sin(deg2rad(rotation_degrees)))
+	return (ShootingPos.global_position - global_position).normalized()
 
 
 func get_shoot_position():

@@ -9,12 +9,14 @@
 [ext_resource path="res://assets/images/mechas/heads/zh01-h.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=9]
-[ext_resource path="res://game/mecha/WeaponNode.gd" type="Script" id=10]
+[ext_resource path="res://game/weapons/WeaponNode.gd" type="Script" id=10]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 37.0
 
-[node name="Mecha" type="KinematicBody2D"]
+[node name="Mecha" type="KinematicBody2D" groups=[
+"mecha",
+]]
 script = ExtResource( 1 )
 
 [node name="Collision" type="CollisionShape2D" parent="."]

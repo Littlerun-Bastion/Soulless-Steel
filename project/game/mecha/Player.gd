@@ -10,12 +10,13 @@ func _ready():
 
 
 func _physics_process(delta):
+	check_input()
+	
 	apply_movement(delta, get_input())
 	
 	var target_pos = get_global_mouse_position()
 	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 		apply_rotation(delta, target_pos, Input.is_action_pressed("strafe"))
-
 
 func _input(event):
 	if event.is_action_pressed("honk"):
@@ -28,6 +29,18 @@ func _input(event):
 		shoot("left_shoulder_weapon")
 	elif event.is_action_pressed("right_shoulder_weapon_shoot") and shoulder_weapon_right:
 		shoot("right_shoulder_weapon")
+
+
+func check_input():
+	check_weapon_input("left_arm_weapon", arm_weapon_left)
+	check_weapon_input("right_arm_weapon", arm_weapon_right)
+	check_weapon_input("left_shoulder_weapon", shoulder_weapon_left)
+	check_weapon_input("right_shoulder_weapon", shoulder_weapon_right)
+
+
+func check_weapon_input(name, weapon_ref):
+	if weapon_ref and weapon_ref.auto_fire and Input.is_action_pressed(name+"_shoot"):
+		shoot(name)
 
 
 func setup():

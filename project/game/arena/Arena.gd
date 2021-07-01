@@ -43,6 +43,6 @@ func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
 
 
-func _on_mecha_create_projectile(_dir, _projectile):
+func _on_mecha_create_projectile(_projectile, _pos, _dir):
 	pass
 

@@ -7,7 +7,7 @@ func _ready():
 	pass
 
 
-func add_connection(origin, final, condition):
+func add_connection(final, condition):
 	connections[final] = condition
 	
 

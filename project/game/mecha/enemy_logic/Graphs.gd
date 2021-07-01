@@ -24,7 +24,7 @@ func get_a_node(id):
 func add_connection(origin, final, condition):
 	var origin_node = get_a_node(origin)
 	var final_node = get_a_node(final)
-	origin_node.add_connection(origin_node, final_node, condition)
+	origin_node.add_connection(final_node, condition)
 
 
 func set_state(state):

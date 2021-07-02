@@ -1,8 +1,13 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
+
+[sub_resource type="NavigationPolygon" id=1]
+vertices = PoolVector2Array( 1010.09, 5.45886, 1011.58, 588.3, 756.872, 386.029, 756.872, 332.09, 710.424, 87.8658, 708.926, 35.425, 740.391, 285.642, 698.438, 137.31, 678.96, 161.283, 693.943, 272.158, 614.533, 164.279, 650.492, 288.639, 361.319, 263.168, 622.024, 342.578, 625.021, 398.015, 373.305, 317.107, 726.906, 412.998, 352.329, 357.561, 565.089, 152.293, 553.102, 131.317, 698.438, 15.947, 695.441, 430.978, 18.2063, 583.805, 635.509, 424.985, 293.895, 380.036, 238.457, 354.564, 13.7114, 5.45886, 223.474, 314.11, 290.898, 257.174, 548.607, 83.3708, 587.563, 33.9267, 614.533, 14.4487 )
+polygons = [ PoolIntArray( 0, 1, 2, 3 ), PoolIntArray( 4, 5, 0, 3, 6 ), PoolIntArray( 7, 4, 6 ), PoolIntArray( 8, 7, 6, 9 ), PoolIntArray( 10, 8, 9, 11, 12 ), PoolIntArray( 13, 14, 15, 12 ), PoolIntArray( 16, 2, 1 ), PoolIntArray( 17, 15, 14 ), PoolIntArray( 11, 13, 12 ), PoolIntArray( 18, 10, 12 ), PoolIntArray( 19, 18, 12 ), PoolIntArray( 0, 5, 20 ), PoolIntArray( 21, 16, 1 ), PoolIntArray( 21, 1, 22, 23 ), PoolIntArray( 17, 14, 23, 22, 24 ), PoolIntArray( 25, 24, 22 ), PoolIntArray( 25, 22, 26, 27 ), PoolIntArray( 28, 27, 26 ), PoolIntArray( 29, 19, 12, 28, 26 ), PoolIntArray( 30, 29, 26 ), PoolIntArray( 31, 30, 26 ), PoolIntArray( 31, 26, 0 ), PoolIntArray( 31, 0, 20 ) ]
+outlines = [ PoolVector2Array( 13.7114, 5.45886, 18.2063, 583.805, 1011.58, 588.3, 1010.09, 5.45886 ), PoolVector2Array( 290.898, 257.174, 223.474, 314.11, 238.457, 354.564, 293.895, 380.036, 352.329, 357.561, 373.305, 317.107, 361.319, 263.168 ), PoolVector2Array( 565.089, 152.293, 614.533, 164.279, 678.96, 161.283, 698.438, 137.31, 710.424, 87.8658, 708.926, 35.425, 698.438, 15.947, 614.533, 14.4487, 587.563, 33.9267, 548.607, 83.3708, 553.102, 131.317 ), PoolVector2Array( 650.492, 288.639, 622.024, 342.578, 625.021, 398.015, 635.509, 424.985, 695.441, 430.978, 726.906, 412.998, 756.872, 386.029, 756.872, 332.09, 740.391, 285.642, 693.943, 272.158 ) ]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource( 1 )
@@ -60,3 +65,8 @@ position = Vector2( 660, 444 )
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Walls/Hull"]
 position = Vector2( -233.723, -318.035 )
 polygon = PoolVector2Array( 306.023, -77.8306, 961.724, -92.085, 1435.68, -49.3218, 1731.46, 214.384, 1749.28, 891.467, 1656.63, 1151.61, 922.525, 1336.92, 373.731, 1290.59, -53.9005, 1219.32, -271.28, 919.976, -292.661, 310.601, -153.681, 4.13208, 305.807, -77.9061, 398.673, 111.3, -89.5363, 182.312, -128.736, 478.09, -50.3369, 1073.21, 420.058, 1144.48, 1125.65, 1119.54, 1503.39, 955.612, 1592.48, 617.07, 1560.41, 196.566, 1268.19, 86.0948, 694.455, 57.586, 398.676, 111.04 )
+
+[node name="Navigation2D" type="Navigation2D" parent="."]
+
+[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
+navpoly = SubResource( 1 )

@@ -15,7 +15,8 @@ var engage_distance = 500
 var shooting_distance = 50
 var current_state
 var move_d_rand = 100
-
+var navigation_node
+var path : = PoolVector2Array()
 
 func _ready():
 	logic = LOGIC.new()
@@ -33,8 +34,9 @@ func _process(delta):
 	logic.updateFiniteLogic(self)
 
 
-func setup(_all_mechas):
+func setup(_all_mechas, _path_stuff):
 	all_mechas = _all_mechas
+	navigation_node = _path_stuff
 	set_max_life(100)
 	set_arm_weapon("test_weapon1", SIDE.RIGHT)
 	set_arm_weapon("test_weapon2", SIDE.LEFT)
@@ -78,8 +80,14 @@ func do_roaming(delta):
 	if not final_pos:
 		final_pos = random_pos()
 
-	apply_movement(delta, Vector2(final_pos.x-position.x,\
-					   			  final_pos.y-position.y))
+	path = navigation_node.get_simple_path(self.position, final_pos)
+
+
+	for place in path:
+		apply_movement(delta, Vector2(place.x-position.x,\
+					   			  place.y-position.y))
+
+	
 	
 	if position.distance_to(final_pos) < REACH_RANGE:
 		final_pos = false
@@ -89,13 +97,17 @@ func do_roaming(delta):
 	
 	
 func do_targeting(delta):
+	if not valid_target:
+		return
 	var enemy_area =  random_pos_targeting()
 
-	apply_rotation(delta, valid_target.position, false)
-	
-	apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
+	if self.position.x < enemy_area.x + 10 or self.position.x < enemy_area.x - 10 and\
+	   self.position.y < enemy_area.y + 10 or self.position.y < enemy_area.y - 10:
+		apply_movement(delta, Vector2(0,0))
+	else:		
+		apply_rotation(delta, valid_target.position, false)
+		apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
 								  enemy_area.y-self.position.y))
-	
 
 func do_idle(_delta):
 	pass

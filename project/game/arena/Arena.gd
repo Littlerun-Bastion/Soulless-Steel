@@ -32,7 +32,7 @@ func add_enemy():
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
 	enemy.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(enemy)
-	enemy.setup(all_mechas)
+	enemy.setup(all_mechas, $Navigation2D)
 
 
 func get_random_start_position(exclude_idx := []):

@@ -45,7 +45,7 @@ func idle_to_roaming(_args):
 	
 
 func idle_to_targeting(_args):
-	if _args.valid_target:
+	if _args.valid_target and g.get_current_state() == "idle":
 		return true
 	else:
 		return false
@@ -56,7 +56,7 @@ func roaming_to_idle(_args):
 
 
 func roaming_to_targeting(_args):
-	if _args.valid_target and g.get_current_state() != "idle":
+	if _args.valid_target and g.get_current_state() == "roaming":
 		return true
 	else:
 		return false
@@ -67,7 +67,16 @@ func targeting_to_idle(_args):
 
 
 func targeting_to_roaming(_args):
-	return false
+	if not _args.valid_target and g.get_current_state() == "targeting":
+		return true
+	else:
+		return false
+		
+		
+		
+		
+		
+		
 
 
 

@@ -104,6 +104,7 @@ func do_targeting(delta):
 	
 	if self.position.x < enemy_area.x + 10 or self.position.x < enemy_area.x - 10 and\
 	   self.position.y < enemy_area.y + 10 or self.position.y < enemy_area.y - 10:
+		apply_rotation(delta, valid_target.position, false)
 		apply_movement(delta, Vector2(0,0))
 	else:		
 		for place in path:

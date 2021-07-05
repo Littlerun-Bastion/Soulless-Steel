@@ -11,7 +11,7 @@ var REACH_RANGE = 10
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 100
+var engage_distance = 300
 var shooting_distance = 50
 var current_state
 var move_d_rand = 50
@@ -32,7 +32,8 @@ func _process(delta):
 		call("do_"+state, delta)
 		
 	logic.updateFiniteLogic(self)
-
+	
+	$Label.text = logic.get_current_state()
 
 func setup(_all_mechas, _path_stuff):
 	all_mechas = _all_mechas
@@ -111,6 +112,9 @@ func do_targeting(delta):
 			apply_rotation(delta, valid_target.position, false)
 			apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
 								  enemy_area.y-self.position.y))
+
+	shoot("left_arm_weapon")
+	shoot("right_arm_weapon")
 
 func do_idle(_delta):
 	pass

@@ -40,7 +40,7 @@ func setup(_all_mechas, _path_stuff):
 	navigation_node = _path_stuff
 	set_max_life(100)
 	set_arm_weapon("test_weapon1", SIDE.RIGHT)
-	set_arm_weapon("test_weapon2", SIDE.LEFT)
+	set_arm_weapon("test_weapon1", SIDE.LEFT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
 	set_shoulder_weapon("test_weapon1", SIDE.LEFT)
 	set_head("head_test")

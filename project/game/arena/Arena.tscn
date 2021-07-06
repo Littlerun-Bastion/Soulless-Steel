@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
+[ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 
@@ -70,3 +71,5 @@ polygon = PoolVector2Array( 306.023, -77.8306, 961.724, -92.085, 1435.68, -49.32
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
 navpoly = SubResource( 1 )
+
+[node name="PlayerHUD" parent="." instance=ExtResource( 2 )]

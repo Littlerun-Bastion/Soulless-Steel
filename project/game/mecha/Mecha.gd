@@ -6,6 +6,7 @@ enum SIDE {LEFT, RIGHT}
 const ARM_WEAPON_INITIAL_ROT = 9
 
 signal create_projectile
+signal took_damage
 signal died
 
 var max_hp = 10
@@ -32,6 +33,8 @@ func set_max_life(value):
 
 func take_damage(amount):
 	hp = max(hp - amount, 0)
+	
+	emit_signal("took_damage", self)
 	
 	if hp <= 0:
 		die()

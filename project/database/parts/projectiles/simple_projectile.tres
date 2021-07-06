@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource( 2 )
 type = 1
-damage = 10
+damage = 1
 image = ExtResource( 1 )
 collision_extents = Vector2( 30, 30 )
 scale = Vector2( 0.5, 0.5 )

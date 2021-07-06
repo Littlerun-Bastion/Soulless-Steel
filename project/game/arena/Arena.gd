@@ -6,6 +6,7 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
+onready var PlayerHUD = $PlayerHUD
 
 var player
 var all_mechas = []
@@ -23,6 +24,7 @@ func add_player():
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(player)
+	PlayerHUD.setup(player)
 
 
 func add_enemy():

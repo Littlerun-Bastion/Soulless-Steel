@@ -192,10 +192,9 @@ func shoot(type):
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 	
-	if weapon_ref.auto_fire:
-		if not node.can_shoot():
-			return
-		node.add_time(weapon_ref.fire_rate) 
+	if not node.can_shoot():
+		return
+	node.add_time(weapon_ref.fire_rate) 
 		
 	emit_signal("create_projectile", self, 
 				{

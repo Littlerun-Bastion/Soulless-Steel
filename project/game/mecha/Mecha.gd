@@ -200,6 +200,6 @@ func shoot(type):
 				{
 					"weapon_data": weapon_ref.projectile,
 					"pos": node.get_shoot_position(),
-					"dir": node.get_direction(),
+					"dir": node.get_direction(weapon_ref.bullet_accuracy_margin),
 					"damage_mod": weapon_ref.damage_modifier,
 				})

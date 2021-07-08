@@ -14,5 +14,5 @@ projectile = ExtResource( 3 )
 damage_modifier = 1.0
 fire_rate = 0.1
 auto_fire = true
-bullet_accuracy_margin = 0
+bullet_accuracy_margin = 10
 bullet_spread = 0

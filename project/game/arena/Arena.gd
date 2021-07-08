@@ -57,4 +57,5 @@ func _on_mecha_create_projectile(mecha, args):
 
 func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)
-	all_mechas.remove(idx)
+	if idx > 0:
+		all_mechas.remove(idx)

@@ -11,12 +11,16 @@ var REACH_RANGE = 10
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 300
+var engage_distance = 100
 var shooting_distance = 50
 var current_state
 var move_d_rand = 50
 var navigation_node
 var path : = PoolVector2Array()
+var pos_for_blocked
+var regions = [1, 2, 3, 4]
+var old_region
+
 
 func _ready():
 	logic = LOGIC.new()
@@ -50,15 +54,49 @@ func setup(_all_mechas, _path_stuff):
 
 
 func random_pos():
+	var screen_x = get_viewport_rect().size.x-move_d_rand
+	var screen_y = get_viewport_rect().size.y-move_d_rand
+	var new_region
 	randomize()
-	return Vector2(rand_range(move_d_rand, get_viewport_rect().size.x-move_d_rand),\
-				   rand_range(move_d_rand, get_viewport_rect().size.y-move_d_rand))
-
+	regions.shuffle()
+	new_region = regions[0]
+		
+	if new_region != old_region:
+		old_region = new_region
+		if new_region == 1:
+			return Vector2(rand_range(move_d_rand, screen_x/2),\
+					  	   rand_range(move_d_rand, screen_y/2))
+		elif new_region == 2:
+			return Vector2(rand_range(screen_x/2, screen_x),\
+					  	   rand_range(move_d_rand, screen_y/2))
+		elif new_region == 3:
+			return Vector2(rand_range(move_d_rand, screen_x/2),\
+					  	   rand_range(screen_y/2, screen_y))
+		else:
+			return Vector2(rand_range(screen_x/2, screen_x),\
+					  	   rand_range(screen_y/2, screen_y))
+	else:
+		old_region = regions[1]
+		if new_region == 1:
+			return Vector2(rand_range(move_d_rand, screen_x/2),\
+					  	   rand_range(move_d_rand, screen_y/2))
+		elif new_region == 2:
+			return Vector2(rand_range(screen_x/2, screen_x),\
+					  	   rand_range(move_d_rand, screen_y/2))
+		elif new_region == 3:
+			return Vector2(rand_range(move_d_rand, screen_x/2),\
+					  	   rand_range(screen_y/2, screen_y))
+		else:
+			return Vector2(rand_range(screen_x/2, screen_x),\
+					  	   rand_range(screen_y/2, screen_y))
+		
+		
 
 func random_pos_targeting():
 	randomize()
 	var v_closeness = Vector2()
-	
+	var rand_pos = Vector2()
+	10
 	## ifs to check where the enemy is and add the proper distance between them
 	if position.x - valid_target.position.x < 0:
 		v_closeness.x = -50
@@ -70,32 +108,40 @@ func random_pos_targeting():
 	else:
 		v_closeness.y = 50
 	
-	return Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
+	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
 				   min(get_viewport_rect().size.x-move_d_rand, valid_target.position.x+move_d_rand+v_closeness.x)),\
 				   
 				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
 				   min(get_viewport_rect().size.y-move_d_rand, valid_target.position.y+move_d_rand+v_closeness.y)))
 
 
+	return navigation_node.get_closest_point(rand_pos)
+
 func do_roaming(delta):
 	if not final_pos:
 		final_pos = random_pos()
-
+	
 	path = navigation_node.get_simple_path(self.position, final_pos)
 
-
 	for place in path:
+		pos_for_blocked = position
+		
+		apply_rotation(delta, Vector2(place.x-position.x,\
+					   			  place.y-position.y), false)
+								
 		apply_movement(delta, Vector2(place.x-position.x,\
 					   			  place.y-position.y))
-	
-	if position.distance_to(final_pos) < REACH_RANGE:
+		print(position.distance_to(place))
+		
+		
+		
+	if final_pos and position.distance_to(final_pos) < REACH_RANGE:
 		final_pos = false
 		
 	if not valid_target:
 		check_for_targets()
 
 	
-
 	
 func do_targeting(delta):
 	if not valid_target:
@@ -115,6 +161,7 @@ func do_targeting(delta):
 
 	shoot("left_arm_weapon")
 	shoot("right_arm_weapon")
+
 
 func do_idle(_delta):
 	pass

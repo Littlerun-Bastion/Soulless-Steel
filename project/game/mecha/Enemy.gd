@@ -20,7 +20,7 @@ var path : = PoolVector2Array()
 var pos_for_blocked
 var regions = [1, 2, 3, 4]
 var old_region
-
+var arena_size = Vector2(1500, 1000)
 
 func _ready():
 	logic = LOGIC.new()
@@ -54,8 +54,8 @@ func setup(_all_mechas, _path_stuff):
 
 
 func random_pos():
-	var screen_x = get_viewport_rect().size.x-move_d_rand
-	var screen_y = get_viewport_rect().size.y-move_d_rand
+	var screen_x = arena_size.x
+	var screen_y = arena_size.y
 	var new_region
 	randomize()
 	regions.shuffle()
@@ -109,10 +109,10 @@ func random_pos_targeting():
 		v_closeness.y = 50
 	
 	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
-				   min(get_viewport_rect().size.x-move_d_rand, valid_target.position.x+move_d_rand+v_closeness.x)),\
+				   min(arena_size.x-move_d_rand, valid_target.position.x+move_d_rand+v_closeness.x)),\
 				   
 				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
-				   min(get_viewport_rect().size.y-move_d_rand, valid_target.position.y+move_d_rand+v_closeness.y)))
+				   min(arena_size.y-move_d_rand, valid_target.position.y+move_d_rand+v_closeness.y)))
 
 
 	return navigation_node.get_closest_point(rand_pos)

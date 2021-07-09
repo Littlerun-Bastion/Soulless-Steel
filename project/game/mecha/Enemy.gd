@@ -7,7 +7,7 @@ var speed = 100
 var mov_vec = Vector2()
 var moving = false
 var final_pos = false
-var REACH_RANGE = 10
+var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
@@ -16,11 +16,12 @@ var shooting_distance = 50
 var current_state
 var move_d_rand = 50
 var navigation_node
-var path : = PoolVector2Array()
+var path : Array = []
 var pos_for_blocked
 var regions = [1, 2, 3, 4]
 var old_region
 var arena_size = Vector2(1500, 1000)
+
 
 func _ready():
 	logic = LOGIC.new()
@@ -96,7 +97,7 @@ func random_pos_targeting():
 	randomize()
 	var v_closeness = Vector2()
 	var rand_pos = Vector2()
-	10
+	
 	## ifs to check where the enemy is and add the proper distance between them
 	if position.x - valid_target.position.x < 0:
 		v_closeness.x = -50
@@ -118,25 +119,28 @@ func random_pos_targeting():
 	return navigation_node.get_closest_point(rand_pos)
 
 func do_roaming(delta):
+	var start_point = position
+	
 	if not final_pos:
 		final_pos = random_pos()
 	
-	path = navigation_node.get_simple_path(self.position, final_pos)
-
-	for place in path:
-		pos_for_blocked = position
+	if not path:
+		path = navigation_node.get_simple_path(self.global_position, final_pos)
+	
+	
+	if path.size() > 0:
 		
-		apply_rotation(delta, Vector2(place.x-position.x,\
-					   			  place.y-position.y), false)
+		apply_rotation(delta, Vector2(path[1].x-position.x,\
+				   			  path[1].y-position.y), false)
 								
-		apply_movement(delta, Vector2(place.x-position.x,\
-					   			  place.y-position.y))
-		print(position.distance_to(place))
+		apply_movement(delta, Vector2(path[1].x-position.x,\
+				   			  path[1].y-position.y))
 		
+		print(global_position.distance_to(path[1]))
 		
-		
-	if final_pos and position.distance_to(final_pos) < REACH_RANGE:
-		final_pos = false
+		if global_position.distance_to(path[1]) <= 1:
+			path.pop_front()
+	
 		
 	if not valid_target:
 		check_for_targets()

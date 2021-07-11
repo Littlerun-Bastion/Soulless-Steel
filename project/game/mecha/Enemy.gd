@@ -130,16 +130,19 @@ func do_roaming(delta):
 	
 	if path.size() > 0:
 		
-		apply_rotation(delta, Vector2(path[1].x-position.x,\
-				   			  path[1].y-position.y), false)
+		apply_rotation(delta, Vector2(path[0].x-position.x,\
+				   			  path[0].y-position.y), false)
 								
-		apply_movement(delta, Vector2(path[1].x-position.x,\
-				   			  path[1].y-position.y))
+		apply_movement(delta, Vector2(path[0].x-position.x,\
+				   			  path[0].y-position.y))
 		
-		print(global_position.distance_to(path[1]))
+		print(global_position.distance_to(path[0]))
 		
-		if global_position.distance_to(path[1]) <= 1:
+		if global_position.distance_to(path[0]) <= 1:
 			path.pop_front()
+	
+	else:
+		path = navigation_node.get_simple_path(self.global_position, final_pos)
 	
 		
 	if not valid_target:

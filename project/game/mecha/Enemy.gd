@@ -11,7 +11,7 @@ var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 100
+var engage_distance = 300
 var shooting_distance = 50
 var current_state
 var move_d_rand = 50

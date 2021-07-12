@@ -140,9 +140,9 @@ func do_roaming(delta):
 		
 		if global_position.distance_to(path[0]) <= 1:
 			path.pop_front()
-	
-	else:
-		path = navigation_node.get_simple_path(self.global_position, final_pos)
+			if path.size() == 0:
+				final_pos = random_pos()
+				path = navigation_node.get_simple_path(self.global_position, final_pos)
 	
 		
 	if not valid_target:

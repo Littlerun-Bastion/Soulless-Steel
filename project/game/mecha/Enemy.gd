@@ -54,6 +54,17 @@ func setup(_all_mechas, _path_stuff):
 	set_shoulder("shoulder_test_right", SIDE.RIGHT)
 
 
+func shoot_weapons():
+	if arm_weapon_left:
+		shoot("left_arm_weapon")
+	if arm_weapon_right:
+		shoot("right_arm_weapon")
+	if shoulder_weapon_left:
+		shoot("left_shoulder_weapon")
+	if shoulder_weapon_right:
+		shoot("right_shoulder_weapon")
+
+
 func random_pos():
 	var screen_x = arena_size.x
 	var screen_y = arena_size.y
@@ -164,8 +175,7 @@ func do_targeting(delta):
 			apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
 								  enemy_area.y-self.position.y))
 
-	shoot("left_arm_weapon")
-	shoot("right_arm_weapon")
+	shoot_weapons()
 
 
 func do_idle(_delta):

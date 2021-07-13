@@ -29,6 +29,8 @@ func _input(event):
 		shoot("left_shoulder_weapon")
 	elif event.is_action_pressed("right_shoulder_weapon_shoot") and shoulder_weapon_right:
 		shoot("right_shoulder_weapon")
+	elif event.is_action_pressed("debug_1"):
+		die()
 
 
 func check_input():

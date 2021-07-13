@@ -136,8 +136,6 @@ func do_roaming(delta):
 		apply_movement(delta, Vector2(path[0].x-position.x,\
 				   			  path[0].y-position.y))
 		
-		print(global_position.distance_to(path[0]))
-		
 		if global_position.distance_to(path[0]) <= 1:
 			path.pop_front()
 			if path.size() == 0:

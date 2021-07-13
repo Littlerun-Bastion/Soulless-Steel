@@ -7,6 +7,7 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
 onready var PlayerHUD = $PlayerHUD
+onready var ArenaCam = $ArenaCamera
 
 var player
 var all_mechas = []
@@ -37,6 +38,11 @@ func add_enemy():
 	enemy.setup(all_mechas, $Navigation2D)
 
 
+func player_died():
+	player = null
+	ArenaCam.current = true
+
+
 func get_random_start_position(exclude_idx := []):
 	var n_pos = $StartPositions.get_child_count()
 	var idx = randi()%n_pos + 1
@@ -57,5 +63,7 @@ func _on_mecha_create_projectile(mecha, args):
 
 func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)
-	if idx > 0:
+	if idx != -1:
 		all_mechas.remove(idx)
+	if mecha == player:
+		player_died()

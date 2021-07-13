@@ -72,4 +72,8 @@ polygon = PoolVector2Array( 306.023, -77.8306, 961.724, -92.085, 1435.68, -49.32
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
 navpoly = SubResource( 1 )
 
+[node name="ArenaCamera" type="Camera2D" parent="."]
+position = Vector2( 495.34, 256.579 )
+zoom = Vector2( 2, 2 )
+
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]

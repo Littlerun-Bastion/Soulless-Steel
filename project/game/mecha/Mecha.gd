@@ -25,7 +25,6 @@ var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
 
-
 func set_max_life(value):
 	max_hp = value
 	hp = max_hp
@@ -195,7 +194,7 @@ func shoot(type):
 	if not node.can_shoot():
 		return
 	node.add_time(weapon_ref.fire_rate) 
-		
+	
 	emit_signal("create_projectile", self, 
 				{
 					"weapon_data": weapon_ref.projectile,
@@ -203,3 +202,12 @@ func shoot(type):
 					"dir": node.get_direction(weapon_ref.bullet_accuracy_margin),
 					"damage_mod": weapon_ref.damage_modifier,
 				})
+	
+	apply_recoil(type, weapon_ref.recoil_force)
+
+
+func apply_recoil(type, recoil):
+	var rotation = recoil
+	if "left" in type:
+		rotation *= -1
+	rotation_degrees += rotation

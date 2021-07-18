@@ -16,6 +16,8 @@ var all_mechas = []
 func _ready():
 	add_player()
 	add_enemy()
+	add_enemy()
+	add_enemy()
 
 
 func add_player():

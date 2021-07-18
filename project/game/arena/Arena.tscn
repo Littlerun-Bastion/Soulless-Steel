@@ -48,16 +48,16 @@ scale = Vector2( 0.45, 0.45 )
 [node name="StartPositions" type="Node2D" parent="."]
 
 [node name="Pos1" type="Position2D" parent="StartPositions"]
-position = Vector2( 133, 129 )
+position = Vector2( 72.387, 88.5913 )
 
 [node name="Pos2" type="Position2D" parent="StartPositions"]
-position = Vector2( 138, 432 )
+position = Vector2( -1.18542, 488.123 )
 
 [node name="Pos3" type="Position2D" parent="StartPositions"]
-position = Vector2( 662, 148 )
+position = Vector2( 960.575, 73.9174 )
 
 [node name="Pos4" type="Position2D" parent="StartPositions"]
-position = Vector2( 660, 444 )
+position = Vector2( 1030.41, 531.552 )
 
 [node name="Walls" type="Node2D" parent="."]
 

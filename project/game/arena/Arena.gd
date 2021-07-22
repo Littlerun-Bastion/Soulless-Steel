@@ -10,10 +10,12 @@ onready var PlayerHUD = $PlayerHUD
 onready var ArenaCam = $ArenaCamera
 
 var player
+var current_cam
 var all_mechas = []
 
 
 func _ready():
+	randomize()
 	add_player()
 	add_enemy()
 	add_enemy()
@@ -28,6 +30,7 @@ func add_player():
 	player.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player)
+	current_cam = player.get_cam()
 
 
 func add_enemy():
@@ -43,6 +46,7 @@ func add_enemy():
 func player_died():
 	player = null
 	ArenaCam.current = true
+	current_cam = ArenaCam
 
 
 func get_random_start_position(exclude_idx := []):

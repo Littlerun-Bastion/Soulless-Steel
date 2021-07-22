@@ -125,9 +125,7 @@ func set_shoulder(part_name, side):
 	
 	node.texture = part_data.image
 
-
 #ATTRIBUTE METHODS
-
 
 func get_max_hp():
 	return max_hp

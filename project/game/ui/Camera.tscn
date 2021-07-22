@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://game/ui/Camera.gd" type="Script" id=1]
+
+[node name="Camera2D" type="Camera2D"]
+current = true
+drag_margin_h_enabled = true
+drag_margin_v_enabled = true
+smoothing_enabled = true
+smoothing_speed = 7.0
+drag_margin_top = 0.3
+drag_margin_bottom = 0.3
+editor_draw_drag_margin = true
+script = ExtResource( 1 )
+
+[node name="Tween" type="Tween" parent="."]
+
+[node name="Duration" type="Timer" parent="."]
+one_shot = true
+
+[node name="Frequency" type="Timer" parent="."]
+
+[connection signal="timeout" from="Duration" to="." method="_on_Duration_timeout"]
+[connection signal="timeout" from="Frequency" to="." method="_on_Frequency_timeout"]

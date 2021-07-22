@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
+[ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 
 [sub_resource type="NavigationPolygon" id=1]
 vertices = PoolVector2Array( 917.19, 430.978, 1248.73, 528.694, 895.932, 719.346, 866.248, 504.395, 1209.53, -128.789, 799.715, 76.1176, 778.334, -23.6631, 566.3, -159.08, 705.28, -68.208, 605.499, -57.5172, 677.461, 303.622, 663.976, 377.039, 413.759, 420.49, 446.722, 306.618, 536.62, 225.71, 635.508, 225.71, 839.278, 240.693, 760.516, 133.135, 903.705, 303.622, -160.673, 696.183, 753.875, 502.897, 681.956, 457.947, 286.403, 439.968, 181.521, 412.998, -249.763, -78.8988, 169.535, 296.13, 245.949, 201.737, 389.786, 174.768, 525.319, -20.0995, 486.119, 40.4816, 475.428, 126.008, 720.912, 266.164, 719.414, 198.74 )
@@ -67,13 +68,15 @@ position = Vector2( 1030.41, 531.552 )
 position = Vector2( -233.723, -318.035 )
 polygon = PoolVector2Array( 306.023, -77.8306, 961.724, -92.085, 1435.68, -49.3218, 1731.46, 214.384, 1749.28, 891.467, 1656.63, 1151.61, 922.525, 1336.92, 373.731, 1290.59, -53.9005, 1219.32, -271.28, 919.976, -292.661, 310.601, -153.681, 4.13208, 305.807, -77.9061, 398.673, 111.3, -89.5363, 182.312, -128.736, 478.09, -50.3369, 1073.21, 420.058, 1144.48, 1125.65, 1119.54, 1503.39, 955.612, 1592.48, 617.07, 1560.41, 196.566, 1268.19, 86.0948, 694.455, 57.586, 398.676, 111.04 )
 
+[node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
+position = Vector2( 489.044, 272.302 )
+current = false
+zoom = Vector2( 2, 2 )
+smoothing_enabled = false
+
 [node name="Navigation2D" type="Navigation2D" parent="."]
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
 navpoly = SubResource( 1 )
-
-[node name="ArenaCamera" type="Camera2D" parent="."]
-position = Vector2( 495.34, 256.579 )
-zoom = Vector2( 2, 2 )
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]

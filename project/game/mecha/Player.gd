@@ -33,6 +33,22 @@ func _input(event):
 		die()
 
 
+func knockback(pos, strength):
+	.knockback(pos, strength)
+	var dur = sqrt(strength)/10
+	var freq = pow(strength, .3)*5
+	var amp = pow(strength, .3)*5
+	Cam.shake(dur, freq, amp, strength)
+
+
+func apply_recoil(type, recoil):
+	.apply_recoil(type, recoil)
+	var dur = sqrt(recoil)/10
+	var freq = pow(recoil, .3)*5
+	var amp = pow(recoil, .3)*5
+	Cam.shake(dur, freq, amp, recoil)
+
+
 func check_input():
 	check_weapon_input("left_arm_weapon", arm_weapon_left)
 	check_weapon_input("right_arm_weapon", arm_weapon_right)
@@ -69,3 +85,7 @@ func get_input():
 		mov_vec.y -= 1
 	
 	return mov_vec
+
+
+func get_cam():
+	return Cam

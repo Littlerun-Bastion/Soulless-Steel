@@ -50,7 +50,6 @@ func play_sfx(name: String, pos = false, override_pitch = false):
 	
 	player.stream.audio_stream = sfx.asset
 	
-	randomize()
 	var vol = sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
 	player.volume_db = vol
 	

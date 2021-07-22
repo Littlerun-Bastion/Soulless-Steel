@@ -29,5 +29,6 @@ func apply_scaling(sc):
 func _on_InstantProjectile_body_entered(body):
 	if body.is_in_group("mecha") and body != original_mecha:
 		body.take_damage(damage)
+		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	
 	queue_free()

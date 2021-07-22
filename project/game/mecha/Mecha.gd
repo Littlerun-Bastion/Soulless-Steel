@@ -24,6 +24,7 @@ var arm_weapon_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
+var core = null
 
 func set_max_life(value):
 	max_hp = value
@@ -34,7 +35,6 @@ func take_damage(amount):
 	hp = max(hp - amount, 0)
 	
 	emit_signal("took_damage", self)
-	
 	if hp <= 0:
 		die()
 
@@ -42,7 +42,6 @@ func take_damage(amount):
 func die():
 	emit_signal("died", self)
 	queue_free()
-
 
 #PARTS SETTERS
 
@@ -105,6 +104,7 @@ func set_shoulder_weapon(part_name, side):
 func set_core(part_name):
 	var part_data = PartManager.get_part("core", part_name)
 	$Core.texture = part_data.image
+	core = part_data
 
 
 func set_head(part_name):
@@ -124,6 +124,18 @@ func set_shoulder(part_name, side):
 		push_error("Not a valid side: " + str(side))
 	
 	node.texture = part_data.image
+
+
+#ATTRIBUTE METHODS
+
+
+func get_max_hp():
+	return max_hp
+
+
+func get_weight():
+	assert(core, "Mecha doesn't have an assigned core")
+	return float(core.weight)
 
 #MOVEMENT METHODS
 
@@ -159,7 +171,7 @@ func apply_rotation(dt, target_pos, stand_still):
 	
 
 func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
-	var target_rot = fmod(rad2deg(origin.angle_to_point(target_pos)) + 270, 360)
+	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
 	var diff = target_rot - cur_rotation
 	if diff > 180:
 		diff -= 360
@@ -170,6 +182,12 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 		return abs(diff)*acc*dt
 	else:
 		return -abs(diff)*acc*dt
+
+
+func knockback(pos, strength):
+	apply_movement(sqrt(strength)*2/get_weight(), global_position - pos)
+	apply_rotation(sqrt(strength)*2/get_weight(), pos, false)
+
 
 #COMBAT METHODS
 
@@ -205,9 +223,8 @@ func shoot(type):
 	
 	apply_recoil(type, weapon_ref.recoil_force)
 
-
 func apply_recoil(type, recoil):
-	var rotation = recoil
+	var rotation = recoil*300/get_weight()
 	if "left" in type:
 		rotation *= -1
 	rotation_degrees += rotation

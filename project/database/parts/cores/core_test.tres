@@ -6,3 +6,4 @@
 [resource]
 script = ExtResource( 1 )
 image = ExtResource( 2 )
+weight = 300

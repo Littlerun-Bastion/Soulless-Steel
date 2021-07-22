@@ -35,18 +35,20 @@ func _input(event):
 
 func knockback(pos, strength):
 	.knockback(pos, strength)
-	var dur = sqrt(strength)/10
-	var freq = pow(strength, .3)*5
-	var amp = pow(strength, .3)*5
-	Cam.shake(dur, freq, amp, strength)
+	if strength > 0:
+		var dur = sqrt(strength)/10
+		var freq = pow(strength, .3)*5
+		var amp = pow(strength, .3)*5
+		Cam.shake(dur, freq, amp, strength)
 
 
 func apply_recoil(type, recoil):
 	.apply_recoil(type, recoil)
-	var dur = sqrt(recoil)/10
-	var freq = pow(recoil, .3)*5
-	var amp = pow(recoil, .3)*5
-	Cam.shake(dur, freq, amp, recoil)
+	if recoil > 0:
+		var dur = sqrt(recoil)/10
+		var freq = pow(recoil, .3)*5
+		var amp = pow(recoil, .3)*5
+		Cam.shake(dur, freq, amp, recoil)
 
 
 func check_input():

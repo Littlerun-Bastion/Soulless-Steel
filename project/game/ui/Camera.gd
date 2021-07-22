@@ -3,10 +3,10 @@ extends Camera2D
 var amp = 0
 var priority = 0
 
-func shake(duration := 0.2, frequency := 15, amplitude := 16, priority := 0):
-	if self.priority > priority:
+func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
+	if priority > prio:
 		return
-	self.priority = priority
+	priority = prio
 	amp = amplitude
 	
 	$Duration.wait_time = duration

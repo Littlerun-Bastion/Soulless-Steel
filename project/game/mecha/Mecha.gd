@@ -3,11 +3,14 @@ class_name Mecha
 
 enum SIDE {LEFT, RIGHT}
 
+const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 
 signal create_projectile
 signal took_damage
 signal died
+
+onready var Decals = $Decals
 
 var max_hp = 10
 var hp = 10
@@ -42,6 +45,13 @@ func take_damage(amount):
 func die():
 	emit_signal("died", self)
 	queue_free()
+
+
+func add_decal(pos, type):
+	var decal = DECAL.instance()
+	decal.setup(type)
+	
+	Decals.add_child(decal)
 
 #PARTS SETTERS
 

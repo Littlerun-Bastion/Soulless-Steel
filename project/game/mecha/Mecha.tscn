@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=9]
 [ext_resource path="res://game/weapons/WeaponNode.gd" type="Script" id=10]
+[ext_resource path="res://game/mecha/Decal.tscn" type="PackedScene" id=11]
 
 [sub_resource type="CapsuleShape2D" id=1]
 radius = 45.0
@@ -20,8 +21,30 @@ height = 50.0
 ]]
 script = ExtResource( 1 )
 
+[node name="Collision" type="CollisionShape2D" parent="."]
+position = Vector2( 2.51985, 5.66965 )
+shape = SubResource( 1 )
+
 [node name="Core" type="Sprite" parent="."]
 texture = ExtResource( 4 )
+
+[node name="DecalMask" type="Light2D" parent="Core"]
+light_mask = 0
+texture = ExtResource( 4 )
+mode = 3
+range_item_cull_mask = 32
+shadow_item_cull_mask = 0
+
+[node name="Decals" type="Node2D" parent="Core/DecalMask"]
+light_mask = 32
+
+[node name="Decal" parent="Core/DecalMask/Decals" instance=ExtResource( 11 )]
+light_mask = 32
+margin_left = -10.0332
+margin_top = 60.8526
+margin_right = 20.9668
+margin_bottom = 92.8526
+rect_scale = Vector2( 2.0085, 1.9146 )
 
 [node name="Head" type="Sprite" parent="."]
 texture = ExtResource( 7 )
@@ -64,15 +87,49 @@ position = Vector2( 2, -75 )
 position = Vector2( -73, 40 )
 texture = ExtResource( 6 )
 
+[node name="DecalMask" type="Light2D" parent="LeftShoulder"]
+light_mask = 0
+texture = ExtResource( 6 )
+mode = 3
+range_item_cull_mask = 64
+shadow_item_cull_mask = 0
+
+[node name="Decals" type="Node2D" parent="LeftShoulder"]
+light_mask = 64
+position = Vector2( 73, -40 )
+
+[node name="Decal" parent="LeftShoulder/Decals" instance=ExtResource( 11 )]
+light_mask = 64
+margin_left = -149.219
+margin_top = 6.97443
+margin_right = -118.218
+margin_bottom = 38.9744
+rect_scale = Vector2( 2.0085, 1.9146 )
+
 [node name="RightShoulder" type="Sprite" parent="."]
 position = Vector2( 76, 40 )
 texture = ExtResource( 3 )
 
-[node name="Light2D" type="Light2D" parent="."]
+[node name="DecalMask" type="Light2D" parent="RightShoulder"]
+light_mask = 0
+texture = ExtResource( 3 )
+mode = 3
+range_item_cull_mask = 128
+shadow_item_cull_mask = 0
+
+[node name="Decals" type="Node2D" parent="RightShoulder"]
+light_mask = 128
+position = Vector2( -76, -40 )
+
+[node name="Decal" parent="RightShoulder/Decals" instance=ExtResource( 11 )]
+light_mask = 128
+margin_left = 46.0899
+margin_top = -0.882813
+margin_right = 77.09
+margin_bottom = 31.1172
+rect_scale = Vector2( 2.0085, 1.9146 )
+
+[node name="MechaLight" type="Light2D" parent="."]
 texture = ExtResource( 9 )
 energy = 2.0
 range_item_cull_mask = 2
-
-[node name="Collision" type="CollisionShape2D" parent="."]
-position = Vector2( 2.51985, 5.66965 )
-shape = SubResource( 1 )

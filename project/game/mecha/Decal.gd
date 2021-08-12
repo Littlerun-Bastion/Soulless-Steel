@@ -13,6 +13,6 @@ func setup(type, size):
 	assert(IMAGES.has(type), "Not a valid type of decal: " + str(type))
 	
 	texture = IMAGES[type]
-	self.size = size
+	rect_size = size
 
 

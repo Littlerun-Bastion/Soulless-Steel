@@ -8,6 +8,7 @@ script = ExtResource( 2 )
 type = 1
 damage = 1
 image = ExtResource( 1 )
+decal_type = "bullet_hole"
 collision_extents = Vector2( 30, 30 )
 scale = Vector2( 0.5, 0.5 )
 speed = 3000

@@ -45,10 +45,9 @@ func die():
 	queue_free()
 
 
-func add_decal(_pos, type):
+func add_decal(_id, _pos, type, size):
 	var decal = DECAL.instance()
-	decal.setup(type)
-	
+	decal.setup(type, size)
 	#Decals.add_child(decal)
 
 #PARTS SETTERS

@@ -6,7 +6,7 @@
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 60, 60 )
 
-[node name="InstantProjectile" type="RigidBody2D"]
+[node name="RegularProjectile" type="RigidBody2D"]
 contacts_reported = 1
 contact_monitor = true
 script = ExtResource( 2 )
@@ -18,3 +18,4 @@ texture = ExtResource( 1 )
 shape = SubResource( 1 )
 
 [connection signal="body_entered" from="." to="." method="_on_InstantProjectile_body_entered"]
+[connection signal="body_shape_entered" from="." to="." method="_on_InstantProjectile_body_shape_entered"]

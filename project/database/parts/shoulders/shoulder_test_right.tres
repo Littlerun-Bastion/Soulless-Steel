@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource( 1 )
 image = ExtResource( 2 )
+collision = PoolVector2Array( 78, -28, 30, 12, 47, 39, 51, 54, 44, 67, 103, 101, 112, 89, 111, 45, 100, 10 )
 side = 1

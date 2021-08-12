@@ -112,6 +112,7 @@ func set_shoulder_weapon(part_name, side):
 func set_core(part_name):
 	var part_data = PartManager.get_part("core", part_name)
 	$Core.texture = part_data.image
+	$CoreCollision.polygon = part_data.collision
 	core = part_data
 
 
@@ -124,14 +125,18 @@ func set_head(part_name):
 func set_shoulder(part_name, side):
 	var part_data = PartManager.get_part("shoulder", part_name)
 	var node
+	var collision_node
 	if side == SIDE.LEFT:
 		node = $LeftShoulder
+		collision_node = $LeftShoulderCollision
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
+		collision_node = $RightShoulderCollision
 	else:
 		push_error("Not a valid side: " + str(side))
 	
 	node.texture = part_data.image
+	collision_node.polygon = part_data.collision
 
 #ATTRIBUTE METHODS
 

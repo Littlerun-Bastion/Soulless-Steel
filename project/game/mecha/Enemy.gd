@@ -130,8 +130,6 @@ func random_pos_targeting():
 	return navigation_node.get_closest_point(rand_pos)
 
 func do_roaming(delta):
-	var start_point = position
-	
 	if not final_pos:
 		final_pos = random_pos()
 	

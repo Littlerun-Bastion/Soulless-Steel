@@ -10,8 +10,6 @@ signal create_projectile
 signal took_damage
 signal died
 
-onready var Decals = $Decals
-
 var max_hp = 10
 var hp = 10
 
@@ -47,11 +45,11 @@ func die():
 	queue_free()
 
 
-func add_decal(pos, type):
+func add_decal(_pos, type):
 	var decal = DECAL.instance()
 	decal.setup(type)
 	
-	Decals.add_child(decal)
+	#Decals.add_child(decal)
 
 #PARTS SETTERS
 

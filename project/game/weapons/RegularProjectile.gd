@@ -38,7 +38,7 @@ func _on_InstantProjectile_body_entered(body):
 
 func _on_InstantProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
 	if body.is_in_group("mecha") and body != original_mecha:
-		body.add_decal(body_shape, global_position, decal_type, $Sprite.scale)
+		body.add_decal(body_shape, global_position, decal_type, $Sprite.scale*$Sprite.texture.get_size())
 		body.take_damage(damage)
 		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	

@@ -32,10 +32,10 @@ light_mask = 32
 
 [node name="Decal" parent="Core/DecalMask/Decals" instance=ExtResource( 11 )]
 light_mask = 32
-margin_left = -10.0332
-margin_top = 60.8526
-margin_right = 20.9668
-margin_bottom = 92.8526
+margin_left = -27.023
+margin_top = 58.021
+margin_right = 3.97702
+margin_bottom = 90.021
 rect_scale = Vector2( 2.0085, 1.9146 )
 
 [node name="Head" type="Sprite" parent="."]
@@ -88,14 +88,13 @@ shadow_item_cull_mask = 0
 
 [node name="Decals" type="Node2D" parent="LeftShoulder"]
 light_mask = 64
-position = Vector2( 73, -40 )
 
 [node name="Decal" parent="LeftShoulder/Decals" instance=ExtResource( 11 )]
 light_mask = 64
-margin_left = -149.219
-margin_top = 6.97443
-margin_right = -118.218
-margin_bottom = 38.9744
+margin_left = -72.4332
+margin_top = -16.5307
+margin_right = -41.4322
+margin_bottom = 15.4693
 rect_scale = Vector2( 2.0085, 1.9146 )
 
 [node name="RightShoulder" type="Sprite" parent="."]
@@ -111,14 +110,13 @@ shadow_item_cull_mask = 0
 
 [node name="Decals" type="Node2D" parent="RightShoulder"]
 light_mask = 128
-position = Vector2( -76, -40 )
 
 [node name="Decal" parent="RightShoulder/Decals" instance=ExtResource( 11 )]
 light_mask = 128
-margin_left = 46.0899
-margin_top = -0.882813
-margin_right = 77.09
-margin_bottom = 31.1172
+margin_left = 9.2788
+margin_top = 22.7141
+margin_right = 40.2789
+margin_bottom = 54.7141
 rect_scale = Vector2( 2.0085, 1.9146 )
 
 [node name="MechaLight" type="Light2D" parent="."]
@@ -127,11 +125,14 @@ energy = 2.0
 range_item_cull_mask = 2
 
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 position = Vector2( 2.51985, 5.66965 )
 polygon = PoolVector2Array( 0.48015, -97.6696, -18.5198, -71.6696, -42.5199, -53.6697, -59.5199, -40.6697, -59.5199, -23.6697, -48.5199, 76.3304, -20.5198, 72.3304, 18.4802, 71.3304, 50.4801, 78.3304, 61.4801, 31.3303, 59.4801, -38.6697, 40.4801, -58.6697, 20.4802, -68.6696 )
 
 [node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
 
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 polygon = PoolVector2Array( 78, -28, 30, 12, 47, 39, 51, 54, 44, 67, 103, 101, 112, 89, 111, 45, 100, 10 )

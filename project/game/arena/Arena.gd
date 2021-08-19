@@ -17,8 +17,8 @@ var all_mechas = []
 func _ready():
 	randomize()
 	add_player()
-	add_enemy()
-	add_enemy()
+	#add_enemy()
+	#add_enemy()
 	add_enemy()
 
 

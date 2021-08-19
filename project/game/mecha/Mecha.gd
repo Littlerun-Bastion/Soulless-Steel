@@ -10,6 +10,10 @@ signal create_projectile
 signal took_damage
 signal died
 
+onready var CoreDecals = $Core/DecalMask/Decals
+onready var LeftShoulderDecals = $LeftShoulder/Decals
+onready var RightShoulderDecals = $RightShoulder/Decals
+
 var max_hp = 10
 var hp = 10
 
@@ -26,6 +30,7 @@ var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
 var core = null
+
 
 func set_max_life(value):
 	max_hp = value
@@ -45,10 +50,24 @@ func die():
 	queue_free()
 
 
-func add_decal(_id, _pos, type, size):
+func add_decal(id, pos, type, size):
+	var shape = shape_owner_get_owner(shape_find_owner(id))
+	var decals_node
+	var mask_id
+	if shape == $CoreCollision:
+		decals_node = CoreDecals
+		mask_id = 32
+	elif shape == $LeftShoulderCollision:
+		decals_node = LeftShoulderDecals
+		mask_id = 64
+	elif shape == $RightShoulderCollision:
+		decals_node = RightShoulderDecals
+		mask_id = 128
+	else:
+		push_error("Not a valid shape id: " + str(id))
 	var decal = DECAL.instance()
-	decal.setup(type, size)
-	#Decals.add_child(decal)
+	decal.setup(type, size, pos-decals_node.global_position, mask_id)
+	decals_node.add_child(decal)
 
 #PARTS SETTERS
 

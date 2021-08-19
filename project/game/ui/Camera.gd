@@ -4,7 +4,7 @@ var amp = 0
 var priority = 0
 
 func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
-	if priority > prio:
+	if priority > prio or frequency <= 0:
 		return
 	priority = prio
 	amp = amplitude

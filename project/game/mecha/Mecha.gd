@@ -16,6 +16,8 @@ onready var RightShoulderDecals = $RightShoulder/Decals
 
 var max_hp = 10
 var hp = 10
+var max_shield = 10
+var shield = 10
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -37,7 +39,16 @@ func set_max_life(value):
 	hp = max_hp
 
 
+func set_max_shield(value):
+	max_shield = value
+	shield = max_hp
+
+
 func take_damage(amount):
+	var temp_shield = shield
+	shield = max(shield - amount, 0)
+	amount = max(amount - shield, 0)
+	
 	hp = max(hp - amount, 0)
 	
 	emit_signal("took_damage", self)

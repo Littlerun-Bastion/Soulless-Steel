@@ -1,9 +1,11 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=2]
 [ext_resource path="res://assets/images/ui/player_ui/armor_bar_foreground.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/ui/player_ui/armor_bar_background.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/ui/player_ui/shields_bar_foreground.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/ui/player_ui/shields_bar_background.png" type="Texture" id=6]
 
 [sub_resource type="StyleBoxTexture" id=1]
 texture = ExtResource( 3 )
@@ -19,6 +21,24 @@ axis_stretch_vertical = 1
 
 [sub_resource type="DynamicFont" id=3]
 size = 45
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxTexture" id=4]
+texture = ExtResource( 5 )
+region_rect = Rect2( 0, 0, 566, 21 )
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id=5]
+texture = ExtResource( 6 )
+region_rect = Rect2( 0, 0, 566, 21 )
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="DynamicFont" id=6]
+size = 32
 use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 2 )
@@ -55,4 +75,34 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="ShieldBar" type="ProgressBar" parent="."]
+margin_left = 1014.5
+margin_top = 494.146
+margin_right = 1429.5
+margin_bottom = 537.146
+rect_min_size = Vector2( 200, 43 )
+rect_scale = Vector2( -1, 0.6 )
+custom_styles/fg = SubResource( 4 )
+custom_styles/bg = SubResource( 5 )
+value = 50.0
+percent_visible = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="ShieldBar"]
+margin_left = 558.18
+margin_top = -16.3384
+margin_right = 696.18
+margin_bottom = 28.6616
+rect_scale = Vector2( -1, 1.667 )
+custom_fonts/font = SubResource( 6 )
+text = "023456"
+align = 2
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="value_changed" from="LifeBar" to="." method="_on_LifeBar_value_changed"]
+[connection signal="value_changed" from="ShieldBar" to="." method="_on_ShieldBar_value_changed"]

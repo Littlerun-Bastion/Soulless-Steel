@@ -18,6 +18,8 @@ var max_hp = 10
 var hp = 10
 var max_shield = 10
 var shield = 10
+var max_energy = 100
+var energy = 75
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -41,13 +43,18 @@ func set_max_life(value):
 
 func set_max_shield(value):
 	max_shield = value
-	shield = max_hp
+	shield = max_shield
+
+
+func set_max_energy(value):
+	max_energy = value
+	energy = max_energy
 
 
 func take_damage(amount):
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
-	amount = max(amount - shield, 0)
+	amount = max(amount - temp_shield, 0)
 	
 	hp = max(hp - amount, 0)
 	

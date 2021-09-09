@@ -2,6 +2,7 @@ extends CanvasLayer
 
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
+onready var EnergyBar = $EnergyBar
 
 var player
 
@@ -11,6 +12,7 @@ func setup(player_ref):
 	player.connect("took_damage", self, "_on_player_took_damage")
 	setup_lifebar()
 	setup_shieldbar()
+	setup_energybar()
 
 
 func setup_lifebar():
@@ -23,12 +25,21 @@ func setup_shieldbar():
 	ShieldBar.value = player.shield
 
 
+func setup_energybar():
+	EnergyBar.max_value = player.max_energy
+	EnergyBar.value = player.energy
+
+
 func update_lifebar(value):
 	LifeBar.value = value
 
 
 func update_shieldbar(value):
 	ShieldBar.value = value
+
+
+func update_energybar(value):
+	EnergyBar.value = value
 
 
 func _on_player_took_damage(_p):

@@ -10,7 +10,7 @@ signal create_projectile
 signal took_damage
 signal died
 
-onready var CoreDecals = $Core/DecalMask/Decals
+onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
 
@@ -53,20 +53,20 @@ func die():
 func add_decal(id, pos, type, size):
 	var shape = shape_owner_get_owner(shape_find_owner(id))
 	var decals_node
-	var mask_id
+	var mask_node
 	if shape == $CoreCollision:
 		decals_node = CoreDecals
-		mask_id = 32
+		mask_node = $Core
 	elif shape == $LeftShoulderCollision:
 		decals_node = LeftShoulderDecals
-		mask_id = 64
+		mask_node = $LeftShoulder
 	elif shape == $RightShoulderCollision:
 		decals_node = RightShoulderDecals
-		mask_id = 128
+		mask_node = $RightShoulder
 	else:
 		push_error("Not a valid shape id: " + str(id))
 	var decal = DECAL.instance()
-	decal.setup(type, size, pos-decals_node.global_position, mask_id)
+	decal.setup(type, size, pos-decals_node.global_position, mask_node.texture)
 	decals_node.add_child(decal)
 
 #PARTS SETTERS

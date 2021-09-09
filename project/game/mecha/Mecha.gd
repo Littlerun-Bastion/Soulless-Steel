@@ -23,7 +23,7 @@ var energy = 75
 
 var movement_type = "free"
 var velocity = Vector2()
-var max_speed = 200
+var max_speed = 500
 var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5

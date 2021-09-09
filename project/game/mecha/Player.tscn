@@ -8,3 +8,4 @@
 script = ExtResource( 2 )
 
 [node name="Camera2D" parent="." index="2" instance=ExtResource( 3 )]
+zoom = Vector2( 3, 3 )

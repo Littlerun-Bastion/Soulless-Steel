@@ -1,0 +1,85 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
+[ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
+[ext_resource path="res://assets/images/ui/player_ui/cursor_crosshair.png" type="Texture" id=3]
+
+[node name="MechaCursorCrosshair" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -1024.0
+margin_bottom = -600.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_left = -10.5946
+margin_top = -11.1244
+margin_right = 11.4054
+margin_bottom = 10.8756
+texture = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LeftWeapon" type="HBoxContainer" parent="."]
+margin_left = -70.603
+margin_top = 10.0
+margin_right = -7.603
+margin_bottom = 33.0
+alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CurAmmo" type="Label" parent="LeftWeapon"]
+margin_right = 22.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "00"
+
+[node name="Separator" type="Label" parent="LeftWeapon"]
+margin_left = 26.0
+margin_right = 37.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "/"
+
+[node name="MaxAmmo" type="Label" parent="LeftWeapon"]
+margin_left = 41.0
+margin_right = 63.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "00"
+
+[node name="RightWeapon" type="HBoxContainer" parent="."]
+margin_left = 8.0
+margin_top = 10.0
+margin_right = 71.0
+margin_bottom = 33.0
+alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CurAmmo" type="Label" parent="RightWeapon"]
+margin_right = 22.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "00"
+
+[node name="Separator" type="Label" parent="RightWeapon"]
+margin_left = 26.0
+margin_right = 37.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "/"
+
+[node name="MaxAmmo" type="Label" parent="RightWeapon"]
+margin_left = 41.0
+margin_right = 63.0
+margin_bottom = 23.0
+custom_fonts/font = ExtResource( 2 )
+text = "00"

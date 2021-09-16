@@ -3,6 +3,7 @@ extends CanvasLayer
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
 onready var EnergyBar = $EnergyBar
+onready var Cursor = $MechaCursorCrosshair
 
 var player
 
@@ -13,6 +14,7 @@ func setup(player_ref):
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
+	setup_cursor()
 
 
 func setup_lifebar():
@@ -28,6 +30,11 @@ func setup_shieldbar():
 func setup_energybar():
 	EnergyBar.max_value = player.max_energy
 	EnergyBar.value = player.energy
+
+
+func setup_cursor():
+	Cursor.set_max_ammo("left", 99)
+	Cursor.set_max_ammo("right", 69)
 
 
 func update_lifebar(value):

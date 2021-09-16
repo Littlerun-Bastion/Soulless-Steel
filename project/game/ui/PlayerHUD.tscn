@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=2]
@@ -12,6 +12,7 @@
 [ext_resource path="res://assets/images/ui/player_ui/left_frame.png" type="Texture" id=10]
 [ext_resource path="res://game/ui/Ticker.tscn" type="PackedScene" id=11]
 [ext_resource path="res://assets/images/ui/player_ui/map_outline.png" type="Texture" id=12]
+[ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 
 [sub_resource type="StyleBoxTexture" id=1]
 texture = ExtResource( 3 )
@@ -190,6 +191,8 @@ __meta__ = {
 }
 
 [node name="Ticker" parent="." instance=ExtResource( 11 )]
+
+[node name="MechaCursorCrosshair" parent="." instance=ExtResource( 13 )]
 
 [connection signal="value_changed" from="LifeBar" to="." method="_on_LifeBar_value_changed"]
 [connection signal="value_changed" from="ShieldBar" to="." method="_on_ShieldBar_value_changed"]

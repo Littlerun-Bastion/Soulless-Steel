@@ -25,61 +25,65 @@ __meta__ = {
 }
 
 [node name="LeftWeapon" type="HBoxContainer" parent="."]
-margin_left = -70.603
-margin_top = 10.0
-margin_right = -7.603
-margin_bottom = 33.0
+margin_left = -58.0
+margin_top = 6.0
+margin_right = -5.0
+margin_bottom = 25.0
 alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="CurAmmo" type="Label" parent="LeftWeapon"]
-margin_right = 22.0
-margin_bottom = 23.0
+margin_right = 18.0
+margin_bottom = 19.0
+rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="Separator" type="Label" parent="LeftWeapon"]
-margin_left = 26.0
-margin_right = 37.0
-margin_bottom = 23.0
+margin_left = 22.0
+margin_right = 31.0
+margin_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="LeftWeapon"]
-margin_left = 41.0
-margin_right = 63.0
-margin_bottom = 23.0
+margin_left = 35.0
+margin_right = 53.0
+margin_bottom = 19.0
+rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="RightWeapon" type="HBoxContainer" parent="."]
-margin_left = 8.0
-margin_top = 10.0
-margin_right = 71.0
-margin_bottom = 33.0
+margin_left = 4.0
+margin_top = 6.0
+margin_right = 57.0
+margin_bottom = 25.0
 alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="CurAmmo" type="Label" parent="RightWeapon"]
-margin_right = 22.0
-margin_bottom = 23.0
+margin_right = 18.0
+margin_bottom = 19.0
+rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="Separator" type="Label" parent="RightWeapon"]
-margin_left = 26.0
-margin_right = 37.0
-margin_bottom = 23.0
+margin_left = 22.0
+margin_right = 31.0
+margin_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="RightWeapon"]
-margin_left = 41.0
-margin_right = 63.0
-margin_bottom = 23.0
+margin_left = 35.0
+margin_right = 53.0
+margin_bottom = 19.0
+rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"

@@ -1,7 +1,5 @@
 extends Control
 
-const OFFSET = Vector2(10,10)
-
 onready var LeftWeapon = $LeftWeapon
 onready var RightWeapon = $RightWeapon
 
@@ -11,7 +9,7 @@ func _ready():
 
 
 func _process(_delta):
-	rect_position = lerp(rect_position, get_global_mouse_position() + OFFSET, .80)
+	rect_position = lerp(rect_position, get_global_mouse_position(), .80)
 
 
 func get_side_node(side):

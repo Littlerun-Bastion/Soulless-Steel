@@ -17,8 +17,8 @@ var all_mechas = []
 func _ready():
 	randomize()
 	add_player()
-	#add_enemy()
-	#add_enemy()
+	add_enemy()
+	add_enemy()
 	add_enemy()
 
 
@@ -29,7 +29,7 @@ func add_player():
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
 	all_mechas.push_back(player)
-	PlayerHUD.setup(player)
+	PlayerHUD.setup(player, all_mechas)
 	current_cam = player.get_cam()
 
 

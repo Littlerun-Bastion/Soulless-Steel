@@ -4,17 +4,27 @@ onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
 onready var EnergyBar = $EnergyBar
 onready var Cursor = $MechaCursorCrosshair
+onready var PlayerRadar = $PlayerRadar
 
 var player
+var mechas
 
 
-func setup(player_ref):
+func _process(_dt):
+	if player and PlayerRadar.visible:
+		PlayerRadar.rect_position = player.get_global_transform_with_canvas().origin
+		PlayerRadar.update_pointers(mechas)
+
+
+func setup(player_ref, mechas_ref):
 	player = player_ref
+	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
 	setup_cursor()
+	PlayerRadar.setup(player, 900)
 
 
 func setup_lifebar():

@@ -18,7 +18,7 @@ func setup(player_ref, mechas_ref):
 	setup_shieldbar()
 	setup_energybar()
 	setup_cursor()
-	PlayerRadar.setup(mechas, player, 900, 2)
+	PlayerRadar.setup(mechas, player, 2300, 2)
 
 
 func setup_lifebar():

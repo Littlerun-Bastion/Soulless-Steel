@@ -17,7 +17,7 @@ var update_cooldown
 func _process(_dt):
 	if player and visible:
 		rect_position = player.get_global_transform_with_canvas().origin
-		clear_deleted_mechas()
+		clear_dead_mechas()
 		if not update_cooldown:
 			update_mecha_position()	
 		update_pointers()
@@ -37,10 +37,10 @@ func setup(mechas_ref, player_ref, radius, update_timer):
 
 func update_mecha_position():
 	for p in pointers:
-		p.target_position = p.mecha.get_global_transform_with_canvas().origin
+		p.target_position = p.mecha.global_position
 
 
-func clear_deleted_mechas():
+func clear_dead_mechas():
 	var to_delete = []
 	for pointer_data in pointers:
 		if not mechas.has(pointer_data.mecha):
@@ -70,7 +70,7 @@ func get_mecha_pointer(mecha):
 	var pointer_data = {
 		"mecha": mecha,
 		"pointer": p,
-		"target_position": mecha.get_global_transform_with_canvas().origin,
+		"target_position": mecha.global_position,
 	}
 	pointers.append(pointer_data)
 	return pointer_data
@@ -88,10 +88,10 @@ func update_pointer(pointer_data):
 	var pointer = pointer_data.pointer
 	
 	#Rotate
-	var angle = rect_position.angle_to_point(target_pos) - PI/2
+	var angle = player.global_position.angle_to_point(target_pos) - PI/2
 	pointer.rect_rotation = rad2deg(angle)
 	
-	var distance = rect_position.distance_to(target_pos)
+	var distance = player.global_position.distance_to(target_pos)
 	if distance > range_radius:
 		pointer.modulate.a = 0.0
 	else:

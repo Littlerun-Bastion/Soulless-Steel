@@ -17,6 +17,9 @@ margin_right = 250.0
 margin_bottom = 250.0
 rect_pivot_offset = Vector2( 250, 250 )
 texture = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Pointers" type="Control" parent="."]
 margin_left = -250.0
@@ -28,8 +31,9 @@ __meta__ = {
 }
 
 [node name="Pointer" parent="Pointers" instance=ExtResource( 1 )]
-margin_left = 210.0
-margin_top = 90.0
-margin_right = 290.0
-margin_bottom = 139.0
-rect_pivot_offset = Vector2( 40, 160 )
+
+[node name="UpdateTimer" type="Timer" parent="."]
+
+[node name="Tween" type="Tween" parent="."]
+
+[connection signal="timeout" from="UpdateTimer" to="." method="_on_UpdateTimer_timeout"]

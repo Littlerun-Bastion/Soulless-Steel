@@ -46,6 +46,7 @@ func add_enemy():
 func player_died():
 	player = null
 	ArenaCam.current = true
+	PlayerHUD.queue_free()
 	current_cam = ArenaCam
 
 

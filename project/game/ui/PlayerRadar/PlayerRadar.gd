@@ -8,18 +8,39 @@ const POINTER_TEXTURES = {
 }
 
 var player
+var mechas
 var range_radius
 var pointers
+var update_cooldown
 
-func setup(player_ref, radius):
+
+func _process(_dt):
+	if player and visible:
+		rect_position = player.get_global_transform_with_canvas().origin
+		clear_deleted_mechas()
+		if not update_cooldown:
+			update_mecha_position()	
+		update_pointers()
+
+
+func setup(mechas_ref, player_ref, radius, update_timer):
 	clear_pointers()
+	mechas = mechas_ref
 	player = player_ref
 	range_radius = radius
+	if update_timer:
+		update_cooldown = true
+		$UpdateTimer.wait_time = update_timer
+		$UpdateTimer.start()
 	pointers = []
 
 
-func update_pointers(mechas):
-	#Remove pointers from dead mechas
+func update_mecha_position():
+	for p in pointers:
+		p.target_position = p.mecha.get_global_transform_with_canvas().origin
+
+
+func clear_deleted_mechas():
 	var to_delete = []
 	for pointer_data in pointers:
 		if not mechas.has(pointer_data.mecha):
@@ -27,12 +48,12 @@ func update_pointers(mechas):
 			to_delete.append(pointer_data)
 	for pointer in to_delete:
 		pointers.erase(pointer)
-	
+
+
+func update_pointers():	
 	for mecha in mechas:
 		if mecha != player:
-			var pos = mecha.get_global_transform_with_canvas().origin
-			var pointer = get_mecha_pointer(mecha)
-			update_pointer(pointer, pos)
+			update_pointer(get_mecha_pointer(mecha))
 
 
 func clear_pointers():
@@ -43,14 +64,16 @@ func clear_pointers():
 func get_mecha_pointer(mecha):
 	for p in pointers:
 		if p.mecha == mecha:
-			return p.pointer
+			return p
 	#Doesn't have a pointer
 	var p = add_pointer()
-	pointers.append({
+	var pointer_data = {
 		"mecha": mecha,
 		"pointer": p,
-	})
-	return p
+		"target_position": mecha.get_global_transform_with_canvas().origin,
+	}
+	pointers.append(pointer_data)
+	return pointer_data
 
 
 func add_pointer():
@@ -60,7 +83,10 @@ func add_pointer():
 	return pointer
 
 
-func update_pointer(pointer, target_pos):
+func update_pointer(pointer_data):
+	var target_pos = pointer_data.target_position
+	var pointer = pointer_data.pointer
+	
 	#Rotate
 	var angle = rect_position.angle_to_point(target_pos) - PI/2
 	pointer.rect_rotation = rad2deg(angle)
@@ -76,3 +102,15 @@ func update_pointer(pointer, target_pos):
 			pointer.texture = POINTER_TEXTURES.mid
 		else:
 			pointer.texture = POINTER_TEXTURES.near
+
+
+func _on_UpdateTimer_timeout():
+	var t_scale = Vector2(.6,.6)
+	$Tween.interpolate_property($Circle, "rect_scale", Vector2(1,1), t_scale, .1, Tween.TRANS_CUBIC, Tween.EASE_IN)
+	$Tween.start()
+	yield($Tween, "tween_completed")
+	update_mecha_position()
+	$Tween.interpolate_property($Circle, "rect_scale", t_scale, Vector2(1,1), .5, Tween.TRANS_CUBIC, Tween.EASE_OUT)
+	$Tween.start()
+	
+	

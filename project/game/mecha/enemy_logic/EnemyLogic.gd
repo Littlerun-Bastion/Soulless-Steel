@@ -11,15 +11,15 @@ func _ready():
 
 func setup():
 	g.add_a_node("idle")
-#	g.add_a_node("roaming")
-#	g.add_a_node("targeting")
-#
-#	g.add_connection("idle", "roaming", funcref(self, "idle_to_roaming"))
-#	g.add_connection("idle", "targeting", funcref(self, "idle_to_targeting"))
-#	g.add_connection("roaming", "idle", funcref(self, "roaming_to_idle"))
-#	g.add_connection("roaming", "targeting", funcref(self, "roaming_to_targeting"))
-#	g.add_connection("targeting", "idle", funcref(self, "targeting_to_idle"))
-#	g.add_connection("targeting", "roaming", funcref(self, "targeting_to_roaming"))
+	g.add_a_node("roaming")
+	g.add_a_node("targeting")
+
+	g.add_connection("idle", "roaming", funcref(self, "idle_to_roaming"))
+	g.add_connection("idle", "targeting", funcref(self, "idle_to_targeting"))
+	g.add_connection("roaming", "idle", funcref(self, "roaming_to_idle"))
+	g.add_connection("roaming", "targeting", funcref(self, "roaming_to_targeting"))
+	g.add_connection("targeting", "idle", funcref(self, "targeting_to_idle"))
+	g.add_connection("targeting", "roaming", funcref(self, "targeting_to_roaming"))
 
 
 func get_current_state():

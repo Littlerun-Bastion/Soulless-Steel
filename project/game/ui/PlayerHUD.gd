@@ -10,12 +10,6 @@ var player
 var mechas
 
 
-func _process(_dt):
-	if player and PlayerRadar.visible:
-		PlayerRadar.rect_position = player.get_global_transform_with_canvas().origin
-		PlayerRadar.update_pointers(mechas)
-
-
 func setup(player_ref, mechas_ref):
 	player = player_ref
 	mechas = mechas_ref
@@ -24,7 +18,7 @@ func setup(player_ref, mechas_ref):
 	setup_shieldbar()
 	setup_energybar()
 	setup_cursor()
-	PlayerRadar.setup(player, 900)
+	PlayerRadar.setup(mechas, player, 900, 2)
 
 
 func setup_lifebar():

@@ -50,11 +50,13 @@ func player_died():
 
 
 func get_random_start_position(exclude_idx := []):
+	var offset = 250
+	var rand_offset = Vector2(rand_range(-offset, offset), rand_range(-offset, offset))
 	var n_pos = $StartPositions.get_child_count()
 	var idx = randi()%n_pos + 1
 	while exclude_idx.has(idx):
 		idx = randi()%n_pos + 1
-	return $StartPositions.get_node("Pos"+str(idx)).position
+	return $StartPositions.get_node("Pos"+str(idx)).position + rand_offset
 
 
 func get_start_position(idx):

@@ -17,7 +17,17 @@ func setup(player_ref, radius):
 	range_radius = radius
 	pointers = []
 
+
 func update_pointers(mechas):
+	#Remove pointers from dead mechas
+	var to_delete = []
+	for pointer_data in pointers:
+		if not mechas.has(pointer_data.mecha):
+			pointer_data.pointer.queue_free()
+			to_delete.append(pointer_data)
+	for pointer in to_delete:
+		pointers.erase(pointer)
+	
 	for mecha in mechas:
 		if mecha != player:
 			var pos = mecha.get_global_transform_with_canvas().origin

@@ -24,13 +24,12 @@ func get_side_node(side):
 
 func set_max_ammo(side, max_ammo):
 	var node = get_side_node(side)
-	
 	if max_ammo is bool and not max_ammo:
 		node.visible = false
 	elif max_ammo is int:
 		node.visible = true
-		node.get_node("CurAmmo").text = str(max_ammo)
-		node.get_node("MaxAmmo").text = str(max_ammo)
+		node.get_node("CurAmmo").text = "%02d" % max_ammo
+		node.get_node("MaxAmmo").text = "%02d" % max_ammo
 	else:
 		push_error("Not a valid max_ammo value: " + str(max_ammo))
 
@@ -39,4 +38,4 @@ func set_ammo(side, ammo):
 	var node = get_side_node(side)
 	
 	if node.visible:
-		node.get_node("CurAmmo").text = str(ammo)
+		node.get_node("CurAmmo").text = "%02d" % ammo

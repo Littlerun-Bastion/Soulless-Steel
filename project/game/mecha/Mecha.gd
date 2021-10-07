@@ -7,6 +7,7 @@ const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 
 signal create_projectile
+signal shoot
 signal took_damage
 signal died
 
@@ -116,6 +117,7 @@ func set_arm_weapon(part_name, side):
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.texture = part_data.image
 	node.set_shooting_pos(part_data.shooting_pos)
+	node.setup(part_data)
 
 
 func set_shoulder_weapon(part_name, side):
@@ -143,6 +145,7 @@ func set_shoulder_weapon(part_name, side):
 		shoulder_weapon_right = part_data
 	node.texture = part_data.image
 	node.set_shooting_pos(part_data.shooting_pos)
+	node.setup(part_data)
 
 
 func set_core(part_name):
@@ -176,6 +179,7 @@ func set_shoulder(part_name, side):
 
 #ATTRIBUTE METHODS
 
+
 func get_max_hp():
 	return max_hp
 
@@ -183,6 +187,21 @@ func get_max_hp():
 func get_weight():
 	assert(core, "Mecha doesn't have an assigned core")
 	return float(core.weight)
+
+
+func get_ammo(part_name):
+	if part_name == "left_arm":
+		if arm_weapon_left:
+			return $ArmWeaponLeft.clip_ammo
+	elif part_name == "right_arm":
+		if arm_weapon_right:
+			return $ArmWeaponRight.clip_ammo
+	elif part_name == "left_shoulder":
+		pass
+	elif part_name == "right_shoulder":
+		pass
+	return false
+
 
 #MOVEMENT METHODS
 
@@ -258,8 +277,8 @@ func shoot(type):
 	
 	if not node.can_shoot():
 		return
-	node.add_time(weapon_ref.fire_rate) 
 	
+	node.shoot()
 	emit_signal("create_projectile", self, 
 				{
 					"weapon_data": weapon_ref.projectile,
@@ -267,8 +286,8 @@ func shoot(type):
 					"dir": node.get_direction(weapon_ref.bullet_accuracy_margin),
 					"damage_mod": weapon_ref.damage_modifier,
 				})
-	
 	apply_recoil(type, weapon_ref.recoil_force)
+	emit_signal("shoot")
 
 func apply_recoil(type, recoil):
 	var rotation = recoil*300/get_weight()

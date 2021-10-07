@@ -14,6 +14,7 @@ func setup(player_ref, mechas_ref):
 	player = player_ref
 	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
+	player.connect("shoot", self, "_on_player_shoot")
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
@@ -37,8 +38,8 @@ func setup_energybar():
 
 
 func setup_cursor():
-	Cursor.set_max_ammo("left", 99)
-	Cursor.set_max_ammo("right", 69)
+	Cursor.set_max_ammo("left", player.get_ammo("left_arm"))
+	Cursor.set_max_ammo("right", player.get_ammo("right_arm"))
 
 
 func update_lifebar(value):
@@ -53,9 +54,18 @@ func update_energybar(value):
 	EnergyBar.value = value
 
 
+func update_cursor():
+	Cursor.set_ammo("left", player.get_ammo("left_arm"))
+	Cursor.set_ammo("right", player.get_ammo("right_arm"))
+
+
 func _on_player_took_damage(_p):
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
+
+
+func _on_player_shoot():
+	update_cursor()
 
 
 func _on_LifeBar_value_changed(value):

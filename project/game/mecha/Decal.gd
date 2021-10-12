@@ -1,5 +1,6 @@
 extends TextureRect
 
+const MATERIAL = preload("res://game/mecha/DecalMaterial.tres")
 const IMAGES = {
 	"bullet_hole": preload("res://assets/images/decals/bullet_hole.png"),
 }
@@ -16,12 +17,14 @@ func setup(type, size, pos, mask_texture):
 	
 	texture = IMAGES[type]
 	rect_size = size
-	rect_position = pos
+	rect_position = pos - size/2
 	
-	material.set_shader_param("mask", mask_texture)
-	material.set_shader_param("offset", pos)
-	material.set_shader_param("mask_size", size)
-	material.set_shader_param("mask_size", mask_texture.get_size())
+	material = null
+#	material = MATERIAL.duplicate()
+#	material.set_shader_param("mask", mask_texture)
+#	material.set_shader_param("offset", pos - size/2)
+#	material.set_shader_param("size", size)
+#	material.set_shader_param("mask_size", mask_texture.get_size())
 
 func start_fade_out():
 	$Tween.interpolate_property(self, "modulate:a", 1, 0, 1, Tween.TRANS_LINEAR, Tween.EASE_IN, fade_out_timer)

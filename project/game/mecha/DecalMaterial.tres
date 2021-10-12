@@ -1,0 +1,32 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform sampler2D mask;
+uniform vec2 offset;
+uniform vec2 size;
+uniform vec2 mask_size;
+
+void fragment() {
+	COLOR = texture(TEXTURE, UV);
+	vec2 mask_pixel = vec2(1.0/mask_size.x, 1.0/mask_size.y);
+	vec2 mask_uv = (offset + vec2(UV.x*size.x, UV.y*size.y))*mask_pixel;
+	if (mask_uv.x < 0.0 || mask_uv.x > 1.0 ||
+	    mask_uv.y < 0.0 || mask_uv.y > 1.0) {
+		COLOR = vec4(1.0,0.0,0.0,1.0);
+		//COLOR.a = 0.0;
+	}
+	else {
+		COLOR = texture(TEXTURE, UV);
+		//vec4 mask_current_pixel = texture(mask, mask_uv);
+		//COLOR.a *= mask_current_pixel.a;
+		//COLOR = vec4(0.0,1.0,0.0,1.0);
+	}
+}"
+
+[resource]
+shader = SubResource( 1 )
+shader_param/offset = null
+shader_param/size = null
+shader_param/mask_size = null

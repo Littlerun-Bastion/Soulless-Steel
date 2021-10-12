@@ -28,17 +28,9 @@ func apply_scaling(sc):
 		child.scale = sc
 
 
-func _on_InstantProjectile_body_entered(body):
+func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
 	if body.is_in_group("mecha") and body != original_mecha:
-		body.take_damage(damage)
-		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
-	
-	queue_free()
-
-
-func _on_InstantProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
-	if body.is_in_group("mecha") and body != original_mecha:
-		body.add_decal(body_shape, global_position, decal_type, $Sprite.scale*$Sprite.texture.get_size())
+		body.add_decal(body_shape, global_transform, decal_type, $Sprite.scale*$Sprite.texture.get_size())
 		body.take_damage(damage)
 		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	

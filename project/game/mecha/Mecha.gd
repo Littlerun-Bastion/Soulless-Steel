@@ -69,7 +69,7 @@ func die():
 	queue_free()
 
 
-func add_decal(id, pos, type, size):
+func add_decal(id, projectile_transform, type, size):
 	var shape = shape_owner_get_owner(shape_find_owner(id))
 	var decals_node
 	var mask_node
@@ -85,7 +85,11 @@ func add_decal(id, pos, type, size):
 	else:
 		push_error("Not a valid shape id: " + str(id))
 	var decal = DECAL.instance()
-	decal.setup(type, size, pos-decals_node.global_position, mask_node.texture)
+	var offset = projectile_transform.origin-decals_node.global_transform.origin
+	offset = offset.rotated(-decals_node.global_transform.get_rotation())
+	offset *= decals_node.global_transform.get_scale()
+	offset *= rand_range(.6,.9) #Random depth for decal on mecha
+	decal.setup(type, size, offset, mask_node.texture)
 	decals_node.add_child(decal)
 
 #PARTS SETTERS

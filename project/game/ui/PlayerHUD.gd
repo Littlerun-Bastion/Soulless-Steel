@@ -15,6 +15,9 @@ func setup(player_ref, mechas_ref):
 	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
 	player.connect("shoot", self, "_on_player_shoot")
+	player.connect("update_reload_mode", self, "_on_reload_mode_update")
+	player.connect("reloading", self, "_on_reloading")
+	player.connect("finished_reloading", self, "update_cursor")
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
@@ -66,6 +69,14 @@ func _on_player_took_damage(_p):
 
 func _on_player_shoot():
 	update_cursor()
+
+
+func _on_reload_mode_update(active):
+	Cursor.set_reload_mode(active)
+
+
+func _on_reloading(reload_time, side):
+	Cursor.reloading(reload_time, side)
 
 
 func _on_LifeBar_value_changed(value):

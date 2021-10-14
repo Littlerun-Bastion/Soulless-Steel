@@ -1,9 +1,14 @@
 extends Mecha
 
+signal update_reload_mode
+signal reloading
+signal finished_reloading
+
 const ROTATION_DEADZONE = 20
 
 onready var Cam = $Camera2D
 
+var reload_mode := false
 
 func _ready():
 	setup()
@@ -22,13 +27,25 @@ func _input(event):
 	if event.is_action_pressed("honk"):
 		AudioManager.play_sfx("test", global_position)
 	elif event.is_action_pressed("left_arm_weapon_shoot") and arm_weapon_left:
-		shoot("left_arm_weapon")
+		if reload_mode:
+			$ArmWeaponLeft.reload()
+		elif not $ArmWeaponLeft.reloading:
+			shoot("left_arm_weapon")
 	elif event.is_action_pressed("right_arm_weapon_shoot") and arm_weapon_right:
-		shoot("right_arm_weapon")
+		if reload_mode:
+			$ArmWeaponRight.reload()
+		elif not $ArmWeaponRight.reloading:
+			shoot("right_arm_weapon")
 	elif event.is_action_pressed("left_shoulder_weapon_shoot") and shoulder_weapon_left:
 		shoot("left_shoulder_weapon")
 	elif event.is_action_pressed("right_shoulder_weapon_shoot") and shoulder_weapon_right:
 		shoot("right_shoulder_weapon")
+	elif event.is_action_pressed("reload_mode") and not reload_mode:
+		reload_mode = true
+		emit_signal("update_reload_mode", reload_mode)
+	elif event.is_action_released("reload_mode") and reload_mode:
+		reload_mode = false
+		emit_signal("update_reload_mode", reload_mode)
 	elif event.is_action_pressed("debug_1"):
 		die()
 
@@ -52,14 +69,15 @@ func apply_recoil(type, recoil):
 
 
 func check_input():
-	check_weapon_input("left_arm_weapon", arm_weapon_left)
-	check_weapon_input("right_arm_weapon", arm_weapon_right)
-	check_weapon_input("left_shoulder_weapon", shoulder_weapon_left)
-	check_weapon_input("right_shoulder_weapon", shoulder_weapon_right)
+	check_weapon_input("left_arm_weapon", $ArmWeaponLeft, arm_weapon_left)
+	check_weapon_input("right_arm_weapon", $ArmWeaponRight, arm_weapon_right)
+	check_weapon_input("left_shoulder_weapon", $ShoulderWeaponLeft, shoulder_weapon_left)
+	check_weapon_input("right_shoulder_weapon", $ShoulderWeaponRight, shoulder_weapon_right)
 
 
-func check_weapon_input(name, weapon_ref):
-	if weapon_ref and weapon_ref.auto_fire and Input.is_action_pressed(name+"_shoot"):
+func check_weapon_input(name, node, weapon_ref):
+	if weapon_ref and weapon_ref.auto_fire and not reload_mode and\
+	   not node.reloading and Input.is_action_pressed(name+"_shoot"):
 		shoot(name)
 
 
@@ -73,6 +91,17 @@ func setup():
 	set_core("core_test")
 	set_shoulder("shoulder_test_left", SIDE.LEFT)
 	set_shoulder("shoulder_test_right", SIDE.RIGHT)
+
+
+func set_arm_weapon(part_name, side):
+	.set_arm_weapon(part_name, side)
+	var node
+	if side == SIDE.LEFT:
+		node = $ArmWeaponLeft
+	elif side == SIDE.RIGHT:
+		node = $ArmWeaponRight
+	node.connect("finished_reloading", self, "_on_finished_reloading")
+	node.connect("reloading", self, "_on_reloading", [side])
 
 
 func get_input():
@@ -91,3 +120,11 @@ func get_input():
 
 func get_cam():
 	return Cam
+
+
+func _on_finished_reloading():
+	emit_signal("finished_reloading")
+
+
+func _on_reloading(reload_time, side):
+	emit_signal("reloading", reload_time, side)

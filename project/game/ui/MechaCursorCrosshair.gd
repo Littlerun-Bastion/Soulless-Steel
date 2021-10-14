@@ -1,11 +1,22 @@
 extends Control
 
+enum SIDE {LEFT, RIGHT}
+
 onready var LeftWeapon = $LeftWeapon
+onready var LeftReload = $LeftReloadProgress
 onready var RightWeapon = $RightWeapon
+onready var RightReload = $RightReloadProgress
+onready var Crosshair = $Crosshair
+onready var ReloadLabel = $ReloadLabel
 
 
 func _ready():
-	 Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	Crosshair.show()
+	ReloadLabel.hide()
+	LeftReload.hide()
+	RightReload.hide()
+	
 
 
 func _process(_delta):
@@ -39,3 +50,35 @@ func set_ammo(side, ammo):
 	
 	if node.visible:
 		node.get_node("CurAmmo").text = "%02d" % ammo
+
+
+func set_reload_mode(active):
+	if active:
+		Crosshair.hide()
+		ReloadLabel.show()
+	else:
+		Crosshair.show()
+		ReloadLabel.hide()
+
+
+func reloading(reload_time, side):
+	var weapon_node
+	var reload_node
+	if side == SIDE.LEFT:
+		weapon_node = LeftWeapon
+		reload_node = LeftReload
+	elif side == SIDE.RIGHT:
+		weapon_node = RightWeapon
+		reload_node = RightReload
+	else:
+		push_error("Not a valid side: " + str(side))
+	weapon_node.hide()
+	reload_node.show()
+	var tween = reload_node.get_node("Tween") as Tween
+	tween.stop_all()
+	tween.interpolate_property(reload_node, "value", 0, 100, reload_time, Tween.TRANS_LINEAR)
+	tween.start()
+	
+	yield(tween, "tween_completed")
+	weapon_node.show()
+	reload_node.hide()

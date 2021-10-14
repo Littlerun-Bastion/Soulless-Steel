@@ -1,8 +1,16 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
 [ext_resource path="res://assets/images/ui/player_ui/cursor_crosshair.png" type="Texture" id=3]
+[ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=4]
+[ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture" id=5]
+
+[sub_resource type="DynamicFont" id=1]
+size = 18
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 4 )
 
 [node name="MechaCursorCrosshair" type="Control"]
 anchor_right = 1.0
@@ -14,7 +22,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="Crosshair" type="TextureRect" parent="."]
 margin_left = -10.5946
 margin_top = -11.1244
 margin_right = 11.4054
@@ -23,6 +31,55 @@ texture = ExtResource( 3 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ReloadLabel" type="Label" parent="."]
+margin_left = -50.0
+margin_top = -15.0
+margin_right = 50.0
+margin_bottom = 5.0
+custom_fonts/font = SubResource( 1 )
+text = "Reload"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LeftReloadProgress" type="TextureProgress" parent="."]
+margin_left = -130.0
+margin_top = -85.0
+margin_right = 70.0
+margin_bottom = 115.0
+rect_scale = Vector2( 0.1, 0.1 )
+rect_pivot_offset = Vector2( 100, 100 )
+value = 50.0
+texture_under = ExtResource( 5 )
+texture_progress = ExtResource( 5 )
+fill_mode = 4
+tint_under = Color( 0, 0, 0, 0.266667 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Tween" type="Tween" parent="LeftReloadProgress"]
+
+[node name="RightReloadProgress" type="TextureProgress" parent="."]
+margin_left = -70.0
+margin_top = -85.0
+margin_right = 130.0
+margin_bottom = 115.0
+rect_scale = Vector2( 0.1, 0.1 )
+rect_pivot_offset = Vector2( 100, 100 )
+value = 50.0
+texture_under = ExtResource( 5 )
+texture_progress = ExtResource( 5 )
+fill_mode = 4
+tint_under = Color( 0, 0, 0, 0.266667 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Tween" type="Tween" parent="RightReloadProgress"]
 
 [node name="LeftWeapon" type="HBoxContainer" parent="."]
 margin_left = -58.0

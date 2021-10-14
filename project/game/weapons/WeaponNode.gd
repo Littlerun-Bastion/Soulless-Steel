@@ -1,5 +1,8 @@
 extends Sprite
 
+signal reloading
+signal finished_reloading
+
 onready var ShootingPos = $ShootingPos
 
 var timer:= 0.0
@@ -38,13 +41,15 @@ func can_reload():
 func reload():
 	if can_reload() != "yes":
 		return
-
+	
 	reloading = true
+	emit_signal("reloading", reload_time)
 	yield(get_tree().create_timer(reload_time), "timeout")
 	var ammo = min(clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo
 	reloading = false
+	emit_signal("finished_reloading")
 
 
 func can_shoot():

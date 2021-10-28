@@ -89,8 +89,8 @@ func add_decal(id, projectile_transform, type, size):
 	offset = offset.rotated(-decals_node.global_transform.get_rotation())
 	offset *= decals_node.global_transform.get_scale()
 	offset *= rand_range(.6,.9) #Random depth for decal on mecha
-	decal.setup(type, size, offset, mask_node.texture)
 	decals_node.add_child(decal)
+	decal.setup(type, size, offset, mask_node.texture, mask_node.get_global_transform().get_scale())
 
 #PARTS SETTERS
 

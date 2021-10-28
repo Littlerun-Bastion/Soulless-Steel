@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/player_directional_pointer_far.png-76b7e0e09c06a5fddc4a7396b785065f.stex"
+path="res://.import/kinetic_icon.png-c1f9ee55ff224ed94c2e45e3550ccd16.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/player_directional_pointer_far.png"
-dest_files=[ "res://.import/player_directional_pointer_far.png-76b7e0e09c06a5fddc4a7396b785065f.stex" ]
+source_file="res://assets/images/ui/player_ui/weapon_types/kinetic_icon.png"
+dest_files=[ "res://.import/kinetic_icon.png-c1f9ee55ff224ed94c2e45e3550ccd16.stex" ]
 
 [params]
 

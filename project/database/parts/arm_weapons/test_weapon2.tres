@@ -6,6 +6,8 @@
 
 [resource]
 script = ExtResource( 1 )
+name = "Big Gun"
+type = "Massive Firepower"
 image = ExtResource( 2 )
 shooting_pos = Vector2( 6, -110 )
 rotation_acc = 5

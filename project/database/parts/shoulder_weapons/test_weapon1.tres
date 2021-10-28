@@ -6,6 +6,8 @@
 
 [resource]
 script = ExtResource( 1 )
+name = "SS-Shoot"
+type = "Long-Range Missiles"
 image = ExtResource( 2 )
 shooting_pos = Vector2( 2, -75 )
 projectile = ExtResource( 3 )
@@ -15,3 +17,6 @@ fire_rate = 0.3
 auto_fire = false
 bullet_accuracy_margin = 0
 bullet_spread = 0
+total_ammo = 5
+clip_size = 1
+reload_speed = 2.0

@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/player_directional_pointer_far.png-76b7e0e09c06a5fddc4a7396b785065f.stex"
+path="res://.import/thermal_icon.png-ff78827c5d590df44cdc1d81399e4028.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/player_directional_pointer_far.png"
-dest_files=[ "res://.import/player_directional_pointer_far.png-76b7e0e09c06a5fddc4a7396b785065f.stex" ]
+source_file="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png"
+dest_files=[ "res://.import/thermal_icon.png-ff78827c5d590df44cdc1d81399e4028.stex" ]
 
 [params]
 

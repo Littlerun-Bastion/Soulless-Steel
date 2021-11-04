@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=4 format=2]
+
+[ext_resource path="res://database/parts/core.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/cores/T-01-C.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/cores/T-01-C head port.png" type="Texture" id=3]
+
+[resource]
+script = ExtResource( 1 )
+image = ExtResource( 2 )
+collision = PoolVector2Array( 57, -89, 23, -89, 8, -75, -12, -75, 27, -90, -62, -90, -79, -73, -84, -45, -85, 42, -59, 77, -38, 78, -36, 71, -26, 60, 21, 60, 31, 71, 32, 78, 55, 78, 80, 40, 81, 27, 77, -45, 72, -75 )
+weight = 300
+head_offset = Vector2( 0, -13 )
+left_shoulder_offset = Vector2( -70, 16 )
+right_shoulder_offset = Vector2( 70, 16 )
+head_port = ExtResource( 3 )
+head_port_offset = Vector2( 0, -13 )

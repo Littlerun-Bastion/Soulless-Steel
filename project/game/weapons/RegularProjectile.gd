@@ -34,4 +34,5 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 		body.take_damage(damage)
 		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	
-	queue_free()
+	if not body.is_in_group("mecha") or body != original_mecha:
+		queue_free()

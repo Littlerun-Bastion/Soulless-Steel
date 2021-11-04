@@ -7,6 +7,7 @@ onready var SHOULDER_WEAPONS = {}
 onready var SHOULDERS = {}
 onready var CORES = {}
 onready var HEADS = {}
+onready var LEGS = {}
 onready var PROJECTILES = {}
 
 
@@ -20,6 +21,7 @@ func setup_parts():
 	load_parts("shoulders", SHOULDERS)
 	load_parts("cores", CORES)
 	load_parts("heads", HEADS)
+	load_parts("legs", LEGS)
 	load_parts("projectiles", PROJECTILES)
 
 
@@ -34,7 +36,7 @@ func load_parts(name, dict):
 				dict[file_name.replace(".tres", "")] = load(path + file_name)
 			file_name = dir.get_next()
 	else:
-		push_error("An error occurred when trying to access sfxs path.")
+		push_error("An error occurred when trying to access part path.")
 		assert(false)
 
 
@@ -54,6 +56,9 @@ func get_part(type, name):
 	elif type == "head":
 		assert(HEADS.has(name), "Not a existent head part: " + str(name))
 		return HEADS[name]
+	elif type == "legs":
+		assert(LEGS.has(name), "Not a existent legs part: " + str(name))
+		return LEGS[name]
 	elif type == "projectile":
 		assert(PROJECTILES.has(name), "Not a existent projectile: " + str(name))
 		return PROJECTILES[name]

@@ -1,22 +1,22 @@
 [gd_resource type="Resource" load_steps=4 format=2]
 
 [ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/SIN-T-01-missile.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/projectiles/simple_projectile.tres" type="Resource" id=3]
 
 [resource]
 script = ExtResource( 1 )
-name = "SS-Shoot"
+name = "SS-BigShoot"
 type = "Long-Range Missiles"
 image = ExtResource( 2 )
-shooting_pos = Vector2( 2, -75 )
+shooting_pos = Vector2( 0, -38 )
 projectile = ExtResource( 3 )
-damage_modifier = 1.0
-recoil_force = 2.0
-fire_rate = 0.3
+damage_modifier = 40.0
+recoil_force = 20.0
+fire_rate = 1.0
 auto_fire = false
 bullet_accuracy_margin = 0
 bullet_spread = 0
-total_ammo = 15
-clip_size = 3
-reload_speed = 2.0
+total_ammo = 5
+clip_size = 1
+reload_speed = 1.0

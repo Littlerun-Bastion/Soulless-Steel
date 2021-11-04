@@ -1,28 +1,39 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/shoulders/zh01-a_right.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/cores/zh01-c.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/cores/T-01-C.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/T01-SH-R.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun1.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/shoulders/zh01-a_left.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/heads/zh01-h.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/shoulders/T01-SH-L.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/mechas/heads/T-01H.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=9]
 [ext_resource path="res://game/weapons/WeaponNode.gd" type="Script" id=10]
+[ext_resource path="res://assets/images/mechas/cores/T-01-C head port.png" type="Texture" id=11]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/SIN-T-01-missile.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/legs/T-01-TR.png" type="Texture" id=13]
 
 [node name="Mecha" type="KinematicBody2D" groups=[
 "mecha",
 ]]
 script = ExtResource( 1 )
 
+[node name="Legs" type="Sprite" parent="."]
+texture = ExtResource( 13 )
+
 [node name="Core" type="Sprite" parent="."]
-texture = ExtResource( 4 )
+texture = ExtResource( 3 )
+
+[node name="HeadPort" type="Sprite" parent="Core"]
+position = Vector2( 0, -13 )
+texture = ExtResource( 11 )
 
 [node name="Decals" type="Node2D" parent="Core"]
 light_mask = 32
 
 [node name="Head" type="Sprite" parent="."]
+position = Vector2( 0, -20 )
 texture = ExtResource( 7 )
 
 [node name="ArmWeaponLeft" type="Sprite" parent="."]
@@ -45,11 +56,11 @@ position = Vector2( 6, -90 )
 
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 position = Vector2( -50, 8 )
-texture = ExtResource( 8 )
+texture = ExtResource( 12 )
 script = ExtResource( 10 )
 
 [node name="ShootingPos" type="Position2D" parent="ShoulderWeaponLeft"]
-position = Vector2( 2, -75 )
+position = Vector2( 0, -38 )
 
 [node name="ShoulderWeaponRight" type="Sprite" parent="."]
 position = Vector2( 50, 8 )
@@ -60,15 +71,15 @@ script = ExtResource( 10 )
 position = Vector2( 2, -75 )
 
 [node name="LeftShoulder" type="Sprite" parent="."]
-position = Vector2( -73, 40 )
+position = Vector2( -70, 16 )
 texture = ExtResource( 6 )
 
 [node name="Decals" type="Node2D" parent="LeftShoulder"]
 light_mask = 64
 
 [node name="RightShoulder" type="Sprite" parent="."]
-position = Vector2( 76, 40 )
-texture = ExtResource( 3 )
+position = Vector2( 70, 16 )
+texture = ExtResource( 4 )
 
 [node name="Decals" type="Node2D" parent="RightShoulder"]
 light_mask = 128
@@ -81,7 +92,7 @@ range_item_cull_mask = 2
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 position = Vector2( 2.51985, 5.66965 )
-polygon = PoolVector2Array( 0.48015, -97.6696, -18.5198, -71.6696, -42.5199, -53.6697, -59.5199, -40.6697, -59.5199, -23.6697, -48.5199, 76.3304, -20.5198, 72.3304, 18.4802, 71.3304, 50.4801, 78.3304, 61.4801, 31.3303, 59.4801, -38.6697, 40.4801, -58.6697, 20.4802, -68.6696 )
+polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
 
 [node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
 visible = false
@@ -89,4 +100,4 @@ polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.
 
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
 visible = false
-polygon = PoolVector2Array( 78, -28, 30, 12, 47, 39, 51, 54, 44, 67, 103, 101, 112, 89, 111, 45, 100, 10 )
+polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )

@@ -11,10 +11,10 @@ var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 300
+var engage_distance = 400
 var shooting_distance = 50
 var current_state
-var move_d_rand = 50
+var move_d_rand = 200
 var navigation_node
 var path : Array = []
 var pos_for_blocked
@@ -30,7 +30,6 @@ func _ready():
 
 func _process(delta):
 	var state = logic.get_current_state()
-	
 	check_for_targets()
 	
 	if has_method("do_"+state):
@@ -39,6 +38,7 @@ func _process(delta):
 	logic.updateFiniteLogic(self)
 	
 	$Label.text = logic.get_current_state()
+
 
 func setup(_all_mechas, _path_stuff):
 	all_mechas = _all_mechas
@@ -111,23 +111,22 @@ func random_pos_targeting():
 	
 	## ifs to check where the enemy is and add the proper distance between them
 	if position.x - valid_target.position.x < 0:
-		v_closeness.x = -50
+		v_closeness.x = -500
 	else:
-		v_closeness.x = 50
+		v_closeness.x = 500
 	
 	if position.x - valid_target.position.y < 0:
-		v_closeness.y = -50
+		v_closeness.y = -500
 	else:
-		v_closeness.y = 50
+		v_closeness.y = 500
 	
 	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
-				   min(arena_size.x-move_d_rand, valid_target.position.x+move_d_rand+v_closeness.x)),\
-				   
+				   (move_d_rand)),\
 				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
-				   min(arena_size.y-move_d_rand, valid_target.position.y+move_d_rand+v_closeness.y)))
-
+				   (move_d_rand)))
 
 	return navigation_node.get_closest_point(rand_pos)
+
 
 func do_roaming(delta):
 	if not final_pos:
@@ -160,18 +159,21 @@ func do_roaming(delta):
 func do_targeting(delta):
 	if not valid_target:
 		return
-	var enemy_area =  random_pos_targeting()
-	path = navigation_node.get_simple_path(self.position, enemy_area)
 	
-	if self.position.x < enemy_area.x + 10 or self.position.x < enemy_area.x - 10 and\
-	   self.position.y < enemy_area.y + 10 or self.position.y < enemy_area.y - 10:
-		apply_rotation(delta, valid_target.position, false)
-		apply_movement(delta, Vector2(0,0))
-	else:		
+	var enemy_area_point
+	
+	if not final_pos:
+		enemy_area_point = random_pos_targeting()
+	
+	if not path:
+		path = navigation_node.get_simple_path(self.position, enemy_area_point)
+	
+	if path.size() > 0:		
 		for place in path:
+			print("wtf")
 			apply_rotation(delta, valid_target.position, false)
-			apply_movement(delta, Vector2(enemy_area.x-self.position.x,\
-								  enemy_area.y-self.position.y))
+			apply_movement(delta,  Vector2(path[0].x-position.x,\
+				   			  	   path[0].y-position.y))
 
 	shoot_weapons()
 

@@ -13,6 +13,7 @@ var all_mechas
 var valid_target = false
 var engage_distance = 800
 var shooting_distance = 200
+var random_pos_targeting_distance = 300
 var current_state
 var move_d_rand = 50
 var navigation_node
@@ -112,20 +113,20 @@ func random_pos_targeting():
 	
 	## ifs to check where the enemy is and add the proper distance between them
 	if position.x - valid_target.position.x < 0:
-		v_closeness.x = -500
+		v_closeness.x = -random_pos_targeting_distance
 	else:
-		v_closeness.x = 500
+		v_closeness.x = random_pos_targeting_distance
 	
 	if position.x - valid_target.position.y < 0:
-		v_closeness.y = -500
+		v_closeness.y = -random_pos_targeting_distance
 	else:
-		v_closeness.y = 500
+		v_closeness.y = random_pos_targeting_distance
 	
 	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
 				   (move_d_rand)),\
 				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
 				   (move_d_rand)))
-	
+				
 	return navigation_node.get_closest_point(rand_pos)
 
 
@@ -138,14 +139,14 @@ func do_roaming(delta):
 	
 	
 	if path.size() > 0:
-		
+
 		apply_rotation(delta, Vector2(path[0].x-position.x,\
 				   			  path[0].y-position.y), false)
 								
 		apply_movement(delta, Vector2(path[0].x-position.x,\
 				   			  path[0].y-position.y))
 		
-		if global_position.distance_to(path[0]) <= 1:
+		if global_position.distance_to(path[0]) <= 10:
 			path.pop_front()
 			if path.size() == 0:
 				final_pos = random_pos()
@@ -174,6 +175,12 @@ func do_targeting(delta):
 			apply_rotation(delta, valid_target.position, false)
 			apply_movement(delta,  Vector2(path[0].x-position.x,\
 				   			  	   path[0].y-position.y))
+
+	if global_position.distance_to(path[0]) <= 10:
+			path.pop_front()
+			if path.size() == 0:
+				final_pos = random_pos_targeting()
+				path = navigation_node.get_simple_path(self.global_position, final_pos)
 
 	shoot_weapons()
 

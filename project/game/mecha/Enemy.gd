@@ -11,10 +11,10 @@ var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 400
-var shooting_distance = 50
+var engage_distance = 800
+var shooting_distance = 200
 var current_state
-var move_d_rand = 200
+var move_d_rand = 50
 var navigation_node
 var path : Array = []
 var pos_for_blocked
@@ -31,7 +31,7 @@ func _ready():
 func _process(delta):
 	var state = logic.get_current_state()
 	check_for_targets()
-	
+	print(state)
 	if has_method("do_"+state):
 		call("do_"+state, delta)
 		
@@ -125,7 +125,7 @@ func random_pos_targeting():
 				   (move_d_rand)),\
 				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
 				   (move_d_rand)))
-
+	
 	return navigation_node.get_closest_point(rand_pos)
 
 
@@ -163,7 +163,7 @@ func do_targeting(delta):
 	
 	var enemy_area_point
 	
-	if not final_pos:
+	if not final_pos or position.distance_to(final_pos) < 10:
 		enemy_area_point = random_pos_targeting()
 	
 	if not path:
@@ -171,7 +171,6 @@ func do_targeting(delta):
 	
 	if path.size() > 0:		
 		for place in path:
-			print("wtf")
 			apply_rotation(delta, valid_target.position, false)
 			apply_movement(delta,  Vector2(path[0].x-position.x,\
 				   			  	   path[0].y-position.y))
@@ -184,19 +183,20 @@ func do_idle(_delta):
 
 
 func check_for_targets():
-	var shortest_distance = 10000
 	var target_to_return
 	
 	for target in all_mechas:
-		if target != self:
-			shortest_distance = min(target.position.distance_to(self.position), shortest_distance)
-			if target.position.distance_to(self.position) == shortest_distance:
-				target_to_return = target
+		if target != self and position.distance_to(target.position) < engage_distance:
+			target_to_return = target
 		
-	if abs(shortest_distance) < engage_distance:
+	for target in all_mechas:
+		if target_to_return:
+			if position.distance_to(target_to_return.position) > position.distance_to(target.position):
+				target_to_return = target				
+		
+	if target_to_return:
 		valid_target = target_to_return
 	else:
 		valid_target = false
-
 
  

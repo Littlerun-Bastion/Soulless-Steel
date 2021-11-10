@@ -6,6 +6,8 @@
 
 [resource]
 script = ExtResource( 1 )
+name = "Gattling Gun"
+type = "PewPew"
 image = ExtResource( 2 )
 shooting_pos = Vector2( 6, -90 )
 rotation_acc = 5

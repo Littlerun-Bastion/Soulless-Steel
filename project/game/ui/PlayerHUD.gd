@@ -1,8 +1,11 @@
 extends CanvasLayer
 
+const WEAPON_SLOT = preload("res://game/ui/WeaponSlot/WeaponSlot.tscn")
+
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
 onready var EnergyBar = $EnergyBar
+onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
 
@@ -21,6 +24,7 @@ func setup(player_ref, mechas_ref):
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
+	setup_weapon_slots()
 	setup_cursor()
 	PlayerRadar.setup(mechas, player, 2300, 2)
 
@@ -38,6 +42,18 @@ func setup_shieldbar():
 func setup_energybar():
 	EnergyBar.max_value = player.max_energy
 	EnergyBar.value = player.energy
+
+
+func setup_weapon_slots():
+	for slot in WeaponSlots.get_children():
+		slot.queue_free()
+	
+	for weapon in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
+		if player.get(weapon):
+			var slot = WEAPON_SLOT.instance()
+			WeaponSlots.add_child(slot)
+			slot.setup(player.get(weapon), weapon)
+
 
 
 func setup_cursor():

@@ -1,5 +1,7 @@
 extends Resource
 
+export var name: String
+export var type: String
 export var image: Resource
 export var shooting_pos : Vector2
 export var rotation_acc := 5

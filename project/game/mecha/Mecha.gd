@@ -35,6 +35,7 @@ var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
 var core = null
+var legs = null
 
 
 func set_max_life(value):
@@ -89,8 +90,8 @@ func add_decal(id, projectile_transform, type, size):
 	offset = offset.rotated(-decals_node.global_transform.get_rotation())
 	offset *= decals_node.global_transform.get_scale()
 	offset *= rand_range(.6,.9) #Random depth for decal on mecha
-	decal.setup(type, size, offset, mask_node.texture)
 	decals_node.add_child(decal)
+	decal.setup(type, size, offset, mask_node.texture, mask_node.get_global_transform().get_scale())
 
 #PARTS SETTERS
 
@@ -157,12 +158,32 @@ func set_core(part_name):
 	$Core.texture = part_data.image
 	$CoreCollision.polygon = part_data.collision
 	core = part_data
+	if core.head_port != null:
+		$Core/HeadPort.texture = core.head_port
+		$Core/HeadPort.position = core.head_port_offset
+		$Core/HeadPort.show()
+	else:
+		$Core/HeadPort.texture = null
+		$Core/HeadPort.hide()
+
+func set_legs(part_name):
+	if not part_name:
+		legs = null
+		$Legs.texture = null
+		return
+		
+	var part_data = PartManager.get_part("legs", part_name)
+	$Legs.texture = part_data.image
+	legs = part_data
+
 
 
 func set_head(part_name):
 	var part_data = PartManager.get_part("head", part_name)
 	$Head.texture = part_data.image
 	head = part_data
+	if core:
+		$Head.position = core.head_offset
 
 
 func set_shoulder(part_name, side):
@@ -172,9 +193,13 @@ func set_shoulder(part_name, side):
 	if side == SIDE.LEFT:
 		node = $LeftShoulder
 		collision_node = $LeftShoulderCollision
+		if core:
+			node.position = core.left_shoulder_offset
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
 		collision_node = $RightShoulderCollision
+		if core:
+			node.position = core.right_shoulder_offset
 	else:
 		push_error("Not a valid side: " + str(side))
 	

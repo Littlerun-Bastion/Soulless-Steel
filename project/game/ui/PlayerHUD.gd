@@ -57,8 +57,8 @@ func setup_weapon_slots():
 
 
 func setup_cursor():
-	Cursor.set_max_ammo("left", player.get_ammo("left_arm"))
-	Cursor.set_max_ammo("right", player.get_ammo("right_arm"))
+	Cursor.set_max_ammo("left", player.get_clip_ammo("arm_weapon_left"))
+	Cursor.set_max_ammo("right", player.get_clip_ammo("arm_weapon_right"))
 
 
 func update_lifebar(value):
@@ -74,8 +74,17 @@ func update_energybar(value):
 
 
 func update_cursor():
-	Cursor.set_ammo("left", player.get_ammo("left_arm"))
-	Cursor.set_ammo("right", player.get_ammo("right_arm"))
+	Cursor.set_ammo("left", player.get_clip_ammo("arm_weapon_left"))
+	Cursor.set_ammo("right", player.get_clip_ammo("arm_weapon_right"))
+
+
+func update_arsenal():
+	for weapon in $WeaponSlots.get_children():
+		var total_ammo = player.get_total_ammo(weapon.type)
+		if total_ammo:
+			weapon.set_ammo(total_ammo - \
+							player.get_clip_size(weapon.type) + \
+							player.get_clip_ammo(weapon.type))
 
 
 func _on_player_took_damage(_p):
@@ -85,6 +94,7 @@ func _on_player_took_damage(_p):
 
 func _on_player_shoot():
 	update_cursor()
+	update_arsenal()
 
 
 func _on_reload_mode_update(active):

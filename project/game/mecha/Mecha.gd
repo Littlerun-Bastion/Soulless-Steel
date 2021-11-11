@@ -218,17 +218,43 @@ func get_weight():
 	return float(core.weight)
 
 
-func get_ammo(part_name):
-	if part_name == "left_arm":
+func get_weapon_part(part_name):
+	if part_name == "arm_weapon_left":
 		if arm_weapon_left:
-			return $ArmWeaponLeft.clip_ammo
-	elif part_name == "right_arm":
+			return $ArmWeaponLeft
+	elif part_name == "arm_weapon_right":
 		if arm_weapon_right:
-			return $ArmWeaponRight.clip_ammo
-	elif part_name == "left_shoulder":
-		pass
-	elif part_name == "right_shoulder":
-		pass
+			return $ArmWeaponRight
+	elif part_name == "shoulder_weapon_left":
+		if shoulder_weapon_left:
+			return $ShoulderWeaponLeft
+	elif part_name == "shoulder_weapon_right":
+		if shoulder_weapon_right:
+			return $ShoulderWeaponRight
+	else:
+		push_error("Not a valid weapon part name: " + str(part_name))
+	
+	return false
+
+
+func get_clip_ammo(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.clip_ammo
+	return false
+
+
+func get_clip_size(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.clip_size
+	return false
+
+
+func get_total_ammo(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.total_ammo
 	return false
 
 

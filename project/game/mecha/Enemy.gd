@@ -32,7 +32,7 @@ func _ready():
 func _process(delta):
 	var state = logic.get_current_state()
 	check_for_targets()
-	print(state)
+	#print(state)
 	if has_method("do_"+state):
 		call("do_"+state, delta)
 		

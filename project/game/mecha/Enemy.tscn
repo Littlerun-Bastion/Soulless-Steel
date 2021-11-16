@@ -4,7 +4,6 @@
 [ext_resource path="res://game/mecha/Enemy.gd" type="Script" id=2]
 [ext_resource path="res://assets/fonts/OFL/OtomanopeeOne-Regular.ttf" type="DynamicFontData" id=3]
 
-
 [sub_resource type="DynamicFont" id=1]
 size = 42
 use_mipmaps = true
@@ -19,10 +18,10 @@ margin_left = -111.963
 margin_top = -40.6918
 margin_right = 127.037
 margin_bottom = 69.3082
-custom_fonts/font = SubResource( 1 )
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 custom_colors/font_outline_modulate = Color( 1, 0.976471, 0.976471, 1 )
 custom_colors/font_color_shadow = Color( 1, 0.964706, 0.964706, 1 )
+custom_fonts/font = SubResource( 1 )
 text = "STATE"
 align = 1
 valign = 1

@@ -33,7 +33,7 @@ func _process(delta):
 	var state = logic.get_current_state()
 	check_for_targets()
 	#print(state)
-	if has_method("do_"+state):
+	if has_method("do_"+state) and not is_stunned():
 		call("do_"+state, delta)
 		
 	logic.updateFiniteLogic(self)

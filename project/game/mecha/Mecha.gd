@@ -38,6 +38,18 @@ var core = null
 var legs = null
 
 
+func _physics_process(delta):
+	if not is_stunned():
+		var all_collisions = []
+		for i in get_slide_count():
+			all_collisions.append(get_slide_collision(i))
+			
+		for collision in all_collisions:
+			if collision and collision.collider.is_in_group("mecha"):
+				knockback(collision.collider.global_position+Vector2(rand_range(-20, 20), rand_range(-20, 20)), 100, false)
+				stun(0.5)
+
+
 func set_max_life(value):
 	max_hp = value
 	hp = max_hp
@@ -268,6 +280,7 @@ func apply_movement(dt, direction):
 			velocity = lerp(velocity, Vector2.ZERO, friction)
 		
 		velocity = move_and_slide(velocity)
+		
 	elif movement_type == "tank":
 		pass
 	else:
@@ -305,9 +318,10 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 		return -abs(diff)*acc*dt
 
 
-func knockback(pos, strength):
+func knockback(pos, strength, should_rotate = true):
 	apply_movement(sqrt(strength)*2/get_weight(), global_position - pos)
-	apply_rotation(sqrt(strength)*2/get_weight(), pos, false)
+	if should_rotate:
+		apply_rotation(sqrt(strength)*2/get_weight(), pos, false)
 
 
 #COMBAT METHODS
@@ -349,3 +363,18 @@ func apply_recoil(type, recoil):
 	if "left" in type:
 		rotation *= -1
 	rotation_degrees += rotation
+
+
+func is_stunned():
+	return not $StunTimer.is_stopped()
+
+
+func stun(time):
+	$StunTimer.wait_time = time
+	$StunTimer.start()
+	
+	
+	
+	
+
+

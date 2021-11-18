@@ -17,6 +17,7 @@ func _ready():
 func _physics_process(delta):
 	if is_stunned():
 		return
+	
 	check_input()
 	
 	apply_movement(delta, get_input())

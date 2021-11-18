@@ -43,12 +43,19 @@ func _physics_process(delta):
 		var all_collisions = []
 		for i in get_slide_count():
 			all_collisions.append(get_slide_collision(i))
-			
+		
+		var collided = false
 		for collision in all_collisions:
 			if collision and collision.collider.is_in_group("mecha"):
-				knockback(collision.collider.global_position+Vector2(rand_range(-20, 20), rand_range(-20, 20)), 100, false)
-				stun(0.5)
-
+				collided = true
+				var mod = 2.0
+				var rand = rand_range(-PI/8, PI/8)
+				var dir = (global_position - collision.collider.global_position).rotated(rand)
+				apply_movement(mod*delta, dir)
+		if collided:
+			stun(0.1)
+	else:
+		apply_movement(delta, Vector2())
 
 func set_max_life(value):
 	max_hp = value
@@ -271,6 +278,7 @@ func get_total_ammo(part_name):
 
 
 #MOVEMENT METHODS
+
 
 func apply_movement(dt, direction):
 	if movement_type == "free":

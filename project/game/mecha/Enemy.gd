@@ -30,13 +30,14 @@ func _ready():
 
 
 func _process(delta):
-	var state = logic.get_current_state()
-	check_for_targets()
-	#print(state)
-	if has_method("do_"+state) and not is_stunned():
-		call("do_"+state, delta)
+	if not is_stunned():
+		var state = logic.get_current_state()
+		check_for_targets()
 		
-	logic.updateFiniteLogic(self)
+		if has_method("do_"+state):
+			call("do_"+state, delta)
+		
+		logic.updateFiniteLogic(self)
 	
 	$Label.text = logic.get_current_state()
 

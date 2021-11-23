@@ -13,15 +13,15 @@ var all_mechas
 var valid_target = false
 var engage_distance = 800
 var shooting_distance = 200
-var random_pos_targeting_distance = 300
+var random_pos_targeting_distance = 400
 var current_state
 var move_d_rand = 50
 var navigation_node
 var path : Array = []
 var pos_for_blocked
-var regions = [1, 2, 3, 4]
 var old_region
-var arena_size = Vector2(1500, 1000)
+var arena_size_y = Vector2(-2000, +2500)
+var arena_size_x = Vector2(-1500, +4000)
 
 
 func _ready():
@@ -38,7 +38,8 @@ func _process(delta):
 			call("do_"+state, delta)
 		
 		logic.updateFiniteLogic(self)
-	
+		
+			
 	$Label.text = logic.get_current_state()
 
 
@@ -69,66 +70,40 @@ func shoot_weapons():
 
 
 func random_pos():
-	var screen_x = arena_size.x
-	var screen_y = arena_size.y
-	var new_region
 	randomize()
-	regions.shuffle()
-	new_region = regions[0]
-		
-	if new_region != old_region:
-		old_region = new_region
-		if new_region == 1:
-			return Vector2(rand_range(move_d_rand, screen_x/2),\
-					  	   rand_range(move_d_rand, screen_y/2))
-		elif new_region == 2:
-			return Vector2(rand_range(screen_x/2, screen_x),\
-					  	   rand_range(move_d_rand, screen_y/2))
-		elif new_region == 3:
-			return Vector2(rand_range(move_d_rand, screen_x/2),\
-					  	   rand_range(screen_y/2, screen_y))
-		else:
-			return Vector2(rand_range(screen_x/2, screen_x),\
-					  	   rand_range(screen_y/2, screen_y))
-	else:
-		old_region = regions[1]
-		if new_region == 1:
-			return Vector2(rand_range(move_d_rand, screen_x/2),\
-					  	   rand_range(move_d_rand, screen_y/2))
-		elif new_region == 2:
-			return Vector2(rand_range(screen_x/2, screen_x),\
-					  	   rand_range(move_d_rand, screen_y/2))
-		elif new_region == 3:
-			return Vector2(rand_range(move_d_rand, screen_x/2),\
-					  	   rand_range(screen_y/2, screen_y))
-		else:
-			return Vector2(rand_range(screen_x/2, screen_x),\
-					  	   rand_range(screen_y/2, screen_y))
-		
-		
+	
+	return Vector2(rand_range(arena_size_x[0], arena_size_x[1]), rand_range(arena_size_y[0], arena_size_y[1]))
+	
 
 func random_pos_targeting():
 	randomize()
+	
 	var v_closeness = Vector2()
 	var rand_pos = Vector2()
+	var angle = rand_range(0, 2.0*PI)
+	var direction = Vector2(cos(angle), sin(angle))
+	var rand_radius = rand_range(300, 500)
+	rand_pos = valid_target.position + direction * rand_radius
+	
+	return navigation_node.get_closest_point(rand_pos)
 	
 	## ifs to check where the enemy is and add the proper distance between them
-	if position.x - valid_target.position.x < 0:
-		v_closeness.x = -random_pos_targeting_distance
-	else:
-		v_closeness.x = random_pos_targeting_distance
-	
-	if position.x - valid_target.position.y < 0:
-		v_closeness.y = -random_pos_targeting_distance
-	else:
-		v_closeness.y = random_pos_targeting_distance
-	
-	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
-				   (move_d_rand)),\
-				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
-				   (move_d_rand)))
-				
-	return navigation_node.get_closest_point(rand_pos)
+#	if position.x - valid_target.position.x < 0:
+#		v_closeness.x = -random_pos_targeting_distance
+#	else:
+#		v_closeness.x = random_pos_targeting_distance
+#
+#	if position.x - valid_target.position.y < 0:
+#		v_closeness.y = -random_pos_targeting_distance
+#	else:
+#		v_closeness.y = random_pos_targeting_distance
+#
+#	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
+#				   (move_d_rand)),\
+#				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
+#				   (move_d_rand)))
+#
+#	return navigation_node.get_closest_point(rand_pos)
 
 
 func do_roaming(delta):

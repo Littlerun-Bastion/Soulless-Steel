@@ -24,7 +24,7 @@ func _physics_process(delta):
 	
 	var target_pos = get_global_mouse_position()
 	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-		apply_rotation(delta, target_pos, \
+		apply_rotation_by_point(delta, target_pos, \
 					   movement_type == "tank" or Input.is_action_pressed("strafe"))
 
 func _input(event):

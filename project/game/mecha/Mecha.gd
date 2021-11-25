@@ -301,12 +301,12 @@ func apply_movement(dt, direction):
 				direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
 				moving = true
 			if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin: #Left
-				apply_rotation(dt, global_position - Vector2(1,0).rotated(deg2rad(rotation_degrees)), false)
+				apply_rotation_by_direction(dt, "counter")
 			if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin: #Up
 				direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
 				moving = true
 			if angle > 7*PI/4 - margin or angle <= PI/4 + margin: #Right
-				apply_rotation(dt, global_position + Vector2(1,0).rotated(deg2rad(rotation_degrees)), false)
+				apply_rotation_by_direction(dt, "clock")
 
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
@@ -321,7 +321,17 @@ func apply_movement(dt, direction):
 		push_error("Not a valid movement type: " + str(movement_type))
 
 
-func apply_rotation(dt, target_pos, stand_still):
+#Rotates solely the body given a direction ('clock' or 'counter'clock wise)
+func apply_rotation_by_direction(dt, direction):
+	if direction == "clock":
+		rotation_degrees += 90*rotation_acc*dt
+	elif direction == "counter":
+		rotation_degrees -= 90*rotation_acc*dt
+	else:
+		push_error("Not a valid direction: " + str(direction))
+
+
+func apply_rotation_by_point(dt, target_pos, stand_still):
 	#Rotate Body
 	if not stand_still:
 		rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, rotation_acc)
@@ -356,7 +366,7 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 func knockback(pos, strength, should_rotate = true):
 	apply_movement(sqrt(strength)*2/get_weight(), global_position - pos)
 	if should_rotate:
-		apply_rotation(sqrt(strength)*2/get_weight(), pos, false)
+		apply_rotation_by_point(sqrt(strength)*2/get_weight(), pos, false)
 
 
 #COMBAT METHODS

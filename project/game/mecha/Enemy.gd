@@ -116,7 +116,7 @@ func do_roaming(delta):
 	
 	if path.size() > 0:
 
-		apply_rotation(delta, Vector2(path[0].x-position.x,\
+		apply_rotation_by_point(delta, Vector2(path[0].x-position.x,\
 				   			  path[0].y-position.y), false)
 								
 		apply_movement(delta, Vector2(path[0].x-position.x,\
@@ -148,7 +148,7 @@ func do_targeting(delta):
 	
 	if path.size() > 0:		
 		for place in path:
-			apply_rotation(delta, valid_target.position, false)
+			apply_rotation_by_point(delta, valid_target.position, false)
 			apply_movement(delta,  Vector2(path[0].x-position.x,\
 				   			  	   path[0].y-position.y))
 

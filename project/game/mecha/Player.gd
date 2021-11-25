@@ -24,7 +24,8 @@ func _physics_process(delta):
 	
 	var target_pos = get_global_mouse_position()
 	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-		apply_rotation(delta, target_pos, Input.is_action_pressed("strafe"))
+		apply_rotation(delta, target_pos, \
+					   movement_type == "tank" or Input.is_action_pressed("strafe"))
 
 func _input(event):
 	if event.is_action_pressed("honk"):
@@ -85,6 +86,9 @@ func check_weapon_input(name, node, weapon_ref):
 
 
 func setup():
+	movement_type = "tank"
+	rotation_acc = 2.0
+	friction = 0.3
 	set_max_life(100)
 	set_core("core_test2")
 	set_head("head_test2")

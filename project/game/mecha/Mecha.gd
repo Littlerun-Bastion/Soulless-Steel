@@ -290,7 +290,33 @@ func apply_movement(dt, direction):
 		velocity = move_and_slide(velocity)
 		
 	elif movement_type == "tank":
-		pass
+		if direction.length() > 0:
+			var margin = PI/8
+			var moving = false
+			var angle = direction.angle()
+			if angle < 0:
+				angle += 2*PI
+			
+			if angle > PI/4 - margin and angle <= 3*PI/4 + margin: #Down
+				direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				moving = true
+			if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin: #Left
+				apply_rotation(dt, global_position - Vector2(1,0).rotated(deg2rad(rotation_degrees)), false)
+			if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin: #Up
+				direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				moving = true
+			if angle > 7*PI/4 - margin or angle <= PI/4 + margin: #Right
+				apply_rotation(dt, global_position + Vector2(1,0).rotated(deg2rad(rotation_degrees)), false)
+
+			if not moving:
+				velocity = lerp(velocity, Vector2.ZERO, friction)
+			else:
+				velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+			velocity = move_and_slide(velocity)
+
+		else:
+			velocity = lerp(velocity, Vector2.ZERO, friction)
+			velocity = move_and_slide(velocity)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 
@@ -319,6 +345,7 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 		diff -= 360
 	elif diff < -180:
 		diff += 360
+	
 	#Rotate properly clock or counter-clockwise fastest to target rotation
 	if diff > 0:
 		return abs(diff)*acc*dt

@@ -52,25 +52,25 @@ func reload():
 	emit_signal("finished_reloading")
 
 
-func can_shoot():
-	return timer <= 0.0 and (clip_ammo is bool or clip_ammo > 0)
+func can_shoot(amount := 1):
+	return timer <= 0.0 and (clip_ammo is bool or clip_ammo >= amount)
 
 
-func shoot():
+func shoot(amount := 1):
 	add_time(fire_rate) 
-	clip_ammo -= 1
+	clip_ammo -= amount
 
 
 func set_shooting_pos(pos):
 	ShootingPos.position = pos
 
 
-func get_direction(accuracy_margin := 0.0):
+func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	var offset = Vector2()
 	var dir = (ShootingPos.global_position - global_position).normalized()
 	if accuracy_margin > 0:
 		offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
-		dir = (ShootingPos.global_position + offset - global_position).normalized()
+		dir = (ShootingPos.global_position + offset - global_position).rotated(angle_offset).normalized()
 	return dir
 
 

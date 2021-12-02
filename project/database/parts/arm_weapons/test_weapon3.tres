@@ -6,14 +6,14 @@
 
 [resource]
 script = ExtResource( 1 )
-name = "Gattling Gun"
-type = "PewPew"
+name = "Shotgun Gun"
+type = "Multi-PewPew"
 image = ExtResource( 2 )
 shooting_pos = Vector2( 6, -90 )
 rotation_acc = 5
 rotation_range = 10.0
 projectile = ExtResource( 3 )
-number_projectiles = 1
+number_projectiles = 2
 damage_modifier = 0.001
 recoil_force = 1.0
 fire_rate = 0.1

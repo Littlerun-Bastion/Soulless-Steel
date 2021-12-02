@@ -5,6 +5,7 @@ export var type: String
 export var image: Resource
 export var shooting_pos : Vector2
 export var projectile : Resource
+export var number_projectiles := 1
 export var damage_modifier := 1.0
 export var recoil_force := 0.0
 export var fire_rate := .3

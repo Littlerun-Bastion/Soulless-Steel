@@ -374,32 +374,40 @@ func knockback(pos, strength, should_rotate = true):
 func shoot(type):
 	var node
 	var weapon_ref
-	if type == "left_arm_weapon":
+	if type == "arm_weapon_left":
 		node = $ArmWeaponLeft
 		weapon_ref = arm_weapon_left
-	elif type ==  "right_arm_weapon":
+	elif type ==  "arm_weapon_right":
 		node = $ArmWeaponRight
 		weapon_ref = arm_weapon_right
-	elif type == "left_shoulder_weapon":
+	elif type == "shoulder_weapon_left":
 		node = $ShoulderWeaponLeft
 		weapon_ref = shoulder_weapon_left
-	elif type ==  "right_shoulder_weapon":
+	elif type ==  "shoulder_weapon_right":
 		node = $ShoulderWeaponRight
 		weapon_ref = shoulder_weapon_right
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 	
-	if not node.can_shoot():
+	var amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
+	amount = max(amount, 1) #Tries to shoot at least 1 projectile
+	
+	if not node.can_shoot(amount):
 		return
 	
-	node.shoot()
-	emit_signal("create_projectile", self, 
-				{
-					"weapon_data": weapon_ref.projectile,
-					"pos": node.get_shoot_position(),
-					"dir": node.get_direction(weapon_ref.bullet_accuracy_margin),
-					"damage_mod": weapon_ref.damage_modifier,
-				})
+	node.shoot(amount)
+	
+	var variation = weapon_ref.bullet_spread/float(amount + 1) 
+	var angle_offset = -weapon_ref.bullet_spread /2
+	for _i in range(amount):
+		angle_offset += variation
+		emit_signal("create_projectile", self, 
+					{
+						"weapon_data": weapon_ref.projectile,
+						"pos": node.get_shoot_position(),
+						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
+						"damage_mod": weapon_ref.damage_modifier,
+					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	emit_signal("shoot")
 

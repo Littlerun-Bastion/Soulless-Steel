@@ -30,20 +30,20 @@ func _physics_process(delta):
 func _input(event):
 	if event.is_action_pressed("honk"):
 		AudioManager.play_sfx("test", global_position)
-	elif event.is_action_pressed("left_arm_weapon_shoot") and arm_weapon_left:
+	elif event.is_action_pressed("arm_weapon_left_shoot") and arm_weapon_left:
 		if reload_mode:
 			$ArmWeaponLeft.reload()
 		elif not $ArmWeaponLeft.reloading:
-			shoot("left_arm_weapon")
-	elif event.is_action_pressed("right_arm_weapon_shoot") and arm_weapon_right:
+			shoot("arm_weapon_left")
+	elif event.is_action_pressed("arm_weapon_right_shoot") and arm_weapon_right:
 		if reload_mode:
 			$ArmWeaponRight.reload()
 		elif not $ArmWeaponRight.reloading:
-			shoot("right_arm_weapon")
-	elif event.is_action_pressed("left_shoulder_weapon_shoot") and shoulder_weapon_left:
-		shoot("left_shoulder_weapon")
-	elif event.is_action_pressed("right_shoulder_weapon_shoot") and shoulder_weapon_right:
-		shoot("right_shoulder_weapon")
+			shoot("arm_weapon_right")
+	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left:
+		shoot("shoulder_weapon_left")
+	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right:
+		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode") and not reload_mode:
 		reload_mode = true
 		emit_signal("update_reload_mode", reload_mode)
@@ -73,10 +73,10 @@ func apply_recoil(type, recoil):
 
 
 func check_input():
-	check_weapon_input("left_arm_weapon", $ArmWeaponLeft, arm_weapon_left)
-	check_weapon_input("right_arm_weapon", $ArmWeaponRight, arm_weapon_right)
-	check_weapon_input("left_shoulder_weapon", $ShoulderWeaponLeft, shoulder_weapon_left)
-	check_weapon_input("right_shoulder_weapon", $ShoulderWeaponRight, shoulder_weapon_right)
+	check_weapon_input("arm_weapon_left", $ArmWeaponLeft, arm_weapon_left)
+	check_weapon_input("arm_weapon_right", $ArmWeaponRight, arm_weapon_right)
+	check_weapon_input("shoulder_weapon_left", $ShoulderWeaponLeft, shoulder_weapon_left)
+	check_weapon_input("shoulder_weapon_right", $ShoulderWeaponRight, shoulder_weapon_right)
 
 
 func check_weapon_input(name, node, weapon_ref):

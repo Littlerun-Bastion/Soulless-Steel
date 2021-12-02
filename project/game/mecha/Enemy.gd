@@ -60,13 +60,13 @@ func setup(_all_mechas, _path_stuff):
 
 func shoot_weapons():
 	if arm_weapon_left:
-		shoot("left_arm_weapon")
+		shoot("arm_weapon_left")
 	if arm_weapon_right:
-		shoot("right_arm_weapon")
+		shoot("arm_weapon_right")
 	if shoulder_weapon_left:
-		shoot("left_shoulder_weapon")
+		shoot("shoulder_weapon_left")
 	if shoulder_weapon_right:
-		shoot("right_shoulder_weapon")
+		shoot("shoulder_weapon_right")
 
 
 func random_pos():

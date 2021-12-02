@@ -65,6 +65,7 @@ func get_start_position(idx):
 
 
 func _on_mecha_create_projectile(mecha, args):
+	yield(get_tree().create_timer(args.delay), "timeout")
 	var data = ProjectileManager.create(mecha, args)
 	if data.create_node:
 		Projectiles.add_child(data.node)

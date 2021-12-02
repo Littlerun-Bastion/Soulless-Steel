@@ -14,6 +14,7 @@ export var fire_rate := .3
 export var auto_fire := true
 export var bullet_accuracy_margin := 0
 export var bullet_spread := PI/4 #Relevant for multi-shot
+export var bullet_spread_delay := 0.0 #Relevant for multi-shot
 export var total_ammo := 270
 export var clip_size := 30
 export var reload_speed := 3.0

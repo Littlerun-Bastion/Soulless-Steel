@@ -407,6 +407,7 @@ func shoot(type):
 						"pos": node.get_shoot_position(),
 						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
 						"damage_mod": weapon_ref.damage_modifier,
+						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	emit_signal("shoot")

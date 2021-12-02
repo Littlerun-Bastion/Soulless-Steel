@@ -86,14 +86,14 @@ func check_weapon_input(name, node, weapon_ref):
 
 
 func setup():
-	movement_type = "tank"
-	rotation_acc = 2.0
-	friction = 0.3
+	movement_type = "free"
+	#rotation_acc = 2.0
+	#friction = 0.3
 	set_max_life(100)
 	set_core("core_test2")
 	set_head("head_test2")
 	set_legs("legs_test")
-	set_arm_weapon("test_weapon1", SIDE.LEFT)
+	set_arm_weapon("test_weapon3", SIDE.LEFT)
 	set_arm_weapon("test_weapon2", SIDE.RIGHT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
 	set_shoulder_weapon(false, SIDE.LEFT)

@@ -20,7 +20,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Project Mecha"
+config/name="Soulless Steel"
 run/main_scene="res://game/arena/Arena.tscn"
 config/icon="res://icon.png"
 

@@ -33,13 +33,17 @@ func can_reload():
 	if reloading or clip_ammo == clip_size:
 		return "no"
 	if total_ammo == 0:
-		#Eventually put a sfx here
+		#Eventually put a sfx here? Should only do it for the player
 		return "empty"
 	return "yes"
 
 
+func is_clip_empty():
+	return clip_ammo == 0
+
+
 func reload():
-	if can_reload() != "yes":
+	if can_reload() != "yes" or reloading:
 		return
 	
 	reloading = true
@@ -52,8 +56,12 @@ func reload():
 	emit_signal("finished_reloading")
 
 
+func is_reloading():
+	return reloading
+
+
 func can_shoot(amount := 1):
-	return timer <= 0.0 and (clip_ammo is bool or clip_ammo >= amount)
+	return timer <= 0.0 and (clip_ammo is bool or clip_ammo >= amount) and not is_reloading()
 
 
 func shoot(amount := 1):

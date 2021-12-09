@@ -57,6 +57,7 @@ func _physics_process(delta):
 	else:
 		apply_movement(delta, Vector2())
 
+
 func set_max_life(value):
 	max_hp = value
 	hp = max_hp

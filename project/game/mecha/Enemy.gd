@@ -59,14 +59,19 @@ func setup(_all_mechas, _path_stuff):
 
 
 func shoot_weapons():
-	if arm_weapon_left:
-		shoot("arm_weapon_left")
-	if arm_weapon_right:
-		shoot("arm_weapon_right")
-	if shoulder_weapon_left:
-		shoot("shoulder_weapon_left")
-	if shoulder_weapon_right:
-		shoot("shoulder_weapon_right")
+	try_to_shoot("arm_weapon_left")
+	try_to_shoot("arm_weapon_right")
+	try_to_shoot("shoulder_weapon_left")
+	try_to_shoot("shoulder_weapon_right")
+
+
+func try_to_shoot(name):
+	var node = get_weapon_part(name)
+	if node:
+		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
+			node.reload()
+		elif node.can_shoot():
+			shoot(name)
 
 
 func random_pos():

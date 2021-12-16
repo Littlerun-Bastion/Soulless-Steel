@@ -15,6 +15,8 @@ onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
 
+var mecha_name = "Mecha Name"
+
 var max_hp = 10
 var hp = 10
 var max_shield = 10
@@ -73,7 +75,7 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount):
+func take_damage(amount, source, weapon_name):
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
 	amount = max(amount - temp_shield, 0)
@@ -82,11 +84,17 @@ func take_damage(amount):
 	
 	emit_signal("took_damage", self)
 	if hp <= 0:
-		die()
+		die(source, weapon_name)
 
 
-func die():
+func die(source, weapon_name):
 	emit_signal("died", self)
+	TickerManager.new_message({
+		"type": "mecha_died",
+		"source": source.mecha_name,
+		"self": self.mecha_name,
+		"weapon_name": weapon_name,
+		})
 	queue_free()
 
 
@@ -405,6 +413,7 @@ func shoot(type):
 		emit_signal("create_projectile", self, 
 					{
 						"weapon_data": weapon_ref.projectile,
+						"weapon_name": weapon_ref.name,
 						"pos": node.get_shoot_position(),
 						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
 						"damage_mod": weapon_ref.damage_modifier,

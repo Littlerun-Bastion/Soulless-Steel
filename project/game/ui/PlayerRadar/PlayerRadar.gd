@@ -37,7 +37,8 @@ func setup(mechas_ref, player_ref, radius, update_timer):
 
 func update_mecha_position():
 	for p in pointers:
-		p.target_position = p.mecha.global_position
+		if weakref(p.mecha).get_ref():
+			p.target_position = p.mecha.global_position
 
 
 func clear_dead_mechas():

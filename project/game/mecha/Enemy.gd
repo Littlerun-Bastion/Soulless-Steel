@@ -44,6 +44,7 @@ func _process(delta):
 
 
 func setup(_all_mechas, _path_stuff):
+	mecha_name = "Mecha " + str(randi()%2000)
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
 	set_max_life(100)
@@ -83,7 +84,6 @@ func random_pos():
 func random_pos_targeting():
 	randomize()
 	
-	var v_closeness = Vector2()
 	var rand_pos = Vector2()
 	var angle = rand_range(0, 2.0*PI)
 	var direction = Vector2(cos(angle), sin(angle))

@@ -51,7 +51,7 @@ func _input(event):
 		reload_mode = false
 		emit_signal("update_reload_mode", reload_mode)
 	elif event.is_action_pressed("debug_1"):
-		die()
+		die(self, "Myself")
 
 
 func knockback(pos, strength, should_rotate = true):
@@ -86,6 +86,7 @@ func check_weapon_input(name, node, weapon_ref):
 
 
 func setup():
+	mecha_name = "Player"
 	movement_type = "free"
 	#rotation_acc = 2.0
 	#friction = 0.3

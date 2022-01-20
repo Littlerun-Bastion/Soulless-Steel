@@ -183,12 +183,12 @@ func set_shoulder_weapon(part_name, side):
 
 func set_core(part_name):
 	var part_data = PartManager.get_part("core", part_name)
-	$Core.texture = part_data.image
-	$CoreCollision.polygon = part_data.collision
+	$Core.texture = part_data.get_image()
+	$CoreCollision.polygon = part_data.get_collision()
 	core = part_data
 	if core.head_port != null:
-		$Core/HeadPort.texture = core.head_port
-		$Core/HeadPort.position = core.head_port_offset
+		$Core/HeadPort.texture = core.get_head_port()
+		$Core/HeadPort.position = core.get_head_port_offset()
 		$Core/HeadPort.show()
 	else:
 		$Core/HeadPort.texture = null
@@ -222,12 +222,12 @@ func set_shoulder(part_name, side):
 		node = $LeftShoulder
 		collision_node = $LeftShoulderCollision
 		if core:
-			node.position = core.left_shoulder_offset
+			node.position = core.get_shoulder_offset("left")
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
 		collision_node = $RightShoulderCollision
 		if core:
-			node.position = core.right_shoulder_offset
+			node.position = core.get_shoulder_offset("right")
 	else:
 		push_error("Not a valid side: " + str(side))
 	

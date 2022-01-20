@@ -33,7 +33,10 @@ func load_parts(name, dict):
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
-				dict[file_name.replace(".tres", "")] = load(path + file_name)
+				var key = file_name.replace(".tres", "").replace(".tscn", "")
+				dict[key] = load(path + file_name)
+				if dict[key] is PackedScene:
+					dict[key] = dict[key].instance()
 			file_name = dir.get_next()
 	else:
 		push_error("An error occurred when trying to access part path.")

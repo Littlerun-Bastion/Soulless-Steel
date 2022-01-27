@@ -55,8 +55,8 @@ func setup(_all_mechas, _path_stuff):
 	set_arm_weapon("test_weapon1", SIDE.LEFT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
 	set_shoulder_weapon("test_weapon1", SIDE.LEFT)
-	set_shoulder("shoulder_test_left", SIDE.LEFT)
-	set_shoulder("shoulder_test_right", SIDE.RIGHT)
+	set_shoulder("shoulder_test1_left", SIDE.LEFT)
+	set_shoulder("shoulder_test1_right", SIDE.RIGHT)
 
 
 func shoot_weapons():

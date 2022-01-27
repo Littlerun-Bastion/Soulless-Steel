@@ -223,16 +223,18 @@ func set_shoulder(part_name, side):
 		collision_node = $LeftShoulderCollision
 		if core:
 			node.position = core.get_shoulder_offset("left")
+			collision_node.position = core.get_shoulder_offset("left")
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
 		collision_node = $RightShoulderCollision
 		if core:
 			node.position = core.get_shoulder_offset("right")
+			collision_node.position = core.get_shoulder_offset("right")
 	else:
 		push_error("Not a valid side: " + str(side))
 	
-	node.texture = part_data.image
-	collision_node.polygon = part_data.collision
+	node.texture = part_data.get_image()
+	collision_node.polygon = part_data.get_collision()
 
 #ATTRIBUTE METHODS
 

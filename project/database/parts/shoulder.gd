@@ -1,7 +1,13 @@
-extends Resource
+extends Node
 
 enum SIDE {LEFT, RIGHT}
 
-export var image: Resource
-export var collision: PoolVector2Array
 export (SIDE) var side
+
+
+func get_image():
+	return $Shoulder.texture
+
+
+func get_collision():
+	return $Collision.polygon

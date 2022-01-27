@@ -13,3 +13,12 @@ drag_margin_left = 0.1
 drag_margin_top = 0.2
 drag_margin_right = 0.1
 drag_margin_bottom = 0.2
+
+[node name="CoreCollision" parent="." index="11"]
+visible = true
+
+[node name="LeftShoulderCollision" parent="." index="12"]
+visible = true
+
+[node name="RightShoulderCollision" parent="." index="13"]
+visible = true

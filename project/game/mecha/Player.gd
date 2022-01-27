@@ -93,7 +93,7 @@ func setup():
 	set_max_life(100)
 	set_core("core_test2")
 	set_head("head_test2")
-	set_legs("legs_test")
+	set_legs("legs_test1")
 	set_arm_weapon("test_weapon3", SIDE.LEFT)
 	set_arm_weapon("test_weapon2", SIDE.RIGHT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)

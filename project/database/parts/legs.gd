@@ -1,3 +1,9 @@
-extends Resource
+extends Node
 
-export var image: Resource
+
+func get_image():
+	return $Legs.texture
+
+
+func get_collision():
+	return $Collision.polygon

@@ -98,6 +98,10 @@ func die(source, weapon_name):
 	queue_free()
 
 
+func is_shape_id_legs(id):
+	return shape_owner_get_owner(shape_find_owner(id)) == $LegsCollision
+
+
 func add_decal(id, projectile_transform, type, size):
 	var shape = shape_owner_get_owner(shape_find_owner(id))
 	var decals_node
@@ -198,10 +202,12 @@ func set_legs(part_name):
 	if not part_name:
 		legs = null
 		$Legs.texture = null
+		$LegsCollision.polygon = []
 		return
 		
 	var part_data = PartManager.get_part("legs", part_name)
-	$Legs.texture = part_data.image
+	$Legs.texture = part_data.get_image()
+	$LegsCollision.polygon = part_data.get_collision()
 	legs = part_data
 
 

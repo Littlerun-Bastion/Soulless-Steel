@@ -31,10 +31,13 @@ func apply_scaling(sc):
 
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
-	if body.is_in_group("mecha") and body != original_mecha:
-		body.add_decal(body_shape, global_transform, decal_type, $Sprite.scale*$Sprite.texture.get_size())
-		body.take_damage(damage, original_mecha, weapon_name)
-		body.knockback(global_position, 100*damage/float(body.get_max_hp()))
+	if body.is_in_group("mecha"):
+		if body.is_shape_id_legs(body_shape):
+			return
+		if body != original_mecha:
+			body.add_decal(body_shape, global_transform, decal_type, $Sprite.scale*$Sprite.texture.get_size())
+			body.take_damage(damage, original_mecha, weapon_name)
+			body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	
 	if not body.is_in_group("mecha") or body != original_mecha:
 		queue_free()

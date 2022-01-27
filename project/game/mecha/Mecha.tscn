@@ -88,16 +88,16 @@ energy = 2.0
 range_item_cull_mask = 2
 
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 position = Vector2( 2.51985, 5.66965 )
 polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
 
+[node name="LegsCollision" type="CollisionPolygon2D" parent="."]
+position = Vector2( 2.51985, 5.66965 )
+
 [node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
 
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
 
 [node name="StunTimer" type="Timer" parent="."]

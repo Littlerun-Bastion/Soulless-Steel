@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -13,6 +13,55 @@
 [ext_resource path="res://assets/images/mechas/cores/T-01-C head port.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/SIN-T-01-missile.png" type="Texture" id=12]
 [ext_resource path="res://assets/images/mechas/legs/T-01-TR.png" type="Texture" id=13]
+
+[sub_resource type="Animation" id=2]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:speed_modifier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 1.0 ]
+}
+
+[sub_resource type="Animation" id=1]
+resource_name = "Walking"
+length = 3.2
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:speed_modifier")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.9, 1.6, 1.8, 2.5, 3.2 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 1.0, 1.0, 0.5, 1.0, 1.0, 0.5, 1.0 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1.6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [ true ],
+"method": "play_step_sound"
+}, {
+"args": [ false ],
+"method": "play_step_sound"
+} ]
+}
 
 [node name="Mecha" type="KinematicBody2D" groups=["mecha"]]
 script = ExtResource( 1 )
@@ -102,3 +151,9 @@ polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.873
 
 [node name="StunTimer" type="Timer" parent="."]
 one_shot = true
+
+[node name="MovementAnimation" type="AnimationPlayer" parent="."]
+autoplay = "RESET"
+playback_speed = 5.0
+anims/RESET = SubResource( 2 )
+anims/Walking = SubResource( 1 )

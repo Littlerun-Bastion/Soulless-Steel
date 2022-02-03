@@ -90,6 +90,7 @@ func setup():
 	movement_type = "free"
 	#rotation_acc = 2.0
 	#friction = 0.3
+	set_speed(500, 50)
 	set_max_life(100)
 	set_core("core_test2")
 	set_head("head_test2")

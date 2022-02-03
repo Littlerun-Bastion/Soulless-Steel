@@ -40,7 +40,7 @@ func get_sfx_player(positional = false):
 func has_sfx(name: String):
 	return SFXS.has(name)
 
-func play_sfx(name: String, pos = false, override_pitch = false):
+func play_sfx(name: String, pos = false, override_pitch = false, override_db = false):
 	if not SFXS.has(name):
 		push_error("Not a valid sfx name: " + name)
 		assert(false)
@@ -50,8 +50,11 @@ func play_sfx(name: String, pos = false, override_pitch = false):
 	
 	player.stream.audio_stream = sfx.asset
 	
-	var vol = sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
-	player.volume_db = vol
+	if not override_db:
+		var vol = sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
+		player.volume_db = vol
+	else:
+		player.volume_db = override_db
 	
 	if override_pitch:
 		override_pitch = max(override_pitch, 0.001)

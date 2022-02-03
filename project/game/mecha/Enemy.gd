@@ -5,7 +5,6 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
-var moving = false
 var final_pos = false
 var REACH_RANGE = 1
 var logic

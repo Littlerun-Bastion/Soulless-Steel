@@ -3,6 +3,8 @@ class_name Mecha
 
 enum SIDE {LEFT, RIGHT}
 
+export var speed_modifier = 1.0
+
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 
@@ -14,6 +16,7 @@ signal died
 onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
+onready var MovementAnimation = $MovementAnimation
 
 var mecha_name = "Mecha Name"
 
@@ -26,6 +29,7 @@ var energy = 75
 
 var movement_type = "free"
 var velocity = Vector2()
+var moving = false
 var max_speed = 500
 var friction = 0.1
 var move_acc = 50
@@ -58,7 +62,22 @@ func _physics_process(delta):
 			stun(0.1)
 	else:
 		apply_movement(delta, Vector2())
+	
+	if moving and not MovementAnimation.is_playing():
+		MovementAnimation.play("Walking")
+	elif not moving and velocity.length() <= 2.0:
+		MovementAnimation.stop()
+		
 
+
+func set_speed(_max_speed, _move_acc):
+	max_speed = _max_speed
+	move_acc = _move_acc
+	MovementAnimation.playback_speed = max_speed/200
+	var animation = MovementAnimation.get_animation("Walking")
+	var track = 0 #animation.find_track("Mecha:speed_modifier")
+	animation.track_set_key_value(track, 3, move_acc/100.0)
+	animation.track_set_key_value(track, 6, move_acc/100.0)
 
 func set_max_life(value):
 	max_hp = value
@@ -300,16 +319,18 @@ func get_total_ammo(part_name):
 func apply_movement(dt, direction):
 	if movement_type == "free":
 		if direction.length() > 0:
+			moving = true
 			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
 		else:
+			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
 		
-		velocity = move_and_slide(velocity)
+		velocity = move_and_slide(velocity*speed_modifier)
 		
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			var margin = PI/8
-			var moving = false
+			moving = false
 			var angle = direction.angle()
 			if angle < 0:
 				angle += 2*PI
@@ -333,7 +354,7 @@ func apply_movement(dt, direction):
 
 		else:
 			velocity = lerp(velocity, Vector2.ZERO, friction)
-			velocity = move_and_slide(velocity)
+			velocity = move_and_slide(velocity*speed_modifier)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 
@@ -444,9 +465,18 @@ func is_stunned():
 func stun(time):
 	$StunTimer.wait_time = time
 	$StunTimer.start()
-	
-	
-	
-	
 
+# MISC METHODS
+
+func play_step_sound(is_left := true):
+	if mecha_name != "Player" or not moving:
+		return
+	var pitch
+	if is_left:
+		pitch = rand_range(.7, .72)
+	else:
+		pitch = rand_range(.95, .97)
+	
+	var volume = min(pow(velocity.length(), 1.3)/300.0 - 26.0, -5.0)
+	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
 

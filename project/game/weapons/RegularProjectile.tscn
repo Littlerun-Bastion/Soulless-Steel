@@ -6,10 +6,8 @@
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 60, 60 )
 
-[node name="RegularProjectile" type="RigidBody2D" groups=["projectile"]]
+[node name="RegularProjectile" type="Area2D" groups=["projectile"]]
 collision_layer = 2
-contacts_reported = 1
-contact_monitor = true
 script = ExtResource( 2 )
 
 [node name="Sprite" type="Sprite" parent="."]

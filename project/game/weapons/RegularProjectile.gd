@@ -1,4 +1,4 @@
-extends RigidBody2D
+extends Area2D
 
 var speed = 0
 var dir = Vector2()
@@ -6,6 +6,10 @@ var damage = 0
 var decal_type = "bullet_hole"
 var original_mecha
 var weapon_name
+
+
+func _process(dt):
+	position += dir*speed*dt
 
 
 func setup(mecha, args):
@@ -21,7 +25,6 @@ func setup(mecha, args):
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
-	apply_impulse(Vector2(), dir*speed)
 
 
 #Workaround since RigidBody can't have its scale changed

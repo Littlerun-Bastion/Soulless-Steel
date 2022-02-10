@@ -74,10 +74,16 @@ func try_to_shoot(name):
 			shoot(name)
 
 
-func random_pos():
+func random_valid_pos(navigation):
 	randomize()
-	
-	return Vector2(rand_range(arena_size_x[0], arena_size_x[1]), rand_range(arena_size_y[0], arena_size_y[1]))
+	#var polygon = navigation.get_node("NavigationPolygonInstance").navpoly.get_polygon()
+	var point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
+						rand_range(arena_size_y[0], arena_size_y[1]))
+	#while not Geometry.is_point_in_polygon(point, polygon):
+	#	print("Not a valid point, getting a new one")
+	#	point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
+	#					rand_range(arena_size_y[0], arena_size_y[1]))
+	return point
 	
 
 func random_pos_targeting():
@@ -112,27 +118,20 @@ func random_pos_targeting():
 
 func do_roaming(delta):
 	if not final_pos:
-		final_pos = random_pos()
+		final_pos = random_valid_pos(navigation_node)
 	
-	if not path:
+	if not path or path.empty():
 		path = navigation_node.get_simple_path(self.global_position, final_pos)
 	
-	
 	if path.size() > 0:
-
-		apply_rotation_by_point(delta, Vector2(path[0].x-position.x,\
-				   			  path[0].y-position.y), false)
-								
-		apply_movement(delta, Vector2(path[0].x-position.x,\
-				   			  path[0].y-position.y))
-		
+		apply_rotation_by_point(delta, path[0], false)
+		apply_movement(delta, path[0] - position)
 		if global_position.distance_to(path[0]) <= 10:
 			path.pop_front()
 			if path.size() == 0:
-				final_pos = random_pos()
-				path = navigation_node.get_simple_path(self.global_position, final_pos)
+				final_pos = false
+				path = []
 	
-		
 	if not valid_target:
 		check_for_targets()
 

@@ -31,6 +31,8 @@ func updateFiniteLogic(enemy):
 	var a_node = g.get_a_node(g.current_state)
 	var valid_connections = a_node.get_valid_connections(enemy)
 	for connection in valid_connections:
+		if connection.id != get_current_state():
+			printt("new state: " + str(connection.id))
 		g.set_state(connection.id)
 		break
 
@@ -38,6 +40,7 @@ func updateFiniteLogic(enemy):
 ## STATE METHODS ##
 
 func idle_to_roaming(_args):
+	return true
 	if not _args.valid_target and g.get_current_state()=="idle":
 		return true
 	else:
@@ -45,6 +48,7 @@ func idle_to_roaming(_args):
 	
 
 func idle_to_targeting(_args):
+	return false
 	if _args.valid_target and g.get_current_state() == "idle":
 		return true
 	else:
@@ -56,6 +60,7 @@ func roaming_to_idle(_args):
 
 
 func roaming_to_targeting(_args):
+	return false
 	if _args.valid_target and g.get_current_state() == "roaming":
 		return true
 	else:

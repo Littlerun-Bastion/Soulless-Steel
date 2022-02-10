@@ -20,6 +20,27 @@ func _ready():
 	add_enemy()
 	add_enemy()
 	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+	add_enemy()
+
+
+func _process(_delta):
+	if all_mechas[0].name != "Player" and all_mechas[0].path and all_mechas[0].path != []:
+		$TargetMovementIndicator.rect_position = all_mechas[0].path[0] - $TargetMovementIndicator.rect_size/2
+		print()
 
 
 func add_player():

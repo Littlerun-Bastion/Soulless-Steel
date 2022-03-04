@@ -5,7 +5,6 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 onready var pathing_debug = $Debug/Pathing
 
 var debug = true
-var nav_path = []
 
 var health = 100
 var speed = 100
@@ -67,8 +66,9 @@ func setup(_all_mechas, _path_stuff):
 
 func update_pathing_debug_line():
 	var local_points = []
-	if nav_path:
-		for point in nav_path:
+	if path:
+		local_points.append(position-global_position)
+		for point in path:
 			local_points.append(point-global_position)
 	
 	pathing_debug.points = local_points
@@ -139,8 +139,6 @@ func do_roaming(delta):
 	
 	if not path or path.empty():
 		path = navigation_node.get_simple_path(global_position, final_pos)
-		nav_path = path.duplicate()
-
 	
 	if path.size() > 0:
 		apply_rotation_by_point(delta, path[0], false)

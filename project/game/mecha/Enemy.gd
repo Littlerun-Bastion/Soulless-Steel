@@ -2,6 +2,11 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
+onready var pathing_debug = $Debug/Pathing
+
+var debug = true
+var nav_path = []
+
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
@@ -26,6 +31,7 @@ var arena_size_x = Vector2(-1500, +4000)
 func _ready():
 	logic = LOGIC.new()
 	logic.setup()
+	pathing_debug.default_color = Color(randf(),randf(),randf())
 
 
 func _process(delta):
@@ -38,8 +44,9 @@ func _process(delta):
 		
 		logic.updateFiniteLogic(self)
 		
-			
-	$Label.text = logic.get_current_state()
+	if debug:
+		$Debug/StateLabel.text = logic.get_current_state()
+		update_pathing_debug_line()
 
 
 func setup(_all_mechas, _path_stuff):
@@ -58,6 +65,15 @@ func setup(_all_mechas, _path_stuff):
 	set_shoulder("shoulder_test1_right", SIDE.RIGHT)
 
 
+func update_pathing_debug_line():
+	var local_points = []
+	if nav_path:
+		for point in nav_path:
+			local_points.append(point-global_position)
+	
+	pathing_debug.points = local_points
+	pathing_debug.global_rotation = 0
+
 func shoot_weapons():
 	try_to_shoot("arm_weapon_left")
 	try_to_shoot("arm_weapon_right")
@@ -74,7 +90,7 @@ func try_to_shoot(name):
 			shoot(name)
 
 
-func random_valid_pos(navigation):
+func random_valid_pos(navigation : Navigation2D):
 	randomize()
 	#var polygon = navigation.get_node("NavigationPolygonInstance").navpoly.get_polygon()
 	var point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
@@ -84,6 +100,7 @@ func random_valid_pos(navigation):
 	#	point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
 	#					rand_range(arena_size_y[0], arena_size_y[1]))
 	return point
+	#return navigation.get_closest_point(point)
 	
 
 func random_pos_targeting():
@@ -121,12 +138,14 @@ func do_roaming(delta):
 		final_pos = random_valid_pos(navigation_node)
 	
 	if not path or path.empty():
-		path = navigation_node.get_simple_path(self.global_position, final_pos)
+		path = navigation_node.get_simple_path(global_position, final_pos)
+		nav_path = path.duplicate()
+
 	
 	if path.size() > 0:
 		apply_rotation_by_point(delta, path[0], false)
 		apply_movement(delta, path[0] - position)
-		if global_position.distance_to(path[0]) <= 10:
+		if position.distance_to(path[0]) <= 10:
 			path.pop_front()
 			if path.size() == 0:
 				final_pos = false
@@ -149,7 +168,7 @@ func do_targeting(delta):
 	if not path:
 		path = navigation_node.get_simple_path(self.position, enemy_area_point)
 	
-	if path.size() > 0:		
+	if path.size() > 0:
 		for place in path:
 			apply_rotation_by_point(delta, valid_target.position, false)
 			apply_movement(delta,  Vector2(path[0].x-position.x,\

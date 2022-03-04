@@ -13,7 +13,9 @@ font_data = ExtResource( 3 )
 modulate = Color( 0.713726, 0.286275, 0.286275, 1 )
 script = ExtResource( 2 )
 
-[node name="Label" type="Label" parent="." index="10"]
+[node name="Debug" type="Node2D" parent="." index="16"]
+
+[node name="StateLabel" type="Label" parent="Debug" index="0"]
 margin_left = -111.963
 margin_top = -40.6918
 margin_right = 127.037
@@ -25,6 +27,8 @@ custom_fonts/font = SubResource( 1 )
 text = "STATE"
 align = 1
 valign = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
+
+[node name="Pathing" type="Line2D" parent="Debug" index="1"]
+points = PoolVector2Array( -196.095, -131.217, -237.475, 73.0135, -71.9547, 315.954, 189.674, 306.611 )
+width = 30.0
+default_color = Color( 0.898039, 0, 1, 1 )

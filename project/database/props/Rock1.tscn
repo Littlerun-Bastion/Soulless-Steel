@@ -1,12 +1,14 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/props/rock1/stone_test1_color.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/props/rock1/stone_test2_color_NRM.png" type="Texture" id=2]
+[ext_resource path="res://database/props/Prop.gd" type="Script" id=3]
 
 [sub_resource type="OccluderPolygon2D" id=1]
 polygon = PoolVector2Array( 191.957, 305.534, 225.975, 290.415, 251.173, 281.595, 281.411, 292.935, 306.609, 282.855, 331.808, 284.115, 382.205, 282.855, 406.143, 314.353, 446.461, 301.754, 387.244, 367.27, 294.01, 368.53, 208.336, 337.032 )
 
 [node name="Rock1" type="Node2D"]
+script = ExtResource( 3 )
 
 [node name="Sprite" type="Sprite" parent="."]
 light_mask = 2
@@ -16,7 +18,7 @@ normal_map = ExtResource( 2 )
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
-position = Vector2( -540.977, -113.688 )
+position = Vector2( -540, -113 )
 polygon = PoolVector2Array( 611.555, -20.9857, 640.959, 23.6067, 652.298, 52.5848, 669.937, 74.0035, 685.056, 92.9023, 642.219, 202.515, 589.302, 257.952, 536.386, 269.291, 480.949, 259.212, 401.574, 227.714, 386.455, 198.736, 396.534, 131.96, 443.152, 50.065, 484.729, 14.7872, 557.804, -12.9311 )
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]

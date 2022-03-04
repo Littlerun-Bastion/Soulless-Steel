@@ -4,6 +4,7 @@ const PLAYER = preload("res://game/mecha/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
 
+onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
 onready var PlayerHUD = $PlayerHUD
@@ -15,32 +16,39 @@ var all_mechas = []
 
 
 func _ready():
+	update_navigation_polygon()
 	randomize()
 	add_player()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
-	add_enemy()
+	for _i in range(20):
+		add_enemy()
 
 
-func _process(_delta):
-	if all_mechas[0].name != "Player" and all_mechas[0].path and all_mechas[0].path != []:
-		$TargetMovementIndicator.rect_position = all_mechas[0].path[0] - $TargetMovementIndicator.rect_size/2
-		print()
+func update_navigation_polygon():
+	var arena_poly = NavInstance.get_navigation_polygon()
+	
+	#Resize arena to avoid navigation close to walls
+	var polygon = NavigationPolygon.new()
+	var outline = PoolVector2Array()
+	var scaling = .97
+	var transf = NavInstance.get_global_transform()
+	for vertex in arena_poly.get_outline(0):
+		vertex += NavInstance.position
+		vertex *= scaling
+		vertex -= NavInstance.position
+		outline.append(transf.xform(vertex))
+	polygon.add_outline(outline)
+	polygon.make_polygons_from_outlines()
+	arena_poly = polygon
+	
+	#Add props collision to navigation
+	scaling = 4.0
+	for prop in $Props.get_children():
+		prop.add_collision_to_navigation(arena_poly, scaling)
+	arena_poly.make_polygons_from_outlines()
+		
+	NavInstance.set_navigation_polygon(arena_poly)
+	NavInstance.enabled = false
+	NavInstance.enabled = true
 
 
 func add_player():

@@ -4,7 +4,7 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
-var debug = true
+var debug = false
 
 var health = 100
 var speed = 100
@@ -90,17 +90,13 @@ func try_to_shoot(name):
 			shoot(name)
 
 
-func random_valid_pos(navigation : Navigation2D):
+func random_valid_pos():
 	randomize()
-	#var polygon = navigation.get_node("NavigationPolygonInstance").navpoly.get_polygon()
 	var point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
 						rand_range(arena_size_y[0], arena_size_y[1]))
-	#while not Geometry.is_point_in_polygon(point, polygon):
-	#	print("Not a valid point, getting a new one")
-	#	point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
-	#					rand_range(arena_size_y[0], arena_size_y[1]))
+
 	return point
-	#return navigation.get_closest_point(point)
+
 	
 
 func random_pos_targeting():
@@ -135,7 +131,7 @@ func random_pos_targeting():
 
 func do_roaming(delta):
 	if not final_pos:
-		final_pos = random_valid_pos(navigation_node)
+		final_pos = random_valid_pos()
 	
 	if not path or path.empty():
 		path = navigation_node.get_simple_path(global_position, final_pos)

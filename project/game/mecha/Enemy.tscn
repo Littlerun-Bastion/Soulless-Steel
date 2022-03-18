@@ -29,6 +29,5 @@ align = 1
 valign = 1
 
 [node name="Pathing" type="Line2D" parent="Debug" index="1"]
-points = PoolVector2Array( -196.095, -131.217, -237.475, 73.0135, -71.9547, 315.954, 189.674, 306.611 )
 width = 30.0
 default_color = Color( 0.898039, 0, 1, 1 )

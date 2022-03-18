@@ -1,10 +1,12 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://database/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
+
+[sub_resource type="CanvasItemMaterial" id=2]
 
 [sub_resource type="NavigationPolygon" id=1]
 vertices = PoolVector2Array( -1676.14, -313.291, -1245.6, -1793.27, -693.974, -2129.63, 2400.52, -2445.8, 4297.59, -1315.64, 4459.04, 164.338, 4270.68, 1099.41, 2979.06, 2572.67, 1162.73, 2687.03, -1689.59, 1402.14 )
@@ -15,16 +17,14 @@ outlines = [ PoolVector2Array( -1689.59, 1402.14, 1162.73, 2687.03, 2979.06, 257
 script = ExtResource( 1 )
 
 [node name="BG" type="TextureRect" parent="."]
-visible = false
-margin_left = -900.432
-margin_top = -569.83
-margin_right = 1994.57
-margin_bottom = 1148.17
+light_mask = 3
+material = SubResource( 2 )
+margin_left = -2698.69
+margin_top = -3175.88
+margin_right = 6117.31
+margin_bottom = 3286.12
 texture = ExtResource( 4 )
 expand = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Props" type="Node2D" parent="."]
 
@@ -107,9 +107,15 @@ zoom = Vector2( 8, 11 )
 smoothing_enabled = false
 
 [node name="Navigation2D" type="Navigation2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
 position = Vector2( 0, -5.03979 )
 navpoly = SubResource( 1 )
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]

@@ -19,7 +19,7 @@ func _ready():
 	update_navigation_polygon()
 	randomize()
 	add_player()
-	for _i in range(20):
+	for _i in range(1):
 		add_enemy()
 
 

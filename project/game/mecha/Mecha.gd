@@ -67,17 +67,18 @@ func _physics_process(delta):
 		MovementAnimation.play("Walking")
 	elif not moving and velocity.length() <= 2.0:
 		MovementAnimation.stop()
-		
+
 
 
 func set_speed(_max_speed, _move_acc):
 	max_speed = _max_speed
-	move_acc = _move_acc
+	move_acc = min(_move_acc, 100.0)
 	MovementAnimation.playback_speed = max_speed/200
 	var animation = MovementAnimation.get_animation("Walking")
 	var track = 0 #animation.find_track("Mecha:speed_modifier")
-	animation.track_set_key_value(track, 3, move_acc/100.0)
-	animation.track_set_key_value(track, 6, move_acc/100.0)
+	animation.track_set_key_value(track, 2, move_acc/100.0)
+	animation.track_set_key_value(track, 5, move_acc/100.0)
+
 
 func set_max_life(value):
 	max_hp = value

@@ -74,7 +74,7 @@ void fragment()
 [sub_resource type="ShaderMaterial" id=4]
 shader = SubResource( 3 )
 shader_param/barRange = 0.05
-shader_param/barOffsetIntensity = 0.02
+shader_param/barOffsetIntensity = 0.001
 shader_param/noiseQuality = 500.0
 shader_param/noiseIntensity = 0.002
 shader_param/colorOffsetIntensity = 1.2
@@ -192,6 +192,7 @@ __meta__ = {
 layer = 2
 
 [node name="ShaderEffects" type="CanvasLayer" parent="."]
+layer = 2
 
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
 material = SubResource( 4 )

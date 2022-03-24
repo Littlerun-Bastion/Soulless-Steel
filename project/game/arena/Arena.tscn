@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
@@ -12,6 +12,76 @@
 vertices = PoolVector2Array( -1676.14, -313.291, -1245.6, -1793.27, -693.974, -2129.63, 2400.52, -2445.8, 4297.59, -1315.64, 4459.04, 164.338, 4270.68, 1099.41, 2979.06, 2572.67, 1162.73, 2687.03, -1689.59, 1402.14 )
 polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ) ]
 outlines = [ PoolVector2Array( -1689.59, 1402.14, 1162.73, 2687.03, 2979.06, 2572.67, 4270.68, 1099.41, 4459.04, 164.338, 4297.59, -1315.64, 2400.52, -2445.8, -693.974, -2129.63, -1245.6, -1793.27, -1676.14, -313.291 ) ]
+
+[sub_resource type="Shader" id=3]
+code = "shader_type canvas_item;
+
+uniform float barRange : hint_range(0.0, 0.1) = 0.05;
+uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.001;
+uniform float noiseQuality : hint_range(1.0, 500) = 500;
+uniform float noiseIntensity : hint_range(0.0, 0.03) = 0.002;
+uniform float colorOffsetIntensity : hint_range(0.0, 2.0) = 1.2;
+uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
+uniform float redIntensity : hint_range(0.0, 1.0) = 1.0;
+uniform float greenMultiplier : hint_range(0.0, 0.01) = 0.0073;
+uniform float greenIntensity : hint_range(0.0, 1.0) = 0.97;
+
+
+float rand(vec2 co)
+{
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float verticalBar(float pos, float uvY, float offset)
+{
+    float edge0 = (pos - barRange);
+    float edge1 = (pos + barRange);
+
+    float x = smoothstep(edge0, pos, uvY) * offset;
+    x -= smoothstep(pos, edge1, uvY) * offset;
+    return x;
+}
+
+void fragment()
+{
+	float uvX, uvY;
+	uvX = UV.x;
+	uvY = UV.y;
+    for (float i = 0.0; i < 0.71; i += 0.1313)
+    {
+        float d = mod(TIME * i, 1.7);
+        float o = sin(1.0 - tan(TIME * 0.24 * i));
+    	o *= barOffsetIntensity;
+        uvX += verticalBar(d, uvY, o);
+    }
+    
+    uvY *= noiseQuality;
+    uvY = float(int(uvY)) * (1.0 / noiseQuality);
+    float noise = rand(vec2(TIME * 0.00001, uvY));
+	uvX += noise * noiseIntensity;
+
+    vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
+    vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
+    
+	vec2 uv = vec2(uvX, 1.0-uvY);
+    float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
+    float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
+    float b = texture(SCREEN_TEXTURE, uv).b;
+
+    COLOR = vec4(r, g, b, 1.0);
+}"
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = SubResource( 3 )
+shader_param/barRange = 0.05
+shader_param/barOffsetIntensity = 0.02
+shader_param/noiseQuality = 500.0
+shader_param/noiseIntensity = 0.002
+shader_param/colorOffsetIntensity = 1.2
+shader_param/redMultiplier = 0.006
+shader_param/redIntensity = 1.0
+shader_param/greenMultiplier = 0.0073
+shader_param/greenIntensity = 0.97
 
 [node name="Arena" type="Node2D"]
 script = ExtResource( 1 )
@@ -119,3 +189,11 @@ __meta__ = {
 }
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
+layer = 2
+
+[node name="ShaderEffects" type="CanvasLayer" parent="."]
+
+[node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
+material = SubResource( 4 )
+anchor_right = 1.0
+anchor_bottom = 1.0

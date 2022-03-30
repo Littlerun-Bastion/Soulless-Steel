@@ -4,7 +4,7 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
-var debug = false
+var debug = true
 
 var health = 100
 var speed = 100

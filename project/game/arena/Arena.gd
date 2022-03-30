@@ -19,8 +19,14 @@ func _ready():
 	update_navigation_polygon()
 	randomize()
 	add_player()
-	for _i in range(1):
+	for _i in range(5):
 		add_enemy()
+
+
+func _input(event):
+	if event is InputEventKey:
+		if event.pressed and event.scancode == KEY_B:
+			$ShaderEffects/VCREffect.visible = !$ShaderEffects/VCREffect.visible
 
 
 func update_navigation_polygon():

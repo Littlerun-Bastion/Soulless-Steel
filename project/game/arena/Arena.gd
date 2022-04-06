@@ -21,7 +21,7 @@ func _ready():
 	update_navigation_polygon()
 	
 	add_player()
-	for _i in range(5):
+	for _i in range(10):
 		add_enemy()
 
 

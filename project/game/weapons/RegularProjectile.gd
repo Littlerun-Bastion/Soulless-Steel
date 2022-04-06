@@ -13,9 +13,14 @@ func _process(dt):
 
 
 func setup(mecha, args):
+	#Check if mecha is already dead
+	if not is_instance_valid(mecha):
+		return
+		
 	var data = args.weapon_data
 	$Sprite.texture = data.image
 	$CollisionShape2D.shape.extents = data.collision_extents
+	
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,

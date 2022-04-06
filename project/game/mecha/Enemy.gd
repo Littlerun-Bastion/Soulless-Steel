@@ -15,8 +15,8 @@ var logic
 var all_mechas
 var valid_target = false
 var engage_distance = 800
-var shooting_distance = 200
-var random_pos_targeting_distance = 400
+var shooting_distance = 2500
+var random_pos_targeting_distance = 700
 var current_state
 var move_d_rand = 50
 var navigation_node
@@ -82,7 +82,7 @@ func update_pathing_debug_line():
 func check_for_targets():
 	#Check if current target is still in distance
 	if valid_target and is_instance_valid(valid_target):
-		if position.distance_to(valid_target.position) > engage_distance:
+		if position.distance_to(valid_target.position) > shooting_distance:
 			valid_target = false
 	else:
 		valid_target = false

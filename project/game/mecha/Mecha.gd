@@ -95,7 +95,7 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, source, weapon_name):
+func take_damage(amount, source_info, weapon_name):
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
 	amount = max(amount - temp_shield, 0)
@@ -104,14 +104,14 @@ func take_damage(amount, source, weapon_name):
 	
 	emit_signal("took_damage", self)
 	if hp <= 0:
-		die(source, weapon_name)
+		die(source_info, weapon_name)
 
 
-func die(source, weapon_name):
+func die(source_info, weapon_name):
 	emit_signal("died", self)
 	TickerManager.new_message({
 		"type": "mecha_died",
-		"source": source.mecha_name,
+		"source": source_info.name,
 		"self": self.mecha_name,
 		"weapon_name": weapon_name,
 		})

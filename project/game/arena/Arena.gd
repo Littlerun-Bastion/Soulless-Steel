@@ -16,8 +16,10 @@ var all_mechas = []
 
 
 func _ready():
-	update_navigation_polygon()
 	randomize()
+	
+	update_navigation_polygon()
+	
 	add_player()
 	for _i in range(5):
 		add_enemy()

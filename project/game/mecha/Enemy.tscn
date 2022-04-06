@@ -10,7 +10,7 @@ use_mipmaps = true
 font_data = ExtResource( 3 )
 
 [node name="Enemy" instance=ExtResource( 1 )]
-modulate = Color( 0.713726, 0.286275, 0.286275, 1 )
+modulate = Color( 1, 0.854902, 0.858824, 1 )
 script = ExtResource( 2 )
 
 [node name="Debug" type="Node2D" parent="." index="16"]

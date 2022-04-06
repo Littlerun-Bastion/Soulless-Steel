@@ -4,7 +4,7 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
-var debug = true
+var debug = false
 
 var health = 100
 var speed = 100
@@ -45,6 +45,8 @@ func _process(delta):
 	if debug:
 		$Debug/StateLabel.text = logic.get_current_state()
 		update_pathing_debug_line()
+	else:
+		$Debug/StateLabel.text = ""
 
 
 func setup(_all_mechas, _path_stuff):
@@ -52,15 +54,16 @@ func setup(_all_mechas, _path_stuff):
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
 	set_max_life(100)
-	set_core("core_test")
-	set_head("head_test")
+	set_core(PartManager.get_random_part_name("core"))
+	set_head(PartManager.get_random_part_name("head"))
 	set_legs(false)
-	set_arm_weapon("test_weapon1", SIDE.RIGHT)
-	set_arm_weapon("test_weapon1", SIDE.LEFT)
-	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
-	set_shoulder_weapon("test_weapon1", SIDE.LEFT)
-	set_shoulder("shoulder_test1_left", SIDE.LEFT)
-	set_shoulder("shoulder_test1_right", SIDE.RIGHT)
+	set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
+	set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
+	set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
+	set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
+	set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
+	set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
+
 
 
 func update_pathing_debug_line():
@@ -81,6 +84,8 @@ func check_for_targets():
 	if valid_target and is_instance_valid(valid_target):
 		if position.distance_to(valid_target.position) > engage_distance:
 			valid_target = false
+	else:
+		valid_target = false
 	
 	#Find new target
 	if not valid_target:
@@ -178,8 +183,6 @@ func do_targeting(delta):
 	check_for_targets()
 	if not valid_target:
 		return
-	
-	var enemy_area_point
 	
 	if not final_pos:
 		final_pos = random_pos_targeting()

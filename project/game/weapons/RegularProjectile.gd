@@ -4,7 +4,7 @@ var speed = 0
 var dir = Vector2()
 var damage = 0
 var decal_type = "bullet_hole"
-var original_mecha
+var original_mecha_info
 var weapon_name
 
 
@@ -16,7 +16,10 @@ func setup(mecha, args):
 	var data = args.weapon_data
 	$Sprite.texture = data.image
 	$CollisionShape2D.shape.extents = data.collision_extents
-	original_mecha = mecha
+	original_mecha_info = {
+		"body": mecha,
+		"name": mecha.mecha_name,
+	}
 	weapon_name = args.weapon_name
 	decal_type = data.decal_type
 	speed = data.speed
@@ -37,10 +40,10 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_legs(body_shape):
 			return
-		if body != original_mecha:
+		if body != original_mecha_info.body:
 			body.add_decal(body_shape, global_transform, decal_type, $Sprite.scale*$Sprite.texture.get_size())
-			body.take_damage(damage, original_mecha, weapon_name)
+			body.take_damage(damage, original_mecha_info, weapon_name)
 			body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	
-	if not body.is_in_group("mecha") or body != original_mecha:
+	if not body.is_in_group("mecha") or body != original_mecha_info.body:
 		queue_free()

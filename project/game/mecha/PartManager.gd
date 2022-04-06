@@ -2,9 +2,13 @@ extends Node
 
 const DATA_PATH = "res://database/parts/"
 
+enum SIDE {LEFT, RIGHT}
+
 onready var ARM_WEAPONS = {}
 onready var SHOULDER_WEAPONS = {}
 onready var SHOULDERS = {}
+onready var SHOULDERS_LEFT = {}
+onready var SHOULDERS_RIGHT = {}
 onready var CORES = {}
 onready var HEADS = {}
 onready var LEGS = {}
@@ -23,6 +27,19 @@ func setup_parts():
 	load_parts("heads", HEADS)
 	load_parts("legs", LEGS)
 	load_parts("projectiles", PROJECTILES)
+	
+	setup_shoulder_sides()
+
+
+func setup_shoulder_sides():
+	for key in SHOULDERS.keys():
+		var shoulder = SHOULDERS[key]
+		if shoulder.side == SIDE.LEFT:
+			SHOULDERS_LEFT[key] = shoulder
+		elif shoulder.side == SIDE.RIGHT:
+			SHOULDERS_RIGHT[key] = shoulder
+		else:
+			push_error("Not a valid shoulder side type: " + str(shoulder.side))
 
 
 func load_parts(name, dict):
@@ -43,27 +60,38 @@ func load_parts(name, dict):
 		assert(false)
 
 
+func get_parts(type):
+	match type:
+		"arm_weapon":
+			return ARM_WEAPONS
+		"shoulder_weapon":
+			return SHOULDER_WEAPONS
+		"shoulder":
+			return SHOULDERS
+		"shoulder_left":
+			return SHOULDERS_LEFT
+		"shoulder_right":
+			return SHOULDERS_RIGHT
+		"core":
+			return CORES
+		"head":
+			return HEADS
+		"legs":
+			return LEGS
+		"projectile":
+			return PROJECTILES
+		_:
+			push_error("Not a valid type of part: " + str(type))
+			return false
+
+
 func get_part(type, name):
-	if type == "arm_weapon":
-		assert(ARM_WEAPONS.has(name), "Not a existent arm weapon part: " + str(name))
-		return ARM_WEAPONS[name]
-	elif type == "shoulder_weapon":
-		assert(SHOULDER_WEAPONS.has(name), "Not a existent shoulder weapon part: " + str(name))
-		return SHOULDER_WEAPONS[name]
-	elif type == "shoulder":
-		assert(SHOULDERS.has(name), "Not a existent shoulder part: " + str(name))
-		return SHOULDERS[name]
-	elif type == "core":
-		assert(CORES.has(name), "Not a existent core part: " + str(name))
-		return CORES[name]
-	elif type == "head":
-		assert(HEADS.has(name), "Not a existent head part: " + str(name))
-		return HEADS[name]
-	elif type == "legs":
-		assert(LEGS.has(name), "Not a existent legs part: " + str(name))
-		return LEGS[name]
-	elif type == "projectile":
-		assert(PROJECTILES.has(name), "Not a existent projectile: " + str(name))
-		return PROJECTILES[name]
-	else:
-		push_error("Not a valid type of part: " + str(type))
+	var table = get_parts(type)
+	assert(table.has(name), "Not a existent part: " + str(name))
+	return table[name]
+
+
+func get_random_part_name(type):
+	var table = get_parts(type)
+	return table.keys()[randi()%table.keys().size()]
+	

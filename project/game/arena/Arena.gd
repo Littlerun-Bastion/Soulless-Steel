@@ -29,6 +29,8 @@ func _input(event):
 	if event is InputEventKey:
 		if event.pressed and event.scancode == KEY_B:
 			$ShaderEffects/VCREffect.visible = !$ShaderEffects/VCREffect.visible
+		if event.pressed and event.scancode == KEY_C:
+			get_tree().change_scene("res://game/arena/Arena.tscn")
 
 
 func update_navigation_polygon():

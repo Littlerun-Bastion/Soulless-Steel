@@ -27,6 +27,7 @@ func _physics_process(delta):
 		apply_rotation_by_point(delta, target_pos, \
 					   movement_type == "tank" or Input.is_action_pressed("strafe"))
 
+
 func _input(event):
 	if event.is_action_pressed("honk"):
 		AudioManager.play_sfx("test", global_position)

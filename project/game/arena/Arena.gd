@@ -9,6 +9,7 @@ onready var Mechas = $Mechas
 onready var Projectiles = $Projectiles
 onready var PlayerHUD = $PlayerHUD
 onready var ArenaCam = $ArenaCamera
+onready var VCREffect = $ShaderEffects/VCREffect
 
 var player
 var current_cam
@@ -21,7 +22,7 @@ func _ready():
 	update_navigation_polygon()
 	
 	add_player()
-	for _i in range(10):
+	for _i in range(20):
 		add_enemy()
 
 
@@ -32,6 +33,10 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_C:
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game/arena/Arena.tscn")
+
+
+func _process(_dt):
+	update_shader_effect()
 
 
 func update_navigation_polygon():
@@ -102,6 +107,13 @@ func get_random_start_position(exclude_idx := []):
 
 func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
+
+
+func update_shader_effect():
+	if player:
+		var value = (player.max_hp - player.hp)/float(player.max_hp)
+		value *= 0.0035
+		VCREffect.material.set_shader_param("noiseIntensity", value)
 
 
 func _on_mecha_create_projectile(mecha, args):

@@ -45,10 +45,10 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_legs(body_shape):
 			return
-		if original_mecha_info.has("body") and body != original_mecha_info.body:
+		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
 			body.add_decal(body_shape, global_transform, decal_type, $Sprite.scale*$Sprite.texture.get_size())
 			body.take_damage(damage, original_mecha_info, weapon_name)
 			body.knockback(global_position, 100*damage/float(body.get_max_hp()))
 	
-	if not body.is_in_group("mecha") or body != original_mecha_info.body:
+	if not body.is_in_group("mecha") or (original_mecha_info and body != original_mecha_info.body):
 		queue_free()

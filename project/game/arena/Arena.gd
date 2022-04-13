@@ -30,6 +30,7 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_B:
 			$ShaderEffects/VCREffect.visible = !$ShaderEffects/VCREffect.visible
 		if event.pressed and event.scancode == KEY_C:
+			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 
 

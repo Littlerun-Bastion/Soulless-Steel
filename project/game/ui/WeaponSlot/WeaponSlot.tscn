@@ -25,9 +25,6 @@ margin_right = -868.0
 margin_bottom = -437.0
 rect_min_size = Vector2( 156, 163 )
 script = ExtResource( 7 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Frame" type="TextureRect" parent="."]
 margin_right = 40.0

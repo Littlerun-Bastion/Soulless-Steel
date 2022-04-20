@@ -48,7 +48,9 @@ func reload():
 	
 	reloading = true
 	emit_signal("reloading", reload_time)
-	yield(get_tree().create_timer(reload_time), "timeout")
+	var temp_timer = Timer.new()
+	add_child(temp_timer)
+	temp_timer.start(reload_time); yield(temp_timer, "timeout")
 	var ammo = min(clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo

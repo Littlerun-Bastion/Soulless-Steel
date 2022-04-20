@@ -3,6 +3,7 @@ extends Mecha
 signal update_reload_mode
 signal reloading
 signal finished_reloading
+signal lost_health
 
 const ROTATION_DEADZONE = 20
 
@@ -53,6 +54,13 @@ func _input(event):
 		emit_signal("update_reload_mode", reload_mode)
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
+
+
+func take_damage(amount, source_info, weapon_name):
+	var prev_hp = hp
+	.take_damage(amount, source_info, weapon_name)
+	if prev_hp > hp:
+		emit_signal("lost_health")
 
 
 func knockback(pos, strength, should_rotate = true):

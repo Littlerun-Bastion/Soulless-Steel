@@ -10,6 +10,7 @@ onready var Projectiles = $Projectiles
 onready var PlayerHUD = $PlayerHUD
 onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
+onready var VCRTween = $ShaderEffects/Tween
 
 var player
 var current_cam
@@ -45,7 +46,7 @@ func update_navigation_polygon():
 	#Resize arena to avoid navigation close to walls
 	var polygon = NavigationPolygon.new()
 	var outline = PoolVector2Array()
-	var scaling = .97
+	var scaling = .93
 	var transf = NavInstance.get_global_transform()
 	for vertex in arena_poly.get_outline(0):
 		vertex += NavInstance.position
@@ -73,6 +74,7 @@ func add_player():
 	player.position = get_start_position(1)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
+	player.connect("lost_health", self, "_on_player_lost_health")
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
 	current_cam = player.get_cam()
@@ -110,10 +112,22 @@ func get_start_position(idx):
 
 
 func update_shader_effect():
-	if player:
-		var value = (player.max_hp - player.hp)/float(player.max_hp)
-		value *= 0.0035
+	if player and not VCRTween.is_active():
+		var target_value = ((player.max_hp - player.hp)/float(player.max_hp)) * 0.0035
+		var value = lerp(VCREffect.material.get_shader_param("noiseIntensity"), target_value, .9)
 		VCREffect.material.set_shader_param("noiseIntensity", value)
+
+
+func damage_burst_effect():
+	if VCRTween.is_active():
+		return
+	VCRTween.interpolate_property(VCREffect.material, "shader_param/noiseIntensity", null, 0.02, .1)
+	VCRTween.interpolate_property(VCREffect.material, "shader_param/colorOffsetIntensity", null, 1.2, .1)
+	VCRTween.start()
+
+
+func _on_player_lost_health():
+	damage_burst_effect()
 
 
 func _on_mecha_create_projectile(mecha, args):

@@ -113,9 +113,13 @@ func get_start_position(idx):
 
 func update_shader_effect():
 	if player and not VCRTween.is_active():
-		var target_value = ((player.max_hp - player.hp)/float(player.max_hp)) * 0.0035
-		var value = lerp(VCREffect.material.get_shader_param("noiseIntensity"), target_value, .9)
+		#Noise Intensity
+		var target_noise = ((player.max_hp - player.hp)/float(player.max_hp)) * 0.0035
+		var value = lerp(VCREffect.material.get_shader_param("noiseIntensity"), target_noise, .9)
 		VCREffect.material.set_shader_param("noiseIntensity", value)
+		#Color Offset Intensity
+		value = lerp(VCREffect.material.get_shader_param("colorOffsetIntensity"), 0.175, .9)
+		VCREffect.material.set_shader_param("colorOffsetIntensity", value)
 
 
 func damage_burst_effect():

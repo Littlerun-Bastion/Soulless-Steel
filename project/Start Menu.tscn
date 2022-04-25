@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="ImageTexture" id=1]
+
+[node name="Start Menu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 1004.0
+margin_bottom = 580.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+margin_right = 984.0
+margin_bottom = 560.0
+
+[node name="Choices" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+margin_bottom = 560.0
+
+[node name="TextureButton" type="TextureButton" parent="MarginContainer/HBoxContainer/Choices"]
+texture_normal = SubResource( 1 )
+
+[node name="Cosmetic" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+margin_left = 4.0
+margin_right = 4.0
+margin_bottom = 560.0
+
+[node name="Background" type="TextureRect" parent="MarginContainer"]
+margin_right = 984.0
+margin_bottom = 560.0

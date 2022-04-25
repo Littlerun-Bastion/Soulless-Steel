@@ -31,6 +31,10 @@ PartManager="*res://game/mecha/PartManager.gd"
 ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 TickerManager="*res://game/ui/Ticker/TickerManager.gd"
 
+[global]
+
+screen=false
+
 [input]
 
 up={

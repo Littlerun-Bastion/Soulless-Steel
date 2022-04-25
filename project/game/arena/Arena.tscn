@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://database/props/Rock1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
+[ext_resource path="res://PauseMenu.tscn" type="PackedScene" id=6]
 
 [sub_resource type="CanvasItemMaterial" id=2]
 
@@ -95,6 +96,9 @@ margin_right = 6117.31
 margin_bottom = 3286.12
 texture = ExtResource( 4 )
 expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Props" type="Node2D" parent="."]
 
@@ -198,5 +202,15 @@ layer = 2
 material = SubResource( 4 )
 anchor_right = 1.0
 anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Tween" type="Tween" parent="ShaderEffects"]
+
+[node name="PauseMenu" parent="." instance=ExtResource( 6 )]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5

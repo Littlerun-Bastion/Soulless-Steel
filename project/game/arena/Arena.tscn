@@ -110,7 +110,7 @@ position = Vector2( 1664.17, 95.0955 )
 position = Vector2( -566.063, -304.437 )
 
 [node name="Rock2" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 432.871, 1408.02 )
+position = Vector2( 432.871, 1446.08 )
 
 [node name="Projectiles" type="Node2D" parent="."]
 
@@ -125,10 +125,10 @@ position = Vector2( -353.132, -1607.49 )
 position = Vector2( -372.766, 1027.51 )
 
 [node name="Pos3" type="Position2D" parent="StartPositions"]
-position = Vector2( 2105.28, -1412.4 )
+position = Vector2( 2533.39, -1279.21 )
 
 [node name="Pos4" type="Position2D" parent="StartPositions"]
-position = Vector2( 2312.96, 1412.56 )
+position = Vector2( 3349.95, 1374.51 )
 
 [node name="Walls" type="Node2D" parent="."]
 

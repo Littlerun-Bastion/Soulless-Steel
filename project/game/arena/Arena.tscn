@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://PauseMenu.tscn" type="PackedScene" id=6]
+[ext_resource path="res://database/props/Building3.tscn" type="PackedScene" id=7]
 
 [sub_resource type="CanvasItemMaterial" id=2]
 
@@ -102,38 +103,14 @@ __meta__ = {
 
 [node name="Props" type="Node2D" parent="."]
 
+[node name="Building3" parent="Props" instance=ExtResource( 7 )]
+position = Vector2( 1664.17, 95.0955 )
+
 [node name="Rock1" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 1574.69, -1519.26 )
-scale = Vector2( 0.5, 0.5 )
+position = Vector2( -566.063, -304.437 )
 
 [node name="Rock2" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( -621.093, -1119.82 )
-rotation = 0.352557
-scale = Vector2( 0.4, 0.4 )
-
-[node name="Rock4" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 1585.37, 1919.28 )
-scale = Vector2( 0.5, 0.5 )
-
-[node name="Rock5" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( -240.694, 1513.49 )
-scale = Vector2( 0.5, 0.5 )
-
-[node name="Rock6" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( -785.309, 370.871 )
-scale = Vector2( 0.5, 0.5 )
-
-[node name="Rock7" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 666.997, 904.807 )
-scale = Vector2( 0.5, 0.5 )
-
-[node name="Rock8" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 1798.94, -419.354 )
-scale = Vector2( 0.5, 0.5 )
-
-[node name="Rock11" parent="Props" instance=ExtResource( 3 )]
-position = Vector2( 2589.17, 1716.39 )
-scale = Vector2( 0.5, 0.5 )
+position = Vector2( 432.871, 1408.02 )
 
 [node name="Projectiles" type="Node2D" parent="."]
 
@@ -164,7 +141,7 @@ polygon = PoolVector2Array( -409.813, -2189.6, 759.393, -2401.27, 2593.84, -2653
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 position = Vector2( 1459.44, 24.947 )
 current = false
-zoom = Vector2( 8, 11 )
+zoom = Vector2( 11, 11 )
 smoothing_enabled = false
 
 [node name="Navigation2D" type="Navigation2D" parent="."]

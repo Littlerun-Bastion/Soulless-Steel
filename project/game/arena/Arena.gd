@@ -61,9 +61,9 @@ func update_navigation_polygon():
 	arena_poly = polygon
 	
 	#Add props collision to navigation
-	scaling = 4.0
+	var distance = 250
 	for prop in $Props.get_children():
-		prop.add_collision_to_navigation(arena_poly, scaling)
+		prop.add_collision_to_navigation(arena_poly, distance)
 	arena_poly.make_polygons_from_outlines()
 		
 	NavInstance.set_navigation_polygon(arena_poly)

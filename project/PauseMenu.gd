@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 func _ready():
-	pass 
+	$Control.hide()
 
 
 func _on_Quit_pressed():

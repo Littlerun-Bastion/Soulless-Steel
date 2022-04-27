@@ -36,7 +36,7 @@ func _input(event):
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
-			PauseMenu.show()
+			PauseMenu.toggle_pause()
 
 
 func _process(_dt):

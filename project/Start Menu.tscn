@@ -1,13 +1,26 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=8 format=2]
 
-[sub_resource type="ImageTexture" id=1]
+[ext_resource path="res://assets/images/ui/menu/exit_button.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/ui/menu/settings_button.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/ui/menu/play_button.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/ui/menu/settings_button_highlight.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/ui/menu/exit_button_highlight.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/ui/menu/play_button_highlight.png" type="Texture" id=6]
+[ext_resource path="res://Start Menu.gd" type="Script" id=7]
 
 [node name="Start Menu" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = ExtResource( 7 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Background" type="TextureRect" parent="."]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 1004.0
+margin_bottom = 580.0
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 margin_left = 20.0
@@ -23,16 +36,33 @@ margin_right = 984.0
 margin_bottom = 560.0
 
 [node name="Choices" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+margin_right = 750.0
 margin_bottom = 560.0
 
-[node name="TextureButton" type="TextureButton" parent="MarginContainer/HBoxContainer/Choices"]
-texture_normal = SubResource( 1 )
+[node name="Start" type="TextureButton" parent="MarginContainer/HBoxContainer/Choices"]
+margin_right = 750.0
+margin_bottom = 120.0
+texture_normal = ExtResource( 3 )
+texture_hover = ExtResource( 6 )
+
+[node name="Settings" type="TextureButton" parent="MarginContainer/HBoxContainer/Choices"]
+margin_top = 124.0
+margin_right = 750.0
+margin_bottom = 244.0
+texture_normal = ExtResource( 2 )
+texture_hover = ExtResource( 4 )
+
+[node name="Quit" type="TextureButton" parent="MarginContainer/HBoxContainer/Choices"]
+margin_top = 248.0
+margin_right = 750.0
+margin_bottom = 368.0
+texture_normal = ExtResource( 1 )
+texture_hover = ExtResource( 5 )
 
 [node name="Cosmetic" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
-margin_left = 4.0
-margin_right = 4.0
+margin_left = 754.0
+margin_right = 754.0
 margin_bottom = 560.0
 
-[node name="Background" type="TextureRect" parent="MarginContainer"]
-margin_right = 984.0
-margin_bottom = 560.0
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Choices/Start" to="." method="_on_Start_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Choices/Quit" to="." method="_on_Quit_pressed"]

@@ -43,6 +43,8 @@
 [ext_resource path="res://database/props/tree_leafless_1_prop.tscn" type="PackedScene" id=41]
 [ext_resource path="res://database/props/tree_leafless_3_prop.tscn" type="PackedScene" id=42]
 [ext_resource path="res://database/props/tree_leafless_2_prop.tscn" type="PackedScene" id=43]
+[ext_resource path="res://PauseMenu.tscn" type="PackedScene" id=6]
+[ext_resource path="res://database/props/Building3.tscn" type="PackedScene" id=7]
 
 [sub_resource type="CanvasItemMaterial" id=2]
 
@@ -92,7 +94,7 @@ void fragment()
     	o *= barOffsetIntensity;
         uvX += verticalBar(d, uvY, o);
     }
-    
+
     uvY *= noiseQuality;
     uvY = float(int(uvY)) * (1.0 / noiseQuality);
     float noise = rand(vec2(TIME * 0.00001, uvY));
@@ -100,7 +102,7 @@ void fragment()
 
     vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
     vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
-    
+
 	vec2 uv = vec2(uvX, 1.0-uvY);
     float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
     float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
@@ -134,6 +136,9 @@ margin_right = 6117.31
 margin_bottom = 3286.12
 texture = ExtResource( 4 )
 expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Props" type="Node2D" parent="."]
 position = Vector2( 269.087, 390.176 )
@@ -1596,15 +1601,15 @@ position = Vector2( -353.132, -1607.49 )
 position = Vector2( -372.766, 1027.51 )
 
 [node name="Pos3" type="Position2D" parent="StartPositions"]
-position = Vector2( 2105.28, -1412.4 )
+position = Vector2( 2533.39, -1279.21 )
 
 [node name="Pos4" type="Position2D" parent="StartPositions"]
-position = Vector2( 2312.96, 1412.56 )
+position = Vector2( 3349.95, 1374.51 )
 
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 position = Vector2( 1459.44, 24.947 )
 current = false
-zoom = Vector2( 8, 11 )
+zoom = Vector2( 11, 11 )
 smoothing_enabled = false
 
 [node name="Navigation2D" type="Navigation2D" parent="."]
@@ -1630,5 +1635,10 @@ layer = 2
 material = SubResource( 4 )
 anchor_right = 1.0
 anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Tween" type="Tween" parent="ShaderEffects"]
+
+[node name="PauseMenu" parent="." instance=ExtResource( 6 )]

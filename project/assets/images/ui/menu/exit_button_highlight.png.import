@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/play_button.png-46cf61cf868f40597e2934eef391167e.stex"
+path="res://.import/exit_button_highlight.png-0a48c227bb4684cc6944903d0bc19b54.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/play_button.png"
-dest_files=[ "res://.import/play_button.png-46cf61cf868f40597e2934eef391167e.stex" ]
+source_file="res://assets/images/ui/menu/exit_button_highlight.png"
+dest_files=[ "res://.import/exit_button_highlight.png-0a48c227bb4684cc6944903d0bc19b54.stex" ]
 
 [params]
 
@@ -28,6 +28,7 @@ process/fix_alpha_border=true
 process/premult_alpha=false
 process/HDR_as_SRGB=false
 process/invert_color=false
+process/normal_map_invert_y=false
 stream=false
 size_limit=0
 detect_3d=true

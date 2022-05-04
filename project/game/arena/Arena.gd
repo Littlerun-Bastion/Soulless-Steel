@@ -11,6 +11,7 @@ onready var PlayerHUD = $PlayerHUD
 onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
+onready var PauseMenu = $PauseMenu
 
 var player
 var current_cam
@@ -34,6 +35,8 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_C:
 			# warning-ignore:return_value_discarded
 			get_tree().change_scene("res://game/arena/Arena.tscn")
+		if event.pressed and event.scancode == KEY_ESCAPE:
+			PauseMenu.toggle_pause()
 
 
 func _process(_dt):
@@ -58,9 +61,9 @@ func update_navigation_polygon():
 	arena_poly = polygon
 	
 	#Add props collision to navigation
-	scaling = 4.0
+	var distance = 250
 	for prop in $Props.get_children():
-		prop.add_collision_to_navigation(arena_poly, scaling)
+		prop.add_collision_to_navigation(arena_poly, distance)
 	arena_poly.make_polygons_from_outlines()
 		
 	NavInstance.set_navigation_polygon(arena_poly)

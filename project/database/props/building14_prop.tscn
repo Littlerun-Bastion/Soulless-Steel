@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://database/props/Prop.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/props/buildings/building14.png" type="Texture" id=2]
+
+[sub_resource type="OccluderPolygon2D" id=1]
+polygon = PoolVector2Array( -2319.19, -1893.82, -2317.67, 80.9525, -2419.11, 80.7133, -2419.26, 1919.28, -181, 1919.17, -180.108, 1894.5, 2419.59, 1894.14, 2419.2, 680.94, 2319.08, 680.94, 2319.32, 555.438, 2244.46, 555.722, 2244.97, -1919.53, 706.195, -1918.94, 707.904, 552.869, 366.29, 552.869, 369.286, 100.38, -576.024, 102.816, -573.374, -1903.41 )
+
+[node name="building14_prop" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
+polygon = PoolVector2Array( -2319.17, -1893.82, -2317.76, 80.9424, -2419.05, 80.8683, -2418.98, 1919.02, -180.814, 1919.41, -180.406, 1894.38, 2419.5, 1894.25, 2419, 681.5, 2319.1, 681.445, 2319.16, 556.192, 2244.42, 556.164, 2245.09, -1919.53, 706.549, -1918.66, 706.398, 554.451, 368.96, 555.511, 368.675, 106.365, -579.83, 106.4, -580.435, -1894.1 )
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource( 1 )

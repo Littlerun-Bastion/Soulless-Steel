@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://database/props/Prop.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/props/buildings/building_ruined_1.png" type="Texture" id=2]
+
+[sub_resource type="OccluderPolygon2D" id=1]
+polygon = PoolVector2Array( -494.117, -444.113, 494.535, -444.062, 494, 443.922, -493.973, 444.562 )
+
+[node name="building_ruined_1_prop" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
+polygon = PoolVector2Array( -494.061, -444.053, 494.36, -443.959, 493.964, 443.924, -494.04, 444.434 )
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource( 1 )

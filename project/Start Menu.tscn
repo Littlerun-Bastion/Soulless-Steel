@@ -68,6 +68,18 @@ margin_right = 3397.22
 margin_bottom = 3278.3
 texture = ExtResource( 10 )
 
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color( 1, 1, 1, 0.14902 )
+motion_scale = Vector2( -0.5, 1 )
+motion_mirroring = Vector2( 4000, 4000 )
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+margin_left = -602.776
+margin_top = -721.705
+margin_right = 3397.22
+margin_bottom = 3278.3
+texture = ExtResource( 10 )
+
 [node name="MarginContainer2" type="MarginContainer" parent="."]
 anchor_top = 1.0
 anchor_bottom = 1.0

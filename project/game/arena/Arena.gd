@@ -46,6 +46,8 @@ func _process(_dt):
 func update_navigation_polygon():
 	var arena_poly = NavInstance.get_navigation_polygon()
 	
+	var all_vectors = []
+	
 	#Resize arena to avoid navigation close to walls
 	var polygon = NavigationPolygon.new()
 	var outline = PoolVector2Array()

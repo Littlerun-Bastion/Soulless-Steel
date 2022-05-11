@@ -3547,9 +3547,9 @@ position = Vector2( 8904.17, -11263.5 )
 rotation = -3.06662
 
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
-position = Vector2( 1459.44, 24.947 )
+position = Vector2( -26.9077, -661.061 )
 current = false
-zoom = Vector2( 11, 11 )
+zoom = Vector2( 40, 60 )
 smoothing_enabled = false
 
 [node name="Navigation2D" type="Navigation2D" parent="."]

@@ -7,7 +7,7 @@
 [node name="Decal" type="TextureRect"]
 light_mask = 0
 material = ExtResource( 3 )
-rect_min_size = Vector2( 10, 10 )
+rect_min_size = Vector2( 5, 5 )
 texture = ExtResource( 2 )
 expand = true
 script = ExtResource( 1 )

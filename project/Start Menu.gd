@@ -15,6 +15,7 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 
 func _on_launch_system_button_pressed():
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
 
 

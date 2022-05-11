@@ -1,256 +1,174 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
-[ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=2]
-[ext_resource path="res://assets/images/ui/player_ui/armor_bar_foreground.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/ui/player_ui/armor_bar_background.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/ui/player_ui/shields_bar_foreground.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/ui/player_ui/shields_bar_background.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/ui/player_ui/energy_bar_foreground.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/ui/player_ui/energy_bar_baclground.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/ui/player_ui/right_side_frame.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/ui/player_ui/left_frame.png" type="Texture" id=10]
-[ext_resource path="res://game/ui/Ticker/Ticker.tscn" type="PackedScene" id=11]
-[ext_resource path="res://assets/images/ui/player_ui/map_outline.png" type="Texture" id=12]
+[ext_resource path="res://game/ui/HUDFont.tres" type="Theme" id=2]
+[ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=3]
+[ext_resource path="res://assets/images/ui/player_ui/healthbar2_back.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/ui/player_ui/healthbar2_front.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/ui/player_ui/ui_vignette.png" type="Texture" id=6]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/PlayerRadar/PlayerRadar.tscn" type="PackedScene" id=14]
-[ext_resource path="res://game/ui/WeaponSlot/WeaponSlot.tscn" type="PackedScene" id=15]
-[ext_resource path="res://game/ui/WeaponSlot/Separator.gd" type="Script" id=16]
 
-[sub_resource type="StyleBoxTexture" id=1]
-texture = ExtResource( 3 )
-region_rect = Rect2( 0, 0, 565, 43 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="StyleBoxTexture" id=2]
-texture = ExtResource( 4 )
-region_rect = Rect2( 0, 0, 566, 43 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="DynamicFont" id=3]
-size = 33
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 2 )
-
-[sub_resource type="StyleBoxTexture" id=4]
+[sub_resource type="StyleBoxTexture" id=10]
 texture = ExtResource( 5 )
-region_rect = Rect2( 0, 0, 570, 21 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
+region_rect = Rect2( 0, 0, 328.149, 33.9862 )
 
-[sub_resource type="StyleBoxTexture" id=5]
-texture = ExtResource( 6 )
-region_rect = Rect2( 0, 0, 566, 21 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
+[sub_resource type="StyleBoxEmpty" id=11]
 
-[sub_resource type="DynamicFont" id=6]
-size = 23
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 2 )
+[sub_resource type="DynamicFont" id=12]
+size = 35
+font_data = ExtResource( 3 )
+
+[sub_resource type="Theme" id=13]
+default_font = SubResource( 12 )
 
 [sub_resource type="StyleBoxTexture" id=7]
-texture = ExtResource( 7 )
-region_rect = Rect2( 0, 0, 1014, 68 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
+texture = ExtResource( 5 )
+region_rect = Rect2( 0, 0, 330, 27 )
 
-[sub_resource type="StyleBoxTexture" id=8]
-texture = ExtResource( 8 )
-region_rect = Rect2( 0, 0, 1014, 68 )
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="DynamicFont" id=9]
-size = 20
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 2 )
-
-[sub_resource type="DynamicFont" id=10]
-size = 21
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 2 )
+[sub_resource type="StyleBoxEmpty" id=16]
 
 [node name="PlayerHUD" type="CanvasLayer"]
 script = ExtResource( 1 )
 
-[node name="LeftFrame" type="TextureRect" parent="."]
-margin_top = 282.0
-margin_right = 180.0
-margin_bottom = 534.0
-texture = ExtResource( 10 )
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_right = 1024.0
+margin_bottom = 600.0
+texture = ExtResource( 6 )
 expand = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="MapFrame" type="TextureRect" parent="LeftFrame"]
-margin_left = -0.263351
-margin_top = 71.712
-margin_right = 179.737
-margin_bottom = 251.712
-texture = ExtResource( 12 )
-expand = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="RightFrame" type="TextureRect" parent="."]
-margin_left = 500.692
-margin_top = 3.57819
-margin_right = 1023.69
-margin_bottom = 571.578
-texture = ExtResource( 9 )
-expand = true
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="LifeBar" type="ProgressBar" parent="."]
-margin_left = 985.553
-margin_top = 523.809
-margin_right = 1476.55
-margin_bottom = 566.809
+margin_left = 962.442
+margin_top = 559.373
+margin_right = 1217.44
+margin_bottom = 602.373
 rect_min_size = Vector2( 200, 0 )
 rect_scale = Vector2( -0.7, 0.55 )
-custom_styles/fg = SubResource( 1 )
-custom_styles/bg = SubResource( 2 )
-value = 50.0
+custom_styles/fg = SubResource( 10 )
+custom_styles/bg = SubResource( 11 )
+value = 100.0
 percent_visible = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="Label" type="Label" parent="LifeBar"]
-margin_left = 639.978
-margin_top = -8.92456
-margin_right = 741.978
-margin_bottom = 25.0754
-rect_scale = Vector2( -1.429, 1.818 )
-custom_fonts/font = SubResource( 3 )
-text = "023456"
+[node name="bar_back" type="TextureRect" parent="LifeBar"]
+margin_left = -8.96045
+margin_top = -4.23608
+margin_right = 341.04
+margin_bottom = 45.7639
+rect_scale = Vector2( 0.78, 1 )
+texture = ExtResource( 4 )
+flip_h = true
+
+[node name="Label2" type="Label" parent="LifeBar"]
+margin_left = -11.0425
+margin_top = 12.1623
+margin_right = 44.9575
+margin_bottom = 48.1623
+rect_scale = Vector2( -0.828571, 1 )
+theme = SubResource( 13 )
+text = "ARM"
+align = 1
+valign = 1
+
+[node name="Label3" type="Label" parent="LifeBar"]
+margin_left = 193.651
+margin_top = 11.8262
+margin_right = 268.651
+margin_bottom = 47.8262
+grow_horizontal = 0
+rect_scale = Vector2( -0.885714, 1 )
+rect_pivot_offset = Vector2( 75.0973, -0.161133 )
+theme = SubResource( 13 )
+text = "00000"
 align = 2
 valign = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ShieldBar" type="ProgressBar" parent="."]
-margin_left = 985.709
-margin_top = 499.597
-margin_right = 1551.71
-margin_bottom = 520.597
+margin_left = 962.442
+margin_top = 533.416
+margin_right = 1217.44
+margin_bottom = 576.416
 rect_min_size = Vector2( 200, 0 )
-rect_scale = Vector2( -0.607, 0.75 )
-custom_styles/fg = SubResource( 4 )
-custom_styles/bg = SubResource( 5 )
-value = 50.0
+rect_scale = Vector2( -0.7, 0.55 )
+custom_styles/fg = SubResource( 10 )
+custom_styles/bg = SubResource( 11 )
+value = 100.0
 percent_visible = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+
+[node name="bar_back" type="TextureRect" parent="ShieldBar"]
+margin_left = -8.96045
+margin_top = -4.23608
+margin_right = 341.04
+margin_bottom = 45.7639
+rect_scale = Vector2( 0.78, 1 )
+texture = ExtResource( 4 )
+flip_h = true
+
+[node name="Label2" type="Label" parent="ShieldBar"]
+margin_left = -11.0425
+margin_top = 11.7883
+margin_right = 44.9575
+margin_bottom = 47.7883
+rect_scale = Vector2( -0.885714, 1 )
+theme = SubResource( 13 )
+text = "SHD"
+align = 1
+valign = 1
 
 [node name="Label" type="Label" parent="ShieldBar"]
-margin_left = 690.244
-margin_top = -3.5202
-margin_right = 762.244
-margin_bottom = 20.4798
-rect_scale = Vector2( -1.647, 1.333 )
-custom_fonts/font = SubResource( 6 )
-text = "023456"
+margin_left = 193.063
+margin_top = 12.4233
+margin_right = 268.063
+margin_bottom = 48.4233
+grow_horizontal = 0
+rect_scale = Vector2( -0.885714, 1 )
+rect_pivot_offset = Vector2( 75.0973, -0.161133 )
+theme = SubResource( 13 )
+text = "00000"
 align = 2
 valign = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="EnergyBar" type="ProgressBar" parent="."]
-margin_left = 975.417
-margin_top = 565.447
-margin_right = 1989.42
-margin_bottom = 633.447
+margin_left = 1000.68
+margin_top = 287.635
+margin_right = 2014.69
+margin_bottom = 355.635
 rect_min_size = Vector2( 1014, 68 )
 rect_rotation = -90.0
-rect_scale = Vector2( 0.543, 0.65 )
+rect_scale = Vector2( 0.183, 0.288 )
+rect_pivot_offset = Vector2( 0.0195313, 67.9788 )
 custom_styles/fg = SubResource( 7 )
-custom_styles/bg = SubResource( 8 )
-value = 90.0
+custom_styles/bg = SubResource( 16 )
+value = 100.0
 percent_visible = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="Status" type="Label" parent="."]
-margin_left = 645.482
-margin_top = 477.977
-margin_right = 705.482
-margin_bottom = 497.977
-custom_fonts/font = SubResource( 9 )
-text = "STATUS"
-align = 2
-valign = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="TextureRect" type="TextureRect" parent="EnergyBar"]
+margin_left = -32.155
+margin_top = -2.12354
+margin_right = 317.845
+margin_bottom = 47.8765
+rect_scale = Vector2( 3.069, 1.783 )
+texture = ExtResource( 4 )
+flip_h = true
 
-[node name="ArsenalSeparator" type="Control" parent="."]
-margin_left = 794.607
-margin_top = 424.046
-margin_right = 834.607
-margin_bottom = 464.046
-script = ExtResource( 16 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="ArsenalLabel" type="Label" parent="ArsenalSeparator"]
-margin_left = 7.40802
-margin_top = -24.7995
-margin_right = 105.408
-margin_bottom = 2.20047
-custom_fonts/font = SubResource( 10 )
-text = "ARSENAL"
+[node name="EnergyBarLabel" type="Label" parent="EnergyBar"]
+margin_left = -38.8584
+margin_top = 32.8014
+margin_right = 1.1416
+margin_bottom = 83.8014
+rect_rotation = 90.0
+rect_scale = Vector2( 1, 1.8333 )
+theme = ExtResource( 2 )
+text = "E"
 
 [node name="WeaponSlots" type="VBoxContainer" parent="."]
-margin_left = 918.413
-margin_top = 73.0018
-margin_right = 1074.41
-margin_bottom = 878.002
+margin_left = 760.0
+margin_top = 151.0
+margin_right = 1004.0
+margin_bottom = 520.0
 rect_scale = Vector2( 0.4, 0.4 )
-custom_constants/separation = 70
+rect_pivot_offset = Vector2( 244.234, 379.71 )
+custom_constants/separation = 10
 alignment = 2
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="WeaponSlot" parent="WeaponSlots" instance=ExtResource( 15 )]
-anchor_right = 0.0
-anchor_bottom = 0.0
-margin_top = 176.0
-margin_right = 156.0
-margin_bottom = 339.0
-
-[node name="WeaponSlot2" parent="WeaponSlots" instance=ExtResource( 15 )]
-anchor_right = 0.0
-anchor_bottom = 0.0
-margin_top = 409.0
-margin_right = 156.0
-margin_bottom = 572.0
-
-[node name="WeaponSlot3" parent="WeaponSlots" instance=ExtResource( 15 )]
-anchor_right = 0.0
-anchor_bottom = 0.0
-margin_top = 642.0
-margin_right = 156.0
-margin_bottom = 805.0
-
-[node name="Ticker" parent="." instance=ExtResource( 11 )]
 
 [node name="MechaCursorCrosshair" parent="." instance=ExtResource( 13 )]
 

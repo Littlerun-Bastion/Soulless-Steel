@@ -108,8 +108,8 @@ func setup():
 	set_arm_weapon("test_weapon2", SIDE.RIGHT)
 	set_shoulder_weapon("test_weapon1", SIDE.RIGHT)
 	set_shoulder_weapon(false, SIDE.LEFT)
-	set_shoulder("shoulder_test2_left", SIDE.LEFT)
-	set_shoulder("shoulder_test2_right", SIDE.RIGHT)
+	set_shoulder("shoulder_test3_left", SIDE.LEFT)
+	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 
 
 func set_arm_weapon(part_name, side):

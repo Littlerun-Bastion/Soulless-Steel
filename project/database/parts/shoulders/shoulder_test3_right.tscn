@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://database/parts/shoulder.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_rshoulder_main.png" type="Texture" id=2]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+side = 1
+
+[node name="Shoulder" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 4.5, -78.5, -45, -28.5, -40.5, -24, -36.5, -28.5, -14.5, -6, -14.5, 30.5, -28.5, 31.5, -27.5, 44.5, 5.5, 78, 45, 77, 44, 68.5, 41.5, 69, 41, -36.5, 7.5, -69.5, 10.5, -73 )

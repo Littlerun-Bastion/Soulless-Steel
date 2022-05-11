@@ -1,16 +1,9 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
 [ext_resource path="res://assets/images/ui/player_ui/cursor_crosshair.png" type="Texture" id=3]
-[ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=4]
 [ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture" id=5]
-
-[sub_resource type="DynamicFont" id=1]
-size = 18
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 4 )
 
 [node name="MechaCursorCrosshair" type="Control"]
 anchor_right = 1.0
@@ -37,7 +30,7 @@ margin_left = -50.0
 margin_top = -15.0
 margin_right = 50.0
 margin_bottom = 5.0
-custom_fonts/font = SubResource( 1 )
+custom_fonts/font = ExtResource( 2 )
 text = "Reload"
 align = 1
 valign = 1
@@ -75,9 +68,6 @@ texture_under = ExtResource( 5 )
 texture_progress = ExtResource( 5 )
 fill_mode = 4
 tint_under = Color( 0, 0, 0, 0.266667 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Tween" type="Tween" parent="RightReloadProgress"]
 
@@ -102,14 +92,14 @@ text = "00"
 
 [node name="Separator" type="Label" parent="LeftWeapon"]
 margin_left = 22.0
-margin_right = 31.0
+margin_right = 30.0
 margin_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="LeftWeapon"]
-margin_left = 31.0
-margin_right = 49.0
+margin_left = 30.0
+margin_right = 48.0
 margin_bottom = 19.0
 rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
@@ -122,9 +112,6 @@ margin_right = 57.0
 margin_bottom = 25.0
 custom_constants/separation = 0
 alignment = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="CurAmmo" type="Label" parent="RightWeapon"]
 margin_left = 4.0
@@ -136,14 +123,14 @@ text = "00"
 
 [node name="Separator" type="Label" parent="RightWeapon"]
 margin_left = 22.0
-margin_right = 31.0
+margin_right = 30.0
 margin_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="RightWeapon"]
-margin_left = 31.0
-margin_right = 49.0
+margin_left = 30.0
+margin_right = 48.0
 margin_bottom = 19.0
 rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )

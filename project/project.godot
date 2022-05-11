@@ -21,7 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Soulless Steel"
-run/main_scene="res://game/arena/Arena.tscn"
+run/main_scene="res://Start Menu.tscn"
 config/icon="res://icon.png"
 
 [autoload]

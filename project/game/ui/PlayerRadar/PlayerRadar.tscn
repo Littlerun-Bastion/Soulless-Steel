@@ -11,6 +11,7 @@ __meta__ = {
 }
 
 [node name="Circle" type="TextureRect" parent="."]
+visible = false
 margin_left = -250.0
 margin_top = -250.0
 margin_right = 250.0

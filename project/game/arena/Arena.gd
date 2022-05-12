@@ -27,7 +27,7 @@ func _ready():
 	update_navigation_polygon()
 	
 	add_player()
-	for _i in range(20):
+	for _i in range(10):
 		add_enemy()
 
 
@@ -148,7 +148,7 @@ func player_died():
 
 
 func get_random_start_position(exclude_idx := []):
-	var offset = 250
+	var offset = 1000
 	var rand_offset = Vector2(rand_range(-offset, offset), rand_range(-offset, offset))
 	var n_pos = $StartPositions.get_child_count()
 	var idx = randi()%n_pos + 1

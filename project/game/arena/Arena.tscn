@@ -386,6 +386,12 @@ rotation = 4.59017
 scale = Vector2( 0.647418, 0.690848 )
 z_index = -1
 
+[node name="bush4_49" parent="Bushes" instance=ExtResource( 48 )]
+position = Vector2( 640.252, -4851.87 )
+rotation = 4.59017
+scale = Vector2( 0.647418, 0.690848 )
+z_index = -1
+
 [node name="bush4_40" parent="Bushes" instance=ExtResource( 48 )]
 position = Vector2( 1168.31, 24.5345 )
 rotation = 4.59017
@@ -417,7 +423,7 @@ scale = Vector2( 0.647418, 0.690848 )
 z_index = -1
 
 [node name="bush4_45" parent="Bushes" instance=ExtResource( 48 )]
-position = Vector2( -1783.32, 5345.16 )
+position = Vector2( -1675.25, 5262.52 )
 rotation = 4.59017
 scale = Vector2( 0.647418, 0.690848 )
 z_index = -1
@@ -478,6 +484,11 @@ z_index = -1
 
 [node name="bush5_11" parent="Bushes" instance=ExtResource( 47 )]
 position = Vector2( -206.95, -5429.69 )
+scale = Vector2( 0.876542, 0.825715 )
+z_index = -1
+
+[node name="bush5_49" parent="Bushes" instance=ExtResource( 47 )]
+position = Vector2( 542.203, -4728.48 )
 scale = Vector2( 0.876542, 0.825715 )
 z_index = -1
 
@@ -924,7 +935,7 @@ scale = Vector2( 0.619329, 0.598291 )
 z_index = -1
 
 [node name="bush2_43" parent="Bushes" instance=ExtResource( 45 )]
-position = Vector2( -1609.84, 5047.53 )
+position = Vector2( -1522.96, 5066.6 )
 rotation = -0.624088
 scale = Vector2( 0.619329, 0.598291 )
 z_index = -1
@@ -1170,6 +1181,12 @@ rotation = 1.53842
 scale = Vector2( 0.901511, 0.855717 )
 z_index = -1
 
+[node name="bush3_49" parent="Bushes" instance=ExtResource( 46 )]
+position = Vector2( 1058.68, -4485.91 )
+rotation = 1.53842
+scale = Vector2( 0.901511, 0.855717 )
+z_index = -1
+
 [node name="bush3_32" parent="Bushes" instance=ExtResource( 46 )]
 position = Vector2( -6618.61, 917.817 )
 rotation = 1.53842
@@ -1213,7 +1230,7 @@ scale = Vector2( 0.901511, 0.855717 )
 z_index = -1
 
 [node name="bush3_39" parent="Bushes" instance=ExtResource( 46 )]
-position = Vector2( -1695.3, 5165.39 )
+position = Vector2( -1720.73, 5120.89 )
 rotation = 1.53842
 scale = Vector2( 0.901511, 0.855717 )
 z_index = -1
@@ -1588,9 +1605,9 @@ scale = Vector2( 0.788068, 0.765468 )
 z_index = 1
 
 [node name="building6_1" parent="Props" instance=ExtResource( 11 )]
-position = Vector2( -4993.49, -1545.35 )
+position = Vector2( -5023.46, -1479.42 )
 rotation = -2.71025
-scale = Vector2( 0.6, 0.6 )
+scale = Vector2( 0.6, 0.555302 )
 z_index = 1
 
 [node name="building8_1" parent="Props" instance=ExtResource( 18 )]
@@ -1690,9 +1707,9 @@ scale = Vector2( 0.39, 0.39 )
 z_index = 1
 
 [node name="building_ruined_1_prop" parent="Props" instance=ExtResource( 20 )]
-position = Vector2( 138.941, 5758.74 )
+position = Vector2( 107.157, 5729.08 )
 rotation = 0.535075
-scale = Vector2( 0.4, 0.4 )
+scale = Vector2( 0.336079, 0.364542 )
 z_index = 1
 
 [node name="building_ruined_1_prop2" parent="Props" instance=ExtResource( 20 )]
@@ -1708,7 +1725,7 @@ scale = Vector2( 0.4, 0.4 )
 z_index = 1
 
 [node name="building_ruined_2_prop" parent="Props" instance=ExtResource( 25 )]
-position = Vector2( -1866.71, 4745.82 )
+position = Vector2( -1909.09, 4720.39 )
 rotation = 0.378768
 scale = Vector2( 0.6, 0.6 )
 z_index = 1
@@ -1737,9 +1754,9 @@ rotation = -0.652283
 z_index = 1
 
 [node name="building_ruined_4_prop2" parent="Props" instance=ExtResource( 23 )]
-position = Vector2( -1325.91, 5209.62 )
-rotation = -1.0828
-scale = Vector2( 0.55, 0.55 )
+position = Vector2( -1225.84, 5157.56 )
+rotation = -1.03578
+scale = Vector2( 0.469287, 0.492902 )
 z_index = 1
 
 [node name="building_ruined_5_prop" parent="Props" instance=ExtResource( 21 )]
@@ -1779,9 +1796,9 @@ scale = Vector2( 1.3, 1.3 )
 z_index = 1
 
 [node name="building_small_1_2" parent="Props" instance=ExtResource( 28 )]
-position = Vector2( 757.62, -4564.65 )
-rotation = -0.616882
-scale = Vector2( 1.05, 1.05 )
+position = Vector2( 1170.36, -4936.88 )
+rotation = 0.964452
+scale = Vector2( 0.929433, 0.95253 )
 z_index = 1
 
 [node name="building_small_2_1" parent="Props" instance=ExtResource( 27 )]
@@ -1797,7 +1814,7 @@ scale = Vector2( 1.8, 1.8 )
 z_index = 1
 
 [node name="building_small_4_1" parent="Props" instance=ExtResource( 26 )]
-position = Vector2( -6290.72, 2404.94 )
+position = Vector2( -6104.93, 2380.97 )
 rotation = -2.20003
 z_index = 1
 
@@ -1837,7 +1854,7 @@ scale = Vector2( 0.24, 0.24 )
 z_index = 1
 
 [node name="house1_4" parent="Props" instance=ExtResource( 31 )]
-position = Vector2( -5328.87, -2286.34 )
+position = Vector2( -5370.87, -2236.34 )
 rotation = 1.96933
 scale = Vector2( 0.253489, 0.3107 )
 z_index = 1
@@ -1897,7 +1914,7 @@ scale = Vector2( 0.305684, -0.304473 )
 z_index = 1
 
 [node name="house1a_1" parent="Props" instance=ExtResource( 30 )]
-position = Vector2( -5482.75, -1999.28 )
+position = Vector2( -5494.75, -1967.28 )
 rotation = 1.95484
 scale = Vector2( 0.26702, 0.28829 )
 z_index = 1
@@ -2059,7 +2076,7 @@ scale = Vector2( 0.19128, 0.18729 )
 z_index = 1
 
 [node name="house3a_2" parent="Props" instance=ExtResource( 33 )]
-position = Vector2( -5173.71, -2610.2 )
+position = Vector2( -5219.71, -2538.2 )
 rotation = -2.6945
 scale = Vector2( 0.232391, 0.251702 )
 z_index = 1
@@ -2209,7 +2226,7 @@ scale = Vector2( 0.355177, 0.339479 )
 z_index = 1
 
 [node name="house4_3" parent="Props" instance=ExtResource( 36 )]
-position = Vector2( 796.6, 5892.72 )
+position = Vector2( 823.509, 5885.99 )
 rotation = -1.74378
 scale = Vector2( 0.355177, 0.339479 )
 z_index = 1
@@ -2518,6 +2535,10 @@ position = Vector2( 1654.79, -8040.47 )
 [node name="tree3_5" parent="Props" instance=ExtResource( 39 )]
 position = Vector2( 2146.57, -5159.03 )
 
+[node name="tree3_56" parent="Props" instance=ExtResource( 39 )]
+position = Vector2( 781.457, -4830.13 )
+rotation = 1.29863
+
 [node name="tree3_44" parent="Props" instance=ExtResource( 39 )]
 position = Vector2( 4378.69, -8069.23 )
 
@@ -2619,7 +2640,7 @@ position = Vector2( -6483.68, 6034.9 )
 scale = Vector2( 1.01828, 1.02218 )
 
 [node name="tree3_14" parent="Props" instance=ExtResource( 39 )]
-position = Vector2( -3659.32, -5185.33 )
+position = Vector2( -3627.25, -5212.06 )
 scale = Vector2( 0.6, 0.6 )
 
 [node name="tree3_15" parent="Props" instance=ExtResource( 39 )]
@@ -2799,7 +2820,7 @@ rotation = -1.15813
 scale = Vector2( 0.65, 0.65 )
 
 [node name="tree_leafless_1_4" parent="Props" instance=ExtResource( 41 )]
-position = Vector2( -3884.46, -4858.06 )
+position = Vector2( -3889.81, -4806.39 )
 rotation = -1.15813
 scale = Vector2( 0.65, 0.65 )
 
@@ -2839,7 +2860,7 @@ rotation = 2.76402
 scale = Vector2( 0.65, 0.65 )
 
 [node name="tree_leafless_1_12" parent="Props" instance=ExtResource( 41 )]
-position = Vector2( 471.394, 5764.58 )
+position = Vector2( 486.077, 5753.9 )
 rotation = 2.76402
 scale = Vector2( 0.65, 0.65 )
 
@@ -3072,7 +3093,7 @@ position = Vector2( 420.23, 5185.71 )
 position = Vector2( 2066.51, 4392.5 )
 
 [node name="tree_leafless_2_7" parent="Props" instance=ExtResource( 43 )]
-position = Vector2( -2183.78, 5119.43 )
+position = Vector2( -2175.3, 5115.19 )
 
 [node name="tree_leafless_2_8" parent="Props" instance=ExtResource( 43 )]
 position = Vector2( -3482.68, 3482.95 )
@@ -3260,13 +3281,13 @@ scale = Vector2( 0.65, 0.65 )
 z_index = -1
 
 [node name="tree_leafless_3_9" parent="Props" instance=ExtResource( 42 )]
-position = Vector2( -5048.61, -3021.57 )
+position = Vector2( -5102.43, -3063.61 )
 rotation = 0.0521305
 scale = Vector2( 0.65, 0.65 )
 z_index = -1
 
 [node name="tree_leafless_3_10" parent="Props" instance=ExtResource( 42 )]
-position = Vector2( -3687.94, -4820.21 )
+position = Vector2( -3221.11, -4939.59 )
 rotation = 0.0521305
 scale = Vector2( 0.65, 0.65 )
 z_index = -1
@@ -3325,7 +3346,7 @@ scale = Vector2( 0.65, 0.65 )
 z_index = -1
 
 [node name="tree_leafless_3_19" parent="Props" instance=ExtResource( 42 )]
-position = Vector2( -1943.11, 5185.5 )
+position = Vector2( -1960.06, 5191.86 )
 rotation = -2.06011
 scale = Vector2( 0.65, 0.65 )
 z_index = -1
@@ -3502,7 +3523,7 @@ rotation = -2.45309
 z_index = -1
 
 [node name="tree_leafless_3_42" parent="Props" instance=ExtResource( 42 )]
-position = Vector2( -1219.21, 5874.66 )
+position = Vector2( -1330.08, 6040.97 )
 rotation = -2.45309
 z_index = -1
 
@@ -3522,6 +3543,7 @@ scale = Vector2( 2, 2 )
 [node name="Projectiles" type="Node2D" parent="."]
 
 [node name="map" parent="." instance=ExtResource( 3 )]
+position = Vector2( -461.641, -710.938 )
 scale = Vector2( 2, 2 )
 z_index = -999
 
@@ -3532,7 +3554,7 @@ z_index = -2
 z_index = -5
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource( 53 )]
-position = Vector2( -13190.9, 4423.26 )
+position = Vector2( -13292.8, 4087.64 )
 rotation = 0.937557
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource( 53 )]
@@ -3546,6 +3568,38 @@ rotation = -2.43856
 [node name="Pos4" parent="StartPositions" instance=ExtResource( 53 )]
 position = Vector2( 8904.17, -11263.5 )
 rotation = -3.06662
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( 3312.33, -4512.53 )
+rotation = -0.657896
+
+[node name="Pos6" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( 11193.8, -5273.73 )
+rotation = 0.150318
+
+[node name="Pos7" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( 8609.67, 2696.6 )
+rotation = -0.0219699
+
+[node name="Pos8" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( -9952, -5678.59 )
+rotation = 0.434006
+
+[node name="Pos9" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( -1892.3, 11424.3 )
+rotation = 0.467009
+
+[node name="Pos10" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( 2248.67, 46.3036 )
+rotation = 0.467009
+
+[node name="Pos11" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( -7131.19, -9330.16 )
+rotation = 0.705731
+
+[node name="Pos12" parent="StartPositions" instance=ExtResource( 53 )]
+position = Vector2( 1465.12, -9128.53 )
+rotation = 0.94085
 
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 position = Vector2( -26.9077, -661.061 )
@@ -3561,6 +3615,7 @@ __meta__ = {
 }
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
+visible = false
 navpoly = SubResource( 6 )
 __meta__ = {
 "_edit_lock_": true

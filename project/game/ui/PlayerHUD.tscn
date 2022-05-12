@@ -69,7 +69,7 @@ text = "ARM"
 align = 1
 valign = 1
 
-[node name="Label3" type="Label" parent="LifeBar"]
+[node name="Label" type="Label" parent="LifeBar"]
 margin_left = 193.651
 margin_top = 11.8262
 margin_right = 268.651

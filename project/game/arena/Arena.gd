@@ -16,10 +16,13 @@ onready var PauseMenu = $PauseMenu
 var player
 var current_cam
 var all_mechas = []
+var target_arena_zoom
 
 
 func _ready():
 	randomize()
+	
+	target_arena_zoom = ArenaCam.zoom
 	
 	update_navigation_polygon()
 	
@@ -37,40 +40,87 @@ func _input(event):
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
+	if ArenaCam.current:
+		var amount = Vector2(.8, .8)
+		if event is InputEventMouseButton:
+			if event.button_index == BUTTON_WHEEL_UP:
+				target_arena_zoom -= amount
+			elif event.button_index == BUTTON_WHEEL_DOWN:
+				target_arena_zoom += amount
 
 
-func _process(_dt):
+func _process(dt):
 	update_shader_effect()
+	update_arena_cam(dt)
+
+
+func update_arena_cam(dt):
+	if ArenaCam.current:
+		var speed = 4600*(ArenaCam.zoom.x/10.0)
+		var margin = 55
+		var mpos = get_viewport().get_mouse_position()
+		var move_vec = Vector2()
+		if mpos.x <= margin:
+			move_vec.x -= 1
+		elif mpos.x >= get_viewport_rect().size.x - margin:
+			move_vec.x += 1
+		if mpos.y <= margin:
+			move_vec.y -= 1
+		elif mpos.y >= get_viewport_rect().size.y - margin:
+			move_vec.y += 1
+		
+		ArenaCam.position += speed*dt*move_vec.normalized()
+		
+		ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
 
 
 func update_navigation_polygon():
-	var arena_poly = NavInstance.get_navigation_polygon()
-	
-	var all_vectors = []
-	
-	#Resize arena to avoid navigation close to walls
-	var polygon = NavigationPolygon.new()
-	var outline = PoolVector2Array()
-	var scaling = .93
-	var transf = NavInstance.get_global_transform()
-	for vertex in arena_poly.get_outline(0):
-		vertex += NavInstance.position
-		vertex *= scaling
-		vertex -= NavInstance.position
-		outline.append(transf.xform(vertex))
-	polygon.add_outline(outline)
-	polygon.make_polygons_from_outlines()
-	arena_poly = polygon
+	var arena_poly = NavInstance.navpoly
 	
 	#Add props collision to navigation
-	var distance = 250
-	for prop in $Props.get_children():
-		prop.add_collision_to_navigation(arena_poly, distance)
-	arena_poly.make_polygons_from_outlines()
+	var distance = 30
+	var prop_polygons = []
+	printt("count",$Props.get_child_count())
+	for i in range(0, $Props.get_child_count()):
+		var prop = $Props.get_child(i)
+		prop_polygons.append(prop.create_collision_polygon(distance))
 		
+	
+	#merge_polygons(prop_polygons)
+	for polygon in prop_polygons:
+		arena_poly.add_outline(polygon)
+	arena_poly.make_polygons_from_outlines()
+	
 	NavInstance.set_navigation_polygon(arena_poly)
 	NavInstance.enabled = false
 	NavInstance.enabled = true
+
+
+func merge_polygons(polygons):
+	while(true):
+		var merged_something = false
+		for i in polygons.size():
+			var polygon = polygons[i]
+			for j in range(i + 1, polygons.size()):
+				var other_polygon = polygons[j]
+				var merged_polygon = Geometry.merge_polygons_2d(polygon, other_polygon)
+				if merged_polygon.size() == 1:
+					polygons.append(merged_polygon[0])
+					merged_something = [i, j]
+					break
+				elif Geometry.is_polygon_clockwise(merged_polygon[1]):
+					for k in range(1, merged_polygon.size()):
+						polygons.append(merged_polygon[k])
+					merged_something = [i, j]
+					break
+			if merged_something:
+				break
+
+		if not merged_something:
+			break
+		else:
+			polygons.remove(merged_something[1])
+			polygons.remove(merged_something[0])
 
 
 func add_player():
@@ -98,6 +148,7 @@ func add_enemy():
 func player_died():
 	player = null
 	ArenaCam.current = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	PlayerHUD.queue_free()
 	current_cam = ArenaCam
 

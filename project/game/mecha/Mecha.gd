@@ -210,13 +210,21 @@ func set_core(part_name):
 	$Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
 	core = part_data
-	if core.head_port != null:
-		$Core/HeadPort.texture = core.get_head_port()
-		$Core/HeadPort.position = core.get_head_port_offset()
-		$Core/HeadPort.show()
+	#HeadPort
+	if core.get_head_port() != null:
+		$HeadPort.texture = core.get_head_port()
+		$HeadPort.position = core.get_head_port_offset()
+		$HeadPort.show()
 	else:
-		$Core/HeadPort.texture = null
-		$Core/HeadPort.hide()
+		$HeadPort.texture = null
+		$HeadPort.hide()
+	#CoreSub
+	if core.get_sub() != null:
+		$CoreSub.texture = core.get_sub()
+		$CoreSub.show()
+	else:
+		$CoreSub.texture = null
+		$CoreSub.hide()
 
 func set_legs(part_name):
 	if not part_name:
@@ -237,7 +245,7 @@ func set_head(part_name):
 	$Head.texture = part_data.image
 	head = part_data
 	if core:
-		$Head.position = core.head_offset
+		$Head.position = core.get_head_port_offset()
 
 
 func set_shoulder(part_name, side):

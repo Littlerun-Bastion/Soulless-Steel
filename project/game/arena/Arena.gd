@@ -85,7 +85,7 @@ func update_navigation_polygon():
 		prop_polygons.append(prop.create_collision_polygon(distance))
 		
 	
-	merge_polygons(prop_polygons)
+	#merge_polygons(prop_polygons)
 	for polygon in prop_polygons:
 		arena_poly.add_outline(polygon)
 	arena_poly.make_polygons_from_outlines()

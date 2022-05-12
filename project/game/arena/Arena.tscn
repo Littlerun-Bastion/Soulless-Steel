@@ -57,9 +57,9 @@
 [sub_resource type="CanvasItemMaterial" id=2]
 
 [sub_resource type="NavigationPolygon" id=6]
-vertices = PoolVector2Array( 28077.6, -27691.4, 33997.6, 31750, -32451.2, 28729.6, -29551.6, -28778.7 )
+vertices = PoolVector2Array( 22018.2, -21510.7, 24758.2, 20045, -21972.9, 21110.5, -21896.8, -20673.5 )
 polygons = [ PoolIntArray( 0, 1, 2, 3 ) ]
-outlines = [ PoolVector2Array( -29551.6, -28778.7, -32451.2, 28729.6, 33997.6, 31750, 28077.6, -27691.4 ) ]
+outlines = [ PoolVector2Array( -21896.8, -20673.5, -21972.9, 21110.5, 24758.2, 20045, 22018.2, -21510.7 ) ]
 
 [sub_resource type="Shader" id=5]
 code = "shader_type canvas_item;
@@ -3506,14 +3506,18 @@ position = Vector2( -1219.21, 5874.66 )
 rotation = -2.45309
 z_index = -1
 
-[node name="arena_wall_outernorth" parent="Props" instance=ExtResource( 50 )]
-position = Vector2( -242.727, -343.498 )
-
-[node name="arena_wall_outersouth" parent="Props" instance=ExtResource( 51 )]
-position = Vector2( -219.906, -351.067 )
-
 [node name="arena_wall_midNorth" parent="Props" instance=ExtResource( 52 )]
 position = Vector2( -224.37, -353.852 )
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="arena_wall_outernorth" parent="Walls" instance=ExtResource( 50 )]
+position = Vector2( -485.454, -686.996 )
+scale = Vector2( 2, 2 )
+
+[node name="arena_wall_outersouth" parent="Walls" instance=ExtResource( 51 )]
+position = Vector2( -439.812, -702.134 )
+scale = Vector2( 2, 2 )
 
 [node name="Projectiles" type="Node2D" parent="."]
 

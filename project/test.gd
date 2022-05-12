@@ -32,15 +32,8 @@ func merge_polygons(polygons):
 			for j in range(i + 1, polygons.size()):
 				var other_polygon = polygons[j]
 				var merged_polygon = Geometry.merge_polygons_2d(polygon, other_polygon)
-				print("size", merged_polygon.size())
-				if merged_polygon.size() == 1:
+				if merged_polygon.size() == 1 or Geometry.is_polygon_clockwise(merged_polygon[1]):
 					polygons.append(merged_polygon[0])
-					merged_something = [i, j]
-					break
-				elif Geometry.is_polygon_clockwise(merged_polygon[1]):
-					polygons.append(merged_polygon[0])
-					for k in range(1, merged_polygon.size()):
-						pass
 					merged_something = [i, j]
 					break
 			if merged_something:

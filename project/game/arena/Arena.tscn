@@ -1671,7 +1671,7 @@ scale = Vector2( 0.46, 0.46 )
 z_index = 1
 
 [node name="building11_1" parent="Props" instance=ExtResource( 15 )]
-position = Vector2( -796.383, -2115.04 )
+position = Vector2( -899.727, -2040.2 )
 rotation = -0.625911
 scale = Vector2( 0.55, 0.55 )
 z_index = 1
@@ -3566,7 +3566,7 @@ position = Vector2( 6220.1, 11180.4 )
 rotation = -2.43856
 
 [node name="Pos4" parent="StartPositions" instance=ExtResource( 53 )]
-position = Vector2( 8904.17, -11263.5 )
+position = Vector2( 8892.86, -11602.9 )
 rotation = -3.06662
 
 [node name="Pos5" parent="StartPositions" instance=ExtResource( 53 )]

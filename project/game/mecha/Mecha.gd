@@ -12,6 +12,7 @@ signal create_projectile
 signal shoot
 signal took_damage
 signal died
+signal player_kill
 
 onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
@@ -26,6 +27,7 @@ var max_shield = 10
 var shield = 10
 var max_energy = 100
 var energy = 75
+var total_kills = 0
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -115,8 +117,11 @@ func die(source_info, weapon_name):
 		"self": self.mecha_name,
 		"weapon_name": weapon_name,
 		})
+	if source_info.name == "Player":
+		emit_signal("player_kill")
+	print(source_info.name)
 	queue_free()
-
+	
 
 func is_shape_id_legs(id):
 	return shape_owner_get_owner(shape_find_owner(id)) == $LegsCollision

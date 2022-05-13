@@ -17,11 +17,12 @@ var player
 var current_cam
 var all_mechas = []
 var target_arena_zoom
+var player_kills = 0
 
 
 func _ready():
 	randomize()
-	
+	var player_kills = 0
 	target_arena_zoom = ArenaCam.zoom
 	
 	update_navigation_polygon()
@@ -135,6 +136,7 @@ func add_enemy():
 	enemy.position = get_random_start_position([1])
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
 	enemy.connect("died", self, "_on_mecha_died")
+	enemy.connect("player_kill", self, "_on_mecha_player_kill")
 	all_mechas.push_back(enemy)
 	enemy.setup(all_mechas, $Navigation2D)
 
@@ -148,7 +150,7 @@ func player_died():
 
 
 func get_random_start_position(exclude_idx := []):
-	var offset = 1000
+	var offset = 100
 	var rand_offset = Vector2(rand_range(-offset, offset), rand_range(-offset, offset))
 	var n_pos = $StartPositions.get_child_count()
 	var idx = randi()%n_pos + 1
@@ -197,3 +199,8 @@ func _on_mecha_died(mecha):
 		all_mechas.remove(idx)
 	if mecha == player:
 		player_died()
+
+func _on_mecha_player_kill():
+	player_kills += 1
+	print("Kills: " + str(player_kills))
+

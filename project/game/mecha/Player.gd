@@ -101,7 +101,7 @@ func setup():
 	#friction = 0.3
 	set_speed(500, 60)
 	set_max_life(100)
-	set_core("core_test2")
+	set_core("MSV-L3J")
 	set_head("head_test2")
 	set_legs("legs_test1")
 	set_arm_weapon("test_weapon3", SIDE.LEFT)

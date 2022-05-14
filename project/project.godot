@@ -30,6 +30,7 @@ AudioManager="*res://game/audio/AudioManager.tscn"
 PartManager="*res://game/mecha/PartManager.gd"
 ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 TickerManager="*res://game/ui/Ticker/TickerManager.gd"
+PlayerStatManager="*res://PlayerStatManager.gd"
 
 [global]
 

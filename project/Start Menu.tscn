@@ -44,7 +44,7 @@ use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 8 )
 
-[sub_resource type="Shader" id=3]
+[sub_resource type="Shader" id=11]
 code = "shader_type canvas_item;
 
 uniform float barRange : hint_range(0.0, 0.1) = 0.01;
@@ -103,7 +103,7 @@ void fragment()
 }"
 
 [sub_resource type="ShaderMaterial" id=8]
-shader = SubResource( 3 )
+shader = SubResource( 11 )
 shader_param/barRange = 0.022
 shader_param/barOffsetIntensity = 0.002
 shader_param/noiseQuality = 2410.59

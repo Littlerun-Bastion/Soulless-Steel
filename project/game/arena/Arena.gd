@@ -30,7 +30,10 @@ func _ready():
 	add_player()
 	for _i in range(10):
 		add_enemy()
-
+	for exitposition in $Exits.get_children():
+		print(str(exitposition))
+		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
+		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
 
 func _input(event):
 	if event is InputEventKey:
@@ -125,10 +128,11 @@ func add_player():
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
 	player.connect("lost_health", self, "_on_player_lost_health")
+	player.connect("mecha_extracted", self, "_on_player_mech_extracted")
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
 	current_cam = player.get_cam()
-
+	player_ammo_set()
 
 func add_enemy():
 	var enemy = ENEMY.instance()
@@ -204,3 +208,47 @@ func _on_mecha_player_kill():
 	player_kills += 1
 	print("Kills: " + str(player_kills))
 
+func _on_ExitPos_mecha_extracting(extractingMech):
+	print(str(extractingMech.name) + str(" is extracting"))
+	extractingMech.extracting()
+	if extractingMech.name == "Player":
+		$PlayerHUD/ExtractingLabel.visible = true
+	
+func _on_ExitPos_extracting_cancelled(extractingMech):
+	if extractingMech == null:
+		pass
+	else:
+		extractingMech.cancel_extract()
+	if extractingMech.name == "Player":
+		$PlayerHUD/ExtractingLabel.visible = false
+
+func _on_player_mech_extracted(playerMech):
+	PlayerStatManager.PlayerKills += player_kills
+	PlayerStatManager.PlayerHP == playerMech.hp
+	PlayerStatManager.PlayerMaxHP == playerMech.max_hp
+	PlayerStatManager.NumberofExtracts += 1
+	PlayerStatManager.Armor = playerMech.hp
+	PlayerStatManager.RArmAmmo = player.get_total_ammo("arm_weapon_right")
+	PlayerStatManager.RArmAmmoMax = player.get_max_ammo("arm_weapon_right")
+	PlayerStatManager.RArmCost = player.get_ammo_cost("arm_weapon_right")
+	PlayerStatManager.LArmAmmo = player.get_total_ammo("arm_weapon_left")
+	PlayerStatManager.LArmAmmoMax = player.get_max_ammo("arm_weapon_left")
+	PlayerStatManager.LArmCost = player.get_ammo_cost("arm_weapon_left")
+	PlayerStatManager.RShoulderAmmo = player.get_total_ammo("shoulder_weapon_right")
+	PlayerStatManager.RShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_right")
+	PlayerStatManager.RShoulderCost = player.get_ammo_cost("shoulder_weapon_right")
+	PlayerStatManager.LShoulderAmmo = player.get_total_ammo("shoulder_weapon_left")
+	PlayerStatManager.LShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_left")
+	PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
+	print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
+	get_tree().change_scene("res://Score Screen.tscn")
+	
+func player_ammo_set():
+	if PlayerStatManager.NumberofExtracts > 0:
+		player.hp == PlayerStatManager.PlayerHP
+		player.set_ammo("arm_weapon_right", PlayerStatManager.RArmAmmo)
+		player.set_ammo("arm_weapon_left", PlayerStatManager.LArmAmmo)
+		player.set_ammo("shoulder_weapon_right", PlayerStatManager.RShoulderAmmo)
+		player.set_ammo("shoulder_weapon_left", PlayerStatManager.LShoulderAmmo)
+		$PlayerHUD.update_cursor()
+		$PlayerHUD.update_arsenal()

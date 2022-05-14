@@ -13,6 +13,7 @@ signal shoot
 signal took_damage
 signal died
 signal player_kill
+signal mecha_extracted
 
 onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
@@ -26,7 +27,7 @@ var hp = 10
 var max_shield = 10
 var shield = 10
 var max_energy = 100
-var energy = 75
+var energy = 100
 var total_kills = 0
 
 var movement_type = "free"
@@ -325,7 +326,23 @@ func get_total_ammo(part_name):
 	if part:
 		return part.total_ammo
 	return false
+	
+func get_max_ammo(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.max_ammo
+	return false
 
+func get_ammo_cost(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.ammo_cost
+	return false
+
+func set_ammo(part_name, target_val):
+	var part = get_weapon_part(part_name)
+	if typeof(target_val) == TYPE_INT:
+		part.total_ammo = target_val
 
 #MOVEMENT METHODS
 
@@ -494,3 +511,17 @@ func play_step_sound(is_left := true):
 	var volume = min(pow(velocity.length(), 1.3)/300.0 - 26.0, -5.0)
 	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
 
+func extracting():
+	$ExtractTimer.start()
+
+func _on_ExtractTimer_timeout():
+	if self.name == "Player":
+		emit_signal("mecha_extracted", self)
+	else:
+		emit_signal("died", self)
+		queue_free()
+
+func cancel_extract():
+	$ExtractTimer.stop()
+	$ExtractTimer.wait_time = 5
+	print(str("Extract Cancelled"))

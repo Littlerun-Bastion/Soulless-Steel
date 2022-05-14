@@ -1,4 +1,4 @@
-[gd_scene load_steps=58 format=2]
+[gd_scene load_steps=59 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
@@ -53,6 +53,7 @@
 [ext_resource path="res://database/props/arena_wall_outersouth.tscn" type="PackedScene" id=51]
 [ext_resource path="res://database/props/arena_wall_midNorth.tscn" type="PackedScene" id=52]
 [ext_resource path="res://database/StartPos.tscn" type="PackedScene" id=53]
+[ext_resource path="res://database/ExitPos.tscn" type="PackedScene" id=54]
 
 [sub_resource type="CanvasItemMaterial" id=2]
 
@@ -2272,7 +2273,7 @@ rotation = 0.635574
 scale = Vector2( 0.65, 0.65 )
 
 [node name="tree1_1" parent="Props" instance=ExtResource( 40 )]
-position = Vector2( -2179.71, -1593.41 )
+position = Vector2( -2186.44, -1788.5 )
 scale = Vector2( 0.75, 0.75 )
 
 [node name="tree1_2" parent="Props" instance=ExtResource( 40 )]
@@ -3635,3 +3636,27 @@ anchor_bottom = 1.0
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 
 [node name="PauseMenu" parent="." instance=ExtResource( 49 )]
+
+[node name="Exits" type="Node2D" parent="."]
+rotation = -0.000512852
+z_index = -5
+
+[node name="ExitPos" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 10793.9, -781.53 )
+rotation = -0.0615385
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos2" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 2246.4, 2901.22 )
+rotation = 0.443725
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos3" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( -4020.72, -2665.43 )
+rotation = 0.443725
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos4" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( -12178.7, 2821.35 )
+rotation = 0.8795
+scale = Vector2( 0.33, 0.33 )

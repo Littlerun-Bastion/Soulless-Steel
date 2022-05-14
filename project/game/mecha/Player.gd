@@ -147,3 +147,7 @@ func _on_finished_reloading():
 
 func _on_reloading(reload_time, side):
 	emit_signal("reloading", reload_time, side)
+
+func player_extracting():
+	print(str("Player is Extracting"))
+	

@@ -22,5 +22,7 @@ bullet_accuracy_margin = 0
 bullet_spread = 0.785398
 bullet_spread_delay = 0.0
 total_ammo = 40
+max_ammo = 40
 clip_size = 5
 reload_speed = 5.0
+ammo_cost = 500

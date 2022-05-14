@@ -128,6 +128,7 @@ align = 2
 valign = 1
 
 [node name="EnergyBar" type="ProgressBar" parent="."]
+visible = false
 margin_left = 1000.68
 margin_top = 287.635
 margin_right = 2014.69
@@ -178,6 +179,18 @@ margin_top = 253.244
 margin_right = 443.492
 margin_bottom = 253.244
 rect_scale = Vector2( 0.3, 0.3 )
+
+[node name="ExtractingLabel" type="Label" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -135.5
+margin_top = -57.0
+margin_right = 135.5
+theme = ExtResource( 2 )
+text = "extracting"
 
 [connection signal="value_changed" from="LifeBar" to="." method="_on_LifeBar_value_changed"]
 [connection signal="value_changed" from="ShieldBar" to="." method="_on_ShieldBar_value_changed"]

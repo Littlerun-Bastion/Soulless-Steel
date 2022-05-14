@@ -7,11 +7,13 @@ onready var ShootingPos = $ShootingPos
 
 var timer:= 0.0
 var total_ammo = false
+var max_ammo = false
 var clip_size = false
 var clip_ammo = false
 var reload_time = false
 var reloading := false
 var fire_rate = false
+var ammo_cost = false
 
 func _process(delta):
 	timer = max(timer - delta, 0.0)
@@ -23,6 +25,9 @@ func setup(weapon_ref):
 	clip_ammo = clip_size
 	reload_time = weapon_ref.reload_speed
 	fire_rate = weapon_ref.fire_rate
+	max_ammo = weapon_ref.max_ammo
+	ammo_cost = weapon_ref.ammo_cost
+	
 
 
 func add_time(time):

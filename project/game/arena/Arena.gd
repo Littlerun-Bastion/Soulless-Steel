@@ -224,8 +224,8 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 func _on_player_mech_extracted(playerMech):
 	PlayerStatManager.PlayerKills += player_kills
-	PlayerStatManager.PlayerHP == playerMech.hp
-	PlayerStatManager.PlayerMaxHP == playerMech.max_hp
+	PlayerStatManager.PlayerHP = playerMech.hp
+	PlayerStatManager.PlayerMaxHP = playerMech.max_hp
 	PlayerStatManager.NumberofExtracts += 1
 	PlayerStatManager.Armor = playerMech.hp
 	PlayerStatManager.RArmAmmo = player.get_total_ammo("arm_weapon_right")
@@ -241,11 +241,12 @@ func _on_player_mech_extracted(playerMech):
 	PlayerStatManager.LShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_left")
 	PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
 	print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://Score Screen.tscn")
 	
 func player_ammo_set():
 	if PlayerStatManager.NumberofExtracts > 0:
-		player.hp == PlayerStatManager.PlayerHP
+		player.hp = PlayerStatManager.PlayerHP
 		player.set_ammo("arm_weapon_right", PlayerStatManager.RArmAmmo)
 		player.set_ammo("arm_weapon_left", PlayerStatManager.LArmAmmo)
 		player.set_ammo("shoulder_weapon_right", PlayerStatManager.RShoulderAmmo)

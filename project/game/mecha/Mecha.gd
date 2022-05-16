@@ -20,6 +20,14 @@ onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
 
+onready var Core = $Core
+onready var CoreSub = $CoreSub
+onready var Head = $Head
+onready var HeadSub = $HeadSub
+onready var HeadPort = $HeadPort
+onready var LeftShoulder = $LeftShoulder
+onready var RightShoulder = $RightShoulder
+
 var mecha_name = "Mecha Name"
 
 var max_hp = 10
@@ -29,6 +37,8 @@ var shield = 10
 var max_energy = 100
 var energy = 100
 var total_kills = 0
+var mecha_heat = 0
+var move_heat = 70 #move when implementing new legs
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -47,7 +57,12 @@ var core = null
 var legs = null
 
 
-func _physics_process(delta):
+func _ready():
+	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder]:
+		node.material = CoreSub.material.duplicate(true)
+
+
+func _physics_process(dt):
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():
@@ -60,17 +75,22 @@ func _physics_process(delta):
 				var mod = 2.0
 				var rand = rand_range(-PI/8, PI/8)
 				var dir = (global_position - collision.collider.global_position).rotated(rand)
-				apply_movement(mod*delta, dir)
+				apply_movement(mod*dt, dir)
 		if collided:
 			stun(0.1)
 	else:
-		apply_movement(delta, Vector2())
+		apply_movement(dt, Vector2())
 	
 	if moving and not MovementAnimation.is_playing():
 		MovementAnimation.play("Walking")
 	elif not moving and velocity.length() <= 2.0:
 		MovementAnimation.stop()
+	
+	update_heat(dt)
 
+
+func is_player():
+	return mecha_name == "Player"
 
 
 func set_speed(_max_speed, _move_acc):
@@ -150,6 +170,15 @@ func add_decal(id, projectile_transform, type, size):
 	offset *= rand_range(.6,.9) #Random depth for decal on mecha
 	decals_node.add_child(decal)
 	decal.setup(type, size, offset, mask_node.texture, mask_node.get_global_transform().get_scale())
+
+
+func update_heat(dt):
+	if is_player():
+		if core:
+			mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
+	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder]:
+		node.material.set_shader_param("heat", mecha_heat) 
+
 
 #PARTS SETTERS
 
@@ -352,6 +381,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
@@ -381,6 +411,7 @@ func apply_movement(dt, direction):
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
 				velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			velocity = move_and_slide(velocity)
 
 		else:

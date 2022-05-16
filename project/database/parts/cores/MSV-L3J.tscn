@@ -10,6 +10,7 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+heat_dispersion = 30
 
 [node name="HeadPort" type="Sprite" parent="."]
 texture = ExtResource( 3 )

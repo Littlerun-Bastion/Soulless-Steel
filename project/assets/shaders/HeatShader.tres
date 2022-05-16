@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=3]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = (heat/100.0)*(1.0 - min_darkness) + min_darkness;
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[resource]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3

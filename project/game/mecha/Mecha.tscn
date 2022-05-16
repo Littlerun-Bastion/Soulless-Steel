@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -17,6 +17,51 @@
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_glow.png" type="Texture" id=15]
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_glow.png" type="Texture" id=16]
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_main.png" type="Texture" id=17]
+[ext_resource path="res://assets/shaders/HeatShader.tres" type="Material" id=18]
+
+[sub_resource type="Shader" id=3]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = (heat/100.0)*(1.0 - min_darkness) + min_darkness;
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=9]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=7]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=8]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
 
 [sub_resource type="Animation" id=2]
 length = 0.001
@@ -76,31 +121,38 @@ visible = false
 texture = ExtResource( 13 )
 
 [node name="HeadPort" type="Sprite" parent="."]
+material = SubResource( 9 )
 texture = ExtResource( 11 )
 
 [node name="CoreSub" type="Sprite" parent="."]
 show_behind_parent = true
+material = SubResource( 4 )
 texture = ExtResource( 3 )
 
 [node name="Sprite" type="Sprite" parent="CoreSub"]
+visible = false
 z_index = 1
 texture = ExtResource( 16 )
 
 [node name="Core" type="Sprite" parent="."]
+material = SubResource( 5 )
 texture = ExtResource( 4 )
 
 [node name="Decals" type="Node2D" parent="Core"]
 light_mask = 32
 
 [node name="HeadSub" type="Sprite" parent="."]
+material = SubResource( 6 )
 position = Vector2( 0, 0.513817 )
 texture = ExtResource( 7 )
 
 [node name="HeadGlow" type="Sprite" parent="."]
+visible = false
 position = Vector2( 0, 0.513817 )
 texture = ExtResource( 15 )
 
 [node name="Head" type="Sprite" parent="."]
+material = SubResource( 7 )
 position = Vector2( 0, 0.513817 )
 texture = ExtResource( 17 )
 
@@ -141,6 +193,7 @@ script = ExtResource( 10 )
 position = Vector2( 2, -75 )
 
 [node name="LeftShoulder" type="Sprite" parent="."]
+material = SubResource( 8 )
 position = Vector2( -70, 16 )
 z_index = 2
 texture = ExtResource( 6 )
@@ -149,6 +202,7 @@ texture = ExtResource( 6 )
 light_mask = 64
 
 [node name="RightShoulder" type="Sprite" parent="."]
+material = ExtResource( 18 )
 position = Vector2( 70, 16 )
 z_index = 2
 texture = ExtResource( 14 )

@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=2]
+[gd_scene load_steps=35 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -43,6 +43,24 @@ shader = SubResource( 3 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
 
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
+uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
+}"
+
+[sub_resource type="ShaderMaterial" id=14]
+shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
 [sub_resource type="ShaderMaterial" id=5]
 shader = SubResource( 3 )
 shader_param/heat = 100.0
@@ -52,6 +70,12 @@ shader_param/min_darkness = 0.3
 shader = SubResource( 3 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=15]
+shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
 
 [sub_resource type="ShaderMaterial" id=7]
 shader = SubResource( 3 )
@@ -98,8 +122,7 @@ tracks/0/keys = {
 "values": [ 1.0 ]
 }
 
-[sub_resource type="Animation" id=1]
-resource_name = "Walking"
+[sub_resource type="Animation" id=16]
 length = 3.2
 loop = true
 tracks/0/type = "value"
@@ -149,8 +172,8 @@ show_behind_parent = true
 material = SubResource( 4 )
 texture = ExtResource( 3 )
 
-[node name="Sprite" type="Sprite" parent="CoreSub"]
-visible = false
+[node name="CoreGlow" type="Sprite" parent="."]
+material = SubResource( 14 )
 z_index = 1
 texture = ExtResource( 16 )
 
@@ -167,7 +190,7 @@ position = Vector2( 0, 0.513817 )
 texture = ExtResource( 7 )
 
 [node name="HeadGlow" type="Sprite" parent="."]
-visible = false
+material = SubResource( 15 )
 position = Vector2( 0, 0.513817 )
 texture = ExtResource( 15 )
 
@@ -266,7 +289,7 @@ one_shot = true
 autoplay = "RESET"
 playback_speed = 5.0
 anims/RESET = SubResource( 2 )
-anims/Walking = SubResource( 1 )
+anims/Walking = SubResource( 16 )
 
 [node name="ExtractTimer" type="Timer" parent="."]
 wait_time = 5.0

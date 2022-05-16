@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
+uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
+}"
+
+[resource]
+shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0

@@ -55,7 +55,6 @@
 [ext_resource path="res://database/StartPos.tscn" type="PackedScene" id=53]
 [ext_resource path="res://database/ExitPoint.tscn" type="PackedScene" id=54]
 
-
 [sub_resource type="CanvasItemMaterial" id=2]
 
 [sub_resource type="NavigationPolygon" id=6]

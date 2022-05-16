@@ -22,8 +22,10 @@ onready var MovementAnimation = $MovementAnimation
 
 onready var Core = $Core
 onready var CoreSub = $CoreSub
+onready var CoreGlow = $CoreGlow
 onready var Head = $Head
 onready var HeadSub = $HeadSub
+onready var HeadGlow = $HeadGlow
 onready var HeadPort = $HeadPort
 onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
@@ -62,7 +64,7 @@ var legs = null
 
 
 func _ready():
-	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder,\
+	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				 LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 		node.material = CoreSub.material.duplicate(true)
 
@@ -181,7 +183,7 @@ func update_heat(dt):
 	#Main Mecha Heat
 	if core:
 		mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
-	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder]:
+	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder]:
 		node.material.set_shader_param("heat", mecha_heat) 
 
 

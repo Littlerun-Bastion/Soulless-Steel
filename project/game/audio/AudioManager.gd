@@ -1,9 +1,11 @@
 extends Node
 
 #Bus
-enum {MASTER_BUS, BGM_BUS, SFX_BUS}
+enum {MASTER_BUS, SFX_BUS}
 
 #SFX
+const MAX_SFX_NODES = 10
+const MAX_POS_SFX_NODES = 10
 const SFX_PATH = "res://database/audio/sfx/"
 onready var SFXS = {}
 
@@ -11,8 +13,22 @@ var cur_sfx_player := 1
 var cur_positional_sfx_player := 1
 
 func _ready():
+	setup_nodes()
 	setup_sfxs()
 
+
+func setup_nodes():
+	for node in MAX_SFX_NODES:
+		var player = AudioStreamPlayer.new()
+		player.stream = AudioStreamRandomPitch.new()
+		player.bus = "SFX"
+		$SFXS.add_child(player)
+	for node in MAX_POS_SFX_NODES:
+		var player = AudioStreamPlayer2D.new()
+		player.stream = AudioStreamRandomPitch.new()
+		player.bus = "SFX"
+		$PositionalSFXS.add_child(player)
+		
 func setup_sfxs():
 	var dir = Directory.new()
 	if dir.open(SFX_PATH) == OK:
@@ -30,15 +46,13 @@ func setup_sfxs():
 func get_sfx_player(positional = false):
 	var player
 	if positional:
-		player = $PositionalSFXS.get_node("Player"+str(cur_positional_sfx_player))
-		cur_positional_sfx_player = (cur_positional_sfx_player%$PositionalSFXS.get_child_count()) + 1
+		player = $PositionalSFXS.get_child(cur_positional_sfx_player)
+		cur_positional_sfx_player = (cur_positional_sfx_player+1)%$PositionalSFXS.get_child_count()
 	else:
-		player = $SFXS.get_node("Player"+str(cur_sfx_player))
-		cur_sfx_player = (cur_sfx_player%$SFXS.get_child_count()) + 1
+		player = $SFXS.get_child(cur_sfx_player)
+		cur_sfx_player = (cur_sfx_player+1)%$SFXS.get_child_count()
 	return player
 
-func has_sfx(name: String):
-	return SFXS.has(name)
 
 func play_sfx(name: String, pos = false, override_pitch = false, override_db = false):
 	if not SFXS.has(name):

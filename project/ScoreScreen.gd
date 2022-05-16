@@ -87,13 +87,13 @@ func _on_RepairButton_pressed():
 
 
 func _on_ContinueButton_pressed():
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
-	pass # Replace with function body.
 
 
 func _on_ExitButton_pressed():
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://Start Menu.tscn")
-	pass # Replace with function body.
 
 
 func _on_RABuy_pressed():

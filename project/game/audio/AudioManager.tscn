@@ -1,90 +1,10 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=2 format=2]
 
 [ext_resource path="res://game/audio/AudioManager.gd" type="Script" id=1]
-
-[sub_resource type="AudioStreamRandomPitch" id=1]
-
-[sub_resource type="AudioStreamRandomPitch" id=2]
-
-[sub_resource type="AudioStreamRandomPitch" id=3]
-
-[sub_resource type="AudioStreamRandomPitch" id=4]
-
-[sub_resource type="AudioStreamRandomPitch" id=5]
-
-[sub_resource type="AudioStreamRandomPitch" id=6]
-
-[sub_resource type="AudioStreamRandomPitch" id=7]
-
-[sub_resource type="AudioStreamRandomPitch" id=8]
-
-[sub_resource type="AudioStreamRandomPitch" id=9]
-
-[sub_resource type="AudioStreamRandomPitch" id=10]
 
 [node name="AudioManager" type="Node2D"]
 script = ExtResource( 1 )
 
 [node name="SFXS" type="Node2D" parent="."]
 
-[node name="Player1" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 1 )
-
-[node name="Player2" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 2 )
-
-[node name="Player3" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 3 )
-
-[node name="Player4" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 4 )
-
-[node name="Player5" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 5 )
-
-[node name="Player6" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 6 )
-
-[node name="Player7" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 7 )
-
-[node name="Player8" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 8 )
-
-[node name="Player9" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 9 )
-
-[node name="Player10" type="AudioStreamPlayer" parent="SFXS"]
-stream = SubResource( 10 )
-
 [node name="PositionalSFXS" type="Node2D" parent="."]
-
-[node name="Player1" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 1 )
-
-[node name="Player2" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 2 )
-
-[node name="Player3" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 3 )
-
-[node name="Player4" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 4 )
-
-[node name="Player5" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 5 )
-
-[node name="Player6" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 6 )
-
-[node name="Player7" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 7 )
-
-[node name="Player8" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 8 )
-
-[node name="Player9" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 9 )
-
-[node name="Player10" type="AudioStreamPlayer2D" parent="PositionalSFXS"]
-stream = SubResource( 10 )

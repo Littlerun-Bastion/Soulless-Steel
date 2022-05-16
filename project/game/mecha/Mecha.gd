@@ -27,6 +27,10 @@ onready var HeadSub = $HeadSub
 onready var HeadPort = $HeadPort
 onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
+onready var LeftArmWeapon = $ArmWeaponLeft
+onready var RightArmWeapon = $ArmWeaponRight
+onready var LeftShoulderWeapon = $ShoulderWeaponLeft
+onready var RightShoulderWeapon = $ShoulderWeaponRight
 
 var mecha_name = "Mecha Name"
 
@@ -58,7 +62,8 @@ var legs = null
 
 
 func _ready():
-	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder]:
+	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder,\
+				 LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 		node.material = CoreSub.material.duplicate(true)
 
 
@@ -173,9 +178,9 @@ func add_decal(id, projectile_transform, type, size):
 
 
 func update_heat(dt):
-	if is_player():
-		if core:
-			mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
+	#Main Mecha Heat
+	if core:
+		mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
 	for node in [Core, CoreSub, Head, HeadSub, HeadPort, LeftShoulder, RightShoulder]:
 		node.material.set_shader_param("heat", mecha_heat) 
 

@@ -14,9 +14,13 @@ var reload_time = false
 var reloading := false
 var fire_rate = false
 var ammo_cost = false
+var heat_dispersion = 0
+var muzzle_heat = 0
+var heat = 0.0
 
-func _process(delta):
-	timer = max(timer - delta, 0.0)
+func _process(dt):
+	timer = max(timer - dt, 0.0)
+	update_heat(dt)
 
 
 func setup(weapon_ref):
@@ -27,7 +31,13 @@ func setup(weapon_ref):
 	fire_rate = weapon_ref.fire_rate
 	max_ammo = weapon_ref.max_ammo
 	ammo_cost = weapon_ref.ammo_cost
-	
+	muzzle_heat = weapon_ref.muzzle_heat
+	heat_dispersion = weapon_ref.heat_dispersion
+
+
+func update_heat(dt):
+	heat = max(heat - heat_dispersion*dt, 0)
+	material.set_shader_param("heat", heat) 
 
 
 func add_time(time):
@@ -74,6 +84,7 @@ func can_shoot(amount := 1):
 func shoot(amount := 1):
 	add_time(fire_rate) 
 	clip_ammo -= amount
+	heat = min(heat + muzzle_heat, 100)
 
 
 func set_shooting_pos(pos):

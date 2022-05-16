@@ -12,7 +12,6 @@ projectile = ExtResource( 3 )
 number_projectiles = 5
 recoil_force = 5.0
 fire_rate = 0.6
-auto_fire = false
 bullet_accuracy_margin = 10
 bullet_spread = 1.047
 bullet_spread_delay = 0.1

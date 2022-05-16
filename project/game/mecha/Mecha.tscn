@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=2]
+[gd_scene load_steps=32 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -54,6 +54,26 @@ shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
 
 [sub_resource type="ShaderMaterial" id=7]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=10]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=11]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=12]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=13]
 shader = SubResource( 3 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
@@ -157,6 +177,7 @@ position = Vector2( 0, 0.513817 )
 texture = ExtResource( 17 )
 
 [node name="ArmWeaponLeft" type="Sprite" parent="."]
+material = SubResource( 10 )
 position = Vector2( -78, 0 )
 rotation = -0.15708
 texture = ExtResource( 2 )
@@ -166,6 +187,7 @@ script = ExtResource( 10 )
 position = Vector2( 6, -110 )
 
 [node name="ArmWeaponRight" type="Sprite" parent="."]
+material = SubResource( 11 )
 position = Vector2( 78, 0 )
 rotation = 0.15708
 texture = ExtResource( 5 )
@@ -175,6 +197,7 @@ script = ExtResource( 10 )
 position = Vector2( 6, -90 )
 
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
+material = SubResource( 12 )
 position = Vector2( -50, 8 )
 z_index = 1
 texture = ExtResource( 12 )
@@ -184,6 +207,7 @@ script = ExtResource( 10 )
 position = Vector2( 0, -38 )
 
 [node name="ShoulderWeaponRight" type="Sprite" parent="."]
+material = SubResource( 13 )
 position = Vector2( 50, 8 )
 z_index = 1
 texture = ExtResource( 8 )

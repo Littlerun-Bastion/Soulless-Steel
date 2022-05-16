@@ -15,6 +15,8 @@ export var total_ammo := 5
 export var max_ammo := 5
 export var clip_size := 1
 export var reload_speed := 2.0
+export var muzzle_heat := 100
+export var heat_dispersion := 30
 export var ammo_cost := 5
 
 var firing_timer = 0.0

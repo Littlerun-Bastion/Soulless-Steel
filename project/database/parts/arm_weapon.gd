@@ -1,9 +1,7 @@
-extends Resource
+extends Node
 
-export var name: String
+export var weapon_name: String
 export var type: String
-export var image: Resource
-export var shooting_pos : Vector2
 export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource
@@ -22,3 +20,12 @@ export var reload_speed := 3.0
 export var ammo_cost := 10
 
 var firing_timer = 0.0
+
+func get_image():
+	return $Weapon.texture
+
+
+func get_shooting_pos():
+	return $ShootingPos.position
+
+

@@ -35,6 +35,7 @@ PlayerStatManager="*res://PlayerStatManager.gd"
 [global]
 
 screen=false
+sound=false
 
 [input]
 

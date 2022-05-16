@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/engine_hum.ogg-1fedc6fb007a983a5d4d655cb3eb12c8.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/engine_hum.ogg"
+dest_files=[ "res://.import/engine_hum.ogg-1fedc6fb007a983a5d4d655cb3eb12c8.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

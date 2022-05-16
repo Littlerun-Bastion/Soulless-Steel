@@ -180,6 +180,8 @@ polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.
 visible = false
 polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
 
+[node name="BulletImpactArmor" type="AudioStreamPlayer2D" parent="."]
+
 [node name="StunTimer" type="Timer" parent="."]
 one_shot = true
 

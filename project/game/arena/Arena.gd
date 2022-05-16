@@ -22,7 +22,7 @@ var player_kills = 0
 
 func _ready():
 	randomize()
-	var player_kills = 0
+	player_kills = 0
 	target_arena_zoom = ArenaCam.zoom
 	
 	update_navigation_polygon()

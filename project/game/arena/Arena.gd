@@ -31,7 +31,6 @@ func _ready():
 	for _i in range(10):
 		add_enemy()
 	for exitposition in $Exits.get_children():
-		print(str(exitposition))
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
 
@@ -204,16 +203,18 @@ func _on_mecha_died(mecha):
 	if mecha == player:
 		player_died()
 
+
 func _on_mecha_player_kill():
 	player_kills += 1
-	print("Kills: " + str(player_kills))
+
 
 func _on_ExitPos_mecha_extracting(extractingMech):
 	print(str(extractingMech.name) + str(" is extracting"))
 	extractingMech.extracting()
 	if extractingMech.name == "Player":
 		$PlayerHUD/ExtractingLabel.visible = true
-	
+
+
 func _on_ExitPos_extracting_cancelled(extractingMech):
 	if extractingMech == null:
 		pass
@@ -221,6 +222,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 		extractingMech.cancel_extract()
 	if extractingMech.name == "Player":
 		$PlayerHUD/ExtractingLabel.visible = false
+
 
 func _on_player_mech_extracted(playerMech):
 	PlayerStatManager.PlayerKills += player_kills

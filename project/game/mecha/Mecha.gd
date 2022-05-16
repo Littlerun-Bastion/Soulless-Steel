@@ -147,9 +147,8 @@ func die(source_info, weapon_name):
 		})
 	if source_info.name == "Player":
 		emit_signal("player_kill")
-	print(source_info.name)
 	queue_free()
-	
+
 
 func is_shape_id_legs(id):
 	return shape_owner_get_owner(shape_find_owner(id)) == $LegsCollision
@@ -562,4 +561,3 @@ func _on_ExtractTimer_timeout():
 func cancel_extract():
 	$ExtractTimer.stop()
 	$ExtractTimer.wait_time = 5
-	print(str("Extract Cancelled"))

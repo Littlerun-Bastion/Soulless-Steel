@@ -6,13 +6,11 @@ var RArmTotal = 0
 var LArmTotal = 0
 var RShdTotal = 0
 var LShdTotal = 0
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
 	if VCRTween.is_active():
 		return

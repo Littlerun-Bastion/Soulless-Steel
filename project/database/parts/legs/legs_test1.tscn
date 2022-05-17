@@ -1,13 +1,24 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://database/parts/legs.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/T-01-TR.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/percival_leg.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/percival_leg_glow.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/percival_leg_sub.png" type="Texture" id=4]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
 
+[node name="LegsGlow" type="Sprite" parent="."]
+z_index = 1
+texture = ExtResource( 3 )
+
 [node name="Legs" type="Sprite" parent="."]
 texture = ExtResource( 2 )
 
+[node name="LegsSub" type="Sprite" parent="."]
+z_index = -1
+texture = ExtResource( 4 )
+
 [node name="Collision" type="CollisionPolygon2D" parent="."]
-polygon = PoolVector2Array( 28.6936, -137.11, 43.8127, -142.15, 57.0419, -142.15, 61.4516, -148.449, 96.7294, -149.079, 103.659, -143.41, 104.16, 140.036, 95.6748, 149.228, 70.2189, 149.935, 70.926, 140.036, 41.9346, 139.329, 26.3783, 124.479, -28.069, 123.065, -42.9182, 138.622, -69.0811, 138.622, -69.0811, 149.228, -95.9512, 149.228, -105.851, 140.036, -104.436, -142.807, -97.3654, -149.171, -62.7172, -147.757, -56.3532, -141.393, -45.0395, -140.686, -29.4832, -135.736, -30.1903, -112.401, -15.341, -104.623, 12.2361, -103.209, 27.7925, -113.108 )
+visible = false
+polygon = PoolVector2Array( -81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112 )

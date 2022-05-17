@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun1.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh.png" type="Texture" id=1]
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=2]
 [ext_resource path="res://database/parts/projectiles/simple_projectile.tres" type="Resource" id=3]
 
@@ -22,7 +22,9 @@ reload_speed = 1.4
 ammo_cost = 25
 
 [node name="Weapon" type="Sprite" parent="."]
+position = Vector2( -1.08598, 38.6246 )
 texture = ExtResource( 1 )
+offset = Vector2( 1.08598, -38.6246 )
 
 [node name="ShootingPos" type="Position2D" parent="."]
-position = Vector2( 6, -90 )
+position = Vector2( -1.42462, -42.9774 )

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=1]
 [ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=2]
 [ext_resource path="res://database/parts/projectiles/simple_projectile.tres" type="Resource" id=3]
 
@@ -17,7 +17,9 @@ clip_size = 15
 ammo_cost = 300
 
 [node name="Weapon" type="Sprite" parent="."]
+position = Vector2( -2.76584, 59.556 )
 texture = ExtResource( 1 )
+offset = Vector2( 2.76584, -59.556 )
 
 [node name="ShootingPos" type="Position2D" parent="."]
-position = Vector2( 2, -75 )
+position = Vector2( -2.40973, -88.8591 )

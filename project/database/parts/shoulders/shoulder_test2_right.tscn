@@ -1,11 +1,10 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/T01-SH-R.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_rshoulder_main.png" type="Texture" id=2]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-side = 1
 
 [node name="Shoulder" type="Sprite" parent="."]
 texture = ExtResource( 2 )

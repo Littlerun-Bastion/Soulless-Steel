@@ -56,7 +56,7 @@ func setup(_all_mechas, _path_stuff):
 	set_max_life(100)
 	set_core(PartManager.get_random_part_name("core"))
 	set_head(PartManager.get_random_part_name("head"))
-	set_legs(false)
+	set_legs(PartManager.get_random_part_name("legs"))
 	set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
 	set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
 	set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)

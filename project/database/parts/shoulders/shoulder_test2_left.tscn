@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/T01-SH-L.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_lshoulder_main.png" type="Texture" id=2]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )

@@ -18,6 +18,8 @@ func _on_PauseMenu_visibility_changed():
 
 func toggle_pause():
 	$Control.visible = not $Control.visible
+	$ParallaxBackground/GridLayer.visible = not $ParallaxBackground/GridLayer.visible
+	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
 	
 	if $Control.visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

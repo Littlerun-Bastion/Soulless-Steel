@@ -104,10 +104,10 @@ void fragment()
 
 [sub_resource type="ShaderMaterial" id=8]
 shader = SubResource( 11 )
-shader_param/barRange = 0.022
+shader_param/barRange = 0.01
 shader_param/barOffsetIntensity = 0.002
-shader_param/noiseQuality = 2410.59
-shader_param/noiseIntensity = 0.015
+shader_param/noiseQuality = 5000.0
+shader_param/noiseIntensity = 0.006
 shader_param/colorOffsetIntensity = 0.373
 shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
@@ -299,7 +299,7 @@ rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )
 
 [node name="ColorRect4" type="ColorRect" parent="."]
-anchor_top = 0.98
+anchor_top = 0.986111
 anchor_right = 1.0
 anchor_bottom = 1.0
 rect_min_size = Vector2( 0, 15 )

@@ -5,7 +5,7 @@ enum {MASTER_BUS, SFX_BUS}
 
 #SFX
 const MAX_SFX_NODES = 30
-const MAX_POS_SFX_NODES = 100
+const MAX_POS_SFX_NODES = 200
 const SFX_PATH = "res://database/audio/sfx/"
 onready var SFXS = {}
 

@@ -38,6 +38,8 @@ window/size/width=1920
 window/size/height=1080
 window/size/borderless=true
 window/size/fullscreen=true
+window/size/test_width=1000
+window/size/test_height=600
 window/stretch/mode="viewport"
 window/stretch/aspect="keep"
 

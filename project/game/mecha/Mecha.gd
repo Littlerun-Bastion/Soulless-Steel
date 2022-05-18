@@ -384,21 +384,38 @@ func set_ammo(part_name, target_val):
 
 #MOVEMENT METHODS
 
-func get_direction_from_vector(dir_vec):
+func get_direction_from_vector(dir_vec, eight_directions = false):
 	var margin = PI/8
 	var angle = dir_vec.angle()
 	if angle < 0:
 		angle += 2*PI
+	if not eight_directions:
+		if angle > PI/4 - margin and angle <= 3*PI/4 + margin:
+			return "down"
+		if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin:
+			return "left"
+		if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin:
+			return "up"
+		if angle > 7*PI/4 - margin or angle <= PI/4 + margin:
+			return "right"
+	else:
+		if angle > PI/2 - margin and angle <= PI/2 + margin:
+			return "down"
+		if angle >  PI/2 + PI/4 - margin and angle <= PI/2 + PI/4 + margin:
+			return "downleft"
+		if angle > PI - margin and angle <= PI + margin:
+			return "left"
+		if angle >  PI + PI/4 - margin and angle <= PI + PI/4 + margin:
+			return "upleft"
+		if angle > 3*PI/2 - margin and angle <= 3*PI/2 + margin:
+			return "up"
+		if angle > 3*PI/2 + PI/4 - margin and angle <= 3*PI/2 + PI/4 + margin:
+			return "upright"
+		if angle > 3*PI/2 + PI/4 + margin or angle <= margin:
+			return "right"
+		if angle > PI/4 - margin or angle <= PI/4 + margin:
+			return "downright"
 	
-	if angle > PI/4 - margin and angle <= 3*PI/4 + margin: #Down
-		return "down"
-	if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin: #Left
-		return "left"
-	if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin: #Up
-		return "up"
-	if angle > 7*PI/4 - margin or angle <= PI/4 + margin: #Right
-		return "right"
-
 
 func apply_movement(dt, direction):
 	if movement_type == "free":
@@ -413,15 +430,27 @@ func apply_movement(dt, direction):
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
-			match get_direction_from_vector(direction):
+			match get_direction_from_vector(direction, true):
 				"down":
 					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				"downleft":
+					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					direction += -Vector2(1,0).rotated(deg2rad(rotation_degrees))
 				"left":
 					direction = -Vector2(1,0).rotated(deg2rad(rotation_degrees))
+				"upleft":
+					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					direction += -Vector2(1,0).rotated(deg2rad(rotation_degrees))
 				"up":
 					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				"upright":
+					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					direction += Vector2(1,0).rotated(deg2rad(rotation_degrees))
 				"right":
 					direction = Vector2(1,0).rotated(deg2rad(rotation_degrees))
+				"downright":
+					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					direction += Vector2(1,0).rotated(deg2rad(rotation_degrees))
 			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:

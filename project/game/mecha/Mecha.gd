@@ -549,7 +549,7 @@ func play_step_sound(is_left := true):
 		pitch = rand_range(.95, .97)
 	
 	var volume = min(pow(velocity.length(), 1.3)/300.0 - 26.0, -5.0)
-	AudioManager.play_sfx("robot_step", global_position, 4000, 1.25, pitch, volume)
+	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
 
 func extracting():
 	$ExtractTimer.start()
@@ -565,25 +565,22 @@ func cancel_extract():
 	$ExtractTimer.stop()
 	$ExtractTimer.wait_time = 5
 
-func select_impact(calibre, isShield):
-	if calibre == "Large":
-		if isShield == true:
-			var sfx_idx = "large_shield_impact" + str((randi()%2) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
-		else:
-			var sfx_idx = "large_impact" + str((randi()%2) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
-	elif calibre == "Medium":
-		if isShield == true:
-			var sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
-		else:
-			var sfx_idx = "medium_impact" + str((randi()%2) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
-	else:
-		if isShield == true:
-			var sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
-		else:
-			var sfx_idx = "small_impact" + str((randi()%2) + 1)
-			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+func select_impact(calibre, is_shield):
+	var sfx_idx
+	match calibre:
+		"Large":
+			if is_shield:
+				sfx_idx = "large_shield_impact" + str((randi()%2) + 1)
+			else:
+				sfx_idx = "large_impact" + str((randi()%2) + 1)
+		"Medium":
+			if is_shield:
+				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
+			else:
+				sfx_idx = "medium_impact" + str((randi()%2) + 1)
+		_:
+			if is_shield:
+				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
+			else:
+				sfx_idx = "small_impact" + str((randi()%2) + 1)
+	AudioManager.play_sfx(sfx_idx, global_position)

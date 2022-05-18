@@ -96,9 +96,6 @@ func check_weapon_input(name, node, weapon_ref):
 
 func setup():
 	mecha_name = "Player"
-	movement_type = "free"
-	#rotation_acc = 2.0
-	#friction = 0.3
 	set_speed(500, 60)
 	set_max_life(100)
 	set_core("MSV-L3J")
@@ -110,6 +107,9 @@ func setup():
 	set_shoulder_weapon(false, SIDE.LEFT)
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
+	movement_type = "relative"
+	#rotation_acc = 2.0
+	#friction = 0.3
 
 
 func set_arm_weapon(part_name, side):

@@ -81,14 +81,14 @@ func update_navigation_polygon():
 	var arena_poly = NavInstance.navpoly
 	
 	#Add props collision to navigation
-	var distance = 100
+	var distance = 40
 	var prop_polygons = []
-	for i in range(0, $Props.get_child_count()):
-		var prop = $Props.get_child(i)
+	for i in range(0, $NavBlocks.get_child_count()):
+		var prop = $NavBlocks.get_child(i)
 		prop_polygons.append(prop.create_collision_polygon(distance))
 		
 	
-	#merge_polygons(prop_polygons)
+	merge_polygons(prop_polygons)
 	for polygon in prop_polygons:
 		arena_poly.add_outline(polygon)
 	arena_poly.make_polygons_from_outlines()
@@ -112,7 +112,6 @@ func merge_polygons(polygons):
 					break
 			if merged_something:
 				break
-
 		if not merged_something:
 			break
 		else:

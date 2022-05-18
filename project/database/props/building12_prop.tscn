@@ -15,7 +15,7 @@ texture = ExtResource( 1 )
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
-polygon = PoolVector2Array( -1919.23, -819.731, -1919.72, -180.613, -1819.33, -181.362, -1820.11, 818.962, 1919.94, 820, 1918.98, -793.313, 918.928, -794.6, 918.928, -819.798, 581.269, -817.278, 581.269, -792.08, -282.138, -791.447, -281.078, -820.052, -619.204, -818.504, -619.204, -793.048, -1482.43, -792.431, -1481.24, -818.594 )
+polygon = PoolVector2Array( -1919.23, -819.731, -1919.72, -180.613, -1819.33, -181.362, -1820.11, 818.962, 1919.94, 820, 1918.98, -793.313, 918.928, -819.798, 581.269, -817.278, -281.078, -820.052, -619.204, -818.504, -1481.24, -818.594 )
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource( 1 )

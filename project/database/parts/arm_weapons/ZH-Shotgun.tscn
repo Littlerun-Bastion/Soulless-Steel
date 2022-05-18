@@ -10,6 +10,7 @@ weapon_name = "ZH Shotgun"
 type = "Multi-PewPew"
 projectile = ExtResource( 3 )
 number_projectiles = 5
+damage_modifier = 6.0
 recoil_force = 5.0
 fire_rate = 0.6
 bullet_accuracy_margin = 10

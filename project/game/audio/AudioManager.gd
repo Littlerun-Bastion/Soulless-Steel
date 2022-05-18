@@ -4,8 +4,8 @@ extends Node
 enum {MASTER_BUS, SFX_BUS}
 
 #SFX
-const MAX_SFX_NODES = 10
-const MAX_POS_SFX_NODES = 10
+const MAX_SFX_NODES = 30
+const MAX_POS_SFX_NODES = 100
 const SFX_PATH = "res://database/audio/sfx/"
 onready var SFXS = {}
 
@@ -54,37 +54,25 @@ func get_sfx_player(positional = false):
 	return player
 
 
-func play_sfx(name: String, pos = false, max_range = false, override_attenuation = false, override_pitch = false, override_db = false):
+func play_sfx(name: String, pos = false, override_pitch = false, override_db = false, override_att = false, override_max_range = false):
 	if not SFXS.has(name):
 		push_error("Not a valid sfx name: " + name)
 		assert(false)
+	
 	var sfx = SFXS[name]
 	var player = get_sfx_player(pos)
 	player.stop()
 	
 	player.stream.audio_stream = sfx.asset
-	
-	if not override_db:
-		var vol = sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
-		player.volume_db = vol
-	else:
-		player.volume_db = override_db
-	
-	if override_pitch:
-		override_pitch = max(override_pitch, 0.001)
-		player.pitch_scale = override_pitch
-	else:
-		player.pitch_scale = sfx.base_pitch
-	
-	if max_range:
-		player.max_distance = max_range
-	
-	if override_attenuation:
-		player.attenuation = override_attenuation
+	player.volume_db = override_db if override_db else sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
+	player.pitch_scale = max(override_pitch, 0.001) if override_pitch else sfx.base_pitch
+	player.max_distance = override_max_range if override_max_range else sfx.max_range
+	player.attenuation = override_att if override_att else sfx.attenuation
 	player.stream.random_pitch = 1.0 + sfx.random_pitch_var
 	
 	if pos:
 		player.position = pos
+		
 	player.play()
 
 

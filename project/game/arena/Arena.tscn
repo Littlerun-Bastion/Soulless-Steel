@@ -1563,6 +1563,7 @@ scale = Vector2( 0.6525, 0.595845 )
 z_index = -1
 
 [node name="Props" type="Node2D" parent="."]
+visible = false
 scale = Vector2( 2, 2 )
 
 [node name="radio_scope_prop" parent="Props" instance=ExtResource( 37 )]

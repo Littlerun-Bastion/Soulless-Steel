@@ -19,8 +19,8 @@ var muzzle_heat = 0
 var heat = 0.0
 var soundEffect = "test"
 var shotPos = false
-var sfx_max_range = 2000
-var sfx_att = 1.00
+var sfx_max_range = 4000
+var sfx_att = 1.0
 
 func _process(dt):
 	timer = max(timer - dt, 0.0)
@@ -91,7 +91,7 @@ func can_shoot(amount := 1):
 
 func shoot(amount := 1):
 	add_time(fire_rate)
-	AudioManager.play_sfx(soundEffect, get_shoot_position(), sfx_max_range, sfx_att)
+	AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
 	clip_ammo -= amount
 	heat = min(heat + muzzle_heat, 100)
 

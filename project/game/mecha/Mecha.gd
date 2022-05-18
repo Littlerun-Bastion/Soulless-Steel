@@ -125,13 +125,16 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, source_info, weapon_name):
+func take_damage(amount, source_info, weapon_name, calibre):
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
 	amount = max(amount - temp_shield, 0)
 	
 	hp = max(hp - amount, 0)
-	
+	if shield <= 0:
+		select_impact(calibre, false)
+	else:
+		select_impact(calibre, true)
 	emit_signal("took_damage", self)
 	if hp <= 0:
 		die(source_info, weapon_name)
@@ -546,7 +549,7 @@ func play_step_sound(is_left := true):
 		pitch = rand_range(.95, .97)
 	
 	var volume = min(pow(velocity.length(), 1.3)/300.0 - 26.0, -5.0)
-	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
+	AudioManager.play_sfx("robot_step", global_position, 4000, 1.25, pitch, volume)
 
 func extracting():
 	$ExtractTimer.start()
@@ -561,3 +564,26 @@ func _on_ExtractTimer_timeout():
 func cancel_extract():
 	$ExtractTimer.stop()
 	$ExtractTimer.wait_time = 5
+
+func select_impact(calibre, isShield):
+	if calibre == "Large":
+		if isShield == true:
+			var sfx_idx = "large_shield_impact" + str((randi()%2) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+		else:
+			var sfx_idx = "large_impact" + str((randi()%2) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+	elif calibre == "Medium":
+		if isShield == true:
+			var sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+		else:
+			var sfx_idx = "medium_impact" + str((randi()%2) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+	else:
+		if isShield == true:
+			var sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)
+		else:
+			var sfx_idx = "small_impact" + str((randi()%2) + 1)
+			AudioManager.play_sfx(sfx_idx, global_position, 10000, 0.75)

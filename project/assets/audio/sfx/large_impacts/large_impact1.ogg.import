@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/large_impacts/large_impact1.ogg"
+dest_files=[ "res://.import/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

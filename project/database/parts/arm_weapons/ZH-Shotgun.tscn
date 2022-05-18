@@ -23,6 +23,7 @@ ammo_cost = 25
 soundEffect = "shotgun_shotA"
 sound_max_range = 500
 sound_att = 1.75
+calibre = "Small"
 
 [node name="Weapon" type="Sprite" parent="."]
 position = Vector2( -1.08598, 38.6246 )

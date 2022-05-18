@@ -56,9 +56,9 @@ func _input(event):
 		die(self, "Myself")
 
 
-func take_damage(amount, source_info, weapon_name):
+func take_damage(amount, source_info, weapon_name, calibre):
 	var prev_hp = hp
-	.take_damage(amount, source_info, weapon_name)
+	.take_damage(amount, source_info, weapon_name, calibre)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 

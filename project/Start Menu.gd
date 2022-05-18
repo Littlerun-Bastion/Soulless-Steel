@@ -1,6 +1,6 @@
 extends Control
 
-const DEBUG = true
+const DEBUG = false
 
 var parallaxMult = 30.0
 

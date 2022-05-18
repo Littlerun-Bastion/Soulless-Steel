@@ -384,6 +384,21 @@ func set_ammo(part_name, target_val):
 
 #MOVEMENT METHODS
 
+func get_direction_from_vector(dir_vec):
+	var margin = PI/8
+	var angle = dir_vec.angle()
+	if angle < 0:
+		angle += 2*PI
+	
+	if angle > PI/4 - margin and angle <= 3*PI/4 + margin: #Down
+		return "down"
+	if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin: #Left
+		return "left"
+	if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin: #Up
+		return "up"
+	if angle > 7*PI/4 - margin or angle <= PI/4 + margin: #Right
+		return "right"
+
 
 func apply_movement(dt, direction):
 	if movement_type == "free":
@@ -394,27 +409,39 @@ func apply_movement(dt, direction):
 		else:
 			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
-		
 		velocity = move_and_slide(velocity*speed_modifier)
-		
+	elif movement_type == "relative":
+		if direction.length() > 0:
+			moving = true
+			match get_direction_from_vector(direction):
+				"down":
+					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				"left":
+					direction = -Vector2(1,0).rotated(deg2rad(rotation_degrees))
+				"up":
+					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+				"right":
+					direction = Vector2(1,0).rotated(deg2rad(rotation_degrees))
+			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+			mecha_heat = min(mecha_heat + move_heat*dt, 100)
+		else:
+			moving = false
+			velocity = lerp(velocity, Vector2.ZERO, friction)
+		velocity = move_and_slide(velocity*speed_modifier)
 	elif movement_type == "tank":
 		if direction.length() > 0:
-			var margin = PI/8
 			moving = false
-			var angle = direction.angle()
-			if angle < 0:
-				angle += 2*PI
-			
-			if angle > PI/4 - margin and angle <= 3*PI/4 + margin: #Down
-				direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
-				moving = true
-			if angle > 3*PI/4 - margin and angle <= 5*PI/4 + margin: #Left
-				apply_rotation_by_direction(dt, "counter")
-			if angle > 5*PI/4 - margin and angle <= 7*PI/4 + margin: #Up
-				direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
-				moving = true
-			if angle > 7*PI/4 - margin or angle <= PI/4 + margin: #Right
-				apply_rotation_by_direction(dt, "clock")
+			match get_direction_from_vector(direction):
+				"down":
+					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					moving = true
+				"left":
+					apply_rotation_by_direction(dt, "counter")
+				"up":
+					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
+					moving = true
+				"right":
+					apply_rotation_by_direction(dt, "clock")
 
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
@@ -548,7 +575,7 @@ func play_step_sound(is_left := true):
 	else:
 		pitch = rand_range(.95, .97)
 	
-	var volume = min(pow(velocity.length(), 1.3)/300.0 - 26.0, -5.0)
+	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
 	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
 
 func extracting():

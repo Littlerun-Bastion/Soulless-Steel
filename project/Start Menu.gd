@@ -13,6 +13,10 @@ func _input(event):
 		var relative_y = (mouse_y - (viewport_size.y/2)) / (viewport_size.y/2)
 		$ParallaxBackground/GridLayer.motion_offset.x = parallaxMult * relative_x
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
+	if event.is_action_pressed("toggle_fullscreen"):
+		OS.window_fullscreen = not OS.window_fullscreen
+		OS.window_borderless = OS.window_fullscreen
+		
 
 func _on_launch_system_button_pressed():
 # warning-ignore:return_value_discarded

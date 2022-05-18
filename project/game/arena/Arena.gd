@@ -43,13 +43,16 @@ func _input(event):
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
-	if ArenaCam.current:
-		var amount = Vector2(.8, .8)
-		if event is InputEventMouseButton:
+	if event is InputEventMouseButton:
+		if ArenaCam.current:
+			var amount = Vector2(.8, .8)
 			if event.button_index == BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
 			elif event.button_index == BUTTON_WHEEL_DOWN:
 				target_arena_zoom += amount
+	if event.is_action_pressed("toggle_fullscreen"):
+		OS.window_fullscreen = not OS.window_fullscreen
+		OS.window_borderless = OS.window_fullscreen
 
 
 func _process(dt):

@@ -15,6 +15,7 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
 		OS.window_fullscreen = not OS.window_fullscreen
+		OS.window_borderless = OS.window_fullscreen
 		
 
 func _on_launch_system_button_pressed():

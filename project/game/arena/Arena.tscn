@@ -69,7 +69,7 @@ code = "shader_type canvas_item;
 
 uniform float barRange : hint_range(0.0, 0.1) = 0.01;
 uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.000;
-uniform float noiseQuality : hint_range(1.0, 500) = 500;
+uniform float noiseQuality : hint_range(1.0, 2000) = 500;
 uniform float noiseIntensity : hint_range(0.0, 0.03) = 0.000;
 uniform float colorOffsetIntensity : hint_range(0.0, 2.0) = 0.175;
 uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
@@ -126,9 +126,9 @@ void fragment()
 shader = SubResource( 5 )
 shader_param/barRange = 0.05
 shader_param/barOffsetIntensity = 0.0
-shader_param/noiseQuality = 500.0
+shader_param/noiseQuality = 418.075
 shader_param/noiseIntensity = 0.0
-shader_param/colorOffsetIntensity = 0.175
+shader_param/colorOffsetIntensity = 0.026
 shader_param/redMultiplier = 0.006
 shader_param/redIntensity = 1.0
 shader_param/greenMultiplier = 0.0073
@@ -2479,6 +2479,9 @@ layer = 2
 material = SubResource( 4 )
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_right = -960.0
+margin_bottom = -540.0
+rect_scale = Vector2( 2, 2 )
 
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 

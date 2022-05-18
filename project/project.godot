@@ -32,10 +32,20 @@ ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 TickerManager="*res://game/ui/Ticker/TickerManager.gd"
 PlayerStatManager="*res://PlayerStatManager.gd"
 
+[display]
+
+window/size/width=1920
+window/size/height=1080
+window/size/borderless=true
+window/size/fullscreen=true
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
 [global]
 
 screen=false
 sound=false
+window=false
 
 [input]
 

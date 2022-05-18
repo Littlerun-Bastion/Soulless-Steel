@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://PauseMenu.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button.png" type="Texture" id=2]
@@ -6,6 +6,11 @@
 [ext_resource path="res://assets/images/ui/pause_menu/resume_button_highlight.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button_highlight.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/ui/pause_menu/temporary_bacground.png" type="Texture" id=6]
+[ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=7]
+
+[sub_resource type="DynamicFont" id=1]
+size = 75
+font_data = ExtResource( 7 )
 
 [node name="PauseMenu" type="CanvasLayer"]
 pause_mode = 2
@@ -22,11 +27,20 @@ margin_bottom = 600.0
 texture = ExtResource( 6 )
 expand = true
 
+[node name="Label" type="Label" parent="Control"]
+margin_left = 21.2192
+margin_top = 16.1432
+margin_right = 1126.22
+margin_bottom = 167.143
+custom_fonts/font = SubResource( 1 )
+text = "Runtime Halted"
+
 [node name="MarginContainer" type="MarginContainer" parent="Control"]
 margin_left = 20.0
-margin_top = 20.0
+margin_top = 97.3977
 margin_right = 770.0
-margin_bottom = 264.0
+margin_bottom = 341.398
+rect_scale = Vector2( 0.33, 0.33 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Control/MarginContainer"]
 margin_right = 750.0

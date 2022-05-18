@@ -17,6 +17,10 @@ var ammo_cost = false
 var heat_dispersion = 0
 var muzzle_heat = 0
 var heat = 0.0
+var soundEffect = "test"
+var shotPos = false
+var sfx_max_range = 2000
+var sfx_att = 1.00
 
 func _process(dt):
 	timer = max(timer - dt, 0.0)
@@ -33,6 +37,10 @@ func setup(weapon_ref):
 	ammo_cost = weapon_ref.ammo_cost
 	muzzle_heat = weapon_ref.muzzle_heat
 	heat_dispersion = weapon_ref.heat_dispersion
+	soundEffect = weapon_ref.soundEffect
+	sfx_max_range = weapon_ref.sound_max_range
+	sfx_att = weapon_ref.sound_att
+	
 
 
 func update_heat(dt):
@@ -82,7 +90,8 @@ func can_shoot(amount := 1):
 
 
 func shoot(amount := 1):
-	add_time(fire_rate) 
+	add_time(fire_rate)
+	AudioManager.play_sfx(soundEffect, get_shoot_position(), sfx_max_range, sfx_att)
 	clip_ammo -= amount
 	heat = min(heat + muzzle_heat, 100)
 

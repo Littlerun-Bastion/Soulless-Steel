@@ -9,12 +9,16 @@ script = ExtResource( 2 )
 weapon_name = "SS-Shoot"
 type = "Long_range Missile"
 projectile = ExtResource( 3 )
-recoil_force = 2.0
+damage_modifier = 20.0
+recoil_force = 20.0
 auto_fire = false
 total_ammo = 15
 max_ammo = 15
 clip_size = 15
 ammo_cost = 300
+soundEffect = "large_shotA"
+sound_max_range = 8000
+sound_att = 1.33
 
 [node name="Weapon" type="Sprite" parent="."]
 position = Vector2( -2.76584, 59.556 )

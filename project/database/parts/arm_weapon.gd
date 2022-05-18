@@ -20,7 +20,9 @@ export var reload_speed := 3.0
 export var muzzle_heat := 60
 export var heat_dispersion := 30
 export var ammo_cost := 10
-
+export var soundEffect := "test"
+export var sound_max_range := 2000
+export var sound_att := 1.00
 var firing_timer = 0.0
 
 func get_image():

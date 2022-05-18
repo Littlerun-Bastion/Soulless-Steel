@@ -54,7 +54,7 @@ func get_sfx_player(positional = false):
 	return player
 
 
-func play_sfx(name: String, pos = false, override_pitch = false, override_db = false):
+func play_sfx(name: String, pos = false, max_range = false, override_attenuation = false, override_pitch = false, override_db = false):
 	if not SFXS.has(name):
 		push_error("Not a valid sfx name: " + name)
 		assert(false)
@@ -75,6 +75,12 @@ func play_sfx(name: String, pos = false, override_pitch = false, override_db = f
 		player.pitch_scale = override_pitch
 	else:
 		player.pitch_scale = sfx.base_pitch
+	
+	if max_range:
+		player.max_distance = max_range
+	
+	if override_attenuation:
+		player.attenuation = override_attenuation
 	player.stream.random_pitch = 1.0 + sfx.random_pitch_var
 	
 	if pos:

@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/small_auto1.wav-5d5b35fc56520daff4c37bb1387f5fda.sample"
+
+[deps]
+
+source_file="res://assets/audio/sfx/small_auto1.wav"
+dest_files=[ "res://.import/small_auto1.wav-5d5b35fc56520daff4c37bb1387f5fda.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

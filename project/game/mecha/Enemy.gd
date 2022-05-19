@@ -54,6 +54,7 @@ func setup(_all_mechas, _path_stuff):
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
 	set_max_life(100)
+	set_max_shield(50)
 	set_core(PartManager.get_random_part_name("core"))
 	set_head(PartManager.get_random_part_name("head"))
 	set_legs(PartManager.get_random_part_name("legs"))

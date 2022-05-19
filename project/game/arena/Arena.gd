@@ -150,7 +150,6 @@ func add_enemy():
 	all_mechas.push_back(enemy)
 	enemy.setup(all_mechas, $Navigation2D)
 
-
 func player_died():
 	player = null
 	ArenaCam.current = true
@@ -263,3 +262,16 @@ func player_ammo_set():
 		player.set_ammo("shoulder_weapon_left", PlayerStatManager.LShoulderAmmo)
 		$PlayerHUD.update_cursor()
 		$PlayerHUD.update_arsenal()
+
+func random_wind_sound():
+	var x = rand_range(-10000.00,10000.00)
+	var y = rand_range(-10000.00,10000.00)
+	var sound_pos = Vector2(x,y)
+	var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
+	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
+	print("Sound playing at location: " + str(x) + ", " + str(y))
+
+
+func _on_WindsTimer_timeout():
+	random_wind_sound()
+	pass # Replace with function body.

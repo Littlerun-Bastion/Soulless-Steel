@@ -3771,3 +3771,9 @@ z_index = -1
 position = Vector2( -1330.08, 6040.97 )
 rotation = -2.45309
 z_index = -1
+
+[node name="WindsTimer" type="Timer" parent="."]
+wait_time = 20.0
+autostart = true
+
+[connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

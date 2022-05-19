@@ -6,6 +6,7 @@ var parallaxMult = 30.0
 
 
 func _ready():
+	$AnimationPlayer.play("Typewrite")
 	if DEBUG:
 		window_debug_mode()
 

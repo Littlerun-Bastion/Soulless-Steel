@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://assets/images/ui/menu/exit_button.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/ui/menu/settings_button.png" type="Texture" id=2]
@@ -43,6 +43,15 @@ font_data = SubResource( 9 )
 size = 18
 use_mipmaps = true
 use_filter = true
+font_data = ExtResource( 8 )
+
+[sub_resource type="DynamicFont" id=12]
+size = 45
+outline_size = 1
+font_data = ExtResource( 8 )
+
+[sub_resource type="DynamicFont" id=13]
+size = 30
 font_data = ExtResource( 8 )
 
 [sub_resource type="Shader" id=11]
@@ -114,6 +123,133 @@ shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
 shader_param/greenIntensity = 0.13
+
+[sub_resource type="Animation" id=14]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("VBoxContainer3/Label:percent_visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("VBoxContainer3/Label2:percent_visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("VBoxContainer3/Label3:percent_visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("VBoxContainer3/Label4:percent_visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("VBoxContainer3/Label6:percent_visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
+[sub_resource type="Animation" id=15]
+resource_name = "Typewrite"
+length = 15.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("VBoxContainer3/Label:percent_visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("VBoxContainer3/Label2:percent_visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 2.5, 4.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("VBoxContainer3/Label3:percent_visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 5, 7 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("VBoxContainer3/Label4:percent_visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 7.5, 8.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("VBoxContainer3/Label6:percent_visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 9, 13 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0 ]
+}
 
 [node name="Start Menu" type="Control"]
 anchor_right = 1.0
@@ -299,6 +435,72 @@ anchor_right = 1.0
 rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )
 
+[node name="VBoxContainer3" type="VBoxContainer" parent="."]
+anchor_left = 0.975
+anchor_top = 0.5
+anchor_right = 0.988
+anchor_bottom = 0.5
+margin_left = -852.476
+margin_top = -195.209
+margin_right = -8.47571
+margin_bottom = 108.791
+custom_constants/separation = 25
+
+[node name="Label5" type="Label" parent="VBoxContainer3"]
+margin_right = 868.0
+margin_bottom = 46.0
+custom_fonts/font = SubResource( 12 )
+text = "User guide"
+align = 2
+
+[node name="Label" type="Label" parent="VBoxContainer3"]
+margin_top = 71.0
+margin_right = 868.0
+margin_bottom = 102.0
+custom_fonts/font = SubResource( 13 )
+text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
+align = 2
+percent_visible = 0.0
+
+[node name="Label2" type="Label" parent="VBoxContainer3"]
+margin_top = 127.0
+margin_right = 868.0
+margin_bottom = 158.0
+custom_fonts/font = SubResource( 13 )
+text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
+align = 2
+percent_visible = 0.0
+
+[node name="Label3" type="Label" parent="VBoxContainer3"]
+margin_top = 183.0
+margin_right = 868.0
+margin_bottom = 248.0
+custom_fonts/font = SubResource( 13 )
+text = "[Q. e] = Fire right and left shoulder weapons. 
+Current loadout does not feature a left shoulder weapon."
+align = 2
+percent_visible = 0.0
+
+[node name="Label4" type="Label" parent="VBoxContainer3"]
+margin_top = 273.0
+margin_right = 868.0
+margin_bottom = 304.0
+custom_fonts/font = SubResource( 13 )
+text = "[R] = Toggle Reload "
+align = 2
+percent_visible = 0.0
+
+[node name="Label6" type="Label" parent="VBoxContainer3"]
+margin_top = 329.0
+margin_right = 868.0
+margin_bottom = 428.0
+custom_fonts/font = SubResource( 13 )
+text = "Hunt and destroy enemy Sav units.
+Find extraction points.
+Survive."
+align = 2
+percent_visible = 0.0
+
 [node name="ColorRect4" type="ColorRect" parent="."]
 anchor_top = 0.986111
 anchor_right = 1.0
@@ -316,6 +518,7 @@ layer = 2
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
+visible = false
 material = SubResource( 8 )
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -323,6 +526,10 @@ mouse_filter = 2
 script = ExtResource( 15 )
 
 [node name="Tween" type="Tween" parent="ShaderEffects/VCREffect"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/RESET = SubResource( 14 )
+anims/Typewrite = SubResource( 15 )
 
 [connection signal="mouse_entered" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_entered"]
 [connection signal="mouse_exited" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_exited"]

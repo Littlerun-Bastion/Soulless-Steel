@@ -70,6 +70,8 @@ func _ready():
 
 
 func _physics_process(dt):
+	if shield < max_shield:
+		shield += 0.1
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():

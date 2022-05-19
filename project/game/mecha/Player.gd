@@ -98,6 +98,7 @@ func setup():
 	mecha_name = "Player"
 	set_speed(500, 60)
 	set_max_life(100)
+	set_max_shield(100)
 	set_core("MSV-L3J")
 	set_head("head_test2")
 	set_legs("legs_test1")

@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/winds3.wav-28653ffa99936fa26989e8383a9fbc91.sample"
+
+[deps]
+
+source_file="res://assets/audio/sfx/wind_gusts/winds3.wav"
+dest_files=[ "res://.import/winds3.wav-28653ffa99936fa26989e8383a9fbc91.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

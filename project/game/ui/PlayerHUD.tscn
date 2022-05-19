@@ -199,6 +199,7 @@ margin_bottom = 253.244
 rect_scale = Vector2( 0.3, 0.3 )
 
 [node name="ExtractingLabel" type="Label" parent="."]
+visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5

@@ -27,6 +27,11 @@ func setup(player_ref, mechas_ref):
 	setup_weapon_slots()
 	setup_cursor()
 	PlayerRadar.setup(mechas, player, 5000, 2)
+	$ExtractingLabel.visible = false
+	update_lifebar(player.hp)
+	update_shieldbar(player.shield)
+	LifeBar.get_node("Label").text = str(player.hp)
+	ShieldBar.get_node("Label").text = str(player.shield)
 
 
 func setup_lifebar():
@@ -47,7 +52,6 @@ func setup_energybar():
 func setup_weapon_slots():
 	for slot in WeaponSlots.get_children():
 		slot.queue_free()
-	
 	for weapon in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
 		if player.get(weapon):
 			var slot = WEAPON_SLOT.instance()
@@ -90,6 +94,8 @@ func update_arsenal():
 func _on_player_took_damage(_p):
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
+	LifeBar.get_node("Label").text = str(player.hp)
+	ShieldBar.get_node("Label").text = str(player.shield)
 
 
 func _on_player_shoot():
@@ -99,6 +105,7 @@ func _on_player_shoot():
 
 func _on_reload_mode_update(active):
 	Cursor.set_reload_mode(active)
+	update_cursor()
 
 
 func _on_reloading(reload_time, side):

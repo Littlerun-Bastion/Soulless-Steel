@@ -29,6 +29,7 @@ func _input(event):
 
 
 func _on_launch_system_button_pressed():
+	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
 

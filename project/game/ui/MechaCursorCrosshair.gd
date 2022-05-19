@@ -82,3 +82,4 @@ func reloading(reload_time, side):
 	yield(tween, "tween_completed")
 	weapon_node.show()
 	reload_node.hide()
+	

@@ -33,6 +33,9 @@ func _ready():
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
+	$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 5.0)
+	$PlayerKilled/Label.visible = false
+	$PlayerKilled/ReturnButton.visible = false
 
 func _input(event):
 	if event is InputEventKey:
@@ -43,6 +46,8 @@ func _input(event):
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
+			if $PauseMenu/Control.visible == false:
+				$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
 	if event is InputEventMouseButton:
 		if ArenaCam.current:
 			var amount = Vector2(.8, .8)
@@ -152,7 +157,8 @@ func player_died():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	PlayerHUD.queue_free()
 	current_cam = ArenaCam
-
+	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
+	$PlayerKilled.killed()
 
 func get_random_start_position(exclude_idx := []):
 	var offset = 100

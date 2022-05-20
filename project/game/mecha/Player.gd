@@ -91,7 +91,7 @@ func check_input():
 func check_weapon_input(name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and not reload_mode and\
 	   not node.reloading and Input.is_action_pressed(name+"_shoot"):
-		shoot(name)
+		shoot(name, true)
 
 
 func setup(is_tutorial):

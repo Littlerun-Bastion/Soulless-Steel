@@ -36,6 +36,7 @@ onready var RightShoulderWeapon = $ShoulderWeaponRight
 
 var mecha_name = "Mecha Name"
 
+var is_dead = false
 var max_hp = 100
 var hp = 100
 var max_shield = 100
@@ -128,6 +129,9 @@ func set_max_energy(value):
 
 
 func take_damage(amount, source_info, weapon_name, calibre):
+	if is_dead:
+		return
+	
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
 	amount = max(amount - temp_shield, 0)
@@ -145,6 +149,7 @@ func take_damage(amount, source_info, weapon_name, calibre):
 
 func die(source_info, weapon_name):
 	emit_signal("died", self)
+	is_dead = true
 	TickerManager.new_message({
 		"type": "mecha_died",
 		"source": source_info.name,

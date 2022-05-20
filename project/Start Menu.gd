@@ -1,6 +1,6 @@
 extends Control
 
-const DEBUG = false
+const DEBUG = true
 
 onready var Parallax = $ParallaxBackground
 onready var VCREffect = $ShaderEffects/VCREffect

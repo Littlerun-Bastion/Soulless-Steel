@@ -3,8 +3,6 @@ class_name Mecha
 
 enum SIDE {LEFT, RIGHT}
 
-export var speed_modifier = 1.0
-
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 
@@ -14,6 +12,8 @@ signal took_damage
 signal died
 signal player_kill
 signal mecha_extracted
+
+export var speed_modifier = 1.0
 
 onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals

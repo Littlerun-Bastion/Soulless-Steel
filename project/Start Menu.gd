@@ -2,6 +2,9 @@ extends Control
 
 const DEBUG = false
 
+onready var Parallax = $ParallaxBackground
+onready var VCREffect = $ShaderEffects/VCREffect
+
 var parallaxMult = 30.0
 
 
@@ -30,18 +33,6 @@ func _input(event):
 			window_debug_mode()
 
 
-func _on_launch_system_button_pressed():
-	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
-# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/arena/Arena.tscn")
-
-
-func _on_exit_system_button_pressed():
-	get_tree().quit()
-
-
 #For debugging since deving on fullscreen is horrible
 func window_debug_mode():
 	OS.window_fullscreen = false
@@ -50,9 +41,39 @@ func window_debug_mode():
 	OS.window_position = Vector2(400, 100)
 
 
-func _on_tutorial_button_pressed():
-	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
+func _on_Button_mouse_entered():
+	AudioManager.play_sfx("select")
+	Parallax.mouse_hovered = true
+
+
+func _on_Button_mouse_exited():
+	Parallax.mouse_hovered = false
+
+
+func _on_TutorialButton_pressed():
+	AudioManager.play_sfx("confirm")
+	VCREffect.play_transition(5000.0, 0, 3.0)
 	PlayerStatManager.NumberofExtracts = 0
 	PlayerStatManager.Credits = 0
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/TestArena.tscn")
+
+
+func _on_LaunchSystemButton_pressed():
+	AudioManager.play_sfx("confirm")
+	VCREffect.play_transition(5000.0, 0, 3.0)
+	PlayerStatManager.NumberofExtracts = 0
+	PlayerStatManager.Credits = 0
+# warning-ignore:return_value_discarded
+	get_tree().change_scene("res://game/arena/Arena.tscn")
+
+
+func _on_SettingsButton_pressed():
+	AudioManager.play_sfx("back")
+
+
+func _on_ExitButton_pressed():
+	AudioManager.play_sfx("back")
+	get_tree().quit()
+
+

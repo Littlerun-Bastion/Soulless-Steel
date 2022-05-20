@@ -66,12 +66,13 @@ func play_sfx(name: String, pos = false, override_pitch = false, override_db = f
 	player.stream.audio_stream = sfx.asset
 	player.volume_db = override_db if override_db else sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
 	player.pitch_scale = max(override_pitch, 0.001) if override_pitch else sfx.base_pitch
-	player.max_distance = override_max_range if override_max_range else sfx.max_range
-	player.attenuation = override_att if override_att else sfx.attenuation
 	player.stream.random_pitch = 1.0 + sfx.random_pitch_var
+	
 	
 	if pos:
 		player.position = pos
+		player.max_distance = override_max_range if override_max_range else sfx.max_range
+		player.attenuation = override_att if override_att else sfx.attenuation
 		
 	player.play()
 

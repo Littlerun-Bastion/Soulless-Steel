@@ -365,7 +365,7 @@ func get_clip_size(part_name):
 func get_total_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.total_ammo
+		return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
 	return false
 	
 func get_max_ammo(part_name):

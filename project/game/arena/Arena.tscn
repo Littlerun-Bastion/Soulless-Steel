@@ -2535,6 +2535,11 @@ position = Vector2( 8472.05, -12402.3 )
 rotation = -1.50763
 scale = Vector2( 0.33, 0.33 )
 
+[node name="ExitPos8" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( -3678.77, 10525.1 )
+rotation = -1.02591
+scale = Vector2( 0.33, 0.33 )
+
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )
 

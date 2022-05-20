@@ -297,3 +297,8 @@ func _on_player_mech_extracted(playerMech):
 
 func _on_WindsTimer_timeout():
 	random_wind_sound()
+
+
+func _on_PlayerHUD_entrance_status(status):
+	for mecha in Mechas.get_children():
+		mecha.set_pause(status)

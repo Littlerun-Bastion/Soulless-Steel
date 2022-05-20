@@ -3825,5 +3825,6 @@ script = ExtResource( 57 )
 wait_time = 20.0
 autostart = true
 
+[connection signal="entrance_status" from="PlayerHUD" to="." method="_on_PlayerHUD_entrance_status"]
 [connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

@@ -2,14 +2,14 @@
 
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=1]
 [ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=2]
-[ext_resource path="res://database/parts/projectiles/simple_projectile.tres" type="Resource" id=3]
+[ext_resource path="res://database/parts/projectiles/large_bullet.tres" type="Resource" id=3]
 
 [node name="Part" type="Node"]
 script = ExtResource( 2 )
 weapon_name = "SS-Shoot"
 type = "Long_range Missile"
 projectile = ExtResource( 3 )
-damage_modifier = 50.0
+damage_modifier = 40.0
 recoil_force = 20.0
 fire_rate = 3.0
 auto_fire = false

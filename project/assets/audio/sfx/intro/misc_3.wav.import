@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/misc_3.wav-5c89252d8bdc981b14344b46201a0829.sample"
+
+[deps]
+
+source_file="res://assets/audio/sfx/intro/misc_3.wav"
+dest_files=[ "res://.import/misc_3.wav-5c89252d8bdc981b14344b46201a0829.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

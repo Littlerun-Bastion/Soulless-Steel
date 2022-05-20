@@ -131,13 +131,14 @@ shader_param/barOffsetIntensity = 0.0
 shader_param/noiseQuality = 2000.0
 shader_param/noiseIntensity = 0.0
 shader_param/colorOffsetIntensity = 0.026
-shader_param/redMultiplier = 0.006
-shader_param/redIntensity = 1.0
-shader_param/greenMultiplier = 0.0073
-shader_param/greenIntensity = 0.97
+shader_param/redMultiplier = 0.002
+shader_param/redIntensity = 0.48
+shader_param/greenMultiplier = 0.002
+shader_param/greenIntensity = 0.492
 
 [node name="Arena" type="Node2D"]
 script = ExtResource( 1 )
+EnemyCount = 15
 
 [node name="BG" type="TextureRect" parent="."]
 visible = false
@@ -2402,6 +2403,7 @@ polygon = PoolVector2Array( 6711.11, 8429.82, 5751.11, 9725.82, 6823.11, 10493.8
 script = ExtResource( 56 )
 
 [node name="StartPositions" type="Node2D" parent="."]
+position = Vector2( -343.266, -127.135 )
 z_index = -5
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource( 53 )]
@@ -2518,6 +2520,21 @@ position = Vector2( -10610.9, 6660.14 )
 rotation = 0.952831
 scale = Vector2( 0.33, 0.33 )
 
+[node name="ExitPos5" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 129.164, -10089 )
+rotation = 0.868489
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos6" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 5988.75, 10609.2 )
+rotation = -0.840008
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos7" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 8472.05, -12402.3 )
+rotation = -1.50763
+scale = Vector2( 0.33, 0.33 )
+
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )
 
@@ -2599,6 +2616,10 @@ scale = Vector2( 0.75, 0.75 )
 
 [node name="tree1_21" parent="Trees" instance=ExtResource( 40 )]
 position = Vector2( 4682.9, 2529.91 )
+scale = Vector2( 0.75, 0.75 )
+
+[node name="tree1_44" parent="Trees" instance=ExtResource( 40 )]
+position = Vector2( 7313.62, 1743.72 )
 scale = Vector2( 0.75, 0.75 )
 
 [node name="tree1_27" parent="Trees" instance=ExtResource( 40 )]
@@ -2713,6 +2734,11 @@ scale = Vector2( 0.75, 0.75 )
 
 [node name="tree2_13" parent="Trees" instance=ExtResource( 38 )]
 position = Vector2( 5995.14, -2461.71 )
+rotation = 0.822606
+scale = Vector2( 0.75, 0.75 )
+
+[node name="tree2_42" parent="Trees" instance=ExtResource( 38 )]
+position = Vector2( 7397.56, -1646.63 )
 rotation = 0.822606
 scale = Vector2( 0.75, 0.75 )
 
@@ -2854,6 +2880,21 @@ position = Vector2( 6998.45, 3079.25 )
 [node name="tree3_9" parent="Trees" instance=ExtResource( 39 )]
 position = Vector2( 6780.18, 1122.33 )
 
+[node name="tree3_57" parent="Trees" instance=ExtResource( 39 )]
+position = Vector2( 6742.04, 618.026 )
+
+[node name="tree3_58" parent="Trees" instance=ExtResource( 39 )]
+position = Vector2( 7434.15, -10.5852 )
+
+[node name="tree3_59" parent="Trees" instance=ExtResource( 39 )]
+position = Vector2( 7382.12, 2508.06 )
+
+[node name="tree3_60" parent="Trees" instance=ExtResource( 39 )]
+position = Vector2( 7584.59, -864.793 )
+
+[node name="tree3_61" parent="Trees" instance=ExtResource( 39 )]
+position = Vector2( 7404.79, -2578.86 )
+
 [node name="tree3_24" parent="Trees" instance=ExtResource( 39 )]
 position = Vector2( 4969.99, 5251.83 )
 
@@ -2961,6 +3002,9 @@ position = Vector2( -5838.47, 5070.01 )
 
 [node name="tree2_25" parent="Trees" instance=ExtResource( 38 )]
 position = Vector2( 6420.3, 2190.62 )
+
+[node name="tree2_41" parent="Trees" instance=ExtResource( 38 )]
+position = Vector2( 7569.35, 819.826 )
 
 [node name="tree2_29" parent="Trees" instance=ExtResource( 38 )]
 position = Vector2( 6011.21, 4654.66 )

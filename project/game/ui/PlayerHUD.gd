@@ -8,12 +8,20 @@ onready var EnergyBar = $EnergyBar
 onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
+onready var Bulletholes = $Bulletholes.get_children()
+
 
 var player
 var mechas
 
 
 func setup(player_ref, mechas_ref):
+	get_tree().get_root().set_disable_input(true)
+	$EntranceAnim.connect("animation_finished", self, "animFinished")
+	if get_tree().get_current_scene().get_name() == "testingGrounds":
+		$EntranceAnim.play("simEntrance")
+	else:
+		$EntranceAnim.play("Entrance")
 	player = player_ref
 	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
@@ -32,8 +40,35 @@ func setup(player_ref, mechas_ref):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
+	if PlayerStatManager.RepairedLastRound == true:
+		if player.hp == player.max_hp:
+			for _i in Bulletholes:
+				_i.visible = false
+		elif player.hp >= player.max_hp * 0.75:
+			var visibleHoles = 2
+			setup_holes(visibleHoles)
+		elif player.hp >= player.max_hp * 0.5:
+			var visibleHoles = 3
+			setup_holes(visibleHoles)
+		elif player.hp >= player.max_hp * 0.25:
+			var visibleHoles = 4
+			setup_holes(visibleHoles)		
 
-
+func animFinished(_animName):
+	get_tree().get_root().set_disable_input(false)
+		
+func setup_holes(v):
+	for _x in Bulletholes:
+		if _x.visible == true:
+			if v > 0:
+				v -= 1
+			else:
+				_x.visible = false
+	
+func _process(_delta):
+	update_shieldbar(player.shield)
+	ShieldBar.get_node("Label").text = str(player.shield)
+	
 func setup_lifebar():
 	LifeBar.max_value = player.max_hp
 	LifeBar.value = player.hp
@@ -96,6 +131,9 @@ func _on_player_took_damage(_p):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
+	if player.hp < 100 and player.shield <= 0:
+		var visibleHole = Bulletholes[(randi() % Bulletholes.size())]
+		visibleHole.visible = true
 
 
 func _on_player_shoot():

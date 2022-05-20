@@ -53,17 +53,25 @@ func setup(_all_mechas, _path_stuff):
 	mecha_name = "Mecha " + str(randi()%2000)
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
-	set_max_life(100)
-	set_max_shield(50)
-	set_core(PartManager.get_random_part_name("core"))
-	set_head(PartManager.get_random_part_name("head"))
-	set_legs(PartManager.get_random_part_name("legs"))
-	set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
-	set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
-	set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
-	set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
-	set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
-	set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
+	if get_tree().get_current_scene().get_name() == "testingGrounds":
+		set_max_life(100)
+		set_max_shield(50)
+		set_core(PartManager.get_random_part_name("core"))
+		set_head(PartManager.get_random_part_name("head"))
+		set_legs(PartManager.get_random_part_name("legs"))
+		scale = Vector2(0.5, 0.5)
+	else:
+		set_max_life(150)
+		set_max_shield(100)
+		set_core(PartManager.get_random_part_name("core"))
+		set_head(PartManager.get_random_part_name("head"))
+		set_legs(PartManager.get_random_part_name("legs"))
+		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
+		set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
+		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
+		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
+		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
+		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
 
 
 

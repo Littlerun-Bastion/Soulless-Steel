@@ -12,6 +12,7 @@ onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
 onready var PauseMenu = $PauseMenu
+export var EnemyCount = 1
 
 var player
 var current_cam
@@ -28,7 +29,7 @@ func _ready():
 	update_navigation_polygon()
 	
 	add_player()
-	for _i in range(10):
+	for _i in range(EnemyCount):
 		add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
@@ -160,7 +161,7 @@ func player_died():
 	$PlayerKilled.killed()
 
 func get_random_start_position(exclude_idx := []):
-	var offset = 100
+	var offset = 500
 	var rand_offset = Vector2(rand_range(-offset, offset), rand_range(-offset, offset))
 	var n_pos = $StartPositions.get_child_count()
 	var idx = randi()%n_pos + 1
@@ -232,26 +233,30 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 
 func _on_player_mech_extracted(playerMech):
-	PlayerStatManager.PlayerKills += player_kills
-	PlayerStatManager.PlayerHP = playerMech.hp
-	PlayerStatManager.PlayerMaxHP = playerMech.max_hp
-	PlayerStatManager.NumberofExtracts += 1
-	PlayerStatManager.Armor = playerMech.hp
-	PlayerStatManager.RArmAmmo = player.get_total_ammo("arm_weapon_right")
-	PlayerStatManager.RArmAmmoMax = player.get_max_ammo("arm_weapon_right")
-	PlayerStatManager.RArmCost = player.get_ammo_cost("arm_weapon_right")
-	PlayerStatManager.LArmAmmo = player.get_total_ammo("arm_weapon_left")
-	PlayerStatManager.LArmAmmoMax = player.get_max_ammo("arm_weapon_left")
-	PlayerStatManager.LArmCost = player.get_ammo_cost("arm_weapon_left")
-	PlayerStatManager.RShoulderAmmo = player.get_total_ammo("shoulder_weapon_right")
-	PlayerStatManager.RShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_right")
-	PlayerStatManager.RShoulderCost = player.get_ammo_cost("shoulder_weapon_right")
-	PlayerStatManager.LShoulderAmmo = player.get_total_ammo("shoulder_weapon_left")
-	PlayerStatManager.LShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_left")
-	PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
-	print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
+	if get_tree().get_current_scene().get_name() == "testingGrounds":
+		get_tree().change_scene("res://Start Menu.tscn")
+	else:
+		PlayerStatManager.PlayerKills += player_kills
+		PlayerStatManager.PlayerHP = playerMech.hp
+		PlayerStatManager.PlayerMaxHP = playerMech.max_hp
+		PlayerStatManager.NumberofExtracts += 1
+		PlayerStatManager.Armor = playerMech.hp
+		PlayerStatManager.RArmAmmo = player.get_total_ammo("arm_weapon_right")
+		PlayerStatManager.RArmAmmoMax = player.get_max_ammo("arm_weapon_right")
+		PlayerStatManager.RArmCost = player.get_ammo_cost("arm_weapon_right")
+		PlayerStatManager.LArmAmmo = player.get_total_ammo("arm_weapon_left")
+		PlayerStatManager.LArmAmmoMax = player.get_max_ammo("arm_weapon_left")
+		PlayerStatManager.LArmCost = player.get_ammo_cost("arm_weapon_left")
+		PlayerStatManager.RShoulderAmmo = player.get_total_ammo("shoulder_weapon_right")
+		PlayerStatManager.RShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_right")
+		PlayerStatManager.RShoulderCost = player.get_ammo_cost("shoulder_weapon_right")
+		PlayerStatManager.LShoulderAmmo = player.get_total_ammo("shoulder_weapon_left")
+		PlayerStatManager.LShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_left")
+		PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
+		PlayerStatManager.RepairedLastRound = false
+		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://Score Screen.tscn")
+		get_tree().change_scene("res://Score Screen.tscn")
 	
 func player_ammo_set():
 	if PlayerStatManager.NumberofExtracts > 0:

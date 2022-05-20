@@ -36,10 +36,10 @@ onready var RightShoulderWeapon = $ShoulderWeaponRight
 
 var mecha_name = "Mecha Name"
 
-var max_hp = 10
-var hp = 10
-var max_shield = 10
-var shield = 10
+var max_hp = 100
+var hp = 100
+var max_shield = 100
+var shield = 100
 var max_energy = 100
 var energy = 100
 var total_kills = 0
@@ -71,7 +71,7 @@ func _ready():
 
 func _physics_process(dt):
 	if shield < max_shield:
-		shield += 0.1
+		shield += 0.2
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():
@@ -139,6 +139,7 @@ func take_damage(amount, source_info, weapon_name, calibre):
 		select_impact(calibre, true)
 	emit_signal("took_damage", self)
 	if hp <= 0:
+		AudioManager.play_sfx("final_explosion", global_position, 0.0, 0.0, 1.25, 10000)
 		die(source_info, weapon_name)
 
 
@@ -560,6 +561,9 @@ func shoot(type):
 	amount = max(amount, 1) #Tries to shoot at least 1 projectile
 	
 	if not node.can_shoot(amount):
+		if mecha_name == "Player":
+			if node.clip_ammo <= 0:
+				AudioManager.play_sfx("no_ammo", global_position)
 		return
 	
 	node.shoot(amount)

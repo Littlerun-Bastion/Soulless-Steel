@@ -20,6 +20,7 @@ var Armor = 0
 var Credits = 0
 var ReloadCost = 0
 var RepairCost = 0
+var RepairedLastRound = true
 # Declare member variables here. Examples:
 # var a = 2
 # var b = "text"

@@ -12,11 +12,7 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
-	if VCRTween.is_active():
-		return
-	VCRTween.interpolate_property(VCREffect.material, "shader_param/noiseIntensity", null, 0.02, .1)
-	VCRTween.interpolate_property(VCREffect.material, "shader_param/colorOffsetIntensity", null, 1.2, .1)
-	VCRTween.start()
+	PlayerStatManager.Credits = PlayerStatManager.PlayerKills * 25000.0 * (1.0 + (PlayerStatManager.PlayerKills/10.0))
 	
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
@@ -40,9 +36,13 @@ func _ready():
 	if PlayerStatManager.PlayerMaxHP == PlayerStatManager.PlayerHP:
 		PlayerStatManager.RepairCost = 0
 	else:
-		PlayerStatManager.RepairCost = 150000*((PlayerStatManager.PlayerMaxHP - PlayerStatManager.PlayerHP)/PlayerStatManager.PlayerMaxHP)
+		if PlayerStatManager.PlayerHP >= 90:
+			PlayerStatManager.RepairCost = (PlayerStatManager.PlayerMaxHP - PlayerStatManager.PlayerHP)* 500
+		else:
+			PlayerStatManager.RepairCost = 5000
 	$HBoxContainer/VBoxContainer/ReloadButton2/ReloadCost.text = str(PlayerStatManager.ReloadCost)+"C"
 	$HBoxContainer/VBoxContainer/RepairButton/RepairCost.text = str(PlayerStatManager.RepairCost)+"C"
+	$VBoxContainer2/ArmorBox/RemainingArmor.text = str(PlayerStatManager.PlayerHP)
 
 func update_prices():
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
@@ -58,12 +58,23 @@ func update_prices():
 	if typeof(PlayerStatManager.LShoulderAmmo) == TYPE_INT:
 		$VBoxContainer2/LeftShoulderBox/LeftShoulderAmmo.text = str(PlayerStatManager.LShoulderAmmo)+"/"+str(PlayerStatManager.LShoulderAmmoMax)
 		$VBoxContainer2/LSCost.text = str(LShdTotal) + "C"
+	if PlayerStatManager.PlayerMaxHP == PlayerStatManager.PlayerHP:
+		PlayerStatManager.RepairCost = 0
+	else:
+		if PlayerStatManager.PlayerHP >= 90:
+			PlayerStatManager.RepairCost = (PlayerStatManager.PlayerMaxHP - PlayerStatManager.PlayerHP)* 500
+		else:
+			PlayerStatManager.RepairCost = 5000
+	$HBoxContainer/VBoxContainer/RepairButton/RepairCost.text = str(PlayerStatManager.RepairCost)+"C"
+	$HBoxContainer/VBoxContainer/ReloadButton2/ReloadCost.text = str(PlayerStatManager.ReloadCost)+"C"
+	$VBoxContainer2/ArmorBox/RemainingArmor.text = str(PlayerStatManager.PlayerHP)
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
 func not_enough_credits():
-	$EarnedCredits.text = "Insufficient Credits."
-	yield(get_tree().create_timer(2.0), "timeout")
+	$AnimationPlayer.stop(true)
+	$AnimationPlayer.play("noCredits")
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
 
 func _on_ReloadButton2_pressed():
@@ -74,12 +85,20 @@ func _on_ReloadButton2_pressed():
 		PlayerStatManager.LArmAmmo = PlayerStatManager.LArmAmmoMax
 		PlayerStatManager.RShoulderAmmo = PlayerStatManager.RShoulderAmmoMax
 		PlayerStatManager.LShoulderAmmo = PlayerStatManager.LShoulderAmmoMax
+		update_prices()
+	else:
+		not_enough_credits()
 
 func _on_RepairButton_pressed():
 	if PlayerStatManager.RepairCost <= PlayerStatManager.Credits:
 		PlayerStatManager.Credits -= PlayerStatManager.RepairCost
 		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-		PlayerStatManager.PlayerHP = PlayerStatManager.PlayerMaxHP
+		if PlayerStatManager.PlayerHP >= 90:
+			PlayerStatManager.PlayerHP = 100
+		else:
+			PlayerStatManager.PlayerHP += 10
+		update_prices()
+		PlayerStatManager.RepairedLastRound = true
 	else:
 		not_enough_credits()
 
@@ -87,41 +106,55 @@ func _on_RepairButton_pressed():
 func _on_ContinueButton_pressed():
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
+	PlayerStatManager.PlayerKills = 0
 
 
 func _on_ExitButton_pressed():
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://Start Menu.tscn")
+	PlayerStatManager.PlayerKills = 0
+	PlayerStatManager.NumberofExtracts = 0
 
 
 func _on_RABuy_pressed():
-	if RArmTotal <= PlayerStatManager.Credits:
-		PlayerStatManager.Credits -= RArmTotal
-		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-		PlayerStatManager.RArmAmmo = PlayerStatManager.RArmAmmoMax
-		update_prices()
-		
+	if PlayerStatManager.RArmAmmo:
+		if RArmTotal <= PlayerStatManager.Credits:
+			PlayerStatManager.Credits -= RArmTotal
+			$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
+			PlayerStatManager.RArmAmmo = PlayerStatManager.RArmAmmoMax
+			update_prices()
+	else:
+		not_enough_credits()	
 
 
 func _on_LABuy_pressed():
-	if LArmTotal <= PlayerStatManager.Credits:
-		PlayerStatManager.Credits -= LArmTotal
-		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-		PlayerStatManager.LArmAmmo = PlayerStatManager.LArmAmmoMax
-		update_prices()
+	if PlayerStatManager.LArmAmmo:
+		if LArmTotal <= PlayerStatManager.Credits:
+			PlayerStatManager.Credits -= LArmTotal
+			$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
+			PlayerStatManager.LArmAmmo = PlayerStatManager.LArmAmmoMax
+			update_prices()
+	else:
+		not_enough_credits()
 
 
 func _on_RSBuy_pressed():
-	if RShdTotal <= PlayerStatManager.Credits:
-		PlayerStatManager.Credits -= RShdTotal
-		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-		PlayerStatManager.RShdAmmo = PlayerStatManager.RShdAmmoMax
-		update_prices()
+	if PlayerStatManager.RShoulderAmmo:
+		if RShdTotal <= PlayerStatManager.Credits:
+			PlayerStatManager.Credits -= RShdTotal
+			$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
+			PlayerStatManager.RShoulderAmmo = PlayerStatManager.RShoulderAmmoMax
+			update_prices()
+	else:
+		not_enough_credits()
 
 
 func _on_LSBuy_pressed():
-	if LShdTotal <= PlayerStatManager.Credits:
-		PlayerStatManager.Credits -= LShdTotal
-		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-		PlayerStatManager.LShdAmmo = PlayerStatManager.LShdAmmoMax
-		update_prices()
+	if PlayerStatManager.LShoulderAmmo:
+		if LShdTotal <= PlayerStatManager.Credits:
+			PlayerStatManager.Credits -= LShdTotal
+			$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
+			PlayerStatManager.LShdAmmo = PlayerStatManager.LShoulderAmmoMax
+			update_prices()
+	else:
+		not_enough_credits()

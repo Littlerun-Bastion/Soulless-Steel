@@ -2,7 +2,7 @@
 
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1.png" type="Texture" id=1]
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=2]
-[ext_resource path="res://database/parts/projectiles/large_bullet.tres" type="Resource" id=3]
+[ext_resource path="res://database/parts/projectiles/medium_bullet.tres" type="Resource" id=3]
 
 [node name="Part" type="Node"]
 script = ExtResource( 2 )

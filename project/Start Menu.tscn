@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=2]
+[gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://assets/images/ui/menu/exit_button.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/ui/menu/settings_button.png" type="Texture" id=2]
@@ -15,6 +15,9 @@
 [ext_resource path="res://assets/images/ui/menu/exit_button_pressed.png" type="Texture" id=13]
 [ext_resource path="res://ParallaxBackgroundScrolling.gd" type="Script" id=14]
 [ext_resource path="res://MenuTransition.gd" type="Script" id=15]
+[ext_resource path="res://assets/images/ui/menu/tutorial_button_pressed.png" type="Texture" id=16]
+[ext_resource path="res://assets/images/ui/menu/tutorial_button.png" type="Texture" id=17]
+[ext_resource path="res://assets/images/ui/menu/tutorial_button_highlight.png" type="Texture" id=18]
 
 [sub_resource type="Theme" id=1]
 
@@ -351,9 +354,29 @@ rect_min_size = Vector2( 750, 0 )
 rect_scale = Vector2( 0.36, 0.36 )
 custom_constants/separation = 100
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="VBoxContainer4" type="VBoxContainer" parent="VBoxContainer"]
 margin_right = 750.0
 margin_bottom = 152.0
+
+[node name="tutorial_button" type="TextureButton" parent="VBoxContainer/VBoxContainer4"]
+margin_right = 750.0
+margin_bottom = 105.0
+texture_normal = ExtResource( 17 )
+texture_pressed = ExtResource( 16 )
+texture_hover = ExtResource( 18 )
+texture_focused = ExtResource( 18 )
+
+[node name="descriptor" type="Label" parent="VBoxContainer/VBoxContainer4"]
+margin_top = 109.0
+margin_right = 750.0
+margin_bottom = 152.0
+custom_fonts/font = ExtResource( 9 )
+text = "New user system simulation"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+margin_top = 252.0
+margin_right = 750.0
+margin_bottom = 404.0
 
 [node name="launch_system_button" type="TextureButton" parent="VBoxContainer/VBoxContainer"]
 margin_right = 750.0
@@ -371,9 +394,9 @@ custom_fonts/font = ExtResource( 9 )
 text = "SAV BOOT SEQUENCE"
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer"]
-margin_top = 252.0
+margin_top = 504.0
 margin_right = 750.0
-margin_bottom = 404.0
+margin_bottom = 656.0
 
 [node name="settings_button" type="TextureButton" parent="VBoxContainer/VBoxContainer2"]
 margin_right = 750.0
@@ -391,9 +414,9 @@ custom_fonts/font = ExtResource( 9 )
 text = "system runtime parameters"
 
 [node name="VBoxContainer3" type="VBoxContainer" parent="VBoxContainer"]
-margin_top = 504.0
+margin_top = 756.0
 margin_right = 750.0
-margin_bottom = 656.0
+margin_bottom = 908.0
 
 [node name="exit_system_button" type="TextureButton" parent="VBoxContainer/VBoxContainer3"]
 margin_right = 750.0
@@ -518,7 +541,6 @@ layer = 2
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
-visible = false
 material = SubResource( 8 )
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -531,6 +553,9 @@ script = ExtResource( 15 )
 anims/RESET = SubResource( 14 )
 anims/Typewrite = SubResource( 15 )
 
+[connection signal="mouse_entered" from="VBoxContainer/VBoxContainer4/tutorial_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/VBoxContainer4/tutorial_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_exited"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer4/tutorial_button" to="." method="_on_tutorial_button_pressed"]
 [connection signal="mouse_entered" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_entered"]
 [connection signal="mouse_exited" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_exited"]
 [connection signal="pressed" from="VBoxContainer/VBoxContainer/launch_system_button" to="." method="_on_launch_system_button_pressed"]

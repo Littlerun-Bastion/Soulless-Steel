@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=34 format=2]
 
 [ext_resource path="res://ParallaxBackgroundScrolling.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=2]
@@ -18,24 +18,26 @@
 [ext_resource path="res://assets/images/ui/menu/reload_button_pressed.png" type="Texture" id=16]
 [ext_resource path="res://assets/images/ui/menu/reload_button_highlight.png" type="Texture" id=17]
 [ext_resource path="res://assets/images/ui/menu/ammo_purchase_button.png" type="Texture" id=18]
+[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_highlight.png" type="Texture" id=19]
+[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_pressed.png" type="Texture" id=20]
 
 [sub_resource type="Theme" id=1]
 
 [sub_resource type="DynamicFont" id=5]
-size = 65
+size = 50
 outline_size = 1
 font_data = ExtResource( 3 )
 
 [sub_resource type="DynamicFont" id=2]
-size = 35
+size = 45
 font_data = ExtResource( 3 )
 
 [sub_resource type="DynamicFont" id=6]
-size = 40
+size = 55
 outline_size = 1
 font_data = ExtResource( 3 )
 
-[sub_resource type="Shader" id=3]
+[sub_resource type="Shader" id=14]
 code = "shader_type canvas_item;
 
 uniform float barRange : hint_range(0.0, 0.1) = 0.01;
@@ -93,17 +95,17 @@ void fragment()
     COLOR = vec4(r, g, b, 1.0);
 }"
 
-[sub_resource type="ShaderMaterial" id=4]
-shader = SubResource( 3 )
+[sub_resource type="ShaderMaterial" id=15]
+shader = SubResource( 14 )
 shader_param/barRange = 0.022
 shader_param/barOffsetIntensity = 0.002
-shader_param/noiseQuality = 2410.59
+shader_param/noiseQuality = 3902.83
 shader_param/noiseIntensity = 0.015
 shader_param/colorOffsetIntensity = 0.373
 shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
-shader_param/greenIntensity = 0.13
+shader_param/greenIntensity = 0.12
 
 [sub_resource type="DynamicFont" id=8]
 size = 150
@@ -126,6 +128,37 @@ font_data = ExtResource( 3 )
 size = 60
 extra_spacing_char = 1
 font_data = ExtResource( 3 )
+
+[sub_resource type="Animation" id=13]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("insufficientcredits:percent_visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.0 ]
+}
+
+[sub_resource type="Animation" id=12]
+resource_name = "noCredits"
+length = 4.0
+tracks/0/type = "value"
+tracks/0/path = NodePath("insufficientcredits:percent_visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2, 3, 4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 0.0, 1.0, 1.0, 0.0 ]
+}
 
 [node name="Score Screen" type="Control"]
 anchor_right = 1.0
@@ -177,10 +210,10 @@ texture = ExtResource( 2 )
 [node name="Title" type="Label" parent="."]
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_left = 15.0
-margin_top = -97.8494
-margin_right = 747.0
-margin_bottom = -31.8494
+margin_left = 7.44904
+margin_top = -86.5229
+margin_right = 739.449
+margin_bottom = -20.5228
 custom_fonts/font = SubResource( 5 )
 text = "Extraction Successful"
 
@@ -201,23 +234,29 @@ margin_bottom = -29.671
 rect_min_size = Vector2( 10, 5 )
 
 [node name="PlayerKills" type="Label" parent="."]
-margin_left = 15.0494
-margin_top = 461.682
-margin_right = 252.049
-margin_bottom = 497.682
+margin_left = 17.1683
+margin_top = 868.516
+margin_right = 254.168
+margin_bottom = 904.516
 custom_fonts/font = SubResource( 2 )
 text = "Player Kills: "
 
+[node name="insufficientcredits" type="Label" parent="."]
+margin_left = 17.1683
+margin_top = 687.497
+margin_right = 480.168
+margin_bottom = 758.497
+custom_fonts/font = SubResource( 2 )
+text = "Insufficient credits."
+percent_visible = 0.0
+
 [node name="EarnedCredits" type="Label" parent="."]
-margin_left = 15.0494
-margin_top = 419.59
-margin_right = 316.049
-margin_bottom = 459.59
+margin_left = 16.1089
+margin_top = 808.414
+margin_right = 626.109
+margin_bottom = 888.414
 custom_fonts/font = SubResource( 6 )
 text = "Earned Credits: "
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-root_node = NodePath("../ShaderEffects/Tween")
 
 [node name="ShaderEffects" type="CanvasLayer" parent="."]
 layer = 2
@@ -228,30 +267,35 @@ playback_speed = 0.2
 playback/speed = 0.2
 
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
-visible = false
-material = SubResource( 4 )
+material = SubResource( 15 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
-margin_left = 496.109
-margin_top = 17.245
-margin_right = 3091.11
-margin_bottom = 2221.24
-rect_scale = Vector2( 0.2, 0.2 )
+anchor_left = 0.703
+anchor_top = 0.05
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 149.088
+margin_top = 226.063
+margin_right = 2103.69
+margin_bottom = 1540.14
+rect_scale = Vector2( 0.15, 0.15 )
 custom_constants/separation = 75
+alignment = 2
 
 [node name="RightArmBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_right = 2595.0
-margin_bottom = 200.0
+margin_top = 136.0
+margin_right = 2524.0
+margin_bottom = 336.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="RightArmLabel" type="Label" parent="VBoxContainer2/RightArmBox"]
-margin_left = 486.0
+margin_left = 415.0
 margin_top = 24.0
-margin_right = 1771.0
+margin_right = 1700.0
 margin_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Right Arm Ammo - "
@@ -259,9 +303,9 @@ align = 2
 valign = 1
 
 [node name="RightArmAmmo" type="Label" parent="VBoxContainer2/RightArmBox"]
-margin_left = 1821.0
+margin_left = 1750.0
 margin_top = 24.0
-margin_right = 2045.0
+margin_right = 1974.0
 margin_bottom = 175.0
 rect_min_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
@@ -270,39 +314,42 @@ align = 2
 valign = 1
 
 [node name="RABuy" type="TextureButton" parent="VBoxContainer2/RightArmBox"]
-margin_left = 2095.0
-margin_right = 2595.0
+margin_left = 2024.0
+margin_right = 2524.0
 margin_bottom = 200.0
 texture_normal = ExtResource( 18 )
+texture_pressed = ExtResource( 20 )
+texture_hover = ExtResource( 19 )
+texture_focused = ExtResource( 19 )
 
 [node name="RACost" type="Label" parent="VBoxContainer2"]
-margin_top = 275.0
-margin_right = 2595.0
-margin_bottom = 426.0
+margin_top = 411.0
+margin_right = 2524.0
+margin_bottom = 562.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="LeftArmBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 501.0
-margin_right = 2595.0
-margin_bottom = 701.0
+margin_top = 637.0
+margin_right = 2524.0
+margin_bottom = 837.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="LeftArmLabel" type="Label" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 570.0
+margin_left = 499.0
 margin_top = 24.0
-margin_right = 1771.0
+margin_right = 1700.0
 margin_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Left Arm AmmO - "
 align = 2
 
 [node name="LeftArmAmmo" type="Label" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 1821.0
+margin_left = 1750.0
 margin_top = 24.0
-margin_right = 2045.0
+margin_right = 1974.0
 margin_bottom = 175.0
 rect_min_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
@@ -310,39 +357,42 @@ text = "N/A"
 align = 2
 
 [node name="LABuy" type="TextureButton" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 2095.0
-margin_right = 2595.0
+margin_left = 2024.0
+margin_right = 2524.0
 margin_bottom = 200.0
 texture_normal = ExtResource( 18 )
+texture_pressed = ExtResource( 20 )
+texture_hover = ExtResource( 19 )
+texture_focused = ExtResource( 19 )
 
 [node name="LACost" type="Label" parent="VBoxContainer2"]
-margin_top = 776.0
-margin_right = 2595.0
-margin_bottom = 927.0
+margin_top = 912.0
+margin_right = 2524.0
+margin_bottom = 1063.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="RightShoulderBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 1002.0
-margin_right = 2595.0
-margin_bottom = 1202.0
+margin_top = 1138.0
+margin_right = 2524.0
+margin_bottom = 1338.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="RightShoulderLabel" type="Label" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 122.0
+margin_left = 51.0
 margin_top = 24.0
-margin_right = 1771.0
+margin_right = 1700.0
 margin_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Right Shoulder AmmO - "
 align = 2
 
 [node name="RightShoulderAmmo" type="Label" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 1821.0
+margin_left = 1750.0
 margin_top = 24.0
-margin_right = 2045.0
+margin_right = 1974.0
 margin_bottom = 175.0
 rect_min_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
@@ -350,39 +400,42 @@ text = "N/A"
 align = 2
 
 [node name="RSBuy" type="TextureButton" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 2095.0
-margin_right = 2595.0
+margin_left = 2024.0
+margin_right = 2524.0
 margin_bottom = 200.0
 texture_normal = ExtResource( 18 )
+texture_pressed = ExtResource( 20 )
+texture_hover = ExtResource( 19 )
+texture_focused = ExtResource( 19 )
 
 [node name="RSCost" type="Label" parent="VBoxContainer2"]
-margin_top = 1277.0
-margin_right = 2595.0
-margin_bottom = 1428.0
+margin_top = 1413.0
+margin_right = 2524.0
+margin_bottom = 1564.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="LeftShoulderBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 1503.0
-margin_right = 2595.0
-margin_bottom = 1703.0
+margin_top = 1639.0
+margin_right = 2524.0
+margin_bottom = 1839.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="LeftShoulderLabel" type="Label" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 206.0
+margin_left = 135.0
 margin_top = 24.0
-margin_right = 1771.0
+margin_right = 1700.0
 margin_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Left Shoulder AmmO - "
 align = 2
 
 [node name="LeftShoulderAmmo" type="Label" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 1821.0
+margin_left = 1750.0
 margin_top = 24.0
-margin_right = 2045.0
+margin_right = 1974.0
 margin_bottom = 175.0
 rect_min_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
@@ -390,36 +443,39 @@ text = "N/A"
 align = 2
 
 [node name="LSBuy" type="TextureButton" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 2095.0
-margin_right = 2595.0
+margin_left = 2024.0
+margin_right = 2524.0
 margin_bottom = 200.0
 texture_normal = ExtResource( 18 )
+texture_pressed = ExtResource( 20 )
+texture_hover = ExtResource( 19 )
+texture_focused = ExtResource( 19 )
 
 [node name="LSCost" type="Label" parent="VBoxContainer2"]
-margin_top = 1778.0
-margin_right = 2595.0
-margin_bottom = 1929.0
+margin_top = 1914.0
+margin_right = 2524.0
+margin_bottom = 2065.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="ArmorBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 2004.0
-margin_right = 2595.0
-margin_bottom = 2204.0
+margin_top = 2140.0
+margin_right = 2524.0
+margin_bottom = 2340.0
 alignment = 2
 
 [node name="RemainingArmorLabel" type="Label" parent="VBoxContainer2/ArmorBox"]
-margin_left = 1558.0
-margin_right = 2330.0
+margin_left = 1487.0
+margin_right = 2259.0
 margin_bottom = 200.0
 custom_fonts/font = SubResource( 10 )
 text = "Armor - "
 align = 2
 
 [node name="RemainingArmor" type="Label" parent="VBoxContainer2/ArmorBox"]
-margin_left = 2334.0
-margin_right = 2595.0
+margin_left = 2263.0
+margin_right = 2524.0
 margin_bottom = 200.0
 rect_min_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 10 )
@@ -431,9 +487,11 @@ anchor_left = 0.015
 anchor_top = 0.025
 anchor_right = 0.015
 anchor_bottom = 0.025
-margin_right = 40.0
-margin_bottom = 40.0
-rect_scale = Vector2( 0.5, 0.5 )
+margin_left = -8.47571
+margin_top = 260.628
+margin_right = 916.524
+margin_bottom = 980.628
+rect_scale = Vector2( 0.36, 0.36 )
 custom_constants/separation = 15
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
@@ -490,7 +548,7 @@ margin_right = 730.0
 margin_bottom = 140.0
 rect_min_size = Vector2( 0, 10 )
 custom_fonts/font = SubResource( 7 )
-text = "Repair hardware/wetware. "
+text = "Repair hardware by 10%. "
 
 [node name="RepairCost" type="Label" parent="HBoxContainer/VBoxContainer/RepairButton"]
 anchor_left = 1.0
@@ -561,6 +619,10 @@ margin_right = 925.0
 margin_bottom = 720.0
 rect_min_size = Vector2( 100, 0 )
 color = Color( 1, 1, 1, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/RESET = SubResource( 13 )
+anims/noCredits = SubResource( 12 )
 
 [connection signal="pressed" from="VBoxContainer2/RightArmBox/RABuy" to="." method="_on_RABuy_pressed"]
 [connection signal="pressed" from="VBoxContainer2/LeftArmBox/LABuy" to="." method="_on_LABuy_pressed"]

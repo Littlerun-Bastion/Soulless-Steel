@@ -31,6 +31,8 @@ func _input(event):
 
 func _on_launch_system_button_pressed():
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
+	PlayerStatManager.NumberofExtracts = 0
+	PlayerStatManager.Credits = 0
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
 
@@ -45,3 +47,10 @@ func window_debug_mode():
 	OS.window_borderless = false
 	OS.window_size = Vector2(1080, 600)
 	OS.window_position = Vector2(400, 100)
+
+
+func _on_tutorial_button_pressed():
+	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
+	PlayerStatManager.NumberofExtracts = 0
+	PlayerStatManager.Credits = 0
+	get_tree().change_scene("res://game/arena/TestArena.tscn")

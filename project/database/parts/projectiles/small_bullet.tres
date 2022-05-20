@@ -12,4 +12,4 @@ decal_type = "bullet_hole_small"
 collision_extents = Vector2( 30, 30 )
 scale = Vector2( 1, 1 )
 speed = 4000
-light_energy = 0.25
+light_energy = 0.15

@@ -11,4 +11,4 @@ random_db_var = 0.0
 base_pitch = 1.0
 random_pitch_var = 0.2
 attenuation = 2.0
-max_range = 2000
+max_range = 10000

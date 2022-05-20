@@ -35,8 +35,9 @@ onready var LeftShoulderWeapon = $ShoulderWeaponLeft
 onready var RightShoulderWeapon = $ShoulderWeaponRight
 
 var mecha_name = "Mecha Name"
-
+var paused = false
 var is_dead = false
+
 var max_hp = 100
 var hp = 100
 var max_shield = 100
@@ -71,6 +72,9 @@ func _ready():
 
 
 func _physics_process(dt):
+	if paused:
+		return
+
 	if shield < max_shield:
 		shield += 0.2
 	if not is_stunned():
@@ -101,6 +105,10 @@ func _physics_process(dt):
 
 func is_player():
 	return mecha_name == "Player"
+
+
+func set_pause(value):
+	paused = value
 
 
 func set_speed(_max_speed, _move_acc):

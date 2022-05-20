@@ -16,7 +16,6 @@ func _ready():
 	ReloadLabel.hide()
 	LeftReload.hide()
 	RightReload.hide()
-	
 
 
 func _process(_delta):

@@ -8,7 +8,7 @@
 [ext_resource path="res://database/props/box1_prop.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/arena/testingGrounds.tscn" type="PackedScene" id=7]
 [ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=8]
-[ext_resource path="res://PauseMenu.tscn" type="PackedScene" id=49]
+[ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://database/StartPoint.tscn" type="PackedScene" id=53]
 [ext_resource path="res://database/ExitPoint.tscn" type="PackedScene" id=54]
 [ext_resource path="res://MenuTransition.gd" type="Script" id=57]
@@ -95,7 +95,7 @@ shader_param/redIntensity = 1.0
 shader_param/greenMultiplier = 0.0073
 shader_param/greenIntensity = 0.97
 
-[node name="testingGrounds" type="Node2D"]
+[node name="TestArena" type="Node2D"]
 script = ExtResource( 1 )
 EnemyCount = 4
 
@@ -184,6 +184,21 @@ position = Vector2( 1.19922, 2571.64 )
 [node name="Pos2" parent="StartPositions" instance=ExtResource( 53 )]
 position = Vector2( 0, -2606 )
 
+[node name="Exits" type="Node2D" parent="."]
+rotation = -0.000512852
+z_index = -5
+
+[node name="ExitPos" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( -2607.5, 0.596485 )
+scale = Vector2( 0.33, 0.33 )
+
+[node name="ExitPos2" parent="Exits" instance=ExtResource( 54 )]
+position = Vector2( 2606.5, 3.27049 )
+scale = Vector2( 0.33, 0.33 )
+
+[node name="Trees" type="Node2D" parent="."]
+scale = Vector2( 2, 2 )
+
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 position = Vector2( -26.9077, -661.061 )
 current = false
@@ -227,23 +242,9 @@ script = ExtResource( 57 )
 
 [node name="PauseMenu" parent="." instance=ExtResource( 49 )]
 
-[node name="Exits" type="Node2D" parent="."]
-rotation = -0.000512852
-z_index = -5
-
-[node name="ExitPos" parent="Exits" instance=ExtResource( 54 )]
-position = Vector2( -2607.5, 0.596485 )
-scale = Vector2( 0.33, 0.33 )
-
-[node name="ExitPos2" parent="Exits" instance=ExtResource( 54 )]
-position = Vector2( 2606.5, 3.27049 )
-scale = Vector2( 0.33, 0.33 )
-
-[node name="Trees" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
-
 [node name="WindsTimer" type="Timer" parent="."]
 wait_time = 20.0
 autostart = true
 
+[connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

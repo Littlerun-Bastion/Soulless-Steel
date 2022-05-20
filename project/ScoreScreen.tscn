@@ -159,7 +159,7 @@ tracks/0/keys = {
 "values": [ 0.0, 1.0, 1.0, 0.0 ]
 }
 
-[node name="Score Screen" type="Control"]
+[node name="ScoreScreen" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 4 )

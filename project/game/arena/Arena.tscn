@@ -48,7 +48,7 @@
 [ext_resource path="res://database/props/bush3_prop.tscn" type="PackedScene" id=46]
 [ext_resource path="res://database/props/bush5_prop.tscn" type="PackedScene" id=47]
 [ext_resource path="res://database/props/bush4_prop.tscn" type="PackedScene" id=48]
-[ext_resource path="res://PauseMenu.tscn" type="PackedScene" id=49]
+[ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://database/props/arena_wall_outernorth.tscn" type="PackedScene" id=50]
 [ext_resource path="res://database/props/arena_wall_outersouth.tscn" type="PackedScene" id=51]
 [ext_resource path="res://database/props/arena_wall_midNorth.tscn" type="PackedScene" id=52]
@@ -2299,7 +2299,7 @@ scale = Vector2( 2, 2 )
 
 [node name="Projectiles" type="Node2D" parent="."]
 
-[node name="map" parent="." instance=ExtResource( 3 )]
+[node name="Map" parent="." instance=ExtResource( 3 )]
 position = Vector2( -461.641, -710.938 )
 scale = Vector2( 2, 2 )
 z_index = -999
@@ -2453,48 +2453,6 @@ rotation = 0.705731
 [node name="Pos12" parent="StartPositions" instance=ExtResource( 53 )]
 position = Vector2( 1465.12, -9128.53 )
 rotation = 0.94085
-
-[node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
-position = Vector2( -26.9077, -661.061 )
-current = false
-zoom = Vector2( 10, 10 )
-drag_margin_h_enabled = false
-drag_margin_v_enabled = false
-smoothing_speed = 10.0
-
-[node name="Navigation2D" type="Navigation2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
-
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
-navpoly = SubResource( 6 )
-__meta__ = {
-"_edit_lock_": true
-}
-
-[node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
-layer = 2
-
-[node name="PlayerKilled" parent="." instance=ExtResource( 58 )]
-
-[node name="ShaderEffects" type="CanvasLayer" parent="."]
-layer = 2
-
-[node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
-material = SubResource( 4 )
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_right = -960.0
-margin_bottom = -540.0
-rect_scale = Vector2( 2, 2 )
-script = ExtResource( 57 )
-
-[node name="Tween" type="Tween" parent="ShaderEffects/VCREffect"]
-
-[node name="Tween" type="Tween" parent="ShaderEffects"]
-
-[node name="PauseMenu" parent="." instance=ExtResource( 49 )]
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
@@ -3821,8 +3779,51 @@ position = Vector2( -1330.08, 6040.97 )
 rotation = -2.45309
 z_index = -1
 
+[node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
+position = Vector2( -26.9077, -661.061 )
+current = false
+zoom = Vector2( 10, 10 )
+drag_margin_h_enabled = false
+drag_margin_v_enabled = false
+smoothing_speed = 10.0
+
+[node name="Navigation2D" type="Navigation2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
+navpoly = SubResource( 6 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
+layer = 2
+
+[node name="PlayerKilled" parent="." instance=ExtResource( 58 )]
+
+[node name="ShaderEffects" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
+material = SubResource( 4 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -960.0
+margin_bottom = -540.0
+rect_scale = Vector2( 2, 2 )
+script = ExtResource( 57 )
+
+[node name="Tween" type="Tween" parent="ShaderEffects/VCREffect"]
+
+[node name="Tween" type="Tween" parent="ShaderEffects"]
+
+[node name="PauseMenu" parent="." instance=ExtResource( 49 )]
+
 [node name="WindsTimer" type="Timer" parent="."]
 wait_time = 20.0
 autostart = true
 
+[connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

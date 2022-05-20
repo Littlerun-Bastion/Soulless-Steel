@@ -38,6 +38,7 @@ func _ready():
 	$PlayerKilled/Label.visible = false
 	$PlayerKilled/ReturnButton.visible = false
 
+
 func _input(event):
 	if event is InputEventKey:
 		if event.pressed and event.scancode == KEY_B:
@@ -47,8 +48,6 @@ func _input(event):
 			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
-			if $PauseMenu/Control.visible == false:
-				$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
 	if event is InputEventMouseButton:
 		if ArenaCam.current:
 			var amount = Vector2(.8, .8)
@@ -103,6 +102,7 @@ func update_navigation_polygon():
 	arena_poly.make_polygons_from_outlines()
 	
 	NavInstance.set_navigation_polygon(arena_poly)
+	#Toggle needed to update the navigation
 	NavInstance.enabled = false
 	NavInstance.enabled = true
 
@@ -141,6 +141,7 @@ func add_player():
 	current_cam = player.get_cam()
 	player_ammo_set()
 
+
 func add_enemy():
 	var enemy = ENEMY.instance()
 	Mechas.add_child(enemy)
@@ -151,6 +152,7 @@ func add_enemy():
 	all_mechas.push_back(enemy)
 	enemy.setup(all_mechas, $Navigation2D)
 
+
 func player_died():
 	player = null
 	ArenaCam.current = true
@@ -159,6 +161,7 @@ func player_died():
 	current_cam = ArenaCam
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
 	$PlayerKilled.killed()
+
 
 func get_random_start_position(exclude_idx := []):
 	var offset = 500
@@ -191,6 +194,34 @@ func damage_burst_effect():
 	VCRTween.interpolate_property(VCREffect.material, "shader_param/noiseIntensity", null, 0.02, .1)
 	VCRTween.interpolate_property(VCREffect.material, "shader_param/colorOffsetIntensity", null, 1.2, .1)
 	VCRTween.start()
+
+
+func player_ammo_set():
+	if PlayerStatManager.NumberofExtracts > 0:
+		player.hp = PlayerStatManager.PlayerHP
+		player.set_ammo("arm_weapon_right", PlayerStatManager.RArmAmmo)
+		player.set_ammo("arm_weapon_left", PlayerStatManager.LArmAmmo)
+		player.set_ammo("shoulder_weapon_right", PlayerStatManager.RShoulderAmmo)
+		player.set_ammo("shoulder_weapon_left", PlayerStatManager.LShoulderAmmo)
+		$PlayerHUD.update_cursor()
+		$PlayerHUD.update_arsenal()
+
+
+func random_wind_sound():
+	var x = rand_range(-10000.00,10000.00)
+	var y = rand_range(-10000.00,10000.00)
+	var sound_pos = Vector2(x,y)
+	var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
+	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
+	print("Sound playing at location: " + str(x) + ", " + str(y))
+
+
+func _on_PauseMenu_pause_toggle(paused):
+	if not paused:
+		$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
+	for mecha in Mechas.get_children():
+		mecha.set_pause(paused)
+	PlayerHUD.set_pause(paused)
 
 
 func _on_player_lost_health():
@@ -235,7 +266,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 func _on_player_mech_extracted(playerMech):
 	if get_tree().get_current_scene().get_name() == "testingGrounds":
 # warning-ignore:return_value_discarded
-		get_tree().change_scene("res://Start Menu.tscn")
+		get_tree().change_scene("res://StartMenu.tscn")
 	else:
 		PlayerStatManager.PlayerKills += player_kills
 		PlayerStatManager.PlayerHP = playerMech.hp
@@ -257,27 +288,8 @@ func _on_player_mech_extracted(playerMech):
 		PlayerStatManager.RepairedLastRound = false
 		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
 # warning-ignore:return_value_discarded
-		get_tree().change_scene("res://Score Screen.tscn")
-	
-func player_ammo_set():
-	if PlayerStatManager.NumberofExtracts > 0:
-		player.hp = PlayerStatManager.PlayerHP
-		player.set_ammo("arm_weapon_right", PlayerStatManager.RArmAmmo)
-		player.set_ammo("arm_weapon_left", PlayerStatManager.LArmAmmo)
-		player.set_ammo("shoulder_weapon_right", PlayerStatManager.RShoulderAmmo)
-		player.set_ammo("shoulder_weapon_left", PlayerStatManager.LShoulderAmmo)
-		$PlayerHUD.update_cursor()
-		$PlayerHUD.update_arsenal()
-
-func random_wind_sound():
-	var x = rand_range(-10000.00,10000.00)
-	var y = rand_range(-10000.00,10000.00)
-	var sound_pos = Vector2(x,y)
-	var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
-	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
-	print("Sound playing at location: " + str(x) + ", " + str(y))
+		get_tree().change_scene("res://ScoreScreen.tscn")
 
 
 func _on_WindsTimer_timeout():
 	random_wind_sound()
-	pass # Replace with function body.

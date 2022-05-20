@@ -111,7 +111,7 @@ func _on_ContinueButton_pressed():
 
 func _on_ExitButton_pressed():
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://Start Menu.tscn")
+	get_tree().change_scene("res://StartMenu.tscn")
 	PlayerStatManager.PlayerKills = 0
 	PlayerStatManager.NumberofExtracts = 0
 

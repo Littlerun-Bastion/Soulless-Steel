@@ -1,20 +1,14 @@
 extends CanvasLayer
 
+signal pause_toggle
+
+
 func _ready():
 	$Control.hide()
 
 
-func _on_Quit_pressed():
-# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://Start Menu.tscn")
-
-
-func _on_Resume_pressed():
-	$Control.hide()
-
-
-func _on_PauseMenu_visibility_changed():
-	get_tree().paused = not get_tree().paused
+func is_paused():
+	return $Control.visible
 
 
 func toggle_pause():
@@ -26,4 +20,20 @@ func toggle_pause():
 		$ShaderEffects/VCREffect.play_transition(0, 3000, 2.0)
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	
+	emit_signal("pause_toggle", $Control.visible)
+
+func _on_Button_mouse_entered():
+	AudioManager.play_sfx("select")
+
+
+func _on_Quit_pressed():
+	AudioManager.play_sfx("back")
+# warning-ignore:return_value_discarded
+	get_tree().change_scene("res://StartMenu.tscn")
+
+
+func _on_Resume_pressed():
+	AudioManager.play_sfx("confirm")
+	toggle_pause()
 

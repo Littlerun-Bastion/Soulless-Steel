@@ -15,10 +15,15 @@ var player
 var mechas
 
 
+func _process(_delta):
+	update_shieldbar(player.shield)
+	ShieldBar.get_node("Label").text = str(player.shield)
+
+
 func setup(player_ref, mechas_ref):
 	get_tree().get_root().set_disable_input(true)
 # warning-ignore:return_value_discarded
-	$EntranceAnim.connect("animation_finished", self, "animFinished")
+	$EntranceAnim.connect("animation_finished", self, "_on_animation_finished")
 	if get_tree().get_current_scene().get_name() == "testingGrounds":
 		$EntranceAnim.play("simEntrance")
 	else:
@@ -55,9 +60,11 @@ func setup(player_ref, mechas_ref):
 			var visibleHoles = 4
 			setup_holes(visibleHoles)		
 
-func animFinished(_animName):
-	get_tree().get_root().set_disable_input(false)
-		
+
+func set_pause(value):
+	Cursor.visible = not value
+
+
 func setup_holes(v):
 	for _x in Bulletholes:
 		if _x.visible == true:
@@ -65,11 +72,8 @@ func setup_holes(v):
 				v -= 1
 			else:
 				_x.visible = false
-	
-func _process(_delta):
-	update_shieldbar(player.shield)
-	ShieldBar.get_node("Label").text = str(player.shield)
-	
+
+
 func setup_lifebar():
 	LifeBar.max_value = player.max_hp
 	LifeBar.value = player.hp
@@ -93,7 +97,6 @@ func setup_weapon_slots():
 			var slot = WEAPON_SLOT.instance()
 			WeaponSlots.add_child(slot)
 			slot.setup(player.get(weapon), weapon)
-
 
 
 func setup_cursor():
@@ -125,6 +128,10 @@ func update_arsenal():
 			weapon.set_ammo(total_ammo - \
 							player.get_clip_size(weapon.type) + \
 							player.get_clip_ammo(weapon.type))
+
+
+func _on_animation_finished(_animName):
+	get_tree().get_root().set_disable_input(false)
 
 
 func _on_player_took_damage(_p):

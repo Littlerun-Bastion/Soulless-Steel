@@ -16,9 +16,9 @@ func _ready():
 
 
 func _physics_process(delta):
-	if is_stunned():
+	if paused or is_stunned():
 		return
-	
+
 	check_input()
 	
 	apply_movement(delta, get_input())
@@ -30,6 +30,9 @@ func _physics_process(delta):
 
 
 func _input(event):
+	if paused or is_stunned():
+		return
+	
 	if event.is_action_pressed("honk"):
 		AudioManager.play_sfx("test", global_position)
 	elif event.is_action_pressed("arm_weapon_left_shoot") and arm_weapon_left:

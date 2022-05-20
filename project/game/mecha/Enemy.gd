@@ -34,13 +34,13 @@ func _ready():
 
 
 func _process(delta):
-	if not is_stunned():
-		var state = logic.get_current_state()
-		
-		if has_method("do_"+state):
-			call("do_"+state, delta)
-		
-		logic.updateFiniteLogic(self)
+	if paused or is_stunned():
+		return
+	
+	var state = logic.get_current_state()
+	if has_method("do_"+state):
+		call("do_"+state, delta)
+	logic.updateFiniteLogic(self)
 		
 	if debug:
 		$Debug/StateLabel.text = logic.get_current_state()

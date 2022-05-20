@@ -151,7 +151,7 @@ func take_damage(amount, source_info, weapon_name, calibre):
 		select_impact(calibre, true)
 	emit_signal("took_damage", self)
 	if hp <= 0:
-		AudioManager.play_sfx("final_explosion", global_position, 0.0, 0.0, 1.25, 10000)
+		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
 
 
@@ -552,7 +552,7 @@ func knockback(pos, strength, should_rotate = true):
 
 #COMBAT METHODS
 
-func shoot(type):
+func shoot(type, is_auto_fire = false):
 	var node
 	var weapon_ref
 	if type == "arm_weapon_left":
@@ -573,10 +573,10 @@ func shoot(type):
 	var amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
 	amount = max(amount, 1) #Tries to shoot at least 1 projectile
 	
+	
 	if not node.can_shoot(amount):
-		if mecha_name == "Player":
-			if node.clip_ammo <= 0:
-				AudioManager.play_sfx("no_ammo", global_position)
+		if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
+			AudioManager.play_sfx("no_ammo", global_position)
 		return
 	
 	node.shoot(amount)

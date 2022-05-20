@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+signal entrance_status
+
 const WEAPON_SLOT = preload("res://game/ui/WeaponSlot/WeaponSlot.tscn")
 
 onready var LifeBar = $LifeBar
@@ -21,9 +23,7 @@ func _process(_delta):
 
 
 func setup(player_ref, mechas_ref, is_tutorial):
-	get_tree().get_root().set_disable_input(true)
-# warning-ignore:return_value_discarded
-	$EntranceAnim.connect("animation_finished", self, "_on_animation_finished")
+	emit_signal("entrance_status", true)
 	if is_tutorial:
 		$EntranceAnim.play("simEntrance")
 	else:
@@ -54,6 +54,9 @@ func setup(player_ref, mechas_ref, is_tutorial):
 func set_pause(value):
 	Cursor.visible = not value
 
+
+func entrance_animation_ending():
+	emit_signal("entrance_status", false)
 
 func setup_lifebar():
 	LifeBar.max_value = player.max_hp
@@ -109,10 +112,6 @@ func update_arsenal():
 			weapon.set_ammo(total_ammo - \
 							player.get_clip_size(weapon.type) + \
 							player.get_clip_ammo(weapon.type))
-
-
-func _on_animation_finished(_animName):
-	get_tree().get_root().set_disable_input(false)
 
 
 func _on_player_took_damage(_p):

@@ -6,7 +6,7 @@
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://database/props/box1_prop.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/arena/testingGrounds.tscn" type="PackedScene" id=7]
+[ext_resource path="res://game/arena/TestingGrounds.tscn" type="PackedScene" id=7]
 [ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=8]
 [ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://database/StartPoint.tscn" type="PackedScene" id=53]
@@ -170,7 +170,7 @@ position = Vector2( 500, 500 )
 [node name="Mechas" type="Node2D" parent="."]
 z_index = -2
 
-[node name="map" parent="." instance=ExtResource( 7 )]
+[node name="Mapp" parent="." instance=ExtResource( 7 )]
 scale = Vector2( 3, 3 )
 z_index = -99
 
@@ -247,5 +247,6 @@ script = ExtResource( 57 )
 wait_time = 20.0
 autostart = true
 
+[connection signal="entrance_status" from="PlayerHUD" to="." method="_on_PlayerHUD_entrance_status"]
 [connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

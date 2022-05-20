@@ -46,9 +46,8 @@ func setup(player_ref, mechas_ref, is_tutorial):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
-	if PlayerStatManager.RepairedLastRound == true:
-		for _i in Bulletholes:
-			_i.visible = false
+	for _i in Bulletholes:
+		_i.visible = false
 
 
 func set_pause(value):

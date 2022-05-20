@@ -16,6 +16,10 @@ func _ready():
 	
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
+	update_prices()
+
+func update_prices():
+	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
 	if typeof(PlayerStatManager.RArmAmmo) == TYPE_INT:
 		$VBoxContainer2/RightArmBox/RightArmAmmo.text = str(PlayerStatManager.RArmAmmo) +"/"+ str(PlayerStatManager.RArmAmmoMax)
 		RArmTotal = (PlayerStatManager.RArmAmmoMax - PlayerStatManager.RArmAmmo) * PlayerStatManager.RArmCost
@@ -40,31 +44,6 @@ func _ready():
 			PlayerStatManager.RepairCost = (PlayerStatManager.PlayerMaxHP - PlayerStatManager.PlayerHP)* 500
 		else:
 			PlayerStatManager.RepairCost = 5000
-	$HBoxContainer/VBoxContainer/ReloadButton2/ReloadCost.text = str(PlayerStatManager.ReloadCost)+"C"
-	$HBoxContainer/VBoxContainer/RepairButton/RepairCost.text = str(PlayerStatManager.RepairCost)+"C"
-	$VBoxContainer2/ArmorBox/RemainingArmor.text = str(PlayerStatManager.PlayerHP)
-
-func update_prices():
-	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
-	if typeof(PlayerStatManager.RArmAmmo) == TYPE_INT:
-		$VBoxContainer2/RightArmBox/RightArmAmmo.text = str(PlayerStatManager.RArmAmmo) +"/"+ str(PlayerStatManager.RArmAmmoMax)
-		$VBoxContainer2/RACost.text = str(RArmTotal) + "C"
-	if typeof(PlayerStatManager.LArmAmmo) == TYPE_INT:
-		$VBoxContainer2/LeftArmBox/LeftArmAmmo.text = str(PlayerStatManager.LArmAmmo)+"/"+str(PlayerStatManager.LArmAmmoMax)
-		$VBoxContainer2/LACost.text = str(LArmTotal) + "C"
-	if typeof(PlayerStatManager.RShoulderAmmo) == TYPE_INT:
-		$VBoxContainer2/RightShoulderBox/RightShoulderAmmo.text = str(PlayerStatManager.RShoulderAmmo)+"/"+str(PlayerStatManager.RShoulderAmmoMax)
-		$VBoxContainer2/RSCost.text = str(RShdTotal) + "C"
-	if typeof(PlayerStatManager.LShoulderAmmo) == TYPE_INT:
-		$VBoxContainer2/LeftShoulderBox/LeftShoulderAmmo.text = str(PlayerStatManager.LShoulderAmmo)+"/"+str(PlayerStatManager.LShoulderAmmoMax)
-		$VBoxContainer2/LSCost.text = str(LShdTotal) + "C"
-	if PlayerStatManager.PlayerMaxHP == PlayerStatManager.PlayerHP:
-		PlayerStatManager.RepairCost = 0
-	else:
-		if PlayerStatManager.PlayerHP >= 90:
-			PlayerStatManager.RepairCost = (PlayerStatManager.PlayerMaxHP - PlayerStatManager.PlayerHP)* 500
-		else:
-			PlayerStatManager.RepairCost = 5000
 	$HBoxContainer/VBoxContainer/RepairButton/RepairCost.text = str(PlayerStatManager.RepairCost)+"C"
 	$HBoxContainer/VBoxContainer/ReloadButton2/ReloadCost.text = str(PlayerStatManager.ReloadCost)+"C"
 	$VBoxContainer2/ArmorBox/RemainingArmor.text = str(PlayerStatManager.PlayerHP)
@@ -80,6 +59,7 @@ func not_enough_credits():
 func _on_ReloadButton2_pressed():
 	if PlayerStatManager.ReloadCost <= PlayerStatManager.Credits:
 		PlayerStatManager.Credits -= PlayerStatManager.ReloadCost
+		PlayerStatManager.ReloadCost = 0
 		$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
 		PlayerStatManager.RArmAmmo = PlayerStatManager.RArmAmmoMax
 		PlayerStatManager.LArmAmmo = PlayerStatManager.LArmAmmoMax

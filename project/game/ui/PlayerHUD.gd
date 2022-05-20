@@ -20,11 +20,11 @@ func _process(_delta):
 	ShieldBar.get_node("Label").text = str(player.shield)
 
 
-func setup(player_ref, mechas_ref):
+func setup(player_ref, mechas_ref, is_tutorial):
 	get_tree().get_root().set_disable_input(true)
 # warning-ignore:return_value_discarded
 	$EntranceAnim.connect("animation_finished", self, "_on_animation_finished")
-	if get_tree().get_current_scene().get_name() == "testingGrounds":
+	if is_tutorial:
 		$EntranceAnim.play("simEntrance")
 	else:
 		$EntranceAnim.play("Entrance")

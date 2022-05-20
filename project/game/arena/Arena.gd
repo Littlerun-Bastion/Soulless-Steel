@@ -3,6 +3,7 @@ extends Node2D
 const PLAYER = preload("res://game/mecha/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
+export var is_tutorial := false
 
 onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
@@ -131,13 +132,14 @@ func merge_polygons(polygons):
 func add_player():
 	player = PLAYER.instance()
 	Mechas.add_child(player)
+	player.setup(is_tutorial)
 	player.position = get_start_position(1)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
 	player.connect("lost_health", self, "_on_player_lost_health")
 	player.connect("mecha_extracted", self, "_on_player_mech_extracted")
 	all_mechas.push_back(player)
-	PlayerHUD.setup(player, all_mechas)
+	PlayerHUD.setup(player, all_mechas, is_tutorial)
 	current_cam = player.get_cam()
 	player_ammo_set()
 
@@ -150,7 +152,7 @@ func add_enemy():
 	enemy.connect("died", self, "_on_mecha_died")
 	enemy.connect("player_kill", self, "_on_mecha_player_kill")
 	all_mechas.push_back(enemy)
-	enemy.setup(all_mechas, $Navigation2D)
+	enemy.setup(all_mechas, $Navigation2D, is_tutorial)
 
 
 func player_died():
@@ -266,7 +268,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 
 func _on_player_mech_extracted(playerMech):
-	if get_tree().get_current_scene().get_name() == "testingGrounds":
+	if is_tutorial:
 # warning-ignore:return_value_discarded
 		get_tree().change_scene("res://StartMenu.tscn")
 	else:

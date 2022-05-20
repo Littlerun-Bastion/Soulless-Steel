@@ -11,3 +11,4 @@ func clear_pointers():
 
 
 func add_pointer():
+	pass

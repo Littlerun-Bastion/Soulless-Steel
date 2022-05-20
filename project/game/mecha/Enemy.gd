@@ -49,11 +49,11 @@ func _process(delta):
 		$Debug/StateLabel.text = ""
 
 
-func setup(_all_mechas, _path_stuff):
+func setup(_all_mechas, _path_stuff, is_tutorial):
 	mecha_name = "Mecha " + str(randi()%2000)
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
-	if get_tree().get_current_scene().get_name() == "testingGrounds":
+	if is_tutorial:
 		set_max_life(100)
 		set_max_shield(50)
 		set_core(PartManager.get_random_part_name("core"))

@@ -11,9 +11,6 @@ onready var Cam = $Camera2D
 
 var reload_mode := false
 
-func _ready():
-	setup()
-
 
 func _physics_process(delta):
 	if paused or is_stunned():
@@ -97,7 +94,7 @@ func check_weapon_input(name, node, weapon_ref):
 		shoot(name)
 
 
-func setup():
+func setup(is_tutorial):
 	mecha_name = "Player"
 	set_speed(500, 60)
 	set_max_life(100)
@@ -115,7 +112,7 @@ func setup():
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 	movement_type = "free"
-	if get_tree().get_current_scene().get_name() == "testingGrounds":
+	if is_tutorial:
 		$Ambience.stop()
 	else:
 		$Ambience.play()

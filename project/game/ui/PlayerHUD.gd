@@ -47,31 +47,12 @@ func setup(player_ref, mechas_ref, is_tutorial):
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
 	if PlayerStatManager.RepairedLastRound == true:
-		if player.hp == player.max_hp:
-			for _i in Bulletholes:
-				_i.visible = false
-		elif player.hp >= player.max_hp * 0.75:
-			var visibleHoles = 2
-			setup_holes(visibleHoles)
-		elif player.hp >= player.max_hp * 0.5:
-			var visibleHoles = 3
-			setup_holes(visibleHoles)
-		elif player.hp >= player.max_hp * 0.25:
-			var visibleHoles = 4
-			setup_holes(visibleHoles)		
+		for _i in Bulletholes:
+			_i.visible = false
 
 
 func set_pause(value):
 	Cursor.visible = not value
-
-
-func setup_holes(v):
-	for _x in Bulletholes:
-		if _x.visible == true:
-			if v > 0:
-				v -= 1
-			else:
-				_x.visible = false
 
 
 func setup_lifebar():

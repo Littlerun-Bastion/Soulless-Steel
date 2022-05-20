@@ -130,7 +130,7 @@ shader_param/greenIntensity = 0.13
 [sub_resource type="Animation" id=14]
 length = 0.001
 tracks/0/type = "value"
-tracks/0/path = NodePath("VBoxContainer3/Label:percent_visible")
+tracks/0/path = NodePath("UserGuide/Label:percent_visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
@@ -142,7 +142,7 @@ tracks/0/keys = {
 "values": [ 0.0 ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("VBoxContainer3/Label2:percent_visible")
+tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/imported = false
@@ -154,7 +154,7 @@ tracks/1/keys = {
 "values": [ 0.0 ]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("VBoxContainer3/Label3:percent_visible")
+tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/imported = false
@@ -166,7 +166,7 @@ tracks/2/keys = {
 "values": [ 0.0 ]
 }
 tracks/3/type = "value"
-tracks/3/path = NodePath("VBoxContainer3/Label4:percent_visible")
+tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/imported = false
@@ -178,7 +178,7 @@ tracks/3/keys = {
 "values": [ 0.0 ]
 }
 tracks/4/type = "value"
-tracks/4/path = NodePath("VBoxContainer3/Label6:percent_visible")
+tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/imported = false
@@ -194,64 +194,64 @@ tracks/4/keys = {
 resource_name = "Typewrite"
 length = 15.0
 tracks/0/type = "value"
-tracks/0/path = NodePath("VBoxContainer3/Label:percent_visible")
+tracks/0/path = NodePath("UserGuide/Label:percent_visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 2 ),
+"times": PoolRealArray( 0, 1.4 ),
 "transitions": PoolRealArray( 1, 1 ),
 "update": 0,
 "values": [ 0.0, 1.0 ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("VBoxContainer3/Label2:percent_visible")
+tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 2.5, 4.5 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PoolRealArray( 0, 2, 3.4 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
 "update": 0,
-"values": [ 0.0, 1.0 ]
+"values": [ 0.0, 0.0, 1.0 ]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("VBoxContainer3/Label3:percent_visible")
+tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 5, 7 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PoolRealArray( 0, 4, 5.2, 5.5, 6.8 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
 "update": 0,
-"values": [ 0.0, 1.0 ]
+"values": [ 0.0, 0.0, 0.428571, 0.428571, 1.0 ]
 }
 tracks/3/type = "value"
-tracks/3/path = NodePath("VBoxContainer3/Label4:percent_visible")
+tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/imported = false
 tracks/3/enabled = true
 tracks/3/keys = {
-"times": PoolRealArray( 7.5, 8.5 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PoolRealArray( 0, 7.4, 8.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
 "update": 0,
-"values": [ 0.0, 1.0 ]
+"values": [ 0.0, 0.0, 1.0 ]
 }
 tracks/4/type = "value"
-tracks/4/path = NodePath("VBoxContainer3/Label6:percent_visible")
+tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/imported = false
 tracks/4/enabled = true
 tracks/4/keys = {
-"times": PoolRealArray( 9, 13 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PoolRealArray( 0, 9.1, 11.2, 11.5, 12.6, 12.9, 13.7 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
 "update": 0,
-"values": [ 0.0, 1.0 ]
+"values": [ 0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0 ]
 }
 
 [node name="Start Menu" type="Control"]
@@ -406,7 +406,7 @@ texture_pressed = ExtResource( 11 )
 texture_hover = ExtResource( 4 )
 texture_focused = ExtResource( 4 )
 
-[node name="descriptor" type="Label" parent="VBoxContainer/VBoxContainer2"]
+[node name="Descriptor" type="Label" parent="VBoxContainer/VBoxContainer2"]
 margin_top = 109.0
 margin_right = 750.0
 margin_bottom = 152.0
@@ -418,7 +418,7 @@ margin_top = 756.0
 margin_right = 750.0
 margin_bottom = 908.0
 
-[node name="exit_system_button" type="TextureButton" parent="VBoxContainer/VBoxContainer3"]
+[node name="ExitSystemButton" type="TextureButton" parent="VBoxContainer/VBoxContainer3"]
 margin_right = 750.0
 margin_bottom = 105.0
 texture_normal = ExtResource( 1 )
@@ -426,27 +426,27 @@ texture_pressed = ExtResource( 13 )
 texture_hover = ExtResource( 5 )
 texture_focused = ExtResource( 5 )
 
-[node name="descriptor" type="Label" parent="VBoxContainer/VBoxContainer3"]
+[node name="Descriptor" type="Label" parent="VBoxContainer/VBoxContainer3"]
 margin_top = 109.0
 margin_right = 750.0
 margin_bottom = 152.0
 custom_fonts/font = ExtResource( 9 )
 text = "terminate program runtime"
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+[node name="MainSystemContainer" type="VBoxContainer" parent="."]
 margin_left = 32.56
 margin_top = 47.28
 margin_right = 459.56
 margin_bottom = 152.28
 custom_constants/separation = -3
 
-[node name="Label" type="Label" parent="VBoxContainer2"]
+[node name="Label" type="Label" parent="MainSystemContainer"]
 margin_right = 427.0
 margin_bottom = 24.0
 custom_fonts/font = SubResource( 7 )
 text = "MAIN SYSTEM"
 
-[node name="Label2" type="Label" parent="VBoxContainer2"]
+[node name="Label2" type="Label" parent="MainSystemContainer"]
 margin_top = 21.0
 margin_right = 427.0
 margin_bottom = 40.0
@@ -458,7 +458,7 @@ anchor_right = 1.0
 rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )
 
-[node name="VBoxContainer3" type="VBoxContainer" parent="."]
+[node name="UserGuide" type="VBoxContainer" parent="."]
 anchor_left = 0.975
 anchor_top = 0.5
 anchor_right = 0.988
@@ -469,14 +469,14 @@ margin_right = -8.47571
 margin_bottom = 108.791
 custom_constants/separation = 25
 
-[node name="Label5" type="Label" parent="VBoxContainer3"]
+[node name="Label5" type="Label" parent="UserGuide"]
 margin_right = 868.0
 margin_bottom = 46.0
 custom_fonts/font = SubResource( 12 )
 text = "User guide"
 align = 2
 
-[node name="Label" type="Label" parent="VBoxContainer3"]
+[node name="Label" type="Label" parent="UserGuide"]
 margin_top = 71.0
 margin_right = 868.0
 margin_bottom = 102.0
@@ -485,7 +485,7 @@ text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
 align = 2
 percent_visible = 0.0
 
-[node name="Label2" type="Label" parent="VBoxContainer3"]
+[node name="Label2" type="Label" parent="UserGuide"]
 margin_top = 127.0
 margin_right = 868.0
 margin_bottom = 158.0
@@ -494,7 +494,7 @@ text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
 align = 2
 percent_visible = 0.0
 
-[node name="Label3" type="Label" parent="VBoxContainer3"]
+[node name="Label3" type="Label" parent="UserGuide"]
 margin_top = 183.0
 margin_right = 868.0
 margin_bottom = 248.0
@@ -504,7 +504,7 @@ Current loadout does not feature a left shoulder weapon."
 align = 2
 percent_visible = 0.0
 
-[node name="Label4" type="Label" parent="VBoxContainer3"]
+[node name="Label4" type="Label" parent="UserGuide"]
 margin_top = 273.0
 margin_right = 868.0
 margin_bottom = 304.0
@@ -513,7 +513,7 @@ text = "[R] = Toggle Reload "
 align = 2
 percent_visible = 0.0
 
-[node name="Label6" type="Label" parent="VBoxContainer3"]
+[node name="Label6" type="Label" parent="UserGuide"]
 margin_top = 329.0
 margin_right = 868.0
 margin_bottom = 428.0
@@ -541,6 +541,7 @@ layer = 2
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
+visible = false
 material = SubResource( 8 )
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -559,6 +560,6 @@ anims/Typewrite = SubResource( 15 )
 [connection signal="mouse_entered" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_entered"]
 [connection signal="mouse_exited" from="VBoxContainer/VBoxContainer/launch_system_button" to="ParallaxBackground" method="_on_launch_system_button_mouse_exited"]
 [connection signal="pressed" from="VBoxContainer/VBoxContainer/launch_system_button" to="." method="_on_launch_system_button_pressed"]
-[connection signal="mouse_entered" from="VBoxContainer/VBoxContainer3/exit_system_button" to="ParallaxBackground" method="_on_exit_system_button_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/VBoxContainer3/exit_system_button" to="ParallaxBackground" method="_on_exit_system_button_mouse_exited"]
-[connection signal="pressed" from="VBoxContainer/VBoxContainer3/exit_system_button" to="." method="_on_exit_system_button_pressed"]
+[connection signal="mouse_entered" from="VBoxContainer/VBoxContainer3/ExitSystemButton" to="ParallaxBackground" method="_on_exit_system_button_mouse_entered"]
+[connection signal="mouse_exited" from="VBoxContainer/VBoxContainer3/ExitSystemButton" to="ParallaxBackground" method="_on_exit_system_button_mouse_exited"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer3/ExitSystemButton" to="." method="_on_exit_system_button_pressed"]

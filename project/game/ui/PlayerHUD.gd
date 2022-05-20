@@ -17,6 +17,7 @@ var mechas
 
 func setup(player_ref, mechas_ref):
 	get_tree().get_root().set_disable_input(true)
+# warning-ignore:return_value_discarded
 	$EntranceAnim.connect("animation_finished", self, "animFinished")
 	if get_tree().get_current_scene().get_name() == "testingGrounds":
 		$EntranceAnim.play("simEntrance")

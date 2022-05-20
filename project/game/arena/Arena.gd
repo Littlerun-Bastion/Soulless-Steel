@@ -234,6 +234,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 func _on_player_mech_extracted(playerMech):
 	if get_tree().get_current_scene().get_name() == "testingGrounds":
+# warning-ignore:return_value_discarded
 		get_tree().change_scene("res://Start Menu.tscn")
 	else:
 		PlayerStatManager.PlayerKills += player_kills

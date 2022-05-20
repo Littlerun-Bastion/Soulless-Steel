@@ -1,10 +1,9 @@
-[gd_scene load_steps=34 format=2]
+[gd_scene load_steps=33 format=2]
 
 [ext_resource path="res://ParallaxBackgroundScrolling.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=2]
 [ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
 [ext_resource path="res://ScoreScreen.gd" type="Script" id=4]
-[ext_resource path="res://ShaderEffectChanger.gd" type="Script" id=5]
 [ext_resource path="res://assets/images/ui/menu/play_button.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/ui/menu/exit_button_highlight.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/ui/menu/play_button_highlight.png" type="Texture" id=8]
@@ -260,7 +259,6 @@ text = "Earned Credits: "
 
 [node name="ShaderEffects" type="CanvasLayer" parent="."]
 layer = 2
-script = ExtResource( 5 )
 
 [node name="Tween" type="Tween" parent="ShaderEffects"]
 playback_speed = 0.2

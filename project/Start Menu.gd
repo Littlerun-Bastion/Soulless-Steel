@@ -6,6 +6,7 @@ var parallaxMult = 30.0
 
 
 func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	$AnimationPlayer.play("Typewrite")
 	if DEBUG:
 		window_debug_mode()
@@ -53,4 +54,5 @@ func _on_tutorial_button_pressed():
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0, 3.0)
 	PlayerStatManager.NumberofExtracts = 0
 	PlayerStatManager.Credits = 0
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/TestArena.tscn")

@@ -24,4 +24,5 @@ func killed():
 
 
 func _on_ReturnButton_pressed():
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://Start Menu.tscn")

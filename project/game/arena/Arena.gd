@@ -157,6 +157,8 @@ func player_died():
 	player = null
 	ArenaCam.current = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if PauseMenu.is_paused():
+		PauseMenu.toggle_pause()
 	PlayerHUD.queue_free()
 	current_cam = ArenaCam
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
@@ -219,9 +221,9 @@ func random_wind_sound():
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:
 		$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
-	for mecha in Mechas.get_children():
-		mecha.set_pause(paused)
-	PlayerHUD.set_pause(paused)
+	if player:
+		player.set_pause(paused)
+		PlayerHUD.set_pause(paused)
 
 
 func _on_player_lost_health():

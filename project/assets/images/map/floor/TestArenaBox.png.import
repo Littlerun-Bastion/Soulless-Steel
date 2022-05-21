@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/TestArena.png-919cd935b379683269b9e1e21a14272e.stex"
+path="res://.import/TestArenaBox.png-9d70f70dad62959f2ddabd020cdb40cd.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/map/floor/TestArena.png"
-dest_files=[ "res://.import/TestArena.png-919cd935b379683269b9e1e21a14272e.stex" ]
+source_file="res://assets/images/map/floor/TestArenaBox.png"
+dest_files=[ "res://.import/TestArenaBox.png-9d70f70dad62959f2ddabd020cdb40cd.stex" ]
 
 [params]
 

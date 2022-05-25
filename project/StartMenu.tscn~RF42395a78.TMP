@@ -378,14 +378,14 @@ custom_constants/separation = -3
 
 [node name="Label" type="Label" parent="MainSystemContainer"]
 margin_right = 427.0
-margin_bottom = 24.0
+margin_bottom = 2.0
 custom_fonts/font = SubResource( 7 )
 text = "MAIN SYSTEM"
 
 [node name="Label2" type="Label" parent="MainSystemContainer"]
-margin_top = 21.0
+margin_top = -1.0
 margin_right = 427.0
-margin_bottom = 40.0
+margin_bottom = 18.0
 custom_fonts/font = SubResource( 10 )
 text = "SAV_hUNTERos.EXE"
 

@@ -15,7 +15,8 @@
 [ext_resource path="res://game/ui/Ticker/Ticker.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/WeaponSlot/WeaponSlot.tscn" type="PackedScene" id=14]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=15]
-[ext_resource path="res://assets/fonts/Zector/Zector.ttf" type="DynamicFontData" id=16]
+[ext_resource path="res://assets/fonts/data/Zector/Zector.ttf" type="DynamicFontData" id=16]
+
 
 [sub_resource type="StyleBoxTexture" id=1]
 texture = ExtResource( 3 )

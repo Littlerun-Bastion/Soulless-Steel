@@ -1,6 +1,6 @@
 [gd_scene load_steps=17 format=2]
 
-[ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=2]
 [ext_resource path="res://assets/images/ui/player_ui/healthbar2_back.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/ui/player_ui/healthbar2_front.png" type="Texture" id=4]
@@ -8,6 +8,7 @@
 [ext_resource path="res://assets/images/ui/player_ui/ui_vignette.png" type="Texture" id=6]
 [ext_resource path="res://game/ui/PlayerRadar/PlayerRadar.tscn" type="PackedScene" id=12]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=15]
+
 
 [sub_resource type="StyleBoxTexture" id=10]
 texture = ExtResource( 4 )

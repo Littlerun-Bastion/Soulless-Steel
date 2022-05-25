@@ -41,6 +41,21 @@ func window_debug_mode():
 	OS.window_position = Vector2(400, 100)
 
 
+func start_game(mode):
+	VCREffect.play_transition(5000.0, 0, 3.0)
+	PlayerStatManager.NumberofExtracts = 0
+	PlayerStatManager.Credits = 0
+	match mode:
+		"main":
+			# warning-ignore:return_value_discarded
+			get_tree().change_scene("res://game/arena/Arena.tscn")
+		"tutorial":
+			# warning-ignore:return_value_discarded
+			get_tree().change_scene("res://game/arena/TutorialArena.tscn")
+		_:
+			push_error("Not a valid mode: " + str(mode))
+
+
 func _on_Button_mouse_entered():
 	AudioManager.play_sfx("select")
 	Parallax.mouse_hovered = true
@@ -52,20 +67,14 @@ func _on_Button_mouse_exited():
 
 func _on_TutorialButton_pressed():
 	AudioManager.play_sfx("confirm")
-	VCREffect.play_transition(5000.0, 0, 3.0)
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
-# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/arena/TestArena.tscn")
+	start_game("tutorial")
+
 
 
 func _on_LaunchSystemButton_pressed():
 	AudioManager.play_sfx("confirm")
-	VCREffect.play_transition(5000.0, 0, 3.0)
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
-# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/arena/Arena.tscn")
+	start_game("main")
+
 
 
 func _on_SettingsButton_pressed():

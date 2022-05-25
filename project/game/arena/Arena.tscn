@@ -2,7 +2,7 @@
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
-[ext_resource path="res://game/arena/compound1.tscn" type="PackedScene" id=3]
+[ext_resource path="res://assets/images/map/floor/compound1.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://database/props/building1_prop.tscn" type="PackedScene" id=6]
@@ -2299,10 +2299,13 @@ scale = Vector2( 2, 2 )
 
 [node name="Projectiles" type="Node2D" parent="."]
 
-[node name="Map" parent="." instance=ExtResource( 3 )]
+[node name="Map" type="Node2D" parent="."]
 position = Vector2( -461.641, -710.938 )
 scale = Vector2( 2, 2 )
 z_index = -999
+
+[node name="Sprite" type="Sprite" parent="Map"]
+texture = ExtResource( 3 )
 
 [node name="Mechas" type="Node2D" parent="."]
 z_index = -2

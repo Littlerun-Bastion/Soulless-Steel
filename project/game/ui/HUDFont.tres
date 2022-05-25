@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=3 format=2]
 
-[ext_resource path="res://assets/fonts/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=1]
 
 [sub_resource type="DynamicFont" id=14]
 size = 50

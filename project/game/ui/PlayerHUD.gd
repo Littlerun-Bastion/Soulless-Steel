@@ -11,6 +11,7 @@ onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes.get_children()
+onready var IntroAnimation = $IntroAnimation
 
 
 var player
@@ -25,9 +26,9 @@ func _process(_delta):
 func setup(player_ref, mechas_ref, is_tutorial):
 	emit_signal("entrance_status", true)
 	if is_tutorial:
-		$EntranceAnim.play("simEntrance")
+		IntroAnimation.play("simEntrance")
 	else:
-		$EntranceAnim.play("Entrance")
+		IntroAnimation.play("Entrance")
 	player = player_ref
 	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
@@ -53,9 +54,6 @@ func setup(player_ref, mechas_ref, is_tutorial):
 func set_pause(value):
 	Cursor.visible = not value
 
-
-func entrance_animation_ending():
-	emit_signal("entrance_status", false)
 
 func setup_lifebar():
 	LifeBar.max_value = player.max_hp
@@ -143,3 +141,7 @@ func _on_LifeBar_value_changed(value):
 
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
+
+
+func _on_IntroAnimation_animation_ending():
+	emit_signal("entrance_status", false)

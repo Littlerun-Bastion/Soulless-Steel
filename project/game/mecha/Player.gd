@@ -96,7 +96,6 @@ func check_weapon_input(name, node, weapon_ref):
 
 func setup(is_tutorial):
 	mecha_name = "Player"
-	set_speed(500, 60)
 	set_max_life(100)
 	set_max_shield(100)
 	if PlayerStatManager.NumberofExtracts != 0:
@@ -104,21 +103,22 @@ func setup(is_tutorial):
 		emit_signal("lost_health")
 	set_core("MSV-L3J")
 	set_head("head_test2")
-	set_legs("legs_test1")
+	#Use to test free mode
+	set_leg("MSV-L3J-L", SIDE.LEFT)
+	set_leg("MSV-L3J-R", SIDE.RIGHT)
+	#Use to test tank mode
+	#set_leg("T-01-TR", SIDE.SINGLE)
 	set_arm_weapon("ZH-Shotgun", SIDE.LEFT)
 	set_arm_weapon("ZH-Massive", SIDE.RIGHT)
 	set_shoulder_weapon("SS-Shoot", SIDE.RIGHT)
 	set_shoulder_weapon(false, SIDE.LEFT)
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
-	movement_type = "free"
 	if is_tutorial:
 		$Ambience.stop()
 	else:
 		$Ambience.play()
 	$AnimationPlayer.play("AudioFade")
-	#rotation_acc = 2.0
-	#friction = 0.3
 
 
 func set_arm_weapon(part_name, side):

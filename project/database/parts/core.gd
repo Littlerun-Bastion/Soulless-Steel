@@ -31,3 +31,12 @@ func get_shoulder_offset(side):
 		return $RightShoulderOffset.position
 	else:
 		push_error("Not a valid side: " + str(side))
+
+
+func get_leg_offset(side):
+	if side == "left":
+		return $LeftLegOffset.position
+	elif side == "right":
+		return $RightLegOffset.position
+	else:
+		push_error("Not a valid side: " + str(side))

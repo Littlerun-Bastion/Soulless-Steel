@@ -2,7 +2,7 @@ extends Node
 
 const DATA_PATH = "res://database/parts/"
 
-enum SIDE {LEFT, RIGHT}
+enum SIDE {LEFT, RIGHT, SINGLE}
 
 onready var ARM_WEAPONS = {}
 onready var SHOULDER_WEAPONS = {}
@@ -12,6 +12,9 @@ onready var SHOULDERS_RIGHT = {}
 onready var CORES = {}
 onready var HEADS = {}
 onready var LEGS = {}
+onready var LEGS_LEFT = {}
+onready var LEGS_RIGHT = {}
+onready var LEGS_SINGLE = {}
 onready var PROJECTILES = {}
 
 
@@ -29,6 +32,7 @@ func setup_parts():
 	load_parts("projectiles", PROJECTILES)
 	
 	setup_shoulder_sides()
+	setup_leg_sides()
 
 
 func setup_shoulder_sides():
@@ -40,6 +44,19 @@ func setup_shoulder_sides():
 			SHOULDERS_RIGHT[key] = shoulder
 		else:
 			push_error("Not a valid shoulder side type: " + str(shoulder.side))
+
+
+func setup_leg_sides():
+	for key in LEGS.keys():
+		var leg = LEGS[key]
+		if leg.side == SIDE.LEFT:
+			LEGS_LEFT[key] = leg
+		elif leg.side == SIDE.RIGHT:
+			LEGS_RIGHT[key] = leg
+		elif leg.side == SIDE.SINGLE:
+			LEGS_SINGLE[key] = leg
+		else:
+			push_error("Not a valid leg side type: " + str(leg.side))
 
 
 func load_parts(name, dict):
@@ -76,8 +93,14 @@ func get_parts(type):
 			return CORES
 		"head":
 			return HEADS
-		"legs":
+		"leg":
 			return LEGS
+		"leg_left":
+			return LEGS_LEFT
+		"leg_right":
+			return LEGS_RIGHT
+		"leg_single":
+			return LEGS_SINGLE
 		"projectile":
 			return PROJECTILES
 		_:

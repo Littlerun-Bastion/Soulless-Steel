@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://database/parts/legs.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_main.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_heat_glow.png" type="Texture" id=4]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+side = 1
+
+[node name="LegsSub" type="Sprite" parent="."]
+z_index = -1
+texture = ExtResource( 2 )
+
+[node name="LegsGlow" type="Sprite" parent="."]
+z_index = 1
+texture = ExtResource( 4 )
+
+[node name="Legs" type="Sprite" parent="."]
+texture = ExtResource( 3 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( -17.5909, 11.1932, -16.8113, -35.3562, -6.12054, -46.9379, 10.4109, -46.7634, 10.9722, 29.9849, -8.79324, 49.2791, -7.90234, 19.5454 )

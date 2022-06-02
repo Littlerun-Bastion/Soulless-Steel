@@ -7,6 +7,11 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+side = 2
+
+[node name="LegsSub" type="Sprite" parent="."]
+z_index = -1
+texture = ExtResource( 4 )
 
 [node name="LegsGlow" type="Sprite" parent="."]
 z_index = 1
@@ -14,10 +19,6 @@ texture = ExtResource( 3 )
 
 [node name="Legs" type="Sprite" parent="."]
 texture = ExtResource( 2 )
-
-[node name="LegsSub" type="Sprite" parent="."]
-z_index = -1
-texture = ExtResource( 4 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="."]
 visible = false

@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://database/parts/legs.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/T-01-TR.png" type="Texture" id=2]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+side = 2
+movement_type = "tank"
+friction = 0.3
+rotation_acc = 2.0
+
+[node name="LegsSub" type="Sprite" parent="."]
+z_index = -1
+
+[node name="LegsGlow" type="Sprite" parent="."]
+z_index = 1
+
+[node name="Legs" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="."]
+polygon = PoolVector2Array( -30.3321, -136.1, -29.8867, -112.937, -14.0732, -103.582, 13.5446, -102.691, 29.3581, -112.269, 29.3581, -136.991, 43.6125, -142.559, 56.9759, -142.782, 62.5441, -148.795, 97.0664, -149.018, 104.862, -141.891, 104.194, 140.078, 95.2846, 148.319, 69.4485, 148.987, 69.4485, 138.965, 41.6079, 139.633, 29.3581, 126.938, 28.9126, 123.82, -29.2185, 124.042, -29.4412, 126.047, -41.9138, 138.965, -69.309, 139.188, -69.7544, 149.21, -95.3677, 148.987, -104.722, 140.078, -104.945, -141.446, -97.8177, -148.573, -63.7408, -149.241, -57.7273, -141.668, -45.9229, -142.114 )

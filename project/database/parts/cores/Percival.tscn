@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/cores/percival_core_glow.png" type="Texture" id=2]
@@ -8,10 +8,24 @@
 [ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_lshoulder_main.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_rshoulder_main.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/cores/percival_core_main.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_main.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_main.png" type="Texture" id=10]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
 heat_dispersion = 30
+
+[node name="LeftLegOffset" type="Position2D" parent="."]
+position = Vector2( -30, 70 )
+
+[node name="Reference" type="Sprite" parent="LeftLegOffset"]
+texture = ExtResource( 10 )
+
+[node name="RightLegOffset" type="Position2D" parent="."]
+position = Vector2( 33, 70 )
+
+[node name="Reference" type="Sprite" parent="RightLegOffset"]
+texture = ExtResource( 9 )
 
 [node name="HeadPort" type="Sprite" parent="."]
 z_index = 1
@@ -33,20 +47,17 @@ visible = false
 polygon = PoolVector2Array( -20.4516, -64.6066, 19.2783, -65.1363, 24.0458, -61.6931, 50.5231, 0.274078, 49.5781, 19.1729, 37.2939, 66.7349, 19.1079, 83.9845, -20.0922, 83.7196, -37.3085, 67.0331, -50.2869, 18.2978, -51.3464, 0.28693, -24.8807, -61.0352 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
-visible = false
 
 [node name="Reference" type="Sprite" parent="HeadOffset"]
 texture = ExtResource( 4 )
 
 [node name="LeftShoulderOffset" type="Position2D" parent="."]
-visible = false
 position = Vector2( -49, 12 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
 texture = ExtResource( 6 )
 
 [node name="RightShoulderOffset" type="Position2D" parent="."]
-visible = false
 position = Vector2( 49, 12 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=2]
+[gd_scene load_steps=52 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
@@ -18,6 +18,12 @@
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_glow.png" type="Texture" id=16]
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_main.png" type="Texture" id=17]
 [ext_resource path="res://assets/shaders/HeatShader.tres" type="Material" id=18]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_sub.png" type="Texture" id=19]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_heat_glow.png" type="Texture" id=20]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_sub.png" type="Texture" id=21]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_main.png" type="Texture" id=22]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_main.png" type="Texture" id=23]
+[ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_heat_glow.png" type="Texture" id=24]
 
 [sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
@@ -33,12 +39,7 @@ void fragment(){
 	COLOR.b *= dark;
 }"
 
-[sub_resource type="ShaderMaterial" id=9]
-shader = SubResource( 3 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
-[sub_resource type="ShaderMaterial" id=4]
+[sub_resource type="ShaderMaterial" id=17]
 shader = SubResource( 3 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
@@ -55,55 +56,134 @@ void fragment(){
 	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
 }"
 
-[sub_resource type="ShaderMaterial" id=14]
+[sub_resource type="ShaderMaterial" id=18]
 shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
+[sub_resource type="ShaderMaterial" id=19]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=20]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=21]
+shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
+[sub_resource type="ShaderMaterial" id=22]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=23]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=24]
+shader = SubResource( 1 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
+[sub_resource type="ShaderMaterial" id=25]
+shader = SubResource( 3 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="Shader" id=26]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = (heat/100.0)*(1.0 - min_darkness) + min_darkness;
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=9]
+shader = SubResource( 26 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = SubResource( 26 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="Shader" id=27]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
+uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
+}"
+
+[sub_resource type="ShaderMaterial" id=14]
+shader = SubResource( 27 )
 shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
 [sub_resource type="ShaderMaterial" id=5]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=6]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
 
 [sub_resource type="ShaderMaterial" id=15]
-shader = SubResource( 1 )
+shader = SubResource( 27 )
 shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
 [sub_resource type="ShaderMaterial" id=7]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=10]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=11]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=12]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=13]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=8]
-shader = SubResource( 3 )
+shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
@@ -159,9 +239,49 @@ tracks/1/keys = {
 z_index = -1
 script = ExtResource( 1 )
 
-[node name="Legs" type="Sprite" parent="."]
-visible = false
+[node name="Legs" type="Node2D" parent="."]
+
+[node name="SingleSub" type="Sprite" parent="Legs"]
+material = SubResource( 17 )
 texture = ExtResource( 13 )
+
+[node name="SingleGlow" type="Sprite" parent="Legs"]
+material = SubResource( 18 )
+texture = ExtResource( 13 )
+
+[node name="Single" type="Sprite" parent="Legs"]
+material = SubResource( 19 )
+texture = ExtResource( 13 )
+
+[node name="LeftSub" type="Sprite" parent="Legs"]
+material = SubResource( 20 )
+position = Vector2( -50, 70 )
+texture = ExtResource( 19 )
+
+[node name="LeftGlow" type="Sprite" parent="Legs"]
+material = SubResource( 21 )
+position = Vector2( -50, 70 )
+texture = ExtResource( 20 )
+
+[node name="Left" type="Sprite" parent="Legs"]
+material = SubResource( 22 )
+position = Vector2( -50, 70 )
+texture = ExtResource( 23 )
+
+[node name="RightSub" type="Sprite" parent="Legs"]
+material = SubResource( 23 )
+position = Vector2( 50, 70 )
+texture = ExtResource( 21 )
+
+[node name="RightGlow" type="Sprite" parent="Legs"]
+material = SubResource( 24 )
+position = Vector2( 50, 70 )
+texture = ExtResource( 24 )
+
+[node name="Right" type="Sprite" parent="Legs"]
+material = SubResource( 25 )
+position = Vector2( 50, 70 )
+texture = ExtResource( 22 )
 
 [node name="HeadPort" type="Sprite" parent="."]
 material = SubResource( 9 )
@@ -266,20 +386,22 @@ shadow_filter = 1
 shadow_filter_smooth = 4.4
 
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 position = Vector2( 2.51985, 5.66965 )
 polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
 
-[node name="LegsCollision" type="CollisionPolygon2D" parent="."]
-visible = false
+[node name="LegsSingleCollision" type="CollisionPolygon2D" parent="."]
+position = Vector2( 2.51985, 5.66965 )
+
+[node name="LegsLeftCollision" type="CollisionPolygon2D" parent="."]
+position = Vector2( 2.51985, 5.66965 )
+
+[node name="LegsRightCollision" type="CollisionPolygon2D" parent="."]
 position = Vector2( 2.51985, 5.66965 )
 
 [node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
 
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
 polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
 
 [node name="StunTimer" type="Timer" parent="."]

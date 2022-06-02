@@ -110,6 +110,7 @@ texture_hover = ExtResource( 4 )
 texture_focused = ExtResource( 4 )
 
 [node name="VCREffect" type="ColorRect" parent="."]
+visible = false
 material = SubResource( 6 )
 anchor_right = 1.0
 anchor_bottom = 1.0

@@ -1,7 +1,7 @@
 extends KinematicBody2D
 class_name Mecha
 
-enum SIDE {LEFT, RIGHT}
+enum SIDE {LEFT, RIGHT, SINGLE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
@@ -33,6 +33,15 @@ onready var LeftArmWeapon = $ArmWeaponLeft
 onready var RightArmWeapon = $ArmWeaponRight
 onready var LeftShoulderWeapon = $ShoulderWeaponLeft
 onready var RightShoulderWeapon = $ShoulderWeaponRight
+onready var SingleLeg = $Legs/Single
+onready var SingleLegSub = $Legs/SingleSub
+onready var SingleLegGlow = $Legs/SingleGlow
+onready var LeftLeg = $Legs/Left
+onready var LeftLegSub = $Legs/LeftSub
+onready var LeftLegGlow = $Legs/LeftGlow
+onready var RightLeg = $Legs/Right
+onready var RightLegSub = $Legs/RightSub
+onready var RightLegGlow = $Legs/RightGlow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -56,18 +65,25 @@ var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5
 
+	#rotation_acc = 2.0
+	#friction = 0.3
+
 var arm_weapon_left = null
 var arm_weapon_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
 var core = null
-var legs = null
+var legs_single = null
+var legs_left = null
+var legs_right = null
 
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
-				 LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
+				 LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon,\
+				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
+				 RightLeg, RightLegSub, RightLegGlow]:
 		node.material = CoreSub.material.duplicate(true)
 
 
@@ -111,8 +127,10 @@ func set_pause(value):
 	paused = value
 
 
-func set_speed(_max_speed, _move_acc):
+func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
+	friction = _friction
+	rotation_acc = _rotation_acc
 	move_acc = min(_move_acc, 100.0)
 	MovementAnimation.playback_speed = max_speed/200
 	var animation = MovementAnimation.get_animation("Walking")
@@ -170,7 +188,9 @@ func die(source_info, weapon_name):
 
 
 func is_shape_id_legs(id):
-	return shape_owner_get_owner(shape_find_owner(id)) == $LegsCollision
+	return shape_owner_get_owner(shape_find_owner(id)) == $LegsSingleCollision or\
+		   shape_owner_get_owner(shape_find_owner(id)) == $LegsLeftCollision or\
+		   shape_owner_get_owner(shape_find_owner(id)) == $LegsRightCollision
 
 
 func add_decal(id, projectile_transform, type, size):
@@ -201,7 +221,9 @@ func update_heat(dt):
 	#Main Mecha Heat
 	if core:
 		mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
-	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder]:
+	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
+				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
+				 RightLeg, RightLegSub, RightLegGlow]:
 		node.material.set_shader_param("heat", mecha_heat) 
 
 
@@ -270,34 +292,76 @@ func set_core(part_name):
 	$Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
 	core = part_data
-	#HeadPort
 	if core.get_head_port() != null:
 		$HeadPort.texture = core.get_head_port()
 		$HeadPort.position = core.get_head_port_offset()
-		$HeadPort.show()
 	else:
 		$HeadPort.texture = null
-		$HeadPort.hide()
-	#CoreSub
-	if core.get_sub() != null:
-		$CoreSub.texture = core.get_sub()
-		$CoreSub.show()
-	else:
-		$CoreSub.texture = null
-		$CoreSub.hide()
+	$CoreSub.texture = core.get_sub()
 
-func set_legs(part_name):
+
+func set_leg(part_name, side := SIDE.LEFT):
 	if not part_name:
-		legs = null
-		$Legs.texture = null
-		$LegsCollision.polygon = []
+		remove_legs("single")
+		remove_legs("pair")
+		movement_type = "free"
 		return
-		
-	var part_data = PartManager.get_part("legs", part_name)
-	$Legs.texture = part_data.get_image()
-	$LegsCollision.polygon = part_data.get_collision()
-	legs = part_data
 
+	var main; var sub; var glow; var collision
+	var pos = false
+	var part_data = PartManager.get_part("leg", part_name)
+	match side:
+		SIDE.RIGHT:
+			main = $Legs/Right; sub = $Legs/RightSub; glow = $Legs/RightGlow
+			collision = $LegsRightCollision
+			if core:
+				pos = core.get_leg_offset("right")
+			legs_right = part_data
+			remove_legs("single")
+		SIDE.LEFT:
+			main = $Legs/Left; sub = $Legs/LeftSub; glow = $Legs/LeftGlow
+			collision = $LegsLeftCollision
+			if core:
+				pos = core.get_leg_offset("left")
+			legs_left = part_data
+			remove_legs("single")
+		SIDE.SINGLE:
+			main = $Legs/Single; sub = $Legs/SingleSub; glow = $Legs/SingleGlow
+			collision = $LegsSingleCollision
+			legs_single = part_data
+			remove_legs("pair")
+	if pos:
+		main.position = pos
+		sub.position = pos
+		glow.position = pos
+		collision.position = pos
+
+	main.texture = part_data.get_image()
+	sub.texture = part_data.get_sub()
+	glow.texture = part_data.get_glow()
+	collision.polygon = part_data.get_collision()
+	movement_type = part_data.movement_type
+	set_speed(part_data.max_speed, part_data.move_acc, part_data.friction, part_data.rotation_acc)
+
+
+func remove_legs(type):
+	if type == "single":
+		legs_single = null
+		$Legs/Single.texture = null
+		$Legs/SingleGlow.texture = null
+		$Legs/SingleSub.texture = null
+		$LegsSingleCollision.polygon = []
+	elif type == "pair":
+		legs_left = null
+		$Legs/Left.texture = null
+		$Legs/LeftGlow.texture = null
+		$Legs/LeftSub.texture = null
+		$LegsLeftCollision.polygon = []
+		legs_right = null
+		$Legs/Right.texture = null
+		$Legs/RightGlow.texture = null
+		$Legs/RightSub.texture = null
+		$LegsRightCollision.polygon = []
 
 
 func set_head(part_name):

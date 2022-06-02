@@ -58,21 +58,24 @@ func setup(_all_mechas, _path_stuff, is_tutorial):
 		set_max_shield(50)
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
-		set_legs(PartManager.get_random_part_name("legs"))
+		set_leg(PartManager.get_random_part_name("leg_single"), SIDE.SINGLE)
 		scale = Vector2(0.5, 0.5)
 	else:
 		set_max_life(150)
 		set_max_shield(100)
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
-		set_legs(PartManager.get_random_part_name("legs"))
+		set_leg(PartManager.get_random_part_name("leg_left"), SIDE.LEFT)
+		set_leg(PartManager.get_random_part_name("leg_right"), SIDE.RIGHT)
 		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
 		set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
 		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
 		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
 		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
 		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
-
+	
+	#For the moment hard set enemies' movement type to free
+	movement_type = "free"
 
 
 func update_pathing_debug_line():

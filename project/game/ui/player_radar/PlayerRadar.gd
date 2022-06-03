@@ -1,6 +1,6 @@
 extends Control
 
-const POINTER = preload("res://game/ui/PlayerRadar/Pointer.tscn")
+const POINTER = preload("res://game/ui/player_radar/Pointer.tscn")
 const POINTER_TEXTURES = {
 	"far": preload("res://assets/images/ui/player_ui/player_directional_pointer_far.png"),
 	"mid": preload("res://assets/images/ui/player_ui/player_directional_pointer_mid.png"),

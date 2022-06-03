@@ -11,7 +11,7 @@
 [ext_resource path="res://assets/images/small_bullethole2.png" type="Texture" id=9]
 [ext_resource path="res://game/ui/IntroAnimation.tscn" type="PackedScene" id=10]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
-[ext_resource path="res://game/ui/player_radarr/PlayerRadar.tscn" type="PackedScene" id=14]
+[ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
 
 [sub_resource type="StyleBoxTexture" id=10]
 texture = ExtResource( 5 )

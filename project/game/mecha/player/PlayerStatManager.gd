@@ -21,18 +21,7 @@ var Credits = 0
 var ReloadCost = 0
 var RepairCost = 0
 var RepairedLastRound = true
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	NumberofExtracts = 0
-	pass # Replace with function body.
-
-	
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass

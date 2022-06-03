@@ -6,7 +6,7 @@
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_glow.png" type="Texture" id=9]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=10]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=11]
-[ext_resource path="res://game/mecha/Player.gd" type="Script" id=12]
+[ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=12]
 
 [node name="Player" instance=ExtResource( 10 )]
 script = ExtResource( 12 )

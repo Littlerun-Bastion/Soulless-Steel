@@ -1,6 +1,6 @@
 extends Node2D
 
-const PLAYER = preload("res://game/mecha/Player.tscn")
+const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
 export var is_tutorial := false
@@ -36,8 +36,9 @@ func _ready():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
 	$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 5.0)
-	$PlayerKilled/Label.visible = false
-	$PlayerKilled/ReturnButton.visible = false
+	#TODO fix this
+	$GameOver/Label.visible = false
+	$GameOver/ReturnButton.visible = false
 
 
 func _input(event):
@@ -164,7 +165,7 @@ func player_died():
 	PlayerHUD.queue_free()
 	current_cam = ArenaCam
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
-	$PlayerKilled.killed()
+	$GameOver.killed()
 
 
 func get_random_start_position(exclude_idx := []):

@@ -1,15 +1,15 @@
 [gd_scene load_steps=10 format=2]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture" id=4]
-[ext_resource path="res://PlayerKilled.gd" type="Script" id=5]
-[ext_resource path="res://game/ui/effects/VCREffect.gd" type="Script" id=6]
+[ext_resource path="res://game/ui/effects/VCREffect.gd" type="Script" id=1]
+[ext_resource path="res://game/arena/GameOver.gd" type="Script" id=2]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button.png" type="Texture" id=5]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=6]
 
 [sub_resource type="DynamicFont" id=1]
 size = 45
-font_data = ExtResource( 1 )
+font_data = ExtResource( 6 )
 
 [sub_resource type="Shader" id=7]
 code = "shader_type canvas_item;
@@ -81,9 +81,9 @@ shader_param/redIntensity = 1.0
 shader_param/greenMultiplier = 0.0073
 shader_param/greenIntensity = 0.97
 
-[node name="PlayerKilled" type="CanvasLayer"]
+[node name="GameOver" type="CanvasLayer"]
 layer = 99
-script = ExtResource( 5 )
+script = ExtResource( 2 )
 
 [node name="Label" type="Label" parent="."]
 margin_left = 12.0208
@@ -104,10 +104,10 @@ margin_top = -97.7595
 margin_right = 243.949
 margin_bottom = 22.2407
 rect_scale = Vector2( 0.66, 0.66 )
-texture_normal = ExtResource( 2 )
-texture_pressed = ExtResource( 3 )
-texture_hover = ExtResource( 4 )
-texture_focused = ExtResource( 4 )
+texture_normal = ExtResource( 5 )
+texture_pressed = ExtResource( 4 )
+texture_hover = ExtResource( 3 )
+texture_focused = ExtResource( 3 )
 
 [node name="VCREffect" type="ColorRect" parent="."]
 visible = false
@@ -118,7 +118,7 @@ margin_right = -960.0
 margin_bottom = -540.0
 rect_scale = Vector2( 2, 2 )
 mouse_filter = 2
-script = ExtResource( 6 )
+script = ExtResource( 1 )
 
 [node name="Tween" type="Tween" parent="VCREffect"]
 

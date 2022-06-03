@@ -280,6 +280,7 @@ func _on_player_mech_extracted(playerMech):
 # warning-ignore:return_value_discarded
 		get_tree().change_scene("res://StartMenu.tscn")
 	else:
+		#TODO: Fix this
 		PlayerStatManager.PlayerKills += player_kills
 		PlayerStatManager.PlayerHP = playerMech.hp
 		PlayerStatManager.PlayerMaxHP = playerMech.max_hp

@@ -2,7 +2,7 @@ extends CanvasLayer
 
 signal entrance_status
 
-const WEAPON_SLOT = preload("res://game/ui/WeaponSlot/WeaponSlot.tscn")
+const WEAPON_SLOT = preload("res://game/ui/weapon_slot/WeaponSlot.tscn")
 
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar

@@ -56,7 +56,7 @@
 [ext_resource path="res://database/ExitPoint.tscn" type="PackedScene" id=54]
 [ext_resource path="res://database/props/arena_wall_mid.tscn" type="PackedScene" id=55]
 [ext_resource path="res://database/props/NavBlocks.gd" type="Script" id=56]
-[ext_resource path="res://MenuTransition.gd" type="Script" id=57]
+[ext_resource path="res://game/ui/effectss/VCREffect.gd" type="Script" id=57]
 [ext_resource path="res://PlayerKilled.tscn" type="PackedScene" id=58]
 
 [sub_resource type="CanvasItemMaterial" id=2]

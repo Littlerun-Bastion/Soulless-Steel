@@ -1,7 +1,7 @@
 [gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://ParallaxBackgroundScrolling.gd" type="Script" id=1]
-[ext_resource path="res://MenuTransition.gd" type="Script" id=2]
+[ext_resource path="res://game/ui/effectss/VCREffect.gd" type="Script" id=2]
 [ext_resource path="res://StartMenu.gd" type="Script" id=3]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=4]
 [ext_resource path="res://assets/images/ui/menu/tutorial_button_highlight.png" type="Texture" id=5]
@@ -254,7 +254,7 @@ tracks/4/keys = {
 "values": [ 0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0 ]
 }
 
-[node name="Start Menu" type="Control"]
+[node name="StartMenu" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 3 )

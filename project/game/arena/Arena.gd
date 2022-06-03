@@ -303,4 +303,4 @@ func _on_PlayerHUD_entrance_status(status):
 	for mecha in Mechas.get_children():
 		mecha.set_pause(status)
 	if not status and not is_tutorial:
-		AudioManager.play_bgm("ambience", false, 40)
+		AudioManager.play_bgm("ambience", true, 40)

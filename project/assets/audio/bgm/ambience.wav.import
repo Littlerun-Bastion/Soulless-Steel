@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/ambience.wav-52cb8f0580325d797c515f39bdc265a9.sample"
+path="res://.import/ambience.wav-d7e0bfe552d70b17355a3f55427fcfeb.sample"
 
 [deps]
 
-source_file="res://assets/audio/sfx/ambience.wav"
-dest_files=[ "res://.import/ambience.wav-52cb8f0580325d797c515f39bdc265a9.sample" ]
+source_file="res://assets/audio/bgm/ambience.wav"
+dest_files=[ "res://.import/ambience.wav-d7e0bfe552d70b17355a3f55427fcfeb.sample" ]
 
 [params]
 

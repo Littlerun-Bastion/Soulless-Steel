@@ -4,7 +4,7 @@
 [ext_resource path="res://assets/images/ui/player_ui/weapon_ammo_slide_frame.png" type="Texture" id=2]
 [ext_resource path="res://assets/fonts/data/Zector/Zector.ttf" type="DynamicFontData" id=5]
 [ext_resource path="res://assets/fonts/data/HPSimplified_Lt.ttf" type="DynamicFontData" id=6]
-[ext_resource path="res://game/ui/WeaponSlot/WeaponSlot.gd" type="Script" id=7]
+[ext_resource path="res://game/ui/weapon_slott/WeaponSlot.gd" type="Script" id=7]
 
 
 [sub_resource type="DynamicFont" id=1]

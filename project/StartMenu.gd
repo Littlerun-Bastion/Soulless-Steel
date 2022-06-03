@@ -11,6 +11,7 @@ var parallaxMult = 30.0
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	$AnimationPlayer.play("Typewrite")
+	AudioManager.play_bgm("main-menu")
 	if DEBUG:
 		window_debug_mode()
 
@@ -43,6 +44,7 @@ func window_debug_mode():
 
 func start_game(mode):
 	VCREffect.play_transition(5000.0, 0, 3.0)
+	AudioManager.stop_bgm()
 	PlayerStatManager.NumberofExtracts = 0
 	PlayerStatManager.Credits = 0
 	match mode:

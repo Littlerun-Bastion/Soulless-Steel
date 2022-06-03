@@ -233,7 +233,14 @@ func _on_player_lost_health():
 
 
 func _on_mecha_create_projectile(mecha, args):
-	yield(get_tree().create_timer(args.delay), "timeout")
+	#To avoid warning when mecha is killed during delay
+	if args.delay > 0:
+		var timer = Timer.new()
+		timer.wait_time = args.delay
+		add_child(timer)
+		timer.start()
+		yield(timer, "timeout")
+		timer.queue_free()
 	var data = ProjectileManager.create(mecha, args)
 	if data.create_node:
 		Projectiles.add_child(data.node)

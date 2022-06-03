@@ -132,7 +132,7 @@ func merge_polygons(polygons):
 func add_player():
 	player = PLAYER.instance()
 	Mechas.add_child(player)
-	player.setup(is_tutorial)
+	player.setup()
 	player.position = get_start_position(1)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
@@ -302,3 +302,5 @@ func _on_WindsTimer_timeout():
 func _on_PlayerHUD_entrance_status(status):
 	for mecha in Mechas.get_children():
 		mecha.set_pause(status)
+	if not status and not is_tutorial:
+		AudioManager.play_bgm("ambience", false, 40)

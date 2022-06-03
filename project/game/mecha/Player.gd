@@ -94,7 +94,7 @@ func check_weapon_input(name, node, weapon_ref):
 		shoot(name, true)
 
 
-func setup(is_tutorial):
+func setup():
 	mecha_name = "Player"
 	set_max_life(100)
 	set_max_shield(100)
@@ -114,11 +114,6 @@ func setup(is_tutorial):
 	set_shoulder_weapon(false, SIDE.LEFT)
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
-	if is_tutorial:
-		$Ambience.stop()
-	else:
-		$Ambience.play()
-	$AnimationPlayer.play("AudioFade")
 
 
 func set_arm_weapon(part_name, side):

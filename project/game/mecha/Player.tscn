@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=1]
 [ext_resource path="res://game/mecha/Player.gd" type="Script" id=2]
@@ -6,38 +6,6 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=6]
-[ext_resource path="res://assets/audio/sfx/ambience.wav" type="AudioStream" id=7]
-
-[sub_resource type="Animation" id=1]
-resource_name = "AudioFade"
-length = 20.0
-tracks/0/type = "value"
-tracks/0/path = NodePath("../Ambience:volume_db")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 1, 17 ),
-"transitions": PoolRealArray( 1, 1 ),
-"update": 0,
-"values": [ -80.0, -4.0 ]
-}
-
-[sub_resource type="Animation" id=2]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/path = NodePath("../Ambience:volume_db")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ -80.0 ]
-}
 
 [node name="Player" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
@@ -78,13 +46,3 @@ position = Vector2( -49.7729, 16 )
 
 [node name="RightShoulder" parent="." index="14"]
 position = Vector2( 51.6457, 16 )
-
-[node name="Ambience" type="AudioStreamPlayer" parent="." index="23"]
-stream = ExtResource( 7 )
-volume_db = -80.0
-mix_target = 1
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="24"]
-root_node = NodePath("../MovementAnimation")
-anims/AudioFade = SubResource( 1 )
-anims/RESET = SubResource( 2 )

@@ -49,14 +49,13 @@ func start_game(mode):
 	PlayerStatManager.Credits = 0
 	match mode:
 		"main":
-			# warning-ignore:return_value_discarded
-			get_tree().change_scene("res://game/arena/Arena.tscn")
+			ArenaManager.set_map_to_load("map1")
 		"tutorial":
-			# warning-ignore:return_value_discarded
-			get_tree().change_scene("res://game/arena/TutorialArena.tscn")
+			ArenaManager.set_map_to_load("tutorial")
 		_:
 			push_error("Not a valid mode: " + str(mode))
-
+	# warning-ignore:return_value_discarded
+	get_tree().change_scene("res://game/arena/Arena.tscn")
 
 func _on_Button_mouse_entered():
 	AudioManager.play_sfx("select")

@@ -24,6 +24,9 @@ var player_kills = 0
 
 func _ready():
 	randomize()
+	
+	setup_arena()
+	
 	player_kills = 0
 	target_arena_zoom = ArenaCam.zoom
 	
@@ -65,6 +68,35 @@ func _input(event):
 func _process(dt):
 	update_shader_effect()
 	update_arena_cam(dt)
+
+
+func setup_arena():
+	var arena_data = ArenaManager.get_current_map()
+	
+	var data_bg = arena_data.get_bg()
+	$BG.texture = data_bg.texture
+	$BG.position = data_bg.position
+	$BG.scale = data_bg.scale
+	
+	for child in arena_data.get_bushes():
+		$Bushes.add_child(child.duplicate(7))
+	for child in arena_data.get_props():
+		$Props.add_child(child.duplicate(7))
+	for child in arena_data.get_walls():
+		$Walls.add_child(child.duplicate(7))
+	for child in arena_data.get_navblocks():
+		$NavBlocks.add_child(child.duplicate(7))
+	for child in arena_data.get_start_positions():
+		$StartPositions.add_child(child.duplicate(7))
+	for child in arena_data.get_exits():
+		$Exits.add_child(child.duplicate(7))
+	for child in arena_data.get_trees():
+		$Trees.add_child(child.duplicate(7))
+	for child in arena_data.get_texts():
+		$Texts.add_child(child.duplicate(7))
+	
+	$Navigation2D/NavigationPolygonInstance.navpoly = arena_data.get_navigation_polygon()
+	
 
 
 func update_arena_cam(dt):

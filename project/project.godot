@@ -21,7 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Soulless Steel"
-run/main_scene="res://StartMenu.tscn"
+run/main_scene="res://game/start_menu/StartMenu.tscn"
 config/icon="res://icon.png"
 
 [autoload]
@@ -31,6 +31,7 @@ PartManager="*res://game/mecha/PartManager.gd"
 ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 TickerManager="*res://game/ui/ticker/TickerManager.gd"
 PlayerStatManager="*res://game/mecha/player/PlayerStatManager.gd"
+ArenaManager="*res://game/arena/ArenaManager.gd"
 
 [display]
 

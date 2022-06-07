@@ -65,9 +65,6 @@ var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5
 
-	#rotation_acc = 2.0
-	#friction = 0.3
-
 var arm_weapon_left = null
 var arm_weapon_right = null
 var shoulder_weapon_left = null

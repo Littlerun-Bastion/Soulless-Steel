@@ -36,7 +36,7 @@ func _ready():
 func _process(delta):
 	if paused or is_stunned():
 		return
-	
+
 	var state = logic.get_current_state()
 	if has_method("do_"+state):
 		call("do_"+state, delta)

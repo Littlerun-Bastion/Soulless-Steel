@@ -1,11 +1,11 @@
-[gd_scene load_steps=54 format=2]
+[gd_scene load_steps=53 format=2]
 
 [ext_resource path="res://database/props/tree_leafless_2_prop.tscn" type="PackedScene" id=1]
 [ext_resource path="res://database/props/tree1_prop.tscn" type="PackedScene" id=2]
 [ext_resource path="res://database/StartPoint.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/props/building2_prop.tscn" type="PackedScene" id=4]
 [ext_resource path="res://database/props/house2a_prop.tscn" type="PackedScene" id=5]
-[ext_resource path="res://database/props/arena_wall_outernorth.tscn" type="PackedScene" id=6]
+[ext_resource path="res://database/props/Prop.gd" type="Script" id=6]
 [ext_resource path="res://database/maps/Map.gd" type="Script" id=7]
 [ext_resource path="res://database/props/house2_prop.tscn" type="PackedScene" id=8]
 [ext_resource path="res://database/props/house1a_prop.tscn" type="PackedScene" id=9]
@@ -13,7 +13,6 @@
 [ext_resource path="res://database/props/arena_wall_mid.tscn" type="PackedScene" id=11]
 [ext_resource path="res://database/props/house3a_prop.tscn" type="PackedScene" id=12]
 [ext_resource path="res://database/props/arena_wall_midNorth.tscn" type="PackedScene" id=13]
-[ext_resource path="res://database/props/arena_wall_outersouth.tscn" type="PackedScene" id=14]
 [ext_resource path="res://database/ExitPoint.tscn" type="PackedScene" id=15]
 [ext_resource path="res://database/props/building1_prop.tscn" type="PackedScene" id=16]
 [ext_resource path="res://database/props/house3_prop.tscn" type="PackedScene" id=18]
@@ -2204,13 +2203,25 @@ position = Vector2( -224.37, -353.852 )
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="arena_wall_outernorth" parent="Walls" instance=ExtResource( 6 )]
+[node name="arena_wall_outernorth" type="Node2D" parent="Walls"]
 position = Vector2( -485.454, -686.996 )
 scale = Vector2( 2, 2 )
+script = ExtResource( 6 )
 
-[node name="arena_wall_outersouth" parent="Walls" instance=ExtResource( 14 )]
+[node name="StaticBody2D" type="StaticBody2D" parent="Walls/arena_wall_outernorth"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/arena_wall_outernorth/StaticBody2D"]
+polygon = PoolVector2Array( -6734.64, 605.886, -6851.69, 458.642, -6880, 356.704, -6878.11, 239.663, -6846.02, 133.949, -6800.72, 49.0006, -6337.67, -545.965, -6194.71, -747.78, -6055.32, -999.067, -5883.69, -1355.05, -5722.27, -1711.38, -5486.85, -2207.91, -5246.85, -2703.91, -4982.85, -3219.91, -4702.85, -3715.91, -4451.7, -4110.23, -4191.28, -4476.15, -3906.46, -4823.09, -3746.38, -4999.4, -3446.65, -5302.15, -2979.92, -5725.82, -2685.87, -5977.26, -2325.47, -6269.59, -1080.41, -7183.9, -816.066, -6860.94, -509.345, -7072.3, -259.881, -7231.05, 9.74231, -7354.52, 196.211, -7415, 375.868, -7449.88, 554.138, -7461.65, 747.544, -7454.92, 913.737, -7431.06, 1089.04, -7404.1, 1325.77, -7345.66, 1459.98, -7295.45, 1566, -7243.78, 1660.43, -7174.29, 1830.44, -7045.95, 1811.75, -7015.25, 1862.32, -6942.03, 1983.41, -6915.12, 2117.95, -6901.67, 2356.77, -6820.94, 2854.58, -6518.22, 3150.27, -6175.21, 5618.19, -5994.78, 5989.77, -5419.43, 6133.61, -4868.05, 6317.9, -3665.6, 6397.9, -2945.6, 6757.9, -2337.6, 6878, -1362.28, 7651.98, -1460.45, 8185.49, -8755.69, -8063.83, -8489.31, -7725.08, 752.781, -7652.18, 5945.23, -5528.15, 4237.97, -6067.24, 3495.06, -6821.36, 2681.56, -6997.78, 2460.04, -7456.4, 1755.5, -6860.26, 1338.98, -6834.45, 923.838 )
+
+[node name="arena_wall_outersouth" type="Node2D" parent="Walls"]
 position = Vector2( -439.812, -702.134 )
 scale = Vector2( 2, 2 )
+script = ExtResource( 6 )
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Walls/arena_wall_outersouth"]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/arena_wall_outersouth/StaticBody2D"]
+polygon = PoolVector2Array( -5336.91, 4088.72, -7772.01, 6032.63, -7820.01, 7824.63, 7632.7, 7758.23, 7658.85, 1152.56, 7629.01, -1433.17, 6853.98, -1334.58, 6822.92, -0.147858, 7278.92, 3.85214, 7319.22, 909.097, 6798.92, 911.852, 6827.8, 1520.53, 5990.27, 1533.98, 5980.18, 1920.79, 3878.69, 1906.89, 3285.32, 1952.41, 3342.4, 2233.06, 3489.86, 2556.53, 3437.11, 2977.23, 3949.69, 2870.45, 4181.66, 2907.73, 4377.06, 3793.06, 4321.29, 3892.05, 4106.09, 3914.71, 3884.61, 4279.26, 4055.94, 4411.31, 4136.85, 4568.63, 4182.26, 4678.55, 4406.86, 4835.35, 4461.96, 5102.34, 4411.1, 5212.52, 4381.09, 5472.69, 4226.25, 5712.96, 4103.44, 5894.49, 3895.21, 6129.43, 3772.4, 6289.61, 3638.92, 6444.45, 3532.13, 6567.25, 3403.99, 6711.42, 2976.84, 6844.9, 2661.82, 6903.63, 2389.51, 6941.01, 1971.37, 6856.2, 1667.37, 6896.2, 1259.37, 6992.2, 723.373, 7128.2, 315.373, 7200.2, 51.3726, 7072.2, -132.627, 6904.2, -452.627, 6768.2, -660.627, 6784.2, -820.627, 6752.2, -940.627, 6680.2, -1070.79, 6622.28, -1250.59, 6460.47, -1358.47, 6262.69, -1472.34, 6214.75, -1598.2, 6034.95, -1903.85, 5795.22, -2233.48, 5687.34, -2389.3, 5687.34, -2491.19, 5633.4, -2898.73, 5279.8, -3042.57, 5183.91, -3222.36, 5088.02, -3264.32, 4968.15, -3390.17, 4830.31, -3486.07, 4758.39, -3765.17, 4647.71, -3859.45, 4656.69, -3913.33, 4728.53, -4021.09, 4670.16, -4039.05, 4625.26, -4133.33, 4674.65, -4133.33, 4719.55, -4645.18, 5006.9, -4748.44, 4935.06, -5085.18, 4939.55, -5287.22, 5006.9, -6142.02, 4785.28, -5335.6, 4145.41, -5317.6, 4163.41, -5233.6, 4105.41, -5301.6, 4021.41, -5383.87, 4079.46, -5374.62, 4092.92, -5346.03, 4077.78 )
 
 [node name="NavBlocks" type="Node2D" parent="."]
 visible = false

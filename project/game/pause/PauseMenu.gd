@@ -30,7 +30,7 @@ func _on_Button_mouse_entered():
 func _on_Quit_pressed():
 	AudioManager.play_sfx("back")
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://StartMenu.tscn")
+	get_tree().change_scene("res://game/start_menu/StartMenu.tscn")
 
 
 func _on_Resume_pressed():

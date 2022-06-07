@@ -310,7 +310,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
 # warning-ignore:return_value_discarded
-		get_tree().change_scene("res://StartMenu.tscn")
+		get_tree().change_scene("res://game/start_menu/StartMenu.tscn")
 	else:
 		#TODO: Fix this
 		PlayerStatManager.PlayerKills += player_kills

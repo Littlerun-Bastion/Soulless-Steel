@@ -7,9 +7,25 @@ signal lost_health
 
 const ROTATION_DEADZONE = 20
 
+export var use_debug_loadout := false
+
 onready var Cam = $Camera2D
 
 var reload_mode := false
+
+
+func _ready():
+	if use_debug_loadout:
+		set_core("MSV-L3J")
+		set_head("head_test2")
+		set_leg("MSV-L3J-L", SIDE.LEFT)
+		set_leg("MSV-L3J-R", SIDE.RIGHT)
+		set_arm_weapon("ZH-Shotgun", SIDE.LEFT)
+		set_arm_weapon("ZH-Massive", SIDE.RIGHT)
+		set_shoulder_weapon("SS-Shoot", SIDE.RIGHT)
+		set_shoulder_weapon(false, SIDE.LEFT)
+		set_shoulder("shoulder_test3_left", SIDE.LEFT)
+		set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 
 
 func _physics_process(delta):

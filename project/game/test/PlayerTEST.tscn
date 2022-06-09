@@ -10,6 +10,7 @@
 
 [node name="Player" instance=ExtResource( 10 )]
 script = ExtResource( 12 )
+use_debug_loadout = true
 
 [node name="Camera2D" parent="." index="0" instance=ExtResource( 11 )]
 zoom = Vector2( 3, 3 )

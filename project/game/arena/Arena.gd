@@ -3,7 +3,7 @@ extends Node2D
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 
-export var is_tutorial := false
+export var EnemyCount = 1
 
 onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
@@ -13,13 +13,14 @@ onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
 onready var PauseMenu = $PauseMenu
-export var EnemyCount = 1
+onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
 var current_cam
 var all_mechas = []
 var target_arena_zoom
 var player_kills = 0
+var is_tutorial := false
 
 
 func _ready():
@@ -39,6 +40,13 @@ func _ready():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
 	$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 5.0)
+	
+	set_mechas_block_status(true)
+	if is_tutorial:
+		IntroAnimation.play("simEntrance")
+	else:
+		IntroAnimation.play("Entrance")
+	
 	#TODO fix this
 	$GameOver/Label.visible = false
 	$GameOver/ReturnButton.visible = false
@@ -72,6 +80,8 @@ func _process(dt):
 
 func setup_arena():
 	var arena_data = ArenaManager.get_current_map()
+	
+	is_tutorial = arena_data.is_tutorial
 	
 	var data_bg = arena_data.get_bg()
 	$BG.texture = data_bg.texture
@@ -172,7 +182,7 @@ func add_player():
 	player.connect("lost_health", self, "_on_player_lost_health")
 	player.connect("mecha_extracted", self, "_on_player_mech_extracted")
 	all_mechas.push_back(player)
-	PlayerHUD.setup(player, all_mechas, is_tutorial)
+	PlayerHUD.setup(player, all_mechas)
 	current_cam = player.get_cam()
 	player_ammo_set()
 
@@ -252,6 +262,12 @@ func random_wind_sound():
 	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
 	print("Sound playing at location: " + str(x) + ", " + str(y))
 
+
+func set_mechas_block_status(status):
+	for mecha in Mechas.get_children():
+		mecha.set_pause(status)
+	if not status and not is_tutorial:
+		AudioManager.play_bgm("ambience", true, 40)
 
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:
@@ -340,8 +356,5 @@ func _on_WindsTimer_timeout():
 	random_wind_sound()
 
 
-func _on_PlayerHUD_entrance_status(status):
-	for mecha in Mechas.get_children():
-		mecha.set_pause(status)
-	if not status and not is_tutorial:
-		AudioManager.play_bgm("ambience", true, 40)
+func _on_IntroAnimation_animation_ending():
+	set_mechas_block_status(false)

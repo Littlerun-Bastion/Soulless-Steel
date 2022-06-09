@@ -1,5 +1,6 @@
 extends Node2D
 
+export var is_tutorial := false
 
 func get_bg():
 	return $BG

@@ -25,7 +25,7 @@ texture = ExtResource( 4 )
 [node name="glow" type="Sprite" parent="Core" index="2"]
 texture = ExtResource( 8 )
 
-[node name="Head" parent="." index="5"]
+[node name="Head" parent="." index="8"]
 position = Vector2( 0, -2.02031 )
 z_index = 1
 
@@ -37,23 +37,23 @@ texture = ExtResource( 3 )
 [node name="glow" type="Sprite" parent="Head" index="1"]
 texture = ExtResource( 9 )
 
-[node name="ArmWeaponLeft" parent="." index="6"]
+[node name="ArmWeaponLeft" parent="." index="9"]
 visible = false
 position = Vector2( -70.8728, 20.0452 )
 
-[node name="ArmWeaponRight" parent="." index="7"]
+[node name="ArmWeaponRight" parent="." index="10"]
 visible = false
 position = Vector2( 49.0458, 13.8089 )
 
-[node name="ShoulderWeaponLeft" parent="." index="8"]
+[node name="ShoulderWeaponLeft" parent="." index="11"]
 visible = false
 position = Vector2( -50, 9.33635 )
 
-[node name="ShoulderWeaponRight" parent="." index="9"]
+[node name="ShoulderWeaponRight" parent="." index="12"]
 visible = false
 
-[node name="LeftShoulder" parent="." index="10"]
+[node name="LeftShoulder" parent="." index="13"]
 position = Vector2( -41, 16 )
 
-[node name="RightShoulder" parent="." index="11"]
+[node name="RightShoulder" parent="." index="14"]
 position = Vector2( 41, 16 )

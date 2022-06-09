@@ -1,7 +1,5 @@
 extends CanvasLayer
 
-signal entrance_status
-
 const WEAPON_SLOT = preload("res://game/ui/weapon_slot/WeaponSlot.tscn")
 
 onready var LifeBar = $LifeBar
@@ -11,7 +9,6 @@ onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes.get_children()
-onready var IntroAnimation = $IntroAnimation
 
 
 var player
@@ -23,12 +20,7 @@ func _process(_delta):
 	ShieldBar.get_node("Label").text = str(player.shield)
 
 
-func setup(player_ref, mechas_ref, is_tutorial):
-	emit_signal("entrance_status", true)
-	if is_tutorial:
-		IntroAnimation.play("simEntrance")
-	else:
-		IntroAnimation.play("Entrance")
+func setup(player_ref, mechas_ref):
 	player = player_ref
 	mechas = mechas_ref
 	player.connect("took_damage", self, "_on_player_took_damage")
@@ -141,7 +133,3 @@ func _on_LifeBar_value_changed(value):
 
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
-
-
-func _on_IntroAnimation_animation_ending():
-	emit_signal("entrance_status", false)

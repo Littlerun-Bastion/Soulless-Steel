@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
+[ext_resource path="res://game/ui/IntroAnimation.tscn" type="PackedScene" id=3]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://game/ui/effects/VCREffect.gd" type="Script" id=57]
@@ -157,6 +158,11 @@ script = ExtResource( 57 )
 wait_time = 20.0
 autostart = true
 
-[connection signal="entrance_status" from="PlayerHUD" to="." method="_on_PlayerHUD_entrance_status"]
+[node name="Intro" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="IntroAnimation" parent="Intro" instance=ExtResource( 3 )]
+
 [connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]
+[connection signal="animation_ending" from="Intro/IntroAnimation" to="." method="_on_IntroAnimation_animation_ending"]

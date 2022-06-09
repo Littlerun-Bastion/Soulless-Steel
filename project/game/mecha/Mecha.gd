@@ -29,19 +29,24 @@ onready var HeadGlow = $HeadGlow
 onready var HeadPort = $HeadPort
 onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
+#Weapons
 onready var LeftArmWeapon = $ArmWeaponLeft
 onready var RightArmWeapon = $ArmWeaponRight
 onready var LeftShoulderWeapon = $ShoulderWeaponLeft
 onready var RightShoulderWeapon = $ShoulderWeaponRight
-onready var SingleLeg = $Legs/Single
-onready var SingleLegSub = $Legs/SingleSub
-onready var SingleLegGlow = $Legs/SingleGlow
-onready var LeftLeg = $Legs/Left
-onready var LeftLegSub = $Legs/LeftSub
-onready var LeftLegGlow = $Legs/LeftGlow
-onready var RightLeg = $Legs/Right
-onready var RightLegSub = $Legs/RightSub
-onready var RightLegGlow = $Legs/RightGlow
+#Legs
+onready var SingleLegRoot = $Legs/Single
+onready var SingleLeg = $Legs/Single/Main
+onready var SingleLegSub = $Legs/Single/Sub
+onready var SingleLegGlow = $Legs/Single/Glow
+onready var LeftLegRoot = $Legs/Left
+onready var LeftLeg = $Legs/Left/Main
+onready var LeftLegSub = $Legs/Left/Sub
+onready var LeftLegGlow = $Legs/Left/Glow
+onready var RightLegRoot = $Legs/Right
+onready var RightLeg = $Legs/Right/Main
+onready var RightLegSub = $Legs/Right/Sub
+onready var RightLegGlow = $Legs/Right/Glow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -55,7 +60,7 @@ var max_energy = 100
 var energy = 100
 var total_kills = 0
 var mecha_heat = 0
-var move_heat = 70 #move when implementing new legs
+var move_heat = 70
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -309,21 +314,21 @@ func set_leg(part_name, side := SIDE.LEFT):
 	var part_data = PartManager.get_part("leg", part_name)
 	match side:
 		SIDE.RIGHT:
-			main = $Legs/Right; sub = $Legs/RightSub; glow = $Legs/RightGlow
+			main = RightLeg; sub = RightLegSub; glow = RightLegGlow
 			collision = $LegsRightCollision
 			if core:
 				pos = core.get_leg_offset("right")
 			legs_right = part_data
 			remove_legs("single")
 		SIDE.LEFT:
-			main = $Legs/Left; sub = $Legs/LeftSub; glow = $Legs/LeftGlow
+			main = LeftLeg; sub = LeftLegSub; glow = LeftLegGlow
 			collision = $LegsLeftCollision
 			if core:
 				pos = core.get_leg_offset("left")
 			legs_left = part_data
 			remove_legs("single")
 		SIDE.SINGLE:
-			main = $Legs/Single; sub = $Legs/SingleSub; glow = $Legs/SingleGlow
+			main = SingleLeg; sub = SingleLegSub; glow = SingleLegGlow
 			collision = $LegsSingleCollision
 			legs_single = part_data
 			remove_legs("pair")
@@ -338,26 +343,27 @@ func set_leg(part_name, side := SIDE.LEFT):
 	glow.texture = part_data.get_glow()
 	collision.polygon = part_data.get_collision()
 	movement_type = part_data.movement_type
+	move_heat = part_data.move_heat
 	set_speed(part_data.max_speed, part_data.move_acc, part_data.friction, part_data.rotation_acc)
 
 
 func remove_legs(type):
 	if type == "single":
 		legs_single = null
-		$Legs/Single.texture = null
-		$Legs/SingleGlow.texture = null
-		$Legs/SingleSub.texture = null
+		SingleLeg.texture = null
+		SingleLegGlow.texture = null
+		SingleLegSub.texture = null
 		$LegsSingleCollision.polygon = []
 	elif type == "pair":
 		legs_left = null
-		$Legs/Left.texture = null
-		$Legs/LeftGlow.texture = null
-		$Legs/LeftSub.texture = null
+		LeftLeg.texture = null
+		LeftLegGlow.texture = null
+		LeftLegSub.texture = null
 		$LegsLeftCollision.polygon = []
 		legs_right = null
-		$Legs/Right.texture = null
-		$Legs/RightGlow.texture = null
-		$Legs/RightSub.texture = null
+		RightLeg.texture = null
+		RightLegGlow.texture = null
+		RightLegSub.texture = null
 		$LegsRightCollision.polygon = []
 
 
@@ -561,7 +567,7 @@ func apply_movement(dt, direction):
 			velocity = move_and_slide(velocity*speed_modifier)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
-
+	update_legs_visuals()
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
 func apply_rotation_by_direction(dt, direction):
@@ -609,6 +615,11 @@ func knockback(pos, strength, should_rotate = true):
 	apply_movement(sqrt(strength)*2/get_weight(), global_position - pos)
 	if should_rotate:
 		apply_rotation_by_point(sqrt(strength)*2/get_weight(), pos, false)
+
+
+func update_legs_visuals():
+	if legs_left or legs_right:
+		pass
 
 
 #COMBAT METHODS

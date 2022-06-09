@@ -1,7 +1,5 @@
 extends Control
 
-const DEBUG = true
-
 onready var Parallax = $ParallaxBackground
 onready var VCREffect = $ShaderEffects/VCREffect
 
@@ -12,8 +10,8 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")
-	if DEBUG:
-		window_debug_mode()
+	if Debug.DEBUG_ON:
+		Debug.window_debug_mode()
 
 
 func _input(event):
@@ -31,15 +29,7 @@ func _input(event):
 	if event is InputEventKey:
 		#For debugging since deving on fullscreen is horrible
 		if event.pressed and event.scancode == KEY_L:
-			window_debug_mode()
-
-
-#For debugging since deving on fullscreen is horrible
-func window_debug_mode():
-	OS.window_fullscreen = false
-	OS.window_borderless = false
-	OS.window_size = Vector2(1080, 600)
-	OS.window_position = Vector2(400, 100)
+			Debug.window_debug_mode()
 
 
 func start_game(mode):

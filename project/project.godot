@@ -32,6 +32,7 @@ ProjectileManager="*res://game/weapons/ProjectileManager.gd"
 TickerManager="*res://game/ui/ticker/TickerManager.gd"
 PlayerStatManager="*res://game/mecha/player/PlayerStatManager.gd"
 ArenaManager="*res://game/arena/ArenaManager.gd"
+Debug="*res://game/Debug.gd"
 
 [display]
 

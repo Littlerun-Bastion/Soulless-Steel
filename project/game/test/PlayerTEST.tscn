@@ -1,60 +1,11 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_sub.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_sub.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_glow.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_glow.png" type="Texture" id=9]
-[ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=10]
-[ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=11]
-[ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=12]
+[ext_resource path="res://game/mecha/player/Player.tscn" type="PackedScene" id=1]
+[ext_resource path="res://game/test/PlayerTEST.gd" type="Script" id=2]
 
-[node name="Player" instance=ExtResource( 10 )]
-script = ExtResource( 12 )
+[node name="PlayerTest" type="Node2D"]
+z_index = -1
+script = ExtResource( 2 )
+
+[node name="Player" parent="." instance=ExtResource( 1 )]
 use_debug_loadout = true
-
-[node name="Camera2D" parent="." index="0" instance=ExtResource( 11 )]
-zoom = Vector2( 3, 3 )
-drag_margin_left = 0.1
-drag_margin_top = 0.2
-drag_margin_right = 0.1
-drag_margin_bottom = 0.2
-
-[node name="sub" type="Sprite" parent="Core" index="1"]
-z_index = -1
-texture = ExtResource( 4 )
-
-[node name="glow" type="Sprite" parent="Core" index="2"]
-texture = ExtResource( 8 )
-
-[node name="Head" parent="." index="8"]
-position = Vector2( 0, -2.02031 )
-z_index = 1
-
-[node name="sub" type="Sprite" parent="Head" index="0"]
-position = Vector2( 0.44545, 0 )
-z_index = -1
-texture = ExtResource( 3 )
-
-[node name="glow" type="Sprite" parent="Head" index="1"]
-texture = ExtResource( 9 )
-
-[node name="ArmWeaponLeft" parent="." index="9"]
-visible = false
-position = Vector2( -70.8728, 20.0452 )
-
-[node name="ArmWeaponRight" parent="." index="10"]
-visible = false
-position = Vector2( 49.0458, 13.8089 )
-
-[node name="ShoulderWeaponLeft" parent="." index="11"]
-visible = false
-position = Vector2( -50, 9.33635 )
-
-[node name="ShoulderWeaponRight" parent="." index="12"]
-visible = false
-
-[node name="LeftShoulder" parent="." index="13"]
-position = Vector2( -41, 16 )
-
-[node name="RightShoulder" parent="." index="14"]
-position = Vector2( 41, 16 )

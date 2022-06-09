@@ -399,7 +399,6 @@ func set_shoulder(part_name, side):
 
 #ATTRIBUTE METHODS
 
-
 func get_max_hp():
 	return max_hp
 
@@ -619,7 +618,21 @@ func knockback(pos, strength, should_rotate = true):
 
 func update_legs_visuals():
 	if legs_left or legs_right:
-		pass
+		var rot_vec = Vector2(1, 0).rotated(deg2rad(rotation_degrees))
+		var vel_vec = velocity
+		if velocity.length() > 3:
+			var angle = vel_vec.angle_to(rot_vec)
+			var dot = vel_vec.dot(rot_vec)
+			if angle >= PI/2 - PI/4 and angle <= PI/2 + PI/4:
+				print("forward")
+			elif angle <= -PI/2 + PI/4 and angle >= -PI/2 - PI/4:
+				print("backward")
+			elif dot > 0:
+				print("right")
+			elif dot < 0:
+				print("left")
+		else:
+			printt("Neutral")
 
 
 #COMBAT METHODS

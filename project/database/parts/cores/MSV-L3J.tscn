@@ -15,14 +15,12 @@ script = ExtResource( 1 )
 heat_dispersion = 30
 
 [node name="LeftLegOffset" type="Position2D" parent="."]
-visible = false
 position = Vector2( -30, 70 )
 
 [node name="Reference" type="Sprite" parent="LeftLegOffset"]
 texture = ExtResource( 9 )
 
 [node name="RightLegOffset" type="Position2D" parent="."]
-visible = false
 position = Vector2( 30, 70 )
 
 [node name="Reference" type="Sprite" parent="RightLegOffset"]

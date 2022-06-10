@@ -5,6 +5,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
+const LEG_SPEED = 20
 
 signal create_projectile
 signal shoot
@@ -566,7 +567,7 @@ func apply_movement(dt, direction):
 			velocity = move_and_slide(velocity*speed_modifier)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
-	update_legs_visuals()
+	update_legs_visuals(dt)
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
 func apply_rotation_by_direction(dt, direction):
@@ -616,23 +617,38 @@ func knockback(pos, strength, should_rotate = true):
 		apply_rotation_by_point(sqrt(strength)*2/get_weight(), pos, false)
 
 
-func update_legs_visuals():
+func update_legs_visuals(dt):
+	var angulation = 25
 	if legs_left or legs_right:
 		var rot_vec = Vector2(1, 0).rotated(deg2rad(rotation_degrees))
 		var vel_vec = velocity
-		if velocity.length() > 3:
+		var left_target_angle
+		var right_target_angle
+		if velocity.length() > 5:
 			var angle = vel_vec.angle_to(rot_vec)
 			var dot = vel_vec.dot(rot_vec)
-			if angle >= PI/2 - PI/4 and angle <= PI/2 + PI/4:
-				print("forward")
-			elif angle <= -PI/2 + PI/4 and angle >= -PI/2 - PI/4:
-				print("backward")
-			elif dot > 0:
-				print("right")
-			elif dot < 0:
-				print("left")
-		else:
-			printt("Neutral")
+			if angle >= PI/2 - PI/4 and angle <= PI/2 + PI/4: #Forward
+				left_target_angle = angulation
+				right_target_angle = -angulation
+			elif angle <= -PI/2 + PI/4 and angle >= -PI/2 - PI/4: #Backward
+				left_target_angle = -angulation
+				right_target_angle = angulation
+			elif dot > 0: #Right
+				left_target_angle = angulation
+				right_target_angle = angulation
+			else: #Left
+				left_target_angle = -angulation
+				right_target_angle = -angulation
+		else: #Neutral
+			left_target_angle = 0
+			right_target_angle = 0
+		
+		for child in LeftLegRoot.get_children():
+			child.rotation_degrees = lerp(child.rotation_degrees, left_target_angle,\
+										  dt*LEG_SPEED)
+		for child in RightLegRoot.get_children():
+			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
+										  dt*LEG_SPEED)
 
 
 #COMBAT METHODS

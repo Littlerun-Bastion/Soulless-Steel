@@ -242,6 +242,7 @@ script = ExtResource( 1 )
 [node name="Legs" type="Node2D" parent="."]
 
 [node name="Single" type="Node2D" parent="Legs"]
+visible = false
 
 [node name="Sub" type="Sprite" parent="Legs/Single"]
 material = SubResource( 17 )

@@ -72,6 +72,10 @@ func _input(event):
 		die(self, "Myself")
 
 
+func get_camera():
+	return Cam
+
+
 func take_damage(amount, source_info, weapon_name, calibre):
 	var prev_hp = hp
 	.take_damage(amount, source_info, weapon_name, calibre)

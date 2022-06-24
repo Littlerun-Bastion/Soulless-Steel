@@ -35,6 +35,10 @@ func setup(mechas_ref, player_ref, radius, update_timer):
 	pointers = []
 
 
+func player_died():
+	player = false
+
+
 func update_mecha_position():
 	for p in pointers:
 		if weakref(p.mecha).get_ref():

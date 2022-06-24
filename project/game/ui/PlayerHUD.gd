@@ -11,13 +11,14 @@ onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes.get_children()
 
 
-var player
+var player = false
 var mechas
 
 
 func _process(_delta):
-	update_shieldbar(player.shield)
-	ShieldBar.get_node("Label").text = str(player.shield)
+	if player:
+		update_shieldbar(player.shield)
+		ShieldBar.get_node("Label").text = str(player.shield)
 
 
 func setup(player_ref, mechas_ref):
@@ -101,6 +102,13 @@ func update_arsenal():
 			weapon.set_ammo(total_ammo - \
 							player.get_clip_size(weapon.type) + \
 							player.get_clip_ammo(weapon.type))
+
+
+func player_died():
+	player = false
+	PlayerRadar.player_died()
+	Cursor.hide()
+	PlayerRadar.hide()
 
 
 func _on_player_took_damage(_p):

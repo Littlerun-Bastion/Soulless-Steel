@@ -2,14 +2,17 @@ extends CanvasLayer
 
 
 func _ready():
+	reset()
+
+
+func reset():
 	$Label.visible = false
 	$ReturnButton.visible = false
 	$VCREffect.visible = false
-	pass # Replace with function body.
 
 
 func killed():
-	yield(get_tree().create_timer(4.0), "timeout")
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	$Label.visible = true
 	$ReturnButton.visible = true
 	$VCREffect.visible = true

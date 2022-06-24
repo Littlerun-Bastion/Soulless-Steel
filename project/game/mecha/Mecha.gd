@@ -177,7 +177,6 @@ func take_damage(amount, source_info, weapon_name, calibre):
 
 
 func die(source_info, weapon_name):
-	emit_signal("died", self)
 	is_dead = true
 	TickerManager.new_message({
 		"type": "mecha_died",
@@ -187,7 +186,7 @@ func die(source_info, weapon_name):
 		})
 	if source_info.name == "Player":
 		emit_signal("player_kill")
-	queue_free()
+	emit_signal("died", self)
 
 
 func is_shape_id_legs(id):
@@ -730,12 +729,13 @@ func play_step_sound(is_left := true):
 func extracting():
 	$ExtractTimer.start()
 
+
 func _on_ExtractTimer_timeout():
 	if self.name == "Player":
 		emit_signal("mecha_extracted", self)
 	else:
 		emit_signal("died", self)
-		queue_free()
+
 
 func cancel_extract():
 	$ExtractTimer.stop()

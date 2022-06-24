@@ -2,6 +2,7 @@ extends Node2D
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
+const DEBUG_CAM = false #Allows to move camera around when player dies
 
 export var EnemyCount = 1
 
@@ -9,6 +10,7 @@ onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
 onready var PlayerHUD = $PlayerHUD
+onready var GameOver = $GameOver
 onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
@@ -16,7 +18,6 @@ onready var PauseMenu = $PauseMenu
 onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
-var current_cam
 var all_mechas = []
 var target_arena_zoom
 var player_kills = 0
@@ -46,23 +47,14 @@ func _ready():
 		IntroAnimation.play("simEntrance")
 	else:
 		IntroAnimation.play("Entrance")
-	
-	#TODO fix this
-	$GameOver/Label.visible = false
-	$GameOver/ReturnButton.visible = false
 
 
 func _input(event):
 	if event is InputEventKey:
-		if event.pressed and event.scancode == KEY_B:
-			$ShaderEffects/VCREffect.visible = !$ShaderEffects/VCREffect.visible
-		if event.pressed and event.scancode == KEY_C:
-			# warning-ignore:return_value_discarded
-			get_tree().change_scene("res://game/arena/Arena.tscn")
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
 	if event is InputEventMouseButton:
-		if ArenaCam.current:
+		if ArenaCam.current and DEBUG_CAM:
 			var amount = Vector2(.8, .8)
 			if event.button_index == BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
@@ -106,11 +98,10 @@ func setup_arena():
 		$Texts.add_child(child.duplicate(7))
 	
 	$Navigation2D/NavigationPolygonInstance.navpoly = arena_data.get_navigation_polygon()
-	
 
 
 func update_arena_cam(dt):
-	if ArenaCam.current:
+	if ArenaCam.current and DEBUG_CAM:
 		var speed = 4600*(ArenaCam.zoom.x/10.0)
 		var margin = 55
 		var mpos = get_viewport().get_mouse_position()
@@ -183,7 +174,6 @@ func add_player():
 	player.connect("mecha_extracted", self, "_on_player_mech_extracted")
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
-	current_cam = player.get_cam()
 	player_ammo_set()
 
 
@@ -199,14 +189,23 @@ func add_enemy():
 
 
 func player_died():
-	player = null
+	#Camera goes to player
 	ArenaCam.current = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	var player_cam = player.get_camera()
+	ArenaCam.zoom = player_cam.zoom
+	ArenaCam.position = player_cam.get_camera_screen_center()
+	ArenaCam.reset_smoothing()
+
+	player.queue_free()
+	player = null
+	PlayerHUD.player_died()
 	if PauseMenu.is_paused():
 		PauseMenu.toggle_pause()
-	PlayerHUD.queue_free()
-	current_cam = ArenaCam
+	
 	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
+	
+	yield(get_tree().create_timer(5.0), "timeout")
+	PlayerHUD.queue_free()
 	$GameOver.killed()
 
 
@@ -301,6 +300,8 @@ func _on_mecha_died(mecha):
 		all_mechas.remove(idx)
 	if mecha == player:
 		player_died()
+	else:
+		mecha.queue_free()
 
 
 func _on_mecha_player_kill():

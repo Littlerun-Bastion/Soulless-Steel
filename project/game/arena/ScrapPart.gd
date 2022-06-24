@@ -14,11 +14,17 @@ func setup(image):
 	$Sprite.texture = image
 
 
+func set_scale(value):
+	for child in get_children():
+		if not child.get("scale") == null:
+			child.scale = value
+
+
 func start_death():
 	#Wait a while
 	var dur = rand_range(LIFETIME_MIN, LIFETIME_MAX)
 	yield(get_tree().create_timer(dur), "timeout")
-	
+
 	#Start fading out
 	dur = rand_range(FADEOUT_MIN, FADEOUT_MAX)
 	$Tween.interpolate_property(self, "modulate:a", 1.0, 0.0, dur)

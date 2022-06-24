@@ -276,7 +276,8 @@ func create_mecha_scraps(mecha):
 		var scrap = SCRAP_PART.instance()
 		scrap.setup(texture)
 		scrap.position = mecha.position
-		ScrapParts.add_child(scrap)
+		scrap.set_scale(mecha.scale)
+
 		var impulse_dir = Vector2(rand_range(-1.0, 1.0), rand_range(-1.0, 1.0)).normalized()
 		var impulse_force = rand_range(400,700)
 		var impulse_torque = rand_range(5, 15)
@@ -284,6 +285,7 @@ func create_mecha_scraps(mecha):
 			impulse_torque = -impulse_torque
 		scrap.apply_impulse(Vector2(), impulse_dir*impulse_force)
 		scrap.apply_torque_impulse(impulse_torque)
+		ScrapParts.call_deferred("add_child", scrap)
 		
 
 

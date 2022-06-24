@@ -108,6 +108,8 @@ z_index = -5
 rotation = -0.000512852
 z_index = -5
 
+[node name="ScrapParts" type="Node2D" parent="."]
+
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )
 

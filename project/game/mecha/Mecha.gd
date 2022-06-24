@@ -189,6 +189,14 @@ func die(source_info, weapon_name):
 	emit_signal("died", self)
 
 
+#Return all parts that should be generated when mecha dies
+func get_scraps():
+	var scraps = []
+	for node in [LeftShoulder, RightShoulder, Core, LeftLeg, RightLeg]:
+		if node.texture:
+			scraps.append(node.texture)
+	return scraps
+
 func is_shape_id_legs(id):
 	return shape_owner_get_owner(shape_find_owner(id)) == $LegsSingleCollision or\
 		   shape_owner_get_owner(shape_find_owner(id)) == $LegsLeftCollision or\

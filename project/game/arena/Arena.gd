@@ -2,6 +2,7 @@ extends Node2D
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
+const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 const DEBUG_CAM = false #Allows to move camera around when player dies
 
 export var EnemyCount = 1
@@ -9,6 +10,7 @@ export var EnemyCount = 1
 onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
+onready var ScrapParts = $ScrapParts
 onready var PlayerHUD = $PlayerHUD
 onready var GameOver = $GameOver
 onready var ArenaCam = $ArenaCamera
@@ -268,6 +270,23 @@ func set_mechas_block_status(status):
 	if not status and not is_tutorial:
 		AudioManager.play_bgm("ambience", true, 40)
 
+
+func create_mecha_scraps(mecha):
+	for texture in mecha.get_scraps():
+		var scrap = SCRAP_PART.instance()
+		scrap.setup(texture)
+		scrap.position = mecha.position
+		ScrapParts.add_child(scrap)
+		var impulse_dir = Vector2(rand_range(-1.0, 1.0), rand_range(-1.0, 1.0)).normalized()
+		var impulse_force = rand_range(400,700)
+		var impulse_torque = rand_range(5, 15)
+		if randf() > .5:
+			impulse_torque = -impulse_torque
+		scrap.apply_impulse(Vector2(), impulse_dir*impulse_force)
+		scrap.apply_torque_impulse(impulse_torque)
+		
+
+
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:
 		$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
@@ -298,6 +317,8 @@ func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove(idx)
+	
+	create_mecha_scraps(mecha)
 	if mecha == player:
 		player_died()
 	else:

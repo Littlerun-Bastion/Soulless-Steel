@@ -1,5 +1,16 @@
-extends Resource
+extends Node2D
 
-export var image: Resource
 export var rotation_acc := 8
 export var rotation_range := 45.0
+
+
+func get_image():
+	return $Main.texture
+
+
+func get_sub():
+	return $Sub.texture
+
+
+func get_glow():
+	return $Glow.texture

@@ -378,7 +378,9 @@ func remove_legs(type):
 
 func set_head(part_name):
 	var part_data = PartManager.get_part("head", part_name)
-	Head.texture = part_data.image
+	Head.texture = part_data.get_image()
+	HeadSub.texture = part_data.get_sub()
+	HeadGlow.texture = part_data.get_glow()
 	head = part_data
 	if core:
 		Head.position = core.get_head_port_offset()

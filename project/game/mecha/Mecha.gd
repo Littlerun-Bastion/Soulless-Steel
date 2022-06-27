@@ -22,11 +22,11 @@ onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
 
 onready var Core = $Core
-onready var CoreSub = $CoreSub
-onready var CoreGlow = $CoreGlow
+onready var CoreSub = $Core/Sub
+onready var CoreGlow = $Core/Glow
 onready var Head = $Head
-onready var HeadSub = $HeadSub
-onready var HeadGlow = $HeadGlow
+onready var HeadSub = $Head/Sub
+onready var HeadGlow = $Head/Glow
 onready var HeadPort = $HeadPort
 onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
@@ -299,7 +299,7 @@ func set_shoulder_weapon(part_name, side):
 
 func set_core(part_name):
 	var part_data = PartManager.get_part("core", part_name)
-	$Core.texture = part_data.get_image()
+	Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
 	core = part_data
 	if core.get_head_port() != null:
@@ -307,7 +307,8 @@ func set_core(part_name):
 		$HeadPort.position = core.get_head_port_offset()
 	else:
 		$HeadPort.texture = null
-	$CoreSub.texture = core.get_sub()
+	CoreSub.texture = core.get_sub()
+	CoreGlow.texture = core.get_glow()
 
 
 func set_leg(part_name, side := SIDE.LEFT):
@@ -377,10 +378,10 @@ func remove_legs(type):
 
 func set_head(part_name):
 	var part_data = PartManager.get_part("head", part_name)
-	$Head.texture = part_data.image
+	Head.texture = part_data.image
 	head = part_data
 	if core:
-		$Head.position = core.get_head_port_offset()
+		Head.position = core.get_head_port_offset()
 
 
 func set_shoulder(part_name, side):

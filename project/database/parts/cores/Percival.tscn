@@ -28,23 +28,17 @@ position = Vector2( 33, 70 )
 texture = ExtResource( 9 )
 
 [node name="HeadPort" type="Sprite" parent="."]
-z_index = 1
 texture = ExtResource( 3 )
 
 [node name="CoreSub" type="Sprite" parent="."]
 texture = ExtResource( 5 )
 
-[node name="CoreGlow" type="Sprite" parent="."]
-modulate = Color( 1, 1, 1, 0.556863 )
-z_index = 2
-texture = ExtResource( 2 )
-
 [node name="Core" type="Sprite" parent="."]
 texture = ExtResource( 8 )
 
-[node name="Collision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( -20.4516, -64.6066, 19.2783, -65.1363, 24.0458, -61.6931, 50.5231, 0.274078, 49.5781, 19.1729, 37.2939, 66.7349, 19.1079, 83.9845, -20.0922, 83.7196, -37.3085, 67.0331, -50.2869, 18.2978, -51.3464, 0.28693, -24.8807, -61.0352 )
+[node name="CoreGlow" type="Sprite" parent="."]
+modulate = Color( 1, 1, 1, 0.556863 )
+texture = ExtResource( 2 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
 
@@ -62,3 +56,8 @@ position = Vector2( 49, 12 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]
 texture = ExtResource( 7 )
+
+[node name="Collision" type="Polygon2D" parent="."]
+visible = false
+color = Color( 1, 0, 0, 0.176471 )
+polygon = PoolVector2Array( -20.4516, -64.6066, 19.2783, -65.1363, 24.0458, -61.6931, 50.5231, 0.274078, 49.5781, 19.1729, 37.2939, 66.7349, 19.1079, 83.9845, -20.0922, 83.7196, -37.3085, 67.0331, -50.2869, 18.2978, -51.3464, 0.28693, -24.8807, -61.0352 )

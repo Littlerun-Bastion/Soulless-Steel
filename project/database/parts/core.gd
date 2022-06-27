@@ -16,6 +16,10 @@ func get_sub():
 	return $CoreSub.texture
 
 
+func get_glow():
+	return $CoreGlow.texture
+
+
 func get_head_port():
 	return $HeadPort.texture
 

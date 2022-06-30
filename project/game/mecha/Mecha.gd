@@ -32,9 +32,17 @@ onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
 #Weapons
 onready var LeftArmWeapon = $ArmWeaponLeft
+onready var LeftArmWeaponSub = $ArmWeaponLeft/Sub
+onready var LeftArmWeaponGlow = $ArmWeaponLeft/Glow
 onready var RightArmWeapon = $ArmWeaponRight
+onready var RightArmWeaponSub = $ArmWeaponRight/Sub
+onready var RightArmWeaponGlow = $ArmWeaponRight/Glow
 onready var LeftShoulderWeapon = $ShoulderWeaponLeft
+onready var LeftShoulderWeaponSub = $ShoulderWeaponLeft/Sub
+onready var LeftShoulderWeaponGlow = $ShoulderWeaponLeft/Glow
 onready var RightShoulderWeapon = $ShoulderWeaponRight
+onready var RightShoulderWeaponSub = $ShoulderWeaponRight/Sub
+onready var RightShoulderWeaponGlow = $ShoulderWeaponRight/Glow
 #Legs
 onready var SingleLegRoot = $Legs/Single
 onready var SingleLeg = $Legs/Single/Main
@@ -83,8 +91,12 @@ var legs_right = null
 
 
 func _ready():
-	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
-				 LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon,\
+	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
+				 LeftShoulder, RightShoulder,\
+				 LeftArmWeapon, LeftArmWeaponSub, LeftArmWeaponGlow,\
+				 RightArmWeapon, RightArmWeaponSub, RightArmWeaponGlow,\
+				 LeftShoulderWeapon, LeftShoulderWeaponSub, LeftShoulderWeaponGlow,\
+				 RightShoulderWeapon, RightShoulderWeaponSub, RightShoulderWeaponGlow,\
 				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
 				 RightLeg, RightLegSub, RightLegGlow]:
 		node.material = CoreSub.material.duplicate(true)
@@ -264,7 +276,7 @@ func set_arm_weapon(part_name, side):
 	else:
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
-	node.texture = part_data.get_image()
+	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
@@ -292,7 +304,7 @@ func set_shoulder_weapon(part_name, side):
 		shoulder_weapon_left = part_data
 	else:
 		shoulder_weapon_right = part_data
-	node.texture = part_data.get_image()
+	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 

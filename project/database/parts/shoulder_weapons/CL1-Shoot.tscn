@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=1]
 [ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=2]
 [ext_resource path="res://database/parts/projectiles/large_bullet.tres" type="Resource" id=3]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_main.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=5]
 
 [node name="Part" type="Node"]
 script = ExtResource( 2 )
@@ -21,9 +23,19 @@ soundEffect = "large_shotA"
 sound_max_range = 8000
 sound_att = 1.33
 
-[node name="Weapon" type="Sprite" parent="."]
+[node name="Sub" type="Sprite" parent="."]
 position = Vector2( -2.76584, 59.556 )
 texture = ExtResource( 1 )
+offset = Vector2( 2.76584, -59.556 )
+
+[node name="Main" type="Sprite" parent="."]
+position = Vector2( -2.76584, 59.556 )
+texture = ExtResource( 4 )
+offset = Vector2( 2.76584, -59.556 )
+
+[node name="Glow" type="Sprite" parent="."]
+position = Vector2( -2.76584, 59.556 )
+texture = ExtResource( 5 )
 offset = Vector2( 2.76584, -59.556 )
 
 [node name="ShootingPos" type="Position2D" parent="."]

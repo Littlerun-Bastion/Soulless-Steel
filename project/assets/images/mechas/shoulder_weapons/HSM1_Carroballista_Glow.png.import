@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/HSM1_Carroballista_Glow.png-d3fa1f38a3cdd5abb8a71821db46039c.stex"
+path="res://.import/HSM1_Carroballista_Glow.png-49c5f2839b4d7e1dc27d8f30eb0f68d8.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/arm_weapons/HSM1_Carroballista_Glow.png"
-dest_files=[ "res://.import/HSM1_Carroballista_Glow.png-d3fa1f38a3cdd5abb8a71821db46039c.stex" ]
+source_file="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Glow.png"
+dest_files=[ "res://.import/HSM1_Carroballista_Glow.png-49c5f2839b4d7e1dc27d8f30eb0f68d8.stex" ]
 
 [params]
 

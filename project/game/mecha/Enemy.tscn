@@ -3,9 +3,9 @@
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=1]
 [ext_resource path="res://game/mecha/Enemy.gd" type="Script" id=2]
 [ext_resource path="res://assets/fonts/data/OFL/OtomanopeeOne-Regular.ttf" type="DynamicFontData" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type1.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Main.png" type="Texture" id=8]
 
 [sub_resource type="DynamicFont" id=1]
 size = 42
@@ -15,37 +15,35 @@ font_data = ExtResource( 3 )
 [node name="Enemy" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
 
-[node name="ArmWeaponLeft" parent="." index="8"]
+[node name="ArmWeaponLeft" parent="." index="4"]
 position = Vector2( -53.8753, 34.9034 )
-texture = ExtResource( 5 )
 offset = Vector2( -12.3018, -38.4923 )
 
-[node name="ShootingPos" parent="ArmWeaponLeft" index="0"]
+[node name="ShootingPos" parent="ArmWeaponLeft" index="2"]
 position = Vector2( -14.2726, -83.4779 )
 
-[node name="ArmWeaponRight" parent="." index="9"]
-position = Vector2( 56.0522, 35.6971 )
-texture = ExtResource( 4 )
-offset = Vector2( 4.30762, -49.6819 )
+[node name="ArmWeaponRight" parent="." index="5"]
+texture = ExtResource( 8 )
 
-[node name="ShootingPos" parent="ArmWeaponRight" index="0"]
+[node name="Sub" parent="ArmWeaponRight" index="0"]
+texture = ExtResource( 7 )
+
+[node name="Glow" parent="ArmWeaponRight" index="1"]
+texture = ExtResource( 4 )
+
+[node name="ShootingPos" parent="ArmWeaponRight" index="2"]
 position = Vector2( 5.49605, -108.403 )
 
-[node name="ShoulderWeaponLeft" parent="." index="10"]
+[node name="ShoulderWeaponLeft" parent="." index="6"]
 visible = false
 
-[node name="ShoulderWeaponRight" parent="." index="11"]
-position = Vector2( 35.6603, 26.8474 )
-texture = ExtResource( 6 )
-offset = Vector2( -1.70621, -56.1304 )
+[node name="ShootingPos" parent="ShoulderWeaponRight" index="2"]
+position = Vector2( -1.74985, -86.7642 )
 
-[node name="ShootingPos" parent="ShoulderWeaponRight" index="0"]
-position = Vector2( -4.74646, -144.449 )
-
-[node name="LeftShoulder" parent="." index="12"]
+[node name="LeftShoulder" parent="." index="8"]
 position = Vector2( -56, 13 )
 
-[node name="RightShoulder" parent="." index="13"]
+[node name="RightShoulder" parent="." index="9"]
 position = Vector2( 56, 13 )
 
 [node name="Debug" type="Node2D" parent="." index="16"]

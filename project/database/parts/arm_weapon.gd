@@ -26,8 +26,16 @@ export var sound_att := 1.00
 export var calibre := "Large"
 var firing_timer = 0.0
 
+func get_sub():
+	return $Sub.texture
+
+
 func get_image():
-	return $Weapon.texture
+	return $Main.texture
+
+
+func get_glow():
+	return $Glow.texture
 
 
 func get_shooting_pos():

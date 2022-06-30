@@ -1,17 +1,17 @@
-[gd_scene load_steps=52 format=2]
+[gd_scene load_steps=67 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun2.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_sub.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/zh01-gun1.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_lshoulder_main.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_sub.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/zh01-sh.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Glow.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=9]
 [ext_resource path="res://game/weapons/WeaponNode.gd" type="Script" id=10]
 [ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/SIN-T-01-missile.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
 [ext_resource path="res://assets/images/mechas/legs/T-01-TR.png" type="Texture" id=13]
 [ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_rshoulder_main.png" type="Texture" id=14]
 [ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_glow.png" type="Texture" id=15]
@@ -24,6 +24,11 @@
 [ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_main.png" type="Texture" id=22]
 [ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_main.png" type="Texture" id=23]
 [ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_heat_glow.png" type="Texture" id=24]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=25]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=26]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=27]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_main.png" type="Texture" id=28]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Sub.png" type="Texture" id=29]
 
 [sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
@@ -167,20 +172,90 @@ shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
+[sub_resource type="Shader" id=28]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = (heat/100.0)*(1.0 - min_darkness) + min_darkness;
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=29]
+shader = SubResource( 28 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="Shader" id=31]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
+uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
+}"
+
+[sub_resource type="ShaderMaterial" id=32]
+shader = SubResource( 31 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
 [sub_resource type="ShaderMaterial" id=11]
 shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=30]
+shader = SubResource( 28 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=33]
+shader = SubResource( 31 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
 
 [sub_resource type="ShaderMaterial" id=12]
 shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
+[sub_resource type="ShaderMaterial" id=34]
+shader = SubResource( 28 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=35]
+shader = SubResource( 31 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
+
 [sub_resource type="ShaderMaterial" id=13]
 shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
+
+[sub_resource type="ShaderMaterial" id=36]
+shader = SubResource( 28 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=37]
+shader = SubResource( 31 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 20.0
+shader_param/upper_threshold = 90.0
 
 [sub_resource type="ShaderMaterial" id=8]
 shader = SubResource( 26 )
@@ -326,43 +401,79 @@ texture = ExtResource( 15 )
 
 [node name="ArmWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 10 )
-position = Vector2( -78, 0 )
+position = Vector2( -73, -30 )
 rotation = -0.15708
-texture = ExtResource( 2 )
+texture = ExtResource( 25 )
 script = ExtResource( 10 )
+
+[node name="Sub" type="Sprite" parent="ArmWeaponLeft"]
+show_behind_parent = true
+material = SubResource( 29 )
+texture = ExtResource( 2 )
+
+[node name="Glow" type="Sprite" parent="ArmWeaponLeft"]
+material = SubResource( 32 )
+texture = ExtResource( 5 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponLeft"]
 position = Vector2( 6, -110 )
 
 [node name="ArmWeaponRight" type="Sprite" parent="."]
 material = SubResource( 11 )
-position = Vector2( 78, 0 )
+position = Vector2( 73, -30 )
 rotation = 0.15708
-texture = ExtResource( 5 )
+texture = ExtResource( 28 )
 script = ExtResource( 10 )
+
+[node name="Sub" type="Sprite" parent="ArmWeaponRight"]
+show_behind_parent = true
+material = SubResource( 30 )
+texture = ExtResource( 26 )
+
+[node name="Glow" type="Sprite" parent="ArmWeaponRight"]
+material = SubResource( 33 )
+texture = ExtResource( 27 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponRight"]
 position = Vector2( 6, -90 )
 
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 12 )
-position = Vector2( -50, 8 )
+position = Vector2( -58, -26 )
+z_index = 1
+texture = ExtResource( 28 )
+script = ExtResource( 10 )
+
+[node name="Sub" type="Sprite" parent="ShoulderWeaponLeft"]
+show_behind_parent = true
+material = SubResource( 34 )
+texture = ExtResource( 26 )
+
+[node name="Glow" type="Sprite" parent="ShoulderWeaponLeft"]
+material = SubResource( 35 )
+texture = ExtResource( 27 )
+
+[node name="ShootingPos" type="Position2D" parent="ShoulderWeaponLeft"]
+position = Vector2( -2.37842, -86.1629 )
+
+[node name="ShoulderWeaponRight" type="Sprite" parent="."]
+material = SubResource( 13 )
+position = Vector2( 58, -26 )
 z_index = 1
 texture = ExtResource( 12 )
 script = ExtResource( 10 )
 
-[node name="ShootingPos" type="Position2D" parent="ShoulderWeaponLeft"]
-position = Vector2( 0, -38 )
+[node name="Sub" type="Sprite" parent="ShoulderWeaponRight"]
+show_behind_parent = true
+material = SubResource( 36 )
+texture = ExtResource( 29 )
 
-[node name="ShoulderWeaponRight" type="Sprite" parent="."]
-material = SubResource( 13 )
-position = Vector2( 50, 8 )
-z_index = 1
+[node name="Glow" type="Sprite" parent="ShoulderWeaponRight"]
+material = SubResource( 37 )
 texture = ExtResource( 8 )
-script = ExtResource( 10 )
 
 [node name="ShootingPos" type="Position2D" parent="ShoulderWeaponRight"]
-position = Vector2( 2, -75 )
+position = Vector2( 7.64874, -60.4322 )
 
 [node name="LeftShoulder" type="Sprite" parent="."]
 material = SubResource( 8 )

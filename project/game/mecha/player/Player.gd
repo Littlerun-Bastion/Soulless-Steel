@@ -128,9 +128,9 @@ func setup():
 	set_leg("MSV-L3J-R", SIDE.RIGHT)
 	#Use to test tank mode
 	#set_leg("T-01-TR", SIDE.SINGLE)
-	set_arm_weapon("ZH-Shotgun", SIDE.LEFT)
-	set_arm_weapon("ZH-Massive", SIDE.RIGHT)
-	set_shoulder_weapon("SS-Shoot", SIDE.RIGHT)
+	set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
+	set_arm_weapon("Type1-Massive", SIDE.RIGHT)
+	set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	set_shoulder_weapon(false, SIDE.LEFT)
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)

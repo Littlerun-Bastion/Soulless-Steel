@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=2]
 
-[sub_resource type="Shader" id=3]
+[sub_resource type="Shader" id=28]
 code = "shader_type canvas_item;
 
 uniform float heat : hint_range(0.0, 100.0) = 100.0;
@@ -15,6 +15,6 @@ void fragment(){
 }"
 
 [resource]
-shader = SubResource( 3 )
+shader = SubResource( 28 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3

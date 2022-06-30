@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
+[ext_resource path="res://database/parts/projectiles/medium_bullet.tres" type="Resource" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Main.png" type="Texture" id=5]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+weapon_name = "ZH Massive Gun"
+type = "Massive Firepower"
+rotation_range = 15.0
+projectile = ExtResource( 2 )
+damage_modifier = 25.0
+recoil_force = 12.0
+fire_rate = 1.0
+auto_fire = false
+total_ammo = 40
+max_ammo = 40
+clip_size = 5
+reload_speed = 5.0
+ammo_cost = 500
+soundEffect = "medium_shotA"
+sound_max_range = 4000
+sound_att = 1.5
+calibre = "Medium"
+
+[node name="Sub" type="Sprite" parent="."]
+position = Vector2( 1.86224, 50.1892 )
+texture = ExtResource( 4 )
+offset = Vector2( -1.86224, -50.1892 )
+
+[node name="Main" type="Sprite" parent="."]
+position = Vector2( 1.86224, 50.1892 )
+texture = ExtResource( 5 )
+offset = Vector2( -1.86224, -50.1892 )
+
+[node name="Glow" type="Sprite" parent="."]
+position = Vector2( 1.86224, 50.1892 )
+texture = ExtResource( 3 )
+offset = Vector2( -1.86224, -50.1892 )
+
+[node name="ShootingPos" type="Position2D" parent="."]
+position = Vector2( 1.05026, -57.6741 )

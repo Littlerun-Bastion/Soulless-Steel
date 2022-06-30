@@ -1,11 +1,14 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type1.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=6]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Main.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_main.png" type="Texture" id=10]
 
 [node name="Player" instance=ExtResource( 5 )]
 script = ExtResource( 1 )
@@ -17,32 +20,36 @@ drag_margin_top = 0.2
 drag_margin_right = 0.1
 drag_margin_bottom = 0.2
 
-[node name="ArmWeaponLeft" parent="." index="9"]
+[node name="ArmWeaponLeft" parent="." index="5"]
 position = Vector2( -44.8525, 23.4889 )
-texture = ExtResource( 3 )
 offset = Vector2( -11.3181, -42.2612 )
 
-[node name="ShootingPos" parent="ArmWeaponLeft" index="0"]
+[node name="ShootingPos" parent="ArmWeaponLeft" index="2"]
 position = Vector2( -12.3322, -85.5814 )
 
-[node name="ArmWeaponRight" parent="." index="10"]
-position = Vector2( 46.9188, 23.4889 )
-texture = ExtResource( 4 )
-offset = Vector2( 12.7758, -55.7656 )
+[node name="ArmWeaponRight" parent="." index="6"]
+texture = ExtResource( 8 )
 
-[node name="ShootingPos" parent="ArmWeaponRight" index="0"]
+[node name="Sub" parent="ArmWeaponRight" index="0"]
+texture = ExtResource( 7 )
+
+[node name="Glow" parent="ArmWeaponRight" index="1"]
+texture = ExtResource( 4 )
+
+[node name="ShootingPos" parent="ArmWeaponRight" index="2"]
 position = Vector2( 14.2824, -113.812 )
 
-[node name="ShoulderWeaponLeft" parent="." index="11"]
-visible = false
+[node name="ShoulderWeaponRight" parent="." index="8"]
+texture = ExtResource( 10 )
 
-[node name="ShoulderWeaponRight" parent="." index="12"]
-position = Vector2( 31.0868, 22.733 )
+[node name="Sub" parent="ShoulderWeaponRight" index="0"]
 texture = ExtResource( 2 )
-offset = Vector2( 0.658142, -61.9582 )
 
-[node name="LeftShoulder" parent="." index="13"]
+[node name="Glow" parent="ShoulderWeaponRight" index="1"]
+texture = ExtResource( 9 )
+
+[node name="LeftShoulder" parent="." index="9"]
 position = Vector2( -49.7729, 16 )
 
-[node name="RightShoulder" parent="." index="14"]
+[node name="RightShoulder" parent="." index="10"]
 position = Vector2( 51.6457, 16 )

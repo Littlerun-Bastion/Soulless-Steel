@@ -4,6 +4,8 @@ signal reloading
 signal finished_reloading
 
 onready var ShootingPos = $ShootingPos
+onready var Sub = $Sub
+onready var Glow = $Glow
 
 var timer:= 0.0
 var total_ammo = false
@@ -42,10 +44,17 @@ func setup(weapon_ref):
 	sfx_att = weapon_ref.sound_att
 	
 
+func set_images(main_image, sub_image, glow_image):
+	self.texture = main_image
+	Sub.texture = sub_image
+	Glow.texture = glow_image
+
 
 func update_heat(dt):
 	heat = max(heat - heat_dispersion*dt, 0)
 	material.set_shader_param("heat", heat) 
+	Sub.material.set_shader_param("heat", heat)
+	Glow.material.set_shader_param("heat", heat)
 
 
 func add_time(time):

@@ -277,9 +277,9 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.set_offsets(-part_data.get_attach_pos())
 	if core:
 		node.position = core.get_arm_weapon_offset(side)
-	node.offset = -part_data.get_attach_pos()
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
@@ -308,9 +308,9 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		shoulder_weapon_right = part_data
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.set_offsets(-part_data.get_attach_pos())
 	if core:
 		node.position = core.get_shoulder_weapon_offset(side)
-	node.offset = -part_data.get_attach_pos()
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 

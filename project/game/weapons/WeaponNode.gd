@@ -50,6 +50,12 @@ func set_images(main_image, sub_image, glow_image):
 	Glow.texture = glow_image
 
 
+func set_offsets(off):
+	self.offset = off
+	Sub.offset = off
+	Glow.offset = off
+
+
 func update_heat(dt):
 	heat = max(heat - heat_dispersion*dt, 0)
 	material.set_shader_param("heat", heat) 

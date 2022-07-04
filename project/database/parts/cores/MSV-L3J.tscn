@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_sub.png" type="Texture" id=2]
@@ -10,6 +10,8 @@
 [ext_resource path="res://assets/images/mechas/legs/msv-l3j_rleg_main.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/mechas/legs/msv-l3j_lleg_main.png" type="Texture" id=9]
 [ext_resource path="res://assets/images/mechas/cores/msv-l3j_core_glow.png" type="Texture" id=10]
+[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -38,6 +40,36 @@ texture = ExtResource( 5 )
 
 [node name="CoreGlow" type="Sprite" parent="."]
 texture = ExtResource( 10 )
+
+[node name="LeftArmWeaponOffset" type="Position2D" parent="."]
+position = Vector2( -40, -13 )
+
+[node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
+texture = ExtResource( 11 )
+offset = Vector2( 4, -36 )
+
+[node name="RightArmWeaponOffset" type="Position2D" parent="."]
+position = Vector2( 40, -13 )
+
+[node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+scale = Vector2( -1, 1 )
+texture = ExtResource( 11 )
+offset = Vector2( 4, -36 )
+
+[node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
+position = Vector2( -30, 17 )
+
+[node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
+texture = ExtResource( 12 )
+offset = Vector2( -9, -23 )
+
+[node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
+position = Vector2( 30, 17 )
+
+[node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
+scale = Vector2( -1, 1 )
+texture = ExtResource( 12 )
+offset = Vector2( -9, -23 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
 

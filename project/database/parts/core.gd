@@ -1,5 +1,7 @@
 extends Node
 
+enum SIDE {LEFT, RIGHT, SINGLE}
+
 export var weight:= 300
 export var heat_dispersion = 20 
 
@@ -29,18 +31,36 @@ func get_head_port_offset():
 
 
 func get_shoulder_offset(side):
-	if side == "left":
+	if side == SIDE.LEFT:
 		return $LeftShoulderOffset.position
-	elif side == "right":
+	elif side == SIDE.RIGHT:
 		return $RightShoulderOffset.position
 	else:
 		push_error("Not a valid side: " + str(side))
 
 
+func get_arm_weapon_offset(side):
+	if side == SIDE.LEFT:
+		return $LeftArmWeaponOffset.position
+	elif side == SIDE.RIGHT:
+		return $RightArmWeaponOffset.position
+	else:
+		push_error("Not a valid side: " + str(side))
+
+
+func get_shoulder_weapon_offset(side):
+	if side == SIDE.LEFT:
+		return $LeftShoulderWeaponOffset.position
+	elif side == SIDE.RIGHT:
+		return $RightShoulderWeaponOffset.position
+	else:
+		push_error("Not a valid side: " + str(side))
+
+
 func get_leg_offset(side):
-	if side == "left":
+	if side == SIDE.LEFT:
 		return $LeftLegOffset.position
-	elif side == "right":
+	elif side == SIDE.RIGHT:
 		return $RightLegOffset.position
 	else:
 		push_error("Not a valid side: " + str(side))

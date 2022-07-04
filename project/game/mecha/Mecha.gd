@@ -266,7 +266,7 @@ func set_arm_weapon(part_name, side):
 			arm_weapon_left = null
 		else:
 			arm_weapon_right = null
-		node.texture = null
+		node.set_images(null, null, null)
 		return
 	
 	var part_data = PartManager.get_part("arm_weapon", part_name)
@@ -277,6 +277,9 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	if core:
+		node.position = core.get_arm_weapon_offset(side)
+	node.offset = -part_data.get_attach_pos()
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
@@ -296,7 +299,7 @@ func set_shoulder_weapon(part_name, side):
 			shoulder_weapon_left = null
 		else:
 			shoulder_weapon_right = null
-		node.texture = null
+		node.set_images(null, null, null)
 		return
 	
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
@@ -305,6 +308,9 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		shoulder_weapon_right = part_data
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	if core:
+		node.position = core.get_shoulder_weapon_offset(side)
+	node.offset = -part_data.get_attach_pos()
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
@@ -338,14 +344,14 @@ func set_leg(part_name, side := SIDE.LEFT):
 			main = RightLeg; sub = RightLegSub; glow = RightLegGlow
 			collision = $LegsRightCollision
 			if core:
-				pos = core.get_leg_offset("right")
+				pos = core.get_leg_offset(SIDE.RIGHT)
 			legs_right = part_data
 			remove_legs("single")
 		SIDE.LEFT:
 			main = LeftLeg; sub = LeftLegSub; glow = LeftLegGlow
 			collision = $LegsLeftCollision
 			if core:
-				pos = core.get_leg_offset("left")
+				pos = core.get_leg_offset(SIDE.LEFT)
 			legs_left = part_data
 			remove_legs("single")
 		SIDE.SINGLE:
@@ -406,14 +412,14 @@ func set_shoulder(part_name, side):
 		node = $LeftShoulder
 		collision_node = $LeftShoulderCollision
 		if core:
-			node.position = core.get_shoulder_offset("left")
-			collision_node.position = core.get_shoulder_offset("left")
+			node.position = core.get_shoulder_offset(SIDE.LEFT)
+			collision_node.position = core.get_shoulder_offset(SIDE.LEFT)
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
 		collision_node = $RightShoulderCollision
 		if core:
-			node.position = core.get_shoulder_offset("right")
-			collision_node.position = core.get_shoulder_offset("right")
+			node.position = core.get_shoulder_offset(SIDE.RIGHT)
+			collision_node.position = core.get_shoulder_offset(SIDE.RIGHT)
 	else:
 		push_error("Not a valid side: " + str(side))
 	

@@ -42,3 +42,7 @@ func get_shooting_pos():
 	return $ShootingPos.position
 
 
+func get_attach_pos():
+	return $AttachPos.position
+
+

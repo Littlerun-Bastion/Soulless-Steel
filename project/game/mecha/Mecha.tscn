@@ -203,7 +203,7 @@ void fragment(){
 	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
 }"
 
-[sub_resource type="ShaderMaterial" id=32]
+[sub_resource type="ShaderMaterial" id=38]
 shader = SubResource( 31 )
 shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
@@ -401,9 +401,9 @@ texture = ExtResource( 15 )
 
 [node name="ArmWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 10 )
-position = Vector2( -73, -30 )
-rotation = -0.15708
+position = Vector2( -40, 13 )
 texture = ExtResource( 25 )
+offset = Vector2( 1, -21 )
 script = ExtResource( 10 )
 
 [node name="Sub" type="Sprite" parent="ArmWeaponLeft"]
@@ -412,7 +412,7 @@ material = SubResource( 29 )
 texture = ExtResource( 2 )
 
 [node name="Glow" type="Sprite" parent="ArmWeaponLeft"]
-material = SubResource( 32 )
+material = SubResource( 38 )
 texture = ExtResource( 5 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponLeft"]
@@ -422,6 +422,7 @@ position = Vector2( 6, -110 )
 material = SubResource( 11 )
 position = Vector2( 73, -30 )
 rotation = 0.15708
+scale = Vector2( -1, 1 )
 texture = ExtResource( 28 )
 script = ExtResource( 10 )
 
@@ -459,6 +460,7 @@ position = Vector2( -2.37842, -86.1629 )
 [node name="ShoulderWeaponRight" type="Sprite" parent="."]
 material = SubResource( 13 )
 position = Vector2( 58, -26 )
+scale = Vector2( -1, 1 )
 z_index = 1
 texture = ExtResource( 12 )
 script = ExtResource( 10 )

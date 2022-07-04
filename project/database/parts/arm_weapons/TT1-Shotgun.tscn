@@ -39,5 +39,8 @@ offset = Vector2( 1.08598, -38.6246 )
 [node name="Glow" type="Sprite" parent="."]
 texture = ExtResource( 4 )
 
+[node name="AttachPos" type="Position2D" parent="."]
+position = Vector2( -4, 36 )
+
 [node name="ShootingPos" type="Position2D" parent="."]
-position = Vector2( -3.67208, -53.8401 )
+position = Vector2( -4, -54 )

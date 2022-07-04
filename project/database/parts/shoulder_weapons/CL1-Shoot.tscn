@@ -38,5 +38,8 @@ position = Vector2( -2.76584, 59.556 )
 texture = ExtResource( 5 )
 offset = Vector2( 2.76584, -59.556 )
 
+[node name="AttachPos" type="Position2D" parent="."]
+position = Vector2( -1, 55 )
+
 [node name="ShootingPos" type="Position2D" parent="."]
-position = Vector2( -2.40973, -88.8591 )
+position = Vector2( -2, -89 )

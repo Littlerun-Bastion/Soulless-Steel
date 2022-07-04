@@ -34,7 +34,11 @@ func setup(player_ref, mechas_ref):
 	setup_energybar()
 	setup_weapon_slots()
 	setup_cursor()
-	PlayerRadar.setup(mechas, player, 5000, 2)
+	if player.head.has_radar:
+		PlayerRadar.setup(mechas, player, 5000, 2)
+		PlayerRadar.show()
+	else:
+		PlayerRadar.hide()
 	$ExtractingLabel.visible = false
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
@@ -108,7 +112,6 @@ func player_died():
 	player = false
 	PlayerRadar.player_died()
 	Cursor.hide()
-	PlayerRadar.hide()
 
 
 func _on_player_took_damage(_p):

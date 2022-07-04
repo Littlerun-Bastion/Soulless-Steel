@@ -37,6 +37,7 @@ func setup(mechas_ref, player_ref, radius, update_timer):
 
 func player_died():
 	player = false
+	hide()
 
 
 func update_mecha_position():

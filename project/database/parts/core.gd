@@ -4,7 +4,6 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 export var weight:= 300
 export var health := 10
-export var heat_dispersion = 20 
 
 
 func get_image():

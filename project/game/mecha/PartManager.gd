@@ -15,6 +15,7 @@ onready var LEGS = {}
 onready var LEGS_LEFT = {}
 onready var LEGS_RIGHT = {}
 onready var LEGS_SINGLE = {}
+onready var GENERATORS = {}
 onready var PROJECTILES = {}
 
 
@@ -29,6 +30,7 @@ func setup_parts():
 	load_parts("cores", CORES)
 	load_parts("heads", HEADS)
 	load_parts("legs", LEGS)
+	load_parts("generators", GENERATORS)
 	load_parts("projectiles", PROJECTILES)
 	
 	setup_shoulder_sides()
@@ -101,6 +103,8 @@ func get_parts(type):
 			return LEGS_RIGHT
 		"leg_single":
 			return LEGS_SINGLE
+		"generator":
+			return GENERATORS
 		"projectile":
 			return PROJECTILES
 		_:

@@ -116,11 +116,11 @@ func check_weapon_input(name, node, weapon_ref):
 
 func setup():
 	mecha_name = "Player"
-	set_max_shield(100)
 	if PlayerStatManager.NumberofExtracts != 0:
 		hp = PlayerStatManager.PlayerHP
 		emit_signal("lost_health")
 	set_core("MSV-L3J")
+	set_generator("type_1")
 	set_head("head_test2")
 	#Use to test free mode
 	set_leg("MSV-L3J-L", SIDE.LEFT)
@@ -133,7 +133,6 @@ func setup():
 	set_shoulder_weapon(false, SIDE.LEFT)
 	set_shoulder("shoulder_test3_left", SIDE.LEFT)
 	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
-
 
 func set_arm_weapon(part_name, side):
 	.set_arm_weapon(part_name, side)

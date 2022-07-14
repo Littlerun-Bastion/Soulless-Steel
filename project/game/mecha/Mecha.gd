@@ -61,10 +61,10 @@ var mecha_name = "Mecha Name"
 var paused = false
 var is_dead = false
 
-var max_hp = 100
-var hp = 100
-var max_shield = 100
-var shield = 100
+var max_hp = 10
+var hp = 10
+var max_shield = 10
+var shield = 10
 var max_energy = 100
 var energy = 100
 var total_kills = 0
@@ -85,6 +85,7 @@ var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
 var core = null
+var generator = null
 var legs_single = null
 var legs_left = null
 var legs_right = null
@@ -170,6 +171,13 @@ func update_max_life_from_parts():
 	
 	set_max_life(value)
 
+
+func update_max_shield_from_parts():
+	var value = 0
+	if generator:
+		value += generator.shield
+	
+	set_max_shield(value)
 
 
 func set_max_life(value):
@@ -259,8 +267,8 @@ func add_decal(id, projectile_transform, type, size):
 
 func update_heat(dt):
 	#Main Mecha Heat
-	if core:
-		mecha_heat = max(mecha_heat - core.heat_dispersion*dt, 0)
+	if generator:
+		mecha_heat = max(mecha_heat - generator.heat_dispersion*dt, 0)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
 				 RightLeg, RightLegSub, RightLegGlow]:
@@ -347,6 +355,11 @@ func set_core(part_name):
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
 
+
+func set_generator(part_name):
+	var part_data = PartManager.get_part("generator", part_name)
+	generator = part_data
+	update_max_shield_from_parts()
 
 func set_leg(part_name, side := SIDE.LEFT):
 	if not part_name:

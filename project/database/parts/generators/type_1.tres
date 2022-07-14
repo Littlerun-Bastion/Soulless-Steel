@@ -1,0 +1,10 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+shield = 60
+shield_regen_speed = 20
+shield_regen_delay = 5
+heat_dispersion = 30

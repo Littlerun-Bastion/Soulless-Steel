@@ -54,13 +54,19 @@ func setup(_all_mechas, _path_stuff, is_tutorial):
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
 	if is_tutorial:
-		set_max_shield(50)
+		set_generator("type_2")
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_single"), SIDE.SINGLE)
+		set_arm_weapon(false, SIDE.RIGHT)
+		set_arm_weapon(false, SIDE.LEFT)
+		set_shoulder_weapon(false, SIDE.RIGHT)
+		set_shoulder_weapon(false, SIDE.LEFT)
+		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
+		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
 		scale = Vector2(0.5, 0.5)
 	else:
-		set_max_shield(100)
+		set_generator("type_1")
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_left"), SIDE.LEFT)

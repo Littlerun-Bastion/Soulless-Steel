@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
 side = 1
+health = 50
 
 [node name="LegsSub" type="Sprite" parent="."]
 z_index = -1

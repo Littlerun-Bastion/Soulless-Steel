@@ -2,6 +2,7 @@ extends Node2D
 
 export var rotation_acc := 8
 export var rotation_range := 45.0
+export var health := 5
 export var has_radar := false
 
 

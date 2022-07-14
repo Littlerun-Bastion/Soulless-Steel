@@ -15,6 +15,7 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+health = 85
 heat_dispersion = 30
 
 [node name="LeftLegOffset" type="Position2D" parent="."]

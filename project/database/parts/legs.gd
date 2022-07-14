@@ -9,6 +9,7 @@ export var max_speed = 500
 export var move_acc = 50
 export var friction = 0.1
 export var rotation_acc = 5.0
+export var health := 5
 export var move_heat = 70
 
 

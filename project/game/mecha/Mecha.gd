@@ -154,6 +154,24 @@ func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	animation.track_set_key_value(track, 5, move_acc/100.0)
 
 
+func update_max_life_from_parts():
+	var value = 0
+	if core:
+		value += core.health
+	if head:
+		value += head.health
+	#Check legs
+	if legs_single:
+		value += legs_single.health
+	elif legs_right:
+		value += legs_right.health
+	elif legs_left:
+		value += legs_left.health
+	
+	set_max_life(value)
+
+
+
 func set_max_life(value):
 	max_hp = value
 	hp = max_hp
@@ -327,6 +345,7 @@ func set_core(part_name):
 		$HeadPort.texture = null
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
+	update_max_life_from_parts()
 
 
 func set_leg(part_name, side := SIDE.LEFT):
@@ -372,7 +391,7 @@ func set_leg(part_name, side := SIDE.LEFT):
 	movement_type = part_data.movement_type
 	move_heat = part_data.move_heat
 	set_speed(part_data.max_speed, part_data.move_acc, part_data.friction, part_data.rotation_acc)
-
+	update_max_life_from_parts()
 
 func remove_legs(type):
 	if type == "single":
@@ -402,6 +421,7 @@ func set_head(part_name):
 	head = part_data
 	if core:
 		Head.position = core.get_head_port_offset()
+	update_max_life_from_parts()
 
 
 func set_shoulder(part_name, side):

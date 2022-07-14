@@ -9,6 +9,7 @@ side = 2
 movement_type = "tank"
 friction = 0.3
 rotation_acc = 2.0
+health = 80
 
 [node name="LegsSub" type="Sprite" parent="."]
 z_index = -1

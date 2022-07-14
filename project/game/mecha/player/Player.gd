@@ -116,7 +116,6 @@ func check_weapon_input(name, node, weapon_ref):
 
 func setup():
 	mecha_name = "Player"
-	set_max_life(100)
 	set_max_shield(100)
 	if PlayerStatManager.NumberofExtracts != 0:
 		hp = PlayerStatManager.PlayerHP

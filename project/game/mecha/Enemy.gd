@@ -54,14 +54,12 @@ func setup(_all_mechas, _path_stuff, is_tutorial):
 	all_mechas = _all_mechas
 	navigation_node = _path_stuff
 	if is_tutorial:
-		set_max_life(100)
 		set_max_shield(50)
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_single"), SIDE.SINGLE)
 		scale = Vector2(0.5, 0.5)
 	else:
-		set_max_life(150)
 		set_max_shield(100)
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))

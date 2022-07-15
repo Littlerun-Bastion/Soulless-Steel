@@ -81,6 +81,8 @@ var rotation_acc = 5
 
 var arm_weapon_left = null
 var arm_weapon_right = null
+var shoulder_left = null
+var shoulder_right = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
@@ -174,8 +176,15 @@ func update_max_life_from_parts():
 
 func update_max_shield_from_parts():
 	var value = 0
+	if core:
+		value += core.shield
 	if generator:
 		value += generator.shield
+	#Check shoulders
+	if shoulder_left:
+		value += shoulder_left.shield
+	elif shoulder_right:
+		value += shoulder_right.shield
 	
 	set_max_shield(value)
 
@@ -354,6 +363,7 @@ func set_core(part_name):
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
+	update_max_shield_from_parts()
 
 
 func set_generator(part_name):
@@ -444,12 +454,14 @@ func set_shoulder(part_name, side):
 	if side == SIDE.LEFT:
 		node = $LeftShoulder
 		collision_node = $LeftShoulderCollision
+		shoulder_left = part_data
 		if core:
 			node.position = core.get_shoulder_offset(SIDE.LEFT)
 			collision_node.position = core.get_shoulder_offset(SIDE.LEFT)
 	elif side == SIDE.RIGHT:
 		node = $RightShoulder
 		collision_node = $RightShoulderCollision
+		shoulder_right = part_data
 		if core:
 			node.position = core.get_shoulder_offset(SIDE.RIGHT)
 			collision_node.position = core.get_shoulder_offset(SIDE.RIGHT)
@@ -458,6 +470,7 @@ func set_shoulder(part_name, side):
 	
 	node.texture = part_data.get_image()
 	collision_node.polygon = part_data.get_collision()
+	update_max_shield_from_parts()
 
 #ATTRIBUTE METHODS
 

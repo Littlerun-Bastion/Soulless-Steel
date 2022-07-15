@@ -5,6 +5,7 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+shield = 30
 
 [node name="Shoulder" type="Sprite" parent="."]
 texture = ExtResource( 2 )

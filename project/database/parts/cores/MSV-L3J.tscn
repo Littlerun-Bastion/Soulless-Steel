@@ -16,6 +16,7 @@
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
 health = 78
+shield = 60
 
 [node name="LeftLegOffset" type="Position2D" parent="."]
 position = Vector2( -30, 70 )

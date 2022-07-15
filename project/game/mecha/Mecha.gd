@@ -65,6 +65,7 @@ var max_hp = 10
 var hp = 10
 var max_shield = 10
 var shield = 10
+var shield_regen_cooldown
 var max_energy = 100
 var energy = 100
 var total_kills = 0
@@ -109,8 +110,10 @@ func _physics_process(dt):
 	if paused:
 		return
 
-	if shield < max_shield:
-		shield += 0.2
+	if generator and shield < max_shield:
+		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
+		if shield_regen_cooldown <= 0:
+			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():
@@ -208,6 +211,8 @@ func take_damage(amount, source_info, weapon_name, calibre):
 	if is_dead:
 		return
 	
+	if amount > 0 and generator:
+		shield_regen_cooldown = generator.shield_regen_delay
 	var temp_shield = shield
 	shield = max(shield - amount, 0)
 	amount = max(amount - temp_shield, 0)

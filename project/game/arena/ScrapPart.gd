@@ -23,7 +23,11 @@ func set_scale(value):
 func start_death():
 	#Wait a while
 	var dur = rand_range(LIFETIME_MIN, LIFETIME_MAX)
-	yield(get_tree().create_timer(dur), "timeout")
+	var timer = Timer.new()
+	timer.wait_time = dur
+	add_child(timer)
+	timer.start()
+	yield(timer, "timeout")
 
 	#Start fading out
 	dur = rand_range(FADEOUT_MIN, FADEOUT_MAX)

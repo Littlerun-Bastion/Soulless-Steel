@@ -44,8 +44,8 @@ func setup(player_ref, mechas_ref):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
-	for _i in Bulletholes:
-		_i.visible = false
+	for bullethole in Bulletholes:
+		bullethole.visible = false
 
 
 func set_pause(value):

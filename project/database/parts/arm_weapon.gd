@@ -18,7 +18,6 @@ export var max_ammo := 270
 export var clip_size := 30
 export var reload_speed := 3.0
 export var muzzle_heat := 60
-export var heat_dispersion := 30
 export var ammo_cost := 10
 export var soundEffect := "test"
 export var sound_max_range := 2000

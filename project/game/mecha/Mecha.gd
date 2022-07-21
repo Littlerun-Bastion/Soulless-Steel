@@ -80,6 +80,7 @@ var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5
 
+
 var arm_weapon_left = null
 var arm_weapon_right = null
 var shoulder_left = null
@@ -283,6 +284,8 @@ func update_heat(dt):
 	#Main Mecha Heat
 	if generator:
 		mecha_heat = max(mecha_heat - generator.heat_dispersion*dt, 0)
+		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
+			weapon.update_heat(generator.heat_dispersion, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
 				 RightLeg, RightLegSub, RightLegGlow]:

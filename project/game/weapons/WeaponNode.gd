@@ -16,7 +16,6 @@ var reload_time = false
 var reloading := false
 var fire_rate = false
 var ammo_cost = false
-var heat_dispersion = 0
 var muzzle_heat = 0
 var heat = 0.0
 var soundEffect = "test"
@@ -24,9 +23,9 @@ var shotPos = false
 var sfx_max_range = 4000
 var sfx_att = 1.0
 
+
 func _process(dt):
 	timer = max(timer - dt, 0.0)
-	update_heat(dt)
 
 
 func setup(weapon_ref):
@@ -38,7 +37,6 @@ func setup(weapon_ref):
 	max_ammo = weapon_ref.max_ammo
 	ammo_cost = weapon_ref.ammo_cost
 	muzzle_heat = weapon_ref.muzzle_heat
-	heat_dispersion = weapon_ref.heat_dispersion
 	soundEffect = weapon_ref.soundEffect
 	sfx_max_range = weapon_ref.sound_max_range
 	sfx_att = weapon_ref.sound_att
@@ -56,7 +54,7 @@ func set_offsets(off):
 	Glow.offset = off
 
 
-func update_heat(dt):
+func update_heat(heat_dispersion, dt):
 	heat = max(heat - heat_dispersion*dt, 0)
 	material.set_shader_param("heat", heat) 
 	Sub.material.set_shader_param("heat", heat)

@@ -18,9 +18,10 @@ func setup(mecha, args):
 	if not is_instance_valid(mecha):
 		return
 		
-	var data = args.weapon_data
-	$Sprite.texture = data.image
-	$CollisionShape2D.shape.extents = data.collision_extents
+	var data = args.weapon_data.instance()
+	$Sprite.texture = data.get_image()
+	$Sprite.scale = data.get_scale()
+	$CollisionShape2D.polygon = data.get_collision()
 	
 	original_mecha_info = {
 		"body": mecha,
@@ -31,16 +32,9 @@ func setup(mecha, args):
 	speed = data.speed
 	$Light2D.energy = data.light_energy
 	damage = data.damage * args.damage_mod
-	apply_scaling(data.scale)
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
-
-
-#Workaround since RigidBody can't have its scale changed
-func apply_scaling(sc):
-	for child in get_children():
-		child.scale = sc
 
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):

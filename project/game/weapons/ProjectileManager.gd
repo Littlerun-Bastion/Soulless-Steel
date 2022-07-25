@@ -5,7 +5,7 @@ enum TYPE {INSTANT, REGULAR}
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 
 func create(mecha, args):
-	var projectile_data = args.weapon_data
+	var projectile_data = args.weapon_data.instance()
 	var data = {
 		"create_node": false,
 		"node": null,

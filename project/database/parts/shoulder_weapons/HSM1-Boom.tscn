@@ -2,7 +2,7 @@
 
 [ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=2]
-[ext_resource path="res://database/parts/projectiles/simple_projectile.tres" type="Resource" id=3]
+[ext_resource path="res://database/parts/projectiles/medium_bullet.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Sub.png" type="Texture" id=5]
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://database/parts/projectiles/medium_bullet.tres" type="Resource" id=2]
+[ext_resource path="res://database/parts/projectiles/medium_bullet.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Main.png" type="Texture" id=5]

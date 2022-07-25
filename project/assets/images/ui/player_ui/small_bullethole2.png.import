@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/small_bullethole2.png-07a5eefbfc0a989e279d8dac120eabf5.stex"
+path="res://.import/small_bullethole2.png-14339c3c0bafd421b4b790152390a9f6.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/small_bullethole2.png"
-dest_files=[ "res://.import/small_bullethole2.png-07a5eefbfc0a989e279d8dac120eabf5.stex" ]
+source_file="res://assets/images/ui/player_ui/small_bullethole2.png"
+dest_files=[ "res://.import/small_bullethole2.png-14339c3c0bafd421b4b790152390a9f6.stex" ]
 
 [params]
 

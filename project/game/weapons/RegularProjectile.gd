@@ -1,6 +1,7 @@
 extends Area2D
 
 var speed = 0
+var decaying_speed_ratio = 1.0
 var dir = Vector2()
 var damage = 0
 var decal_type = "bullet_hole"

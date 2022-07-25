@@ -6,9 +6,9 @@
 [ext_resource path="res://assets/images/ui/player_ui/healthbar2_back.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/ui/player_ui/healthbar2_front.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/ui/player_ui/ui_vignette.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/small_bullethole3.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/small_bullethole1.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/small_bullethole2.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/ui/player_ui/small_bullethole3.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/ui/player_ui/small_bullethole1.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/ui/player_ui/small_bullethole2.png" type="Texture" id=9]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
 

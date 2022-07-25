@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/small_bullethole3.png-ed363d1d9fadc657449e25a18d111a5c.stex"
+path="res://.import/flame.png-dcbc6553cb71ed83eea169593fd600c4.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/small_bullethole3.png"
-dest_files=[ "res://.import/small_bullethole3.png-ed363d1d9fadc657449e25a18d111a5c.stex" ]
+source_file="res://assets/images/mechas/projectiles/flame.png"
+dest_files=[ "res://.import/flame.png-dcbc6553cb71ed83eea169593fd600c4.stex" ]
 
 [params]
 

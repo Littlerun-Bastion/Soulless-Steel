@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/bullet_large.png-9c1b62b985b03274eb91a9380a02bc40.stex"
+path="res://.import/bullet_small.png-7f5b25deacb09e0975d7371ae0096d63.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/bullet_large.png"
-dest_files=[ "res://.import/bullet_large.png-9c1b62b985b03274eb91a9380a02bc40.stex" ]
+source_file="res://assets/images/mechas/projectiles/bullet_small.png"
+dest_files=[ "res://.import/bullet_small.png-7f5b25deacb09e0975d7371ae0096d63.stex" ]
 
 [params]
 

@@ -3,7 +3,7 @@ extends TextureRect
 const MATERIAL = preload("res://game/mecha/DecalMaterial.tres")
 const IMAGES = {
 	"bullet_hole_large": preload("res://assets/images/decals/bullet_hole_large.png"),
-	"bullet_hole_small": preload("res://assets/images/decals/bullet_hole_large.png"),
+	"bullet_hole_small": preload("res://assets/images/decals/bullet_hole_small.png"),
 }
 const USE_DECAL = false
 

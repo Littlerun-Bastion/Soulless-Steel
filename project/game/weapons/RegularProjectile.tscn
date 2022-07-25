@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/bullet_large.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/projectiles/bullet_large.png" type="Texture" id=1]
 [ext_resource path="res://game/weapons/RegularProjectile.gd" type="Script" id=2]
 [ext_resource path="res://assets/images/light.png" type="Texture" id=3]
 

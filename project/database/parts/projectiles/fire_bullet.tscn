@@ -8,8 +8,11 @@ script = ExtResource( 2 )
 type = 1
 damage = 1
 decal_type = "bullet_hole_small"
-speed = 4000
-light_energy = 0.15
+light_energy = 0.8
+speed = 1000
+decaying_speed_ratio = 0.8
+life_time = 1.1
+life_time_rand = 0.2
 
 [node name="Image" type="Sprite" parent="."]
 texture = ExtResource( 1 )

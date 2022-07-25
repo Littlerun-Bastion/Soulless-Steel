@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://game/mecha/Decal.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/decals/bullet_hole.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/decals/bullet_hole_large.png" type="Texture" id=2]
 [ext_resource path="res://game/mecha/DecalMaterial.tres" type="Material" id=3]
 
 [node name="Decal" type="TextureRect"]

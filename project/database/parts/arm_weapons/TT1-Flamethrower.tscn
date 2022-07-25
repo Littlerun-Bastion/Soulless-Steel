@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=2]
+[ext_resource path="res://database/parts/projectiles/fire_bullet.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" type="Texture" id=5]
@@ -11,19 +11,18 @@ script = ExtResource( 1 )
 weapon_name = "ZH Shotgun"
 type = "Multi-PewPew"
 projectile = ExtResource( 2 )
-number_projectiles = 8
+number_projectiles = 4
 damage_modifier = 2.0
-recoil_force = 5.0
-fire_rate = 0.75
+fire_rate = 0.05
 bullet_accuracy_margin = 5
-bullet_spread = 0.15
+bullet_spread = 1.2
 bullet_spread_delay = 0.05
-total_ammo = 400
-max_ammo = 400
-clip_size = 80
+total_ammo = 3000
+max_ammo = 3000
+clip_size = 600
 reload_speed = 1.4
 ammo_cost = 25
-soundEffect = "shotgun_shotA"
+soundEffect = ""
 sound_max_range = 1000
 sound_att = 1.75
 calibre = "Small"

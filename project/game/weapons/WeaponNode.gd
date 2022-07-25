@@ -104,9 +104,10 @@ func can_shoot(amount := 1):
 
 func shoot(amount := 1):
 	add_time(fire_rate)
-	AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
 	clip_ammo -= amount
 	heat = min(heat + muzzle_heat, 100)
+	if soundEffect:
+		AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
 
 
 func set_shooting_pos(pos):

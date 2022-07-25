@@ -19,4 +19,7 @@ texture = ExtResource( 3 )
 texture_scale = 0.75
 energy = 0.5
 
+[node name="LifeTimer" type="Timer" parent="."]
+
 [connection signal="body_shape_entered" from="." to="." method="_on_RegularProjectile_body_shape_entered"]
+[connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

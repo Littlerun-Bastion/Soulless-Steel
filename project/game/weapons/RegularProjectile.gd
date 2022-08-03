@@ -6,10 +6,11 @@ var decaying_speed_ratio = 1.0
 var scaling_variance = 0.0
 var dir = Vector2()
 var damage = 0
+var is_overtime = false
 var decal_type = "bullet_hole"
 var original_mecha_info
 var weapon_name
-var calibre = "test"
+var calibre
 
 
 func _process(dt):
@@ -43,6 +44,8 @@ func setup(mecha, args):
 	speed = data.speed
 	$Light2D.energy = data.light_energy
 	damage = data.damage * args.damage_mod
+	is_overtime = data.is_overtime
+	calibre = data.calibre
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
@@ -68,11 +71,14 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 		if body.is_shape_id_legs(body_shape):
 			return
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
+			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
 			body.add_decal(body_shape, global_transform, decal_type, ($Sprite.scale*$Sprite.texture.get_size())/2)
-			body.take_damage(damage, original_mecha_info, weapon_name, calibre)
-			body.knockback(global_position, 100*damage/float(body.get_max_hp()))
+			body.take_damage(final_damage, original_mecha_info, weapon_name, calibre)
+			if not is_overtime:
+				body.knockback(global_position, 100*final_damage/float(body.get_max_hp()))
 	
-	if not body.is_in_group("mecha") or (original_mecha_info and body != original_mecha_info.body):
+	if (not is_overtime) and\
+	   (not body.is_in_group("mecha") or (original_mecha_info and body != original_mecha_info.body)):
 		queue_free()
 
 

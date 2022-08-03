@@ -2,6 +2,7 @@ extends KinematicBody2D
 class_name Mecha
 
 enum SIDE {LEFT, RIGHT, SINGLE}
+enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
@@ -827,19 +828,25 @@ func cancel_extract():
 func select_impact(calibre, is_shield):
 	var sfx_idx
 	match calibre:
-		"Large":
+		CALIBRE_TYPES.LARGE:
 			if is_shield:
 				sfx_idx = "large_shield_impact" + str((randi()%2) + 1)
 			else:
 				sfx_idx = "large_impact" + str((randi()%2) + 1)
-		"Medium":
+		CALIBRE_TYPES.MEDIUM:
 			if is_shield:
 				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
 			else:
 				sfx_idx = "medium_impact" + str((randi()%2) + 1)
-		_:
+		CALIBRE_TYPES.SMALL:
 			if is_shield:
 				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
 			else:
 				sfx_idx = "small_impact" + str((randi()%2) + 1)
-	AudioManager.play_sfx(sfx_idx, global_position)
+		CALIBRE_TYPES.FIRE:
+			sfx_idx = false
+		_:
+			push_error("Not a valid calibre type:" + str(calibre))
+	
+	if sfx_idx:
+		AudioManager.play_sfx(sfx_idx, global_position)

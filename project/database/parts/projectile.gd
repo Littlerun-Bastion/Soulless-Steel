@@ -1,10 +1,13 @@
 extends Node2D
 
 enum TYPE {INSTANT, REGULAR}
+enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 export (TYPE) var type
 export var damage:= 10
+export var is_overtime := false
 export var decal_type:= "bullet_hole"
+export (CALIBRE_TYPES) var  calibre := CALIBRE_TYPES.SMALL
 export var light_energy:= 0.5
 export var speed:= 400
 export var decaying_speed_ratio := 1.0 # If 1.0 it doesn't decay

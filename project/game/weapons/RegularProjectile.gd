@@ -12,7 +12,6 @@ var original_mecha_info
 var weapon_name
 var calibre
 
-
 func _process(dt):
 	change_scaling(scaling_variance*dt)
 	if decaying_speed_ratio < 1.0:
@@ -42,7 +41,7 @@ func setup(mecha, args):
 	weapon_name = args.weapon_name
 	decal_type = data.decal_type
 	speed = data.speed
-	$Light2D.energy = data.light_energy
+	$Sprite/LightEffect.modulate.a = data.light_energy
 	damage = data.damage * args.damage_mod
 	is_overtime = data.is_overtime
 	calibre = data.calibre
@@ -63,7 +62,6 @@ func change_scaling(sc):
 	var vec = Vector2(sc,sc)
 	$Sprite.scale += vec
 	$CollisionShape2D.scale += vec
-	$Light2D.scale += vec
 
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):

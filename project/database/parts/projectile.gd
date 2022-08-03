@@ -7,6 +7,7 @@ export (TYPE) var type
 export var damage:= 10
 export var is_overtime := false
 export var decal_type:= "bullet_hole"
+export var texture_variations = []
 export (CALIBRE_TYPES) var  calibre := CALIBRE_TYPES.SMALL
 export var light_energy:= 0.5
 export var speed:= 400
@@ -19,7 +20,11 @@ export var life_time_var = 0.0 #How much to vary from base life_time
 
 
 func get_image():
-	return $Image.texture
+	if texture_variations.empty() or randf() > 1.0/float(texture_variations.size() + 1):
+		return $Image.texture
+	else:
+		texture_variations.shuffle()
+		return texture_variations.front()
 
 
 func get_collision():

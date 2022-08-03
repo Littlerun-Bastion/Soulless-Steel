@@ -75,8 +75,8 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 			if not is_overtime:
 				body.knockback(global_position, 100*final_damage/float(body.get_max_hp()))
 	
-	if (not is_overtime) and\
-	   (not body.is_in_group("mecha") or (original_mecha_info and body != original_mecha_info.body)):
+	if not body.is_in_group("mecha") or\
+	  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		queue_free()
 
 

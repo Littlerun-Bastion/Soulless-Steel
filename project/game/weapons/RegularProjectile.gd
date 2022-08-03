@@ -1,5 +1,6 @@
 extends Area2D
 
+var dying = false
 var speed = 0
 var local_scale = 1.0
 var decaying_speed_ratio = 1.0
@@ -13,6 +14,8 @@ var weapon_name
 var calibre
 
 func _process(dt):
+	if dying:
+		return
 	change_scaling(scaling_variance*dt)
 	if decaying_speed_ratio < 1.0:
 		var time_elapsed = dt
@@ -64,6 +67,16 @@ func change_scaling(sc):
 	$CollisionShape2D.scale += vec
 
 
+func die():
+	if dying:
+		return
+	dying = true
+	var dur = rand_range(.2, .4)
+	$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
+	$Tween.start()
+	yield($Tween, "tween_completed")
+	queue_free()
+
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_legs(body_shape):
@@ -77,7 +90,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local
 	
 	if not body.is_in_group("mecha") or\
 	  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
-		queue_free()
+		die()
 
 
 func _on_LifeTimer_timeout():

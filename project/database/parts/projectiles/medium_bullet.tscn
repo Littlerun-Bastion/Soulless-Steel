@@ -9,7 +9,7 @@ type = 1
 damage = 1
 decal_type = "bullet_hole_small"
 calibre = 1
-light_energy = 0.2
+light_energy = 0.4
 speed = 4000
 
 [node name="Image" type="Sprite" parent="."]

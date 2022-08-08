@@ -17,6 +17,8 @@ signal mecha_extracted
 
 export var speed_modifier = 1.0
 
+onready var NavAgent = $NavigationAgent2D
+
 onready var CoreDecals = $Core/Decals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
@@ -581,7 +583,14 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 			return "right"
 		if angle > PI/4 - margin or angle <= PI/4 + margin:
 			return "downright"
-	
+
+
+func move(vec):
+	if is_player():
+		velocity = move_and_slide(vec)
+	else:
+		NavAgent.set_velocity(vec)
+
 
 func apply_movement(dt, direction):
 	if movement_type == "free":
@@ -592,7 +601,7 @@ func apply_movement(dt, direction):
 		else:
 			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
-		velocity = move_and_slide(velocity*speed_modifier)
+		move(velocity*speed_modifier)
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
@@ -622,7 +631,7 @@ func apply_movement(dt, direction):
 		else:
 			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
-		velocity = move_and_slide(velocity*speed_modifier)
+		move(velocity*speed_modifier)
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false
@@ -643,11 +652,11 @@ func apply_movement(dt, direction):
 			else:
 				velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
-			velocity = move_and_slide(velocity)
+			move(velocity)
 
 		else:
 			velocity = lerp(velocity, Vector2.ZERO, friction)
-			velocity = move_and_slide(velocity*speed_modifier)
+			move(velocity*speed_modifier)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 	update_legs_visuals(dt)
@@ -850,3 +859,7 @@ func select_impact(calibre, is_shield):
 	
 	if sfx_idx:
 		AudioManager.play_sfx(sfx_idx, global_position)
+
+
+func _on_NavigationAgent2D_velocity_computed(safe_velocity):
+	velocity = move_and_slide(safe_velocity)

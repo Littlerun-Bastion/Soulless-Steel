@@ -3698,13 +3698,13 @@ z_index = -1
 
 [node name="Texts" type="Node2D" parent="."]
 
-[node name="Navigation2D" type="Navigation2D" parent="."]
+[node name="NavigationPolygons" type="Node2D" parent="."]
 visible = false
 __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
+[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="NavigationPolygons"]
 navpoly = SubResource( 6 )
 __meta__ = {
 "_edit_lock_": true

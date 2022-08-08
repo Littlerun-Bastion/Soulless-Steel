@@ -38,5 +38,5 @@ func get_texts():
 	return $Texts.get_children()
 
 
-func get_navigation_polygon():
-	return $Navigation2D/NavigationPolygonInstance.navpoly
+func get_navigation_polygons():
+	return $NavigationPolygons.get_children()

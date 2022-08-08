@@ -4,12 +4,12 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
-var debug = false
+var debug = true
 
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
-var final_pos = false
+var going_to_position = false
 var REACH_RANGE = 1
 var logic
 var all_mechas
@@ -19,8 +19,6 @@ var shooting_distance = 3500
 var random_pos_targeting_distance = 700
 var current_state
 var move_d_rand = 50
-var navigation_node
-var path : Array = []
 var pos_for_blocked
 var old_region
 var arena_size_y = Vector2(-2000, +2500)
@@ -41,7 +39,14 @@ func _process(delta):
 	if has_method("do_"+state):
 		call("do_"+state, delta)
 	logic.updateFiniteLogic(self)
-		
+	
+	if going_to_position:
+		var dir = NavAgent.get_next_location()
+		apply_movement(delta, dir)
+		if NavAgent.is_target_reached():
+			going_to_position = false
+			print("reached")
+	
 	if debug:
 		$Debug/StateLabel.text = logic.get_current_state()
 		update_pathing_debug_line()
@@ -49,10 +54,9 @@ func _process(delta):
 		$Debug/StateLabel.text = ""
 
 
-func setup(_all_mechas, _path_stuff, is_tutorial):
+func setup(_all_mechas, is_tutorial):
 	mecha_name = "Mecha " + str(randi()%2000)
 	all_mechas = _all_mechas
-	navigation_node = _path_stuff
 	if is_tutorial:
 		set_generator("type_2")
 		set_core(PartManager.get_random_part_name("core"))
@@ -84,6 +88,7 @@ func setup(_all_mechas, _path_stuff, is_tutorial):
 
 func update_pathing_debug_line():
 	var local_points = []
+	var path = NavAgent.get_nav_path()
 	if path:
 		local_points.append(position-global_position)
 		for point in path:
@@ -137,73 +142,39 @@ func random_valid_pos():
 	return point
 
 
-func random_pos_targeting():
+func random_targeting_pos():
 	randomize()
 	
 	var rand_pos = Vector2()
 	var angle = rand_range(0, 2.0*PI)
-	var direction = Vector2(cos(angle), sin(angle))
+	var direction = Vector2(cos(angle), sin(angle)).normalized()
 	var rand_radius = rand_range(400, 800)
 	rand_pos = valid_target.position + direction * rand_radius
 	
-	return navigation_node.get_closest_point(rand_pos)
-	
-	## ifs to check where the enemy is and add the proper distance between them
-#	if position.x - valid_target.position.x < 0:
-#		v_closeness.x = -random_pos_targeting_distance
-#	else:
-#		v_closeness.x = random_pos_targeting_distance
-#
-#	if position.x - valid_target.position.y < 0:
-#		v_closeness.y = -random_pos_targeting_distance
-#	else:
-#		v_closeness.y = random_pos_targeting_distance
-#
-#	rand_pos = Vector2(rand_range(max(move_d_rand, valid_target.position.x-move_d_rand+v_closeness.x),\
-#				   (move_d_rand)),\
-#				   rand_range(max(move_d_rand, valid_target.position.y-move_d_rand+v_closeness.y),\
-#				   (move_d_rand)))
-#
-#	return navigation_node.get_closest_point(rand_pos)
+	return rand_pos
 
 
-func path_movement(delta, target_position, look_pos = false):
-	if not path or path.empty():
-		path = navigation_node.get_simple_path(global_position, target_position)
-	
-	if path.size() > 0:
-		if not look_pos:
-			look_pos = path[0]
-		apply_rotation_by_point(delta, look_pos, false)
-		apply_movement(delta, path[0] - position)
-		if position.distance_to(path[0]) <= 10:
-			path.pop_front()
-			if path.size() == 0:
-				final_pos = false
-				path = []
 
 
 # State methods
 
-func do_roaming(delta):
-	if not final_pos:
-		final_pos = random_valid_pos()
-	
-	path_movement(delta, final_pos)
+func do_roaming(_delta):
+	if not going_to_position:
+		going_to_position = true
+		NavAgent.set_target_location(random_valid_pos())
 	
 	check_for_targets()
 
-	
-	
-func do_targeting(delta):
+
+func do_targeting(_delta):
 	check_for_targets()
 	if not valid_target:
 		return
 	
-	if not final_pos:
-		final_pos = random_pos_targeting()
+	if not going_to_position:
+		going_to_position = true
+		NavAgent.set_target_location(random_targeting_pos())
 	
-	path_movement(delta, final_pos, valid_target.position)
 	shoot_weapons()
 
 

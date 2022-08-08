@@ -5,9 +5,7 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 const DEBUG_CAM = false #Allows to move camera around when player dies
 
-export var EnemyCount = 1
 
-onready var NavInstance = $Navigation2D/NavigationPolygonInstance
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
 onready var ScrapParts = $ScrapParts
@@ -34,10 +32,8 @@ func _ready():
 	player_kills = 0
 	target_arena_zoom = ArenaCam.zoom
 	
-	update_navigation_polygon()
-	
 	add_player()
-	for _i in range(EnemyCount):
+	for _i in range(1):
 		add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
@@ -99,7 +95,8 @@ func setup_arena():
 	for child in arena_data.get_texts():
 		$Texts.add_child(child.duplicate(7))
 	
-	$Navigation2D/NavigationPolygonInstance.navpoly = arena_data.get_navigation_polygon()
+	for polygon in arena_data.get_navigation_polygons():
+		$Navigation.add_child(polygon.duplicate(7))
 
 
 func update_arena_cam(dt):
@@ -120,49 +117,6 @@ func update_arena_cam(dt):
 		ArenaCam.position += speed*dt*move_vec.normalized()
 		
 		ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
-
-
-func update_navigation_polygon():
-	var arena_poly = NavInstance.navpoly
-	
-	#Add props collision to navigation
-	var distance = 40
-	var prop_polygons = []
-	for i in range(0, $NavBlocks.get_child_count()):
-		var prop = $NavBlocks.get_child(i)
-		prop_polygons.append(prop.create_collision_polygon(distance))
-		
-	
-	merge_polygons(prop_polygons)
-	for polygon in prop_polygons:
-		arena_poly.add_outline(polygon)
-	arena_poly.make_polygons_from_outlines()
-	
-	NavInstance.set_navigation_polygon(arena_poly)
-	#Toggle needed to update the navigation
-	NavInstance.enabled = false
-	NavInstance.enabled = true
-
-
-func merge_polygons(polygons):
-	while(true):
-		var merged_something = false
-		for i in polygons.size():
-			var polygon = polygons[i]
-			for j in range(i + 1, polygons.size()):
-				var other_polygon = polygons[j]
-				var merged_polygon = Geometry.merge_polygons_2d(polygon, other_polygon)
-				if merged_polygon.size() == 1 or Geometry.is_polygon_clockwise(merged_polygon[1]):
-					polygons.append(merged_polygon[0])
-					merged_something = [i, j]
-					break
-			if merged_something:
-				break
-		if not merged_something:
-			break
-		else:
-			polygons.remove(merged_something[1])
-			polygons.remove(merged_something[0])
 
 
 func add_player():
@@ -187,7 +141,7 @@ func add_enemy():
 	enemy.connect("died", self, "_on_mecha_died")
 	enemy.connect("player_kill", self, "_on_mecha_player_kill")
 	all_mechas.push_back(enemy)
-	enemy.setup(all_mechas, $Navigation2D, is_tutorial)
+	enemy.setup(all_mechas, is_tutorial)
 
 
 func player_died():
@@ -286,7 +240,6 @@ func create_mecha_scraps(mecha):
 		scrap.apply_impulse(Vector2(), impulse_dir*impulse_force)
 		scrap.apply_torque_impulse(impulse_torque)
 		ScrapParts.call_deferred("add_child", scrap)
-		
 
 
 func _on_PauseMenu_pause_toggle(paused):

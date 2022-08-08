@@ -80,7 +80,6 @@ shader_param/greenIntensity = 0.492
 
 [node name="Arena" type="Node2D"]
 script = ExtResource( 1 )
-EnemyCount = 15
 
 [node name="BG" type="Sprite" parent="."]
 z_index = -4
@@ -115,6 +114,11 @@ scale = Vector2( 2, 2 )
 
 [node name="Texts" type="Node2D" parent="."]
 
+[node name="Navigation" type="Node2D" parent="."]
+__meta__ = {
+"_edit_lock_": true
+}
+
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 position = Vector2( -26.9077, -661.061 )
 current = false
@@ -122,16 +126,6 @@ zoom = Vector2( 10, 10 )
 drag_margin_h_enabled = false
 drag_margin_v_enabled = false
 smoothing_speed = 10.0
-
-[node name="Navigation2D" type="Navigation2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
-
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="Navigation2D"]
-__meta__ = {
-"_edit_lock_": true
-}
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
 layer = 2

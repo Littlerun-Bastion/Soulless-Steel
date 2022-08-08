@@ -544,4 +544,8 @@ anims/Walking = SubResource( 16 )
 wait_time = 5.0
 one_shot = true
 
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+avoidance_enabled = true
+
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]
+[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_velocity_computed"]

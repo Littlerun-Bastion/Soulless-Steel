@@ -52,8 +52,7 @@ func roaming_to_idle(_args):
 
 func roaming_to_targeting(args):
 	if args.valid_target:
-		args.path = []
-		args.final_pos = false
+		args.going_to_position = false
 	return args.valid_target
 
 
@@ -63,6 +62,5 @@ func targeting_to_idle(_args):
 
 func targeting_to_roaming(args):
 	if not args.valid_target:
-		args.path = []
-		args.final_pos = false
+		args.going_to_position = false
 	return not args.valid_target

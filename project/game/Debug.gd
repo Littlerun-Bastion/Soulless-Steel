@@ -1,6 +1,6 @@
 extends Node
 
-const DEBUG_ON = true
+const ACTIVE = true
 
 func window_debug_mode():
 	OS.window_fullscreen = false

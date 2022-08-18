@@ -1,8 +1,7 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=2]
-[ext_resource path="res://database/props/box3_prop.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/props/box1_prop.tscn" type="PackedScene" id=4]
 [ext_resource path="res://database/props/Prop.gd" type="Script" id=5]
 [ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
@@ -38,7 +37,7 @@ position = Vector2( -500, -500 )
 [node name="box2" parent="Props" instance=ExtResource( 4 )]
 position = Vector2( 500, -500 )
 
-[node name="box3" parent="Props" instance=ExtResource( 3 )]
+[node name="box3" parent="Props" instance=ExtResource( 4 )]
 position = Vector2( -500, 500 )
 
 [node name="box4" parent="Props" instance=ExtResource( 4 )]

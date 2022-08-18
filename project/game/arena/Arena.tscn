@@ -154,6 +154,11 @@ script = ExtResource( 57 )
 wait_time = 20.0
 autostart = true
 
+[node name="DebugInterface" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Pathings" type="Node2D" parent="DebugInterface"]
+
 [node name="Intro" type="CanvasLayer" parent="."]
 layer = 2
 

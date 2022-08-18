@@ -859,7 +859,3 @@ func select_impact(calibre, is_shield):
 	
 	if sfx_idx:
 		AudioManager.play_sfx(sfx_idx, global_position)
-
-
-func _on_NavigationAgent2D_velocity_computed(safe_velocity):
-	velocity = move_and_slide(safe_velocity)

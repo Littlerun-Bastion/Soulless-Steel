@@ -10,7 +10,7 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")
-	if Debug.DEBUG_ON:
+	if Debug.ACTIVE:
 		Debug.window_debug_mode()
 
 

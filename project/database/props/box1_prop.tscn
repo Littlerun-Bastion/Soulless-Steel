@@ -19,5 +19,3 @@ polygon = PoolVector2Array( -226.857, -226.01, 226.238, -226.441, 227.118, 226.8
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource( 2 )
-
-[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]

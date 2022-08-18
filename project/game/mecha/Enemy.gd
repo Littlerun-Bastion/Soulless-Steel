@@ -4,8 +4,6 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
-var debug = true
-
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
@@ -40,16 +38,9 @@ func _process(delta):
 		call("do_"+state, delta)
 	logic.updateFiniteLogic(self)
 	
-	if going_to_position:
-		var dir = NavAgent.get_next_location()
-		apply_movement(delta, dir)
-		if NavAgent.is_target_reached():
-			going_to_position = false
-			print("reached")
 	
-	if debug:
+	if Debug.ACTIVE:
 		$Debug/StateLabel.text = logic.get_current_state()
-		update_pathing_debug_line()
 	else:
 		$Debug/StateLabel.text = ""
 
@@ -84,19 +75,6 @@ func setup(_all_mechas, is_tutorial):
 	
 	#For the moment hard set enemies' movement type to free
 	movement_type = "free"
-
-
-func update_pathing_debug_line():
-	var local_points = []
-	var path = NavAgent.get_nav_path()
-	if path:
-		local_points.append(position-global_position)
-		for point in path:
-			local_points.append(point-global_position)
-	
-	pathing_debug.points = local_points
-	pathing_debug.global_rotation = 0
-
 
 #Auxiliary functions
 
@@ -133,6 +111,7 @@ func try_to_shoot(name):
 		elif node.can_shoot():
 			shoot(name)
 
+# Navigation
 
 func random_valid_pos():
 	randomize()
@@ -154,19 +133,32 @@ func random_targeting_pos():
 	return rand_pos
 
 
+func get_navigation_path():
+	return NavAgent.get_nav_path()
+
+
+func navigate_to_target(dt):
+	if going_to_position:
+		var target = NavAgent.get_next_location()
+		var pos = get_global_transform().origin
+		var dir = (target - pos).normalized()
+		apply_movement(dt, dir)
+
 
 
 # State methods
 
-func do_roaming(_delta):
+func do_roaming(dt):
 	if not going_to_position:
 		going_to_position = true
 		NavAgent.set_target_location(random_valid_pos())
+	navigate_to_target(dt)
+	
 	
 	check_for_targets()
 
 
-func do_targeting(_delta):
+func do_targeting(dt):
 	check_for_targets()
 	if not valid_target:
 		return
@@ -175,9 +167,22 @@ func do_targeting(_delta):
 		going_to_position = true
 		NavAgent.set_target_location(random_targeting_pos())
 	
+	navigate_to_target(dt)
+	
 	shoot_weapons()
 
 
-func do_idle(_delta):
+func do_idle(_dt):
 	pass
  
+
+func _on_NavigationAgent2D_navigation_finished():
+	going_to_position = false
+
+
+func _on_NavigationAgent2D_velocity_computed(safe_velocity):
+	velocity = move_and_slide(safe_velocity)
+
+
+func _on_NavigationAgent2D_target_reached():
+	going_to_position = false

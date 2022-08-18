@@ -15,6 +15,7 @@ onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
 onready var PauseMenu = $PauseMenu
+onready var DebugInterface = $DebugInterface
 onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
@@ -66,6 +67,8 @@ func _input(event):
 func _process(dt):
 	update_shader_effect()
 	update_arena_cam(dt)
+	if Debug.ACTIVE:
+		update_enemies_pathing()
 
 
 func setup_arena():
@@ -117,6 +120,25 @@ func update_arena_cam(dt):
 		ArenaCam.position += speed*dt*move_vec.normalized()
 		
 		ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
+
+
+func update_enemies_pathing():
+	var pathings = DebugInterface.get_node("Pathings")
+	for path in pathings.get_children():
+		path.queue_free()
+	for mecha in Mechas.get_children():
+		if not mecha.is_player():
+			var path = mecha.get_navigation_path()
+			if path:
+				var line = Line2D.new()
+				line.width = 30
+				line.default_color = Color(0.89, 0, 1.0, 1.0)
+				line.points = []
+				line.points.append(mecha.global_position)
+				for point in path:
+					line.points.append(point)
+				line.position = mecha.global_position
+				pathings.add_child(line)
 
 
 func add_player():

@@ -545,7 +545,12 @@ wait_time = 5.0
 one_shot = true
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-avoidance_enabled = true
+path_desired_distance = 50.0
+target_desired_distance = 50.0
+path_max_distance = 20.0
+radius = 90.0
+max_speed = 3000.0
+
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
 
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]
-[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_velocity_computed"]

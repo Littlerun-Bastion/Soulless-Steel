@@ -1,6 +1,5 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://game/ui/effects/VCREffect.gd" type="Script" id=1]
 [ext_resource path="res://game/arena/GameOver.gd" type="Script" id=2]
 [ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture" id=4]
@@ -10,76 +9,6 @@
 [sub_resource type="DynamicFont" id=1]
 size = 45
 font_data = ExtResource( 6 )
-
-[sub_resource type="Shader" id=7]
-code = "shader_type canvas_item;
-
-uniform float barRange : hint_range(0.0, 0.1) = 0.01;
-uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.000;
-uniform float noiseQuality : hint_range(1.0, 2000) = 500;
-uniform float noiseIntensity : hint_range(0.0, 0.03) = 0.000;
-uniform float colorOffsetIntensity : hint_range(0.0, 2.0) = 0.175;
-uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
-uniform float redIntensity : hint_range(0.0, 1.0) = 1.0;
-uniform float greenMultiplier : hint_range(0.0, 0.01) = 0.0073;
-uniform float greenIntensity : hint_range(0.0, 1.0) = 0.97;
-
-
-float rand(vec2 co)
-{
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-float verticalBar(float pos, float uvY, float offset)
-{
-    float edge0 = (pos - barRange);
-    float edge1 = (pos + barRange);
-
-    float x = smoothstep(edge0, pos, uvY) * offset;
-    x -= smoothstep(pos, edge1, uvY) * offset;
-    return x;
-}
-
-void fragment()
-{
-	float uvX, uvY;
-	uvX = UV.x;
-	uvY = UV.y;
-    for (float i = 0.0; i < 0.71; i += 0.1313)
-    {
-        float d = mod(TIME * i, 1.7);
-        float o = sin(1.0 - tan(TIME * 0.24 * i));
-    	o *= barOffsetIntensity;
-        uvX += verticalBar(d, uvY, o);
-    }
-
-    uvY *= noiseQuality;
-    uvY = float(int(uvY)) * (1.0 / noiseQuality);
-    float noise = rand(vec2(TIME * 0.00001, uvY));
-	uvX += noise * noiseIntensity;
-
-    vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
-    vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
-
-	vec2 uv = vec2(uvX, 1.0-uvY);
-    float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
-    float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
-    float b = texture(SCREEN_TEXTURE, uv).b;
-
-    COLOR = vec4(r, g, b, 1.0);
-}"
-
-[sub_resource type="ShaderMaterial" id=6]
-shader = SubResource( 7 )
-shader_param/barRange = 0.05
-shader_param/barOffsetIntensity = 0.0
-shader_param/noiseQuality = 866.239
-shader_param/noiseIntensity = 0.001
-shader_param/colorOffsetIntensity = 0.026
-shader_param/redMultiplier = 0.006
-shader_param/redIntensity = 1.0
-shader_param/greenMultiplier = 0.0073
-shader_param/greenIntensity = 0.97
 
 [node name="GameOver" type="CanvasLayer"]
 layer = 99
@@ -108,18 +37,5 @@ texture_normal = ExtResource( 5 )
 texture_pressed = ExtResource( 4 )
 texture_hover = ExtResource( 3 )
 texture_focused = ExtResource( 3 )
-
-[node name="VCREffect" type="ColorRect" parent="."]
-visible = false
-material = SubResource( 6 )
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_right = -960.0
-margin_bottom = -540.0
-rect_scale = Vector2( 2, 2 )
-mouse_filter = 2
-script = ExtResource( 1 )
-
-[node name="Tween" type="Tween" parent="VCREffect"]
 
 [connection signal="pressed" from="ReturnButton" to="." method="_on_ReturnButton_pressed"]

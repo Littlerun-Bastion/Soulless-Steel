@@ -76,7 +76,7 @@ func get_camera():
 	return Cam
 
 
-func take_damage(amount, source_info, weapon_name, calibre):
+func take_damage(amount, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp
 	.take_damage(amount, source_info, weapon_name, calibre)
 	if prev_hp > hp:

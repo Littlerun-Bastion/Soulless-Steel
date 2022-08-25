@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=2]
+[gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=2]
@@ -35,76 +35,6 @@ font_data = ExtResource( 3 )
 size = 55
 outline_size = 1
 font_data = ExtResource( 3 )
-
-[sub_resource type="Shader" id=14]
-code = "shader_type canvas_item;
-
-uniform float barRange : hint_range(0.0, 0.1) = 0.01;
-uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.000;
-uniform float noiseQuality : hint_range(1.0, 5000) = 500;
-uniform float noiseIntensity : hint_range(0.0, 0.03) = 0.000;
-uniform float colorOffsetIntensity : hint_range(0.0, 2.0) = 0.175;
-uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
-uniform float redIntensity : hint_range(0.0, 1.0) = 1.0;
-uniform float greenMultiplier : hint_range(0.0, 0.01) = 0.0073;
-uniform float greenIntensity : hint_range(0.0, 1.0) = 0.97;
-
-
-float rand(vec2 co)
-{
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-float verticalBar(float pos, float uvY, float offset)
-{
-    float edge0 = (pos - barRange);
-    float edge1 = (pos + barRange);
-
-    float x = smoothstep(edge0, pos, uvY) * offset;
-    x -= smoothstep(pos, edge1, uvY) * offset;
-    return x;
-}
-
-void fragment()
-{
-	float uvX, uvY;
-	uvX = UV.x;
-	uvY = UV.y;
-    for (float i = 0.0; i < 0.71; i += 0.1313)
-    {
-        float d = mod(TIME * i, 1.7);
-        float o = sin(1.0 - tan(TIME * 0.24 * i));
-    	o *= barOffsetIntensity;
-        uvX += verticalBar(d, uvY, o);
-    }
-
-    uvY *= noiseQuality;
-    uvY = float(int(uvY)) * (1.0 / noiseQuality);
-    float noise = rand(vec2(TIME * 0.00001, uvY));
-	uvX += (noise * noiseIntensity)/15.0;
-
-    vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
-    vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
-
-	vec2 uv = vec2(uvX, 1.0-uvY);
-    float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
-    float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
-    float b = texture(SCREEN_TEXTURE, uv).b;
-
-    COLOR = vec4(r, g, b, 1.0);
-}"
-
-[sub_resource type="ShaderMaterial" id=15]
-shader = SubResource( 14 )
-shader_param/barRange = 0.022
-shader_param/barOffsetIntensity = 0.002
-shader_param/noiseQuality = 3902.83
-shader_param/noiseIntensity = 0.015
-shader_param/colorOffsetIntensity = 0.373
-shader_param/redMultiplier = 0.002
-shader_param/redIntensity = 0.133
-shader_param/greenMultiplier = 0.002
-shader_param/greenIntensity = 0.12
 
 [sub_resource type="DynamicFont" id=8]
 size = 150
@@ -256,19 +186,6 @@ margin_right = 626.109
 margin_bottom = 888.414
 custom_fonts/font = SubResource( 6 )
 text = "Earned Credits: "
-
-[node name="ShaderEffects" type="CanvasLayer" parent="."]
-layer = 2
-
-[node name="Tween" type="Tween" parent="ShaderEffects"]
-playback_speed = 0.2
-playback/speed = 0.2
-
-[node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
-material = SubResource( 15 )
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 anchor_left = 0.703

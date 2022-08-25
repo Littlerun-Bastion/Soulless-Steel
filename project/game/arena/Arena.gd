@@ -52,6 +52,9 @@ func _input(event):
 			PauseMenu.toggle_pause()
 		elif event.pressed and event.scancode == KEY_P:
 			activate_arena_cam()
+		elif event.pressed and event.scancode == KEY_L:
+			if player:
+				player.take_damage(10, player)
 	if event is InputEventMouseButton:
 		if ArenaCam.current:
 			var amount = Vector2(.8, .8)

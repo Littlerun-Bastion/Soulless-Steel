@@ -17,7 +17,7 @@ func toggle_pause():
 	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
 	if $Control.visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		$ShaderEffects/VCREffect.play_transition(0, 3000, 2.0)
+		ShaderEffects.play_transition(0, 3000, 2.0)
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	

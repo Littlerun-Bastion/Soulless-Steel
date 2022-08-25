@@ -1,7 +1,5 @@
 extends Control
 
-onready var VCRTween = $ShaderEffects/Tween
-onready var VCREffect = $ShaderEffects/VCREffect
 var RArmTotal = 0
 var LArmTotal = 0
 var RShdTotal = 0

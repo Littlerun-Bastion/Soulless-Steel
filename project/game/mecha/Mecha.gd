@@ -211,7 +211,7 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, source_info, weapon_name, calibre):
+func take_damage(amount, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
 	

@@ -83,5 +83,6 @@ anchor_bottom = 1.0
 margin_right = -960.0
 margin_bottom = -540.0
 rect_scale = Vector2( 2, 2 )
+mouse_filter = 2
 
 [node name="Tween" type="Tween" parent="."]

@@ -2,9 +2,17 @@ extends CanvasLayer
 
 onready var VCREffect = $VCREffect
 
+
+func enable():
+	VCREffect.show()
+
+
+func disable():
+	VCREffect.hide()
+
+
 func play_transition(from_value, to_value, duration):
-	self.material.set_shader_param("noiseQuality", from_value)
-	$Tween.interpolate_property(self.material, "shader_param/noiseQuality", from_value, to_value, duration)
+	$Tween.interpolate_property(VCREffect.material, "shader_param/noiseQuality", from_value, to_value, duration)
 	$Tween.start()
 
 

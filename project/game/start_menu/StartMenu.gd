@@ -41,7 +41,7 @@ func start_game(mode):
 		"main":
 			ArenaManager.set_map_to_load("map1")
 		"tutorial":
-			ArenaManager.set_map_to_load("test")
+			ArenaManager.set_map_to_load("tutorial")
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	# warning-ignore:return_value_discarded

@@ -89,8 +89,6 @@ func setup_arena():
 		$Props.add_child(child.duplicate(7))
 	for child in arena_data.get_walls():
 		$Walls.add_child(child.duplicate(7))
-	for child in arena_data.get_navblocks():
-		$NavBlocks.add_child(child.duplicate(7))
 	for child in arena_data.get_start_positions():
 		$StartPositions.add_child(child.duplicate(7))
 	for child in arena_data.get_exits():

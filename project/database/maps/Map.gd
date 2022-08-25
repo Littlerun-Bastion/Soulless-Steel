@@ -18,10 +18,6 @@ func get_walls():
 	return $Walls.get_children()
 
 
-func get_navblocks():
-	return $NavBlocks.get_children()
-
-
 func get_start_positions():
 	return $StartPositions.get_children()
 

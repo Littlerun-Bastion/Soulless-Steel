@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=2]
+[gd_scene load_steps=52 format=2]
 
 [ext_resource path="res://database/props/tree_leafless_2_prop.tscn" type="PackedScene" id=1]
 [ext_resource path="res://database/props/tree1_prop.tscn" type="PackedScene" id=2]
@@ -21,7 +21,6 @@
 [ext_resource path="res://database/props/tree_leafless_1_prop.tscn" type="PackedScene" id=22]
 [ext_resource path="res://database/props/tree2_prop.tscn" type="PackedScene" id=23]
 [ext_resource path="res://database/props/house4_prop.tscn" type="PackedScene" id=24]
-[ext_resource path="res://database/props/NavBlocks.gd" type="Script" id=26]
 [ext_resource path="res://assets/images/map/floor/compound1.png" type="Texture" id=27]
 [ext_resource path="res://database/props/bush5_prop.tscn" type="PackedScene" id=29]
 [ext_resource path="res://database/props/bush3_prop.tscn" type="PackedScene" id=30]
@@ -2222,102 +2221,6 @@ script = ExtResource( 6 )
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/arena_wall_outersouth/StaticBody2D"]
 polygon = PoolVector2Array( -5336.91, 4088.72, -7772.01, 6032.63, -7820.01, 7824.63, 7632.7, 7758.23, 7658.85, 1152.56, 7629.01, -1433.17, 6853.98, -1334.58, 6822.92, -0.147858, 7278.92, 3.85214, 7319.22, 909.097, 6798.92, 911.852, 6827.8, 1520.53, 5990.27, 1533.98, 5980.18, 1920.79, 3878.69, 1906.89, 3285.32, 1952.41, 3342.4, 2233.06, 3489.86, 2556.53, 3437.11, 2977.23, 3949.69, 2870.45, 4181.66, 2907.73, 4377.06, 3793.06, 4321.29, 3892.05, 4106.09, 3914.71, 3884.61, 4279.26, 4055.94, 4411.31, 4136.85, 4568.63, 4182.26, 4678.55, 4406.86, 4835.35, 4461.96, 5102.34, 4411.1, 5212.52, 4381.09, 5472.69, 4226.25, 5712.96, 4103.44, 5894.49, 3895.21, 6129.43, 3772.4, 6289.61, 3638.92, 6444.45, 3532.13, 6567.25, 3403.99, 6711.42, 2976.84, 6844.9, 2661.82, 6903.63, 2389.51, 6941.01, 1971.37, 6856.2, 1667.37, 6896.2, 1259.37, 6992.2, 723.373, 7128.2, 315.373, 7200.2, 51.3726, 7072.2, -132.627, 6904.2, -452.627, 6768.2, -660.627, 6784.2, -820.627, 6752.2, -940.627, 6680.2, -1070.79, 6622.28, -1250.59, 6460.47, -1358.47, 6262.69, -1472.34, 6214.75, -1598.2, 6034.95, -1903.85, 5795.22, -2233.48, 5687.34, -2389.3, 5687.34, -2491.19, 5633.4, -2898.73, 5279.8, -3042.57, 5183.91, -3222.36, 5088.02, -3264.32, 4968.15, -3390.17, 4830.31, -3486.07, 4758.39, -3765.17, 4647.71, -3859.45, 4656.69, -3913.33, 4728.53, -4021.09, 4670.16, -4039.05, 4625.26, -4133.33, 4674.65, -4133.33, 4719.55, -4645.18, 5006.9, -4748.44, 4935.06, -5085.18, 4939.55, -5287.22, 5006.9, -6142.02, 4785.28, -5335.6, 4145.41, -5317.6, 4163.41, -5233.6, 4105.41, -5301.6, 4021.41, -5383.87, 4079.46, -5374.62, 4092.92, -5346.03, 4077.78 )
-
-[node name="NavBlocks" type="Node2D" parent="."]
-visible = false
-
-[node name="CollisionPolygon2D2" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -11706.9, -3254.23, -11547.7, -3163.95, -10982, -2915.05, -11066.9, -2677.46, -11163, -2479.47, -11852.5, -2915.14, -12668, -1593.72, -13762.9, -272.294, -12743.6, 611.173, -13023.4, 845.472, -12220.2, 2056.04, -10534.4, 981.236, -8185.87, -4233.68, -8670.78, -4440.21, -8643.84, -4547.97, -9890.11, -5113.45, -9833.03, -5246.64, -10675, -5641.46, -11297.5, -4321.38 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D4" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -9410.86, -5584.3, -7964.04, -4743.29, -6865.66, -6638.1, -5361.47, -8311.64, -4655.12, -7490.93, -3740.22, -8257.82, -3652.77, -8156.92, -2302.45, -9286.36, -2202.67, -9243.6, -1775.03, -9621.34, -1639.62, -9485.92, -719.527, -10224.2, -643.039, -10218.4, -316.023, -10498.7, -639.853, -10882.8, -738.271, -10816.1, -2284.64, -12666.6, -3410.52, -11836.9, -3850.12, -11710.9, -4968.49, -10855, -5291.28, -10623.4, -6383.41, -9670.98, -6581.77, -9415.65, -7052.73, -8876.18, -7408.08, -9163.66, -8128.89, -9734.97, -9327.38, -7976.65, -9435.5, -8036.72, -9601.71, -7762.91, -9504.91, -7692.33, -10030.3, -6865.74, -10315.3, -6260.45, -9299.64, -5775.73 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D6" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -6505.06, -11481.9, -6450.42, -11411.7, -6699.6, -11143.7, -7263.82, -10678.2, -6742.85, -10023.4, -5918.49, -10709.9, -5862.62, -10651.1, -4799.73, -11488.6, -5440.93, -12305.8 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D7" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -1486.34, -13067.5, 1017.85, -9639.15, 1578.5, -9950.71, 2243.73, -8932.69, 1558.34, -8438.8, 2754.11, -6735.42, 4415.92, -7901.94, 4303.04, -8129.05, 4462.28, -8297.85, 3285.08, -9984.34, 3077.08, -9856.34, 2477.08, -10712.3, 3632.81, -11558.2, 1355.74, -14670, 1084.21, -14489, 801.364, -14794.5 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D8" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -3311.91, -7607.17, -1991.2, -5777, -811.204, -6565, 715.124, -4423.64, 2410.47, -5661.81, -405.385, -9681.79 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D9" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -3703.62, -4008.22, -1127.12, -5864.92, 90.501, -4169.67, -2391.83, -2366.79, -3353.81, -3685.31, -3481.63, -3618.04 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D10" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -5438.02, -7362, -6415.85, -6193.68, -5452.93, -5357.88, -4448.93, -6525.88 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D11" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -6908.78, -5759.73, -9944.96, 426.669, -7255.71, 1659.95, -4182.95, -4450.16 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D12" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -11026.4, 2157.51, -7541.4, 5371.13, -5113.3, 2695.11, -6282.95, 1644.12, -7452.6, 2932.43, -8198.46, 2262.85, -7952.66, 1987.39, -8440.02, 1546.65, -8685.81, 1800.92, -8961.53, 1565.03, -9244.07, 1861.02, -10044.6, 1161.4 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D13" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -13020.1, 4690.63, -11660.1, 6530.63, -11700.1, 6634.63, -11404.1, 7042.63, -10967, 6712.21, -11031.1, 6584.07, -8922.06, 5019.64, -9875.94, 3808.28, -10594.4, 4323.06, -10684.9, 4238.2, -11476.8, 4809.55, -11804.9, 4340.03, -12014.2, 4487.11, -12223.5, 4204.26 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D14" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -10868, 7278.25, -9634.29, 8921.42, -7075.4, 6946.7, -8313.57, 5352.94 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D15" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -7799.8, 7737.74, -6582.18, 9318.63, -4816.24, 9953.26, -4686.6, 9645.08, -3448.42, 10140.3, -3048.4, 9200.61, -4204.03, 8749.78, -4331.02, 8559.29, -5702.53, 8057.68, -6642.28, 6902.05 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D17" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 4266.19, -6162.96, 3155.03, -5256.26, 4060.01, -4081.59, 4191.86, -2595.27, 4687.85, -2625.39, 4782.99, -1697.81, 4378.66, -1731.11, 3931.06, -877.849, 4795.58, -394.733, 5100.71, -352.355, 6083.89, -496.442, 5983.38, -1347.28, 6070.84, -1347.28, 6030.47, -1717.27, 5948.28, -1733.89, 5855.83, -2706.59, 5674.81, -2683.97, 5482.48, -4663.86 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D16" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -1344.04, -2072.14, -692.641, -1207.17, 211.767, -1097.51, 2435.45, -2800.91, 2520.98, -2722.51, 3632.82, -3570.64, 2609.07, -4941.23 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D18" type="CollisionPolygon2D" parent="NavBlocks"]
-position = Vector2( 332.619, 0 )
-polygon = PoolVector2Array( 5077.16, -11480.7, 4937.47, -9931.44, 5039.06, -9906.04, 5039.06, -9740.95, 5127.96, -9740.95, 4835.88, -6756.63, 6778.86, -6604.24, 7070.94, -9550.46, 7350.32, -9486.96, 7312.22, -9004.39, 8455.15, -8826.61, 8213.87, -6502.65, 10410.8, -6261.36, 10639.4, -8610.72, 10726, -8609.35, 10925.8, -10886.9 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D19" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 6034.49, -5054.92, 6586.25, -691.626, 10401.2, -900.927, 10363.2, -1053.15, 10439.3, -1062.66, 10401.2, -2194.78, 10344.1, -2889.28, 8574.6, -4677.85, 8640.3, -6070.67, 6818.79, -6263, 6762.22, -5380.53 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D20" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 8863.9, -6021.69, 8863.9, -5302.51, 9613.05, -5254.56, 9619.04, -5206.62, 9037.7, -4667.23, 10014.6, -3600.43, 10787.6, -2793.36, 10881.8, -1128.13, 11864.2, -1106.77, 11992.4, -1010.67, 12462.2, -1042.7, 12633.1, -935.914, 12868, -946.592, 12942.8, -1918.36, 12141.9, -2003.79, 12035.1, -2847.4, 11042, -2858.08, 11490.5, -3370.66, 10775, -4075.46, 10903.2, -4214.28, 9835.28, -5346.23, 9783.23, -6010.13 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D21" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( -2513.77, 9369.63, -3302.01, 10700.3, -2420.54, 11259.7, -2022.18, 10649.5, -1089.85, 11225.8, -1335.65, 11734.4, -553.677, 12204.7, -265.352, 11692.1, 396.729, 12044.5, 802.521, 11318.3 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D22" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 1064.24, 11237.5, 4344.24, 10709.5, 4584.24, 10701.5, 4704.24, 11597.5, 2184.24, 12045.5, 2208.24, 12277.5, 1280.24, 12445.5 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D23" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 441.051, 5482.76, -430.105, 6964.86, -316.968, 7066.68, -1606.73, 9306.79, -262.085, 10057.2, 186.899, 9302.92, 308.125, 9343.33, 766.09, 8562.1, 793.029, 9172.72, 1394.67, 9163.74, 2539.58, 8889.86, 3763.15, 8298.07, 3399.88, 7578.26, 3561.33, 7652.26, 4067.76, 6564.62, 3226.75, 6151.24, 2713.59, 7234.57, 3212.49, 7476.9, 2228.94, 8032.82, 2122.03, 7897.4, 1124.23, 8153.98, 1537.6, 7427.01, 1986.62, 7647.95, 2556.79, 6728.54, 2554.75, 6589.3, 502.808, 5418.88 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D24" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 4198.05, 6507.46, 4072.33, 7158.49, 4754.79, 8298.91, 5637.09, 8997.08, 6086.11, 8391.27, 5416.15, 7899.49, 5587.2, 7771.2, 5000.71, 6677.99 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D25" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 498.206, 9315.53, 10.4856, 10193.4, 567.489, 10493.1, 863.819, 10713.2, 4065.08, 10201.3, 4737.42, 9914.67, 5257.71, 9216.2, 4516.48, 8567.63, 3939.18, 9273.22, 3219.33, 9323.11, 3212.2, 9258.97, 1152.45, 9629.58 )
-script = ExtResource( 26 )
-
-[node name="CollisionPolygon2D26" type="CollisionPolygon2D" parent="NavBlocks"]
-polygon = PoolVector2Array( 6711.11, 8429.82, 5751.11, 9725.82, 6823.11, 10493.8, 7790.66, 9197.82 )
-script = ExtResource( 26 )
 
 [node name="StartPositions" type="Node2D" parent="."]
 position = Vector2( -343.266, -127.135 )

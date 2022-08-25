@@ -13,9 +13,9 @@ size = 54
 font_data = ExtResource( 2 )
 
 [sub_resource type="NavigationPolygon" id=8]
-vertices = PoolVector2Array( -2780, -1418, -1436, -2780, 1425, -2799, 2796, -1396, 2790, 1384, 1431, 2797, -1439, 2762, -2810, 1445 )
-polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5, 6, 7 ) ]
-outlines = [ PoolVector2Array( -2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418 ) ]
+vertices = PoolVector2Array( 1425, -2799, 2796, -1396, 1865, -1609, 1925, 105, 2790, 1384, 1888, 1472, 1431, 2797, 453, -1662, -1436, -2780, 453, 1472, -1439, 2762, -295, 1457, -1699, 1480, -2810, 1445, 1850, -310, -219, -317, 445, -317, 430, 128, -302, 136, -1790, -333, -1699, 181, -2780, -1418, -1752, -1699, -234, -1677 )
+polygons = [ PoolIntArray( 0, 1, 2 ), PoolIntArray( 3, 1, 4, 5 ), PoolIntArray( 5, 4, 6 ), PoolIntArray( 0, 2, 7, 8 ), PoolIntArray( 9, 5, 6, 10 ), PoolIntArray( 11, 9, 10, 12 ), PoolIntArray( 12, 10, 13 ), PoolIntArray( 2, 1, 3, 14 ), PoolIntArray( 15, 16, 14, 3, 17, 18 ), PoolIntArray( 17, 9, 11, 18 ), PoolIntArray( 19, 15, 18, 20 ), PoolIntArray( 20, 12, 13, 21, 19 ), PoolIntArray( 22, 19, 21 ), PoolIntArray( 22, 21, 8 ), PoolIntArray( 23, 22, 8 ), PoolIntArray( 23, 8, 7 ), PoolIntArray( 15, 23, 7, 16 ) ]
+outlines = [ PoolVector2Array( -2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418 ), PoolVector2Array( -1752, -1699, -1790, -333, -219, -317, -234, -1677 ), PoolVector2Array( 453, -1662, 445, -317, 1850, -310, 1865, -1609 ), PoolVector2Array( -1699, 181, -1699, 1480, -295, 1457, -302, 136 ), PoolVector2Array( 430, 128, 453, 1472, 1888, 1472, 1925, 105 ) ]
 
 [node name="Map" type="Node2D"]
 script = ExtResource( 1 )
@@ -53,8 +53,6 @@ script = ExtResource( 5 )
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
 position = Vector2( 635, -6832 )
 polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
-
-[node name="NavBlocks" type="Node2D" parent="."]
 
 [node name="StartPositions" type="Node2D" parent="."]
 z_index = -5

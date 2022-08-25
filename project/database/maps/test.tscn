@@ -55,7 +55,7 @@ position = Vector2( 635, -6832 )
 polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
 
 [node name="StartPositions" type="Node2D" parent="."]
-z_index = -5
+
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource( 6 )]
 position = Vector2( -510, 284 )
@@ -65,7 +65,7 @@ position = Vector2( 188, 293 )
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
-z_index = -5
+
 
 [node name="ExitPos" parent="Exits" instance=ExtResource( 7 )]
 position = Vector2( -2607.5, 0.596485 )
@@ -114,12 +114,7 @@ to recover armor, shields
 and munitions."
 align = 2
 
-[node name="NavigationPolygons" type="Node2D" parent="."]
-__meta__ = {
-"_edit_lock_": true
-}
-
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="NavigationPolygons"]
+[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="."]
 navpoly = SubResource( 8 )
 __meta__ = {
 "_edit_lock_": true

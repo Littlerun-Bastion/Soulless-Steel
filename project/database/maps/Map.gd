@@ -2,6 +2,7 @@ extends Node2D
 
 export var is_tutorial := false
 
+
 func get_bg():
 	return $BG
 
@@ -34,5 +35,5 @@ func get_texts():
 	return $Texts.get_children()
 
 
-func get_navigation_polygons():
-	return $NavigationPolygons.get_children()
+func get_navigation_polygon():
+	return $NavigationPolygonInstance.navpoly

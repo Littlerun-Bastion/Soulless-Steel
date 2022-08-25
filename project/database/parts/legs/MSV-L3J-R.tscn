@@ -11,11 +11,11 @@ side = 1
 health = 50
 
 [node name="LegsSub" type="Sprite" parent="."]
-z_index = -1
+
 texture = ExtResource( 2 )
 
 [node name="LegsGlow" type="Sprite" parent="."]
-z_index = 1
+
 texture = ExtResource( 4 )
 
 [node name="Legs" type="Sprite" parent="."]

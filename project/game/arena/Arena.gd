@@ -32,7 +32,7 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	for _i in range(1):
+	for _i in range(10):
 		add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
@@ -102,8 +102,7 @@ func setup_arena():
 	for child in arena_data.get_texts():
 		$Texts.add_child(child.duplicate(7))
 	
-	for polygon in arena_data.get_navigation_polygons():
-		$Navigation.add_child(polygon.duplicate(7))
+	$NavigationPolygon.navpoly = arena_data.get_navigation_polygon()
 
 
 func update_arena_cam(dt):
@@ -156,7 +155,7 @@ func add_player():
 	player = PLAYER.instance()
 	Mechas.add_child(player)
 	player.setup()
-	player.position = get_start_position(1)
+	player.position = get_start_position(0)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
 	player.connect("lost_health", self, "_on_player_lost_health")
@@ -174,7 +173,11 @@ func add_enemy():
 	enemy.connect("died", self, "_on_mecha_died")
 	enemy.connect("player_kill", self, "_on_mecha_player_kill")
 	all_mechas.push_back(enemy)
-	enemy.setup(all_mechas, is_tutorial)
+	enemy.setup(self, is_tutorial)
+
+
+func get_mechas():
+	return all_mechas
 
 
 func player_died():
@@ -195,14 +198,26 @@ func get_random_start_position(exclude_idx := []):
 	var offset = 500
 	var rand_offset = Vector2(rand_range(-offset, offset), rand_range(-offset, offset))
 	var n_pos = $StartPositions.get_child_count()
-	var idx = randi()%n_pos + 1
+	var idx = randi()%n_pos
 	while exclude_idx.has(idx):
-		idx = randi()%n_pos + 1
-	return $StartPositions.get_node("Pos"+str(idx)).position + rand_offset
+		idx = randi()%n_pos
+	return get_start_position(idx) + rand_offset
 
 
 func get_start_position(idx):
-	return $StartPositions.get_node("Pos"+str(idx)).position
+	return $StartPositions.get_child(idx).position
+
+
+func get_random_position():
+	var w = $BG.texture.get_width()*$BG.scale.x
+	var h = $BG.texture.get_height()*$BG.scale.y
+	var point = Vector2(rand_range(-w/2, w/2),\
+						rand_range(-h/2, h/2))
+	var poly = $NavigationPolygon.navpoly.get_outline(0)
+	while not Geometry.is_point_in_polygon(point, poly):
+		point = Vector2(rand_range(-w/2, w/2),\
+							rand_range(-h/2, h/2))
+	return point
 
 
 func player_ammo_set():

@@ -311,7 +311,6 @@ tracks/1/keys = {
 }
 
 [node name="Mecha" type="KinematicBody2D" groups=["mecha"]]
-z_index = -1
 script = ExtResource( 1 )
 
 [node name="Legs" type="Node2D" parent="."]
@@ -375,7 +374,7 @@ texture = ExtResource( 3 )
 
 [node name="Glow" type="Sprite" parent="Core"]
 material = SubResource( 14 )
-z_index = 1
+
 texture = ExtResource( 16 )
 
 [node name="Decals" type="Node2D" parent="Core"]
@@ -441,7 +440,7 @@ position = Vector2( 6, -90 )
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 12 )
 position = Vector2( -58, -26 )
-z_index = 1
+
 texture = ExtResource( 28 )
 script = ExtResource( 10 )
 
@@ -461,7 +460,7 @@ position = Vector2( -2.37842, -86.1629 )
 material = SubResource( 13 )
 position = Vector2( 58, -26 )
 scale = Vector2( -1, 1 )
-z_index = 1
+
 texture = ExtResource( 12 )
 script = ExtResource( 10 )
 
@@ -480,7 +479,7 @@ position = Vector2( 7.64874, -60.4322 )
 [node name="LeftShoulder" type="Sprite" parent="."]
 material = SubResource( 8 )
 position = Vector2( -70, 16 )
-z_index = 2
+
 texture = ExtResource( 6 )
 
 [node name="Decals" type="Node2D" parent="LeftShoulder"]
@@ -489,7 +488,7 @@ light_mask = 64
 [node name="RightShoulder" type="Sprite" parent="."]
 material = ExtResource( 18 )
 position = Vector2( 70, 16 )
-z_index = 2
+
 texture = ExtResource( 14 )
 
 [node name="Decals" type="Node2D" parent="RightShoulder"]

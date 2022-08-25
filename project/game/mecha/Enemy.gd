@@ -4,6 +4,7 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 onready var pathing_debug = $Debug/Pathing
 
+var arena
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
@@ -19,8 +20,6 @@ var current_state
 var move_d_rand = 50
 var pos_for_blocked
 var old_region
-var arena_size_y = Vector2(-2000, +2500)
-var arena_size_x = Vector2(-1500, +4000)
 
 
 func _ready():
@@ -45,9 +44,9 @@ func _process(delta):
 		$Debug/StateLabel.text = ""
 
 
-func setup(_all_mechas, is_tutorial):
+func setup(arena_ref, is_tutorial):
+	arena = arena_ref
 	mecha_name = "Mecha " + str(randi()%2000)
-	all_mechas = _all_mechas
 	if is_tutorial:
 		set_generator("type_2")
 		set_core(PartManager.get_random_part_name("core"))
@@ -89,7 +88,7 @@ func check_for_targets():
 	#Find new target
 	if not valid_target:
 		var min_distance = 99999999
-		for target in all_mechas:
+		for target in arena.get_mechas():
 			var distance = position.distance_to(target.position)
 			if target != self and distance <= engage_distance and distance < min_distance:
 				valid_target = target
@@ -113,17 +112,7 @@ func try_to_shoot(name):
 
 # Navigation
 
-func random_valid_pos():
-	randomize()
-	var point = Vector2(rand_range(arena_size_x[0], arena_size_x[1]),\
-						rand_range(arena_size_y[0], arena_size_y[1]))
-
-	return point
-
-
 func random_targeting_pos():
-	randomize()
-	
 	var rand_pos = Vector2()
 	var angle = rand_range(0, 2.0*PI)
 	var direction = Vector2(cos(angle), sin(angle)).normalized()
@@ -142,7 +131,9 @@ func navigate_to_target(dt):
 		var target = NavAgent.get_next_location()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
+		apply_rotation_by_point(dt, target, false)
 		apply_movement(dt, dir)
+
 
 func get_target_navigation_pos():
 	if going_to_position:
@@ -154,7 +145,7 @@ func get_target_navigation_pos():
 func do_roaming(dt):
 	if not going_to_position:
 		going_to_position = true
-		NavAgent.set_target_location(random_valid_pos())
+		NavAgent.set_target_location(arena.get_random_position())
 	navigate_to_target(dt)
 	
 	

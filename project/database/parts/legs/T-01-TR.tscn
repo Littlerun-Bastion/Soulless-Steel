@@ -12,10 +12,10 @@ rotation_acc = 2.0
 health = 80
 
 [node name="LegsSub" type="Sprite" parent="."]
-z_index = -1
+
 
 [node name="LegsGlow" type="Sprite" parent="."]
-z_index = 1
+
 
 [node name="Legs" type="Sprite" parent="."]
 texture = ExtResource( 2 )

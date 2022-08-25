@@ -6,6 +6,7 @@ var parallaxMult = 30.0
 
 
 func _ready():
+	randomize()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	ShaderEffects.reset_shader_effect("main_menu")
 	$AnimationPlayer.play("Typewrite")

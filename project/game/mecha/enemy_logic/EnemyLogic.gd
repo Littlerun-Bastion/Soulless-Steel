@@ -12,11 +12,11 @@ func setup():
 	g.add_a_node("targeting")
 
 	add_connection("idle", "roaming")
-	add_connection("idle", "targeting")
-	add_connection("roaming", "idle")
-	add_connection("roaming", "targeting")
-	add_connection("targeting", "idle")
-	add_connection("targeting", "roaming")
+	#add_connection("idle", "targeting")
+	#add_connection("roaming", "idle")
+	#add_connection("roaming", "targeting")
+	#add_connection("targeting", "idle")
+	#add_connection("targeting", "roaming")
 
 
 func add_connection(from, to):

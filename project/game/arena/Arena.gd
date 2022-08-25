@@ -37,6 +37,8 @@ func _ready():
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
+	
+	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	
 	set_mechas_block_status(true)
@@ -68,7 +70,7 @@ func _input(event):
 
 
 func _process(dt):
-	if player:
+	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
 	update_arena_cam(dt)
 	if Debug.ACTIVE:

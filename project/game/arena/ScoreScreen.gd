@@ -8,6 +8,7 @@ var LShdTotal = 0
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	ShaderEffects.reset_shader_effect("score_screen")
 	
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
 	PlayerStatManager.Credits = PlayerStatManager.PlayerKills * 25000.0 * (1.0 + (PlayerStatManager.PlayerKills/10.0))

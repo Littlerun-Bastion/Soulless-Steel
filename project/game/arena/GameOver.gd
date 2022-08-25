@@ -12,6 +12,7 @@ func reset():
 
 func killed():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	ShaderEffects.reset_shader_effect("gameover")
 	$Label.visible = true
 	$ReturnButton.visible = true
 

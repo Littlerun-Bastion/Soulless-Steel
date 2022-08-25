@@ -17,8 +17,31 @@ func play_transition(from_value, to_value, duration):
 
 
 func reset_shader_effect(mode):
-	if mode == "main_menu":
-		pass
+	$Tween.remove_all()
+	if mode == "arena":
+		set_shader_params(0.05, 0.0, 2000.0, 0.0, 0.026, 0.002, 0.48, 0.002, 0.492)
+	elif mode == "gameover":
+		set_shader_params(0.05, 0.0, 866.0, 0.001, 0.026, 0.006, 1.0, 0.0073, 0.97)
+	elif mode == "score_screen":
+		set_shader_params(0.022, 0.002, 3900.0, 0.015, 0.373, 0.002, 0.133, 0.002, 0.12)
+	elif mode == "main_menu":
+		set_shader_params(0.01, 0.002, 4000.0, 0.0005, 0.373, 0.002, 0.133, 0.002, 0.13)
+	else:
+		push_error("Not a valid shader mode:" + str(mode))
+
+
+func set_shader_params(bar_range, bar_intensity, noise_quality, noise_intensity,\
+					   color_intensity, red_multiplier, red_intensity,\
+					   green_multiplier, green_intensity):
+	VCREffect.material.set_shader_param("barRange", bar_range)
+	VCREffect.material.set_shader_param("barOffsetIntensity", bar_intensity)
+	VCREffect.material.set_shader_param("noiseQuality", noise_quality)
+	VCREffect.material.set_shader_param("noiseIntensity", noise_intensity)
+	VCREffect.material.set_shader_param("colorOffsetIntensity", color_intensity)
+	VCREffect.material.set_shader_param("redMultiplier", red_multiplier)
+	VCREffect.material.set_shader_param("redIntensity", red_intensity)
+	VCREffect.material.set_shader_param("greenMultiplier", green_multiplier)
+	VCREffect.material.set_shader_param("greenIntensity", green_intensity)
 
 
 func update_shader_effect(player):

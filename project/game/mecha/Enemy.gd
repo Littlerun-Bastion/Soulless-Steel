@@ -38,7 +38,7 @@ func _process(delta):
 	logic.updateFiniteLogic(self)
 	
 	
-	if Debug.ACTIVE:
+	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
 	else:
 		$Debug/StateLabel.text = ""

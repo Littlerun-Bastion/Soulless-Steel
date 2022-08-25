@@ -73,7 +73,7 @@ func _process(dt):
 	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
 	update_arena_cam(dt)
-	if Debug.ACTIVE:
+	if Debug.get_setting("navigation"):
 		update_enemies_debug_navigation()
 
 

@@ -1,6 +1,14 @@
 extends Node
 
-const ACTIVE = true
+const ACTIVE = false
+
+
+var debug_settings = {
+	"window": true,
+	"navigation": false,
+	"enemy_state": false,
+}
+
 
 func window_debug_mode():
 	OS.window_fullscreen = false

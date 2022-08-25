@@ -587,6 +587,7 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 
 func move(vec):
 	if is_player():
+		NavAgent.set_velocity(vec)
 		velocity = move_and_slide(vec)
 	else:
 		NavAgent.set_velocity(vec)

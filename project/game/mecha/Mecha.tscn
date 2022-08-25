@@ -374,7 +374,6 @@ texture = ExtResource( 3 )
 
 [node name="Glow" type="Sprite" parent="Core"]
 material = SubResource( 14 )
-
 texture = ExtResource( 16 )
 
 [node name="Decals" type="Node2D" parent="Core"]
@@ -440,7 +439,6 @@ position = Vector2( 6, -90 )
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 12 )
 position = Vector2( -58, -26 )
-
 texture = ExtResource( 28 )
 script = ExtResource( 10 )
 
@@ -460,7 +458,6 @@ position = Vector2( -2.37842, -86.1629 )
 material = SubResource( 13 )
 position = Vector2( 58, -26 )
 scale = Vector2( -1, 1 )
-
 texture = ExtResource( 12 )
 script = ExtResource( 10 )
 
@@ -479,7 +476,6 @@ position = Vector2( 7.64874, -60.4322 )
 [node name="LeftShoulder" type="Sprite" parent="."]
 material = SubResource( 8 )
 position = Vector2( -70, 16 )
-
 texture = ExtResource( 6 )
 
 [node name="Decals" type="Node2D" parent="LeftShoulder"]
@@ -488,7 +484,6 @@ light_mask = 64
 [node name="RightShoulder" type="Sprite" parent="."]
 material = ExtResource( 18 )
 position = Vector2( 70, 16 )
-
 texture = ExtResource( 14 )
 
 [node name="Decals" type="Node2D" parent="RightShoulder"]
@@ -547,9 +542,15 @@ one_shot = true
 path_desired_distance = 50.0
 target_desired_distance = 50.0
 path_max_distance = 20.0
-radius = 90.0
-max_speed = 3000.0
+avoidance_enabled = true
+radius = 200.0
+neighbor_dist = 1200.0
+max_neighbors = 1000
+time_horizon = 10000.0
+max_speed = 1000.0
 
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
+estimate_radius = false
+radius = 200.0
 
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]

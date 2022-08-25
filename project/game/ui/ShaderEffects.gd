@@ -16,6 +16,11 @@ func play_transition(from_value, to_value, duration):
 	$Tween.start()
 
 
+func reset_shader_effect(mode):
+	if mode == "main_menu":
+		pass
+
+
 func update_shader_effect(player):
 	if not $Tween.is_active():
 		#Noise Intensity

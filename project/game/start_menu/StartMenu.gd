@@ -43,7 +43,7 @@ func start_game(mode):
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	yield(get_tree().create_timer(.3), "timeout")
+	#yield(get_tree().create_timer(.3), "timeout")
 	# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
 

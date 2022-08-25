@@ -1,5 +1,6 @@
 [gd_scene load_steps=28 format=2]
 
+[ext_resource path="res://assets/fonts/StartMenuUserGuideFont.tres" type="DynamicFont" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
 [ext_resource path="res://game/start_menu/StartMenu.gd" type="Script" id=4]
@@ -45,15 +46,9 @@ use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=12]
+[sub_resource type="DynamicFont" id=18]
 size = 45
 outline_size = 1
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
-
-[sub_resource type="DynamicFont" id=13]
-size = 30
 use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 3 )
@@ -224,11 +219,11 @@ rect_scale = Vector2( 0.36, 0.36 )
 custom_constants/separation = 100
 
 [node name="NewGameContainer" type="VBoxContainer" parent="MainButtons"]
-margin_right = 750.0
-margin_bottom = 152.0
+margin_right = 1055.0
+margin_bottom = 184.0
 
 [node name="Button" type="TextureButton" parent="MainButtons/NewGameContainer"]
-margin_right = 750.0
+margin_right = 1055.0
 margin_bottom = 105.0
 texture_normal = ExtResource( 12 )
 texture_pressed = ExtResource( 13 )
@@ -237,18 +232,18 @@ texture_focused = ExtResource( 15 )
 
 [node name="Descriptor" type="Label" parent="MainButtons/NewGameContainer"]
 margin_top = 109.0
-margin_right = 750.0
-margin_bottom = 152.0
+margin_right = 1055.0
+margin_bottom = 184.0
 custom_fonts/font = ExtResource( 5 )
 text = "SAV BOOT SEQUENCE"
 
 [node name="TutorialContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 252.0
-margin_right = 750.0
-margin_bottom = 404.0
+margin_top = 284.0
+margin_right = 1055.0
+margin_bottom = 468.0
 
 [node name="Button" type="TextureButton" parent="MainButtons/TutorialContainer"]
-margin_right = 750.0
+margin_right = 1055.0
 margin_bottom = 105.0
 texture_normal = ExtResource( 10 )
 texture_pressed = ExtResource( 7 )
@@ -257,18 +252,18 @@ texture_focused = ExtResource( 18 )
 
 [node name="Descriptor" type="Label" parent="MainButtons/TutorialContainer"]
 margin_top = 109.0
-margin_right = 750.0
-margin_bottom = 152.0
+margin_right = 1055.0
+margin_bottom = 184.0
 custom_fonts/font = ExtResource( 5 )
 text = "New user system simulation"
 
 [node name="SettingsContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 504.0
-margin_right = 750.0
-margin_bottom = 656.0
+margin_top = 568.0
+margin_right = 1055.0
+margin_bottom = 752.0
 
 [node name="Button" type="TextureButton" parent="MainButtons/SettingsContainer"]
-margin_right = 750.0
+margin_right = 1055.0
 margin_bottom = 105.0
 texture_normal = ExtResource( 8 )
 texture_pressed = ExtResource( 9 )
@@ -277,18 +272,18 @@ texture_focused = ExtResource( 11 )
 
 [node name="Descriptor" type="Label" parent="MainButtons/SettingsContainer"]
 margin_top = 109.0
-margin_right = 750.0
-margin_bottom = 152.0
+margin_right = 1055.0
+margin_bottom = 184.0
 custom_fonts/font = ExtResource( 5 )
 text = "system runtime parameters"
 
 [node name="ExitContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 756.0
-margin_right = 750.0
-margin_bottom = 908.0
+margin_top = 852.0
+margin_right = 1055.0
+margin_bottom = 1036.0
 
 [node name="Button" type="TextureButton" parent="MainButtons/ExitContainer"]
-margin_right = 750.0
+margin_right = 1055.0
 margin_bottom = 105.0
 texture_normal = ExtResource( 6 )
 texture_pressed = ExtResource( 17 )
@@ -297,8 +292,8 @@ texture_focused = ExtResource( 16 )
 
 [node name="Descriptor" type="Label" parent="MainButtons/ExitContainer"]
 margin_top = 109.0
-margin_right = 750.0
-margin_bottom = 152.0
+margin_right = 1055.0
+margin_bottom = 184.0
 custom_fonts/font = ExtResource( 5 )
 text = "terminate program runtime"
 
@@ -334,54 +329,54 @@ margin_bottom = 108.791
 custom_constants/separation = 25
 
 [node name="Label5" type="Label" parent="UserGuide"]
-margin_right = 868.0
+margin_right = 874.0
 margin_bottom = 46.0
-custom_fonts/font = SubResource( 12 )
+custom_fonts/font = SubResource( 18 )
 text = "User guide"
 align = 2
 
 [node name="Label" type="Label" parent="UserGuide"]
 margin_top = 71.0
-margin_right = 868.0
-margin_bottom = 102.0
-custom_fonts/font = SubResource( 13 )
+margin_right = 874.0
+margin_bottom = 103.0
+custom_fonts/font = ExtResource( 1 )
 text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
 align = 2
 percent_visible = 0.0
 
 [node name="Label2" type="Label" parent="UserGuide"]
-margin_top = 127.0
-margin_right = 868.0
-margin_bottom = 158.0
-custom_fonts/font = SubResource( 13 )
+margin_top = 128.0
+margin_right = 874.0
+margin_bottom = 160.0
+custom_fonts/font = ExtResource( 1 )
 text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
 align = 2
 percent_visible = 0.0
 
 [node name="Label3" type="Label" parent="UserGuide"]
-margin_top = 183.0
-margin_right = 868.0
-margin_bottom = 248.0
-custom_fonts/font = SubResource( 13 )
+margin_top = 185.0
+margin_right = 874.0
+margin_bottom = 252.0
+custom_fonts/font = ExtResource( 1 )
 text = "[Q. e] = Fire right and left shoulder weapons.
 Current loadout does not feature a left shoulder weapon."
 align = 2
 percent_visible = 0.0
 
 [node name="Label4" type="Label" parent="UserGuide"]
-margin_top = 273.0
-margin_right = 868.0
-margin_bottom = 304.0
-custom_fonts/font = SubResource( 13 )
+margin_top = 277.0
+margin_right = 874.0
+margin_bottom = 309.0
+custom_fonts/font = ExtResource( 1 )
 text = "[R] = Toggle Reload "
 align = 2
 percent_visible = 0.0
 
 [node name="Label6" type="Label" parent="UserGuide"]
-margin_top = 329.0
-margin_right = 868.0
-margin_bottom = 428.0
-custom_fonts/font = SubResource( 13 )
+margin_top = 334.0
+margin_right = 874.0
+margin_bottom = 436.0
+custom_fonts/font = ExtResource( 1 )
 text = "Hunt and destroy enemy Sav units.
 Find extraction points.
 Survive."

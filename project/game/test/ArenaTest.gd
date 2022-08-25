@@ -15,7 +15,6 @@ var player
 var all_mechas = []
 
 func _ready():
-	Debug.window_debug_mode()
 	add_player()
 	add_enemy()
 

@@ -11,8 +11,6 @@ func _ready():
 	ShaderEffects.reset_shader_effect("main_menu")
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")
-	if Debug.ACTIVE:
-		Debug.window_debug_mode()
 
 
 func _input(event):
@@ -27,10 +25,6 @@ func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		OS.window_fullscreen = not OS.window_fullscreen
 		OS.window_borderless = OS.window_fullscreen
-	if event is InputEventKey:
-		#For debugging since deving on fullscreen is horrible
-		if event.pressed and event.scancode == KEY_L:
-			Debug.window_debug_mode()
 
 
 func start_game(mode):

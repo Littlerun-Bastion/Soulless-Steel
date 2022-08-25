@@ -1,6 +1,5 @@
 [gd_scene load_steps=31 format=2]
 
-[ext_resource path="res://game/ui/effects/VCREffect.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
 [ext_resource path="res://game/start_menu/StartMenu.gd" type="Script" id=4]
@@ -126,6 +125,13 @@ shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
 shader_param/greenIntensity = 0.13
+
+[sub_resource type="GDScript" id=18]
+script/source = "extends ColorRect
+
+
+
+"
 
 [sub_resource type="Animation" id=14]
 length = 0.001
@@ -529,14 +535,12 @@ texture = ExtResource( 14 )
 [node name="ShaderEffects" type="CanvasLayer" parent="."]
 layer = 2
 
-[node name="Tween" type="Tween" parent="ShaderEffects"]
-
 [node name="VCREffect" type="ColorRect" parent="ShaderEffects"]
 material = SubResource( 8 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource( 1 )
+script = SubResource( 18 )
 
 [node name="Tween" type="Tween" parent="ShaderEffects/VCREffect"]
 

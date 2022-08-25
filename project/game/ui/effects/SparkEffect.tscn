@@ -1,7 +1,7 @@
 [gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://assets/images/spark_fx.png" type="Texture" id=1]
-[ext_resource path="res://game/ui/effects/HitEffect.gd" type="Script" id=2]
+[ext_resource path="res://game/ui/effects/SparkEffect.gd" type="Script" id=2]
 
 [sub_resource type="Gradient" id=3]
 offsets = PoolRealArray( 0.703297, 1 )

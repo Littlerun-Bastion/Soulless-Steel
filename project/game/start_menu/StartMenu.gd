@@ -1,7 +1,6 @@
 extends Control
 
 onready var Parallax = $ParallaxBackground
-onready var VCREffect = $ShaderEffects/VCREffect
 
 var parallaxMult = 30.0
 
@@ -33,7 +32,6 @@ func _input(event):
 
 
 func start_game(mode):
-	VCREffect.play_transition(5000.0, 0, 3.0)
 	AudioManager.stop_bgm()
 	PlayerStatManager.NumberofExtracts = 0
 	PlayerStatManager.Credits = 0
@@ -44,6 +42,8 @@ func start_game(mode):
 			ArenaManager.set_map_to_load("tutorial")
 		_:
 			push_error("Not a valid mode: " + str(mode))
+	ShaderEffects.play_transition(5000.0, 0, 0.5)
+	yield(get_tree().create_timer(.3), "timeout")
 	# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
 

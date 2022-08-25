@@ -12,8 +12,6 @@ onready var ScrapParts = $ScrapParts
 onready var PlayerHUD = $PlayerHUD
 onready var GameOver = $GameOver
 onready var ArenaCam = $ArenaCamera
-onready var VCREffect = $ShaderEffects/VCREffect
-onready var VCRTween = $ShaderEffects/Tween
 onready var PauseMenu = $PauseMenu
 onready var DebugNavigation = $DebugNavigation
 onready var IntroAnimation = $Intro/IntroAnimation
@@ -39,7 +37,7 @@ func _ready():
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
-	$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 5.0)
+	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	
 	set_mechas_block_status(true)
 	if is_tutorial:
@@ -67,7 +65,8 @@ func _input(event):
 
 
 func _process(dt):
-	update_shader_effect()
+	if player:
+		ShaderEffects.update_shader_effect(player)
 	update_arena_cam(dt)
 	if Debug.ACTIVE:
 		update_enemies_debug_navigation()
@@ -180,7 +179,7 @@ func player_died():
 	if PauseMenu.is_paused():
 		PauseMenu.toggle_pause()
 	
-	$ShaderEffects/VCREffect.play_transition(5000.0, 0.0, 4.0)
+	ShaderEffects.play_transition(5000.0, 0.0, 4.0)
 	
 	yield(get_tree().create_timer(5.0), "timeout")
 	PlayerHUD.queue_free()
@@ -199,25 +198,6 @@ func get_random_start_position(exclude_idx := []):
 
 func get_start_position(idx):
 	return $StartPositions.get_node("Pos"+str(idx)).position
-
-
-func update_shader_effect():
-	if player and not VCRTween.is_active():
-		#Noise Intensity
-		var target_noise = ((player.max_hp - player.hp)/float(player.max_hp)) * 0.0035
-		var value = lerp(VCREffect.material.get_shader_param("noiseIntensity"), target_noise, .9)
-		VCREffect.material.set_shader_param("noiseIntensity", value)
-		#Color Offset Intensity
-		value = lerp(VCREffect.material.get_shader_param("colorOffsetIntensity"), 0.175, .9)
-		VCREffect.material.set_shader_param("colorOffsetIntensity", value)
-
-
-func damage_burst_effect():
-	if VCRTween.is_active():
-		return
-	VCRTween.interpolate_property(VCREffect.material, "shader_param/noiseIntensity", null, 0.02, .1)
-	VCRTween.interpolate_property(VCREffect.material, "shader_param/colorOffsetIntensity", null, 1.2, .1)
-	VCRTween.start()
 
 
 func player_ammo_set():
@@ -272,16 +252,17 @@ func activate_arena_cam():
 		ArenaCam.position = player_cam.get_camera_screen_center()
 		ArenaCam.reset_smoothing()
 
+
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:
-		$ShaderEffects/VCREffect.play_transition(0.0, 5000.0, 2.0)
+		ShaderEffects.play_transition(0.0, 5000.0, 2.0)
 	if player:
 		player.set_pause(paused)
 		PlayerHUD.set_pause(paused)
 
 
 func _on_player_lost_health():
-	damage_burst_effect()
+	ShaderEffects.damage_burst_effect()
 
 
 func _on_mecha_create_projectile(mecha, args):

@@ -144,7 +144,10 @@ func navigate_to_target(dt):
 		var dir = (target - pos).normalized()
 		apply_movement(dt, dir)
 
-
+func get_target_navigation_pos():
+	if going_to_position:
+		return NavAgent.get_final_location()
+	return false
 
 # State methods
 

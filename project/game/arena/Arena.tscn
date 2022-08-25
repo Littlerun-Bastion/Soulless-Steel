@@ -127,6 +127,8 @@ drag_margin_h_enabled = false
 drag_margin_v_enabled = false
 smoothing_speed = 10.0
 
+[node name="DebugNavigation" type="Node2D" parent="."]
+
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
 layer = 2
 
@@ -153,11 +155,6 @@ script = ExtResource( 57 )
 [node name="WindsTimer" type="Timer" parent="."]
 wait_time = 20.0
 autostart = true
-
-[node name="DebugInterface" type="CanvasLayer" parent="."]
-layer = 2
-
-[node name="Pathings" type="Node2D" parent="DebugInterface"]
 
 [node name="Intro" type="CanvasLayer" parent="."]
 layer = 2

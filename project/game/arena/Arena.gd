@@ -3,7 +3,7 @@ extends Node2D
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
-const DEBUG_CAM = false #Allows to move camera around when player dies
+const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png")
 
 
 onready var Mechas = $Mechas 
@@ -15,7 +15,7 @@ onready var ArenaCam = $ArenaCamera
 onready var VCREffect = $ShaderEffects/VCREffect
 onready var VCRTween = $ShaderEffects/Tween
 onready var PauseMenu = $PauseMenu
-onready var DebugInterface = $DebugInterface
+onready var DebugNavigation = $DebugNavigation
 onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
@@ -52,8 +52,10 @@ func _input(event):
 	if event is InputEventKey:
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
+		elif event.pressed and event.scancode == KEY_P:
+			activate_arena_cam()
 	if event is InputEventMouseButton:
-		if ArenaCam.current and DEBUG_CAM:
+		if ArenaCam.current:
 			var amount = Vector2(.8, .8)
 			if event.button_index == BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
@@ -68,7 +70,7 @@ func _process(dt):
 	update_shader_effect()
 	update_arena_cam(dt)
 	if Debug.ACTIVE:
-		update_enemies_pathing()
+		update_enemies_debug_navigation()
 
 
 func setup_arena():
@@ -103,7 +105,7 @@ func setup_arena():
 
 
 func update_arena_cam(dt):
-	if ArenaCam.current and DEBUG_CAM:
+	if ArenaCam.current:
 		var speed = 4600*(ArenaCam.zoom.x/10.0)
 		var margin = 55
 		var mpos = get_viewport().get_mouse_position()
@@ -122,23 +124,30 @@ func update_arena_cam(dt):
 		ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
 
 
-func update_enemies_pathing():
-	var pathings = DebugInterface.get_node("Pathings")
-	for path in pathings.get_children():
+func update_enemies_debug_navigation():
+	for path in DebugNavigation.get_children():
 		path.queue_free()
 	for mecha in Mechas.get_children():
 		if not mecha.is_player():
+			#Create pathings
 			var path = mecha.get_navigation_path()
 			if path:
 				var line = Line2D.new()
-				line.width = 30
+				line.width = 20
 				line.default_color = Color(0.89, 0, 1.0, 1.0)
-				line.points = []
-				line.points.append(mecha.global_position)
+				var points = []
 				for point in path:
-					line.points.append(point)
-				line.position = mecha.global_position
-				pathings.add_child(line)
+					points.append(point)
+				line.points = points
+				DebugNavigation.add_child(line)
+			#Create endings
+			var target_pos = mecha.get_target_navigation_pos()
+			if target_pos:
+				var target = Sprite.new()
+				target.texture = TARGET_SPRITE
+				target.global_position = target_pos
+				DebugNavigation.add_child(target)
+
 
 
 func add_player():
@@ -167,13 +176,6 @@ func add_enemy():
 
 
 func player_died():
-	#Camera goes to player
-	ArenaCam.current = true
-	var player_cam = player.get_camera()
-	ArenaCam.zoom = player_cam.zoom
-	ArenaCam.position = player_cam.get_camera_screen_center()
-	ArenaCam.reset_smoothing()
-
 	player.queue_free()
 	player = null
 	PlayerHUD.player_died()
@@ -263,6 +265,14 @@ func create_mecha_scraps(mecha):
 		scrap.apply_torque_impulse(impulse_torque)
 		ScrapParts.call_deferred("add_child", scrap)
 
+
+func activate_arena_cam():
+	ArenaCam.current = true
+	if player:
+		var player_cam = player.get_camera()
+		ArenaCam.zoom = player_cam.zoom
+		ArenaCam.position = player_cam.get_camera_screen_center()
+		ArenaCam.reset_smoothing()
 
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:

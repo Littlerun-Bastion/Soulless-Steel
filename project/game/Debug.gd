@@ -7,6 +7,7 @@ var debug_settings = {
 	"window": true,
 	"navigation": false,
 	"enemy_state": false,
+	"move_arena_cam": false,
 }
 
 

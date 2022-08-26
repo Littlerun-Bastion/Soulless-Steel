@@ -14,7 +14,18 @@ font_data = ExtResource( 6 )
 layer = 99
 script = ExtResource( 2 )
 
-[node name="Label" type="Label" parent="."]
+[node name="Control" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 1880.0
+margin_bottom = 1040.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="Label" type="Label" parent="Control"]
 margin_left = 12.0208
 margin_top = 974.013
 margin_right = 861.021
@@ -23,19 +34,19 @@ custom_fonts/font = SubResource( 1 )
 text = "Lost connection...
 Would you like to return to the menu?"
 
-[node name="ReturnButton" type="TextureButton" parent="."]
+[node name="ReturnButton" type="TextureButton" parent="Control"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -506.052
-margin_top = -97.7595
-margin_right = 243.949
-margin_bottom = 22.2407
+margin_left = 1373.95
+margin_top = 942.24
+margin_right = 2123.95
+margin_bottom = 1062.24
 rect_scale = Vector2( 0.66, 0.66 )
 texture_normal = ExtResource( 5 )
 texture_pressed = ExtResource( 4 )
 texture_hover = ExtResource( 3 )
 texture_focused = ExtResource( 3 )
 
-[connection signal="pressed" from="ReturnButton" to="." method="_on_ReturnButton_pressed"]
+[connection signal="pressed" from="Control/ReturnButton" to="." method="_on_ReturnButton_pressed"]

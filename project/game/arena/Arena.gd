@@ -58,7 +58,7 @@ func _input(event):
 			if player:
 				player.take_damage(10, player)
 	if event is InputEventMouseButton:
-		if ArenaCam.current:
+		if Debug.get_setting("move_arena_cam") and ArenaCam.current:
 			var amount = Vector2(.8, .8)
 			if event.button_index == BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
@@ -72,7 +72,10 @@ func _input(event):
 func _process(dt):
 	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
-	update_arena_cam(dt)
+	
+	#Debug
+	if Debug.get_setting("move_arena_cam"):
+		update_arena_cam(dt)
 	if Debug.get_setting("navigation"):
 		update_enemies_debug_navigation()
 
@@ -181,6 +184,8 @@ func get_mechas():
 
 
 func player_died():
+	activate_arena_cam()
+	
 	player.queue_free()
 	player = null
 	PlayerHUD.player_died()

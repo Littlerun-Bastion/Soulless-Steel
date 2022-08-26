@@ -1,6 +1,9 @@
 extends CanvasLayer
 
 const WEAPON_SLOT = preload("res://game/ui/weapon_slot/WeaponSlot.tscn")
+const HOLE_FADE_DUR = .1
+const BULLET_THRESHOLD = .75 #On what percent of max helth should player start getting holes
+const BULLET_CHANCE = .8 #Chance that a bullet will appear on hud
 
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
@@ -8,7 +11,7 @@ onready var EnergyBar = $EnergyBar
 onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
-onready var Bulletholes = $Bulletholes.get_children()
+onready var Bulletholes = $Bulletholes
 
 
 var player = false
@@ -44,8 +47,8 @@ func setup(player_ref, mechas_ref):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
-	for bullethole in Bulletholes:
-		bullethole.visible = false
+	for bullethole in Bulletholes.get_children():
+		bullethole.modulate.a = 0
 
 
 func set_pause(value):
@@ -119,9 +122,17 @@ func _on_player_took_damage(_p):
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
-	if player.hp < 100 and player.shield <= 0:
-		var visibleHole = Bulletholes[(randi() % Bulletholes.size())]
-		visibleHole.visible = true
+	#Bullet holes logic
+	if player.shield <= 0 and player.hp < player.max_hp*BULLET_THRESHOLD and\
+	   randf() <= BULLET_CHANCE:
+		var visible_holes = []
+		for hole in Bulletholes.get_children():
+			if hole.modulate.a == 0.0:
+				visible_holes.append(hole)
+		if not visible_holes.empty():
+			var hole = visible_holes[randi() % visible_holes.size()]
+			$Tween.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
+			$Tween.start()
 
 
 func _on_player_shoot():

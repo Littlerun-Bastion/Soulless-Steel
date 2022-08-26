@@ -4,8 +4,8 @@ const ACTIVE = true
 
 
 var debug_settings = {
-	"window": true,
-	"navigation": true,
+	"window": false,
+	"navigation": false,
 	"enemy_state": false,
 }
 
@@ -20,6 +20,7 @@ func get_setting(mode):
 	if ACTIVE:
 		return debug_settings[mode]
 	return false
+
 
 func window_debug_mode():
 	OS.window_fullscreen = false

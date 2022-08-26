@@ -188,16 +188,16 @@ func get_mechas():
 
 func player_died():
 	activate_arena_cam()
-	
 	player.queue_free()
 	player = null
 	PlayerHUD.player_died()
 	if PauseMenu.is_paused():
 		PauseMenu.toggle_pause()
+	var dur = 4.0
+	ShaderEffects.play_transition(5000.0, 0.0, dur)
 	
-	ShaderEffects.play_transition(5000.0, 0.0, 4.0)
-	
-	yield(get_tree().create_timer(5.0), "timeout")
+	yield(get_tree().create_timer(dur), "timeout")
+
 	PlayerHUD.queue_free()
 	$GameOver.killed()
 

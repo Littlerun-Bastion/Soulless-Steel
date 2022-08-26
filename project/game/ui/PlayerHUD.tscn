@@ -368,5 +368,7 @@ rect_rotation = -120.339
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
+[node name="Tween" type="Tween" parent="."]
+
 [connection signal="value_changed" from="LifeBar" to="." method="_on_LifeBar_value_changed"]
 [connection signal="value_changed" from="ShieldBar" to="." method="_on_ShieldBar_value_changed"]

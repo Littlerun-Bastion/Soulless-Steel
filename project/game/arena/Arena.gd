@@ -18,9 +18,12 @@ onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
 var all_mechas = []
-var target_arena_zoom
 var player_kills = 0
 var is_tutorial := false
+
+# Debug vars
+var allow_debug_cam = false
+var target_arena_zoom
 
 
 func _ready():
@@ -53,12 +56,13 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
 		elif event.pressed and event.scancode == KEY_P:
-			activate_arena_cam()
+			ArenaCam.current = true
+			allow_debug_cam = true
 		elif event.pressed and event.scancode == KEY_L:
 			if player:
 				player.take_damage(10, player)
 	if event is InputEventMouseButton:
-		if Debug.get_setting("move_arena_cam") and ArenaCam.current:
+		if allow_debug_cam and ArenaCam.current:
 			var amount = Vector2(.8, .8)
 			if event.button_index == BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
@@ -74,7 +78,7 @@ func _process(dt):
 		ShaderEffects.update_shader_effect(player)
 	
 	#Debug
-	if Debug.get_setting("move_arena_cam"):
+	if allow_debug_cam and ArenaCam.current:
 		update_arena_cam(dt)
 	if Debug.get_setting("navigation"):
 		update_enemies_debug_navigation()
@@ -109,23 +113,22 @@ func setup_arena():
 
 
 func update_arena_cam(dt):
-	if ArenaCam.current:
-		var speed = 4600*(ArenaCam.zoom.x/10.0)
-		var margin = 55
-		var mpos = get_viewport().get_mouse_position()
-		var move_vec = Vector2()
-		if mpos.x <= margin:
-			move_vec.x -= 1
-		elif mpos.x >= get_viewport_rect().size.x - margin:
-			move_vec.x += 1
-		if mpos.y <= margin:
-			move_vec.y -= 1
-		elif mpos.y >= get_viewport_rect().size.y - margin:
-			move_vec.y += 1
-		
-		ArenaCam.position += speed*dt*move_vec.normalized()
-		
-		ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
+	var speed = 4600*(ArenaCam.zoom.x/10.0)
+	var margin = 55
+	var mpos = get_viewport().get_mouse_position()
+	var move_vec = Vector2()
+	if mpos.x <= margin:
+		move_vec.x -= 1
+	elif mpos.x >= get_viewport_rect().size.x - margin:
+		move_vec.x += 1
+	if mpos.y <= margin:
+		move_vec.y -= 1
+	elif mpos.y >= get_viewport_rect().size.y - margin:
+		move_vec.y += 1
+	
+	ArenaCam.position += speed*dt*move_vec.normalized()
+	
+	ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10*dt)
 
 
 func update_enemies_debug_navigation():
@@ -217,11 +220,11 @@ func get_random_position():
 	var w = $BG.texture.get_width()*$BG.scale.x
 	var h = $BG.texture.get_height()*$BG.scale.y
 	var point = Vector2(rand_range(-w/2, w/2),\
-						rand_range(-h/2, h/2))
+						rand_range(-h/2, h/2)) - $BG.position
 	var poly = $NavigationPolygon.navpoly.get_outline(0)
 	while not Geometry.is_point_in_polygon(point, poly):
 		point = Vector2(rand_range(-w/2, w/2),\
-							rand_range(-h/2, h/2))
+							rand_range(-h/2, h/2)) - $BG.position
 	return point
 
 

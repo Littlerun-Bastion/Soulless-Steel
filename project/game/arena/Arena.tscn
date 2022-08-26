@@ -17,7 +17,6 @@ outlines = [ PoolVector2Array( -657, -563, -879, -214, -790, 326, -574, 707, -11
 script = ExtResource( 1 )
 
 [node name="BG" type="Sprite" parent="."]
-
 texture = ExtResource( 4 )
 
 [node name="Bushes" type="Node2D" parent="."]
@@ -28,25 +27,22 @@ scale = Vector2( 2, 2 )
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="DebugNavigation" type="Node2D" parent="."]
-
 [node name="Projectiles" type="Node2D" parent="."]
 
 [node name="Mechas" type="Node2D" parent="."]
 
-
 [node name="StartPositions" type="Node2D" parent="."]
 position = Vector2( -343.266, -127.135 )
 
-
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
-
 
 [node name="ScrapParts" type="Node2D" parent="."]
 
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )
+
+[node name="DebugNavigation" type="Node2D" parent="."]
 
 [node name="Texts" type="Node2D" parent="."]
 

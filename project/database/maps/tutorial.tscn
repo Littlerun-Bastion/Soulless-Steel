@@ -56,16 +56,23 @@ polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 232
 
 [node name="StartPositions" type="Node2D" parent="."]
 
-
 [node name="Pos1" parent="StartPositions" instance=ExtResource( 6 )]
 position = Vector2( 1.19922, 2571.64 )
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource( 6 )]
 position = Vector2( 0, -2606 )
 
+[node name="Pos3" parent="StartPositions" instance=ExtResource( 6 )]
+position = Vector2( -1776, -4 )
+
+[node name="Pos4" parent="StartPositions" instance=ExtResource( 6 )]
+position = Vector2( 1924, -4 )
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource( 6 )]
+position = Vector2( 12, 222 )
+
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
-
 
 [node name="ExitPos" parent="Exits" instance=ExtResource( 7 )]
 position = Vector2( -2607.5, 0.596485 )

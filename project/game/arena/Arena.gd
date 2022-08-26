@@ -171,7 +171,7 @@ func add_player():
 func add_enemy():
 	var enemy = ENEMY.instance()
 	Mechas.add_child(enemy)
-	enemy.position = get_random_start_position([1])
+	enemy.position = get_random_start_position([0])
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
 	enemy.connect("died", self, "_on_mecha_died")
 	enemy.connect("player_kill", self, "_on_mecha_player_kill")

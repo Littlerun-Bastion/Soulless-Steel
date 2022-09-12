@@ -194,11 +194,11 @@ margin_right = 595.0
 margin_bottom = 1083.0
 alignment = 2
 
-[node name="TeamVolk" type="Label" parent="Title"]
+[node name="CompanyName" type="Label" parent="Title"]
 margin_right = 564.0
 margin_bottom = 31.0
 custom_fonts/font = SubResource( 16 )
-text = "Team Volk"
+text = "Littlerun Bastion"
 
 [node name="MainTitle" type="Label" parent="Title"]
 margin_top = 35.0

@@ -5,6 +5,7 @@ const LIFETIME_MAX = 5.5
 const FADEOUT_MIN = .4
 const FADEOUT_MAX = .8
 
+
 func _ready():
 	inertia = 1.0 #Need to set some value to allow rotation
 	start_death()
@@ -12,12 +13,18 @@ func _ready():
 
 func setup(image):
 	$Sprite.texture = image
+	$Sprite.material = $Sprite.material.duplicate(true)
 
 
 func set_scale(value):
 	for child in get_children():
 		if not child.get("scale") == null:
 			child.scale = value
+
+
+func set_heat_parameters(heat, min_darkness):
+	$Sprite.material.set_shader_param("heat", heat)
+	$Sprite.material.set_shader_param("min_darkness", min_darkness)
 
 
 func start_death():

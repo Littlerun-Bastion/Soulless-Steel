@@ -256,11 +256,13 @@ func set_mechas_block_status(status):
 
 
 func create_mecha_scraps(mecha):
-	for texture in mecha.get_scraps():
+	for part in mecha.get_scrapable_parts():
 		var scrap = SCRAP_PART.instance()
-		scrap.setup(texture)
+		scrap.setup(part.texture)
 		scrap.position = mecha.position
 		scrap.set_scale(mecha.scale)
+		var mat = part.material
+		scrap.set_heat_parameters(mat.get_shader_param("heat"), mat.get_shader_param("min_darkness"))
 
 		var impulse_dir = Vector2(rand_range(-1.0, 1.0), rand_range(-1.0, 1.0)).normalized()
 		var impulse_force = rand_range(400,700)

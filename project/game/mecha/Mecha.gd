@@ -246,11 +246,11 @@ func die(source_info, weapon_name):
 
 
 #Return all parts that should be generated when mecha dies
-func get_scraps():
+func get_scrapable_parts():
 	var scraps = []
 	for node in [LeftShoulder, RightShoulder, Core, LeftLeg, RightLeg]:
 		if node.texture:
-			scraps.append(node.texture)
+			scraps.append(node)
 	return scraps
 
 func is_shape_id_legs(id):

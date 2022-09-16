@@ -3,7 +3,7 @@ extends Node
 const NODE = preload("res://game/mecha/enemy_logic/Node.gd")
 
 var graph = []
-var current_state = "idle"
+var current_state = false
 
 func _ready():
 	pass

@@ -2,7 +2,6 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
-onready var pathing_debug = $Debug/Pathing
 
 var arena
 var health = 100
@@ -24,19 +23,15 @@ var old_region
 
 func _ready():
 	logic = LOGIC.new()
-	logic.setup()
-	pathing_debug.default_color = Color(randf(),randf(),randf())
+	logic.setup("default")
 
 
 func _process(delta):
 	if paused or is_stunned():
 		return
 
-	var state = logic.get_current_state()
-	if has_method("do_"+state):
-		call("do_"+state, delta)
-	logic.updateFiniteLogic(self)
-	
+	logic.update(self)
+	logic.run(self, delta)
 	
 	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
@@ -140,35 +135,6 @@ func get_target_navigation_pos():
 		return NavAgent.get_final_location()
 	return false
 
-# State methods
-
-func do_roaming(dt):
-	if not going_to_position:
-		going_to_position = true
-		NavAgent.set_target_location(arena.get_random_position())
-	navigate_to_target(dt)
-	
-	
-	check_for_targets()
-
-
-func do_targeting(dt):
-	check_for_targets()
-	if not valid_target:
-		return
-	
-	if not going_to_position:
-		going_to_position = true
-		NavAgent.set_target_location(random_targeting_pos())
-	
-	navigate_to_target(dt)
-	
-	shoot_weapons()
-
-
-func do_idle(_dt):
-	pass
- 
 
 func _on_NavigationAgent2D_navigation_finished():
 	going_to_position = false

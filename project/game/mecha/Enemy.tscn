@@ -46,9 +46,6 @@ position = Vector2( -56, 13 )
 [node name="RightShoulder" parent="." index="9"]
 position = Vector2( 56, 13 )
 
-[node name="NavigationAgent2D" parent="." index="20"]
-avoidance_enabled = true
-
 [node name="Debug" type="Node2D" parent="." index="22"]
 
 [node name="StateLabel" type="Label" parent="Debug" index="0"]
@@ -63,10 +60,6 @@ custom_fonts/font = SubResource( 1 )
 text = "STATE"
 align = 1
 valign = 1
-
-[node name="Pathing" type="Line2D" parent="Debug" index="1"]
-width = 30.0
-default_color = Color( 0.898039, 0, 1, 1 )
 
 [connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_navigation_finished"]
 [connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_target_reached"]

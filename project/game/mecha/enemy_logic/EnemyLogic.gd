@@ -1,26 +1,29 @@
 extends Node
 
 const GRAPH = preload("res://game/mecha/enemy_logic/Graphs.gd")
+const BEHAVIOUR_PATH = "res://game/mecha/enemy_logic/behaviours/"
 
 var g = GRAPH.new()
 var current_state
+var behaviour
 
-
-func setup():
-	g.add_a_node("idle")
-	g.add_a_node("roaming")
-	g.add_a_node("targeting")
-
-	add_connection("idle", "roaming")
-	#add_connection("idle", "targeting")
-	#add_connection("roaming", "idle")
-	#add_connection("roaming", "targeting")
-	#add_connection("targeting", "idle")
-	#add_connection("targeting", "roaming")
-
-
-func add_connection(from, to):
-	g.add_connection(from, to, funcref(self, from+"_to_"+to))
+func setup(behaviour_name):
+	var dir = Directory.new()
+	var path = BEHAVIOUR_PATH + str(behaviour_name) + ".gd"
+	assert(dir.file_exists(path), "Not a valid enemy behaviour: " + str(behaviour_name))
+	
+	behaviour = load(path).new()
+	
+	for node in behaviour.get_nodes():
+		g.add_a_node(node)
+	
+	g.set_state(behaviour.initial_state)
+	
+	for node_i in behaviour.get_nodes():
+		for node_j in behaviour.get_nodes():
+			var func_name = node_i+"_to_"+node_j
+			if behaviour.has_method(func_name):
+				g.add_connection(node_i, node_j, funcref(behaviour, func_name))
 
 
 func get_current_state():
@@ -28,7 +31,7 @@ func get_current_state():
 	return g.get_current_state()
 	
 	
-func updateFiniteLogic(enemy):
+func update(enemy):
 	var a_node = g.get_a_node(g.current_state)
 	var valid_connections = a_node.get_valid_connections(enemy)
 	for connection in valid_connections:
@@ -36,31 +39,7 @@ func updateFiniteLogic(enemy):
 		break
 
 
-## STATE METHODS ##
-
-func idle_to_roaming(args):
-	return not args.valid_target
-
-
-func idle_to_targeting(args):
-	return args.valid_target
-
-
-func roaming_to_idle(_args):
-	return false
-
-
-func roaming_to_targeting(args):
-	if args.valid_target:
-		args.going_to_position = false
-	return args.valid_target
-
-
-func targeting_to_idle(_args):
-	return false
-
-
-func targeting_to_roaming(args):
-	if not args.valid_target:
-		args.going_to_position = false
-	return not args.valid_target
+func run(enemy, dt):
+	var state = get_current_state()
+	if behaviour.has_method("do_"+state):
+		behaviour.call("do_"+state, dt, enemy)

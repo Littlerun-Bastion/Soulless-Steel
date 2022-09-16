@@ -5,8 +5,8 @@ const ACTIVE = true
 
 var debug_settings = {
 	"window": true,
-	"navigation": false,
-	"enemy_state": false,
+	"navigation": true,
+	"enemy_state": true,
 }
 
 

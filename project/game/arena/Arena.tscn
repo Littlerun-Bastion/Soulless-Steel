@@ -27,17 +27,17 @@ scale = Vector2( 2, 2 )
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="Projectiles" type="Node2D" parent="."]
-
-[node name="Mechas" type="Node2D" parent="."]
-
 [node name="StartPositions" type="Node2D" parent="."]
 position = Vector2( -343.266, -127.135 )
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
 
+[node name="Mechas" type="Node2D" parent="."]
+
 [node name="ScrapParts" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
 
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )

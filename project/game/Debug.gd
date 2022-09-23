@@ -5,8 +5,11 @@ const ACTIVE = true
 
 var debug_settings = {
 	"window": true,
-	"navigation": true,
+	"navigation": false,
 	"enemy_state": true,
+	"player_loadout": true,
+	"player_zoom": true,
+	"ai_behaviour": "idle",
 }
 
 

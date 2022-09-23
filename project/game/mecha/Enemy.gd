@@ -23,7 +23,10 @@ var old_region
 
 func _ready():
 	logic = LOGIC.new()
-	logic.setup("default")
+	if Debug.get_setting("ai_behaviour"):
+		logic.setup("idle")
+	else:
+		logic.setup("default")
 
 
 func _process(delta):

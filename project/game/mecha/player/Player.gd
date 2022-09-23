@@ -7,15 +7,13 @@ signal lost_health
 
 const ROTATION_DEADZONE = 20
 
-export var use_debug_loadout := false
-
 onready var Cam = $Camera2D
 
 var reload_mode := false
 
 
 func _ready():
-	if use_debug_loadout:
+	if Debug.get_setting("player_loadout"):
 		set_core("MSV-L3J")
 		set_head("head_test")
 		set_leg("MSV-L3J-L", SIDE.LEFT)
@@ -26,6 +24,8 @@ func _ready():
 		set_shoulder_weapon(false, SIDE.LEFT)
 		set_shoulder("shoulder_test3_left", SIDE.LEFT)
 		set_shoulder("shoulder_test3_right", SIDE.RIGHT)
+	if Debug.get_setting("player_zoom"):
+		Cam.zoom = Vector2(1.2,1.2)
 
 
 func _physics_process(delta):
@@ -119,20 +119,21 @@ func setup():
 	if PlayerStatManager.NumberofExtracts != 0:
 		hp = PlayerStatManager.PlayerHP
 		emit_signal("lost_health")
-	set_core("MSV-L3J")
-	set_generator("type_1")
-	set_head("head_test2")
-	#Use to test free mode
-	set_leg("MSV-L3J-L", SIDE.LEFT)
-	set_leg("MSV-L3J-R", SIDE.RIGHT)
-	#Use to test tank mode
-	#set_leg("T-01-TR", SIDE.SINGLE)
-	set_arm_weapon("TT1-Flamethrower", SIDE.LEFT)
-	set_arm_weapon("Type1-Massive", SIDE.RIGHT)
-	set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
-	set_shoulder_weapon(false, SIDE.LEFT)
-	set_shoulder("shoulder_test3_left", SIDE.LEFT)
-	set_shoulder("shoulder_test3_right", SIDE.RIGHT)
+	if not Debug.get_setting("player_loadout"):
+		set_core("MSV-L3J")
+		set_generator("type_1")
+		set_head("head_test2")
+		#Use to test free mode
+		set_leg("MSV-L3J-L", SIDE.LEFT)
+		set_leg("MSV-L3J-R", SIDE.RIGHT)
+		#Use to test tank mode
+		#set_leg("T-01-TR", SIDE.SINGLE)
+		set_arm_weapon("TT1-Flamethrower", SIDE.LEFT)
+		set_arm_weapon("Type1-Massive", SIDE.RIGHT)
+		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
+		set_shoulder_weapon(false, SIDE.LEFT)
+		set_shoulder("shoulder_test3_left", SIDE.LEFT)
+		set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 
 
 func set_arm_weapon(part_name, side):

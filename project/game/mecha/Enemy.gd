@@ -70,7 +70,7 @@ func setup(arena_ref, is_tutorial):
 	#For the moment hard set enemies' movement type to free
 	movement_type = "free"
 
-#Auxiliary functions
+#Combat functions
 
 func check_for_targets():
 	#Check if current target is still in distance
@@ -103,7 +103,19 @@ func try_to_shoot(name):
 		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
 			node.reload()
 		elif node.can_shoot():
-			shoot(name)
+			if can_see_target():
+				shoot(name)
+
+
+func can_see_target():
+	if valid_target:
+		var space_state = get_world_2d().direct_space_state
+		var result = space_state.intersect_ray(position, valid_target.position, [self])
+		if result:
+			return (result.collider == valid_target)
+		return false
+	return true
+
 
 # Navigation
 

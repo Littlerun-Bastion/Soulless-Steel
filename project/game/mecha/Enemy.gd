@@ -107,11 +107,12 @@ func try_to_shoot(name):
 
 # Navigation
 
-func random_targeting_pos():
+#Assumes enemy has a valid target
+func random_targeting_pos(min_dist, max_dist):
 	var rand_pos = Vector2()
 	var angle = rand_range(0, 2.0*PI)
 	var direction = Vector2(cos(angle), sin(angle)).normalized()
-	var rand_radius = rand_range(400, 800)
+	var rand_radius = rand_range(min_dist, max_dist)
 	rand_pos = valid_target.position + direction * rand_radius
 	
 	return rand_pos
@@ -126,8 +127,12 @@ func navigate_to_target(dt):
 		var target = NavAgent.get_next_location()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
-		apply_rotation_by_point(dt, target, false)
 		apply_movement(dt, dir)
+		if valid_target:
+			apply_rotation_by_point(dt, valid_target.position, false)
+		else:
+			apply_rotation_by_point(dt, target, false)
+			
 
 
 func get_target_navigation_pos():

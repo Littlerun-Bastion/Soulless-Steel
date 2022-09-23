@@ -10,7 +10,6 @@ func get_nodes():
 ## CONNECTION METHODS ##
 
 func roaming_to_targeting(args):
-	return false
 	if args.valid_target:
 		args.going_to_position = false
 	return args.valid_target
@@ -42,7 +41,7 @@ func do_targeting(dt, enemy):
 	
 	if not enemy.going_to_position:
 		enemy.going_to_position = true
-		enemy.NavAgent.set_target_location(enemy.random_targeting_pos())
+		enemy.NavAgent.set_target_location(enemy.random_targeting_pos(400,800))
 	
 	enemy.navigate_to_target(dt)
 	

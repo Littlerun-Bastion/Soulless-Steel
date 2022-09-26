@@ -8,8 +8,8 @@ var debug_settings = {
 	"navigation": false,
 	"enemy_state": true,
 	"player_loadout": true,
-	"player_zoom": true,
-	"ai_behaviour": "idle",
+	"player_zoom": false,
+	"ai_behaviour": false,
 }
 
 

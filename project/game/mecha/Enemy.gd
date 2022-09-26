@@ -24,7 +24,7 @@ var old_region
 func _ready():
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
-		logic.setup("idle")
+		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
 		logic.setup("default")
 

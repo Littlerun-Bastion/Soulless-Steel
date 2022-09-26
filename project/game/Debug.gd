@@ -6,7 +6,7 @@ const ACTIVE = true
 var debug_settings = {
 	"window": true,
 	"navigation": false,
-	"enemy_state": true,
+	"enemy_state": false,
 	"player_loadout": true,
 	"player_zoom": false,
 	"ai_behaviour": false,

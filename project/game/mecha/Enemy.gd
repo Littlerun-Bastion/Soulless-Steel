@@ -12,13 +12,6 @@ var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
-var engage_distance = 2000
-var shooting_distance = 3500
-var random_pos_targeting_distance = 700
-var current_state
-var move_d_rand = 50
-var pos_for_blocked
-var old_region
 
 
 func _ready():
@@ -75,10 +68,10 @@ func setup(arena_ref, is_tutorial):
 
 #Combat functions
 
-func check_for_targets():
+func check_for_targets(engage_distance, max_shooting_distance):
 	#Check if current target is still in distance
 	if valid_target and is_instance_valid(valid_target):
-		if position.distance_to(valid_target.position) > shooting_distance:
+		if position.distance_to(valid_target.position) > max_shooting_distance:
 			valid_target = false
 	else:
 		valid_target = false

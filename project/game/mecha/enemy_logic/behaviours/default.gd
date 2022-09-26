@@ -1,8 +1,12 @@
 extends Node
 
-
+#Essential variables
 var nodes = ["roaming", "targeting"]
 var initial_state = "roaming"
+
+#Custom variables
+var engage_distance = 2000
+var max_shooting_distance = 3500
 
 func get_nodes():
 	return nodes
@@ -31,11 +35,11 @@ func do_roaming(dt, enemy):
 	enemy.navigate_to_target(dt)
 	
 	
-	enemy.check_for_targets()
+	enemy.check_for_targets(engage_distance, max_shooting_distance)
 
 
 func do_targeting(dt, enemy):
-	enemy.check_for_targets()
+	enemy.check_for_targets(engage_distance, max_shooting_distance)
 	if not enemy.valid_target:
 		return
 	

@@ -11,6 +11,10 @@ func _ready():
 	ShaderEffects.reset_shader_effect("main_menu")
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")
+	
+	if Debug.get_setting("go_to_mode"):
+		yield(get_tree(), "idle_frame")
+		start_game(Debug.get_setting("go_to_mode"))
 
 
 func _input(event):
@@ -39,9 +43,9 @@ func start_game(mode):
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	#yield(get_tree().create_timer(.3), "timeout")
 	# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/arena/Arena.tscn")
+
 
 func _on_Button_mouse_entered():
 	AudioManager.play_sfx("select")

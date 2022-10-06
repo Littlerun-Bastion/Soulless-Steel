@@ -2,13 +2,11 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
-
 var arena
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
 var going_to_position = false
-var REACH_RANGE = 1
 var logic
 var all_mechas
 var valid_target = false
@@ -20,6 +18,8 @@ func _ready():
 		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
 		logic.setup("default")
+	
+	
 
 
 func _process(delta):
@@ -40,7 +40,7 @@ func setup(arena_ref, is_tutorial):
 	mecha_name = "Mecha " + str(randi()%2000)
 	if is_tutorial:
 		set_generator("type_2")
-		set_core(PartManager.get_random_part_name("core"))
+		set_core("MSV-L3J")
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_single"), SIDE.SINGLE)
 		set_arm_weapon(false, SIDE.RIGHT)

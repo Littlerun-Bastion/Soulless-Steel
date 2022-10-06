@@ -44,11 +44,17 @@ func _ready():
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	
+	
 	set_mechas_block_status(true)
+	
 	if is_tutorial:
 		IntroAnimation.play("simEntrance")
 	else:
 		IntroAnimation.play("Entrance")
+	
+	if Debug.get_setting("skip_intro"):
+		yield(get_tree().create_timer(.01), "timeout")
+		IntroAnimation.stop_animation()
 
 
 func _input(event):

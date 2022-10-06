@@ -1,5 +1,8 @@
 extends Area2D
 
+onready var LightEffect = $Sprite/LightEffect
+onready var Collision = $CollisionShape2D
+
 var dying = false
 var speed = 0
 var local_scale = 1.0
@@ -12,6 +15,14 @@ var decal_type = "bullet_hole"
 var original_mecha_info
 var weapon_name
 var calibre
+
+
+func _ready():
+	if Debug.get_setting("disable_projectiles_light"):
+		LightEffect.hide()
+	else:
+		LightEffect.show()
+
 
 func _process(dt):
 	if dying:
@@ -27,6 +38,7 @@ func _process(dt):
 	
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, $LifeTimer.time_left)
+
 
 func setup(mecha, args):
 	#Check if mecha is already dead
@@ -77,17 +89,31 @@ func die():
 	yield($Tween, "tween_completed")
 	queue_free()
 
-func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape, _local_shape):
+func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
-		if body.is_shape_id_legs(body_shape):
+		if body.is_shape_id_legs(body_shape_id):
 			return
+		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
+			var shape = body.get_shape_from_id(body_shape_id)
+			var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
+													  shape.polygon, shape.global_transform)
+			
+			var collision_point
+			if points.size() > 0:
+				collision_point = points[0]
+			else:
+				collision_point = global_position
+			
+			var size = Vector2(40,40)
+			body.add_decal(body_shape_id, collision_point, decal_type, size)
+	
 			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
-			body.add_decal(body_shape, global_transform, decal_type, ($Sprite.scale*$Sprite.texture.get_size())/2)
 			body.take_damage(final_damage, original_mecha_info, weapon_name, calibre)
 			if not is_overtime:
-				body.knockback(global_position, 100*final_damage/float(body.get_max_hp()))
-	
+				pass
+				#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))
+			
 	if not body.is_in_group("mecha") or\
 	  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		die()

@@ -19,7 +19,7 @@ export var speed_modifier = 1.0
 
 onready var NavAgent = $NavigationAgent2D
 
-onready var CoreDecals = $Core/Decals
+onready var CoreDecals = $CoreDecals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
@@ -253,34 +253,38 @@ func get_scrapable_parts():
 			scraps.append(node)
 	return scraps
 
+
 func is_shape_id_legs(id):
 	return shape_owner_get_owner(shape_find_owner(id)) == $LegsSingleCollision or\
 		   shape_owner_get_owner(shape_find_owner(id)) == $LegsLeftCollision or\
 		   shape_owner_get_owner(shape_find_owner(id)) == $LegsRightCollision
 
 
-func add_decal(id, projectile_transform, type, size):
-	var shape = shape_owner_get_owner(shape_find_owner(id))
+func get_shape_from_id(id):
+	return shape_owner_get_owner(shape_find_owner(id))
+
+
+func add_decal(id, decal_position, type, size):
+	var shape = get_shape_from_id(id)
 	var decals_node
-	var mask_node
 	if shape == $CoreCollision:
 		decals_node = CoreDecals
-		mask_node = $Core
 	elif shape == $LeftShoulderCollision:
 		decals_node = LeftShoulderDecals
-		mask_node = $LeftShoulder
 	elif shape == $RightShoulderCollision:
 		decals_node = RightShoulderDecals
-		mask_node = $RightShoulder
 	else:
 		push_error("Not a valid shape id: " + str(id))
 	var decal = DECAL.instance()
-	var offset = projectile_transform.origin-decals_node.global_transform.origin
-	offset = offset.rotated(-decals_node.global_transform.get_rotation())
-	offset *= decals_node.global_transform.get_scale()
-	offset *= rand_range(.6,.9) #Random depth for decal on mecha
+	
+	#Transform global position into local position
+	var final_pos = decal_position-decals_node.global_position
+	var trans = decals_node.global_transform
+	final_pos = final_pos.rotated(-trans.get_rotation())
+	final_pos /= trans.get_scale()
+	final_pos *= rand_range(.6,.9) #Random depth for decal on mecha
 	decals_node.add_child(decal)
-	decal.setup(type, size, offset, mask_node.texture, mask_node.get_global_transform().get_scale())
+	decal.setup(type, size, final_pos)
 
 
 func update_heat(dt):
@@ -782,7 +786,7 @@ func shoot(type, is_auto_fire = false):
 		emit_signal("create_projectile", self, 
 					{
 						"weapon_data": weapon_ref.projectile,
-						"weapon_name": weapon_ref.name,
+						"weapon_name": weapon_ref.weapon_name,
 						"pos": node.get_shoot_position(),
 						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
 						"damage_mod": weapon_ref.damage_modifier,

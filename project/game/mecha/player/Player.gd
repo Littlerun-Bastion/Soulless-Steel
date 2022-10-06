@@ -19,13 +19,13 @@ func _ready():
 		set_leg("MSV-L3J-L", SIDE.LEFT)
 		set_leg("MSV-L3J-R", SIDE.RIGHT)
 		set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
-		set_arm_weapon("Type1-Massive", SIDE.RIGHT)
+		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.LEFT)
 		set_shoulder("shoulder_test3_left", SIDE.LEFT)
 		set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 	if Debug.get_setting("player_zoom"):
-		Cam.zoom = Vector2(1.2,1.2)
+		Cam.zoom = Debug.get_setting("player_zoom")
 
 
 func _physics_process(delta):

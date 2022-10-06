@@ -1470,7 +1470,7 @@ tracks/3/keys = {
 "times": PoolRealArray( 0 ),
 "transitions": PoolRealArray( 1 ),
 "update": 0,
-"values": [ "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING." ]
+"values": [ "" ]
 }
 tracks/4/type = "value"
 tracks/4/path = NodePath("IntroAnimation/VCREffect:visible")
@@ -2038,7 +2038,7 @@ anims/simEntrance = SubResource( 22 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 rect_min_size = Vector2( 1920, 1080 )
-color = Color( 0, 0, 0, 0 )
+color = Color( 0, 0, 0, 1 )
 
 [node name="CommandLine" type="Label" parent="."]
 anchor_top = 1.0
@@ -2059,7 +2059,6 @@ margin_right = 871.0
 margin_bottom = 1018.0
 grow_vertical = 0
 custom_fonts/font = SubResource( 19 )
-text = "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING."
 
 [node name="EntranceSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 2 )

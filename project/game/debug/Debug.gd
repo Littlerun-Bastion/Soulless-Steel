@@ -1,7 +1,9 @@
-extends Node
+extends CanvasLayer
 
 const ACTIVE = true
+const MARKER = preload("res://game/debug/Marker.tscn")
 
+onready var Markers = $Markers
 
 var debug_settings = {
 	"window": true,
@@ -10,6 +12,9 @@ var debug_settings = {
 	"player_loadout": true,
 	"player_zoom": false,
 	"ai_behaviour": false,
+	"go_to_mode": "tutorial",
+	"skip_intro": false,
+	"disable_projectiles_light": false,
 }
 
 
@@ -30,3 +35,17 @@ func window_debug_mode():
 	OS.window_borderless = false
 	OS.window_size = Vector2(1080, 600)
 	OS.window_position = Vector2(400, 100)
+
+
+func create_marker(pos, color:= Color.white, scale_mod := 1.0):
+	print("Creating marker at ", pos, " with color ", str(color))
+	var marker = MARKER.instance()
+	Markers.add_child(marker)
+	marker.global_position = pos
+	marker.modulate = color
+	marker.scale *= scale_mod
+	
+	
+	return marker
+	
+	

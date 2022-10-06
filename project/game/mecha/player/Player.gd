@@ -15,6 +15,7 @@ var reload_mode := false
 func _ready():
 	if Debug.get_setting("player_loadout"):
 		set_core("MSV-L3J")
+		set_generator("type_1")
 		set_head("head_test")
 		set_leg("MSV-L3J-L", SIDE.LEFT)
 		set_leg("MSV-L3J-R", SIDE.RIGHT)

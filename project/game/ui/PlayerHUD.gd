@@ -107,9 +107,7 @@ func update_arsenal():
 	for weapon in $WeaponSlots.get_children():
 		var total_ammo = player.get_total_ammo(weapon.type)
 		if total_ammo:
-			weapon.set_ammo(total_ammo - \
-							player.get_clip_size(weapon.type) + \
-							player.get_clip_ammo(weapon.type))
+			weapon.set_ammo(total_ammo)
 
 
 func player_died():

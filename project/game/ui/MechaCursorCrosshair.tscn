@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
 [ext_resource path="res://assets/images/ui/player_ui/cursor_crosshair.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/ui/player_ui/change_mode_progress_front.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture" id=5]
 
 [node name="MechaCursorCrosshair" type="Control"]
@@ -34,9 +35,20 @@ custom_fonts/font = ExtResource( 2 )
 text = "Reload"
 align = 1
 valign = 1
-__meta__ = {
-"_edit_use_anchors_": false
-}
+
+[node name="ChangeModeProgress" type="TextureProgress" parent="."]
+margin_left = -113.25
+margin_top = -66.75
+margin_right = 216.75
+margin_bottom = 133.25
+rect_scale = Vector2( 0.2, 0.4 )
+rect_pivot_offset = Vector2( 100, 100 )
+value = 50.0
+texture_under = ExtResource( 4 )
+texture_progress = ExtResource( 4 )
+tint_under = Color( 0, 0, 0, 0.572549 )
+
+[node name="Tween" type="Tween" parent="ChangeModeProgress"]
 
 [node name="LeftReloadProgress" type="TextureProgress" parent="."]
 margin_left = -130.0

@@ -1,15 +1,18 @@
 extends Mecha
 
 signal update_reload_mode
+signal update_lock_mode
 signal reloading
 signal finished_reloading
 signal lost_health
+
+enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 
 const ROTATION_DEADZONE = 20
 
 onready var Cam = $Camera2D
 
-var reload_mode := false
+var cur_mode = MODES.NEUTRAL
 
 
 func _ready():
@@ -47,15 +50,15 @@ func _input(event):
 	if paused or is_stunned():
 		return
 	
-	if event.is_action_pressed("honk"):
+	if event.is_action_pressed("interact"):
 		AudioManager.play_sfx("test", global_position)
 	elif event.is_action_pressed("arm_weapon_left_shoot") and arm_weapon_left:
-		if reload_mode:
+		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
 		elif not $ArmWeaponLeft.reloading:
 			shoot("arm_weapon_left")
 	elif event.is_action_pressed("arm_weapon_right_shoot") and arm_weapon_right:
-		if reload_mode:
+		if cur_mode == MODES.RELOAD:
 			$ArmWeaponRight.reload()
 		elif not $ArmWeaponRight.reloading:
 			shoot("arm_weapon_right")
@@ -63,12 +66,18 @@ func _input(event):
 		shoot("shoulder_weapon_left")
 	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right:
 		shoot("shoulder_weapon_right")
-	elif event.is_action_pressed("reload_mode") and not reload_mode:
-		reload_mode = true
-		emit_signal("update_reload_mode", reload_mode)
-	elif event.is_action_released("reload_mode") and reload_mode:
-		reload_mode = false
-		emit_signal("update_reload_mode", reload_mode)
+	elif event.is_action_pressed("reload_mode"):
+		cur_mode = MODES.RELOAD
+		emit_signal("update_reload_mode", true)
+	elif event.is_action_released("reload_mode"):
+		cur_mode = MODES.NEUTRAL
+		emit_signal("update_reload_mode", false)
+	elif event.is_action_pressed("lock_mode"):
+		cur_mode = MODES.ACTIVATING_LOCK
+		emit_signal("update_lock_mode", true)
+	elif event.is_action_released("lock_mode"):
+		cur_mode = MODES.NEUTRAL
+		emit_signal("update_lock_mode", false)
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
 
@@ -110,7 +119,7 @@ func check_input():
 
 
 func check_weapon_input(name, node, weapon_ref):
-	if weapon_ref and weapon_ref.auto_fire and not reload_mode and\
+	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
 	   not node.reloading and Input.is_action_pressed(name+"_shoot"):
 		shoot(name, true)
 

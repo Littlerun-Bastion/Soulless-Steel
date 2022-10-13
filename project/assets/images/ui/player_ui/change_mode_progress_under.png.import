@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/energy_bar_baclground.png-4aebfdbd5522321849c282af2c94e028.stex"
+path="res://.import/change_mode_progress_under.png-8fda2532c633d235f8e374f6f29a4be5.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/energy_bar_baclground.png"
-dest_files=[ "res://.import/energy_bar_baclground.png-4aebfdbd5522321849c282af2c94e028.stex" ]
+source_file="res://assets/images/ui/player_ui/change_mode_progress_under.png"
+dest_files=[ "res://.import/change_mode_progress_under.png-8fda2532c633d235f8e374f6f29a4be5.stex" ]
 
 [params]
 
@@ -28,6 +28,7 @@ process/fix_alpha_border=true
 process/premult_alpha=false
 process/HDR_as_SRGB=false
 process/invert_color=false
+process/normal_map_invert_y=false
 stream=false
 size_limit=0
 detect_3d=true

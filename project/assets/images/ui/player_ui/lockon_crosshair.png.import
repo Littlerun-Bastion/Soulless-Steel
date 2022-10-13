@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/cursor_crosshair.png-991316932f77214d0faaa513eb241623.stex"
+path="res://.import/lockon_crosshair.png-710e5c5fe1a0d60b76283033e3e206c2.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/cursor_crosshair.png"
-dest_files=[ "res://.import/cursor_crosshair.png-991316932f77214d0faaa513eb241623.stex" ]
+source_file="res://assets/images/ui/player_ui/lockon_crosshair.png"
+dest_files=[ "res://.import/lockon_crosshair.png-710e5c5fe1a0d60b76283033e3e206c2.stex" ]
 
 [params]
 

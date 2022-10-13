@@ -1,6 +1,14 @@
 extends Control
 
 enum SIDE {LEFT, RIGHT}
+enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
+
+const ALPHA_SPEED = 8
+const LOCKING_TIME_COOLDOWN = 1.0
+const CROSSHAIRS = {
+	"regular": preload("res://assets/images/ui/player_ui/cursor_crosshair.png"),
+	"lock": preload("res://assets/images/ui/player_ui/lockon_crosshair.png"),
+}
 
 onready var LeftWeapon = $LeftWeapon
 onready var LeftReload = $LeftReloadProgress
@@ -8,18 +16,66 @@ onready var RightWeapon = $RightWeapon
 onready var RightReload = $RightReloadProgress
 onready var Crosshair = $Crosshair
 onready var ReloadLabel = $ReloadLabel
+onready var ChangeModeProgress = $ChangeModeProgress
+
+var cur_mode = MODES.NEUTRAL
+var change_mode_timer := 0.0
 
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
-	Crosshair.show()
-	ReloadLabel.hide()
+	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload]:
+		set_alpha(node, 1.0)
+	for node in [ReloadLabel, ChangeModeProgress]:
+		set_alpha(node, 0.0)
 	LeftReload.hide()
 	RightReload.hide()
 
-
-func _process(_delta):
+func _process(dt):
 	rect_position = lerp(rect_position, get_global_mouse_position(), .80)
+	
+	match cur_mode:
+		MODES.NEUTRAL:
+			show_specific_nodes(dt, [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload])
+		MODES.RELOAD:
+			show_specific_nodes(dt, [ReloadLabel, LeftWeapon, RightWeapon, LeftReload, RightReload])
+		MODES.ACTIVATING_LOCK:
+			show_specific_nodes(dt, [ChangeModeProgress])
+		MODES.LOCK:
+			show_specific_nodes(dt, [Crosshair])
+	
+	#Update changing-to-lock-mode progress
+	if cur_mode == MODES.ACTIVATING_LOCK:
+		change_mode_timer = min(change_mode_timer + dt, LOCKING_TIME_COOLDOWN)
+		if change_mode_timer >= LOCKING_TIME_COOLDOWN:
+			cur_mode = MODES.LOCK
+	else:
+		change_mode_timer = max(change_mode_timer - 10*dt, 0.0)
+	ChangeModeProgress.value = 100*change_mode_timer/float(LOCKING_TIME_COOLDOWN)
+	
+	if cur_mode == MODES.LOCK:
+		Crosshair.texture = CROSSHAIRS.lock
+	else:
+		Crosshair.texture = CROSSHAIRS.regular
+
+func show_specific_nodes(dt, show_nodes):
+	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload,\
+				 ReloadLabel, ChangeModeProgress]:
+		if show_nodes.has(node):
+			change_alpha(dt, node, 1.0)
+		else:
+			change_alpha(dt, node, 0.0)
+
+
+func set_alpha(node, target_value):
+	node.modulate.a = target_value
+
+
+func change_alpha(dt, node, target_value):
+	if node.modulate.a > target_value:
+		node.modulate.a = max(node.modulate.a - dt*ALPHA_SPEED, target_value)
+	else:
+		node.modulate.a = min(node.modulate.a + dt*ALPHA_SPEED, target_value)
 
 
 func get_side_node(side):
@@ -46,18 +102,15 @@ func set_max_ammo(side, max_ammo):
 
 func set_ammo(side, ammo):
 	var node = get_side_node(side)
-	
-	if node.visible:
-		node.get_node("CurAmmo").text = "%02d" % ammo
+	node.get_node("CurAmmo").text = "%02d" % ammo
+
+
+func set_lock_mode(active):
+	cur_mode = MODES.ACTIVATING_LOCK if active else MODES.NEUTRAL
 
 
 func set_reload_mode(active):
-	if active:
-		Crosshair.hide()
-		ReloadLabel.show()
-	else:
-		Crosshair.show()
-		ReloadLabel.hide()
+	cur_mode = MODES.RELOAD if active else MODES.NEUTRAL
 
 
 func reloading(reload_time, side):

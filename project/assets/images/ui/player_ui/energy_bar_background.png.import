@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/cursor_crosshair.png-991316932f77214d0faaa513eb241623.stex"
+path="res://.import/energy_bar_background.png-e82dd17a648168263ff2fc2904378ec0.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/cursor_crosshair.png"
-dest_files=[ "res://.import/cursor_crosshair.png-991316932f77214d0faaa513eb241623.stex" ]
+source_file="res://assets/images/ui/player_ui/energy_bar_background.png"
+dest_files=[ "res://.import/energy_bar_background.png-e82dd17a648168263ff2fc2904378ec0.stex" ]
 
 [params]
 
@@ -21,8 +21,8 @@ compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
 flags/filter=true
-flags/mipmaps=true
-flags/anisotropic=true
+flags/mipmaps=false
+flags/anisotropic=false
 flags/srgb=2
 process/fix_alpha_border=true
 process/premult_alpha=false

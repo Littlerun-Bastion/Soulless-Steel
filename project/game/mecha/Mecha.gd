@@ -1,12 +1,16 @@
 extends KinematicBody2D
 class_name Mecha
 
+enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const LEG_SPEED = 20
+const LOCKON_SPEED = .2
+const LOCKON_RANGE = 5000
+const LOCKON_RETICLE_SIZE = 10
 
 signal create_projectile
 signal shoot
@@ -63,6 +67,7 @@ onready var RightLegGlow = $Legs/Right/Glow
 var mecha_name = "Mecha Name"
 var paused = false
 var is_dead = false
+var cur_mode = MODES.NEUTRAL
 
 var max_hp = 10
 var hp = 10
@@ -83,6 +88,9 @@ var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5
 
+var locking_targets = []
+var locking_to = false
+var locked_to = false
 
 var arm_weapon_left = null
 var arm_weapon_right = null
@@ -113,11 +121,14 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
-
+	
+	#Handle shield
 	if generator and shield < max_shield:
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
 		if shield_regen_cooldown <= 0:
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
+	
+	#Handle collisions with other mechas and movement
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():
@@ -142,6 +153,8 @@ func _physics_process(dt):
 		MovementAnimation.stop()
 	
 	update_heat(dt)
+	
+	update_locking(dt)
 
 
 func is_player():
@@ -809,6 +822,60 @@ func is_stunned():
 func stun(time):
 	$StunTimer.wait_time = time
 	$StunTimer.start()
+
+
+#LOCK ON METHODS
+
+
+func update_locking(dt):
+	if cur_mode == MODES.LOCK:
+		locking_to = false
+		var min_dist = INF
+		for target in locking_targets:
+			if not locking_to:
+				locking_to = target
+				min_dist = global_position.distance_to(target.mecha.global_position)
+			else:
+				var dist = global_position.distance_to(target.mecha.global_position)
+				if dist < min_dist:
+					locking_to = target
+					min_dist = dist
+		if locking_to:
+			locking_to.progress = min(locking_to.progress + dt*LOCKON_SPEED, 1.0)
+			if locking_to.progress >= 1.0:
+				locked_to = locking_to.mecha
+
+
+func get_locking_to():
+	return locking_to
+
+
+func get_locked_to():
+	return locked_to
+
+
+func _on_enter_lock_mode():
+	cur_mode = MODES.LOCK
+
+
+func _on_lock_area_entered(area):
+	var mecha = area.get_parent()
+	print("adding mecha ", mecha)
+	locking_targets.append({
+		"progress": 0,
+		"mecha": mecha,
+	})
+
+
+func _on_lock_area_exited(area):
+	var mecha = area.get_parent()
+	for target in locking_targets:
+		if target.mecha == mecha:
+			locking_targets.erase(target)
+			print("removing mecha ", mecha)
+			return
+	push_warning("Couldn't find the mecha. This shouldn't happen")
+
 
 # MISC METHODS
 

@@ -1,6 +1,10 @@
 extends CanvasLayer
 
 const WEAPON_SLOT = preload("res://game/ui/weapon_slot/WeaponSlot.tscn")
+const LOCKING_SPRITES = {
+	"locking": preload("res://assets/images/ui/player_ui/locking_on_highlight.png"),
+	"locked": preload("res://assets/images/ui/player_ui/locked_on_highlight.png"),
+}
 const HOLE_FADE_DUR = .1
 const BULLET_THRESHOLD = .75 #On what percent of max helth should player start getting holes
 const BULLET_CHANCE = .8 #Chance that a bullet will appear on hud
@@ -12,6 +16,7 @@ onready var WeaponSlots = $WeaponSlots
 onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes
+onready var LockingSprite = $LockingSprite
 
 
 var player = false
@@ -22,7 +27,22 @@ func _process(_delta):
 	if player:
 		update_shieldbar(player.shield)
 		ShieldBar.get_node("Label").text = str(player.shield)
-
+		
+		if player.get_locked_to():
+			LockingSprite.show()
+			LockingSprite.texture = LOCKING_SPRITES.locked
+			var mecha = player.get_locked_to().mecha
+			LockingSprite.global_position = mecha.global_position
+			
+		elif player.get_locking_to():
+			LockingSprite.show()
+			LockingSprite.texture = LOCKING_SPRITES.locking
+			var mecha = player.get_locking_to().mecha
+			var dist = mecha.global_position - player.global_position
+			LockingSprite.global_position = player.global_position + dist*player.get_locking_to().progress
+			
+		else:
+			LockingSprite.hide()
 
 func setup(player_ref, mechas_ref):
 	player = player_ref
@@ -33,6 +53,9 @@ func setup(player_ref, mechas_ref):
 	player.connect("update_lock_mode", self, "_on_lock_mode_update")
 	player.connect("reloading", self, "_on_reloading")
 	player.connect("finished_reloading", self, "update_cursor")
+	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
+	Cursor.connect("lock_area_entered", player, "_on_lock_area_entered")
+	Cursor.connect("lock_area_exited", player, "_on_lock_area_exited")
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()
@@ -157,3 +180,4 @@ func _on_LifeBar_value_changed(value):
 
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
+

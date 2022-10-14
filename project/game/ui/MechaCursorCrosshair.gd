@@ -1,5 +1,9 @@
 extends Control
 
+signal enter_lock_mode
+signal lock_area_entered
+signal lock_area_exited
+
 enum SIDE {LEFT, RIGHT}
 enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 
@@ -49,6 +53,7 @@ func _process(dt):
 		change_mode_timer = min(change_mode_timer + dt, LOCKING_TIME_COOLDOWN)
 		if change_mode_timer >= LOCKING_TIME_COOLDOWN:
 			cur_mode = MODES.LOCK
+			emit_signal("enter_lock_mode")
 	else:
 		change_mode_timer = max(change_mode_timer - 10*dt, 0.0)
 	ChangeModeProgress.value = 100*change_mode_timer/float(LOCKING_TIME_COOLDOWN)
@@ -135,3 +140,15 @@ func reloading(reload_time, side):
 	weapon_node.show()
 	reload_node.hide()
 	
+
+
+func _on_CursorArea_area_entered(area):
+	print("enter")
+	if cur_mode == MODES.LOCK:
+		emit_signal("lock_area_entered", area)
+
+
+func _on_CursorArea_area_exited(area):
+	print("exited")
+	if cur_mode == MODES.LOCK:
+		emit_signal("lock_area_exited", area)

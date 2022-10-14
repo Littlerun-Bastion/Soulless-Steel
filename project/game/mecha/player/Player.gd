@@ -6,13 +6,9 @@ signal reloading
 signal finished_reloading
 signal lost_health
 
-enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
-
 const ROTATION_DEADZONE = 20
 
 onready var Cam = $Camera2D
-
-var cur_mode = MODES.NEUTRAL
 
 
 func _ready():
@@ -55,16 +51,18 @@ func _input(event):
 	elif event.is_action_pressed("arm_weapon_left_shoot") and arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
-		elif not $ArmWeaponLeft.reloading:
+		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponLeft.reloading:
 			shoot("arm_weapon_left")
 	elif event.is_action_pressed("arm_weapon_right_shoot") and arm_weapon_right:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponRight.reload()
-		elif not $ArmWeaponRight.reloading:
+		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponRight.reloading:
 			shoot("arm_weapon_right")
-	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left:
+	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left and\
+		 cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_left")
-	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right:
+	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right and\
+		 cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode"):
 		cur_mode = MODES.RELOAD

@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
-[ext_resource path="res://assets/images/ui/player_ui/cursor_crosshair.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/ui/player_ui/lockon_crosshair.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/ui/player_ui/change_mode_progress_front.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture" id=5]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 15, 15 )
 
 [node name="MechaCursorCrosshair" type="Control"]
 anchor_right = 1.0
@@ -16,15 +19,16 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Crosshair" type="TextureRect" parent="."]
-margin_left = -10.5946
-margin_top = -11.1244
-margin_right = 11.4054
-margin_bottom = 10.8756
+[node name="Crosshair" type="Sprite" parent="."]
 texture = ExtResource( 3 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+
+[node name="CursorArea" type="Area2D" parent="Crosshair"]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Crosshair/CursorArea"]
+shape = SubResource( 1 )
 
 [node name="ReloadLabel" type="Label" parent="."]
 margin_left = -50.0
@@ -144,3 +148,6 @@ margin_bottom = 19.0
 rect_min_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
+
+[connection signal="area_entered" from="Crosshair/CursorArea" to="." method="_on_CursorArea_area_entered"]
+[connection signal="area_exited" from="Crosshair/CursorArea" to="." method="_on_CursorArea_area_exited"]

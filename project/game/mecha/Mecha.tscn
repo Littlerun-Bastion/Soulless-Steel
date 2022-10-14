@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=2]
+[gd_scene load_steps=68 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -310,6 +310,9 @@ tracks/1/keys = {
 } ]
 }
 
+[sub_resource type="CircleShape2D" id=39]
+radius = 206.26
+
 [node name="Mecha" type="KinematicBody2D" groups=["mecha"]]
 script = ExtResource( 1 )
 
@@ -547,5 +550,13 @@ max_speed = 700.0
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
 estimate_radius = false
 radius = 200.0
+
+[node name="LockCollision" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LockCollision"]
+shape = SubResource( 39 )
 
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]

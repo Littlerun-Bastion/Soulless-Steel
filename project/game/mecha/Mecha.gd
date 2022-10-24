@@ -10,7 +10,7 @@ const ARM_WEAPON_INITIAL_ROT = 9
 const LEG_SPEED = 20
 const LOCKON_SPEED = .2
 const LOCKON_RANGE = 5000
-const LOCKON_RETICLE_SIZE = 10
+const LOCKON_RETICLE_SIZE = 15
 
 signal create_projectile
 signal shoot
@@ -69,6 +69,7 @@ var mecha_name = "Mecha Name"
 var paused = false
 var is_dead = false
 var cur_mode = MODES.NEUTRAL
+var arena = false
 
 var max_hp = 10
 var hp = 10
@@ -827,13 +828,36 @@ func stun(time):
 
 #LOCK ON METHODS
 
-
-func get_lock_space():
-	return Physics2DServer.area_get_space(LockCollision.get_rid())
+func get_lock_area():
+	return LockCollision
 
 
 func update_locking(dt):
 	if cur_mode == MODES.LOCK:
+		#Update locking targets
+		#For now, check only using mouse, assuming its only the player that locks
+		var could_lock = []
+		var mouse_pos = get_global_mouse_position()
+		for area in arena.get_lock_areas():
+			var mecha = area.get_parent()
+			var a_radius = area.get_node("CollisionShape2D").shape.radius
+			if  mecha != self and\
+			   mouse_pos.distance_to(area.global_position) <= LOCKON_RETICLE_SIZE + a_radius:
+				could_lock.append(area.get_parent())
+		
+		for target in locking_targets:
+			if not could_lock.has(target.mecha):
+				locking_targets.erase(target)
+			else:
+				#Erase from list so we don't duplicate later
+				could_lock.erase(target.mecha)
+		#What remains are new locks
+		for mecha in could_lock:
+			locking_targets.append({
+				"progress": 0,
+				"mecha": mecha,
+			})
+		
 		locking_to = false
 		var min_dist = INF
 		for target in locking_targets:
@@ -860,26 +884,9 @@ func get_locked_to():
 
 
 func _on_enter_lock_mode():
+	locking_targets = []
+	locked_to = false
 	cur_mode = MODES.LOCK
-
-
-func _on_lock_area_entered(area):
-	var mecha = area.get_parent()
-	print("adding mecha ", mecha)
-	locking_targets.append({
-		"progress": 0,
-		"mecha": mecha,
-	})
-
-
-func _on_lock_area_exited(area):
-	var mecha = area.get_parent()
-	for target in locking_targets:
-		if target.mecha == mecha:
-			locking_targets.erase(target)
-			print("removing mecha ", mecha)
-			return
-	push_warning("Couldn't find the mecha. This shouldn't happen")
 
 
 # MISC METHODS

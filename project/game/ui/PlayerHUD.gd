@@ -28,19 +28,18 @@ func _process(_delta):
 		update_shieldbar(player.shield)
 		ShieldBar.get_node("Label").text = str(player.shield)
 		
+		var v_trans = get_viewport().canvas_transform
 		if player.get_locked_to():
 			LockingSprite.show()
 			LockingSprite.texture = LOCKING_SPRITES.locked
-			var mecha = player.get_locked_to().mecha
-			LockingSprite.global_position = mecha.global_position
-			
+			LockingSprite.global_position = v_trans * player.get_locked_to().global_position
 		elif player.get_locking_to():
 			LockingSprite.show()
 			LockingSprite.texture = LOCKING_SPRITES.locking
 			var mecha = player.get_locking_to().mecha
 			var dist = mecha.global_position - player.global_position
-			LockingSprite.global_position = player.global_position + dist*player.get_locking_to().progress
-			
+			var pos = player.global_position + dist*player.get_locking_to().progress
+			LockingSprite.global_position = v_trans * pos
 		else:
 			LockingSprite.hide()
 
@@ -54,9 +53,6 @@ func setup(player_ref, mechas_ref):
 	player.connect("reloading", self, "_on_reloading")
 	player.connect("finished_reloading", self, "update_cursor")
 	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
-	Cursor.connect("lock_area_entered", player, "_on_lock_area_entered")
-	Cursor.connect("lock_area_exited", player, "_on_lock_area_exited")
-	Cursor.set_cursor_collision_space(player.get_lock_space())
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()

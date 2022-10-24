@@ -2,7 +2,7 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
-var arena
+
 var health = 100
 var speed = 100
 var mov_vec = Vector2()
@@ -49,7 +49,6 @@ func setup(arena_ref, is_tutorial):
 		set_shoulder_weapon(false, SIDE.LEFT)
 		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
 		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
-		scale = Vector2(0.5, 0.5)
 	else:
 		set_generator("type_1")
 		set_core(PartManager.get_random_part_name("core"))

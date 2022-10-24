@@ -56,6 +56,7 @@ func setup(player_ref, mechas_ref):
 	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
 	Cursor.connect("lock_area_entered", player, "_on_lock_area_entered")
 	Cursor.connect("lock_area_exited", player, "_on_lock_area_exited")
+	Cursor.set_cursor_collision_space(player.get_lock_space())
 	setup_lifebar()
 	setup_shieldbar()
 	setup_energybar()

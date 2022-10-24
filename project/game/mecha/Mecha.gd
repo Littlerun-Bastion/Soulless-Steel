@@ -27,6 +27,7 @@ onready var CoreDecals = $CoreDecals
 onready var LeftShoulderDecals = $LeftShoulder/Decals
 onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
+onready var LockCollision = $LockCollision
 
 onready var Core = $Core
 onready var CoreSub = $Core/Sub
@@ -825,6 +826,10 @@ func stun(time):
 
 
 #LOCK ON METHODS
+
+
+func get_lock_space():
+	return Physics2DServer.area_get_space(LockCollision.get_rid())
 
 
 func update_locking(dt):

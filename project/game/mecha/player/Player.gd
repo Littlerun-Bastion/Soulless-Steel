@@ -36,10 +36,11 @@ func _physics_process(delta):
 	
 	apply_movement(delta, get_input())
 	
-	var target_pos = get_global_mouse_position()
-	if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-		apply_rotation_by_point(delta, target_pos, \
-					   movement_type == "tank" or Input.is_action_pressed("strafe"))
+	if not get_locked_to():
+		var target_pos = get_global_mouse_position()
+		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
+			apply_rotation_by_point(delta, target_pos, \
+						   movement_type == "tank" or Input.is_action_pressed("strafe"))
 
 
 func _input(event):
@@ -74,6 +75,7 @@ func _input(event):
 		cur_mode = MODES.ACTIVATING_LOCK
 		emit_signal("update_lock_mode", true)
 	elif event.is_action_released("lock_mode"):
+		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
 	elif event.is_action_pressed("debug_1"):

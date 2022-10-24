@@ -157,7 +157,11 @@ func _physics_process(dt):
 	update_heat(dt)
 	
 	update_locking(dt)
-
+	
+	if get_locked_to():
+		var target_pos = locked_to.global_position
+		apply_rotation_by_point(dt, target_pos, false)
+	
 
 func is_player():
 	return mecha_name == "Player"
@@ -876,10 +880,17 @@ func update_locking(dt):
 
 
 func get_locking_to():
+	#Check if mecha has died
+	if locking_to and not weakref(locking_to.mecha).get_ref():
+		locking_to = false
+	
 	return locking_to
 
 
 func get_locked_to():
+	#Check if mecha has died
+	if locked_to and not weakref(locked_to).get_ref():
+		locked_to = false
 	return locked_to
 
 

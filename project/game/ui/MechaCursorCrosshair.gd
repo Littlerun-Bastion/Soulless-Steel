@@ -1,8 +1,6 @@
 extends Control
 
 signal enter_lock_mode
-signal lock_area_entered
-signal lock_area_exited
 
 enum SIDE {LEFT, RIGHT}
 enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
@@ -21,7 +19,6 @@ onready var RightReload = $RightReloadProgress
 onready var Crosshair = $Crosshair
 onready var ReloadLabel = $ReloadLabel
 onready var ChangeModeProgress = $ChangeModeProgress
-onready var CursorArea = $Crosshair/CursorArea
 
 var cur_mode = MODES.NEUTRAL
 var change_mode_timer := 0.0
@@ -63,10 +60,6 @@ func _process(dt):
 		Crosshair.texture = CROSSHAIRS.lock
 	else:
 		Crosshair.texture = CROSSHAIRS.regular
-
-
-func set_cursor_collision_space(space):
-	Physics2DServer.area_set_space(CursorArea.get_rid(), space)
 
 
 func show_specific_nodes(dt, show_nodes):
@@ -145,18 +138,3 @@ func reloading(reload_time, side):
 	yield(tween, "tween_completed")
 	weapon_node.show()
 	reload_node.hide()
-	
-
-
-func _on_CursorArea_area_entered(area):
-	print("enter")
-	if cur_mode == MODES.LOCK:
-		emit_signal("lock_area_entered", area)
-
-
-func _on_CursorArea_area_exited(area):
-	print("exited")
-	print(area)
-	print(area.get_path())
-	if cur_mode == MODES.LOCK:
-		emit_signal("lock_area_exited", area)

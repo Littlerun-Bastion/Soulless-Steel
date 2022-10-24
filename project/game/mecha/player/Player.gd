@@ -122,7 +122,8 @@ func check_weapon_input(name, node, weapon_ref):
 		shoot(name, true)
 
 
-func setup():
+func setup(arena_ref):
+	arena = arena_ref
 	mecha_name = "Player"
 	if PlayerStatManager.NumberofExtracts != 0:
 		hp = PlayerStatManager.PlayerHP

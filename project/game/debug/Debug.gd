@@ -11,7 +11,7 @@ var debug_settings = {
 	"enemy_state": false,
 	"player_loadout": true,
 	"player_zoom": false,
-	"ai_behaviour": false,
+	"ai_behaviour": "idle",
 	"go_to_mode": "tutorial",
 	"skip_intro": true,
 	"disable_projectiles_light": false,

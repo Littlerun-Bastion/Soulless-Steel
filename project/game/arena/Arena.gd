@@ -166,7 +166,7 @@ func update_enemies_debug_navigation():
 func add_player():
 	player = PLAYER.instance()
 	Mechas.add_child(player)
-	player.setup()
+	player.setup(self)
 	player.position = get_start_position(0)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
 	player.connect("died", self, "_on_mecha_died")
@@ -288,6 +288,12 @@ func activate_arena_cam():
 		ArenaCam.position = player_cam.get_camera_screen_center()
 		ArenaCam.reset_smoothing()
 
+
+func get_lock_areas():
+	var areas = []
+	for mecha in all_mechas:
+		areas.append(mecha.get_lock_area())
+	return areas
 
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:

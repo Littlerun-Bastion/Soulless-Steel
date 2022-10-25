@@ -10,8 +10,9 @@ const BULLET_THRESHOLD = .75 #On what percent of max helth should player start g
 const BULLET_CHANCE = .8 #Chance that a bullet will appear on hud
 const LOCKING_INIT_SCALE = .15
 const LOCKING_FINAL_SCALE = .25
-const LOCKING_INIT_BLINK = 2.0
-const LOCKING_FINAL_BLINK = 25.0
+const LOCKING_INIT_BLINK = .7
+const LOCKING_FINAL_BLINK = 15.0
+const BLINK_PITCH_TARGET_MOD = .40 
 
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
@@ -22,6 +23,7 @@ onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes
 onready var LockingSprite = $LockingSprite
 onready var LockingAnim = $LockingSprite/AnimationPlayer
+onready var ConstantBlinkingSFX = $ConstantBlinkingSFX
 
 
 var player = false
@@ -39,7 +41,10 @@ func _process(_delta):
 			LockingSprite.global_position = v_trans * player.get_locked_to().global_position
 			LockingSprite.scale = Vector2(LOCKING_FINAL_SCALE, LOCKING_FINAL_SCALE)
 			LockingAnim.play("static")
+			if not ConstantBlinkingSFX.playing:
+				ConstantBlinkingSFX.play()
 		elif player.get_locking_to():
+			ConstantBlinkingSFX.stop()
 			LockingSprite.texture = LOCKING_SPRITES.locking
 			var prog = player.get_locking_to().progress
 			var mecha = player.get_locking_to().mecha
@@ -52,6 +57,7 @@ func _process(_delta):
 			LockingAnim.play("blinking")
 			LockingAnim.playback_speed = blink_speed
 		else:
+			ConstantBlinkingSFX.stop()
 			LockingAnim.stop()
 			LockingSprite.hide()
 
@@ -149,7 +155,9 @@ func player_died():
 
 
 func play_blink_sound():
-	pass
+	var prog = LockingAnim.playback_speed/float(LOCKING_FINAL_BLINK - LOCKING_INIT_BLINK)
+	var pitch = 1.0 + BLINK_PITCH_TARGET_MOD*prog
+	AudioManager.play_sfx("blinking", false, pitch)
 
 
 func _on_player_took_damage(_p):

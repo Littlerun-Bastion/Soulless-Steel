@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/example_locked_tone.ogg-2914ea14a24991c09e011911cc497434.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/example_locked_tone.ogg"
+dest_files=[ "res://.import/example_locked_tone.ogg-2914ea14a24991c09e011911cc497434.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

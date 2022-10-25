@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/HUDFont.tres" type="Theme" id=2]
@@ -11,6 +11,68 @@
 [ext_resource path="res://assets/images/ui/player_ui/small_bullethole2.png" type="Texture" id=9]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
+
+[sub_resource type="Animation" id=17]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ true ]
+}
+
+[sub_resource type="Animation" id=18]
+resource_name = "blinking"
+length = 2.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ true, false, true ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath("..")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 1 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [  ],
+"method": "play_blink_sound"
+} ]
+}
+
+[sub_resource type="Animation" id=19]
+resource_name = "static"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ true ]
+}
 
 [sub_resource type="StyleBoxTexture" id=10]
 texture = ExtResource( 5 )
@@ -41,6 +103,12 @@ texture = ExtResource( 6 )
 expand = true
 
 [node name="LockingSprite" type="Sprite" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="LockingSprite"]
+autoplay = "RESET"
+anims/RESET = SubResource( 17 )
+anims/blinking = SubResource( 18 )
+anims/static = SubResource( 19 )
 
 [node name="LifeBar" type="ProgressBar" parent="."]
 anchor_left = 1.0

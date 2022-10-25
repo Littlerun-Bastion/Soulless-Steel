@@ -8,6 +8,10 @@ const LOCKING_SPRITES = {
 const HOLE_FADE_DUR = .1
 const BULLET_THRESHOLD = .75 #On what percent of max helth should player start getting holes
 const BULLET_CHANCE = .8 #Chance that a bullet will appear on hud
+const LOCKING_INIT_SCALE = .15
+const LOCKING_FINAL_SCALE = .25
+const LOCKING_INIT_BLINK = 2.0
+const LOCKING_FINAL_BLINK = 25.0
 
 onready var LifeBar = $LifeBar
 onready var ShieldBar = $ShieldBar
@@ -17,6 +21,7 @@ onready var Cursor = $MechaCursorCrosshair
 onready var PlayerRadar = $PlayerRadar
 onready var Bulletholes = $Bulletholes
 onready var LockingSprite = $LockingSprite
+onready var LockingAnim = $LockingSprite/AnimationPlayer
 
 
 var player = false
@@ -30,17 +35,24 @@ func _process(_delta):
 		
 		var v_trans = get_viewport().canvas_transform
 		if player.get_locked_to():
-			LockingSprite.show()
 			LockingSprite.texture = LOCKING_SPRITES.locked
 			LockingSprite.global_position = v_trans * player.get_locked_to().global_position
+			LockingSprite.scale = Vector2(LOCKING_FINAL_SCALE, LOCKING_FINAL_SCALE)
+			LockingAnim.play("static")
 		elif player.get_locking_to():
-			LockingSprite.show()
 			LockingSprite.texture = LOCKING_SPRITES.locking
+			var prog = player.get_locking_to().progress
 			var mecha = player.get_locking_to().mecha
 			var dist = mecha.global_position - player.global_position
-			var pos = player.global_position + dist*player.get_locking_to().progress
+			var pos = player.global_position + dist*prog
+			var sc = LOCKING_INIT_SCALE -  LOCKING_INIT_SCALE*prog + LOCKING_FINAL_SCALE*prog
+			var blink_speed = LOCKING_INIT_BLINK -  LOCKING_INIT_BLINK*prog + LOCKING_FINAL_BLINK*prog
+			LockingSprite.scale = Vector2(sc, sc)
 			LockingSprite.global_position = v_trans * pos
+			LockingAnim.play("blinking")
+			LockingAnim.playback_speed = blink_speed
 		else:
+			LockingAnim.stop()
 			LockingSprite.hide()
 
 func setup(player_ref, mechas_ref):
@@ -134,6 +146,10 @@ func player_died():
 	player = false
 	PlayerRadar.player_died()
 	Cursor.hide()
+
+
+func play_blink_sound():
+	pass
 
 
 func _on_player_took_damage(_p):

@@ -76,7 +76,7 @@ func setup(player_ref, mechas_ref):
 	setup_energybar()
 	setup_weapon_slots()
 	setup_cursor()
-	if player.head.has_radar:
+	if player.chipset.has_radar:
 		PlayerRadar.setup(mechas, player, 5000, 2)
 		PlayerRadar.show()
 	else:

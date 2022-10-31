@@ -103,6 +103,7 @@ var shoulder_weapon_right = null
 var head = null
 var core = null
 var generator = null
+var chipset = null
 var legs_single = null
 var legs_left = null
 var legs_right = null
@@ -329,7 +330,6 @@ func set_arm_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-
 	if not part_name:
 		if side == SIDE.LEFT:
 			arm_weapon_left = null
@@ -404,6 +404,12 @@ func set_generator(part_name):
 	var part_data = PartManager.get_part("generator", part_name)
 	generator = part_data
 	update_max_shield_from_parts()
+
+
+func set_chipset(part_name):
+	var part_data = PartManager.get_part("chipset", part_name)
+	chipset = part_data
+
 
 func set_leg(part_name, side := SIDE.LEFT):
 	if not part_name:

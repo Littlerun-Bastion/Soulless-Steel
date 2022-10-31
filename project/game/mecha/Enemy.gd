@@ -18,8 +18,6 @@ func _ready():
 		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
 		logic.setup("default")
-	
-	
 
 
 func _process(delta):
@@ -40,6 +38,7 @@ func setup(arena_ref, is_tutorial):
 	mecha_name = "Mecha " + str(randi()%2000)
 	if is_tutorial:
 		set_generator("type_2")
+		set_chipset("type_2")
 		set_core("MSV-L3J")
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_single"), SIDE.SINGLE)
@@ -51,6 +50,7 @@ func setup(arena_ref, is_tutorial):
 		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
 	else:
 		set_generator("type_1")
+		set_chipset("type_2")
 		set_core(PartManager.get_random_part_name("core"))
 		set_head(PartManager.get_random_part_name("head"))
 		set_leg(PartManager.get_random_part_name("leg_left"), SIDE.LEFT)
@@ -139,7 +139,6 @@ func navigate_to_target(dt):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
-			
 
 
 func get_target_navigation_pos():

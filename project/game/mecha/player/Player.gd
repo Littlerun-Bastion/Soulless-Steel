@@ -15,6 +15,7 @@ func _ready():
 	if Debug.get_setting("player_loadout"):
 		set_core("MSV-L3J")
 		set_generator("type_1")
+		set_chipset("type_1")
 		set_head("head_test")
 		set_leg("MSV-L3J-L", SIDE.LEFT)
 		set_leg("MSV-L3J-R", SIDE.RIGHT)
@@ -133,6 +134,7 @@ func setup(arena_ref):
 	if not Debug.get_setting("player_loadout"):
 		set_core("MSV-L3J")
 		set_generator("type_1")
+		set_chipset("type_1")
 		set_head("head_test2")
 		#Use to test free mode
 		set_leg("MSV-L3J-L", SIDE.LEFT)

@@ -317,7 +317,7 @@ func _on_mecha_create_projectile(mecha, args):
 		yield(timer, "timeout")
 		timer.queue_free()
 	var data = ProjectileManager.create(mecha, args)
-	if data.create_node:
+	if data and data.create_node:
 		Projectiles.add_child(data.node)
 
 

@@ -5,6 +5,10 @@ enum TYPE {INSTANT, REGULAR}
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 
 func create(mecha, args):
+	var wr = weakref(mecha)
+	if not wr.get_ref():
+		return false
+
 	var projectile_data = args.weapon_data.instance()
 	var data = {
 		"create_node": false,

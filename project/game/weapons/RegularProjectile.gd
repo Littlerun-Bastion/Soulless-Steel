@@ -41,10 +41,6 @@ func _process(dt):
 
 
 func setup(mecha, args):
-	#Check if mecha is already dead
-	if not is_instance_valid(mecha):
-		return
-		
 	var data = args.weapon_data.instance()
 	$Sprite.texture = data.get_image()
 	$CollisionShape2D.polygon = data.get_collision()

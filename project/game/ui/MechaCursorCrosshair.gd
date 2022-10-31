@@ -22,6 +22,7 @@ onready var ChangeModeProgress = $ChangeModeProgress
 
 var cur_mode = MODES.NEUTRAL
 var change_mode_timer := 0.0
+var lock_reticle_size := 5
 
 
 func _ready():
@@ -58,9 +59,11 @@ func _process(dt):
 	
 	if cur_mode == MODES.LOCK:
 		Crosshair.texture = CROSSHAIRS.lock
+		var sc = (2*lock_reticle_size)/float(Crosshair.texture.get_width())
+		Crosshair.scale = Vector2(sc, sc)
 	else:
 		Crosshair.texture = CROSSHAIRS.regular
-
+		Crosshair.scale = Vector2(1.0, 1.0)
 
 func show_specific_nodes(dt, show_nodes):
 	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload,\
@@ -109,9 +112,13 @@ func set_ammo(side, ammo):
 	node.get_node("CurAmmo").text = "%02d" % ammo
 
 
+func set_lock_on_reticle_size(value):
+	lock_reticle_size = value
+
+
 func set_lock_mode(active):
 	cur_mode = MODES.ACTIVATING_LOCK if active else MODES.NEUTRAL
-
+	
 
 func set_reload_mode(active):
 	cur_mode = MODES.RELOAD if active else MODES.NEUTRAL

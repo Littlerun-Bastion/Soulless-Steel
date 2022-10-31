@@ -72,10 +72,10 @@ func _input(event):
 	elif event.is_action_released("reload_mode"):
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_reload_mode", false)
-	elif event.is_action_pressed("lock_mode"):
+	elif event.is_action_pressed("lock_mode") and chipset.can_lock:
 		cur_mode = MODES.ACTIVATING_LOCK
 		emit_signal("update_lock_mode", true)
-	elif event.is_action_released("lock_mode"):
+	elif event.is_action_released("lock_mode") and chipset.can_lock:
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)

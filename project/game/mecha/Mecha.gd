@@ -8,8 +8,6 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const LEG_SPEED = 20
-const LOCKON_SPEED = .2
-const LOCKON_RANGE = 5000
 const LOCKON_RETICLE_SIZE = 15
 
 signal create_projectile
@@ -852,7 +850,7 @@ func update_locking(dt):
 			var mecha = area.get_parent()
 			var a_radius = area.get_node("CollisionShape2D").shape.radius
 			if  mecha != self and\
-			   mouse_pos.distance_to(area.global_position) <= LOCKON_RETICLE_SIZE + a_radius:
+			   mouse_pos.distance_to(area.global_position) <= chipset.lock_on_reticle_size + a_radius:
 				could_lock.append(area.get_parent())
 		
 		for target in locking_targets:
@@ -880,7 +878,7 @@ func update_locking(dt):
 					locking_to = target
 					min_dist = dist
 		if locking_to:
-			locking_to.progress = min(locking_to.progress + dt*LOCKON_SPEED, 1.0)
+			locking_to.progress = min(locking_to.progress + dt*chipset.lock_on_speed, 1.0)
 			if locking_to.progress >= 1.0:
 				locked_to = locking_to.mecha
 

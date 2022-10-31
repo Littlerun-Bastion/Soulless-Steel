@@ -8,6 +8,7 @@ can_lock = true
 lock_on_speed = 0.2
 lock_on_duration = 5
 lock_on_distance = 5000
+lock_on_reticle_size = 20
 lock_on_strength = 5
 ECM = 10
 ECM_frequency = 0.3

@@ -122,6 +122,7 @@ func setup_weapon_slots():
 func setup_cursor():
 	Cursor.set_max_ammo("left", player.get_clip_ammo("arm_weapon_left"))
 	Cursor.set_max_ammo("right", player.get_clip_ammo("arm_weapon_right"))
+	Cursor.set_lock_on_reticle_size(player.chipset.lock_on_reticle_size)
 
 
 func update_lifebar(value):

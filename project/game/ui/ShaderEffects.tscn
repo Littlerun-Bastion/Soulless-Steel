@@ -14,11 +14,21 @@ uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
 uniform float redIntensity : hint_range(0.0, 1.0) = 1.0;
 uniform float greenMultiplier : hint_range(0.0, 0.01) = 0.0073;
 uniform float greenIntensity : hint_range(0.0, 1.0) = 0.97;
+uniform float warpAmount : hint_range(0.0, 1.0) = 0.97;
 
 
 float rand(vec2 co)
 {
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+vec2 warp(vec2 uv){
+    vec2 delta = uv - 0.5;
+    float delta2 = dot(delta.xy, delta.xy);
+    float delta4 = delta2 * delta2;
+    float delta_offset = delta4 * warpAmount;
+
+    return uv + delta * delta_offset;
 }
 
 float verticalBar(float pos, float uvY, float offset)
@@ -33,9 +43,10 @@ float verticalBar(float pos, float uvY, float offset)
 
 void fragment()
 {
+	vec2 warp_uv = warp(UV);
 	float uvX, uvY;
-	uvX = UV.x;
-	uvY = UV.y;
+	uvX = warp_uv.x;
+	uvY = warp_uv.y;
     for (float i = 0.0; i < 0.71; i += 0.1313)
     {
         float d = mod(TIME * i, 1.7);
@@ -71,6 +82,7 @@ shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
 shader_param/greenIntensity = 0.13
+shader_param/warpAmount = 0.708
 
 [node name="ShaderEffects" type="CanvasLayer"]
 layer = 2

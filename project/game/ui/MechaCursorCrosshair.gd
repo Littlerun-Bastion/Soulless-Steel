@@ -35,7 +35,9 @@ func _ready():
 	RightReload.hide()
 
 func _process(dt):
-	rect_position = lerp(rect_position, get_global_mouse_position(), .80)
+	var screen_scale = get_viewport_rect().size/OS.window_size
+	var target_pos = get_global_mouse_position() * screen_scale
+	rect_position = lerp(rect_position, target_pos, .80)
 	
 	match cur_mode:
 		MODES.NEUTRAL:

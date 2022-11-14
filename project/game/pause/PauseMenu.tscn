@@ -47,7 +47,6 @@ color = Color( 0, 0, 0, 0 )
 
 [node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
 visible = false
-
 motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]

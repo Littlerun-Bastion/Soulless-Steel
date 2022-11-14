@@ -105,9 +105,9 @@ custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="RightWeapon" type="HBoxContainer" parent="."]
-margin_left = 4.0
+margin_left = 8.0
 margin_top = 6.0
-margin_right = 57.0
+margin_right = 61.0
 margin_bottom = 25.0
 custom_constants/separation = 0
 alignment = 1

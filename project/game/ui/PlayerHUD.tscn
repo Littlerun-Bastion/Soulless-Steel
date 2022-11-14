@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/HUDFont.tres" type="Theme" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://assets/images/ui/player_ui/small_bullethole1.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/ui/player_ui/small_bullethole2.png" type="Texture" id=9]
 [ext_resource path="res://assets/audio/sfx/example_locked_tone.ogg" type="AudioStream" id=10]
+[ext_resource path="res://assets/shaders/ScreenWarp.tres" type="Material" id=11]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
 
@@ -97,21 +98,34 @@ region_rect = Rect2( 0, 0, 330, 27 )
 [node name="PlayerHUD" type="CanvasLayer"]
 script = ExtResource( 1 )
 
-[node name="BG" type="TextureRect" parent="."]
+[node name="ViewportContainer" type="ViewportContainer" parent="."]
+material = ExtResource( 11 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+size = Vector2( 1920, 1080 )
+transparent_bg = true
+handle_input_locally = false
+render_target_update_mode = 3
+gui_disable_input = true
+
+[node name="BG" type="TextureRect" parent="ViewportContainer/Viewport"]
 margin_right = 1920.0
 margin_bottom = 1080.0
 texture = ExtResource( 6 )
 expand = true
 
-[node name="LockingSprite" type="Sprite" parent="."]
+[node name="LockingSprite" type="Sprite" parent="ViewportContainer/Viewport"]
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="LockingSprite"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="ViewportContainer/Viewport/LockingSprite"]
 autoplay = "RESET"
 anims/RESET = SubResource( 17 )
 anims/blinking = SubResource( 18 )
 anims/static = SubResource( 19 )
 
-[node name="LifeBar" type="ProgressBar" parent="."]
+[node name="LifeBar" type="ProgressBar" parent="ViewportContainer/Viewport"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -127,7 +141,7 @@ custom_styles/bg = SubResource( 11 )
 value = 100.0
 percent_visible = false
 
-[node name="bar_back" type="TextureRect" parent="LifeBar"]
+[node name="bar_back" type="TextureRect" parent="ViewportContainer/Viewport/LifeBar"]
 margin_left = -8.96045
 margin_top = -4.23608
 margin_right = 341.04
@@ -136,7 +150,7 @@ rect_scale = Vector2( 0.78, 1 )
 texture = ExtResource( 4 )
 flip_h = true
 
-[node name="Label2" type="Label" parent="LifeBar"]
+[node name="Label2" type="Label" parent="ViewportContainer/Viewport/LifeBar"]
 margin_left = -11.0425
 margin_top = 12.1623
 margin_right = 44.9575
@@ -147,7 +161,7 @@ text = "ARM"
 align = 1
 valign = 1
 
-[node name="Label" type="Label" parent="LifeBar"]
+[node name="Label" type="Label" parent="ViewportContainer/Viewport/LifeBar"]
 margin_left = 193.651
 margin_top = 11.8262
 margin_right = 268.651
@@ -160,7 +174,7 @@ text = "00000"
 align = 2
 valign = 1
 
-[node name="ShieldBar" type="ProgressBar" parent="."]
+[node name="ShieldBar" type="ProgressBar" parent="ViewportContainer/Viewport"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -176,7 +190,7 @@ custom_styles/bg = SubResource( 11 )
 value = 100.0
 percent_visible = false
 
-[node name="bar_back" type="TextureRect" parent="ShieldBar"]
+[node name="bar_back" type="TextureRect" parent="ViewportContainer/Viewport/ShieldBar"]
 margin_left = -8.96045
 margin_top = -4.23608
 margin_right = 341.04
@@ -185,7 +199,7 @@ rect_scale = Vector2( 0.78, 1 )
 texture = ExtResource( 4 )
 flip_h = true
 
-[node name="Label2" type="Label" parent="ShieldBar"]
+[node name="Label2" type="Label" parent="ViewportContainer/Viewport/ShieldBar"]
 margin_left = -11.0425
 margin_top = 11.7883
 margin_right = 44.9575
@@ -196,7 +210,7 @@ text = "SHD"
 align = 1
 valign = 1
 
-[node name="Label" type="Label" parent="ShieldBar"]
+[node name="Label" type="Label" parent="ViewportContainer/Viewport/ShieldBar"]
 margin_left = 193.063
 margin_top = 12.4233
 margin_right = 268.063
@@ -209,16 +223,16 @@ text = "00000"
 align = 2
 valign = 1
 
-[node name="EnergyBar" type="ProgressBar" parent="."]
+[node name="EnergyBar" type="ProgressBar" parent="ViewportContainer/Viewport"]
 visible = false
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-margin_left = -30.2721
-margin_top = 80.6349
-margin_right = 983.728
-margin_bottom = 148.635
+margin_left = -84.6161
+margin_top = 216.608
+margin_right = 929.384
+margin_bottom = 284.608
 rect_min_size = Vector2( 1014, 68 )
 rect_rotation = -90.0
 rect_scale = Vector2( 0.4, 0.4 )
@@ -228,7 +242,7 @@ custom_styles/bg = SubResource( 16 )
 value = 100.0
 percent_visible = false
 
-[node name="TextureRect" type="TextureRect" parent="EnergyBar"]
+[node name="TextureRect" type="TextureRect" parent="ViewportContainer/Viewport/EnergyBar"]
 margin_left = -32.155
 margin_top = -2.12354
 margin_right = 317.845
@@ -237,7 +251,7 @@ rect_scale = Vector2( 3.069, 1.783 )
 texture = ExtResource( 4 )
 flip_h = true
 
-[node name="EnergyBarLabel" type="Label" parent="EnergyBar"]
+[node name="EnergyBarLabel" type="Label" parent="ViewportContainer/Viewport/EnergyBar"]
 margin_left = -38.8584
 margin_top = 32.8014
 margin_right = 1.1416
@@ -247,32 +261,32 @@ rect_scale = Vector2( 1, 1.8333 )
 theme = ExtResource( 2 )
 text = "E"
 
-[node name="WeaponSlots" type="VBoxContainer" parent="."]
+[node name="WeaponSlots" type="VBoxContainer" parent="ViewportContainer/Viewport"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -244.0
-margin_top = -502.0
-margin_right = 0.00012207
-margin_bottom = -133.0
+margin_left = -48.6128
+margin_top = -198.232
+margin_right = 195.387
+margin_bottom = 170.768
 rect_scale = Vector2( 0.6, 0.6 )
 rect_pivot_offset = Vector2( 244.234, 379.71 )
 custom_constants/separation = 10
 alignment = 2
 
-[node name="MechaCursorCrosshair" parent="." instance=ExtResource( 13 )]
+[node name="MechaCursorCrosshair" parent="ViewportContainer/Viewport" instance=ExtResource( 13 )]
 margin_right = 0.0
 margin_bottom = 0.0
 
-[node name="PlayerRadar" parent="." instance=ExtResource( 14 )]
+[node name="PlayerRadar" parent="ViewportContainer/Viewport" instance=ExtResource( 14 )]
 margin_left = 443.492
 margin_top = 253.244
 margin_right = 443.492
 margin_bottom = 253.244
 rect_scale = Vector2( 0.3, 0.3 )
 
-[node name="ExtractingLabel" type="Label" parent="."]
+[node name="ExtractingLabel" type="Label" parent="ViewportContainer/Viewport"]
 visible = false
 anchor_left = 0.5
 anchor_top = 1.0
@@ -284,11 +298,11 @@ margin_right = 135.5
 theme = ExtResource( 2 )
 text = "extracting"
 
-[node name="Bulletholes" type="Control" parent="."]
+[node name="Bulletholes" type="Control" parent="ViewportContainer/Viewport"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Bh0" type="TextureRect" parent="Bulletholes"]
+[node name="Bh0" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1918.04
 margin_top = 794.945
 margin_right = 2318.04
@@ -297,7 +311,7 @@ rect_rotation = -246.3
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh1" type="TextureRect" parent="Bulletholes"]
+[node name="Bh1" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 38.118
 margin_top = 36.9538
 margin_right = 438.118
@@ -305,7 +319,7 @@ margin_bottom = 436.954
 rect_scale = Vector2( 0.687099, 0.680114 )
 texture = ExtResource( 8 )
 
-[node name="Bh2" type="TextureRect" parent="Bulletholes"]
+[node name="Bh2" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1614.95
 margin_top = 262.07
 margin_right = 2014.95
@@ -314,7 +328,7 @@ rect_rotation = -74.6368
 rect_scale = Vector2( 0.687099, 0.680114 )
 texture = ExtResource( 8 )
 
-[node name="Bh3" type="TextureRect" parent="Bulletholes"]
+[node name="Bh3" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 595.743
 margin_top = 855.913
 margin_right = 995.743
@@ -323,7 +337,7 @@ rect_rotation = -161.874
 rect_scale = Vector2( 0.687099, 0.680114 )
 texture = ExtResource( 8 )
 
-[node name="Bh4" type="TextureRect" parent="Bulletholes"]
+[node name="Bh4" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 259.656
 margin_top = 646.467
 margin_right = 659.656
@@ -332,7 +346,7 @@ rect_rotation = -161.874
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="Bh5" type="TextureRect" parent="Bulletholes"]
+[node name="Bh5" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 109.17
 margin_top = 1050.22
 margin_right = 509.17
@@ -341,7 +355,7 @@ rect_rotation = -120.339
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="Bh6" type="TextureRect" parent="Bulletholes"]
+[node name="Bh6" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1854.36
 margin_top = 692.966
 margin_right = 2254.36
@@ -350,7 +364,7 @@ rect_rotation = -157.983
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="Bh7" type="TextureRect" parent="Bulletholes"]
+[node name="Bh7" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 360.328
 margin_top = 820.331
 margin_right = 760.328
@@ -359,7 +373,7 @@ rect_rotation = -157.983
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh8" type="TextureRect" parent="Bulletholes"]
+[node name="Bh8" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 503.728
 margin_top = 983.427
 margin_right = 903.728
@@ -368,7 +382,7 @@ rect_rotation = -197.859
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh9" type="TextureRect" parent="Bulletholes"]
+[node name="Bh9" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1730.17
 margin_top = 916.015
 margin_right = 2130.17
@@ -377,7 +391,7 @@ rect_rotation = -205.244
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh10" type="TextureRect" parent="Bulletholes"]
+[node name="Bh10" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1724.49
 margin_top = 503.658
 margin_right = 2124.49
@@ -386,7 +400,7 @@ rect_rotation = -205.244
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh11" type="TextureRect" parent="Bulletholes"]
+[node name="Bh11" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1309.91
 margin_top = 120.204
 margin_right = 1709.91
@@ -394,7 +408,7 @@ margin_bottom = 520.204
 rect_scale = Vector2( 0.687099, 0.680114 )
 texture = ExtResource( 8 )
 
-[node name="Bh12" type="TextureRect" parent="Bulletholes"]
+[node name="Bh12" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1269.65
 margin_top = 341.154
 margin_right = 1669.65
@@ -403,7 +417,7 @@ rect_rotation = -161.874
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="Bh13" type="TextureRect" parent="Bulletholes"]
+[node name="Bh13" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 611.495
 margin_top = 366.164
 margin_right = 1011.5
@@ -412,7 +426,7 @@ rect_rotation = -205.244
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh14" type="TextureRect" parent="Bulletholes"]
+[node name="Bh14" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1379.26
 margin_top = 1113.72
 margin_right = 1779.26
@@ -421,7 +435,7 @@ rect_rotation = -143.733
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 7 )
 
-[node name="Bh15" type="TextureRect" parent="Bulletholes"]
+[node name="Bh15" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1434.49
 margin_top = 628.134
 margin_right = 1834.49
@@ -430,7 +444,7 @@ rect_rotation = -23.3515
 rect_scale = Vector2( 0.687099, 0.680114 )
 texture = ExtResource( 8 )
 
-[node name="Bh16" type="TextureRect" parent="Bulletholes"]
+[node name="Bh16" type="TextureRect" parent="ViewportContainer/Viewport/Bulletholes"]
 margin_left = 1655.99
 margin_top = 516.252
 margin_right = 2055.99
@@ -439,12 +453,12 @@ rect_rotation = -120.339
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="Tween" type="Tween" parent="."]
+[node name="Tween" type="Tween" parent="ViewportContainer/Viewport"]
 
-[node name="ConstantBlinkingSFX" type="AudioStreamPlayer" parent="."]
+[node name="ConstantBlinkingSFX" type="AudioStreamPlayer" parent="ViewportContainer/Viewport"]
 stream = ExtResource( 10 )
 volume_db = -6.0
 bus = "SFX"
 
-[connection signal="value_changed" from="LifeBar" to="." method="_on_LifeBar_value_changed"]
-[connection signal="value_changed" from="ShieldBar" to="." method="_on_ShieldBar_value_changed"]
+[connection signal="value_changed" from="ViewportContainer/Viewport/LifeBar" to="." method="_on_LifeBar_value_changed"]
+[connection signal="value_changed" from="ViewportContainer/Viewport/ShieldBar" to="." method="_on_ShieldBar_value_changed"]

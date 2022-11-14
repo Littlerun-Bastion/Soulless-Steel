@@ -14,16 +14,18 @@ const LOCKING_INIT_BLINK = .7
 const LOCKING_FINAL_BLINK = 15.0
 const BLINK_PITCH_TARGET_MOD = .40 
 
-onready var LifeBar = $LifeBar
-onready var ShieldBar = $ShieldBar
-onready var EnergyBar = $EnergyBar
-onready var WeaponSlots = $WeaponSlots
-onready var Cursor = $MechaCursorCrosshair
-onready var PlayerRadar = $PlayerRadar
-onready var Bulletholes = $Bulletholes
-onready var LockingSprite = $LockingSprite
-onready var LockingAnim = $LockingSprite/AnimationPlayer
-onready var ConstantBlinkingSFX = $ConstantBlinkingSFX
+onready var LifeBar = $ViewportContainer/Viewport/LifeBar
+onready var ShieldBar = $ViewportContainer/Viewport/ShieldBar
+onready var EnergyBar = $ViewportContainer/Viewport/EnergyBar
+onready var WeaponSlots = $ViewportContainer/Viewport/WeaponSlots
+onready var Cursor = $ViewportContainer/Viewport/MechaCursorCrosshair
+onready var PlayerRadar = $ViewportContainer/Viewport/PlayerRadar
+onready var Bulletholes = $ViewportContainer/Viewport/Bulletholes
+onready var LockingSprite = $ViewportContainer/Viewport/LockingSprite
+onready var LockingAnim = $ViewportContainer/Viewport/LockingSprite/AnimationPlayer
+onready var ConstantBlinkingSFX = $ViewportContainer/Viewport/ConstantBlinkingSFX
+onready var ExtractingLabel = $ViewportContainer/Viewport/ExtractingLabel
+onready var Tw = $ViewportContainer/Viewport/Tween
 
 
 var player = false
@@ -81,7 +83,7 @@ func setup(player_ref, mechas_ref):
 		PlayerRadar.show()
 	else:
 		PlayerRadar.hide()
-	$ExtractingLabel.visible = false
+	ExtractingLabel.visible = false
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
@@ -143,7 +145,7 @@ func update_cursor():
 
 
 func update_arsenal():
-	for weapon in $WeaponSlots.get_children():
+	for weapon in WeaponSlots.get_children():
 		var total_ammo = player.get_total_ammo(weapon.type)
 		if total_ammo:
 			weapon.set_ammo(total_ammo)
@@ -175,8 +177,8 @@ func _on_player_took_damage(_p):
 				visible_holes.append(hole)
 		if not visible_holes.empty():
 			var hole = visible_holes[randi() % visible_holes.size()]
-			$Tween.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
-			$Tween.start()
+			Tw.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
+			Tw.start()
 
 
 func _on_player_shoot():

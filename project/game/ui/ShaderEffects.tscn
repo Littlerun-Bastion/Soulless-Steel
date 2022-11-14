@@ -82,7 +82,7 @@ shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
 shader_param/greenIntensity = 0.13
-shader_param/warpAmount = 0.708
+shader_param/warpAmount = 0.2
 
 [node name="ShaderEffects" type="CanvasLayer"]
 layer = 2

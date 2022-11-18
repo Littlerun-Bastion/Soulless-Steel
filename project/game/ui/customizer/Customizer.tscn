@@ -1,0 +1,260 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
+[ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
+[ext_resource path="res://game/ui/customizer/Customizer.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/ui/menu/hardware_tab_selected.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/ui/menu/equipment_tab_selected.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/ui/menu/wetware_tab_selected.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/ui/menu/item_frame.png" type="Texture" id=8]
+[ext_resource path="res://game/ui/customizer/ItemFrame.tscn" type="PackedScene" id=9]
+
+[sub_resource type="DynamicFontData" id=9]
+font_path = "res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf"
+
+[sub_resource type="DynamicFont" id=10]
+size = 24
+outline_size = 1
+use_mipmaps = true
+use_filter = true
+extra_spacing_char = 1
+font_data = SubResource( 9 )
+
+[sub_resource type="DynamicFont" id=11]
+size = 18
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=12]
+bg_color = Color( 1, 1, 1, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="StyleBoxFlat" id=13]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="Theme" id=14]
+
+[sub_resource type="StyleBoxFlat" id=15]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+
+[node name="Customizer" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_pivot_offset = Vector2( -611, -230 )
+script = ExtResource( 3 )
+
+[node name="LowerBar" type="ColorRect" parent="."]
+anchor_top = 0.978755
+anchor_right = 1.0
+anchor_bottom = 1.00005
+margin_top = 3.94446
+margin_bottom = 3.94446
+rect_min_size = Vector2( 0, 15 )
+rect_pivot_offset = Vector2( 0.0615444, 39.8171 )
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": true
+}
+
+[node name="LeftBar" type="ColorRect" parent="."]
+margin_right = 43.0
+margin_bottom = 1084.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="RightBar" type="ColorRect" parent="."]
+margin_left = 1383.0
+margin_right = 1923.0
+margin_bottom = 1084.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="UpperBar" type="ColorRect" parent="."]
+anchor_right = 1.0
+margin_top = 3.0
+margin_bottom = 257.0
+rect_min_size = Vector2( 0, 40 )
+color = Color( 0, 0, 0, 1 )
+
+[node name="MainSystemContainer" type="VBoxContainer" parent="."]
+margin_left = 43.0
+margin_top = 47.0
+margin_right = 470.0
+margin_bottom = 152.0
+custom_constants/separation = -3
+
+[node name="Label" type="Label" parent="MainSystemContainer"]
+margin_right = 427.0
+margin_bottom = 24.0
+custom_fonts/font = SubResource( 10 )
+text = "Hangar"
+
+[node name="Label2" type="Label" parent="MainSystemContainer"]
+margin_top = 21.0
+margin_right = 427.0
+margin_bottom = 40.0
+custom_fonts/font = SubResource( 11 )
+text = "SAV_hUNTERos.EXE -Hgr"
+
+[node name="PartListContainer" type="ScrollContainer" parent="."]
+margin_left = 874.0
+margin_top = 258.0
+margin_right = 1194.0
+margin_bottom = 1059.0
+rect_pivot_offset = Vector2( -949, -126 )
+scroll_horizontal_enabled = false
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
+rect_pivot_offset = Vector2( -926, -63 )
+custom_constants/separation = 152
+
+[node name="ItemFrame" parent="PartListContainer/VBoxContainer" instance=ExtResource( 9 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 0.0
+margin_bottom = 0.0
+rect_pivot_offset = Vector2( -38, -52 )
+
+[node name="GridContainer" type="GridContainer" parent="."]
+margin_left = 40.0
+margin_top = 258.0
+margin_right = 1878.0
+margin_bottom = 1487.0
+rect_scale = Vector2( 0.66, 0.66 )
+custom_constants/vseparation = 50
+custom_constants/hseparation = 0
+
+[node name="HeadCategory" type="TextureButton" parent="GridContainer"]
+margin_right = 404.0
+margin_bottom = 254.0
+texture_normal = ExtResource( 8 )
+
+[node name="hardware_button" type="TextureButton" parent="."]
+margin_left = 51.0
+margin_top = 144.0
+margin_right = 356.0
+margin_bottom = 195.0
+
+[node name="wetware_button" type="TextureButton" parent="."]
+margin_left = 372.0
+margin_top = 144.0
+margin_right = 677.0
+margin_bottom = 195.0
+
+[node name="equipment_button" type="TextureButton" parent="."]
+margin_left = 695.0
+margin_top = 144.0
+margin_right = 1000.0
+margin_bottom = 195.0
+
+[node name="hardware_selected" type="TextureRect" parent="."]
+margin_left = 43.44
+margin_top = 131.72
+margin_right = 1872.44
+margin_bottom = 205.72
+texture = ExtResource( 4 )
+
+[node name="wetware_selected" type="TextureRect" parent="."]
+visible = false
+margin_left = 44.0
+margin_top = 132.0
+margin_right = 1873.0
+margin_bottom = 206.0
+texture = ExtResource( 7 )
+
+[node name="equipment_selected" type="TextureRect" parent="."]
+visible = false
+margin_left = 44.0
+margin_top = 132.0
+margin_right = 1873.0
+margin_bottom = 206.0
+texture = ExtResource( 5 )
+
+[node name="SideBar1" type="ColorRect" parent="."]
+anchor_bottom = 1.0
+margin_left = 12.0
+margin_right = 14.0
+rect_min_size = Vector2( 2, 0 )
+
+[node name="SideBar2" type="ColorRect" parent="."]
+anchor_bottom = 1.0
+margin_left = 17.2305
+margin_right = 24.2305
+rect_min_size = Vector2( 7, 0 )
+
+[node name="WeightBar" type="ProgressBar" parent="."]
+margin_left = 1216.0
+margin_top = 1002.0
+margin_right = 2003.0
+margin_bottom = 1042.0
+rect_rotation = 270.0
+custom_colors/font_color = Color( 0, 0, 0, 0 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
+custom_styles/fg = SubResource( 12 )
+custom_styles/bg = SubResource( 13 )
+value = 50.0
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scale = Vector2( 0.75, 0.75 )
+transform = Transform2D( 0.75, 0, 0, 0.75, 0, 0 )
+scroll_base_scale = Vector2( 3, 1 )
+script = ExtResource( 2 )
+
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2( 4000, 4000 )
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+show_behind_parent = true
+margin_left = -605.0
+margin_top = -726.0
+margin_right = 7395.0
+margin_bottom = 7274.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource( 14 )
+color = Color( 0, 0, 0, 1 )
+
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2( 4000, 4000 )
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+margin_left = -602.776
+margin_top = -721.705
+margin_right = 3397.22
+margin_bottom = 3278.3
+texture = ExtResource( 6 )
+
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color( 1, 1, 1, 0.14902 )
+motion_scale = Vector2( -0.5, 1 )
+motion_mirroring = Vector2( 4000, 4000 )
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+margin_left = -726.667
+margin_top = -832.0
+margin_right = 3273.33
+margin_bottom = 3168.01
+texture = ExtResource( 6 )
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+margin_left = 1281.0
+margin_top = 215.0
+margin_right = 1873.0
+margin_bottom = 1047.0
+custom_styles/panel = SubResource( 15 )
+
+[connection signal="pressed" from="GridContainer/HeadCategory" to="." method="_on_Category_pressed" binds= [ "head" ]]

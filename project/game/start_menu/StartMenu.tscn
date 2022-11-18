@@ -29,7 +29,7 @@ outline_size = 2
 extra_spacing_char = 2
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFontData" id=9]
+[sub_resource type="DynamicFontData" id=19]
 font_path = "res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf"
 
 [sub_resource type="DynamicFont" id=7]
@@ -38,7 +38,7 @@ outline_size = 1
 use_mipmaps = true
 use_filter = true
 extra_spacing_char = 1
-font_data = SubResource( 9 )
+font_data = SubResource( 19 )
 
 [sub_resource type="DynamicFont" id=10]
 size = 18
@@ -400,6 +400,8 @@ rect_min_size = Vector2( 7, 0 )
 
 [node name="UpperBar" type="ColorRect" parent="."]
 anchor_right = 1.0
+margin_left = 17.2305
+margin_right = 17.2305
 margin_bottom = 40.0
 rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )

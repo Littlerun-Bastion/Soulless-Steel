@@ -4,6 +4,8 @@
 
 [resource]
 script = ExtResource( 1 )
+part_name = "Test Chipset 2"
+manufacturer_name = "Test"
 can_lock = false
 lock_on_speed = 0.2
 lock_on_duration = 5

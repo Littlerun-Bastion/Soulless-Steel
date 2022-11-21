@@ -17,6 +17,7 @@ onready var LEGS_RIGHT = {}
 onready var LEGS_SINGLE = {}
 onready var GENERATORS = {}
 onready var CHIPSETS = {}
+onready var THRUSTERS = {}
 onready var PROJECTILES = {}
 
 
@@ -33,6 +34,7 @@ func setup_parts():
 	load_parts("legs", LEGS)
 	load_parts("generators", GENERATORS)
 	load_parts("chipsets", CHIPSETS)
+	load_parts("thrusters", THRUSTERS)
 	load_parts("projectiles", PROJECTILES)
 	
 	setup_shoulder_sides()
@@ -109,6 +111,8 @@ func get_parts(type):
 			return GENERATORS
 		"chipset":
 			return CHIPSETS
+		"thruster":
+			return THRUSTERS
 		"projectile":
 			return PROJECTILES
 		_:

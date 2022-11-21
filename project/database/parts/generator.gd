@@ -1,5 +1,7 @@
 extends Resource
 
+export var part_name : String
+export var manufacturer_name : String
 export var image : Texture
 export var shield := 5
 export var shield_regen_speed := 1

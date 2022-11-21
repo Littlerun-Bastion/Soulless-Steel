@@ -13,9 +13,7 @@ health = 80
 
 [node name="LegsSub" type="Sprite" parent="."]
 
-
 [node name="LegsGlow" type="Sprite" parent="."]
-
 
 [node name="Legs" type="Sprite" parent="."]
 texture = ExtResource( 2 )

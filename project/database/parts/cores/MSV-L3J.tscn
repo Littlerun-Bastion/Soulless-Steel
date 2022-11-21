@@ -15,6 +15,8 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+part_name = "MSV-L3J TEST"
+manufacturer_name = "Test"
 health = 78
 shield = 60
 

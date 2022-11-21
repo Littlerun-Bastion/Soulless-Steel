@@ -4,6 +4,8 @@
 
 [resource]
 script = ExtResource( 1 )
+part_name = ""
+manufacturer_name = ""
 shield = 60
 shield_regen_speed = 20
 shield_regen_delay = 5

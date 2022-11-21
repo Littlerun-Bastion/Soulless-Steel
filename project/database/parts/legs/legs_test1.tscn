@@ -11,11 +11,9 @@ side = 2
 health = 50
 
 [node name="LegsSub" type="Sprite" parent="."]
-
 texture = ExtResource( 4 )
 
 [node name="LegsGlow" type="Sprite" parent="."]
-
 texture = ExtResource( 3 )
 
 [node name="Legs" type="Sprite" parent="."]

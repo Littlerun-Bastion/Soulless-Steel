@@ -1,7 +1,9 @@
 extends Node
 
-export var weapon_name: String
+export var part_name : String
+export var manufacturer_name : String
 export var type: String
+export var image : Texture
 export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource

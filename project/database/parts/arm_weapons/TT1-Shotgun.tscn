@@ -8,7 +8,8 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-weapon_name = "ZH Shotgun"
+part_name = "Test Shotgun"
+manufacturer_name = "Test"
 type = "Multi-PewPew"
 projectile = ExtResource( 2 )
 number_projectiles = 8

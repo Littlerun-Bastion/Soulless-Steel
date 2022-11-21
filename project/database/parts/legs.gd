@@ -3,6 +3,9 @@ extends Node
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 
+export var part_name : String
+export var manufacturer_name : String
+export var image : Texture
 export (SIDE) var side
 export(String, "free", "tank", "relative") var movement_type = "free"
 export var max_speed = 500

@@ -1,5 +1,7 @@
 extends Resource
 
+export var part_name : String
+export var manufacturer_name : String
 export var image : Texture
 export var can_lock := false
 export var lock_on_speed := .2

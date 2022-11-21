@@ -8,7 +8,8 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-weapon_name = "ZH Massive Gun"
+part_name = "Test Cannon"
+manufacturer_name = "Test"
 type = "Massive Firepower"
 rotation_range = 15.0
 projectile = ExtResource( 2 )
@@ -24,7 +25,6 @@ ammo_cost = 500
 soundEffect = "medium_shotA"
 sound_max_range = 4000
 sound_att = 1.5
-calibre = "Medium"
 
 [node name="Sub" type="Sprite" parent="."]
 position = Vector2( 1.86224, 50.1892 )

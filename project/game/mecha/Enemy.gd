@@ -46,8 +46,7 @@ func setup(arena_ref, is_tutorial):
 		set_arm_weapon(false, SIDE.LEFT)
 		set_shoulder_weapon(false, SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.LEFT)
-		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
-		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
+		set_shoulder(PartManager.get_random_part_name("shoulders"))
 	else:
 		set_generator("type_1")
 		set_chipset("type_2")
@@ -59,8 +58,7 @@ func setup(arena_ref, is_tutorial):
 		set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
 		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
 		set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
-		set_shoulder(PartManager.get_random_part_name("shoulder_left"), SIDE.LEFT)
-		set_shoulder(PartManager.get_random_part_name("shoulder_right"), SIDE.RIGHT)
+		set_shoulder(PartManager.get_random_part_name("shoulders"))
 	
 	#For the moment hard set enemies' movement type to free
 	movement_type = "free"

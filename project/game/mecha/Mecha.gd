@@ -95,8 +95,7 @@ var locked_to = false
 
 var arm_weapon_left = null
 var arm_weapon_right = null
-var shoulder_left = null
-var shoulder_right = null
+var shoulders = null
 var shoulder_weapon_left = null
 var shoulder_weapon_right = null
 var head = null
@@ -207,10 +206,8 @@ func update_max_shield_from_parts():
 	if generator:
 		value += generator.shield
 	#Check shoulders
-	if shoulder_left:
-		value += shoulder_left.shield
-	elif shoulder_right:
-		value += shoulder_right.shield
+	if shoulders:
+		value += shoulders.shield
 	
 	set_max_shield(value)
 
@@ -489,29 +486,21 @@ func set_head(part_name):
 	update_max_life_from_parts()
 
 
-func set_shoulder(part_name, side):
-	var part_data = PartManager.get_part("shoulder", part_name)
-	var node
-	var collision_node
-	if side == SIDE.LEFT:
-		node = $LeftShoulder
-		collision_node = $LeftShoulderCollision
-		shoulder_left = part_data
-		if core:
-			node.position = core.get_shoulder_offset(SIDE.LEFT)
-			collision_node.position = core.get_shoulder_offset(SIDE.LEFT)
-	elif side == SIDE.RIGHT:
-		node = $RightShoulder
-		collision_node = $RightShoulderCollision
-		shoulder_right = part_data
-		if core:
-			node.position = core.get_shoulder_offset(SIDE.RIGHT)
-			collision_node.position = core.get_shoulder_offset(SIDE.RIGHT)
+func set_shoulder(part_name):
+	var part_data = PartManager.get_part("shoulders", part_name)
+	shoulders = part_data
+	if core:
+		$LeftShoulder.position = core.get_shoulder_offset(SIDE.LEFT)
+		$LeftShoulderCollision.position = core.get_shoulder_offset(SIDE.LEFT)
+		$RightShoulder.position = core.get_shoulder_offset(SIDE.RIGHT)
+		$RightShoulderCollision.position = core.get_shoulder_offset(SIDE.RIGHT)
 	else:
-		push_error("Not a valid side: " + str(side))
-	
-	node.texture = part_data.get_image()
-	collision_node.polygon = part_data.get_collision()
+		push_error("No core for putting on shoulders.")
+
+	$LeftShoulder.texture = part_data.get_image(SIDE.LEFT)
+	$RightShoulder.texture = part_data.get_image(SIDE.RIGHT)
+	$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
+	$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	update_max_shield_from_parts()
 
 #ATTRIBUTE METHODS
@@ -813,7 +802,7 @@ func shoot(type, is_auto_fire = false):
 		emit_signal("create_projectile", self, 
 					{
 						"weapon_data": weapon_ref.projectile,
-						"weapon_name": weapon_ref.weapon_name,
+						"weapon_name": weapon_ref.part_name,
 						"pos": node.get_shoot_position(),
 						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
 						"damage_mod": weapon_ref.damage_modifier,

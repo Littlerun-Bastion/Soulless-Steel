@@ -21,8 +21,7 @@ func default_loadout():
 	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	DisplayMecha.set_shoulder("shoulder_test3_left", SIDE.LEFT)
-	DisplayMecha.set_shoulder("shoulder_test3_right", SIDE.RIGHT)
+	DisplayMecha.set_shoulder("shoulder_test")
 
 func _on_Category_pressed(type,side = false):
 	var parts = PartManager.get_parts(type)
@@ -66,10 +65,7 @@ func _on_EquipmentButton_pressed():
 
 func _on_itemFrame_pressed(part_name,type,side):
 	var part = PartManager.get_part(type,part_name)
-	if type == "shoulder":
-		DisplayMecha.callv("set_" + str(type), [part_name,DisplayMecha.SIDE.LEFT])
-		DisplayMecha.callv("set_" + str(type), [part_name,DisplayMecha.SIDE.RIGHT])
-	elif type == "legs":
+	if type == "legs":
 		DisplayMecha.callv("set_" + str(type), [part_name,part.side])
 	elif side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT

@@ -7,8 +7,6 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 onready var ARM_WEAPONS = {}
 onready var SHOULDER_WEAPONS = {}
 onready var SHOULDERS = {}
-onready var SHOULDERS_LEFT = {}
-onready var SHOULDERS_RIGHT = {}
 onready var CORES = {}
 onready var HEADS = {}
 onready var LEGS = {}
@@ -37,19 +35,7 @@ func setup_parts():
 	load_parts("thrusters", THRUSTERS)
 	load_parts("projectiles", PROJECTILES)
 	
-	setup_shoulder_sides()
 	setup_leg_sides()
-
-
-func setup_shoulder_sides():
-	for key in SHOULDERS.keys():
-		var shoulder = SHOULDERS[key]
-		if shoulder.side == SIDE.LEFT:
-			SHOULDERS_LEFT[key] = shoulder
-		elif shoulder.side == SIDE.RIGHT:
-			SHOULDERS_RIGHT[key] = shoulder
-		else:
-			push_error("Not a valid shoulder side type: " + str(shoulder.side))
 
 
 func setup_leg_sides():
@@ -89,12 +75,8 @@ func get_parts(type):
 			return ARM_WEAPONS
 		"shoulder_weapon":
 			return SHOULDER_WEAPONS
-		"shoulder":
+		"shoulders":
 			return SHOULDERS
-		"shoulder_left":
-			return SHOULDERS_LEFT
-		"shoulder_right":
-			return SHOULDERS_RIGHT
 		"core":
 			return CORES
 		"head":

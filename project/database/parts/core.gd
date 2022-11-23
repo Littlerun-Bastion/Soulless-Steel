@@ -61,10 +61,10 @@ func get_shoulder_weapon_offset(side):
 		push_error("Not a valid side: " + str(side))
 
 
-func get_leg_offset(side):
+func get_chassis_offset(side):
 	if side == SIDE.LEFT:
-		return $LeftLegOffset.position
+		return $LeftChassisOffset.position
 	elif side == SIDE.RIGHT:
-		return $RightLegOffset.position
+		return $RightChassisOffset.position
 	else:
 		push_error("Not a valid side: " + str(side))

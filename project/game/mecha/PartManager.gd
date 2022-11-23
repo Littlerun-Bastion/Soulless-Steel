@@ -9,10 +9,10 @@ onready var SHOULDER_WEAPONS = {}
 onready var SHOULDERS = {}
 onready var CORES = {}
 onready var HEADS = {}
-onready var LEGS = {}
-onready var LEGS_LEFT = {}
-onready var LEGS_RIGHT = {}
-onready var LEGS_SINGLE = {}
+onready var CHASSIS = {}
+onready var CHASSIS_LEFT = {}
+onready var CHASSIS_RIGHT = {}
+onready var CHASSIS_SINGLE = {}
 onready var GENERATORS = {}
 onready var CHIPSETS = {}
 onready var THRUSTERS = {}
@@ -29,26 +29,26 @@ func setup_parts():
 	load_parts("shoulders", SHOULDERS)
 	load_parts("cores", CORES)
 	load_parts("heads", HEADS)
-	load_parts("legs", LEGS)
+	load_parts("chassis", CHASSIS)
 	load_parts("generators", GENERATORS)
 	load_parts("chipsets", CHIPSETS)
 	load_parts("thrusters", THRUSTERS)
 	load_parts("projectiles", PROJECTILES)
 	
-	setup_leg_sides()
+	setup_chassis_sides()
 
 
-func setup_leg_sides():
-	for key in LEGS.keys():
-		var leg = LEGS[key]
-		if leg.side == SIDE.LEFT:
-			LEGS_LEFT[key] = leg
-		elif leg.side == SIDE.RIGHT:
-			LEGS_RIGHT[key] = leg
-		elif leg.side == SIDE.SINGLE:
-			LEGS_SINGLE[key] = leg
+func setup_chassis_sides():
+	for key in CHASSIS.keys():
+		var chassis = CHASSIS[key]
+		if chassis.side == SIDE.LEFT:
+			CHASSIS_LEFT[key] = chassis
+		elif chassis.side == SIDE.RIGHT:
+			CHASSIS_RIGHT[key] = chassis
+		elif chassis.side == SIDE.SINGLE:
+			CHASSIS_SINGLE[key] = chassis
 		else:
-			push_error("Not a valid leg side type: " + str(leg.side))
+			push_error("Not a valid chassis side type: " + str(chassis.side))
 
 
 func load_parts(name, dict):
@@ -81,14 +81,14 @@ func get_parts(type):
 			return CORES
 		"head":
 			return HEADS
-		"leg":
-			return LEGS
-		"leg_left":
-			return LEGS_LEFT
-		"leg_right":
-			return LEGS_RIGHT
-		"leg_single":
-			return LEGS_SINGLE
+		"chassis":
+			return CHASSIS
+		"chassis_left":
+			return CHASSIS_LEFT
+		"chassis_right":
+			return CHASSIS_RIGHT
+		"chassis_single":
+			return CHASSIS_SINGLE
 		"generator":
 			return GENERATORS
 		"chipset":

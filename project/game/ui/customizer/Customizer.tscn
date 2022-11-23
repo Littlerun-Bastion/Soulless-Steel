@@ -401,8 +401,8 @@ custom_styles/panel = SubResource( 15 )
 
 [connection signal="pressed" from="HardwareContainer/HeadCategory" to="." method="_on_Category_pressed" binds= [ "head" ]]
 [connection signal="pressed" from="HardwareContainer/CoreCategory" to="." method="_on_Category_pressed" binds= [ "core" ]]
-[connection signal="pressed" from="HardwareContainer/ChassisCategory" to="." method="_on_Category_pressed" binds= [ "leg" ]]
-[connection signal="pressed" from="HardwareContainer/ShoulderCategory" to="." method="_on_Category_pressed" binds= [ "shoulder" ]]
+[connection signal="pressed" from="HardwareContainer/ChassisCategory" to="." method="_on_Category_pressed" binds= [ "chassis" ]]
+[connection signal="pressed" from="HardwareContainer/ShoulderCategory" to="." method="_on_Category_pressed" binds= [ "shoulders" ]]
 [connection signal="pressed" from="WetwareContainer/GeneratorCategory" to="." method="_on_Category_pressed" binds= [ "generator" ]]
 [connection signal="pressed" from="WetwareContainer/ChipsetCategory" to="." method="_on_Category_pressed" binds= [ "chipset" ]]
 [connection signal="pressed" from="WetwareContainer/ThrustersCategory" to="." method="_on_Category_pressed" binds= [ "thruster" ]]

@@ -316,52 +316,52 @@ radius = 206.0
 [node name="Mecha" type="KinematicBody2D" groups=["mecha"]]
 script = ExtResource( 1 )
 
-[node name="Legs" type="Node2D" parent="."]
+[node name="Chassis" type="Node2D" parent="."]
 
-[node name="Single" type="Node2D" parent="Legs"]
+[node name="Single" type="Node2D" parent="Chassis"]
 
-[node name="Sub" type="Sprite" parent="Legs/Single"]
+[node name="Sub" type="Sprite" parent="Chassis/Single"]
 material = SubResource( 17 )
 texture = ExtResource( 13 )
 
-[node name="Glow" type="Sprite" parent="Legs/Single"]
+[node name="Glow" type="Sprite" parent="Chassis/Single"]
 material = SubResource( 18 )
 texture = ExtResource( 13 )
 
-[node name="Main" type="Sprite" parent="Legs/Single"]
+[node name="Main" type="Sprite" parent="Chassis/Single"]
 material = SubResource( 19 )
 texture = ExtResource( 13 )
 
-[node name="Left" type="Node2D" parent="Legs"]
+[node name="Left" type="Node2D" parent="Chassis"]
 
-[node name="Sub" type="Sprite" parent="Legs/Left"]
+[node name="Sub" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 20 )
 position = Vector2( -50, 70 )
 texture = ExtResource( 19 )
 
-[node name="Glow" type="Sprite" parent="Legs/Left"]
+[node name="Glow" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 21 )
 position = Vector2( -50, 70 )
 texture = ExtResource( 20 )
 
-[node name="Main" type="Sprite" parent="Legs/Left"]
+[node name="Main" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 22 )
 position = Vector2( -50, 70 )
 texture = ExtResource( 23 )
 
-[node name="Right" type="Node2D" parent="Legs"]
+[node name="Right" type="Node2D" parent="Chassis"]
 
-[node name="Sub" type="Sprite" parent="Legs/Right"]
+[node name="Sub" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 23 )
 position = Vector2( 50, 70 )
 texture = ExtResource( 21 )
 
-[node name="Glow" type="Sprite" parent="Legs/Right"]
+[node name="Glow" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 24 )
 position = Vector2( 50, 70 )
 texture = ExtResource( 24 )
 
-[node name="Main" type="Sprite" parent="Legs/Right"]
+[node name="Main" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 25 )
 position = Vector2( 50, 70 )
 texture = ExtResource( 22 )
@@ -503,15 +503,15 @@ shadow_filter_smooth = 4.4
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
 polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
 
-[node name="LegsSingleCollision" type="CollisionPolygon2D" parent="."]
+[node name="ChassisSingleCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
 
-[node name="LegsLeftCollision" type="CollisionPolygon2D" parent="."]
+[node name="ChassisLeftCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
 
-[node name="LegsRightCollision" type="CollisionPolygon2D" parent="."]
+[node name="ChassisRightCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
 

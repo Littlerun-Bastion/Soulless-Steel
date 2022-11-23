@@ -17,15 +17,15 @@ export var move_heat = 70
 
 
 func get_image():
-	return $Legs.texture
+	return $Chassis.texture
 
 
 func get_sub():
-	return $LegsSub.texture
+	return $ChassisSub.texture
 
 
 func get_glow():
-	return $LegsGlow.texture
+	return $ChassisGlow.texture
 
 
 func get_collision():

@@ -18,16 +18,16 @@ script = ExtResource( 1 )
 health = 85
 shield = 70
 
-[node name="LeftLegOffset" type="Position2D" parent="."]
+[node name="LeftChassisOffset" type="Position2D" parent="."]
 position = Vector2( -30, 70 )
 
-[node name="Reference" type="Sprite" parent="LeftLegOffset"]
+[node name="Reference" type="Sprite" parent="LeftChassisOffset"]
 texture = ExtResource( 10 )
 
-[node name="RightLegOffset" type="Position2D" parent="."]
+[node name="RightChassisOffset" type="Position2D" parent="."]
 position = Vector2( 33, 70 )
 
-[node name="Reference" type="Sprite" parent="RightLegOffset"]
+[node name="Reference" type="Sprite" parent="RightChassisOffset"]
 texture = ExtResource( 9 )
 
 [node name="HeadPort" type="Sprite" parent="."]

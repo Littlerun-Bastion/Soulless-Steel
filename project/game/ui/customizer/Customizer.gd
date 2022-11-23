@@ -15,13 +15,13 @@ func default_loadout():
 	DisplayMecha.set_generator("type_1")
 	DisplayMecha.set_chipset("type_1")
 	DisplayMecha.set_head("head_test")
-	DisplayMecha.set_leg("MSV-L3J-L", SIDE.LEFT)
-	DisplayMecha.set_leg("MSV-L3J-R", SIDE.RIGHT)
+	DisplayMecha.set_chassis("MSV-L3J-L", SIDE.LEFT)
+	DisplayMecha.set_chassis("MSV-L3J-R", SIDE.RIGHT)
 	DisplayMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	DisplayMecha.set_shoulder("shoulder_test")
+	DisplayMecha.set_shoulders("shoulder_test")
 
 func _on_Category_pressed(type,side = false):
 	var parts = PartManager.get_parts(type)
@@ -65,11 +65,10 @@ func _on_EquipmentButton_pressed():
 
 func _on_itemFrame_pressed(part_name,type,side):
 	var part = PartManager.get_part(type,part_name)
-	if type == "legs":
+	if type == "chassis":
 		DisplayMecha.callv("set_" + str(type), [part_name,part.side])
 	elif side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
-	

@@ -87,7 +87,7 @@ func die():
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
-		if body.is_shape_id_legs(body_shape_id):
+		if body.is_shape_id_chassis(body_shape_id):
 			return
 		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:

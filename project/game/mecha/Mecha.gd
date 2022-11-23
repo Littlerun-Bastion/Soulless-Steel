@@ -7,7 +7,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
-const LEG_SPEED = 20
+const CHASSIS_SPEED = 20
 const LOCKON_RETICLE_SIZE = 15
 
 signal create_projectile
@@ -50,19 +50,19 @@ onready var LeftShoulderWeaponGlow = $ShoulderWeaponLeft/Glow
 onready var RightShoulderWeapon = $ShoulderWeaponRight
 onready var RightShoulderWeaponSub = $ShoulderWeaponRight/Sub
 onready var RightShoulderWeaponGlow = $ShoulderWeaponRight/Glow
-#Legs
-onready var SingleLegRoot = $Legs/Single
-onready var SingleLeg = $Legs/Single/Main
-onready var SingleLegSub = $Legs/Single/Sub
-onready var SingleLegGlow = $Legs/Single/Glow
-onready var LeftLegRoot = $Legs/Left
-onready var LeftLeg = $Legs/Left/Main
-onready var LeftLegSub = $Legs/Left/Sub
-onready var LeftLegGlow = $Legs/Left/Glow
-onready var RightLegRoot = $Legs/Right
-onready var RightLeg = $Legs/Right/Main
-onready var RightLegSub = $Legs/Right/Sub
-onready var RightLegGlow = $Legs/Right/Glow
+#Chassis
+onready var SingleChassisRoot = $Chassis/Single
+onready var SingleChassis = $Chassis/Single/Main
+onready var SingleChassisSub = $Chassis/Single/Sub
+onready var SingleChassisGlow = $Chassis/Single/Glow
+onready var LeftChassisRoot = $Chassis/Left
+onready var LeftChassis = $Chassis/Left/Main
+onready var LeftChassisSub = $Chassis/Left/Sub
+onready var LeftChassisGlow = $Chassis/Left/Glow
+onready var RightChassisRoot = $Chassis/Right
+onready var RightChassis = $Chassis/Right/Main
+onready var RightChassisSub = $Chassis/Right/Sub
+onready var RightChassisGlow = $Chassis/Right/Glow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -102,9 +102,9 @@ var head = null
 var core = null
 var generator = null
 var chipset = null
-var legs_single = null
-var legs_left = null
-var legs_right = null
+var chassis_single = null
+var chassis_left = null
+var chassis_right = null
 
 
 func _ready():
@@ -114,8 +114,8 @@ func _ready():
 				 RightArmWeapon, RightArmWeaponSub, RightArmWeaponGlow,\
 				 LeftShoulderWeapon, LeftShoulderWeaponSub, LeftShoulderWeaponGlow,\
 				 RightShoulderWeapon, RightShoulderWeaponSub, RightShoulderWeaponGlow,\
-				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
-				 RightLeg, RightLegSub, RightLegGlow]:
+				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
+				 RightChassis, RightChassisSub, RightChassisGlow]:
 		node.material = CoreSub.material.duplicate(true)
 
 
@@ -188,13 +188,13 @@ func update_max_life_from_parts():
 		value += core.health
 	if head:
 		value += head.health
-	#Check legs
-	if legs_single:
-		value += legs_single.health
-	elif legs_right:
-		value += legs_right.health
-	elif legs_left:
-		value += legs_left.health
+	#Check chassis
+	if chassis_single:
+		value += chassis_single.health
+	elif chassis_right:
+		value += chassis_right.health
+	elif chassis_left:
+		value += chassis_left.health
 	
 	set_max_life(value)
 
@@ -264,16 +264,16 @@ func die(source_info, weapon_name):
 #Return all parts that should be generated when mecha dies
 func get_scrapable_parts():
 	var scraps = []
-	for node in [LeftShoulder, RightShoulder, Core, LeftLeg, RightLeg]:
+	for node in [LeftShoulder, RightShoulder, Core, LeftChassis, RightChassis]:
 		if node.texture:
 			scraps.append(node)
 	return scraps
 
 
-func is_shape_id_legs(id):
-	return shape_owner_get_owner(shape_find_owner(id)) == $LegsSingleCollision or\
-		   shape_owner_get_owner(shape_find_owner(id)) == $LegsLeftCollision or\
-		   shape_owner_get_owner(shape_find_owner(id)) == $LegsRightCollision
+func is_shape_id_chassis(id):
+	return shape_owner_get_owner(shape_find_owner(id)) == $ChassisSingleCollision or\
+		   shape_owner_get_owner(shape_find_owner(id)) == $ChassisLeftCollision or\
+		   shape_owner_get_owner(shape_find_owner(id)) == $ChassisRightCollision
 
 
 func get_shape_from_id(id):
@@ -313,8 +313,8 @@ func update_heat(dt):
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(generator.heat_dispersion, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
-				 SingleLeg, SingleLegSub, SingleLegGlow, LeftLeg, LeftLegSub, LeftLegGlow,\
-				 RightLeg, RightLegSub, RightLegGlow]:
+				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
+				 RightChassis, RightChassisSub, RightChassisGlow]:
 		node.material.set_shader_param("heat", mecha_heat) 
 
 
@@ -410,36 +410,36 @@ func set_chipset(part_name):
 	chipset = part_data
 
 
-func set_leg(part_name, side := SIDE.LEFT):
+func set_chassis(part_name, side := SIDE.LEFT):
 	if not part_name:
-		remove_legs("single")
-		remove_legs("pair")
+		remove_chassis("single")
+		remove_chassis("pair")
 		movement_type = "free"
 		return
 
 	var main; var sub; var glow; var collision
 	var pos = false
-	var part_data = PartManager.get_part("leg", part_name)
+	var part_data = PartManager.get_part("chassis", part_name)
 	match side:
 		SIDE.RIGHT:
-			main = RightLeg; sub = RightLegSub; glow = RightLegGlow
-			collision = $LegsRightCollision
+			main = RightChassis; sub = RightChassisSub; glow = RightChassisGlow
+			collision = $ChassisRightCollision
 			if core:
-				pos = core.get_leg_offset(SIDE.RIGHT)
-			legs_right = part_data
-			remove_legs("single")
+				pos = core.get_chassis_offset(SIDE.RIGHT)
+			chassis_right = part_data
+			remove_chassis("single")
 		SIDE.LEFT:
-			main = LeftLeg; sub = LeftLegSub; glow = LeftLegGlow
-			collision = $LegsLeftCollision
+			main = LeftChassis; sub = LeftChassisSub; glow = LeftChassisGlow
+			collision = $ChassisLeftCollision
 			if core:
-				pos = core.get_leg_offset(SIDE.LEFT)
-			legs_left = part_data
-			remove_legs("single")
+				pos = core.get_chassis_offset(SIDE.LEFT)
+			chassis_left = part_data
+			remove_chassis("single")
 		SIDE.SINGLE:
-			main = SingleLeg; sub = SingleLegSub; glow = SingleLegGlow
-			collision = $LegsSingleCollision
-			legs_single = part_data
-			remove_legs("pair")
+			main = SingleChassis; sub = SingleChassisSub; glow = SingleChassisGlow
+			collision = $ChassisSingleCollision
+			chassis_single = part_data
+			remove_chassis("pair")
 	if pos:
 		main.position = pos
 		sub.position = pos
@@ -455,24 +455,24 @@ func set_leg(part_name, side := SIDE.LEFT):
 	set_speed(part_data.max_speed, part_data.move_acc, part_data.friction, part_data.rotation_acc)
 	update_max_life_from_parts()
 
-func remove_legs(type):
+func remove_chassis(type):
 	if type == "single":
-		legs_single = null
-		SingleLeg.texture = null
-		SingleLegGlow.texture = null
-		SingleLegSub.texture = null
-		$LegsSingleCollision.polygon = []
+		chassis_single = null
+		SingleChassis.texture = null
+		SingleChassisGlow.texture = null
+		SingleChassisSub.texture = null
+		$ChassisSingleCollision.polygon = []
 	elif type == "pair":
-		legs_left = null
-		LeftLeg.texture = null
-		LeftLegGlow.texture = null
-		LeftLegSub.texture = null
-		$LegsLeftCollision.polygon = []
-		legs_right = null
-		RightLeg.texture = null
-		RightLegGlow.texture = null
-		RightLegSub.texture = null
-		$LegsRightCollision.polygon = []
+		chassis_left = null
+		LeftChassis.texture = null
+		LeftChassisGlow.texture = null
+		LeftChassisSub.texture = null
+		$ChassisLeftCollision.polygon = []
+		chassis_right = null
+		RightChassis.texture = null
+		RightChassisGlow.texture = null
+		RightChassisSub.texture = null
+		$ChassisRightCollision.polygon = []
 
 
 func set_head(part_name):
@@ -486,7 +486,7 @@ func set_head(part_name):
 	update_max_life_from_parts()
 
 
-func set_shoulder(part_name):
+func set_shoulders(part_name):
 	var part_data = PartManager.get_part("shoulders", part_name)
 	shoulders = part_data
 	if core:
@@ -680,7 +680,7 @@ func apply_movement(dt, direction):
 			move(velocity*speed_modifier)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
-	update_legs_visuals(dt)
+	update_chassis_visuals(dt)
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
 func apply_rotation_by_direction(dt, direction):
@@ -730,9 +730,9 @@ func knockback(pos, strength, should_rotate = true):
 		apply_rotation_by_point(sqrt(strength)*2/get_weight(), pos, false)
 
 
-func update_legs_visuals(dt):
+func update_chassis_visuals(dt):
 	var angulation = 25
-	if legs_left or legs_right:
+	if chassis_left or chassis_right:
 		var rot_vec = Vector2(1, 0).rotated(deg2rad(rotation_degrees))
 		var vel_vec = velocity
 		var left_target_angle
@@ -756,12 +756,12 @@ func update_legs_visuals(dt):
 			left_target_angle = 0
 			right_target_angle = 0
 		
-		for child in LeftLegRoot.get_children():
+		for child in LeftChassisRoot.get_children():
 			child.rotation_degrees = lerp(child.rotation_degrees, left_target_angle,\
-										  dt*LEG_SPEED)
-		for child in RightLegRoot.get_children():
+										  dt*CHASSIS_SPEED)
+		for child in RightChassisRoot.get_children():
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
-										  dt*LEG_SPEED)
+										  dt*CHASSIS_SPEED)
 
 
 #COMBAT METHODS

@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
@@ -26,6 +26,24 @@ size = 18
 use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=20]
+size = 40
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=17]
+size = 68
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=19]
+bg_color = Color( 0, 0, 0, 0 )
+
+[sub_resource type="StyleBoxFlat" id=18]
+bg_color = Color( 0, 0, 0, 0 )
 
 [sub_resource type="StyleBoxFlat" id=12]
 bg_color = Color( 1, 1, 1, 1 )
@@ -63,6 +81,7 @@ script = ExtResource( 3 )
 
 [node name="Mecha" parent="." instance=ExtResource( 9 )]
 position = Vector2( 700, 560 )
+display_mode = true
 
 [node name="LowerBar" type="ColorRect" parent="."]
 anchor_top = 0.978755
@@ -116,7 +135,6 @@ custom_fonts/font = SubResource( 11 )
 text = "SAV_hUNTERos.EXE -Hgr"
 
 [node name="HardwareContainer" type="GridContainer" parent="."]
-visible = false
 margin_left = 40.0
 margin_top = 258.0
 margin_right = 1878.0
@@ -130,11 +148,27 @@ margin_right = 404.0
 margin_bottom = 254.0
 texture_normal = ExtResource( 8 )
 
+[node name="Label" type="Label" parent="HardwareContainer/HeadCategory"]
+margin_left = 9.0909
+margin_top = 6.06061
+margin_right = 81.0909
+margin_bottom = 42.0606
+custom_fonts/font = SubResource( 20 )
+text = "Head"
+
 [node name="CoreCategory" type="TextureButton" parent="HardwareContainer"]
 margin_top = 304.0
 margin_right = 404.0
 margin_bottom = 558.0
 texture_normal = ExtResource( 8 )
+
+[node name="Label2" type="Label" parent="HardwareContainer/CoreCategory"]
+margin_left = 9.0909
+margin_top = 11.1515
+margin_right = 89.0909
+margin_bottom = 51.1515
+custom_fonts/font = SubResource( 20 )
+text = "Core"
 
 [node name="ChassisCategory" type="TextureButton" parent="HardwareContainer"]
 margin_top = 608.0
@@ -142,11 +176,27 @@ margin_right = 404.0
 margin_bottom = 862.0
 texture_normal = ExtResource( 8 )
 
+[node name="Label3" type="Label" parent="HardwareContainer/ChassisCategory"]
+margin_left = 9.0909
+margin_top = 10.1818
+margin_right = 93.0909
+margin_bottom = 50.1818
+custom_fonts/font = SubResource( 20 )
+text = "Chassis"
+
 [node name="ShoulderCategory" type="TextureButton" parent="HardwareContainer"]
 margin_top = 912.0
 margin_right = 404.0
 margin_bottom = 1166.0
 texture_normal = ExtResource( 8 )
+
+[node name="Label4" type="Label" parent="HardwareContainer/ShoulderCategory"]
+margin_left = 9.0909
+margin_top = 9.21204
+margin_right = 155.091
+margin_bottom = 49.212
+custom_fonts/font = SubResource( 20 )
+text = "Shoulder"
 
 [node name="WetwareContainer" type="GridContainer" parent="."]
 visible = false
@@ -176,6 +226,7 @@ margin_bottom = 862.0
 texture_normal = ExtResource( 8 )
 
 [node name="EquipmentContainer" type="GridContainer" parent="."]
+visible = false
 margin_left = 40.0
 margin_top = 258.0
 margin_right = 1878.0
@@ -230,23 +281,36 @@ margin_right = 1873.0
 margin_bottom = 206.0
 texture = ExtResource( 5 )
 
-[node name="HardwareButton" type="TextureButton" parent="."]
-margin_left = 51.0
-margin_top = 144.0
-margin_right = 356.0
-margin_bottom = 195.0
+[node name="HardwareButton" type="Button" parent="."]
+margin_left = 46.0
+margin_top = 140.0
+margin_right = 357.0
+margin_bottom = 208.0
+custom_fonts/font = SubResource( 17 )
+custom_styles/hover = SubResource( 19 )
+custom_styles/normal = SubResource( 18 )
+text = "Hardware"
+icon_align = 1
 
-[node name="WetwareButton" type="TextureButton" parent="."]
-margin_left = 372.0
-margin_top = 144.0
-margin_right = 677.0
-margin_bottom = 195.0
+[node name="WetwareButton" type="Button" parent="."]
+margin_left = 370.0
+margin_top = 140.0
+margin_right = 681.0
+margin_bottom = 208.0
+custom_fonts/font = SubResource( 17 )
+custom_styles/normal = SubResource( 18 )
+text = "Wetware"
+icon_align = 1
 
-[node name="EquipmentButton" type="TextureButton" parent="."]
-margin_left = 695.0
-margin_top = 144.0
-margin_right = 1000.0
-margin_bottom = 195.0
+[node name="EquipmentButton" type="Button" parent="."]
+margin_left = 692.0
+margin_top = 140.0
+margin_right = 1003.0
+margin_bottom = 208.0
+custom_fonts/font = SubResource( 17 )
+custom_styles/normal = SubResource( 18 )
+text = "weapons"
+icon_align = 1
 
 [node name="SideBar1" type="ColorRect" parent="."]
 anchor_bottom = 1.0

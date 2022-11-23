@@ -18,6 +18,7 @@ signal player_kill
 signal mecha_extracted
 
 export var speed_modifier = 1.0
+export var display_mode = false
 
 onready var NavAgent = $NavigationAgent2D
 
@@ -307,6 +308,9 @@ func add_decal(id, decal_position, type, size):
 
 func update_heat(dt):
 	#Main Mecha Heat
+	if display_mode == true:
+		mecha_heat = 100
+		return
 	if generator:
 		mecha_heat = max(mecha_heat - generator.heat_dispersion*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:

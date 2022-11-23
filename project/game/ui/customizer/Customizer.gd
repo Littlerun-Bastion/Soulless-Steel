@@ -1,8 +1,28 @@
 extends Control
 
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
+
+enum SIDE {LEFT, RIGHT, SINGLE}
+
 onready var PartList = $PartListContainer/VBoxContainer
 onready var DisplayMecha = $Mecha
+
+func _ready():
+	default_loadout()
+
+func default_loadout():
+	DisplayMecha.set_core("MSV-L3J")
+	DisplayMecha.set_generator("type_1")
+	DisplayMecha.set_chipset("type_1")
+	DisplayMecha.set_head("head_test")
+	DisplayMecha.set_leg("MSV-L3J-L", SIDE.LEFT)
+	DisplayMecha.set_leg("MSV-L3J-R", SIDE.RIGHT)
+	DisplayMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
+	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
+	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
+	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
+	DisplayMecha.set_shoulder("shoulder_test3_left", SIDE.LEFT)
+	DisplayMecha.set_shoulder("shoulder_test3_right", SIDE.RIGHT)
 
 func _on_Category_pressed(type,side = false):
 	var parts = PartManager.get_parts(type)

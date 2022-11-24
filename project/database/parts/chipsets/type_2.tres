@@ -9,6 +9,7 @@ manufacturer_name = "Test"
 tagline = "Narrow Field"
 description = ""
 can_lock = false
+accuracy_modifier = 1.0
 lock_on_speed = 0.2
 lock_on_duration = 5
 lock_on_distance = 5000

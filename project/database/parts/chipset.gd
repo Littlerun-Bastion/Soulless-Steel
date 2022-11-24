@@ -6,6 +6,7 @@ export var tagline : String
 export var description : String
 export var image : Texture
 export var can_lock := false
+export var accuracy_modifier := 1.0
 export var lock_on_speed := .2
 export var lock_on_duration := 5
 export var lock_on_distance := 5000

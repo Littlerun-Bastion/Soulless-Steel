@@ -6,6 +6,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 onready var PartList = $PartListContainer/VBoxContainer
 onready var DisplayMecha = $Mecha
+onready var categoryVisible = false
 
 func _ready():
 	default_loadout()
@@ -23,23 +24,46 @@ func default_loadout():
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	DisplayMecha.set_shoulders("shoulder_test")
 
-func _on_Category_pressed(type,side = false):
-	var parts = PartManager.get_parts(type)
-	for child in PartList.get_children(): #Clear PartList
-		PartList.remove_child(child)
-	for part_key in parts.keys(): #Parsing through a dictionary using .values()
-		var part = parts[part_key]
-		var item = ITEMFRAME.instance()
-		item.setup(part)
-		PartList.add_child(item)
-		item.get_button().connect("pressed",self,"_on_itemFrame_pressed",[part_key,type,side])
+func _on_Category_pressed(type,group,side = false):
+	var groupNode = get_node(group)
+	var typeName = type
+	if side:
+		typeName = type + "_" + side
+	if categoryVisible == false:
+		categoryVisible = true
+		PartList.visible = true
+		for child in groupNode.get_children():
+			if child == get_node(group + "/" + typeName):
+				pass
+			else:
+				child.visible = false
+				child.pressed = false
+		var parts = PartManager.get_parts(type)
+		for child in PartList.get_children(): #Clear PartList
+			PartList.remove_child(child)
+		for part_key in parts.keys(): #Parsing through a dictionary using .values()
+			var part = parts[part_key]
+			var item = ITEMFRAME.instance()
+			item.setup(part)
+			PartList.add_child(item)
+			item.get_button().connect("pressed",self,"_on_itemFrame_pressed",[part_key,type,side])
+	else:
+		categoryVisible = false
+		for child in groupNode.get_children():
+			child.visible = true
+		for child in PartList.get_children(): #Clear PartList
+			PartList.remove_child(child)
+		PartList.visible = false
+	
 
 func hide_all_buttons():
+	categoryVisible = false
+	PartList.visible = false
 	for child in PartList.get_children(): #Clear PartList
 		PartList.remove_child(child)
-	$HardwareContainer.visible = false
-	$WetwareContainer.visible = false
-	$EquipmentContainer.visible = false
+	$Hardware.visible = false
+	$Wetware.visible = false
+	$Equipment.visible = false
 	$HardwareSelected.visible = false
 	$WetwareSelected.visible = false
 	$EquipmentSelected.visible = false
@@ -49,19 +73,19 @@ func hide_all_buttons():
 func _on_HardwareButton_pressed():
 	hide_all_buttons()
 	$HardwareSelected.visible = true
-	$HardwareContainer.visible = true
+	$Hardware.visible = true
 
 
 func _on_WetwareButton_pressed():
 	hide_all_buttons()
 	$WetwareSelected.visible = true
-	$WetwareContainer.visible = true
+	$Wetware.visible = true
 
 
 func _on_EquipmentButton_pressed():
 	hide_all_buttons()
 	$EquipmentSelected.visible = true
-	$EquipmentContainer.visible = true
+	$Equipment.visible = true
 
 func _on_itemFrame_pressed(part_name,type,side):
 	var part = PartManager.get_part(type,part_name)

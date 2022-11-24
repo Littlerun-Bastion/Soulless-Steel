@@ -19,6 +19,7 @@ export var health := 5
 export var move_heat = 70
 export var has_thrusters = false
 export var weight := 300.0
+export var weight_capacity := 1000.0
 
 
 

@@ -98,7 +98,7 @@ custom_colors/font_color = Color( 1, 1, 1, 1 )
 custom_fonts/font = SubResource( 7 )
 text = "ML-01 Phoenix"
 
-[node name="PartLabel2" type="Label" parent="."]
+[node name="TaglineLabel" type="Label" parent="."]
 margin_left = 9.0
 margin_top = 75.0
 margin_right = 141.0

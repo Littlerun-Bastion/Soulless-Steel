@@ -2,6 +2,8 @@ extends Node
 
 export var part_name : String
 export var manufacturer_name : String
+export var tagline : String
+export var description : String
 export var image : Texture
 export var type: String
 export var projectile : Resource

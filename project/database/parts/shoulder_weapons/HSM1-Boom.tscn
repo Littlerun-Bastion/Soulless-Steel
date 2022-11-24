@@ -8,7 +8,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-weapon_name = "HSM1-Boom"
+part_name = "Test Heavy Weapon"
+manufacturer_name = "Test"
+tagline = "Heavy Ordnance"
 type = "Big Weapon"
 projectile = ExtResource( 3 )
 damage_modifier = 20.0

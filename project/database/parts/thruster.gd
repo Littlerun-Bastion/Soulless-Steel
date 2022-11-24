@@ -2,6 +2,8 @@ extends Resource
 
 export var part_name : String
 export var manufacturer_name : String
+export var tagline : String
+export var description : String
 export var image : Texture
 export var walk_speed_multiplier := 1.0
 export var dash_distance := 2

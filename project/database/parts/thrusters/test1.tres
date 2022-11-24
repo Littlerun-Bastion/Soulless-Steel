@@ -6,6 +6,8 @@
 script = ExtResource( 1 )
 part_name = "Test Thruster"
 manufacturer_name = "Test"
+tagline = "Test"
+description = ""
 walk_speed_multiplier = 1.0
 dash_distance = 2
 dash_recharge_rate = 4

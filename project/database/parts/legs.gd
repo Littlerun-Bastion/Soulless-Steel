@@ -5,6 +5,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 export var part_name : String
 export var manufacturer_name : String
+export var tagline : String
+export var description : String
 export var image : Texture
 export (SIDE) var side
 export(String, "free", "tank", "relative") var movement_type = "free"

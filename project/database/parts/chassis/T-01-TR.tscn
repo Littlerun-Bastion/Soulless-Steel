@@ -5,6 +5,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+part_name = "Test Tank Chassis"
+manufacturer_name = "Test"
+tagline = "Tank"
 side = 2
 movement_type = "tank"
 friction = 0.3

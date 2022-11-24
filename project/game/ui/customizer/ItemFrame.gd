@@ -9,6 +9,10 @@ func setup(part):
 		$ManufacturerLabel.text = part.manufacturer_name
 	else:
 		$ManufacturerLabel.text = "???"
+	if part.tagline.empty() == false:
+		$TaglineLabel.text = part.tagline
+	else:
+		$TaglineLabel.text = "???"
 	$PartPreview.texture = part.image
 
 func get_button():

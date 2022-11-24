@@ -17,6 +17,7 @@
 script = ExtResource( 1 )
 part_name = "MSV-L3J TEST"
 manufacturer_name = "Test"
+tagline = "Light Core"
 health = 78
 shield = 60
 

@@ -7,6 +7,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 4 )
+part_name = "Test 2 L3J"
+manufacturer_name = "Test"
+tagline = "Bipedal"
 health = 50
 
 [node name="ChassisSub" type="Sprite" parent="."]

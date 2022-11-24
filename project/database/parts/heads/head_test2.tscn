@@ -10,6 +10,7 @@
 script = ExtResource( 3 )
 part_name = "Test Head 1"
 manufacturer_name = "Test"
+tagline = "Test"
 image = ExtResource( 5 )
 health = 35
 

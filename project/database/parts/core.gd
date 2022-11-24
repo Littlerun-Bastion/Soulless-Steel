@@ -4,6 +4,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 export var part_name : String
 export var manufacturer_name : String
+export var tagline : String
+export var description : String
 export var image : Texture
 export var weight:= 300
 export var health := 10

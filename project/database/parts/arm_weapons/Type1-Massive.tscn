@@ -10,6 +10,7 @@
 script = ExtResource( 1 )
 part_name = "Test Cannon"
 manufacturer_name = "Test"
+tagline = "Cannon"
 type = "Massive Firepower"
 rotation_range = 15.0
 projectile = ExtResource( 2 )

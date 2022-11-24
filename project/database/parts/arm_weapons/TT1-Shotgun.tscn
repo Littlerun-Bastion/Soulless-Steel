@@ -10,6 +10,7 @@
 script = ExtResource( 1 )
 part_name = "Test Shotgun"
 manufacturer_name = "Test"
+tagline = "Shotgun"
 type = "Multi-PewPew"
 projectile = ExtResource( 2 )
 number_projectiles = 8

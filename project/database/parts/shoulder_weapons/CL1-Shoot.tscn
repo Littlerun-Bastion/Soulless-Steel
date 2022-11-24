@@ -8,7 +8,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 2 )
-weapon_name = "SS-Shoot"
+part_name = "Test Cannon"
+manufacturer_name = "Test"
+tagline = "Artillery Cannon"
 type = "Long_range Missile"
 projectile = ExtResource( 3 )
 damage_modifier = 30.0

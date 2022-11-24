@@ -4,6 +4,10 @@
 
 [resource]
 script = ExtResource( 1 )
+part_name = "Test Generator 2"
+manufacturer_name = "Test"
+tagline = "High Capacity"
+description = ""
 shield = 30
 shield_regen_speed = 10
 shield_regen_delay = 8

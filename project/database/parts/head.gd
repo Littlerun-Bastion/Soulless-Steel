@@ -2,6 +2,8 @@ extends Node2D
 
 export var part_name : String
 export var manufacturer_name : String
+export var tagline : String
+export var description : String
 export var image : Texture
 export var rotation_acc := 8
 export var rotation_range := 45.0

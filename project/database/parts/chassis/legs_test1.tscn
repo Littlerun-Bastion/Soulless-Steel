@@ -7,6 +7,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 4 )
+part_name = "Test Wheeled Chassis"
+manufacturer_name = "Test"
+tagline = "Wheeled"
 side = 2
 health = 50
 

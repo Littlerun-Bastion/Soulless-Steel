@@ -10,6 +10,7 @@
 script = ExtResource( 1 )
 part_name = "Test Chaingun"
 manufacturer_name = "Test"
+tagline = "Chaingun"
 type = "PewPew"
 projectile = ExtResource( 3 )
 damage_modifier = 0.5

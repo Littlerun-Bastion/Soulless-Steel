@@ -6,6 +6,9 @@
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
+part_name = "Test Shoulders 2"
+manufacturer_name = "Test"
+tagline = "Test"
 shield = 20
 
 [node name="ShoulderLeft" type="Sprite" parent="."]

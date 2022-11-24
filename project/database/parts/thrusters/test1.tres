@@ -13,3 +13,4 @@ dash_distance = 2
 dash_recharge_rate = 4
 dash_heat = 100
 walk_heat = 5
+weight = 1.0

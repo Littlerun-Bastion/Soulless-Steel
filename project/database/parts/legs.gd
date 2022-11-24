@@ -16,6 +16,9 @@ export var friction = 0.1
 export var rotation_acc = 5.0
 export var health := 5
 export var move_heat = 70
+export var has_thrusters = false
+export var weight := 300.0
+
 
 
 func get_image():

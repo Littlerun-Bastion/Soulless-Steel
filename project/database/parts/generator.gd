@@ -9,6 +9,11 @@ export var shield := 5
 export var shield_regen_speed := 1
 export var shield_regen_delay := 5
 export var heat_dispersion := 10
+export var heat_capacity := 100
+export var battery_capacity := 100
+export var battery_recharge_rate := 10
+export var power_output := 1.0
+export var weight := 10.0
 
 
 func get_image():

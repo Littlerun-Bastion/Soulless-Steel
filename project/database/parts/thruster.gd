@@ -10,6 +10,7 @@ export var dash_distance := 2
 export var dash_recharge_rate := 4
 export var dash_heat := 100
 export var walk_heat := 5
+export var weight := 1.0
 
 
 func get_image():

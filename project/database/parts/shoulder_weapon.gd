@@ -24,6 +24,8 @@ export var ammo_cost := 5
 export var soundEffect := "test"
 export var sound_max_range := 2000
 export var sound_att := 1.00
+export var weight := 1.0
+
 
 var firing_timer = 0.0
 

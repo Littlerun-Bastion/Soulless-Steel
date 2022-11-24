@@ -14,6 +14,9 @@ export var lock_on_strength := 5
 export var ECM := 10
 export var ECM_frequency := .3
 export var has_radar := false
+export var radar_refresh_rate := 1.0
+export var loot_search_time := 1.0
+export var weight := 1.0
 
 
 func get_image():

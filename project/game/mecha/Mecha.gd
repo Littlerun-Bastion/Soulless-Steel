@@ -508,7 +508,6 @@ func set_shoulders(part_name):
 func get_max_hp():
 	return max_hp
 
-
 func get_weight():
 	assert(core, "Mecha doesn't have an assigned core")
 	return float(core.weight)

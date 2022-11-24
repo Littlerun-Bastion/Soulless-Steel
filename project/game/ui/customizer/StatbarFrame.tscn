@@ -1,0 +1,105 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
+[ext_resource path="res://assets/fonts/stats_font.tres" type="DynamicFont" id=2]
+[ext_resource path="res://game/ui/customizer/StatbarFrame.gd" type="Script" id=3]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 1 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 25
+extra_spacing_top = 1
+extra_spacing_bottom = -6
+extra_spacing_space = 1
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 30
+extra_spacing_top = 1
+extra_spacing_bottom = -6
+extra_spacing_space = 1
+font_data = ExtResource( 1 )
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 1, 1, 1, 1 )
+border_width_bottom = 2
+border_color = Color( 0, 0, 0, 1 )
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+expand_margin_left = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id=6]
+bg_color = Color( 1, 1, 1, 1 )
+border_color = Color( 0, 0, 0, 1 )
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.00784314, 0.00392157, 0.00392157, 1 )
+border_color = Color( 1, 1, 1, 1 )
+
+[node name="StatbarFrame" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+
+[node name="Panel" type="Panel" parent="."]
+margin_right = 560.0
+margin_bottom = 80.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="LockAcquisition" type="Label" parent="Panel"]
+margin_left = 11.0
+margin_top = 13.0
+margin_right = 399.0
+margin_bottom = 42.0
+custom_fonts/font = ExtResource( 2 )
+text = "Lock acquisition"
+
+[node name="ComparisonValue" type="Label" parent="Panel"]
+margin_left = 342.0
+margin_top = 11.0
+margin_right = 554.0
+margin_bottom = 40.0
+custom_fonts/font = SubResource( 2 )
+text = "1000 > 1000"
+align = 2
+valign = 2
+clip_text = true
+
+[node name="RealValue" type="Label" parent="Panel"]
+margin_left = 497.0
+margin_top = 43.0
+margin_right = 553.0
+margin_bottom = 70.0
+custom_fonts/font = SubResource( 3 )
+text = "1000"
+align = 2
+valign = 2
+clip_text = true
+
+[node name="RealBar" type="ProgressBar" parent="Panel"]
+margin_left = 11.0
+margin_top = 46.0
+margin_right = 492.612
+margin_bottom = 66.0
+rect_min_size = Vector2( 0, 20 )
+custom_styles/fg = SubResource( 4 )
+custom_styles/bg = SubResource( 5 )
+value = 50.0
+percent_visible = false
+
+[node name="ComparisonBar" type="ProgressBar" parent="Panel"]
+margin_left = 11.0
+margin_top = 46.0
+margin_right = 492.612
+margin_bottom = 56.0
+rect_min_size = Vector2( 0, 10 )
+custom_styles/fg = SubResource( 6 )
+custom_styles/bg = SubResource( 7 )
+value = 45.0
+percent_visible = false

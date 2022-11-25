@@ -3,6 +3,7 @@ extends Control
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
 
 enum SIDE {LEFT, RIGHT, SINGLE}
+enum PARAM {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
 onready var PartList = $PartListContainer/VBoxContainer
 onready var DisplayMecha = $Mecha
@@ -96,3 +97,7 @@ func _on_itemFrame_pressed(part_name,type,side):
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
+
+
+func _on_SwitchParams_pressed():
+	pass # Replace with function body.

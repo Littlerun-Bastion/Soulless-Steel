@@ -509,8 +509,14 @@ func get_max_hp():
 	return max_hp
 
 func get_weight():
-	assert(core, "Mecha doesn't have an assigned core")
-	return float(core.weight)
+	var total_weight = 0.0
+	for part in [arm_weapon_left, arm_weapon_right, shoulders,\
+				 shoulder_weapon_left, shoulder_weapon_right,\
+				 head, core, generator, chipset, chassis_single,\
+				 chassis_left, chassis_right]:
+		if part and part.get("weight"):
+			total_weight += part.weight
+	return float(total_weight)
 
 
 func get_weapon_part(part_name):

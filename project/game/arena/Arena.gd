@@ -205,6 +205,7 @@ func player_died():
 	yield(get_tree().create_timer(dur), "timeout")
 
 	PlayerHUD.queue_free()
+	PauseMenu.queue_free()
 	$GameOver.killed()
 
 

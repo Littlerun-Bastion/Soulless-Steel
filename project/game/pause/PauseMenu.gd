@@ -4,24 +4,24 @@ signal pause_toggle
 
 
 func _ready():
-	$Control.hide()
+	$ViewportContainer.hide()
 
 
 func is_paused():
-	return $Control.visible
+	return $ViewportContainer.visible
 
 
 func toggle_pause():
-	$Control.visible = not $Control.visible
+	$ViewportContainer.visible = not $ViewportContainer.visible
 	$ParallaxBackground/GridLayer.visible = not $ParallaxBackground/GridLayer.visible
 	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
-	if $Control.visible:
+	if $ViewportContainer.visible:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		ShaderEffects.play_transition(0, 1000, 2.0)
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	
-	emit_signal("pause_toggle", $Control.visible)
+	emit_signal("pause_toggle", $ViewportContainer.visible)
 
 func _on_Button_mouse_entered():
 	AudioManager.play_sfx("select")

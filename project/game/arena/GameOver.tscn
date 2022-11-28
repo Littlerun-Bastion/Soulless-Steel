@@ -1,10 +1,34 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://game/arena/GameOver.gd" type="Script" id=2]
 [ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/ui/pause_menu/return_button.png" type="Texture" id=5]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=6]
+
+[sub_resource type="Shader" id=20]
+code = "shader_type canvas_item;
+
+uniform float warpAmount : hint_range(0.0, 1.0) = 0.97;
+
+vec2 warp(vec2 uv){
+    vec2 delta = uv - 0.5;
+    float delta2 = dot(delta.xy, delta.xy);
+    float delta4 = delta2 * delta2;
+    float delta_offset = delta4 * warpAmount;
+
+    return uv + delta * delta_offset;
+}
+
+void fragment()
+{
+	vec2 warp_uv = warp(UV);
+    COLOR = texture(TEXTURE, warp_uv);
+}"
+
+[sub_resource type="ShaderMaterial" id=21]
+shader = SubResource( 20 )
+shader_param/warpAmount = 0.15
 
 [sub_resource type="DynamicFont" id=1]
 size = 45
@@ -14,18 +38,28 @@ font_data = ExtResource( 6 )
 layer = 99
 script = ExtResource( 2 )
 
-[node name="Control" type="Control" parent="."]
+[node name="ViewportContainer" type="ViewportContainer" parent="."]
+material = SubResource( 21 )
 margin_right = 40.0
 margin_bottom = 40.0
 
-[node name="ColorRect" type="ColorRect" parent="Control"]
+[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+size = Vector2( 1920, 1080 )
+handle_input_locally = false
+render_target_update_mode = 3
+
+[node name="Control" type="Control" parent="ViewportContainer/Viewport"]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="ViewportContainer/Viewport/Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1880.0
 margin_bottom = 1040.0
 color = Color( 0, 0, 0, 1 )
 
-[node name="Label" type="Label" parent="Control"]
+[node name="Label" type="Label" parent="ViewportContainer/Viewport/Control"]
 margin_left = 12.0208
 margin_top = 974.013
 margin_right = 861.021
@@ -34,7 +68,7 @@ custom_fonts/font = SubResource( 1 )
 text = "Lost connection...
 Would you like to return to the menu?"
 
-[node name="ReturnButton" type="TextureButton" parent="Control"]
+[node name="ReturnButton" type="TextureButton" parent="ViewportContainer/Viewport/Control"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -49,4 +83,4 @@ texture_pressed = ExtResource( 4 )
 texture_hover = ExtResource( 3 )
 texture_focused = ExtResource( 3 )
 
-[connection signal="pressed" from="Control/ReturnButton" to="." method="_on_ReturnButton_pressed"]
+[connection signal="pressed" from="ViewportContainer/Viewport/Control/ReturnButton" to="." method="_on_ReturnButton_pressed"]

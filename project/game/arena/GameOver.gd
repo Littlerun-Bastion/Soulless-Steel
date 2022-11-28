@@ -6,13 +6,13 @@ func _ready():
 
 
 func reset():
-	$Control.visible = false
+	$ViewportContainer.visible = false
 
 
 func killed():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	ShaderEffects.reset_shader_effect("gameover")
-	$Control.visible = true
+	$ViewportContainer.visible = true
 
 
 func _on_ReturnButton_pressed():

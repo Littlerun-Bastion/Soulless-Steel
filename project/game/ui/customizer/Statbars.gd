@@ -3,6 +3,7 @@ extends Control
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
 const CAT_PATH = "CategoryContainers/"
+const LERP_WEIGHT = 5
 
 onready var StatNodes = [get_node(CAT_PATH + "ElectronicsContainer"),
 get_node(CAT_PATH + "DefensesContainer"),
@@ -25,9 +26,23 @@ onready var StatNodeTitles = ["Electronics",
 onready var CategoryTitle = $CategoryTitle
 
 var current_category = 0
+var compared_part = false
 
 func _ready():
 	mode_switch(0)
+	
+func _process(dt):
+	if not compared_part:
+		for container in $CategoryContainers.get_children():
+			for stat in container.get_node("VBoxContainer").get_children():
+				if stat.get_child_count() > 0:
+					var comparison_value = stat.get_node("ComparisonValue")
+					comparison_value.percent_visible = lerp(comparison_value.percent_visible, 0, LERP_WEIGHT*dt)
+					if stat.has_node("ComparisonBar"):
+						var comparison_bar = stat.get_node("ComparisonBar")
+						var real_bar = stat.get_node("RealBar")
+						comparison_bar.value = lerp(comparison_bar.value, real_bar.value, LERP_WEIGHT*dt)
+					
 
 func mode_switch (mode):
 	assert(mode >= 0 and mode <= StatNodes.size() - 1, "Not a valid mode: " + str(mode))
@@ -45,3 +60,9 @@ func _on_SwitchRight_pressed():
 func _on_SwitchLeft_pressed():
 	current_category = posmod(current_category - 1, StatNodes.size())
 	mode_switch(current_category)
+
+func no_comparing_part():
+	pass
+
+func set_comparing_part():
+	pass

@@ -3,7 +3,7 @@ extends Control
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
 
 enum SIDE {LEFT, RIGHT, SINGLE}
-enum PARAM {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
+enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
 onready var PartList = $PartListContainer/VBoxContainer
 onready var DisplayMecha = $Mecha
@@ -48,6 +48,8 @@ func _on_Category_pressed(type,group,side = false):
 			item.setup(part)
 			PartList.add_child(item)
 			item.get_button().connect("pressed",self,"_on_itemFrame_pressed",[part_key,type,side])
+			item.get_button().connect("mouse_entered",self,"_on_itemFrame_mouse_entered",[part_key,type,side])
+			item.get_button().connect("mouse_exited",self,"_on_itemFrame_mouse_exited",[part_key,type,side])
 	else:
 		categoryVisible = false
 		for child in groupNode.get_children():
@@ -97,7 +99,13 @@ func _on_itemFrame_pressed(part_name,type,side):
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
+		
+
+func _on_itemFrame_mouse_entered(part_name,type,side):
+	pass
+	
+
+func _on_itemFrame_mouse_exited(part_name,type,side):
+	pass
 
 
-func _on_SwitchParams_pressed():
-	pass # Replace with function body.

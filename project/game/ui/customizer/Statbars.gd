@@ -30,6 +30,7 @@ var compared_part = false
 
 func _ready():
 	mode_switch(0)
+	update_max_value()
 	
 func _process(dt):
 	if not compared_part:
@@ -66,3 +67,21 @@ func no_comparing_part():
 
 func set_comparing_part():
 	pass
+
+func update_stats(mecha):
+	for container in $CategoryContainers.get_children():
+		for stat in container.get_node("VBoxContainer").get_children():
+			if stat.get("stat_name"):
+				var stat_value = mecha.get_stat(stat.stat_name)
+				stat.get_node("RealValue").text = str(stat_value)
+				if stat.has_node("RealBar"):
+					stat.get_node("RealBar").value = stat_value
+					stat.get_node("ComparisonBar").value = stat_value
+
+func update_max_value():
+	for container in $CategoryContainers.get_children():
+		for stat in container.get_node("VBoxContainer").get_children():
+			if stat.has_node("RealBar") and stat.get("stat_name"):
+				stat.get_node("RealBar").max_value = PartManager.get_max_stat_value(stat.stat_name)
+				stat.get_node("ComparisonBar").max_value = PartManager.get_max_stat_value(stat.stat_name)
+	

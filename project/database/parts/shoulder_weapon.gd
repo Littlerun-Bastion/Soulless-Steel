@@ -7,6 +7,8 @@ export var description : String
 export var image : Texture
 export var type: String
 export var projectile : Resource
+export var projectile_type : String
+export var requires_lock := false
 export var number_projectiles := 1
 export var damage_modifier := 1.0
 export var recoil_force := 0.0
@@ -25,6 +27,7 @@ export var soundEffect := "test"
 export var sound_max_range := 2000
 export var sound_att := 1.00
 export var weight := 1.0
+export var battery_drain := 0
 
 
 var firing_timer = 0.0

@@ -508,16 +508,18 @@ func set_shoulders(part_name):
 func get_max_hp():
 	return max_hp
 
-func get_weight():
-	var total_weight = 0.0
-	for part in [arm_weapon_left, arm_weapon_right, shoulders,\
+
+func get_stat(stat_name):
+	var total_stat = 0.0
+	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
 				 shoulder_weapon_left, shoulder_weapon_right,\
 				 head, core, generator, chipset, chassis_single,\
-				 chassis_left, chassis_right]:
-		if part and part.get("weight"):
-			total_weight += part.weight
-	return float(total_weight)
-
+				 chassis_left, chassis_right]
+	for part in parts:
+		if part and part.get(stat_name):
+			total_stat += part[stat_name]
+	return float(total_stat)
+	
 
 func get_weapon_part(part_name):
 	if part_name == "arm_weapon_left":
@@ -730,9 +732,9 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 
 
 func knockback(pos, strength, should_rotate = true):
-	apply_movement(sqrt(strength)*2/get_weight(), global_position - pos)
+	apply_movement(sqrt(strength)*2/get_stat("weight"), global_position - pos)
 	if should_rotate:
-		apply_rotation_by_point(sqrt(strength)*2/get_weight(), pos, false)
+		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), pos, false)
 
 
 func update_chassis_visuals(dt):
@@ -817,7 +819,7 @@ func shoot(type, is_auto_fire = false):
 	emit_signal("shoot")
 
 func apply_recoil(type, recoil):
-	var rotation = recoil*300/get_weight()
+	var rotation = recoil*300/get_stat("weight")
 	if "left" in type:
 		rotation *= -1
 	rotation_degrees += rotation
@@ -956,3 +958,4 @@ func select_impact(calibre, is_shield):
 	
 	if sfx_idx:
 		AudioManager.play_sfx(sfx_idx, global_position)
+

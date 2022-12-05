@@ -11,6 +11,7 @@ onready var categoryVisible = false
 
 func _ready():
 	default_loadout()
+	$Statbars.update_stats(DisplayMecha)
 
 func default_loadout():
 	DisplayMecha.set_core("MSV-L3J")

@@ -1,9 +1,10 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://game/ui/theme_folder/customizer_buttons_theme.tres" type="Theme" id=1]
 [ext_resource path="res://assets/fonts/stats_font.tres" type="DynamicFont" id=2]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
 [ext_resource path="res://game/ui/customizer/Statbars.gd" type="Script" id=4]
+[ext_resource path="res://game/ui/customizer/Stat.gd" type="Script" id=5]
 
 [sub_resource type="StyleBoxFlat" id=28]
 bg_color = Color( 0, 0, 0, 1 )
@@ -106,6 +107,8 @@ custom_constants/separation = 80
 
 [node name="LockSpeed" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "lock_on_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
 margin_left = 11.0
@@ -163,6 +166,8 @@ percent_visible = false
 margin_top = 80.0
 margin_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "lock_on_distance"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
 margin_left = 11.0
@@ -220,6 +225,8 @@ percent_visible = false
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "lock_on_strength"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
 margin_left = 11.0
@@ -277,6 +284,8 @@ percent_visible = false
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "ECM"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
 margin_left = 11.0
@@ -334,6 +343,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "ECM_frequency"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
 margin_left = 11.0
@@ -448,6 +459,8 @@ percent_visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "radar_refresh_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
 margin_left = 11.0
@@ -505,6 +518,8 @@ percent_visible = false
 margin_top = 560.0
 margin_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "loot_search_time"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
 margin_left = 11.0
@@ -573,11 +588,13 @@ rect_pivot_offset = Vector2( -163, 79 )
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/DefensesContainer"]
-margin_bottom = 320.0
+margin_bottom = 400.0
 custom_constants/separation = 80
 
 [node name="Armor" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "health"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
 margin_left = 11.0
@@ -635,6 +652,8 @@ percent_visible = false
 margin_top = 80.0
 margin_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "shield"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
 margin_left = 11.0
@@ -692,6 +711,8 @@ percent_visible = false
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "shield_regen_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
 margin_left = 11.0
@@ -749,6 +770,8 @@ percent_visible = false
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "shield_regen_delay"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
 margin_left = 11.0
@@ -806,6 +829,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "stability"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
 margin_left = 11.0
@@ -874,11 +899,13 @@ rect_pivot_offset = Vector2( -163, 79 )
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/MobilityContainer"]
-margin_bottom = 400.0
+margin_bottom = 480.0
 custom_constants/separation = 80
 
 [node name="WeightCapacity" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "weight_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
 margin_left = 11.0
@@ -936,6 +963,8 @@ percent_visible = false
 margin_top = 80.0
 margin_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "max_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
 margin_left = 11.0
@@ -993,6 +1022,8 @@ percent_visible = false
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "move_heat"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
 margin_left = 11.0
@@ -1050,6 +1081,8 @@ percent_visible = false
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "dash_distance"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
 margin_left = 11.0
@@ -1107,6 +1140,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "dash_recharge_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
 margin_left = 11.0
@@ -1164,6 +1199,8 @@ percent_visible = false
 margin_top = 400.0
 margin_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "dash_heat"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
 margin_left = 11.0
@@ -1232,11 +1269,13 @@ rect_pivot_offset = Vector2( -163, 79 )
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/EnergyContainer"]
-margin_bottom = 320.0
+margin_bottom = 400.0
 custom_constants/separation = 80
 
 [node name="HeatCapacity" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "heat_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
 margin_left = 11.0
@@ -1294,6 +1333,8 @@ percent_visible = false
 margin_top = 80.0
 margin_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "heat_dispersion"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
 margin_left = 11.0
@@ -1351,6 +1392,8 @@ percent_visible = false
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
 margin_left = 11.0
@@ -1408,6 +1451,8 @@ percent_visible = false
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_recharge_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
 margin_left = 11.0
@@ -1465,6 +1510,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "power_output"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
 margin_left = 11.0
@@ -1629,6 +1676,8 @@ clip_text = true
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "projectile_type"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ProjectileType"]
 margin_left = 11.0
@@ -1663,6 +1712,8 @@ clip_text = true
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "fire_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
 margin_left = 11.0
@@ -1720,6 +1771,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "bullet_spread"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
 margin_left = 11.0
@@ -1834,6 +1887,8 @@ percent_visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "requires_lock"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/RequiresLock"]
 margin_left = 11.0
@@ -1869,6 +1924,8 @@ clip_text = true
 margin_top = 560.0
 margin_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "clip_size"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
 margin_left = 11.0
@@ -1926,6 +1983,8 @@ percent_visible = false
 margin_top = 640.0
 margin_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "max_ammo"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
 margin_left = 11.0
@@ -1983,6 +2042,8 @@ percent_visible = false
 margin_top = 720.0
 margin_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_drain"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
 margin_left = 11.0
@@ -2053,6 +2114,11 @@ theme = ExtResource( 1 )
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/LArmContainer"]
 margin_bottom = 800.0
 custom_constants/separation = 80
+
+[node name="BlankSpace" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
+margin_top = 720.0
+margin_bottom = 720.0
+custom_styles/panel = SubResource( 20 )
 
 [node name="Damage" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
@@ -2148,6 +2214,8 @@ clip_text = true
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "projectile_type"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ProjectileType"]
 margin_left = 11.0
@@ -2182,6 +2250,8 @@ clip_text = true
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "fire_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
 margin_left = 11.0
@@ -2239,6 +2309,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "bullet_spread"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
 margin_left = 11.0
@@ -2353,6 +2425,8 @@ percent_visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "requires_lock"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/RequiresLock"]
 margin_left = 11.0
@@ -2388,6 +2462,8 @@ clip_text = true
 margin_top = 560.0
 margin_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "clip_size"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
 margin_left = 11.0
@@ -2445,6 +2521,8 @@ percent_visible = false
 margin_top = 640.0
 margin_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "max_ammo"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
 margin_left = 11.0
@@ -2502,6 +2580,8 @@ percent_visible = false
 margin_top = 720.0
 margin_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_drain"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
 margin_left = 11.0
@@ -2555,11 +2635,6 @@ custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
-[node name="BlankSpace" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
-custom_styles/panel = SubResource( 20 )
-
 [node name="RShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
 margin_left = 1294.0
@@ -2572,6 +2647,11 @@ theme = ExtResource( 1 )
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/RShoulderContainer"]
 margin_bottom = 800.0
 custom_constants/separation = 80
+
+[node name="BlankSpace" type="Panel" parent="CategoryContainers/RShoulderContainer/VBoxContainer"]
+margin_top = 720.0
+margin_bottom = 720.0
+custom_styles/panel = SubResource( 20 )
 
 [node name="Damage" type="Panel" parent="CategoryContainers/RShoulderContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
@@ -2667,6 +2747,8 @@ clip_text = true
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "projectile_type"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/ProjectileType"]
 margin_left = 11.0
@@ -2701,6 +2783,8 @@ clip_text = true
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "fire_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/FireRate"]
 margin_left = 11.0
@@ -2758,6 +2842,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "bullet_spread"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/Accuracy"]
 margin_left = 11.0
@@ -2872,6 +2958,8 @@ percent_visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "requires_lock"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/RequiresLock"]
 margin_left = 11.0
@@ -2907,6 +2995,8 @@ clip_text = true
 margin_top = 560.0
 margin_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "clip_size"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/Magazine Capacity"]
 margin_left = 11.0
@@ -2964,6 +3054,8 @@ percent_visible = false
 margin_top = 640.0
 margin_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "max_ammo"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/ReserveAmmunition"]
 margin_left = 11.0
@@ -3021,6 +3113,8 @@ percent_visible = false
 margin_top = 720.0
 margin_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_drain"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RShoulderContainer/VBoxContainer/BatteryPowerDrain"]
 margin_left = 11.0
@@ -3074,11 +3168,6 @@ custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
-[node name="BlankSpace" type="Panel" parent="CategoryContainers/RShoulderContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
-custom_styles/panel = SubResource( 20 )
-
 [node name="LShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
 margin_left = 1294.0
@@ -3091,6 +3180,11 @@ theme = ExtResource( 1 )
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/LShoulderContainer"]
 margin_bottom = 800.0
 custom_constants/separation = 80
+
+[node name="BlankSpace" type="Panel" parent="CategoryContainers/LShoulderContainer/VBoxContainer"]
+margin_top = 720.0
+margin_bottom = 720.0
+custom_styles/panel = SubResource( 20 )
 
 [node name="Damage" type="Panel" parent="CategoryContainers/LShoulderContainer/VBoxContainer"]
 custom_styles/panel = SubResource( 20 )
@@ -3186,6 +3280,8 @@ clip_text = true
 margin_top = 160.0
 margin_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "projectile_type"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/ProjectileType"]
 margin_left = 11.0
@@ -3220,6 +3316,8 @@ clip_text = true
 margin_top = 240.0
 margin_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "fire_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/FireRate"]
 margin_left = 11.0
@@ -3277,6 +3375,8 @@ percent_visible = false
 margin_top = 320.0
 margin_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "bullet_spread"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/Accuracy"]
 margin_left = 11.0
@@ -3391,6 +3491,8 @@ percent_visible = false
 margin_top = 480.0
 margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "requires_lock"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/RequiresLock"]
 margin_left = 11.0
@@ -3426,6 +3528,8 @@ clip_text = true
 margin_top = 560.0
 margin_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "clip_size"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/Magazine Capacity"]
 margin_left = 11.0
@@ -3483,6 +3587,8 @@ percent_visible = false
 margin_top = 640.0
 margin_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "max_ammo"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/ReserveAmmunition"]
 margin_left = 11.0
@@ -3540,6 +3646,8 @@ percent_visible = false
 margin_top = 720.0
 margin_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
+script = ExtResource( 5 )
+stat_name = "battery_drain"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LShoulderContainer/VBoxContainer/BatteryPowerDrain"]
 margin_left = 11.0
@@ -3592,11 +3700,6 @@ custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
-
-[node name="BlankSpace" type="Panel" parent="CategoryContainers/LShoulderContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
-custom_styles/panel = SubResource( 20 )
 
 [node name="SwitchRight" type="Button" parent="."]
 margin_left = 1645.0

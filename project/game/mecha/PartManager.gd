@@ -111,4 +111,14 @@ func get_part(type, name):
 func get_random_part_name(type):
 	var table = get_parts(type)
 	return table.keys()[randi()%table.keys().size()]
-	
+
+func get_max_stat_value(stat_name):
+	var max_value = 0.0
+	var categories = [ARM_WEAPONS, SHOULDER_WEAPONS, SHOULDERS, CORES, HEADS, CHASSIS, GENERATORS, CHIPSETS, THRUSTERS]
+	for parts in categories:
+		var current_max = 0
+		for part in parts.values():
+			if part.get(stat_name) and part.get(stat_name) > current_max:
+				current_max = part.get(stat_name)
+		max_value += current_max
+	return float(max_value)

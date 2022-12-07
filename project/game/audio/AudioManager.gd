@@ -5,6 +5,7 @@ enum {MASTER_BUS, SFX_BUS, BGM_BUS}
 
 #Volume/Fades
 const MUTE_DB = -80
+const CONTROL_MULTIPLIER = 2.5
 const FADEOUT_SPEED = 20
 const FADEIN_SPEED = 60
 
@@ -72,6 +73,28 @@ func setup_sfxs():
 	else:
 		push_error("An error occurred when trying to access sfxs path.")
 		assert(false)
+
+#Bus methods
+
+#Expects a value between 0 and 1
+func set_bus_volume(which_bus: int, value: float):
+	var db
+	if value <= 0.0:
+		db = MUTE_DB
+	else:
+		db = (1-value)*MUTE_DB/CONTROL_MULTIPLIER
+	
+	if which_bus in [MASTER_BUS, BGM_BUS, SFX_BUS]:
+		AudioServer.set_bus_volume_db(which_bus, db)
+	else:
+		assert(false, "Not a valid bus to set volume: " + str(which_bus))
+
+
+func get_bus_volume(which_bus: int):
+	if which_bus in [MASTER_BUS, SFX_BUS, BGM_BUS]:
+		return clamp(1.0 - AudioServer.get_bus_volume_db(which_bus)/float(MUTE_DB/CONTROL_MULTIPLIER), 0.0, 1.0)
+	else:
+		assert(false, "Not a valid bus to set volume: " + str(which_bus))
 
 #BGM methods
 

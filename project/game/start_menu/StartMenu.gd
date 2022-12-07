@@ -6,6 +6,8 @@ var parallaxMult = 30.0
 
 
 func _ready():
+	FileManager.load_game()
+	
 	randomize()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	ShaderEffects.reset_shader_effect("main_menu")
@@ -28,7 +30,11 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
 		OS.window_fullscreen = not OS.window_fullscreen
-		OS.window_borderless = OS.window_fullscreen
+		Profile.set_option("fullscreen", OS.window_fullscreen, true)
+		if not OS.window_fullscreen:
+			yield(get_tree(), "idle_frame")
+			OS.window_size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
+			OS.window_position = Vector2(0,0)
 
 
 func start_game(mode):

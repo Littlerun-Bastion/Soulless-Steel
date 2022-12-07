@@ -26,6 +26,9 @@ config/icon="res://icon.png"
 
 [autoload]
 
+FileManager="*res://game/file-manager/FileManager.gd"
+Profile="*res://game/file-manager/Profile.gd"
+Debug="*res://game/debug/Debug.tscn"
 AudioManager="*res://game/audio/AudioManager.tscn"
 PartManager="*res://game/mecha/PartManager.gd"
 ProjectileManager="*res://game/weapons/ProjectileManager.gd"
@@ -33,13 +36,11 @@ TickerManager="*res://game/ui/ticker/TickerManager.gd"
 PlayerStatManager="*res://game/mecha/player/PlayerStatManager.gd"
 ArenaManager="*res://game/arena/ArenaManager.gd"
 ShaderEffects="*res://game/ui/ShaderEffects.tscn"
-Debug="*res://game/debug/Debug.tscn"
 
 [display]
 
 window/size/width=1920
 window/size/height=1080
-window/size/borderless=true
 window/size/fullscreen=true
 window/size/test_width=1000
 window/size/test_height=600

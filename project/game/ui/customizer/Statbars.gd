@@ -29,7 +29,7 @@ var current_category = 0
 var compared_part = false
 
 func _ready():
-	mode_switch(0)
+	mode_switch(STAT.ELECTRONICS)
 	update_max_value()
 	
 func _process(dt):
@@ -43,7 +43,7 @@ func _process(dt):
 						var comparison_bar = stat.get_node("ComparisonBar")
 						var real_bar = stat.get_node("RealBar")
 						comparison_bar.value = lerp(comparison_bar.value, real_bar.value, LERP_WEIGHT*dt)
-					
+
 
 func mode_switch (mode):
 	assert(mode >= 0 and mode <= StatNodes.size() - 1, "Not a valid mode: " + str(mode))
@@ -52,6 +52,15 @@ func mode_switch (mode):
 		child.visible = child == target_node 
 	current_category = mode 
 	CategoryTitle.text = StatNodeTitles[current_category]
+
+
+func reset_comparing_part(_part_name, _type, _side):
+	compared_part = false
+
+
+func set_comparing_part(_part_name, _type, _side):
+	pass
+
 
 func _on_SwitchRight_pressed():
 	current_category = ((current_category + 1) % StatNodes.size())
@@ -62,11 +71,6 @@ func _on_SwitchLeft_pressed():
 	current_category = posmod(current_category - 1, StatNodes.size())
 	mode_switch(current_category)
 
-func no_comparing_part():
-	pass
-
-func set_comparing_part():
-	pass
 
 func update_stats(mecha):
 	for container in $CategoryContainers.get_children():

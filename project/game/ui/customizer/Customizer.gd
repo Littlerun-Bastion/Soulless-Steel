@@ -110,13 +110,12 @@ func _on_ItemFrame_pressed(part_name,type,side):
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
-		
+
 
 func _on_ItemFrame_mouse_entered(part_name,type,side):
-	pass
-	
+	StatBars.set_comparing_part(part_name, type, side)
+
 
 func _on_ItemFrame_mouse_exited(part_name,type,side):
-	pass
-
+	StatBars.reset_comparing_part(part_name, type, side)
 

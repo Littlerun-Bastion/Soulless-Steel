@@ -102,6 +102,7 @@ var head = null
 var core = null
 var generator = null
 var chipset = null
+var thruster = null
 var chassis_single = null
 var chassis_left = null
 var chassis_right = null
@@ -410,6 +411,11 @@ func set_chipset(part_name):
 	chipset = part_data
 
 
+func set_thruster(part_name):
+	var part_data = PartManager.get_part("thruster", part_name)
+	thruster = part_data
+
+
 func set_chassis(part_name, side := SIDE.LEFT):
 	if not part_name:
 		remove_chassis("single")
@@ -513,8 +519,8 @@ func get_stat(stat_name):
 	var total_stat = 0.0
 	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
 				 shoulder_weapon_left, shoulder_weapon_right,\
-				 head, core, generator, chipset, chassis_single,\
-				 chassis_left, chassis_right]
+				 head, core, generator, chipset, thruster,\
+				 chassis_single, chassis_left, chassis_right]
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]

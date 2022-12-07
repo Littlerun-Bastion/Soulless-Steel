@@ -6,12 +6,18 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
 onready var PartList = $PartListContainer/VBoxContainer
+onready var CategorySelectedUI = $CategorySelectedUI
+onready var CategoryButtons = $CategoryButtons
+onready var PartCategories = $PartCategories
 onready var DisplayMecha = $Mecha
-onready var categoryVisible = false
+onready var StatBars = $Statbars
+
+var category_visible = false
 
 func _ready():
 	default_loadout()
 	$Statbars.update_stats(DisplayMecha)
+
 
 func default_loadout():
 	DisplayMecha.set_core("MSV-L3J")
@@ -26,18 +32,28 @@ func default_loadout():
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	DisplayMecha.set_shoulders("shoulder_test")
 
+
+func show_category_button(parts, selected):
+	category_visible = false
+	PartList.visible = false
+	for child in PartList.get_children():
+		PartList.remove_child(child)
+	for child in PartCategories.get_children():
+		child.visible = (child == parts)
+	for child in CategorySelectedUI.get_children():
+		child.visible = (child == selected)
+
+
 func _on_Category_pressed(type,group,side = false):
-	var groupNode = get_node(group)
-	var typeName = type
+	var group_node = PartCategories.get_node(group)
+	var type_name = type
 	if side:
-		typeName = type + "_" + side
-	if categoryVisible == false:
-		categoryVisible = true
+		type_name = type + "_" + side
+	if category_visible == false:
+		category_visible = true
 		PartList.visible = true
-		for child in groupNode.get_children():
-			if child == get_node(group + "/" + typeName):
-				pass
-			else:
+		for child in group_node.get_children():
+			if child.name != type_name:
 				child.visible = false
 				child.pressed = false
 		var parts = PartManager.get_parts(type)
@@ -48,50 +64,31 @@ func _on_Category_pressed(type,group,side = false):
 			var item = ITEMFRAME.instance()
 			item.setup(part)
 			PartList.add_child(item)
-			item.get_button().connect("pressed",self,"_on_itemFrame_pressed",[part_key,type,side])
-			item.get_button().connect("mouse_entered",self,"_on_itemFrame_mouse_entered",[part_key,type,side])
-			item.get_button().connect("mouse_exited",self,"_on_itemFrame_mouse_exited",[part_key,type,side])
+			item.get_button().connect("pressed",self,"_on_ItemFrame_pressed",[part_key,type,side])
+			item.get_button().connect("mouse_entered",self,"_on_ItemFrame_mouse_entered",[part_key,type,side])
+			item.get_button().connect("mouse_exited",self,"_on_ItemFrame_mouse_exited",[part_key,type,side])
 	else:
-		categoryVisible = false
-		for child in groupNode.get_children():
+		category_visible = false
+		for child in group_node.get_children():
 			child.visible = true
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
 		PartList.visible = false
-	
 
-func hide_all_buttons():
-	categoryVisible = false
-	PartList.visible = false
-	for child in PartList.get_children(): #Clear PartList
-		PartList.remove_child(child)
-	$Hardware.visible = false
-	$Wetware.visible = false
-	$Equipment.visible = false
-	$HardwareSelected.visible = false
-	$WetwareSelected.visible = false
-	$EquipmentSelected.visible = false
-	
-	
 
 func _on_HardwareButton_pressed():
-	hide_all_buttons()
-	$HardwareSelected.visible = true
-	$Hardware.visible = true
+	show_category_button($PartCategories/Hardware, $CategorySelectedUI/Hardware)
 
 
 func _on_WetwareButton_pressed():
-	hide_all_buttons()
-	$WetwareSelected.visible = true
-	$Wetware.visible = true
+	show_category_button($PartCategories/Wetware, $CategorySelectedUI/Wetware)
 
 
 func _on_EquipmentButton_pressed():
-	hide_all_buttons()
-	$EquipmentSelected.visible = true
-	$Equipment.visible = true
+	show_category_button($PartCategories/Hardware, $CategorySelectedUI/Equipment)
 
-func _on_itemFrame_pressed(part_name,type,side):
+
+func _on_ItemFrame_pressed(part_name,type,side):
 	var part = PartManager.get_part(type,part_name)
 	if type == "chassis":
 		DisplayMecha.callv("set_" + str(type), [part_name,part.side])
@@ -102,11 +99,11 @@ func _on_itemFrame_pressed(part_name,type,side):
 		DisplayMecha.callv("set_" + str(type), [part_name])
 		
 
-func _on_itemFrame_mouse_entered(part_name,type,side):
+func _on_ItemFrame_mouse_entered(part_name,type,side):
 	pass
 	
 
-func _on_itemFrame_mouse_exited(part_name,type,side):
+func _on_ItemFrame_mouse_exited(part_name,type,side):
 	pass
 
 

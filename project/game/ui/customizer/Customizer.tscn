@@ -110,68 +110,87 @@ margin_right = 3334.67
 margin_bottom = 3209.34
 texture = ExtResource( 6 )
 
-[node name="LowerBar" type="ColorRect" parent="."]
+[node name="BackgroundElements" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="LowerBar" type="ColorRect" parent="BackgroundElements"]
 anchor_top = 0.978755
 anchor_right = 1.0
 anchor_bottom = 1.00005
-margin_top = 3.94446
-margin_bottom = 3.94446
+margin_top = 1021.85
+margin_bottom = 1036.0
 rect_min_size = Vector2( 0, 15 )
 rect_pivot_offset = Vector2( 0.0615444, 39.8171 )
 color = Color( 0, 0, 0, 1 )
-__meta__ = {
-"_edit_use_anchors_": true
-}
 
-[node name="LeftBar" type="ColorRect" parent="."]
+[node name="LeftBar" type="ColorRect" parent="BackgroundElements"]
 margin_right = 43.0
 margin_bottom = 1084.0
 color = Color( 0, 0, 0, 1 )
 
-[node name="RightBar" type="ColorRect" parent="."]
+[node name="RightBar" type="ColorRect" parent="BackgroundElements"]
 margin_left = 1383.0
 margin_right = 1923.0
 margin_bottom = 1084.0
 color = Color( 0, 0, 0, 1 )
 
-[node name="UpperBar" type="ColorRect" parent="."]
+[node name="UpperBar" type="ColorRect" parent="BackgroundElements"]
 anchor_right = 1.0
 margin_top = 3.0
 margin_bottom = 257.0
 rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )
 
-[node name="MainSystemContainer" type="VBoxContainer" parent="."]
+[node name="MainSystemContainer" type="VBoxContainer" parent="BackgroundElements"]
 margin_left = 43.0
 margin_top = 47.0
 margin_right = 470.0
 margin_bottom = 152.0
 custom_constants/separation = -3
 
-[node name="Label" type="Label" parent="MainSystemContainer"]
+[node name="Label" type="Label" parent="BackgroundElements/MainSystemContainer"]
 margin_right = 427.0
 margin_bottom = 24.0
 custom_fonts/font = SubResource( 10 )
 text = "Hangar"
 
-[node name="Label2" type="Label" parent="MainSystemContainer"]
+[node name="Label2" type="Label" parent="BackgroundElements/MainSystemContainer"]
 margin_top = 21.0
 margin_right = 427.0
 margin_bottom = 40.0
 custom_fonts/font = SubResource( 11 )
 text = "SAV_hUNTERos.EXE -Hgr"
 
-[node name="Hardware" type="GridContainer" parent="."]
+[node name="SideBar1" type="ColorRect" parent="BackgroundElements"]
+anchor_bottom = 1.0
+margin_left = 12.0
+margin_right = 14.0
+margin_bottom = 1040.0
+rect_min_size = Vector2( 2, 0 )
+
+[node name="SideBar2" type="ColorRect" parent="BackgroundElements"]
+anchor_bottom = 1.0
+margin_left = 17.2305
+margin_right = 24.2305
+margin_bottom = 1040.0
+rect_min_size = Vector2( 7, 0 )
+
+[node name="PartCategories" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Hardware" type="GridContainer" parent="PartCategories"]
 margin_left = 40.0
 margin_top = 258.0
-margin_right = 1240.0
+margin_right = 1315.0
 margin_bottom = 318.0
 rect_scale = Vector2( 0.66, 0.66 )
 custom_constants/vseparation = 50
 custom_constants/hseparation = 25
 columns = 4
 
-[node name="head" type="Button" parent="Hardware"]
+[node name="head" type="Button" parent="PartCategories/Hardware"]
 margin_right = 300.0
 margin_bottom = 60.0
 rect_min_size = Vector2( 300, 60 )
@@ -180,7 +199,7 @@ text = "Head"
 align = 0
 icon_align = 2
 
-[node name="core" type="Button" parent="Hardware"]
+[node name="core" type="Button" parent="PartCategories/Hardware"]
 margin_left = 325.0
 margin_right = 625.0
 margin_bottom = 60.0
@@ -190,7 +209,7 @@ text = "Core"
 align = 0
 icon_align = 2
 
-[node name="shoulders" type="Button" parent="Hardware"]
+[node name="shoulders" type="Button" parent="PartCategories/Hardware"]
 margin_left = 650.0
 margin_right = 950.0
 margin_bottom = 60.0
@@ -200,7 +219,7 @@ text = "Shoulders"
 align = 0
 icon_align = 2
 
-[node name="chassis" type="Button" parent="Hardware"]
+[node name="chassis" type="Button" parent="PartCategories/Hardware"]
 margin_left = 975.0
 margin_right = 1275.0
 margin_bottom = 60.0
@@ -210,7 +229,7 @@ text = "Chassis"
 align = 0
 icon_align = 2
 
-[node name="Wetware" type="GridContainer" parent="."]
+[node name="Wetware" type="GridContainer" parent="PartCategories"]
 visible = false
 margin_left = 40.0
 margin_top = 258.0
@@ -221,7 +240,7 @@ custom_constants/vseparation = 50
 custom_constants/hseparation = 25
 columns = 4
 
-[node name="chipset" type="Button" parent="Wetware"]
+[node name="chipset" type="Button" parent="PartCategories/Wetware"]
 margin_right = 300.0
 margin_bottom = 60.0
 rect_min_size = Vector2( 300, 60 )
@@ -230,7 +249,7 @@ text = "Chipset"
 align = 0
 icon_align = 2
 
-[node name="generator" type="Button" parent="Wetware"]
+[node name="generator" type="Button" parent="PartCategories/Wetware"]
 margin_left = 325.0
 margin_right = 625.0
 margin_bottom = 60.0
@@ -240,7 +259,7 @@ text = "Generator"
 align = 0
 icon_align = 2
 
-[node name="thruster" type="Button" parent="Wetware"]
+[node name="thruster" type="Button" parent="PartCategories/Wetware"]
 margin_left = 650.0
 margin_right = 950.0
 margin_bottom = 60.0
@@ -250,18 +269,18 @@ text = "Thruster"
 align = 0
 icon_align = 2
 
-[node name="Equipment" type="GridContainer" parent="."]
+[node name="Equipment" type="GridContainer" parent="PartCategories"]
 visible = false
 margin_left = 40.0
 margin_top = 258.0
-margin_right = 1240.0
+margin_right = 1315.0
 margin_bottom = 318.0
 rect_scale = Vector2( 0.66, 0.66 )
 custom_constants/vseparation = 50
 custom_constants/hseparation = 25
 columns = 4
 
-[node name="arm_weapon_right" type="Button" parent="Equipment"]
+[node name="arm_weapon_right" type="Button" parent="PartCategories/Equipment"]
 margin_right = 300.0
 margin_bottom = 60.0
 rect_min_size = Vector2( 300, 60 )
@@ -270,7 +289,7 @@ text = "Right Arm"
 align = 0
 icon_align = 2
 
-[node name="arm_weapon_left" type="Button" parent="Equipment"]
+[node name="arm_weapon_left" type="Button" parent="PartCategories/Equipment"]
 margin_left = 325.0
 margin_right = 625.0
 margin_bottom = 60.0
@@ -280,7 +299,7 @@ text = "Left Arm"
 align = 0
 icon_align = 2
 
-[node name="shoulder_weapon_right" type="Button" parent="Equipment"]
+[node name="shoulder_weapon_right" type="Button" parent="PartCategories/Equipment"]
 margin_left = 650.0
 margin_right = 950.0
 margin_bottom = 60.0
@@ -290,7 +309,7 @@ text = "R Shoulder"
 align = 0
 icon_align = 2
 
-[node name="shoulder_weapon_left" type="Button" parent="Equipment"]
+[node name="shoulder_weapon_left" type="Button" parent="PartCategories/Equipment"]
 margin_left = 975.0
 margin_right = 1275.0
 margin_bottom = 60.0
@@ -300,23 +319,18 @@ text = "L Shoulder"
 align = 0
 icon_align = 2
 
-[node name="PartListContainer" type="ScrollContainer" parent="."]
-margin_left = 40.0
-margin_top = 313.0
-margin_right = 440.0
-margin_bottom = 1063.0
+[node name="CategorySelectedUI" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
-custom_constants/separation = 120
-
-[node name="HardwareSelected" type="TextureRect" parent="."]
+[node name="Hardware" type="TextureRect" parent="CategorySelectedUI"]
 margin_left = 43.44
 margin_top = 131.72
 margin_right = 1872.44
 margin_bottom = 205.72
 texture = ExtResource( 4 )
 
-[node name="WetwareSelected" type="TextureRect" parent="."]
+[node name="Wetware" type="TextureRect" parent="CategorySelectedUI"]
 visible = false
 margin_left = 44.0
 margin_top = 132.0
@@ -324,7 +338,7 @@ margin_right = 1873.0
 margin_bottom = 206.0
 texture = ExtResource( 7 )
 
-[node name="EquipmentSelected" type="TextureRect" parent="."]
+[node name="Equipment" type="TextureRect" parent="CategorySelectedUI"]
 visible = false
 margin_left = 44.0
 margin_top = 132.0
@@ -332,7 +346,11 @@ margin_right = 1873.0
 margin_bottom = 206.0
 texture = ExtResource( 5 )
 
-[node name="HardwareButton" type="Button" parent="."]
+[node name="CategoryButtons" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Hardware" type="Button" parent="CategoryButtons"]
 margin_left = 46.0
 margin_top = 140.0
 margin_right = 357.0
@@ -343,7 +361,7 @@ custom_styles/normal = SubResource( 18 )
 text = "Hardware"
 icon_align = 1
 
-[node name="WetwareButton" type="Button" parent="."]
+[node name="Wetware" type="Button" parent="CategoryButtons"]
 margin_left = 370.0
 margin_top = 140.0
 margin_right = 681.0
@@ -353,7 +371,7 @@ custom_styles/normal = SubResource( 18 )
 text = "Wetware"
 icon_align = 1
 
-[node name="EquipmentButton" type="Button" parent="."]
+[node name="Equipment" type="Button" parent="CategoryButtons"]
 margin_left = 692.0
 margin_top = 140.0
 margin_right = 1003.0
@@ -363,17 +381,14 @@ custom_styles/normal = SubResource( 18 )
 text = "weapons"
 icon_align = 1
 
-[node name="SideBar1" type="ColorRect" parent="."]
-anchor_bottom = 1.0
-margin_left = 12.0
-margin_right = 14.0
-rect_min_size = Vector2( 2, 0 )
+[node name="PartListContainer" type="ScrollContainer" parent="."]
+margin_left = 40.0
+margin_top = 313.0
+margin_right = 440.0
+margin_bottom = 1063.0
 
-[node name="SideBar2" type="ColorRect" parent="."]
-anchor_bottom = 1.0
-margin_left = 17.2305
-margin_right = 24.2305
-rect_min_size = Vector2( 7, 0 )
+[node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
+custom_constants/separation = 120
 
 [node name="WeightBar" type="ProgressBar" parent="."]
 margin_left = 1216.0
@@ -389,17 +404,17 @@ value = 50.0
 
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
 
-[connection signal="pressed" from="Hardware/head" to="." method="_on_Category_pressed" binds= [ "head", "Hardware" ]]
-[connection signal="pressed" from="Hardware/core" to="." method="_on_Category_pressed" binds= [ "core", "Hardware" ]]
-[connection signal="pressed" from="Hardware/shoulders" to="." method="_on_Category_pressed" binds= [ "shoulders", "Hardware" ]]
-[connection signal="pressed" from="Hardware/chassis" to="." method="_on_Category_pressed" binds= [ "chassis", "Hardware" ]]
-[connection signal="pressed" from="Wetware/chipset" to="." method="_on_Category_pressed" binds= [ "chipset", "Wetware" ]]
-[connection signal="pressed" from="Wetware/generator" to="." method="_on_Category_pressed" binds= [ "generator", "Wetware" ]]
-[connection signal="pressed" from="Wetware/thruster" to="." method="_on_Category_pressed" binds= [ "thruster", "Wetware" ]]
-[connection signal="pressed" from="Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "right" ]]
-[connection signal="pressed" from="Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "left" ]]
-[connection signal="pressed" from="Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "right" ]]
-[connection signal="pressed" from="Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "left" ]]
-[connection signal="pressed" from="HardwareButton" to="." method="_on_HardwareButton_pressed"]
-[connection signal="pressed" from="WetwareButton" to="." method="_on_WetwareButton_pressed"]
-[connection signal="pressed" from="EquipmentButton" to="." method="_on_EquipmentButton_pressed"]
+[connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= [ "head", "Hardware" ]]
+[connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= [ "core", "Hardware" ]]
+[connection signal="pressed" from="PartCategories/Hardware/shoulders" to="." method="_on_Category_pressed" binds= [ "shoulders", "Hardware" ]]
+[connection signal="pressed" from="PartCategories/Hardware/chassis" to="." method="_on_Category_pressed" binds= [ "chassis", "Hardware" ]]
+[connection signal="pressed" from="PartCategories/Wetware/chipset" to="." method="_on_Category_pressed" binds= [ "chipset", "Wetware" ]]
+[connection signal="pressed" from="PartCategories/Wetware/generator" to="." method="_on_Category_pressed" binds= [ "generator", "Wetware" ]]
+[connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= [ "thruster", "Wetware" ]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "right" ]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "left" ]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "right" ]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "left" ]]
+[connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
+[connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
+[connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]

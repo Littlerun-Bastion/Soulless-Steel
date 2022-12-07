@@ -19,6 +19,16 @@ func _ready():
 	$Statbars.update_stats(DisplayMecha)
 
 
+func _input(event):
+	if event.is_action_pressed("toggle_fullscreen"):
+		OS.window_fullscreen = not OS.window_fullscreen
+		Profile.set_option("fullscreen", OS.window_fullscreen, true)
+		if not OS.window_fullscreen:
+			yield(get_tree(), "idle_frame")
+			OS.window_size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
+			OS.window_position = Vector2(0,0)
+
+
 func default_loadout():
 	DisplayMecha.set_core("MSV-L3J")
 	DisplayMecha.set_generator("type_1")
@@ -38,8 +48,11 @@ func show_category_button(parts, selected):
 	PartList.visible = false
 	for child in PartList.get_children():
 		PartList.remove_child(child)
-	for child in PartCategories.get_children():
-		child.visible = (child == parts)
+	for category in PartCategories.get_children():
+		category.visible = (category == parts)
+		for part in category.get_children():
+			part.visible = true
+			part.pressed = false
 	for child in CategorySelectedUI.get_children():
 		child.visible = (child == selected)
 

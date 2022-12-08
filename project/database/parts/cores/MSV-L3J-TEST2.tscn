@@ -22,13 +22,13 @@ health = 200
 shield = 60
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
-position = Vector2( -30, 70 )
+position = Vector2( -31, 70 )
 
 [node name="Reference" type="Sprite" parent="LeftChassisOffset"]
 texture = ExtResource( 9 )
 
 [node name="RightChassisOffset" type="Position2D" parent="."]
-position = Vector2( 30, 70 )
+position = Vector2( 37, 70 )
 
 [node name="Reference" type="Sprite" parent="RightChassisOffset"]
 texture = ExtResource( 8 )

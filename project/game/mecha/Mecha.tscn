@@ -336,34 +336,28 @@ texture = ExtResource( 13 )
 
 [node name="Sub" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 20 )
-position = Vector2( -50, 70 )
 texture = ExtResource( 19 )
 
 [node name="Glow" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 21 )
-position = Vector2( -50, 70 )
 texture = ExtResource( 20 )
 
 [node name="Main" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 22 )
-position = Vector2( -50, 70 )
 texture = ExtResource( 23 )
 
 [node name="Right" type="Node2D" parent="Chassis"]
 
 [node name="Sub" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 23 )
-position = Vector2( 50, 70 )
 texture = ExtResource( 21 )
 
 [node name="Glow" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 24 )
-position = Vector2( 50, 70 )
 texture = ExtResource( 24 )
 
 [node name="Main" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 25 )
-position = Vector2( 50, 70 )
 texture = ExtResource( 22 )
 
 [node name="Core" type="Sprite" parent="."]

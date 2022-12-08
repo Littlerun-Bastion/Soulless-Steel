@@ -103,9 +103,7 @@ var core = null
 var generator = null
 var chipset = null
 var thruster = null
-var chassis_single = null
-var chassis_left = null
-var chassis_right = null
+var chassis = null
 
 
 func _ready():
@@ -189,13 +187,8 @@ func update_max_life_from_parts():
 		value += core.health
 	if head:
 		value += head.health
-	#Check chassis
-	if chassis_single:
-		value += chassis_single.health
-	elif chassis_right:
-		value += chassis_right.health
-	elif chassis_left:
-		value += chassis_left.health
+	if chassis:
+		value += chassis.health
 	
 	set_max_life(value)
 
@@ -416,65 +409,50 @@ func set_thruster(part_name):
 	thruster = part_data
 
 
-func set_chassis(part_name, side := SIDE.LEFT):
+func set_chassis(part_name):
 	if not part_name:
 		remove_chassis("single")
 		remove_chassis("pair")
 		movement_type = "free"
 		return
+	chassis = PartManager.get_part("chassis", part_name)
+	if chassis.is_legs:
+			remove_chassis("single")
+			set_chassis_nodes(RightChassis, RightChassisSub, RightChassisGlow, $ChassisRightCollision, SIDE.RIGHT)
+			set_chassis_nodes(LeftChassis, LeftChassisSub, LeftChassisGlow, $ChassisLeftCollision, SIDE.LEFT)
+	else:
+		remove_chassis("pair")
+		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 
-	var main; var sub; var glow; var collision
-	var pos = false
-	var part_data = PartManager.get_part("chassis", part_name)
-	match side:
-		SIDE.RIGHT:
-			main = RightChassis; sub = RightChassisSub; glow = RightChassisGlow
-			collision = $ChassisRightCollision
-			if core:
-				pos = core.get_chassis_offset(SIDE.RIGHT)
-			chassis_right = part_data
-			remove_chassis("single")
-		SIDE.LEFT:
-			main = LeftChassis; sub = LeftChassisSub; glow = LeftChassisGlow
-			collision = $ChassisLeftCollision
-			if core:
-				pos = core.get_chassis_offset(SIDE.LEFT)
-			chassis_left = part_data
-			remove_chassis("single")
-		SIDE.SINGLE:
-			main = SingleChassis; sub = SingleChassisSub; glow = SingleChassisGlow
-			collision = $ChassisSingleCollision
-			chassis_single = part_data
-			remove_chassis("pair")
-	if pos:
+
+	
+func set_chassis_nodes(main,sub,glow,collision,side = false):
+	if core and chassis.is_legs:
+		var pos = core.get_chassis_offset(side)
 		main.position = pos
 		sub.position = pos
 		glow.position = pos
 		collision.position = pos
-
-	main.texture = part_data.get_image()
-	sub.texture = part_data.get_sub()
-	glow.texture = part_data.get_glow()
-	collision.polygon = part_data.get_collision()
-	movement_type = part_data.movement_type
-	move_heat = part_data.move_heat
-	set_speed(part_data.max_speed, part_data.move_acc, part_data.friction, part_data.rotation_acc)
+	main.texture = chassis.get_image(side)
+	sub.texture = chassis.get_sub(side)
+	glow.texture = chassis.get_glow(side)
+	collision.polygon = chassis.get_collision(side)
+	movement_type = chassis.movement_type
+	move_heat = chassis.move_heat
+	set_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
 
 func remove_chassis(type):
 	if type == "single":
-		chassis_single = null
 		SingleChassis.texture = null
 		SingleChassisGlow.texture = null
 		SingleChassisSub.texture = null
 		$ChassisSingleCollision.polygon = []
 	elif type == "pair":
-		chassis_left = null
 		LeftChassis.texture = null
 		LeftChassisGlow.texture = null
 		LeftChassisSub.texture = null
 		$ChassisLeftCollision.polygon = []
-		chassis_right = null
 		RightChassis.texture = null
 		RightChassisGlow.texture = null
 		RightChassisSub.texture = null
@@ -520,7 +498,7 @@ func get_stat(stat_name):
 	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
 				 shoulder_weapon_left, shoulder_weapon_right,\
 				 head, core, generator, chipset, thruster,\
-				 chassis_single, chassis_left, chassis_right]
+				 chassis]
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
@@ -745,7 +723,7 @@ func knockback(pos, strength, should_rotate = true):
 
 func update_chassis_visuals(dt):
 	var angulation = 25
-	if chassis_left or chassis_right:
+	if chassis and chassis.is_legs:
 		var rot_vec = Vector2(1, 0).rotated(deg2rad(rotation_degrees))
 		var vel_vec = velocity
 		var left_target_angle

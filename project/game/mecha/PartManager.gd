@@ -10,9 +10,6 @@ onready var SHOULDERS = {}
 onready var CORES = {}
 onready var HEADS = {}
 onready var CHASSIS = {}
-onready var CHASSIS_LEFT = {}
-onready var CHASSIS_RIGHT = {}
-onready var CHASSIS_SINGLE = {}
 onready var GENERATORS = {}
 onready var CHIPSETS = {}
 onready var THRUSTERS = {}
@@ -35,21 +32,6 @@ func setup_parts():
 	load_parts("thrusters", THRUSTERS)
 	load_parts("projectiles", PROJECTILES)
 	
-	setup_chassis_sides()
-
-
-func setup_chassis_sides():
-	for key in CHASSIS.keys():
-		var chassis = CHASSIS[key]
-		if chassis.side == SIDE.LEFT:
-			CHASSIS_LEFT[key] = chassis
-		elif chassis.side == SIDE.RIGHT:
-			CHASSIS_RIGHT[key] = chassis
-		elif chassis.side == SIDE.SINGLE:
-			CHASSIS_SINGLE[key] = chassis
-		else:
-			push_error("Not a valid chassis side type: " + str(chassis.side))
-
 
 func load_parts(name, dict):
 	var dir = Directory.new()
@@ -83,12 +65,6 @@ func get_parts(type):
 			return HEADS
 		"chassis":
 			return CHASSIS
-		"chassis_left":
-			return CHASSIS_LEFT
-		"chassis_right":
-			return CHASSIS_RIGHT
-		"chassis_single":
-			return CHASSIS_SINGLE
 		"generator":
 			return GENERATORS
 		"chipset":

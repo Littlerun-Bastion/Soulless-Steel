@@ -17,8 +17,7 @@ func _ready():
 		set_generator("type_1")
 		set_chipset("type_1")
 		set_head("head_test")
-		set_chassis("MSV-L3J-L", SIDE.LEFT)
-		set_chassis("MSV-L3J-R", SIDE.RIGHT)
+		set_chassis("legs_test2")
 		set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
@@ -136,8 +135,7 @@ func setup(arena_ref):
 		set_chipset("type_1")
 		set_head("head_test2")
 		#Use to test free mode
-		set_chassis("MSV-L3J-L", SIDE.LEFT)
-		set_chassis("MSV-L3J-R", SIDE.RIGHT)
+		set_chassis("legs_test")
 		#Use to test tank mode
 		#set_chassis("T-01-TR", SIDE.SINGLE)
 		set_arm_weapon("TT1-Flamethrower", SIDE.LEFT)

@@ -97,14 +97,11 @@ func _on_WetwareButton_pressed():
 
 
 func _on_EquipmentButton_pressed():
-	show_category_button($PartCategories/Hardware, $CategorySelectedUI/Equipment)
+	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
 func _on_ItemFrame_pressed(part_name,type,side):
-	var part = PartManager.get_part(type,part_name)
-	if type == "chassis":
-		DisplayMecha.callv("set_" + str(type), [part_name,part.side])
-	elif side:
+	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:

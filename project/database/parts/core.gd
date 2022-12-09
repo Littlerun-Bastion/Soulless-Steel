@@ -7,12 +7,14 @@ export var manufacturer_name : String
 export var tagline : String
 export var description : String
 export var image : Texture
-export var health := 10
-export var shield := 10
+export var healthMult := 1.5
+export var shieldMult := 1.5
 export var stability := 10.0 
 export var has_left_shoulder := false 
 export var has_right_shoulder := false 
 export var weight:= 300 
+var health := healthMult * 4500.0
+var shield := shieldMult * 2500.0
 
 
 func get_image():

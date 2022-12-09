@@ -12,7 +12,6 @@ part_name = "Test Head 1"
 manufacturer_name = "Test"
 tagline = "Test"
 image = ExtResource( 5 )
-health = 35
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 1 )

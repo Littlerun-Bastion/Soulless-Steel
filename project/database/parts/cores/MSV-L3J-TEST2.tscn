@@ -18,8 +18,6 @@ script = ExtResource( 1 )
 part_name = "MSV-L3J TEST"
 manufacturer_name = "Test"
 tagline = "Light Core"
-health = 200
-shield = 60
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
 position = Vector2( -31, 70 )

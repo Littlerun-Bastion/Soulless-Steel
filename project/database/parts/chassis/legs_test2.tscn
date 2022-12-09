@@ -10,7 +10,6 @@ script = ExtResource( 7 )
 part_name = "Test 2 L3J"
 manufacturer_name = "Test Tank Chassis"
 tagline = "Bipedal"
-health = 50
 
 [node name="SingleSide" type="Node2D" parent="."]
 

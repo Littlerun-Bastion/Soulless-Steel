@@ -14,7 +14,6 @@ part_name = "Test 2 L3J"
 manufacturer_name = "Test Legged Chassis"
 tagline = "Bipedal"
 is_legs = true
-health = 50
 
 [node name="SingleSide" type="Node2D" parent="."]
 

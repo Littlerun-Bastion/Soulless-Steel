@@ -10,6 +10,9 @@ var decaying_speed_ratio = 1.0
 var scaling_variance = 0.0
 var dir = Vector2()
 var damage = 0
+var shield_mult = 0.0
+var health_mult = 0.0
+var heat_damage = 0.0
 var is_overtime = false
 var decal_type = "bullet_hole"
 var original_mecha_info
@@ -54,6 +57,9 @@ func setup(mecha, args):
 	speed = data.speed
 	$Sprite/LightEffect.modulate.a = data.light_energy
 	damage = data.damage * args.damage_mod
+	shield_mult = args.shield_mult
+	health_mult = args.health_mult
+	heat_damage = args.heat_damage
 	is_overtime = data.is_overtime
 	calibre = data.calibre
 	dir = args.dir.normalized()
@@ -105,7 +111,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			body.add_decal(body_shape_id, collision_point, decal_type, size)
 	
 			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
-			body.take_damage(final_damage, original_mecha_info, weapon_name, calibre)
+			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, original_mecha_info, weapon_name, calibre)
 			if not is_overtime:
 				pass
 				#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))

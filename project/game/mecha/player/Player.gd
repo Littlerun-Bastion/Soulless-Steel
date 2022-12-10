@@ -85,9 +85,9 @@ func get_camera():
 	return Cam
 
 
-func take_damage(amount, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp
-	.take_damage(amount, source_info, weapon_name, calibre)
+	.take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name, calibre)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 

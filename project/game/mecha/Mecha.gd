@@ -221,17 +221,18 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
 	
 	if amount > 0 and generator:
 		shield_regen_cooldown = generator.shield_regen_delay
 	var temp_shield = shield
-	shield = max(shield - amount, 0)
+	shield = max(shield - (shield_mult * amount), 0)
 	amount = max(amount - temp_shield, 0)
 	
-	hp = max(hp - amount, 0)
+	hp = max(hp - (health_mult * amount), 0)
+	mecha_heat += heat_damage
 	if shield <= 0:
 		select_impact(calibre, false)
 	else:
@@ -797,6 +798,9 @@ func shoot(type, is_auto_fire = false):
 						"pos": node.get_shoot_position(),
 						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
 						"damage_mod": weapon_ref.damage_modifier,
+						"shield_mult": weapon_ref.shield_mult,
+						"health_mult": weapon_ref.health_mult,
+						"heat_damage": weapon_ref.heat_damage,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 					})
 	apply_recoil(type, weapon_ref.recoil_force)

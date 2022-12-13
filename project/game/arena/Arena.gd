@@ -334,7 +334,7 @@ func _on_mecha_create_projectile(mecha, args):
 
 func _on_bullet_impact(projectile):
 	var impact_effect = ProjectileManager.create_explosion(projectile)
-	impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
+	impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit, projectile.speed)
 	Explosions.add_child(impact_effect)
 	
 

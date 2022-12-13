@@ -20,6 +20,7 @@ var decal_type = "bullet_hole"
 var original_mecha_info
 var weapon_name
 var calibre
+var seeker_target : Object = null
 var mech_hit = false
 
 var trail_enabled := false
@@ -31,8 +32,11 @@ var trail_width := 20
 
 var has_wiggle := false
 var wiggle_amount := 2.0
+var is_seeker := false
+var seek_agility := 0.01
 
 var impact_size := 1.0
+
 
 
 func _ready():
@@ -53,9 +57,13 @@ func _process(dt):
 			time_elapsed -= 1.0
 		speed *= decaying_speed_ratio*(1.0 - dt)
 	position += dir*speed*dt
+	if is_seeker:
+		if seeker_target and is_instance_valid(seeker_target):
+			dir = lerp(dir.rotated(rand_range(-wiggle_amount, wiggle_amount)), position.direction_to(seeker_target.position), seek_agility)
 	if has_wiggle:
-		dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
-		
+		if not seeker_target or not is_seeker or not is_instance_valid(seeker_target):
+			dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
+	
 	
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, $LifeTimer.time_left)
@@ -88,6 +96,9 @@ func setup(mecha, args):
 	wiggle_amount = args.wiggle_amount
 	calibre = data.calibre
 	impact_size = args.impact_size
+	is_seeker = args.is_seeker
+	if args.seeker_target:
+		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90

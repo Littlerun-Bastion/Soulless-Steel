@@ -811,6 +811,8 @@ func shoot(type, is_auto_fire = false):
 						
 						"has_wiggle": weapon_ref.has_wiggle,
 						"wiggle_amount": weapon_ref.wiggle_amount,
+						"is_seeker": weapon_ref.is_seeker,
+						"seeker_target": locked_to,
 						
 						"impact_size": weapon_ref.impact_size
 					})

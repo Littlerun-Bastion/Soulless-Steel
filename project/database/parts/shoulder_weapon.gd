@@ -45,6 +45,7 @@ export var impact_size := 1.0
 #---MISSILE/ROCKET BEHAVIOURS---
 export var has_wiggle := false
 export var wiggle_amount := 2.0
+export var is_seeker := false
 
 
 var firing_timer = 0.0

@@ -3,6 +3,7 @@ extends Node
 enum TYPE {INSTANT, REGULAR}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
+const TRAIL = preload("res://game/weapons/Trail.tscn")
 
 func create(mecha, args):
 	var wr = weakref(mecha)
@@ -20,11 +21,17 @@ func create(mecha, args):
 	
 	elif projectile_data.type == TYPE.REGULAR:
 		var projectile = REGULAR.instance()
-		projectile.setup(mecha, args)
+		projectile.setup(mecha, args)#
 		data.create_node = true
 		data.node = projectile
 	
 	return data
+
+func create_trail(projectile, args):
+		var trail = TRAIL.instance()
+		trail.setup(args.trail_lifetime, args.trail_lifetime_range, args.trail_eccentricity, args.trail_min_spawn_distance, projectile)
+		return trail
+
 
 #Given two polygons and their transforms, return an array with all points where they collide
 func get_intersection_points(poly1, trans1, poly2, trans2):

@@ -19,6 +19,11 @@ var original_mecha_info
 var weapon_name
 var calibre
 
+var trail_enabled := false
+var trail_lifetime := 1.0
+var trail_lifetime_range := 0.25
+var trail_eccentricity := 5.0
+var trail_min_spawn_distance := 20.0
 
 func _ready():
 	if Debug.get_setting("disable_projectiles_light"):
@@ -61,6 +66,10 @@ func setup(mecha, args):
 	health_mult = args.health_mult
 	heat_damage = args.heat_damage
 	is_overtime = data.is_overtime
+	trail_lifetime = args.trail_lifetime
+	trail_lifetime_range = args.trail_lifetime_range
+	trail_eccentricity = args.trail_eccentricity
+	trail_min_spawn_distance = args.trail_min_spawn_distance
 	calibre = data.calibre
 	dir = args.dir.normalized()
 	position = args.pos
@@ -72,6 +81,7 @@ func setup(mecha, args):
 	
 	decaying_speed_ratio = data.decaying_speed_ratio + rand_range(-data.decaying_speed_ratio_var, data.decaying_speed_ratio_var)
 	scaling_variance = data.change_scaling + rand_range(-data.change_scaling_var, data.change_scaling_var)
+	
 
 
 #Workaround since RigidBody can't have its scale changed
@@ -123,3 +133,5 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 
 func _on_LifeTimer_timeout():
 	queue_free()
+
+

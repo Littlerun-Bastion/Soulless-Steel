@@ -24,6 +24,7 @@ ammo_cost = 4500
 soundEffect = "large_shotA"
 sound_max_range = 8000
 sound_att = 1.33
+has_trail = true
 
 [node name="Sub" type="Sprite" parent="."]
 position = Vector2( -2.76584, 59.556 )

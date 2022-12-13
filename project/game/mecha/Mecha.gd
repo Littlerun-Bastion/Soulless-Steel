@@ -801,6 +801,12 @@ func shoot(type, is_auto_fire = false):
 						"health_mult": weapon_ref.health_mult,
 						"heat_damage": weapon_ref.heat_damage,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
+						
+						"has_trail": weapon_ref.has_trail,
+						"trail_lifetime": weapon_ref.trail_lifetime,
+						"trail_lifetime_range": weapon_ref.trail_lifetime_range,
+						"trail_eccentricity": weapon_ref.trail_eccentricity,
+						"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	emit_signal("shoot")

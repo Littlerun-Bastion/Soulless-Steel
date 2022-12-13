@@ -12,6 +12,8 @@ export var projectile : Resource
 export var projectile_type : String
 export var number_projectiles := 1
 export var damage_modifier := 1.0
+export var requires_lock := false
+export var uses_battery := false
 export var shield_mult := 1.0
 export var health_mult := 1.0
 export var heat_damage := 10.0
@@ -30,6 +32,7 @@ export var ammo_cost := 10
 export var soundEffect := "test"
 export var sound_max_range := 2000
 export var sound_att := 1.00
+export var battery_drain := 1.00
 export var weight := 1.0
 var firing_timer = 0.0
 
@@ -51,5 +54,17 @@ func get_shooting_pos():
 
 func get_attach_pos():
 	return $AttachPos.position
+	
+func get_stat(stat_name):
+	var stat
+	if stat_name == "armor_damage":
+		stat = 100 * damage_modifier * health_mult
+	elif stat_name == "shield_damage":
+		stat = 100 * damage_modifier * shield_mult
+	else:
+		stat = get(stat_name)
+	print(stat_name + " " + str(stat))
+	return stat
+	
 
 

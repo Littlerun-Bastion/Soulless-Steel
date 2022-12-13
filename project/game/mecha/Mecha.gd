@@ -504,7 +504,6 @@ func get_stat(stat_name):
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
 	return float(total_stat)
-	
 
 func get_weapon_part(part_name):
 	if part_name == "arm_weapon_left":

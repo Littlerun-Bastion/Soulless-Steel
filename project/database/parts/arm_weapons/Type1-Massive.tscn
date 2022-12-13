@@ -14,6 +14,7 @@ tagline = "Cannon"
 type = "Massive Firepower"
 rotation_range = 15.0
 projectile = ExtResource( 2 )
+projectile_type = "Hi-Calibre Shell"
 damage_modifier = 25.0
 recoil_force = 12.0
 fire_rate = 1.0

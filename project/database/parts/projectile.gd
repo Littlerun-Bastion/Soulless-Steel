@@ -4,7 +4,7 @@ enum TYPE {INSTANT, REGULAR}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 export (TYPE) var type
-export var damage:= 10
+export var damage:= 100
 export var is_overtime := false
 export var decal_type:= "bullet_hole"
 export var texture_variations = []

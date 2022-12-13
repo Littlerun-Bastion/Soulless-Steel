@@ -13,6 +13,7 @@ manufacturer_name = "Test"
 tagline = "Shotgun"
 type = "Multi-PewPew"
 projectile = ExtResource( 2 )
+projectile_type = "Buckshot"
 number_projectiles = 8
 damage_modifier = 2.0
 recoil_force = 5.0

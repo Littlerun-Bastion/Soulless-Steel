@@ -106,6 +106,7 @@ func _on_ItemFrame_pressed(part_name,type,side):
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
+	$Statbars.update_stats(DisplayMecha)
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side):

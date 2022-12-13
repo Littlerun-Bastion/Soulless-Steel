@@ -76,11 +76,27 @@ func update_stats(mecha):
 	for container in $CategoryContainers.get_children():
 		for stat in container.get_node("VBoxContainer").get_children():
 			if stat.get("stat_name"):
-				var stat_value = mecha.get_stat(stat.stat_name)
-				stat.get_node("RealValue").text = str(stat_value)
-				if stat.has_node("RealBar"):
-					stat.get_node("RealBar").value = stat_value
-					stat.get_node("ComparisonBar").value = stat_value
+				var stat_value
+				var weapon
+				if stat.get("weapon_position"):
+					weapon = mecha.get(stat.get("weapon_position"))
+					stat_value = weapon.get_stat(stat.get("stat_name"))
+				else:
+					stat_value = mecha.get_stat(stat.get("stat_name"))
+				if stat_value is bool:
+					if stat_value == true:
+						stat.get_node("RealValue").text = "Yes"
+					else: 
+						stat.get_node("RealValue").text = "No"
+				elif stat_value is float or stat_value is int:
+					stat.get_node("RealValue").text = str(stat_value)
+					if stat.has_node("RealBar"):
+						stat.get_node("RealBar").value = stat_value
+						stat.get_node("ComparisonBar").value = stat_value
+				elif stat_value is String:
+					stat.get_node("RealValue").text = stat_value
+				else:
+					pass
 
 func update_max_value():
 	for container in $CategoryContainers.get_children():

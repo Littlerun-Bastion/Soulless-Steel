@@ -36,7 +36,6 @@ export var battery_drain := 1.00
 export var weight := 1.0
 
 #---TRAILS---
-
 export var has_trail := false
 export var trail_lifetime := 1.0
 export var trail_lifetime_range := 0.25

@@ -3,6 +3,8 @@ extends Area2D
 onready var LightEffect = $Sprite/LightEffect
 onready var Collision = $CollisionShape2D
 
+signal bullet_impact
+
 var dying = false
 var speed = 0
 var local_scale = 1.0
@@ -28,6 +30,9 @@ var trail_width := 20
 
 var has_wiggle := false
 var wiggle_amount := 2.0
+
+var impact_size := 1.0
+
 
 func _ready():
 	if Debug.get_setting("disable_projectiles_light"):
@@ -105,10 +110,11 @@ func die():
 	if dying:
 		return
 	dying = true
-	var dur = rand_range(.2, .4)
-	$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
-	$Tween.start()
-	yield($Tween, "tween_completed")
+	emit_signal("bullet_impact", self)
+	#var dur = rand_range(.2, .4)
+	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
+	#$Tween.start()
+	#yield($Tween, "tween_completed")
 	queue_free()
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):

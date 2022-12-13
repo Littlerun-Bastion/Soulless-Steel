@@ -9,6 +9,7 @@ const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png"
 onready var Mechas = $Mechas 
 onready var Projectiles = $Projectiles
 onready var Trails = $Trails
+onready var Explosions = $Trails
 onready var ScrapParts = $ScrapParts
 onready var PlayerHUD = $PlayerHUD
 onready var GameOver = $GameOver
@@ -325,11 +326,16 @@ func _on_mecha_create_projectile(mecha, args):
 	var data = ProjectileManager.create(mecha, args)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
+		data.node.connect("bullet_impact",self,"_on_bullet_impact")
 		if args.has_trail:
 			if data:
 				var trail = ProjectileManager.create_trail(data.node, args)
 				Trails.add_child(trail)
 
+func _on_bullet_impact(projectile):
+	var impact_effect = ProjectileManager.create_explosion(projectile)
+	Explosions.add_child(impact_effect)
+	
 
 func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)

@@ -32,12 +32,17 @@ export var sound_att := 1.00
 export var weight := 1.0
 export var battery_drain := 0
 
+#---TRAILS---
 export var has_trail := false
 export var trail_lifetime := 1.0
 export var trail_lifetime_range := 0.25
 export var trail_eccentricity := 5.0
 export var trail_min_spawn_distance := 20.0
 export var trail_width := 20
+
+#---MISSILE/ROCKET BEHAVIOURS---
+export var has_wiggle := false
+export var wiggle_amount := 2.0
 
 
 var firing_timer = 0.0

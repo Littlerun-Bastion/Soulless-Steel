@@ -4,6 +4,7 @@ enum TYPE {INSTANT, REGULAR}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 export (TYPE) var type
+export var projectile_size := 1.0
 export var damage:= 100
 export var is_overtime := false
 export var decal_type:= "bullet_hole"
@@ -17,6 +18,7 @@ export var change_scaling = 0.0 #How much scaling it gets overtime
 export var change_scaling_var = 0.0 #How much to vary scaling
 export var life_time = -1.0 #-1 means it won't disappear
 export var life_time_var = 0.0 #How much to vary from base life_time
+
 
 
 func get_image():

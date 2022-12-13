@@ -6,10 +6,11 @@
 [node name="Projectile" type="Node2D"]
 script = ExtResource( 2 )
 type = 1
+projectile_size = 0.2
 damage = 1
 decal_type = "bullet_hole_small"
 calibre = 1
-light_energy = 0.4
+light_energy = 0.15
 speed = 2700
 
 [node name="Image" type="Sprite" parent="."]

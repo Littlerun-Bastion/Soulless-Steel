@@ -7,7 +7,7 @@
 _data = [ Vector2( 0.0434783, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0.172727 ), -1.6854, 0.0, 0, 0 ]
 
 [sub_resource type="Gradient" id=2]
-offsets = PoolRealArray( 0, 0.264605, 0.618557, 1 )
+offsets = PoolRealArray( 0, 0.216495, 0.546392, 1 )
 colors = PoolColorArray( 0.00784314, 0.00784314, 0.00784314, 0, 0.0477778, 0.0477778, 0.0477778, 0.783333, 0.0588235, 0.0588235, 0.0588235, 1, 1, 1, 1, 1 )
 
 [node name="Trail" type="Line2D"]

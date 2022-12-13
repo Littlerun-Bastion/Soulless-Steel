@@ -25,6 +25,10 @@ soundEffect = "large_shotA"
 sound_max_range = 8000
 sound_att = 1.33
 has_trail = true
+trail_lifetime = 10.0
+trail_lifetime_range = 0.1
+trail_eccentricity = 100.0
+trail_width = 100
 
 [node name="Sub" type="Sprite" parent="."]
 position = Vector2( -2.76584, 59.556 )

@@ -29,7 +29,7 @@ func create(mecha, args):
 
 func create_trail(projectile, args):
 		var trail = TRAIL.instance()
-		trail.setup(args.trail_lifetime, args.trail_lifetime_range, args.trail_eccentricity, args.trail_min_spawn_distance, projectile)
+		trail.setup(args.trail_lifetime, args.trail_lifetime_range, args.trail_eccentricity, args.trail_min_spawn_distance, trail.width, projectile)
 		return trail
 
 

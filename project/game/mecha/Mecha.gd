@@ -807,6 +807,10 @@ func shoot(type, is_auto_fire = false):
 						"trail_lifetime_range": weapon_ref.trail_lifetime_range,
 						"trail_eccentricity": weapon_ref.trail_eccentricity,
 						"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
+						"trail_width" : weapon_ref.trail_width,
+						
+						"has_wiggle": weapon_ref.has_wiggle,
+						"wiggle_amount": weapon_ref.wiggle_amount,
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	emit_signal("shoot")

@@ -24,6 +24,10 @@ var trail_lifetime := 1.0
 var trail_lifetime_range := 0.25
 var trail_eccentricity := 5.0
 var trail_min_spawn_distance := 20.0
+var trail_width := 20
+
+var has_wiggle := false
+var wiggle_amount := 2.0
 
 func _ready():
 	if Debug.get_setting("disable_projectiles_light"):
@@ -43,6 +47,9 @@ func _process(dt):
 			time_elapsed -= 1.0
 		speed *= decaying_speed_ratio*(1.0 - dt)
 	position += dir*speed*dt
+	if has_wiggle:
+		dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
+		
 	
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, $LifeTimer.time_left)
@@ -52,7 +59,7 @@ func setup(mecha, args):
 	var data = args.weapon_data.instance()
 	$Sprite.texture = data.get_image()
 	$CollisionShape2D.polygon = data.get_collision()
-	
+	change_scaling(data.projectile_size)
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
@@ -70,6 +77,9 @@ func setup(mecha, args):
 	trail_lifetime_range = args.trail_lifetime_range
 	trail_eccentricity = args.trail_eccentricity
 	trail_min_spawn_distance = args.trail_min_spawn_distance
+	trail_width = args.trail_width
+	has_wiggle = args.has_wiggle
+	wiggle_amount = args.wiggle_amount
 	calibre = data.calibre
 	dir = args.dir.normalized()
 	position = args.pos

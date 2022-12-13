@@ -24,6 +24,8 @@ sound_max_range = 7500
 sound_att = 1.75
 has_trail = true
 trail_min_spawn_distance = 5.0
+has_wiggle = true
+wiggle_amount = 0.02
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 2 )

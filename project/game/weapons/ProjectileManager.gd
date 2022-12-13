@@ -4,7 +4,7 @@ enum TYPE {INSTANT, REGULAR}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 const TRAIL = preload("res://game/weapons/Trail.tscn")
-const IMPACT = preload("res://game/fx/bullet_impact_light.tscn")
+const IMPACT = preload("res://game/fx/impact_master.tscn")
 
 func create(mecha, args):
 	var wr = weakref(mecha)
@@ -36,7 +36,6 @@ func create_trail(projectile, args):
 func create_explosion(pos):
 	var explosion = IMPACT.instance()
 	explosion.position = pos.position
-	print("explosion created")
 	return explosion
 
 

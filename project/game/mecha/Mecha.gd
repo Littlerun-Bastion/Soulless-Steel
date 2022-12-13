@@ -811,6 +811,8 @@ func shoot(type, is_auto_fire = false):
 						
 						"has_wiggle": weapon_ref.has_wiggle,
 						"wiggle_amount": weapon_ref.wiggle_amount,
+						
+						"impact_size": weapon_ref.impact_size
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	emit_signal("shoot")

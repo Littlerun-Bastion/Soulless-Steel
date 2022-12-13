@@ -20,6 +20,7 @@ var decal_type = "bullet_hole"
 var original_mecha_info
 var weapon_name
 var calibre
+var mech_hit = false
 
 var trail_enabled := false
 var trail_lifetime := 1.0
@@ -86,6 +87,7 @@ func setup(mecha, args):
 	has_wiggle = args.has_wiggle
 	wiggle_amount = args.wiggle_amount
 	calibre = data.calibre
+	impact_size = args.impact_size
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
@@ -110,7 +112,8 @@ func die():
 	if dying:
 		return
 	dying = true
-	emit_signal("bullet_impact", self)
+	if not is_overtime:
+		emit_signal("bullet_impact", self)
 	#var dur = rand_range(.2, .4)
 	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
 	#$Tween.start()
@@ -141,9 +144,12 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			if not is_overtime:
 				pass
 				#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))
+			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\
 	  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
+		if not body.is_in_group("mecha"):
+			mech_hit = false
 		die()
 
 

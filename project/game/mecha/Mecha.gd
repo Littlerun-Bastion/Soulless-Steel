@@ -775,20 +775,26 @@ func shoot(type, is_auto_fire = false):
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 	
-	var amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
-	amount = max(amount, 1) #Tries to shoot at least 1 projectile
+	var amount = 1
 	
-	
-	if not node.can_shoot(amount):
-		if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
-			AudioManager.play_sfx("no_ammo", global_position)
-		return
+	if weapon_ref.uses_battery:
+		amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
+		
+	else:
+		amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
+		amount = max(amount, 1) #Tries to shoot at least 1 projectile
+		
+		
+		if not node.can_shoot(amount):
+			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
+				AudioManager.play_sfx("no_ammo", global_position)
+			return
 	
 	node.shoot(amount)
 	
 	var variation = weapon_ref.bullet_spread/float(amount + 1) 
 	var angle_offset = -weapon_ref.bullet_spread /2
-	for _i in range(amount):
+	for _i in range(weapon_ref.number_projectiles):
 		angle_offset += variation
 		emit_signal("create_projectile", self, 
 					{

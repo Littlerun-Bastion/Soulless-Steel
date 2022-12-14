@@ -22,6 +22,8 @@ var soundEffect = "test"
 var shotPos = false
 var sfx_max_range = 4000
 var sfx_att = 1.0
+var uses_battery = false
+var battery_drain = 0.00
 
 
 func _process(dt):

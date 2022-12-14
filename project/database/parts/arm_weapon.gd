@@ -11,6 +11,7 @@ export var rotation_range := 10.0
 export var projectile : Resource
 export var projectile_type : String
 export var number_projectiles := 1
+export var burst_ammo_cost := 1
 export var damage_modifier := 1.0
 export var requires_lock := false
 export var uses_battery := false

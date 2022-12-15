@@ -808,6 +808,7 @@ func shoot(type, is_auto_fire = false):
 						"heat_damage": weapon_ref.heat_damage,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 						"bullet_velocity": weapon_ref.bullet_velocity,
+						"projectile_size": weapon_ref.projectile_size,
 						
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,
@@ -820,6 +821,9 @@ func shoot(type, is_auto_fire = false):
 						"wiggle_amount": weapon_ref.wiggle_amount,
 						"is_seeker": weapon_ref.is_seeker,
 						"seeker_target": locked_to,
+						"seek_time": weapon_ref.seek_time,
+						"seek_agility": weapon_ref.seeker_agility,
+						"seeker_angle": weapon_ref.seeker_angle,
 						
 						"impact_size": weapon_ref.impact_size
 					})

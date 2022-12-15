@@ -34,6 +34,8 @@ var has_wiggle := false
 var wiggle_amount := 2.0
 var is_seeker := false
 var seek_agility := 0.01
+var seek_time := 1.0
+var seeker_angle := 90.0
 
 var impact_size := 1.0
 
@@ -63,6 +65,8 @@ func _process(dt):
 	if has_wiggle:
 		if not seeker_target or not is_seeker or not is_instance_valid(seeker_target):
 			dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
+	set_rotation(atan(dir.y/dir.x) - PI/2)
+	
 	
 	
 	if not $LifeTimer.is_stopped():
@@ -73,7 +77,7 @@ func setup(mecha, args):
 	var data = args.weapon_data.instance()
 	$Sprite.texture = data.get_image()
 	$CollisionShape2D.polygon = data.get_collision()
-	change_scaling(data.projectile_size)
+	change_scaling(args.projectile_size)
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
@@ -97,6 +101,9 @@ func setup(mecha, args):
 	calibre = data.calibre
 	impact_size = args.impact_size
 	is_seeker = args.is_seeker
+	seek_agility = args.seek_agility
+	seek_time = args.seek_time
+	seeker_angle = args.seeker_angle
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()

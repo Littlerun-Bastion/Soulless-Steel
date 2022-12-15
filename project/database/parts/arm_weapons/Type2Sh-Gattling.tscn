@@ -17,17 +17,21 @@ damage_modifier = 0.5
 recoil_force = 1.0
 fire_rate = 0.05
 bullet_accuracy_margin = 10
+total_ammo = 3000
+max_ammo = 3000
+clip_size = 1000
 reload_speed = 1.3
 ammo_cost = 1
 soundEffect = "small_auto1"
 sound_max_range = 7500
 sound_att = 1.75
-bullet_velocity = 10000
+bullet_velocity = 1000
 has_trail = true
 trail_min_spawn_distance = 5.0
 has_wiggle = true
 wiggle_amount = 0.05
 is_seeker = true
+seek_time = 0.5
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 2 )

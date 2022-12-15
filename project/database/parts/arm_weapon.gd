@@ -29,13 +29,14 @@ export var max_ammo := 270
 export var clip_size := 30
 export var reload_speed := 3.0
 export var muzzle_heat := 60
-export var ammo_cost := 10
+export var ammo_cost := 10 #the monetary cost of the ammunition, not the ammo used when firing.
 export var soundEffect := "test"
 export var sound_max_range := 2000
 export var sound_att := 1.00
 export var battery_drain := 1.00
 export var weight := 1.0
 export var bullet_velocity := 2000
+export var projectile_size := 1.0
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false
@@ -51,6 +52,8 @@ export var has_wiggle := false
 export var wiggle_amount := 2.0
 export var is_seeker := false
 export var seeker_agility := 0.01
+export var seek_time := 1.0
+export var seeker_angle := 90
 
 var firing_timer = 0.0
 

@@ -80,7 +80,7 @@ func setup(mecha, args):
 	}
 	weapon_name = args.weapon_name
 	decal_type = data.decal_type
-	speed = data.speed
+	speed = args.bullet_velocity
 	$Sprite/LightEffect.modulate.a = data.light_energy
 	damage = data.damage * args.damage_mod
 	shield_mult = args.shield_mult

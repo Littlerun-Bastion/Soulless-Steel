@@ -35,6 +35,7 @@ export var sound_max_range := 2000
 export var sound_att := 1.00
 export var battery_drain := 1.00
 export var weight := 1.0
+export var bullet_velocity := 2000
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false

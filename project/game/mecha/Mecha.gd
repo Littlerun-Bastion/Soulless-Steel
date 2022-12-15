@@ -807,6 +807,7 @@ func shoot(type, is_auto_fire = false):
 						"health_mult": weapon_ref.health_mult,
 						"heat_damage": weapon_ref.heat_damage,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
+						"bullet_velocity": weapon_ref.bullet_velocity,
 						
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,

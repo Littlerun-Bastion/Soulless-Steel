@@ -9,6 +9,7 @@ const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const CHASSIS_SPEED = 20
 const LOCKON_RETICLE_SIZE = 15
+const DASH_DECAY = 25000
 
 signal create_projectile
 signal shoot
@@ -83,6 +84,8 @@ var move_heat = 70
 
 var movement_type = "free"
 var velocity = Vector2()
+var dash_velocity = Vector2()
+var dash_strength = 5000
 var moving = false
 var max_speed = 500
 var friction = 0.1
@@ -146,6 +149,21 @@ func _physics_process(dt):
 			stun(0.1)
 	else:
 		apply_movement(dt, Vector2())
+	
+	#Handle dash movement
+	if not is_stunned() and dash_velocity.length() > 0:
+		move(dash_velocity)
+		if dash_velocity.x > 0:
+			dash_velocity.x = max(dash_velocity.x - DASH_DECAY*dt, 0)
+		else:
+			dash_velocity.x = min(dash_velocity.x + DASH_DECAY*dt, 0)
+		
+		if dash_velocity.y > 0:
+			dash_velocity.y = max(dash_velocity.y - DASH_DECAY*dt, 0)
+		else:
+			dash_velocity.y = min(dash_velocity.y + DASH_DECAY*dt, 0)
+		if dash_velocity.length() < 1:
+			dash_velocity = Vector2()
 	
 	if moving and not MovementAnimation.is_playing():
 		MovementAnimation.play("Walking")
@@ -602,6 +620,11 @@ func move(vec):
 		velocity = move_and_slide(vec)
 	else:
 		NavAgent.set_velocity(vec)
+
+
+func dash(dir):
+	if dash_velocity.length() == 0 and dir.length() > 0:
+		dash_velocity = dir.normalized()*dash_strength
 
 
 func apply_movement(dt, direction):

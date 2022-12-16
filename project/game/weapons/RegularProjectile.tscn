@@ -20,7 +20,7 @@ scale = Vector2( 5, 5 )
 texture = ExtResource( 3 )
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
-polygon = PoolVector2Array( -7.53427, -145.441, 11.493, -144.252, 29.3311, -22.9529, 11.493, 111.427, -13.4803, 110.238, -34.886, -30.0882 )
+polygon = PoolVector2Array( -4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835 )
 
 [node name="LifeTimer" type="Timer" parent="."]
 

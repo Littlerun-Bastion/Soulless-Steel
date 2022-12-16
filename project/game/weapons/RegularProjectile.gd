@@ -87,7 +87,7 @@ func setup(mecha, args):
 	var data = args.weapon_data.instance()
 	$Sprite.texture = data.get_image()
 	$CollisionShape2D.polygon = data.get_collision()
-	change_scaling(args.projectile_size)
+	print(args.projectile_size)
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
@@ -114,11 +114,13 @@ func setup(mecha, args):
 	seek_agility = args.seek_agility
 	seek_time = args.seek_time
 	seeker_angle = args.seeker_angle
+	local_scale = args.projectile_size
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
 	position = args.pos
 	rotation_degrees = rad2deg(dir.angle()) + 90
+	change_scaling(local_scale)
 	
 	if data.life_time > 0 :
 		$LifeTimer.wait_time = data.life_time + rand_range(-data.life_time_var, data.life_time_var)

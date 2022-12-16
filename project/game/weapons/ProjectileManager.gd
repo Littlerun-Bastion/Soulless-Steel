@@ -3,6 +3,7 @@ extends Node
 enum TYPE {INSTANT, REGULAR}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
+const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
 const TRAIL = preload("res://game/weapons/Trail.tscn")
 const IMPACT = preload("res://game/fx/impact_master.tscn")
 
@@ -18,7 +19,10 @@ func create(mecha, args):
 	}
 	
 	if projectile_data.type == TYPE.INSTANT:
-		pass
+		var projectile = INSTANT.instance()
+		projectile.setup(mecha, args)
+		data.create_node = true
+		data.node = projectile
 	
 	elif projectile_data.type == TYPE.REGULAR:
 		var projectile = REGULAR.instance()

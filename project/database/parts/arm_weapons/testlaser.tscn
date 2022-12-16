@@ -2,7 +2,7 @@
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
-[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
+[ext_resource path="res://database/parts/projectiles/testlaser_effect.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
 
@@ -25,15 +25,11 @@ ammo_cost = 1
 soundEffect = "small_auto1"
 sound_max_range = 7500
 sound_att = 1.75
-bullet_velocity = 1500
-projectile_size = 0.5
-has_trail = true
-trail_lifetime_range = 5.0
+bullet_velocity = 1000
+projectile_size = 30.0
+lifetime = 1.0
 trail_min_spawn_distance = 5.0
-has_wiggle = true
-wiggle_amount = 0.01
-is_seeker = true
-seeker_agility = 0.003
+wiggle_amount = 0.05
 seek_time = 0.5
 
 [node name="Sub" type="Sprite" parent="."]

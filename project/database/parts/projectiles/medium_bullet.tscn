@@ -18,4 +18,4 @@ texture = ExtResource( 1 )
 
 [node name="CollisionShape" type="Polygon2D" parent="."]
 color = Color( 1, 0.176471, 0.176471, 0.298039 )
-polygon = PoolVector2Array( 11, -104.5, 10, 37.5, -11, 33, -12, -106.5 )
+polygon = PoolVector2Array( 4, -37, 3, 12, -4, 12, -5, -37 )

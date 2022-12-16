@@ -35,6 +35,7 @@ export var battery_drain := 0
 export var uses_battery := false
 export var bullet_velocity := 2000.0
 export var projectile_size := 1.0
+export var lifetime := 2.0
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false

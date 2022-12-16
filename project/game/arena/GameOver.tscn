@@ -45,6 +45,7 @@ margin_bottom = 40.0
 
 [node name="Viewport" type="Viewport" parent="ViewportContainer"]
 size = Vector2( 1920, 1080 )
+handle_input_locally = false
 render_target_update_mode = 3
 
 [node name="Control" type="Control" parent="ViewportContainer/Viewport"]
@@ -56,6 +57,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 margin_right = 1880.0
 margin_bottom = 1040.0
+mouse_filter = 2
 color = Color( 0, 0, 0, 1 )
 
 [node name="Label" type="Label" parent="ViewportContainer/Viewport/Control"]

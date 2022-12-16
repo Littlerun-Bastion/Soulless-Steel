@@ -87,7 +87,7 @@ func setup(mecha, args):
 	var data = args.weapon_data.instance()
 	$Sprite.texture = data.get_image()
 	$CollisionShape2D.polygon = data.get_collision()
-	print(args.projectile_size)
+
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,

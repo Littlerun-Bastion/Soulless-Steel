@@ -15,6 +15,7 @@ var heat_damage = 0.0
 var is_overtime = false
 var decal_type = "bullet_hole_small"
 var weapon_name
+var calibre 
 var seeker_target : Object = null
 var hit = false
 var miss = false

@@ -70,7 +70,7 @@ func _process(dt):
 			if lifetime < seek_time:
 				dir = lerp(dir.rotated(rand_range(-wiggle_amount, wiggle_amount)), position.direction_to(seeker_target.position), seek_agility)
 			elif not seek_time_expired:
-				dir = position.direction_to(seeker_target.position)
+				dir = lerp(dir, position.direction_to(seeker_target.position), seek_agility)
 				wiggle_amount = wiggle_amount/2
 				seek_time_expired = true
 	if has_wiggle:

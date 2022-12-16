@@ -361,7 +361,7 @@ func _on_ExitPos_mecha_extracting(extractingMech):
 	print(str(extractingMech.name) + str(" is extracting"))
 	extractingMech.extracting()
 	if extractingMech.name == "Player":
-		$PlayerHUD/ExtractingLabel.visible = true
+		$PlayerHUD/ViewportContainer/Viewport/ExtractingLabel.visible = true
 
 
 func _on_ExitPos_extracting_cancelled(extractingMech):
@@ -370,7 +370,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 	else:
 		extractingMech.cancel_extract()
 	if extractingMech.name == "Player":
-		$PlayerHUD/ExtractingLabel.visible = false
+		$PlayerHUD/ViewportContainer/Viewport/ExtractingLabel.visible = false
 
 
 func _on_player_mech_extracted(playerMech):

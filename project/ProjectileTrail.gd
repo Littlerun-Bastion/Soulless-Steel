@@ -14,7 +14,7 @@ onready var tween := $Decay
 
 func _ready():
 	set_as_toplevel(true)
-	tween.interpolate_property(self, "modulate:a", 1.0, 0.0, rand_range((lifetime - (lifetime*lifetime_range)), (lifetime+(lifetime*lifetime_range))), Tween.TRANS_CIRC, Tween.EASE_OUT)
+	tween.interpolate_property(self, "modulate:a", 1.0, 0.0, rand_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))), Tween.TRANS_CIRC, Tween.EASE_OUT)
 	clear_points()
 	tween.start()
 

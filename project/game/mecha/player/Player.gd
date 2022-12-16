@@ -77,6 +77,8 @@ func _input(event):
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
+	elif event.is_action_pressed("thruster_dash"):
+		dash(get_input().normalized())
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
 

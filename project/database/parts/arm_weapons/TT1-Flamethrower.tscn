@@ -28,6 +28,7 @@ ammo_cost = 25
 soundEffect = ""
 sound_max_range = 1000
 sound_att = 1.75
+weight = 400.0
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 5 )

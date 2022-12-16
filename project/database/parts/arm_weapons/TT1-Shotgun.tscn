@@ -15,7 +15,6 @@ type = "Multi-PewPew"
 projectile = ExtResource( 2 )
 projectile_type = "Buckshot"
 number_projectiles = 8
-burst_ammo_cost = 4
 damage_modifier = 2.0
 recoil_force = 5.0
 fire_rate = 0.75

@@ -108,6 +108,9 @@ var chipset = null
 var thruster = null
 var chassis = null
 
+var total_weight = 0.0
+var weight_capacity = 0.0
+
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
@@ -364,6 +367,7 @@ func set_arm_weapon(part_name, side):
 		node.position = core.get_arm_weapon_offset(side)
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
+	total_weight = get_stat("weight")
 
 
 func set_shoulder_weapon(part_name, side):
@@ -395,6 +399,7 @@ func set_shoulder_weapon(part_name, side):
 		node.position = core.get_shoulder_weapon_offset(side)
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
+	total_weight = get_stat("weight")
 
 
 func set_core(part_name):
@@ -411,22 +416,26 @@ func set_core(part_name):
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
 	update_max_shield_from_parts()
+	total_weight = get_stat("weight")
 
 
 func set_generator(part_name):
 	var part_data = PartManager.get_part("generator", part_name)
 	generator = part_data
 	update_max_shield_from_parts()
+	total_weight = get_stat("weight")
 
 
 func set_chipset(part_name):
 	var part_data = PartManager.get_part("chipset", part_name)
 	chipset = part_data
+	total_weight = get_stat("weight")
 
 
 func set_thruster(part_name):
 	var part_data = PartManager.get_part("thruster", part_name)
 	thruster = part_data
+	total_weight = get_stat("weight")
 
 
 func set_chassis(part_name):
@@ -443,7 +452,8 @@ func set_chassis(part_name):
 	else:
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
-
+	weight_capacity = chassis.weight_capacity
+	total_weight = get_stat("weight")
 
 	
 func set_chassis_nodes(main,sub,glow,collision,side = false):
@@ -461,6 +471,7 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	move_heat = chassis.move_heat
 	set_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
+	total_weight = get_stat("weight")
 
 func remove_chassis(type):
 	if type == "single":
@@ -488,6 +499,7 @@ func set_head(part_name):
 	if core:
 		Head.position = core.get_head_port_offset()
 	update_max_life_from_parts()
+	total_weight = get_stat("weight")
 
 
 func set_shoulders(part_name):
@@ -506,6 +518,7 @@ func set_shoulders(part_name):
 	$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
 	$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	update_max_shield_from_parts()
+	total_weight = get_stat("weight")
 
 #ATTRIBUTE METHODS
 

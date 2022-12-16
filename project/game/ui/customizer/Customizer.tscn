@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
@@ -58,6 +58,14 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color( 1, 1, 1, 1 )
 
+[sub_resource type="DynamicFont" id=20]
+size = 35
+extra_spacing_top = 1
+extra_spacing_bottom = -6
+extra_spacing_char = 2
+extra_spacing_space = 2
+font_data = ExtResource( 1 )
+
 [node name="Customizer" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -104,10 +112,10 @@ motion_scale = Vector2( -0.5, 1 )
 motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
-margin_left = -665.333
-margin_top = -790.667
-margin_right = 3334.67
-margin_bottom = 3209.34
+margin_left = -664.0
+margin_top = -794.667
+margin_right = 3336.0
+margin_bottom = 3205.34
 texture = ExtResource( 6 )
 
 [node name="BackgroundElements" type="Control" parent="."]
@@ -392,15 +400,39 @@ custom_constants/separation = 120
 
 [node name="WeightBar" type="ProgressBar" parent="."]
 margin_left = 1216.0
-margin_top = 1002.0
-margin_right = 2003.0
-margin_bottom = 1042.0
+margin_top = 974.0
+margin_right = 1975.0
+margin_bottom = 1014.0
 rect_rotation = 270.0
 custom_colors/font_color = Color( 0, 0, 0, 0 )
 custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
 custom_styles/fg = SubResource( 12 )
 custom_styles/bg = SubResource( 13 )
 value = 50.0
+
+[node name="CurrentWeightLabel" type="Label" parent="."]
+margin_left = 1191.0
+margin_top = 980.0
+margin_right = 1257.0
+margin_bottom = 1011.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_fonts/font = SubResource( 20 )
+text = "4000"
+align = 2
+valign = 2
+
+[node name="MaxWeightLabel" type="Label" parent="."]
+margin_left = 1191.0
+margin_top = 1019.0
+margin_right = 1257.0
+margin_bottom = 1050.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_fonts/font = SubResource( 20 )
+text = "4000"
+align = 2
+valign = 2
 
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
 

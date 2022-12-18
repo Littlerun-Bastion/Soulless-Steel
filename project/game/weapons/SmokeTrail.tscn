@@ -5,7 +5,10 @@
 [ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=3]
 
 [node name="Particles2D" type="Particles2D"]
+pause_mode = 2
+physics_interpolation_mode = 2
 amount = 400
+visibility_rect = Rect2( -10000, -10000, 20000, 20000 )
 local_coords = false
 process_material = ExtResource( 2 )
 texture = ExtResource( 3 )

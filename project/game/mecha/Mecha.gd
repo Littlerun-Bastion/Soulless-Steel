@@ -855,6 +855,12 @@ func shoot(type, is_auto_fire = false):
 						"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
 						"trail_width" : weapon_ref.trail_width,
 						
+						"has_smoke": weapon_ref.has_smoke,
+						"smoke_density": weapon_ref.smoke_density,
+						"smoke_lifetime": weapon_ref.smoke_lifetime,
+						"smoke_trail_material": weapon_ref.smoke_trail_material,
+						"smoke_texture": weapon_ref.smoke_texture,
+						
 						"has_wiggle": weapon_ref.has_wiggle,
 						"wiggle_amount": weapon_ref.wiggle_amount,
 						"is_seeker": weapon_ref.is_seeker,

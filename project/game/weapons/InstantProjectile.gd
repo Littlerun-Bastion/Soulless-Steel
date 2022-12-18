@@ -46,7 +46,6 @@ func _process(dt):
 				if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
 					force_raycast_update()
 					var body_shape_id = get_collider_shape()
-					var shape = body.get_shape_from_id(body_shape_id)
 					var collision_point = get_collision_point()
 					
 					var size = Vector2(40,40)
@@ -92,7 +91,6 @@ func setup(mecha, args):
 		self.add_child(effect_data)
 	else:
 		effect_data = $Basic
-	original_mecha_info 
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,

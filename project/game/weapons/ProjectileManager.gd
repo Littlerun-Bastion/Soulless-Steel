@@ -5,6 +5,7 @@ enum TYPE {INSTANT, REGULAR}
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
 const TRAIL = preload("res://game/weapons/Trail.tscn")
+const SMOKETRAIL = preload("res://game/weapons/SmokeTrail.tscn")
 const IMPACT = preload("res://game/fx/impact_master.tscn")
 
 func create(mecha, args):
@@ -42,6 +43,10 @@ func create_explosion(pos):
 	explosion.position = pos.position
 	return explosion
 
+func create_smoke_trail(projectile, args):
+	var smoke_trail = SMOKETRAIL.instance()
+	smoke_trail.setup(projectile, args.smoke_trail_material, args)
+	return smoke_trail
 
 #Given two polygons and their transforms, return an array with all points where they collide
 func get_intersection_points(poly1, trans1, poly2, trans2):

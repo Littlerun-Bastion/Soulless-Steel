@@ -38,6 +38,7 @@ var seek_time := 1.0
 var seeker_angle := 90.0
 var seek_time_expired := false
 
+
 var impact_size := 1.0
 
 var lifetime := 0.0

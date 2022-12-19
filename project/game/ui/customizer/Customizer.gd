@@ -121,6 +121,6 @@ func _on_ItemFrame_mouse_exited(part_name,type,side):
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.weight_capacity
 	$WeightBar.value = DisplayMecha.total_weight
-	$CurrentWeightLabel.text = str(DisplayMecha.total_weight) + "kg"
-	$MaxWeightLabel.text = str(DisplayMecha.weight_capacity) + "kg"
+	$CurrentWeightLabel.text = str(DisplayMecha.total_weight) 
+	$MaxWeightLabel.text = str(DisplayMecha.weight_capacity)
 

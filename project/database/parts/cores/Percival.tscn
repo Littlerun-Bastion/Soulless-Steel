@@ -18,6 +18,8 @@ script = ExtResource( 1 )
 part_name = "Percival Test"
 manufacturer_name = "Test"
 tagline = "Light Core"
+health = 4000.0
+shield = 4000.0
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
 position = Vector2( -30, 70 )

@@ -1,6 +1,6 @@
 [gd_scene load_steps=17 format=2]
 
-[ext_resource path="res://game/ui/theme_folder/customizer_buttons_theme.tres" type="Theme" id=1]
+[ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=1]
 [ext_resource path="res://assets/fonts/stats_font.tres" type="DynamicFont" id=2]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
 [ext_resource path="res://game/ui/customizer/Statbars.gd" type="Script" id=4]
@@ -18,14 +18,14 @@ border_color = Color( 1, 1, 1, 1 )
 bg_color = Color( 0, 0, 0, 1 )
 
 [sub_resource type="DynamicFont" id=21]
-size = 25
+size = 21
 extra_spacing_top = 1
 extra_spacing_bottom = -6
 extra_spacing_space = 1
 font_data = ExtResource( 3 )
 
 [sub_resource type="DynamicFont" id=22]
-size = 30
+size = 25
 extra_spacing_top = 1
 extra_spacing_bottom = -6
 extra_spacing_space = 1
@@ -100,13 +100,16 @@ margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/ElectronicsContainer"]
 margin_bottom = 640.0
+mouse_filter = 2
 custom_constants/separation = 80
 
 [node name="LockSpeed" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
+mouse_filter = 1
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "lock_on_speed"
@@ -116,6 +119,14 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The amount of time it takes this 
+SAV to achieve a target lock in a 
+single, uninterrupted attempt.
+
+Mainly modified by the SAV's 
+chipset and electronic support 
+modules."
+mouse_filter = 0
 custom_fonts/font = ExtResource( 2 )
 text = "Lock Speed"
 
@@ -166,6 +177,7 @@ percent_visible = false
 [node name="LockRange" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 80.0
 margin_bottom = 80.0
+mouse_filter = 1
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "lock_on_distance"
@@ -175,6 +187,13 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How far out the target can be locked
+on to and stay locked on. 
+
+Modified by the SAV's chipset and
+electronic support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Lock Range"
 
@@ -225,6 +244,8 @@ percent_visible = false
 [node name="LockStrength" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 160.0
 margin_bottom = 160.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "lock_on_strength"
@@ -234,6 +255,19 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The amount of ECM required
+to prevent this SAV from 
+achieving a target lock. ECM
+values equal or higher to this
+value will provide a higher
+likelihood of preventing this 
+SAV from locking onto a target. 
+
+Modified
+by the SAV's chipset and electronic
+support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Lock Strength"
 
@@ -284,6 +318,8 @@ percent_visible = false
 [node name="ECMStrength" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 240.0
 margin_bottom = 240.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "ECM"
@@ -293,6 +329,17 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The strength of this SAV's ECM.
+Enemies attempting to lock onto 
+this SAV must have a Lock Strength
+higher than this ECM value or risk
+losing established locks or lock
+progress.
+
+Modified by the SAV's chipset
+and electronic support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "ECM Strength"
 
@@ -343,6 +390,8 @@ percent_visible = false
 [node name="ECMFrequency" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 320.0
 margin_bottom = 320.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "ECM_frequency"
@@ -352,6 +401,17 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How often this SAV sends an ECM
+pulse to enemies attempting to
+lock onto it. If the value of an ECM
+pulse is higher than the Lock Strength
+of the targeting SAV, there is a chance
+the lock either fails or is interrupted.
+
+Modified by the SAV's chipset and 
+electronic support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "ECM Frequency"
 
@@ -402,6 +462,8 @@ percent_visible = false
 [node name="RadarRange" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 400.0
 margin_bottom = 400.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
@@ -409,6 +471,15 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The range at which targets will
+appear on this SAV's radar. Certain
+weather conditions can modify
+this range.
+
+Modified by the SAV's chipset and
+electronic support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Radar Range"
 
@@ -459,6 +530,8 @@ percent_visible = false
 [node name="RadarRefreshRate" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 480.0
 margin_bottom = 480.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "radar_refresh_rate"
@@ -468,6 +541,14 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How often the radar is updated,
+displaying the current location of
+any radar tracks.
+
+Modified by the SAV's chipset and
+electronic support modules."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Radar Refresh Rate"
 
@@ -518,6 +599,8 @@ percent_visible = false
 [node name="SearchTime" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
 margin_top = 560.0
 margin_bottom = 560.0
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "loot_search_time"
@@ -527,6 +610,16 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The basic time it takes for this
+SAV to search containers and
+identify items of interest. This
+can take longer depending on 
+the size of the container and 
+other conditions.
+
+Modified by the SAV's chipset."
+mouse_filter = 0
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Search Time"
 
@@ -586,13 +679,17 @@ margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/DefensesContainer"]
 margin_bottom = 400.0
+mouse_filter = 2
 custom_constants/separation = 80
 
 [node name="Armor" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "health"
@@ -602,6 +699,14 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The SAV's armor integrity. When
+reduced to zero, the SAV is destroyed.
+Hard to repair during a sortie.
+
+Modified by the SAV's Head, Core and
+Chassis."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Armor"
 
@@ -652,6 +757,16 @@ percent_visible = false
 [node name="Shields" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 margin_top = 80.0
 margin_bottom = 80.0
+hint_tooltip = "Shield integrity of the SAV. When
+this drops to zero, the SAV begins
+taking armor damage. Regenerates
+after a period of not taking any damage
+dictated by the Generator.
+
+Modified by the SAV's Core, Shoulders
+and Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "shield"
@@ -661,6 +776,15 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "Shield integrity of the SAV. When
+this drops to zero, the SAV begins
+taking armor damage. Regenerates
+after a period of not taking any damage
+dictated by the Generator.
+
+Modified by the SAV's Core, Shoulders
+and Generator."
+mouse_filter = 1
 custom_fonts/font = ExtResource( 2 )
 text = "Shields"
 
@@ -711,6 +835,13 @@ percent_visible = false
 [node name="ShieldRecoveryRate" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 margin_top = 160.0
 margin_bottom = 160.0
+hint_tooltip = "How fast the Shield recovers lost integrity.
+Activates after not taking damage for
+a while.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "shield_regen_speed"
@@ -720,6 +851,12 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How fast the Shield recovers lost integrity.
+Activates after not taking damage for
+a while.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
 custom_fonts/font = ExtResource( 2 )
 text = "Shield Recovery Rate"
 
@@ -770,6 +907,13 @@ percent_visible = false
 [node name="ShieldReactionDelay" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 margin_top = 240.0
 margin_bottom = 240.0
+hint_tooltip = "How fast the Shield recovery kicks
+in if the SAV has taken no damage in
+the duration.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "shield_regen_delay"
@@ -779,6 +923,13 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How fast the Shield recovery kicks
+in if the SAV has taken no damage in
+the duration.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Shield Reaction Delay"
 
@@ -829,6 +980,15 @@ percent_visible = false
 [node name="Stability" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 margin_top = 320.0
 margin_bottom = 320.0
+hint_tooltip = "The stability of the SAV.
+Higher stability values make the
+SAV harder to stagger or apply
+knockback.
+
+Modified by the SAV's Head, Core and
+Chassis."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "stability"
@@ -838,6 +998,15 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The stability of the SAV.
+Higher stability values make the
+SAV harder to stagger or apply
+knockback.
+
+Modified by the SAV's Head, Core and
+Chassis."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Stability"
 
@@ -886,8 +1055,8 @@ value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
+margin_top = 400.0
+margin_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="MobilityContainer" type="ScrollContainer" parent="CategoryContainers"]
@@ -897,6 +1066,7 @@ margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/MobilityContainer"]
@@ -913,6 +1083,12 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The maximum weight limit of the
+SAV. 
+
+Modified by the SAV's Chassis."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Weight Capacity"
 
@@ -972,6 +1148,12 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The base movement speed of the
+SAV while walking.
+
+Modified by the SAV's Chassis."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Walk Speed"
 
@@ -1031,6 +1213,11 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How much heat is generated by the
+SAV while walking.
+
+Modified by the SAV's Chassis."
+mouse_filter = 1
 custom_fonts/font = ExtResource( 2 )
 text = "Walk Heat Emission"
 
@@ -1090,8 +1277,16 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "How much force the SAV's dash
+imparts on the frame. Higher values
+will cause the SAV to dash faster
+and further.
+
+Modified by the SAV's Thrusters."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
-text = "Dash Distance"
+text = "Dash Force"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
 margin_left = 342.0
@@ -1149,6 +1344,12 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The time it takes for the SAV's dash
+function to recharge. 
+
+Modified by the SAV's Thrusters."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Dash Recharge Rate"
 
@@ -1208,6 +1409,12 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "Heat generated by performing a
+dash.
+
+Modified by the SAV's Thrusters."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Dash Heat"
 
@@ -1256,17 +1463,17 @@ value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
+margin_top = 480.0
+margin_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="EnergyContainer" type="ScrollContainer" parent="CategoryContainers"]
-visible = false
 margin_left = 1294.0
 margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/EnergyContainer"]
@@ -1283,6 +1490,13 @@ margin_left = 11.0
 margin_top = 13.0
 margin_right = 399.0
 margin_bottom = 42.0
+hint_tooltip = "The amount of heat the SAV can
+take before it begins taking heat
+damage.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
 text = "Heat Capacity"
 
@@ -1333,6 +1547,12 @@ percent_visible = false
 [node name="HeatDissipation" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 margin_top = 80.0
 margin_bottom = 80.0
+hint_tooltip = "The rate at which the mecha's heat 
+is dissipated per second.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "heat_dispersion"
@@ -1392,6 +1612,15 @@ percent_visible = false
 [node name="BatteryCapacity" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 margin_top = 160.0
 margin_bottom = 160.0
+hint_tooltip = "The available power capacity for
+the SAV's energy weapons. All 
+energy weapons across the SAV
+draw power from the battery, instead
+of using ammunition.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "battery_capacity"
@@ -1451,6 +1680,12 @@ percent_visible = false
 [node name="BatteryRechargeRate" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 margin_top = 240.0
 margin_bottom = 240.0
+hint_tooltip = "The rate at which the SAV's battery
+recharges, per second.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
+theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "battery_recharge_rate"
@@ -1510,6 +1745,14 @@ percent_visible = false
 [node name="PowerOutput" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 margin_top = 320.0
 margin_bottom = 320.0
+hint_tooltip = "Output of the SAV's energy weapons, 
+higher values allow for more powerful
+weapons. Also forms as the basis for
+how much damage an energy weapon
+deals.
+
+Modified by the SAV's Generator."
+mouse_filter = 1
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "power_output"
@@ -1567,20 +1810,22 @@ value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
+margin_top = 400.0
+margin_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="RArmContainer" type="ScrollContainer" parent="CategoryContainers"]
+visible = false
 margin_left = 1294.0
 margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/RArmContainer"]
-margin_bottom = 800.0
+margin_bottom = 720.0
 custom_constants/separation = 80
 
 [node name="ArmorDamage" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
@@ -1858,63 +2103,6 @@ custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
-[node name="DPS" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
-custom_styles/panel = SubResource( 20 )
-
-[node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-custom_fonts/font = ExtResource( 2 )
-text = "Damage Per Second"
-
-[node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/DPS"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
-custom_fonts/font = SubResource( 21 )
-text = "1000 > 1000"
-align = 2
-valign = 2
-clip_text = true
-
-[node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/DPS"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
-custom_fonts/font = SubResource( 22 )
-text = "1000"
-align = 2
-valign = 2
-clip_text = true
-
-[node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
-custom_styles/fg = SubResource( 23 )
-custom_styles/bg = SubResource( 24 )
-value = 50.0
-percent_visible = false
-
-[node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
-custom_styles/fg = SubResource( 25 )
-custom_styles/bg = SubResource( 26 )
-value = 45.0
-percent_visible = false
-
 [node name="RequiresLock" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
 margin_top = 480.0
 margin_bottom = 480.0
@@ -2139,15 +2327,17 @@ margin_bottom = 800.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="LArmContainer" type="ScrollContainer" parent="CategoryContainers"]
+visible = false
 margin_left = 1294.0
 margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/LArmContainer"]
-margin_bottom = 800.0
+margin_bottom = 720.0
 custom_constants/separation = 80
 
 [node name="ArmorDamage" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
@@ -2425,63 +2615,6 @@ custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
-[node name="DPS" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
-custom_styles/panel = SubResource( 20 )
-
-[node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-custom_fonts/font = ExtResource( 2 )
-text = "Damage Per Second"
-
-[node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/DPS"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
-custom_fonts/font = SubResource( 21 )
-text = "1000 > 1000"
-align = 2
-valign = 2
-clip_text = true
-
-[node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/DPS"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
-custom_fonts/font = SubResource( 22 )
-text = "1000"
-align = 2
-valign = 2
-clip_text = true
-
-[node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
-custom_styles/fg = SubResource( 23 )
-custom_styles/bg = SubResource( 24 )
-value = 50.0
-percent_visible = false
-
-[node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/DPS"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
-custom_styles/fg = SubResource( 25 )
-custom_styles/bg = SubResource( 26 )
-value = 45.0
-percent_visible = false
-
 [node name="RequiresLock" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
 margin_top = 480.0
 margin_bottom = 480.0
@@ -2706,11 +2839,13 @@ margin_bottom = 800.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="RShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
+visible = false
 margin_left = 1294.0
 margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/RShoulderContainer"]
@@ -2720,11 +2855,13 @@ custom_constants/separation = 80
 custom_styles/panel = SubResource( 20 )
 
 [node name="LShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
+visible = false
 margin_left = 1294.0
 margin_top = 290.0
 margin_right = 1869.0
 margin_bottom = 1002.0
 rect_pivot_offset = Vector2( -163, 79 )
+mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/LShoulderContainer"]

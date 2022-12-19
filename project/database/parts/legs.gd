@@ -15,12 +15,11 @@ export var move_acc = 50
 export var accuracy_modifier = 1.0
 export var friction = 0.1
 export var rotation_acc = 5.0
-export var healthMult := 1.0
+export var health := 1000.0
 export var move_heat = 70
 export var has_thrusters = false
 export var weight := 300.0
 export var weight_capacity := 1000.0
-var health := healthMult * 4000.0
 
 
 func get_image(side = false):

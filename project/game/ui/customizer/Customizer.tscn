@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
@@ -7,7 +7,7 @@
 [ext_resource path="res://assets/images/ui/menu/equipment_tab_selected.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/ui/menu/wetware_tab_selected.png" type="Texture" id=7]
-[ext_resource path="res://game/ui/theme_folder/customizer_buttons_theme.tres" type="Theme" id=8]
+[ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=8]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=9]
 [ext_resource path="res://game/ui/customizer/Statbars.tscn" type="PackedScene" id=10]
 
@@ -59,7 +59,15 @@ border_width_bottom = 2
 border_color = Color( 1, 1, 1, 1 )
 
 [sub_resource type="DynamicFont" id=20]
-size = 35
+size = 30
+extra_spacing_top = 1
+extra_spacing_bottom = -6
+extra_spacing_char = 2
+extra_spacing_space = 2
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=21]
+size = 17
 extra_spacing_top = 1
 extra_spacing_bottom = -6
 extra_spacing_char = 2
@@ -365,6 +373,7 @@ margin_right = 357.0
 margin_bottom = 208.0
 custom_fonts/font = SubResource( 17 )
 custom_styles/hover = SubResource( 19 )
+custom_styles/pressed = SubResource( 18 )
 custom_styles/normal = SubResource( 18 )
 text = "Hardware"
 icon_align = 1
@@ -375,6 +384,8 @@ margin_top = 140.0
 margin_right = 681.0
 margin_bottom = 208.0
 custom_fonts/font = SubResource( 17 )
+custom_styles/hover = SubResource( 19 )
+custom_styles/pressed = SubResource( 18 )
 custom_styles/normal = SubResource( 18 )
 text = "Wetware"
 icon_align = 1
@@ -385,6 +396,8 @@ margin_top = 140.0
 margin_right = 1003.0
 margin_bottom = 208.0
 custom_fonts/font = SubResource( 17 )
+custom_styles/hover = SubResource( 19 )
+custom_styles/pressed = SubResource( 18 )
 custom_styles/normal = SubResource( 18 )
 text = "weapons"
 icon_align = 1
@@ -408,13 +421,13 @@ custom_colors/font_color = Color( 0, 0, 0, 0 )
 custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
 custom_styles/fg = SubResource( 12 )
 custom_styles/bg = SubResource( 13 )
-value = 50.0
+value = 75.0
 
 [node name="CurrentWeightLabel" type="Label" parent="."]
-margin_left = 1191.0
-margin_top = 980.0
-margin_right = 1257.0
-margin_bottom = 1011.0
+margin_left = 1180.0
+margin_top = 976.0
+margin_right = 1246.0
+margin_bottom = 1007.0
 grow_horizontal = 0
 grow_vertical = 0
 custom_fonts/font = SubResource( 20 )
@@ -423,9 +436,9 @@ align = 2
 valign = 2
 
 [node name="MaxWeightLabel" type="Label" parent="."]
-margin_left = 1191.0
+margin_left = 1180.0
 margin_top = 1019.0
-margin_right = 1257.0
+margin_right = 1246.0
 margin_bottom = 1050.0
 grow_horizontal = 0
 grow_vertical = 0
@@ -434,7 +447,61 @@ text = "4000"
 align = 2
 valign = 2
 
+[node name="t" type="Label" parent="."]
+margin_left = 1204.0
+margin_top = 976.0
+margin_right = 1270.0
+margin_bottom = 1007.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_fonts/font = SubResource( 21 )
+text = "kg"
+align = 2
+valign = 2
+
+[node name="t3" type="Label" parent="."]
+margin_left = 1179.0
+margin_top = 396.0
+margin_right = 1199.0
+margin_bottom = 409.0
+grow_horizontal = 0
+grow_vertical = 0
+hint_tooltip = "Testing, attention please"
+mouse_filter = 0
+theme = ExtResource( 8 )
+custom_fonts/font = SubResource( 21 )
+text = "Soft Limit"
+align = 2
+valign = 2
+__meta__ = {
+"_editor_description_": ""
+}
+
+[node name="t2" type="Label" parent="."]
+margin_left = 1204.0
+margin_top = 1019.0
+margin_right = 1270.0
+margin_bottom = 1050.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_fonts/font = SubResource( 21 )
+text = "kg"
+align = 2
+valign = 2
+
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+margin_left = 1202.0
+margin_top = 1015.0
+margin_right = 1256.0
+margin_bottom = 1017.0
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+margin_left = 1202.0
+margin_top = 404.0
+margin_right = 1256.0
+margin_bottom = 406.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= [ "head", "Hardware" ]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= [ "core", "Hardware" ]]

@@ -12,6 +12,7 @@ export var dash_heat := 100
 export var walk_heat := 5
 export var weight := 1.0
 
+var part_id
 
 func get_image():
 	return image

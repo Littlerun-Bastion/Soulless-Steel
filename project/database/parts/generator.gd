@@ -15,6 +15,7 @@ export var battery_recharge_rate := 10
 export var power_output := 1.0
 export var weight := 10.0
 
-	
+var part_id
+
 func get_image():
 	return image

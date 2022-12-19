@@ -13,6 +13,7 @@ export var stability := 10.0
 export var arms_accuracy_modifier := 10.0
 export var weight := 20
 
+var part_id
 
 func get_image(side):
 	if side == SIDE.LEFT:

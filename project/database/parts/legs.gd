@@ -21,6 +21,7 @@ export var has_thrusters = false
 export var weight := 300.0
 export var weight_capacity := 1000.0
 
+var part_id
 
 func get_image(side = false):
 	if is_legs:

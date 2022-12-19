@@ -14,6 +14,7 @@ export var has_left_shoulder := false
 export var has_right_shoulder := false 
 export var weight:= 300 
 
+var part_id
 
 func get_image():
 	return $Core.texture

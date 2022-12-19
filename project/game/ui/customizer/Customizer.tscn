@@ -534,7 +534,7 @@ text = "SAVE design"
 align = 0
 icon_align = 2
 
-[node name="Save2" type="Button" parent="."]
+[node name="Exit" type="Button" parent="."]
 margin_left = 1660.0
 margin_top = 152.0
 margin_right = 1980.0
@@ -572,3 +572,4 @@ margin_bottom = 406.0
 [connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
+[connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]

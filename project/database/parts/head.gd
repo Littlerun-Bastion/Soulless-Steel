@@ -12,7 +12,8 @@ export var visual_range := 1.0
 export var health := 1500
 export var weight := 1.0 
 
-	
+var part_id
+
 func get_image():
 	return $Main.texture
 

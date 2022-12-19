@@ -45,6 +45,7 @@ func load_parts(name, dict):
 				dict[key] = load(path + file_name)
 				if dict[key] is PackedScene:
 					dict[key] = dict[key].instance()
+					dict[key].part_id = file_name
 			file_name = dir.get_next()
 	else:
 		push_error("An error occurred when trying to access part path.")

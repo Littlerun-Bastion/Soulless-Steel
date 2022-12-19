@@ -146,7 +146,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side):
 	comparing_part = true
 
 
-func _on_ItemFrame_mouse_exited(part_name,type,side):
+func _on_ItemFrame_mouse_exited(_part_name,_type,_side):
 	StatBars.reset_comparing_part()
 	comparing_part = false
 
@@ -157,4 +157,5 @@ func update_weight():
 	$MaxWeightLabel.text = str(DisplayMecha.weight_capacity)
 
 
-
+func _on_Save_pressed():
+	FileManager.save_mecha_design(DisplayMecha, "test")

@@ -110,6 +110,69 @@ func save_profile():
 		push_error("Error trying to delete backup profile whilst saving:" + str(err))
 
 
+func has_mecha_design(name):
+	var dir = Directory.new()
+	if not dir.dir_exists("user://mecha_designs"):
+		push_warning("Making mecha designs directory")
+		dir.make_dir("user://mecha_design")
+	return dir.file_exists("user://mecha_designs/"+str(name)+".design")
+
+
+func save_mecha_design(mecha, design_name):
+	if has_mecha_design(design_name):
+		push_warning("Overwritting previous mecha design named: " + str(design_name))
+	
+	var design_file = File.new()
+	var err = design_file.open("user://mecha_designs/"+design_name+".design", File.WRITE)
+	if err != OK:
+		push_error("Error trying to create design file whilst saving: " + str(err))
+	
+	var data = mecha.get_design_data()
+	design_file.store_line(to_json(data))
+	design_file.close()
+
+
+func load_mecha_design(design_name):
+	if not has_mecha_design(design_name):
+		push_error("Not an existing mecha design name: " + str(design_name))
+		return false
+		
+	var design_file = File.new()
+	var err = design_file.open("user://mecha_designs/"+design_name+".design", File.READ)
+	if err != OK:
+		push_error("Error trying to load mecha design file: " + str(err))
+	
+	var data = false
+	while design_file.get_position() < design_file.get_len():
+		data = parse_json(design_file.get_line())
+		break
+	
+	design_file.close()
+	return data
+
+
+func get_all_mecha_design_names():
+	var dir = Directory.new()
+	if not dir.dir_exists("user://mecha_designs"):
+		push_warning("Making mecha designs directory")
+		dir.make_dir("user://mecha_design")
+	
+	var designs = []
+	var err = dir.open("user://mecha_designs")
+	if err == OK:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if not dir.current_is_dir() and file_name != "." and file_name != "..":
+				var design_name = file_name.replace(".design", "")
+				designs.append(design_name)
+			file_name = dir.get_next()
+	else:
+		push_error("An error occurred when trying to access mecha designs dir path: " + str(err))
+	
+	return designs
+
+
 func arquive_file(path, use_warning := true):
 	var dir = Directory.new()
 	if not dir.dir_exists("user://archived_files"):

@@ -190,6 +190,17 @@ func set_pause(value):
 	paused = value
 
 
+func get_design_data():
+	var data = {}
+	for part_type in ["arm_weapon_left", "arm_weapon_right", "shoulders", \
+					  "shoulder_weapon_left", "shoulder_weapon_right", \
+					  "head", "core", "generator", "chipset", "thruster", "chassis"]:
+		var part = get(part_type)
+		data[part_type] = part.part_id if part else false
+
+	return data
+
+
 func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
 	friction = _friction

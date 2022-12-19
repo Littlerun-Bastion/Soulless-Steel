@@ -75,14 +75,14 @@ void fragment()
 shader = SubResource( 7 )
 shader_param/barRange = 0.01
 shader_param/barOffsetIntensity = 0.003
-shader_param/noiseQuality = 1099.28
-shader_param/noiseIntensity = 0.001
+shader_param/noiseQuality = 1667.33
+shader_param/noiseIntensity = 0.0
 shader_param/colorOffsetIntensity = 0.373
 shader_param/redMultiplier = 0.002
 shader_param/redIntensity = 0.133
 shader_param/greenMultiplier = 0.002
 shader_param/greenIntensity = 0.13
-shader_param/warpAmount = 0.2
+shader_param/warpAmount = 0.15
 
 [node name="ShaderEffects" type="CanvasLayer"]
 layer = 2

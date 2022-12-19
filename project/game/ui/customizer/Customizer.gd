@@ -1,6 +1,7 @@
 extends Control
 
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
+const LERP_WEIGHT = 5
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
@@ -14,12 +15,20 @@ onready var ComparisonMecha = $ComparisonMecha
 onready var StatBars = $Statbars
 
 var category_visible = false
+var comparing_part = false
 
 func _ready():
 	default_loadout()
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
 
+func _process(dt):
+	if not comparing_part:
+		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, $WeightBar.value, LERP_WEIGHT*dt)
+		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, $WeightBar.max_value, LERP_WEIGHT*dt)
+	else:
+		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, ComparisonMecha.total_weight, LERP_WEIGHT*dt)
+		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, ComparisonMecha.weight_capacity, LERP_WEIGHT*dt)
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
@@ -124,6 +133,7 @@ func _on_ItemFrame_pressed(part_name,type,side):
 		ComparisonMecha.callv("set_" + str(type), [part_name])
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
+	comparing_part = false
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side):
@@ -133,14 +143,18 @@ func _on_ItemFrame_mouse_entered(part_name,type,side):
 	else:
 		ComparisonMecha.callv("set_" + str(type), [part_name])
 	StatBars.set_comparing_part(ComparisonMecha)
+	comparing_part = true
 
 
 func _on_ItemFrame_mouse_exited(part_name,type,side):
 	StatBars.reset_comparing_part()
+	comparing_part = false
 
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.weight_capacity
 	$WeightBar.value = DisplayMecha.total_weight
 	$CurrentWeightLabel.text = str(DisplayMecha.total_weight) 
 	$MaxWeightLabel.text = str(DisplayMecha.weight_capacity)
+
+
 

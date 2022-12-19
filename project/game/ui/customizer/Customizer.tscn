@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=24 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
@@ -56,6 +56,14 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="StyleBoxFlat" id=22]
+bg_color = Color( 1, 1, 1, 1 )
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="StyleBoxFlat" id=23]
+bg_color = Color( 0, 0, 0, 1 )
 border_color = Color( 1, 1, 1, 1 )
 
 [sub_resource type="DynamicFont" id=20]
@@ -428,6 +436,18 @@ custom_styles/fg = SubResource( 12 )
 custom_styles/bg = SubResource( 13 )
 value = 75.0
 
+[node name="WeightComparisonBar" type="ProgressBar" parent="."]
+margin_left = 1235.0
+margin_top = 974.0
+margin_right = 1994.0
+margin_bottom = 995.0
+rect_rotation = 270.0
+custom_colors/font_color = Color( 0, 0, 0, 0 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
+custom_styles/fg = SubResource( 22 )
+custom_styles/bg = SubResource( 23 )
+value = 75.0
+
 [node name="CurrentWeightLabel" type="Label" parent="."]
 margin_left = 1180.0
 margin_top = 976.0
@@ -452,7 +472,7 @@ text = "4000"
 align = 2
 valign = 2
 
-[node name="t" type="Label" parent="."]
+[node name="kg" type="Label" parent="."]
 margin_left = 1204.0
 margin_top = 976.0
 margin_right = 1270.0
@@ -464,8 +484,20 @@ text = "kg"
 align = 2
 valign = 2
 
-[node name="t3" type="Label" parent="."]
-margin_left = 1179.0
+[node name="kg2" type="Label" parent="."]
+margin_left = 1204.0
+margin_top = 1019.0
+margin_right = 1270.0
+margin_bottom = 1050.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_fonts/font = SubResource( 21 )
+text = "kg"
+align = 2
+valign = 2
+
+[node name="SoftLimit" type="Label" parent="."]
+margin_left = 1085.0
 margin_top = 396.0
 margin_right = 1199.0
 margin_bottom = 409.0
@@ -481,18 +513,6 @@ valign = 2
 __meta__ = {
 "_editor_description_": ""
 }
-
-[node name="t2" type="Label" parent="."]
-margin_left = 1204.0
-margin_top = 1019.0
-margin_right = 1270.0
-margin_bottom = 1050.0
-grow_horizontal = 0
-grow_vertical = 0
-custom_fonts/font = SubResource( 21 )
-text = "kg"
-align = 2
-valign = 2
 
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
 

@@ -201,6 +201,25 @@ func get_design_data():
 	return data
 
 
+func set_parts_from_design(data):
+	for part_name in ["arm_weapon_left", "arm_weapon_right", "shoulders", \
+					  "shoulder_weapon_left", "shoulder_weapon_right", \
+					  "head", "core", "generator", "chipset", "thruster", "chassis"]:
+		var type = part_name.replace("_left", "").replace("_right", "")
+		var side = false
+		if part_name.find("left") != -1:
+			side = SIDE.LEFT
+		elif part_name.find("right") != -1:
+			side = SIDE.RIGHT
+		
+		if typeof(side) == TYPE_INT:
+			callv("set_" + type, [data[part_name], side])
+		else:
+			callv("set_" + type, [data[part_name]])
+
+	return data
+
+
 func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
 	friction = _friction
@@ -430,21 +449,30 @@ func set_core(part_name):
 
 
 func set_generator(part_name):
-	var part_data = PartManager.get_part("generator", part_name)
-	generator = part_data
+	if part_name:
+		var part_data = PartManager.get_part("generator", part_name)
+		generator = part_data
+	else:
+		generator = false
 	update_max_shield_from_parts()
 	total_weight = get_stat("weight")
 
 
 func set_chipset(part_name):
-	var part_data = PartManager.get_part("chipset", part_name)
-	chipset = part_data
+	if part_name:
+		var part_data = PartManager.get_part("chipset", part_name)
+		chipset = part_data
+	else:
+		chipset = false
 	total_weight = get_stat("weight")
 
 
 func set_thruster(part_name):
-	var part_data = PartManager.get_part("thruster", part_name)
-	thruster = part_data
+	if part_name:
+		var part_data = PartManager.get_part("thruster", part_name)
+		thruster = part_data
+	else:
+		thruster = false
 	total_weight = get_stat("weight")
 
 

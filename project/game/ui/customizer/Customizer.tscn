@@ -573,3 +573,4 @@ margin_bottom = 406.0
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
 [connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
+[connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]

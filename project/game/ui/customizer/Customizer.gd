@@ -159,3 +159,9 @@ func update_weight():
 
 func _on_Save_pressed():
 	FileManager.save_mecha_design(DisplayMecha, "test")
+
+
+func _on_Exit_pressed():
+	var data = FileManager.load_mecha_design("test")
+	if data:
+		DisplayMecha.set_parts_from_design(data)

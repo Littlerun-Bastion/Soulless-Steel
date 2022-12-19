@@ -847,6 +847,7 @@ func shoot(type, is_auto_fire = false):
 						"bullet_velocity": weapon_ref.bullet_velocity,
 						"projectile_size": weapon_ref.projectile_size,
 						"lifetime": weapon_ref.lifetime,
+						"beam_range": weapon_ref.beam_range,
 						
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,

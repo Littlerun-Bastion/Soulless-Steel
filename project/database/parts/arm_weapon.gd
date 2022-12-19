@@ -38,6 +38,7 @@ export var weight := 1.0
 export var bullet_velocity := 2000
 export var projectile_size := 1.0
 export var lifetime := 2.0
+export var beam_range := 2000.0
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false

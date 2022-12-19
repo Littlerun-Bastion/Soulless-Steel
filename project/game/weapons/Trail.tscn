@@ -4,7 +4,7 @@
 [ext_resource path="res://assets/images/fx/trail_cloudy_hi.png" type="Texture" id=2]
 
 [sub_resource type="Curve" id=1]
-_data = [ Vector2( 0.0434783, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0.172727 ), -1.6854, 0.0, 0, 0 ]
+_data = [ Vector2( 0.0434783, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0 ), -1.6854, 0.0, 0, 0 ]
 
 [sub_resource type="Gradient" id=2]
 offsets = PoolRealArray( 0, 0.330275, 0.862385 )

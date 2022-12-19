@@ -1,12 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=2 format=2]
 
 [ext_resource path="res://game/weapons/InstantProjectile.gd" type="Script" id=1]
 
-[sub_resource type="CanvasItemMaterial" id=1]
-blend_mode = 1
-
 [node name="InstantProjectile" type="RayCast2D"]
-material = SubResource( 1 )
 enabled = true
 collide_with_areas = true
 script = ExtResource( 1 )

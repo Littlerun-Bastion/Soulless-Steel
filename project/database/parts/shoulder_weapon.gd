@@ -36,6 +36,7 @@ export var uses_battery := false
 export var bullet_velocity := 2000.0
 export var projectile_size := 1.0
 export var lifetime := 2.0
+export var beam_range := 2000.0
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false
@@ -44,6 +45,12 @@ export var trail_lifetime_range := 0.25
 export var trail_eccentricity := 5.0
 export var trail_min_spawn_distance := 20.0
 export var trail_width := 20
+
+export var has_smoke := false
+export var smoke_density := 400
+export var smoke_lifetime := 5.0
+export var smoke_trail_material : ParticlesMaterial
+export var smoke_texture : Texture
 
 export var impact_size := 1.0
 

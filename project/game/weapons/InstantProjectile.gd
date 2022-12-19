@@ -24,7 +24,6 @@ var impact_size := 1.0
 var effect_data 
 var lifetime = 2.0
 var lifetime_tick = 1.0
-var weapon_range = 2000
 var body
 
 signal bullet_impact
@@ -107,7 +106,7 @@ func setup(mecha, args):
 	lifetime_tick = lifetime
 	dir = args.dir.normalized()
 	position = args.pos
-	cast_to = dir*weapon_range
+	cast_to = dir*args.beam_range
 	add_exception(original_mecha_info.body)
 	
 

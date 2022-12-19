@@ -30,6 +30,7 @@ sound_att = 1.75
 bullet_velocity = 1000
 projectile_size = 3.0
 lifetime = 1.0
+beam_range = 1000.0
 trail_min_spawn_distance = 5.0
 wiggle_amount = 0.05
 seek_time = 0.5

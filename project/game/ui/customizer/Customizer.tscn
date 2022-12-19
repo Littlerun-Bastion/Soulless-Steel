@@ -84,6 +84,11 @@ script = ExtResource( 3 )
 position = Vector2( 619, 671 )
 display_mode = true
 
+[node name="ComparisonMecha" parent="." instance=ExtResource( 9 )]
+visible = false
+position = Vector2( 619, 671 )
+display_mode = true
+
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 scale = Vector2( 0.75, 0.75 )
 transform = Transform2D( 0.75, 0, 0, 0.75, 0, 0 )
@@ -490,6 +495,30 @@ align = 2
 valign = 2
 
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
+
+[node name="Save" type="Button" parent="."]
+margin_left = 41.0
+margin_top = 1011.0
+margin_right = 361.0
+margin_bottom = 1071.0
+rect_min_size = Vector2( 300, 60 )
+rect_scale = Vector2( 0.66, 0.66 )
+theme = ExtResource( 8 )
+text = "SAVE design"
+align = 0
+icon_align = 2
+
+[node name="Save2" type="Button" parent="."]
+margin_left = 1660.0
+margin_top = 152.0
+margin_right = 1980.0
+margin_bottom = 212.0
+rect_min_size = Vector2( 300, 60 )
+rect_scale = Vector2( 0.66, 0.66 )
+theme = ExtResource( 8 )
+text = "Exit"
+align = 2
+icon_align = 2
 
 [node name="ColorRect" type="ColorRect" parent="."]
 margin_left = 1202.0

@@ -12,7 +12,6 @@ func setup(projectile, mat, args):
 	self.process_material = mat
 	self.emitting = true
 	self.texture = args.smoke_texture
-	print("Hello")
 
 func _process(dt):
 	if is_instance_valid(home_projectile):

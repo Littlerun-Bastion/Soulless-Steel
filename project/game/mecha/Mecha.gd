@@ -210,8 +210,6 @@ func update_max_life_from_parts():
 		value += head.health
 	if chassis:
 		value += chassis.health
-	
-	print("Armor: " + str(value))
 	set_max_life(value)
 
 

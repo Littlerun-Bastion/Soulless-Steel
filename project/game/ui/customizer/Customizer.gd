@@ -10,6 +10,7 @@ onready var CategorySelectedUI = $CategorySelectedUI
 onready var CategoryButtons = $CategoryButtons
 onready var PartCategories = $PartCategories
 onready var DisplayMecha = $Mecha
+onready var ComparisonMecha = $ComparisonMecha
 onready var StatBars = $Statbars
 
 var category_visible = false
@@ -41,6 +42,18 @@ func default_loadout():
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	DisplayMecha.set_shoulders("shoulder_test")
+	
+	
+	ComparisonMecha.set_core("MSV-L3J")
+	ComparisonMecha.set_generator("type_1")
+	ComparisonMecha.set_chipset("type_1")
+	ComparisonMecha.set_head("head_test")
+	ComparisonMecha.set_chassis("legs_test")
+	ComparisonMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
+	ComparisonMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
+	ComparisonMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
+	ComparisonMecha.set_shoulder_weapon(false, SIDE.LEFT)
+	ComparisonMecha.set_shoulders("shoulder_test")
 
 
 func show_category_button(parts, selected):
@@ -105,18 +118,25 @@ func _on_ItemFrame_pressed(part_name,type,side):
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
+		ComparisonMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
+		ComparisonMecha.callv("set_" + str(type), [part_name])
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side):
-	StatBars.set_comparing_part(part_name, type, side)
+	if side:
+		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
+		ComparisonMecha.callv("set_" + str(type), [part_name,side])
+	else:
+		ComparisonMecha.callv("set_" + str(type), [part_name])
+	StatBars.set_comparing_part(ComparisonMecha)
 
 
 func _on_ItemFrame_mouse_exited(part_name,type,side):
-	StatBars.reset_comparing_part(part_name, type, side)
+	StatBars.reset_comparing_part()
 
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.weight_capacity

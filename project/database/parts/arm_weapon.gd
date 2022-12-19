@@ -92,7 +92,6 @@ func get_stat(stat_name):
 		stat = 100 * damage_modifier * shield_mult
 	else:
 		stat = get(stat_name)
-	print(stat_name + " " + str(stat))
 	return stat
 	
 

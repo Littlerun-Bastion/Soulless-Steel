@@ -43,7 +43,13 @@ func _process(dt):
 						var comparison_bar = stat.get_node("ComparisonBar")
 						var real_bar = stat.get_node("RealBar")
 						comparison_bar.value = lerp(comparison_bar.value, real_bar.value, LERP_WEIGHT*dt)
-
+	else:
+		for container in $CategoryContainers.get_children():
+			for stat in container.get_node("VBoxContainer").get_children():
+				if stat.get_child_count() > 0:
+					var comparison_value = stat.get_node("ComparisonValue")
+					comparison_value.percent_visible = lerp(comparison_value.percent_visible, 100, LERP_WEIGHT*dt)
+					
 
 func mode_switch (mode):
 	assert(mode >= 0 and mode <= StatNodes.size() - 1, "Not a valid mode: " + str(mode))
@@ -54,12 +60,36 @@ func mode_switch (mode):
 	CategoryTitle.text = StatNodeTitles[current_category]
 
 
-func reset_comparing_part(_part_name, _type, _side):
+func reset_comparing_part():
 	compared_part = false
 
 
-func set_comparing_part(_part_name, _type, _side):
-	pass
+func set_comparing_part(mecha):
+	compared_part = true
+	for container in $CategoryContainers.get_children():
+		for stat in container.get_node("VBoxContainer").get_children():
+			if stat.get("stat_name"):
+				var stat_value
+				var weapon
+				if stat.get("weapon_position"):
+					weapon = mecha.get(stat.get("weapon_position"))
+					stat_value = weapon.get_stat(stat.get("stat_name"))
+				else:
+					stat_value = mecha.get_stat(stat.get("stat_name"))
+				if stat_value is bool:
+					if stat_value == true:
+						stat.get_node("ComparisonValue").text = "Yes"
+					else: 
+						stat.get_node("ComparisonValue").text = "No"
+				elif stat_value is float or stat_value is int:
+					stat.get_node("ComparisonValue").text = str(stat_value)
+					if stat.has_node("ComparisonBar"):
+						stat.get_node("ComparisonBar").value = stat_value
+						stat.get_node("ComparisonBar").value = stat_value
+				elif stat_value is String:
+					stat.get_node("ComparisonValue").text = stat_value
+				else:
+					pass
 
 
 func _on_SwitchRight_pressed():

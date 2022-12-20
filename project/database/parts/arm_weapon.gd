@@ -67,6 +67,7 @@ export var seek_time := 1.0
 export var seeker_angle := 90
 
 var firing_timer = 0.0
+var part_id
 
 func get_sub():
 	return $Sub.texture

@@ -22,6 +22,7 @@ export var weight := 300.0
 export var weight_capacity := 1000.0
 export var stability := 1.0
 
+var part_id
 
 func get_image(side = false):
 	if is_legs:

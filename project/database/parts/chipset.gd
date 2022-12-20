@@ -19,6 +19,7 @@ export var radar_refresh_rate := 1.0
 export var loot_search_time := 1.0
 export var weight := 1.0
 
+var part_id
 
 func get_image():
 	return image

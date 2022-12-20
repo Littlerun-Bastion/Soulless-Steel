@@ -19,7 +19,7 @@ export var change_scaling_var = 0.0 #How much to vary scaling
 export var life_time = -1.0 #-1 means it won't disappear
 export var life_time_var = 0.0 #How much to vary from base life_time
 
-
+var part_id
 
 func get_image():
 	if texture_variations.empty() or randf() > 1.0/float(texture_variations.size() + 1):

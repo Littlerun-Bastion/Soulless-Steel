@@ -9,6 +9,7 @@ script = ExtResource( 1 )
 part_name = "Test Shoulders 2"
 manufacturer_name = "Test"
 tagline = "Test"
+stability = 1.5
 
 [node name="ShoulderLeft" type="Sprite" parent="."]
 texture = ExtResource( 2 )

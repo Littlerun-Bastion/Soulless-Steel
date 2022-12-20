@@ -10,6 +10,8 @@ part_name = "Test Shoulders 1"
 manufacturer_name = "Test"
 tagline = "Test"
 shield = 1200.0
+stability = 1.25
+arms_accuracy_modifier = 2.0
 
 [node name="ShoulderLeft" type="Sprite" parent="."]
 texture = ExtResource( 2 )

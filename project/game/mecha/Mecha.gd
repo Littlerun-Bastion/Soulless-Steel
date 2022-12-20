@@ -91,6 +91,18 @@ var max_speed = 500
 var friction = 0.1
 var move_acc = 50
 var rotation_acc = 5
+var arm_accuracy_mod := 0.0
+var stability := 1.0
+
+
+var right_arm_bloom_time := 0.0
+var right_arm_bloom_count = 0
+var left_arm_bloom_time := 0.0
+var left_arm_bloom_count = 0
+var right_shoulder_bloom_time := 0.0
+var right_shoulder_bloom_count = 0
+var left_shoulder_bloom_time := 0.0
+var left_shoulder_bloom_count = 0
 
 var locking_targets = []
 var locking_to = false
@@ -127,6 +139,27 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
+	
+	#Bloom
+	if right_arm_bloom_time > 0:
+		right_arm_bloom_time -= dt
+	else:
+		right_arm_bloom_count = 0
+		
+	if left_arm_bloom_time > 0:
+		left_arm_bloom_time -= dt
+	else:
+		left_arm_bloom_count = 0
+		
+	if right_shoulder_bloom_time > 0:
+		right_shoulder_bloom_time -= dt
+	else:
+		right_shoulder_bloom_count = 0
+		
+	if left_shoulder_bloom_time > 0:
+		left_shoulder_bloom_time -= dt
+	else:
+		left_shoulder_bloom_count = 0
 	
 	#Handle shield
 	if generator and shield < max_shield:
@@ -416,6 +449,7 @@ func set_core(part_name):
 	update_max_life_from_parts()
 	update_max_shield_from_parts()
 	total_weight = get_stat("weight")
+	stability = get_stat("stability")
 
 
 func set_generator(part_name):
@@ -453,6 +487,7 @@ func set_chassis(part_name):
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	weight_capacity = chassis.weight_capacity
 	total_weight = get_stat("weight")
+	stability = get_stat("stability")
 
 	
 func set_chassis_nodes(main,sub,glow,collision,side = false):
@@ -518,6 +553,8 @@ func set_shoulders(part_name):
 	$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	update_max_shield_from_parts()
 	total_weight = get_stat("weight")
+	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
+	stability = get_stat("stability")
 
 #ATTRIBUTE METHODS
 
@@ -527,6 +564,7 @@ func get_max_hp():
 
 func get_stat(stat_name):
 	var total_stat = 0.0
+	var num_parts = 0
 	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
 				 shoulder_weapon_left, shoulder_weapon_right,\
 				 head, core, generator, chipset, thruster,\
@@ -534,6 +572,9 @@ func get_stat(stat_name):
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
+			num_parts += 1
+	if stat_name == "stability":
+		total_stat = total_stat/num_parts
 	return float(total_stat)
 
 func get_weapon_part(part_name):
@@ -796,18 +837,31 @@ func update_chassis_visuals(dt):
 func shoot(type, is_auto_fire = false):
 	var node
 	var weapon_ref
+	var bloom
 	if type == "arm_weapon_left":
 		node = $ArmWeaponLeft
 		weapon_ref = arm_weapon_left
+		left_arm_bloom_time = weapon_ref.instability
+		bloom = left_arm_bloom_count * weapon_ref.accuracy_bloom
+		left_arm_bloom_count += 1
 	elif type ==  "arm_weapon_right":
 		node = $ArmWeaponRight
 		weapon_ref = arm_weapon_right
+		right_arm_bloom_time = weapon_ref.instability
+		bloom = right_arm_bloom_count * weapon_ref.accuracy_bloom
+		right_arm_bloom_count += 1
 	elif type == "shoulder_weapon_left":
 		node = $ShoulderWeaponLeft
 		weapon_ref = shoulder_weapon_left
+		left_shoulder_bloom_time = weapon_ref.instability
+		bloom = left_shoulder_bloom_count * weapon_ref.accuracy_bloom
+		left_shoulder_bloom_count += 1
 	elif type ==  "shoulder_weapon_right":
 		node = $ShoulderWeaponRight
 		weapon_ref = shoulder_weapon_right
+		right_shoulder_bloom_time = weapon_ref.instability
+		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
+		right_shoulder_bloom_count += 1
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 	
@@ -828,8 +882,16 @@ func shoot(type, is_auto_fire = false):
 	
 	node.shoot(amount)
 	
-	var variation = weapon_ref.bullet_spread/float(amount + 1) 
+	var variation = weapon_ref.bullet_spread/float(amount + 1) 		
 	var angle_offset = -weapon_ref.bullet_spread /2
+	var total_accuracy = weapon_ref.base_accuracy
+	total_accuracy += bloom
+	if type == "arm_weapon_left" or type == "arm_weapon_right":
+		total_accuracy = total_accuracy / arm_accuracy_mod
+	if locked_to:
+		total_accuracy = total_accuracy/chipset.accuracy_modifier
+	if total_accuracy > weapon_ref.base_accuracy * weapon_ref.max_bloom_factor:
+		total_accuracy = weapon_ref.base_accuracy * weapon_ref.max_bloom_factor
 	for _i in range(weapon_ref.number_projectiles):
 		angle_offset += variation
 		emit_signal("create_projectile", self, 
@@ -837,7 +899,7 @@ func shoot(type, is_auto_fire = false):
 						"weapon_data": weapon_ref.projectile,
 						"weapon_name": weapon_ref.part_name,
 						"pos": node.get_shoot_position(),
-						"dir": node.get_direction(angle_offset, weapon_ref.bullet_accuracy_margin),
+						"dir": node.get_direction(angle_offset, total_accuracy),
 						"damage_mod": weapon_ref.damage_modifier,
 						"shield_mult": weapon_ref.shield_mult,
 						"health_mult": weapon_ref.health_mult,

@@ -9,7 +9,7 @@ export var tagline : String
 export var description : String
 export var image : Texture
 export var shield := 1500.0
-export var stability := 10.0
+export var stability := 1.0
 export var arms_accuracy_modifier := 10.0
 export var weight := 20
 

@@ -14,6 +14,7 @@ part_name = "Test 2 L3J"
 manufacturer_name = "Test Legged Chassis"
 tagline = "Bipedal"
 is_legs = true
+accuracy_modifier = 1.33
 
 [node name="SingleSide" type="Node2D" parent="."]
 

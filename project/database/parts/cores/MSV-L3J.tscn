@@ -20,6 +20,7 @@ manufacturer_name = "Test"
 tagline = "Light Core"
 health = 3500.0
 shield = 3400.0
+stability = 0.8
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
 position = Vector2( -31.25, 70 )

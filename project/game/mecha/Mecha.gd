@@ -906,6 +906,7 @@ func shoot(type, is_auto_fire = false):
 	
 	var amount = 1
 	
+	
 	if weapon_ref.uses_battery:
 		amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
 		
@@ -918,7 +919,7 @@ func shoot(type, is_auto_fire = false):
 			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
-	
+		
 	node.shoot(amount)
 	
 	var variation = weapon_ref.bullet_spread/float(amount + 1) 		

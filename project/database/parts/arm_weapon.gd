@@ -69,6 +69,10 @@ export var seeker_angle := 90
 var firing_timer = 0.0
 var part_id
 
+#---MELEE BEHAVIOURS---
+export var is_melee := false
+export var idle_rotation := 30.0
+
 func get_sub():
 	return $Sub.texture
 

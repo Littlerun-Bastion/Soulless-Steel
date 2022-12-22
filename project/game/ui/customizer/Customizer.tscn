@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=8]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=9]
 [ext_resource path="res://game/ui/customizer/Statbars.tscn" type="PackedScene" id=10]
+[ext_resource path="res://game/ui/customizer/LoadScreen.tscn" type="PackedScene" id=11]
 
 [sub_resource type="Theme" id=14]
 
@@ -534,6 +535,18 @@ text = "SAVE design"
 align = 0
 icon_align = 2
 
+[node name="Load" type="Button" parent="."]
+margin_left = 41.0
+margin_top = 959.0
+margin_right = 361.0
+margin_bottom = 1019.0
+rect_min_size = Vector2( 300, 60 )
+rect_scale = Vector2( 0.66, 0.66 )
+theme = ExtResource( 8 )
+text = "Load design"
+align = 0
+icon_align = 2
+
 [node name="Exit" type="Button" parent="."]
 margin_left = 1660.0
 margin_top = 152.0
@@ -558,6 +571,12 @@ margin_top = 404.0
 margin_right = 1256.0
 margin_bottom = 406.0
 
+[node name="LoadScreen" parent="." instance=ExtResource( 11 )]
+margin_left = 164.0
+margin_top = 337.0
+margin_right = -1756.0
+margin_bottom = -743.0
+
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= [ "head", "Hardware" ]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= [ "core", "Hardware" ]]
 [connection signal="pressed" from="PartCategories/Hardware/shoulders" to="." method="_on_Category_pressed" binds= [ "shoulders", "Hardware" ]]
@@ -573,4 +592,5 @@ margin_bottom = 406.0
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
 [connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
+[connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]

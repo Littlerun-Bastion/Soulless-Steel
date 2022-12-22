@@ -18,7 +18,6 @@ number_projectiles = 8
 damage_modifier = 2.0
 recoil_force = 5.0
 fire_rate = 0.75
-bullet_accuracy_margin = 5
 bullet_spread = 0.15
 bullet_spread_delay = 0.05
 total_ammo = 400

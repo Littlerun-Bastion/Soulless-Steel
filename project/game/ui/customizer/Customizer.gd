@@ -165,3 +165,7 @@ func _on_Exit_pressed():
 	var data = FileManager.load_mecha_design("test")
 	if data:
 		DisplayMecha.set_parts_from_design(data)
+
+func _on_Load_pressed():
+	$LoadScreen.visible = true
+	

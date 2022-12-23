@@ -7,9 +7,10 @@ signal finished_reloading
 signal lost_health
 
 const ROTATION_DEADZONE = 20
+const MOVE_CAMERA_SCREEN_MARGIN = 260
+const MOVE_CAMERA_MAX_SPEED = 800
 
 onready var Cam = $Camera2D
-
 
 func _ready():
 	if Debug.get_setting("player_loadout"):
@@ -40,6 +41,8 @@ func _physics_process(delta):
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, \
 						   movement_type == "tank" or Input.is_action_pressed("strafe"))
+	
+	update_camera_offset(delta)
 
 
 func _input(event):
@@ -86,6 +89,31 @@ func _input(event):
 func get_camera():
 	return Cam
 
+
+func update_camera_offset(dt):
+	if head and head.visual_range > 0:
+		var mp = get_viewport().get_mouse_position()
+		var sx = get_viewport_rect().size.x
+		var sy = get_viewport_rect().size.y
+		var abs_dir = Vector2()
+		var strength = Vector2()
+		if mp.x <= MOVE_CAMERA_SCREEN_MARGIN:
+			abs_dir.x += 1
+			strength.x = -1.0 + (mp.x/float(MOVE_CAMERA_SCREEN_MARGIN))
+		elif mp.x >= sx - MOVE_CAMERA_SCREEN_MARGIN:
+			abs_dir.x += 1
+			strength.x = ((mp.x - sx + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
+		if mp.y <= MOVE_CAMERA_SCREEN_MARGIN:
+			abs_dir.y += 1
+			strength.y = -1.0 + (mp.y/float(MOVE_CAMERA_SCREEN_MARGIN))
+		elif mp.y >= sy - MOVE_CAMERA_SCREEN_MARGIN:
+			abs_dir.y += 1
+			strength.y = ((mp.y - sy + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
+		
+		abs_dir = abs_dir.normalized()
+		strength *= strength*strength #Make it cubically strong on edges
+		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
+		Cam.offset = Cam.offset.limit_length(head.visual_range)
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp

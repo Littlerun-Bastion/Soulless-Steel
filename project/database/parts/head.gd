@@ -8,7 +8,7 @@ export var image : Texture
 export var rotation_acc := 8
 export var rotation_range := 45.0
 export var accuracy_modifier := -1.0 
-export var visual_range := 1.0 
+export var visual_range := 450 
 export var health := 1500
 export var weight := 1.0 
 

@@ -88,6 +88,10 @@ var is_sprinting = false
 var dash_velocity = Vector2()
 var dash_strength = 5000
 var moving = false
+var moving_axis = {
+	"x": false,
+	"y": false,
+}
 var max_speed = 500
 var friction = 0.1
 var move_acc = 50
@@ -739,6 +743,8 @@ func apply_movement(dt, direction):
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
+			moving_axis.x = direction.x != 0
+			moving_axis.y = direction.y != 0
 			match get_direction_from_vector(direction, true):
 				"down":
 					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
@@ -764,6 +770,8 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
+			moving_axis.x = false
+			moving_axis.y = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
 		move(velocity*speed_modifier)
 	elif movement_type == "tank":

@@ -14,7 +14,10 @@ const SPRINTING_TIMEOUT = .2 #How much the player needs to hold the button to en
 onready var Cam = $Camera2D
 
 var sprinting_timer = 0
-var invert_controls = false
+var invert_controls = {
+	"x": false,
+	"y": false,
+}
 
 func _ready():
 	if Debug.get_setting("player_loadout"):
@@ -216,14 +219,21 @@ func get_input():
 	var left_margin = 90
 	var right_margin = 270
 	var angle = posmod(rotation_degrees, 360)
-	if mov_vec.length() == 0:
-		invert_controls = false
-	elif movement_type == "relative" and not moving and \
+	if mov_vec.x == 0:
+		invert_controls.x = false
+	if mov_vec.y == 0:
+		invert_controls.y = false
+	elif movement_type == "relative" and \
 	   angle > left_margin and angle < right_margin:
-		invert_controls = true
+		if not moving_axis.x:
+			invert_controls.x = mov_vec.x != 0
+		if not moving_axis.y:
+			invert_controls.y = mov_vec.y != 0
 	
-	if invert_controls:
-		mov_vec *= -1
+	if invert_controls.x:
+		mov_vec.x *= -1
+	if invert_controls.y:
+		mov_vec.y *= -1
 	
 	return mov_vec
 

@@ -22,7 +22,7 @@ func _ready():
 		set_chipset("type_1")
 		set_thruster("test1")
 		set_head("head_test")
-		set_chassis("legs_test2")
+		set_chassis("legs_test")
 		set_arm_weapon("testlaser", SIDE.LEFT)
 		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)

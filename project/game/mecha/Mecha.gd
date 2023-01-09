@@ -84,6 +84,7 @@ var move_heat = 70
 
 var movement_type = "free"
 var velocity = Vector2()
+var is_sprinting = false
 var dash_velocity = Vector2()
 var dash_strength = 5000
 var moving = false
@@ -721,10 +722,15 @@ func dash(dir):
 
 
 func apply_movement(dt, direction):
+	var target_max_speed = max_speed
+	var target_move_acc = move_acc
+	if thruster and is_sprinting:
+		target_max_speed *= thruster.thrust_speed_multiplier
+		target_move_acc *= thruster.thrust_speed_multiplier
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+			velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -754,7 +760,7 @@ func apply_movement(dt, direction):
 				"downright":
 					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
 					direction += Vector2(1,0).rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+			velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -778,7 +784,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
-				velocity = lerp(velocity, direction.normalized() * max_speed, move_acc*dt)
+				velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			move(velocity)
 

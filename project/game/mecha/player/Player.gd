@@ -9,14 +9,18 @@ signal lost_health
 const ROTATION_DEADZONE = 20
 const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
+const SPRINTING_TIMEOUT = .2 #How much the player needs to hold the button to enter sprint mode
 
 onready var Cam = $Camera2D
+
+var sprinting_timer = 0
 
 func _ready():
 	if Debug.get_setting("player_loadout"):
 		set_core("MSV-L3J")
 		set_generator("type_1")
 		set_chipset("type_1")
+		set_thruster("test1")
 		set_head("head_test")
 		set_chassis("legs_test2")
 		set_arm_weapon("testlaser", SIDE.LEFT)
@@ -35,6 +39,12 @@ func _physics_process(delta):
 	check_input()
 	
 	apply_movement(delta, get_input())
+	
+	#Update sprinting timer
+	if sprinting_timer > 0.0:
+		sprinting_timer = max(sprinting_timer - delta, 0.0)
+		if sprinting_timer <= 0.0:
+			is_sprinting = true
 	
 	if not get_locked_to():
 		var target_pos = get_global_mouse_position()
@@ -81,11 +91,15 @@ func _input(event):
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
 	elif event.is_action_pressed("thruster_dash"):
-		dash(get_input().normalized())
+		sprinting_timer = SPRINTING_TIMEOUT
+	elif event.is_action_released("thruster_dash"):
+		if sprinting_timer > 0.0:
+			dash(get_input().normalized())
+		is_sprinting = false
+		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
-
-
+	
 func get_camera():
 	return Cam
 
@@ -163,6 +177,7 @@ func setup(arena_ref):
 		set_core("MSV-L3J")
 		set_generator("type_1")
 		set_chipset("type_1")
+		set_thruster("test1")
 		set_head("head_test2")
 		#Use to test free mode
 		set_chassis("legs_test")

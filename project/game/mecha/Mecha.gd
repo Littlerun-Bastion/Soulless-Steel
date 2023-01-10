@@ -7,7 +7,10 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
+const SPEED_MOD_CORRECTION = 3
 const CHASSIS_SPEED = 20
+const SPRINTING_COOLDOWN_SPEED = 4
+const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 25000
 
@@ -85,6 +88,7 @@ var move_heat = 70
 var movement_type = "free"
 var velocity = Vector2()
 var is_sprinting = false
+var sprinting_ending_correction = 0.0
 var dash_velocity = Vector2()
 var dash_strength = 5000
 var moving = false
@@ -177,6 +181,9 @@ func _physics_process(dt):
 		if shield_regen_cooldown <= 0:
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
 	
+	#Handle sprinting
+	sprinting_ending_correction = max(sprinting_ending_correction - SPRINTING_COOLDOWN_SPEED*dt, 0.0)
+	
 	#Handle collisions with other mechas and movement
 	if not is_stunned():
 		var all_collisions = []
@@ -218,6 +225,9 @@ func _physics_process(dt):
 		 (is_sprinting or dash_velocity.length() > 0):
 		MovementAnimation.stop()
 	
+	if not MovementAnimation.is_playing():
+		speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
+	
 	update_heat(dt)
 	
 	update_locking(dt)
@@ -246,7 +256,7 @@ func _physics_process(dt):
 		corrode_status_time = max(corrode_status_time - dt, 0.0)
 	elif corrode_status_time < 0.0:
 		pass
-	
+
 
 func is_player():
 	return mecha_name == "Player"
@@ -756,15 +766,21 @@ func dash(dir):
 
 
 func apply_movement(dt, direction):
-	var target_move_acc = move_acc
+	if is_sprinting:
+		direction.x = 0 #Disable horizontal movement when sprinting
+	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
-	if thruster and is_sprinting:
-		target_speed.y *= thruster.thrust_speed_multiplier
-		target_move_acc *= thruster.thrust_speed_multiplier
+	if thruster:
+		var mult = thruster.thrust_speed_multiplier
+		if is_sprinting:
+			target_speed.y *= mult
+			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
+		else:
+			target_speed.y += (max_speed*mult - max_speed)*sprinting_ending_correction*sign(target_speed.y)
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, target_speed, target_move_acc*dt)
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -776,7 +792,7 @@ func apply_movement(dt, direction):
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, target_speed, target_move_acc*dt)
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -802,7 +818,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
-				velocity = lerp(velocity, target_speed, target_move_acc*dt)
+				velocity = lerp(velocity, target_speed, target_move_acc)
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			move(velocity)
 
@@ -900,6 +916,10 @@ func update_chassis_visuals(dt):
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
 										  dt*CHASSIS_SPEED)
 
+func stop_sprinting():
+	if is_sprinting:
+		sprinting_ending_correction = 1.0
+	is_sprinting = false
 
 #COMBAT METHODS
 

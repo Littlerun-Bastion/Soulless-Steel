@@ -747,6 +747,9 @@ polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.873
 [node name="StunTimer" type="Timer" parent="."]
 one_shot = true
 
+[node name="LockMovementTimer" type="Timer" parent="."]
+one_shot = true
+
 [node name="MovementAnimation" type="AnimationPlayer" parent="."]
 autoplay = "RESET"
 playback_speed = 5.0

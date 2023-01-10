@@ -94,9 +94,9 @@ func _input(event):
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
-	elif event.is_action_pressed("thruster_dash"):
+	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked():
 		sprinting_timer = SPRINTING_TIMEOUT
-	elif event.is_action_released("thruster_dash"):
+	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0:
 			dash(get_input().normalized())
 		stop_sprinting()
@@ -167,6 +167,7 @@ func check_input():
 	#Safety check for sprinting, since it was bugging sometimes
 	if not Input.is_action_pressed("thruster_dash"):
 		stop_sprinting()
+		sprinting_timer = 0.0
 
 func check_weapon_input(name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\

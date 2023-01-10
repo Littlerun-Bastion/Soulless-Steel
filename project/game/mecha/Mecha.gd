@@ -187,7 +187,7 @@ func _physics_process(dt):
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
 
 	#Handle collisions with other mechas and movement
-	if not is_stunned():
+	if not is_stunned() and not is_movement_locked():
 		var all_collisions = []
 		for i in get_slide_count():
 			all_collisions.append(get_slide_collision(i))
@@ -201,7 +201,7 @@ func _physics_process(dt):
 				var dir = (global_position - collision.collider.global_position).rotated(rand)
 				apply_movement(mod*dt, dir)
 		if collided:
-			stun(0.1)
+			lock_movement(0.1)
 	else:
 		if sprinting_ending_correction.length():
 			move(sprinting_ending_correction)
@@ -964,7 +964,7 @@ func update_chassis_visuals(dt):
 func stop_sprinting():
 	if is_sprinting:
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
-		stun(0.5)
+		lock_movement(0.5)
 	is_sprinting = false
 
 #COMBAT METHODS
@@ -1085,9 +1085,18 @@ func is_stunned():
 	return not $StunTimer.is_stopped()
 
 
+func is_movement_locked():
+	return not $LockMovementTimer.is_stopped()
+
+
 func stun(time):
 	$StunTimer.wait_time = time
 	$StunTimer.start()
+
+
+func lock_movement(time):
+	$LockMovementTimer.wait_time = time
+	$LockMovementTimer.start()
 
 
 #LOCK ON METHODS

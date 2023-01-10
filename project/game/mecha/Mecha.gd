@@ -9,7 +9,7 @@ const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const SPEED_MOD_CORRECTION = 3
 const CHASSIS_SPEED = 20
-const SPRINTING_COOLDOWN_SPEED = 4
+const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 25000
@@ -88,7 +88,7 @@ var move_heat = 70
 var movement_type = "free"
 var velocity = Vector2()
 var is_sprinting = false
-var sprinting_ending_correction = 0.0
+var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
 var dash_strength = 5000
 var moving = false
@@ -183,8 +183,8 @@ func _physics_process(dt):
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
 
-	#Handle sprinting
-	sprinting_ending_correction = max(sprinting_ending_correction - SPRINTING_COOLDOWN_SPEED*dt, 0.0)
+	#Handle sprinting momentum
+	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
 
 	#Handle collisions with other mechas and movement
 	if not is_stunned():
@@ -203,7 +203,10 @@ func _physics_process(dt):
 		if collided:
 			stun(0.1)
 	else:
-		apply_movement(dt, Vector2())
+		if sprinting_ending_correction.length():
+			move(sprinting_ending_correction)
+		else:
+			apply_movement(dt, Vector2())
 
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
@@ -819,8 +822,6 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
-#		else:
-#			target_speed.y += (max_speed*mult - max_speed)*sprinting_ending_correction*sign(target_speed.y)
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -962,8 +963,8 @@ func update_chassis_visuals(dt):
 
 func stop_sprinting():
 	if is_sprinting:
-		sprinting_ending_correction = 1.0
-		stun(0.9)
+		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
+		stun(0.5)
 	is_sprinting = false
 
 #COMBAT METHODS

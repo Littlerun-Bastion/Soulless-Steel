@@ -723,6 +723,8 @@ func move(vec):
 func dash(dir):
 	if dash_velocity.length() == 0 and dir.length() > 0:
 		dash_velocity = dir.normalized()*dash_strength
+		if movement_type == "relative":
+			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
 
 
 func apply_movement(dt, direction):

@@ -216,8 +216,8 @@ func get_input():
 	if Input.is_action_pressed('up'):
 		mov_vec.y -= 1
 	
-	var left_margin = 90
-	var right_margin = 270
+	var left_margin = 135
+	var right_margin = 225
 	var angle = posmod(rotation_degrees, 360)
 	if mov_vec.x == 0:
 		invert_controls.x = false

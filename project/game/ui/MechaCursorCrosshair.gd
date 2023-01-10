@@ -26,7 +26,7 @@ var lock_reticle_size := 5
 
 
 func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	MouseManager.hide_cursor()
 	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload]:
 		set_alpha(node, 1.0)
 	for node in [ReloadLabel, ChangeModeProgress]:

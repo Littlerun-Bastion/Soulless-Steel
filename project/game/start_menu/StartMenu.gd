@@ -9,7 +9,7 @@ func _ready():
 	FileManager.load_game()
 	
 	randomize()
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	MouseManager.show_cursor()
 	ShaderEffects.reset_shader_effect("main_menu")
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")

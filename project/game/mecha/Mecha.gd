@@ -563,7 +563,6 @@ func set_generator(part_name):
 	else:
 		generator = false
 	update_max_shield_from_parts()
-	print ("Generator set" + str(part_name))
 	total_weight = get_stat("weight")
 
 

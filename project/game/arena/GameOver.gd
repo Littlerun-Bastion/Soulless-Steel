@@ -10,7 +10,7 @@ func reset():
 
 
 func killed():
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	MouseManager.show_cursor()
 	ShaderEffects.reset_shader_effect("gameover")
 	$ViewportContainer.visible = true
 

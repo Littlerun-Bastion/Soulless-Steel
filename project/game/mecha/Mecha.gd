@@ -128,6 +128,11 @@ var chassis = null
 var total_weight = 0.0
 var weight_capacity = 0.0
 
+var fire_status_time = 0.0
+var electrified_status_time = 0.0
+var freezing_status_time = 0.0 
+var corrode_status_time = 0.0
+
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
@@ -218,6 +223,27 @@ func _physics_process(dt):
 	if get_locked_to():
 		var target_pos = locked_to.global_position
 		apply_rotation_by_point(dt, target_pos, false)
+	
+	#Status Effects
+	if fire_status_time > 0.0:
+		fire_status_time = max(fire_status_time - dt, 0.0)
+	elif fire_status_time < 0.0:
+		pass
+		
+	if electrified_status_time > 0.0:
+		electrified_status_time = max(electrified_status_time - dt, 0.0)
+	elif electrified_status_time < 0.0:
+		pass
+		
+	if freezing_status_time > 0.0:
+		freezing_status_time = max(freezing_status_time - dt, 0.0)
+	elif freezing_status_time < 0.0:
+		pass
+		
+	if corrode_status_time > 0.0:
+		corrode_status_time = max(corrode_status_time - dt, 0.0)
+	elif corrode_status_time < 0.0:
+		pass
 	
 
 func is_player():

@@ -163,7 +163,10 @@ func check_input():
 	check_weapon_input("arm_weapon_right", $ArmWeaponRight, arm_weapon_right)
 	check_weapon_input("shoulder_weapon_left", $ShoulderWeaponLeft, shoulder_weapon_left)
 	check_weapon_input("shoulder_weapon_right", $ShoulderWeaponRight, shoulder_weapon_right)
-
+	
+	#Safety check for sprinting, since it was bugging sometimes
+	if not Input.is_action_pressed("thruster_dash"):
+		stop_sprinting()
 
 func check_weapon_input(name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\

@@ -15,6 +15,8 @@ export var damage_modifier := 1.0
 export var shield_mult := 1.0
 export var health_mult := 1.0
 export var heat_damage := 10.0
+export var status_damage := 0.0
+export var status_type : String
 export var recoil_force := 0.0
 export var fire_rate := .3
 export var auto_fire := true

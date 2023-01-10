@@ -361,7 +361,7 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
 
@@ -370,6 +370,16 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, wea
 	var temp_shield = shield
 	shield = max(shield - (shield_mult * amount), 0)
 	amount = max(amount - temp_shield, 0)
+	
+	if status_type and status_amount > 0.0:
+		if status_type == "Fire":
+			fire_status_time = status_amount
+		elif status_type == "Electrified":
+			electrified_status_time = status_amount
+		elif status_type == "Corrode":
+			corrode_status_time = status_amount
+		elif status_type == "Freezing":
+			freezing_status_time = status_amount
 
 	hp = max(hp - (health_mult * amount), 0)
 	mecha_heat += heat_damage
@@ -1027,6 +1037,8 @@ func shoot(type, is_auto_fire = false):
 						"shield_mult": weapon_ref.shield_mult,
 						"health_mult": weapon_ref.health_mult,
 						"heat_damage": weapon_ref.heat_damage,
+						"status_damage": weapon_ref.status_damage,
+						"status_type": weapon_ref.status_type,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 						"bullet_velocity": weapon_ref.bullet_velocity,
 						"projectile_size": weapon_ref.projectile_size,

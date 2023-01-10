@@ -28,7 +28,7 @@ func _ready():
 		set_head("head_test")
 		set_chassis("legs_test")
 		set_arm_weapon("testlaser", SIDE.LEFT)
-		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
+		set_arm_weapon("TT1-Flamethrower", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.LEFT)
 		set_shoulders("shoulder_test")
@@ -133,9 +133,9 @@ func update_camera_offset(dt):
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
 		Cam.offset = Cam.offset.limit_length(head.visual_range)
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp
-	.take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name, calibre)
+	.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, source_info, weapon_name, calibre)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 

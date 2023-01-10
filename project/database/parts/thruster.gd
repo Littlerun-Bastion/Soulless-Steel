@@ -7,6 +7,7 @@ export var description : String
 export var image : Texture
 export var walk_speed_multiplier := 1.0
 export var thrust_speed_multiplier := 3.0
+export var sprinting_heat := 100
 export var dash_distance := 2
 export var dash_recharge_rate := 4
 export var dash_heat := 100

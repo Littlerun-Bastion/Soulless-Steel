@@ -773,6 +773,7 @@ func apply_movement(dt, direction):
 	if thruster:
 		var mult = thruster.thrust_speed_multiplier
 		if is_sprinting:
+			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		else:

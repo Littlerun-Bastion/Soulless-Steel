@@ -75,7 +75,7 @@ var max_hp = 10
 var hp = 10
 var max_shield = 10
 var shield = 10
-var shield_regen_cooldown
+var shield_regen_cooldown = 5
 var max_energy = 100
 var energy = 100
 var total_kills = 0
@@ -129,7 +129,7 @@ var total_weight = 0.0
 var weight_capacity = 0.0
 
 var fire_status_time = 0.0
-var electrified_status_time = 0.0
+var electrified_status_time = 2.0
 var freezing_status_time = 0.0 
 var corrode_status_time = 0.0
 
@@ -174,8 +174,9 @@ func _physics_process(dt):
 	#Handle shield
 	if generator and shield < max_shield:
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
-		if shield_regen_cooldown <= 0:
+		if shield_regen_cooldown <= 0 and electrified_status_time <= 0.0:
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
+			emit_signal("take_damage", self, true)
 	
 	#Handle collisions with other mechas and movement
 	if not is_stunned():
@@ -229,23 +230,35 @@ func _physics_process(dt):
 	#Status Effects
 	if fire_status_time > 0.0:
 		fire_status_time = max(fire_status_time - dt, 0.0)
-	elif fire_status_time < 0.0:
-		pass
+		$FireParticles2.emitting = true
+		$FireParticles.emitting = true
+	elif fire_status_time <= 0.0:
+		$FireParticles2.emitting = false
+		$FireParticles.emitting = false
 		
 	if electrified_status_time > 0.0:
 		electrified_status_time = max(electrified_status_time - dt, 0.0)
-	elif electrified_status_time < 0.0:
-		pass
+		$ElectricParticles.emitting = true
+	elif electrified_status_time <= 0.0:
+		$ElectricParticles.emitting = false
 		
 	if freezing_status_time > 0.0:
 		freezing_status_time = max(freezing_status_time - dt, 0.0)
-	elif freezing_status_time < 0.0:
-		pass
+		$FreezingParticles2.emitting = true
+		$FreezingParticles.emitting = true
+	elif freezing_status_time <= 0.0:
+		$FreezingParticles2.emitting = false
+		$FreezingParticles.emitting = false
 		
 	if corrode_status_time > 0.0:
 		corrode_status_time = max(corrode_status_time - dt, 0.0)
-	elif corrode_status_time < 0.0:
-		pass
+		$CorrosionParticles.emitting = true
+		$CorrosionParticles2.emitting = true
+	elif corrode_status_time <= 0.0:
+		$CorrosionParticles.emitting = false
+		$CorrosionParticles2.emitting = false
+	
+	take_status_damage(dt)
 	
 
 func is_player():
@@ -353,11 +366,28 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, wea
 		select_impact(calibre, false)
 	else:
 		select_impact(calibre, true)
-	emit_signal("took_damage", self)
+	emit_signal("took_damage", self, false)
 	if hp <= 0:
 		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
 
+func take_status_damage(dt):
+	if is_dead:
+		return
+	
+	if generator:
+		shield_regen_cooldown = generator.shield_regen_delay
+	
+	if fire_status_time > 0.0:
+		mecha_heat += dt * 10
+	
+	if electrified_status_time > 0.0:
+		shield = round(max(shield - (dt * 100), 0))
+		emit_signal("took_damage", self, true)
+
+	if corrode_status_time > 0.0:
+		hp = round(max(hp - (dt * 100), 1))
+		emit_signal("took_damage", self, true)
 
 func die(source_info, weapon_name):
 	is_dead = true
@@ -420,7 +450,7 @@ func update_heat(dt):
 	if display_mode == true:
 		mecha_heat = 100
 		return
-	if generator:
+	if generator and fire_status_time <= 0.0:
 		mecha_heat = max(mecha_heat - generator.heat_dispersion*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(generator.heat_dispersion, dt)
@@ -522,6 +552,7 @@ func set_generator(part_name):
 	else:
 		generator = false
 	update_max_shield_from_parts()
+	print ("Generator set" + str(part_name))
 	total_weight = get_stat("weight")
 
 
@@ -1066,7 +1097,10 @@ func update_locking(dt):
 					locking_to = target
 					min_dist = dist
 		if locking_to:
-			locking_to.progress = min(locking_to.progress + dt*chipset.lock_on_speed, 1.0)
+			if electrified_status_time > 0.0:
+				locking_to.progress = min(locking_to.progress + (dt*chipset.lock_on_speed * 0.5), 1.0)
+			else:
+				locking_to.progress = min(locking_to.progress + dt*chipset.lock_on_speed, 1.0)
 			if locking_to.progress >= 1.0:
 				locked_to = locking_to.mecha
 

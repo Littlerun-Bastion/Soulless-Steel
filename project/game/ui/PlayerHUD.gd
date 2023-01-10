@@ -163,14 +163,14 @@ func play_blink_sound():
 	AudioManager.play_sfx("blinking", false, pitch)
 
 
-func _on_player_took_damage(_p):
+func _on_player_took_damage(_p, is_status):
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
 	LifeBar.get_node("Label").text = str(player.hp)
 	ShieldBar.get_node("Label").text = str(player.shield)
 	#Bullet holes logic
 	if player.shield <= 0 and player.hp < player.max_hp*BULLET_THRESHOLD and\
-	   randf() <= BULLET_CHANCE:
+	   randf() <= BULLET_CHANCE and not is_status:
 		var visible_holes = []
 		for hole in Bulletholes.get_children():
 			if hole.modulate.a == 0.0:

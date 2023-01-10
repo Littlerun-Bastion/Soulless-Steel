@@ -7,7 +7,10 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
+const SPEED_MOD_CORRECTION = 3
 const CHASSIS_SPEED = 20
+const SPRINTING_COOLDOWN_SPEED = 4
+const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 25000
 
@@ -85,6 +88,7 @@ var move_heat = 70
 var movement_type = "free"
 var velocity = Vector2()
 var is_sprinting = false
+var sprinting_ending_correction = 0.0
 var dash_velocity = Vector2()
 var dash_strength = 5000
 var moving = false
@@ -130,7 +134,7 @@ var weight_capacity = 0.0
 
 var fire_status_time = 0.0
 var electrified_status_time = 2.0
-var freezing_status_time = 0.0 
+var freezing_status_time = 0.0
 var corrode_status_time = 0.0
 
 
@@ -149,41 +153,44 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
-	
+
 	#Bloom
 	if right_arm_bloom_time > 0:
 		right_arm_bloom_time -= dt
 	else:
 		right_arm_bloom_count = 0
-		
+
 	if left_arm_bloom_time > 0:
 		left_arm_bloom_time -= dt
 	else:
 		left_arm_bloom_count = 0
-		
+
 	if right_shoulder_bloom_time > 0:
 		right_shoulder_bloom_time -= dt
 	else:
 		right_shoulder_bloom_count = 0
-		
+
 	if left_shoulder_bloom_time > 0:
 		left_shoulder_bloom_time -= dt
 	else:
 		left_shoulder_bloom_count = 0
-	
+
 	#Handle shield
 	if generator and shield < max_shield:
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
 		if shield_regen_cooldown <= 0 and electrified_status_time <= 0.0:
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
 			emit_signal("take_damage", self, true)
-	
+
+	#Handle sprinting
+	sprinting_ending_correction = max(sprinting_ending_correction - SPRINTING_COOLDOWN_SPEED*dt, 0.0)
+
 	#Handle collisions with other mechas and movement
 	if not is_stunned():
 		var all_collisions = []
 		for i in get_slide_count():
 			all_collisions.append(get_slide_collision(i))
-		
+
 		var collided = false
 		for collision in all_collisions:
 			if collision and collision.collider.is_in_group("mecha"):
@@ -196,7 +203,7 @@ func _physics_process(dt):
 			stun(0.1)
 	else:
 		apply_movement(dt, Vector2())
-	
+
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
 		move(dash_velocity)
@@ -204,29 +211,32 @@ func _physics_process(dt):
 			dash_velocity.x = max(dash_velocity.x - DASH_DECAY*dt, 0)
 		else:
 			dash_velocity.x = min(dash_velocity.x + DASH_DECAY*dt, 0)
-		
+
 		if dash_velocity.y > 0:
 			dash_velocity.y = max(dash_velocity.y - DASH_DECAY*dt, 0)
 		else:
 			dash_velocity.y = min(dash_velocity.y + DASH_DECAY*dt, 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
-	
+
 	if moving and not MovementAnimation.is_playing() and\
 	   not is_sprinting and dash_velocity.length() <= 0.0:
 		MovementAnimation.play("Walking")
 	elif (not moving and velocity.length() <= 2.0) or\
 		 (is_sprinting or dash_velocity.length() > 0):
 		MovementAnimation.stop()
-	
+
+	if not MovementAnimation.is_playing():
+		speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
+
 	update_heat(dt)
-	
+
 	update_locking(dt)
-	
+
 	if get_locked_to():
 		var target_pos = locked_to.global_position
 		apply_rotation_by_point(dt, target_pos, false)
-	
+
 	#Status Effects
 	if fire_status_time > 0.0:
 		fire_status_time = max(fire_status_time - dt, 0.0)
@@ -235,13 +245,13 @@ func _physics_process(dt):
 	elif fire_status_time <= 0.0:
 		$FireParticles2.emitting = false
 		$FireParticles.emitting = false
-		
+
 	if electrified_status_time > 0.0:
 		electrified_status_time = max(electrified_status_time - dt, 0.0)
 		$ElectricParticles.emitting = true
 	elif electrified_status_time <= 0.0:
 		$ElectricParticles.emitting = false
-		
+
 	if freezing_status_time > 0.0:
 		freezing_status_time = max(freezing_status_time - dt, 0.0)
 		$FreezingParticles2.emitting = true
@@ -249,7 +259,7 @@ func _physics_process(dt):
 	elif freezing_status_time <= 0.0:
 		$FreezingParticles2.emitting = false
 		$FreezingParticles.emitting = false
-		
+
 	if corrode_status_time > 0.0:
 		corrode_status_time = max(corrode_status_time - dt, 0.0)
 		$CorrosionParticles.emitting = true
@@ -257,9 +267,9 @@ func _physics_process(dt):
 	elif corrode_status_time <= 0.0:
 		$CorrosionParticles.emitting = false
 		$CorrosionParticles2.emitting = false
-	
+
 	take_status_damage(dt)
-	
+
 
 func is_player():
 	return mecha_name == "Player"
@@ -290,7 +300,7 @@ func set_parts_from_design(data):
 			side = SIDE.LEFT
 		elif part_name.find("right") != -1:
 			side = SIDE.RIGHT
-		
+
 		if typeof(side) == TYPE_INT:
 			callv("set_" + type, [data[part_name], side])
 		else:
@@ -331,7 +341,7 @@ func update_max_shield_from_parts():
 	#Check shoulders
 	if shoulders:
 		value += shoulders.shield
-	
+
 	set_max_shield(value)
 
 
@@ -353,13 +363,13 @@ func set_max_energy(value):
 func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
-	
+
 	if amount > 0 and generator:
 		shield_regen_cooldown = generator.shield_regen_delay
 	var temp_shield = shield
 	shield = max(shield - (shield_mult * amount), 0)
 	amount = max(amount - temp_shield, 0)
-	
+
 	hp = max(hp - (health_mult * amount), 0)
 	mecha_heat += heat_damage
 	if shield <= 0:
@@ -374,13 +384,13 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, source_info, wea
 func take_status_damage(dt):
 	if is_dead:
 		return
-	
+
 	if generator:
 		shield_regen_cooldown = generator.shield_regen_delay
-	
+
 	if fire_status_time > 0.0:
 		mecha_heat += dt * 10
-	
+
 	if electrified_status_time > 0.0:
 		shield = round(max(shield - (dt * 100), 0))
 		emit_signal("took_damage", self, true)
@@ -434,9 +444,9 @@ func add_decal(id, decal_position, type, size):
 		else:
 			push_error("Not a valid shape id: " + str(id))
 		var decal = DECAL.instance()
-		
+
 		#Transform global position into local position
-		var final_pos = decal_position-decals_node.global_position 
+		var final_pos = decal_position-decals_node.global_position
 		var trans = decals_node.global_transform
 		final_pos = final_pos.rotated(-trans.get_rotation())
 		final_pos /= trans.get_scale()
@@ -457,7 +467,7 @@ func update_heat(dt):
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				 RightChassis, RightChassisSub, RightChassisGlow]:
-		node.material.set_shader_param("heat", mecha_heat) 
+		node.material.set_shader_param("heat", mecha_heat)
 
 
 #PARTS SETTERS
@@ -478,7 +488,7 @@ func set_arm_weapon(part_name, side):
 			arm_weapon_right = null
 		node.set_images(null, null, null)
 		return
-	
+
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
 		arm_weapon_left = part_data
@@ -512,7 +522,7 @@ func set_shoulder_weapon(part_name, side):
 			shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return
-	
+
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
 		shoulder_weapon_left = part_data
@@ -592,7 +602,7 @@ func set_chassis(part_name):
 	total_weight = get_stat("weight")
 	stability = get_stat("stability")
 
-	
+
 func set_chassis_nodes(main,sub,glow,collision,side = false):
 	if core and chassis.is_legs:
 		var pos = core.get_chassis_offset(side)
@@ -695,7 +705,7 @@ func get_weapon_part(part_name):
 			return $ShoulderWeaponRight
 	else:
 		push_error("Not a valid weapon part name: " + str(part_name))
-	
+
 	return false
 
 
@@ -718,7 +728,7 @@ func get_total_ammo(part_name):
 	if part:
 		return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
 	return false
-	
+
 func get_max_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
@@ -787,15 +797,22 @@ func dash(dir):
 
 
 func apply_movement(dt, direction):
-	var target_move_acc = move_acc
+	if is_sprinting:
+		direction.x = 0 #Disable horizontal movement when sprinting
+	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
-	if thruster and is_sprinting:
-		target_speed.y *= thruster.thrust_speed_multiplier
-		target_move_acc *= thruster.thrust_speed_multiplier
+	if thruster:
+		var mult = thruster.thrust_speed_multiplier
+		if is_sprinting:
+			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
+			target_speed.y *= mult
+			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
+		else:
+			target_speed.y += (max_speed*mult - max_speed)*sprinting_ending_correction*sign(target_speed.y)
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, target_speed, target_move_acc*dt)
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -807,7 +824,7 @@ func apply_movement(dt, direction):
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, target_speed, target_move_acc*dt)
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -833,7 +850,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
-				velocity = lerp(velocity, target_speed, target_move_acc*dt)
+				velocity = lerp(velocity, target_speed, target_move_acc)
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			move(velocity)
 
@@ -864,8 +881,8 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		_rotation_acc = rotation_acc/5
 	if not stand_still:
 		rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
-	
-	
+
+
 	#Rotate Arm Weapons
 	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right],\
 				 [$Head, head]]:
@@ -875,7 +892,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_target_rotation_diff(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
-	
+
 
 func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
@@ -884,7 +901,7 @@ func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
 		diff -= 360
 	elif diff < -180:
 		diff += 360
-	
+
 	#Rotate properly clock or counter-clockwise fastest to target rotation
 	if diff > 0:
 		return abs(diff)*acc*dt
@@ -923,7 +940,7 @@ func update_chassis_visuals(dt):
 		else: #Neutral
 			left_target_angle = 0
 			right_target_angle = 0
-		
+
 		for child in LeftChassisRoot.get_children():
 			child.rotation_degrees = lerp(child.rotation_degrees, left_target_angle,\
 										  dt*CHASSIS_SPEED)
@@ -931,6 +948,10 @@ func update_chassis_visuals(dt):
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
 										  dt*CHASSIS_SPEED)
 
+func stop_sprinting():
+	if is_sprinting:
+		sprinting_ending_correction = 1.0
+	is_sprinting = false
 
 #COMBAT METHODS
 
@@ -964,26 +985,26 @@ func shoot(type, is_auto_fire = false):
 		right_shoulder_bloom_count += 1
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-	
+
 	var amount = 1
-	
-	
+
+
 	if weapon_ref.uses_battery:
 		amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
-		
+
 	else:
 		amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
 		amount = max(amount, 1) #Tries to shoot at least 1 projectile
-		
-		
+
+
 		if not node.can_shoot(amount):
 			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
-		
+
 	node.shoot(amount)
-	
-	var variation = weapon_ref.bullet_spread/float(amount + 1) 		
+
+	var variation = weapon_ref.bullet_spread/float(amount + 1)
 	var angle_offset = -weapon_ref.bullet_spread /2
 	var total_accuracy = weapon_ref.base_accuracy
 	total_accuracy += bloom
@@ -995,7 +1016,7 @@ func shoot(type, is_auto_fire = false):
 		total_accuracy = weapon_ref.base_accuracy * weapon_ref.max_bloom_factor
 	for _i in range(weapon_ref.number_projectiles):
 		angle_offset += variation
-		emit_signal("create_projectile", self, 
+		emit_signal("create_projectile", self,
 					{
 						"weapon_data": weapon_ref.projectile,
 						"weapon_name": weapon_ref.part_name,
@@ -1010,20 +1031,20 @@ func shoot(type, is_auto_fire = false):
 						"projectile_size": weapon_ref.projectile_size,
 						"lifetime": weapon_ref.lifetime,
 						"beam_range": weapon_ref.beam_range,
-						
+
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,
 						"trail_lifetime_range": weapon_ref.trail_lifetime_range,
 						"trail_eccentricity": weapon_ref.trail_eccentricity,
 						"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
 						"trail_width" : weapon_ref.trail_width,
-						
+
 						"has_smoke": weapon_ref.has_smoke,
 						"smoke_density": weapon_ref.smoke_density,
 						"smoke_lifetime": weapon_ref.smoke_lifetime,
 						"smoke_trail_material": weapon_ref.smoke_trail_material,
 						"smoke_texture": weapon_ref.smoke_texture,
-						
+
 						"has_wiggle": weapon_ref.has_wiggle,
 						"wiggle_amount": weapon_ref.wiggle_amount,
 						"is_seeker": weapon_ref.is_seeker,
@@ -1031,7 +1052,7 @@ func shoot(type, is_auto_fire = false):
 						"seek_time": weapon_ref.seek_time,
 						"seek_agility": weapon_ref.seeker_agility,
 						"seeker_angle": weapon_ref.seeker_angle,
-						
+
 						"impact_size": weapon_ref.impact_size
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
@@ -1071,7 +1092,7 @@ func update_locking(dt):
 			if  mecha != self and\
 			   mouse_pos.distance_to(area.global_position) <= chipset.lock_on_reticle_size + a_radius:
 				could_lock.append(area.get_parent())
-		
+
 		for target in locking_targets:
 			if not could_lock.has(target.mecha):
 				locking_targets.erase(target)
@@ -1084,7 +1105,7 @@ func update_locking(dt):
 				"progress": 0,
 				"mecha": mecha,
 			})
-		
+
 		locking_to = false
 		var min_dist = INF
 		for target in locking_targets:
@@ -1109,7 +1130,7 @@ func get_locking_to():
 	#Check if mecha has died
 	if locking_to and not weakref(locking_to.mecha).get_ref():
 		locking_to = false
-	
+
 	return locking_to
 
 
@@ -1136,7 +1157,7 @@ func play_step_sound(is_left := true):
 		pitch = rand_range(.7, .72)
 	else:
 		pitch = rand_range(.95, .97)
-	
+
 	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
 	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
 
@@ -1177,7 +1198,6 @@ func select_impact(calibre, is_shield):
 			sfx_idx = false
 		_:
 			push_error("Not a valid calibre type:" + str(calibre))
-	
+
 	if sfx_idx:
 		AudioManager.play_sfx(sfx_idx, global_position)
-

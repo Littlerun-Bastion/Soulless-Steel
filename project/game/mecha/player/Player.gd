@@ -99,7 +99,7 @@ func _input(event):
 	elif event.is_action_released("thruster_dash"):
 		if sprinting_timer > 0.0:
 			dash(get_input().normalized())
-		is_sprinting = false
+		stop_sprinting()
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")

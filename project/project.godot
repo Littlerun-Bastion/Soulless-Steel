@@ -36,6 +36,7 @@ TickerManager="*res://game/ui/ticker/TickerManager.gd"
 PlayerStatManager="*res://game/mecha/player/PlayerStatManager.gd"
 ArenaManager="*res://game/arena/ArenaManager.gd"
 ShaderEffects="*res://game/ui/ShaderEffects.tscn"
+MouseManager="*res://game/ui/MouseManager.gd"
 
 [display]
 

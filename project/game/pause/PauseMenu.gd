@@ -8,7 +8,6 @@ onready var QuitButton = $ViewportContainer/Viewport/Control/MarginContainer/VBo
 
 func _ready():
 	$ViewportContainer.hide()
-	ViewContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	disable()
 
 func is_paused():
@@ -16,13 +15,18 @@ func is_paused():
 
 
 func enable():
+	ViewContainer.mouse_filter = Control.MOUSE_FILTER_STOP
+	MouseManager.show_cursor()
+	ShaderEffects.play_transition(0, 1000, 2.0)
 	ResumeButton.disabled = false
 	QuitButton.disabled = false
+	
 
 
 func disable():
 	ResumeButton.disabled = true
 	QuitButton.disabled = true
+	ViewContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func toggle_pause():
@@ -31,13 +35,10 @@ func toggle_pause():
 	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
 	if $ViewportContainer.visible:
 		enable()
-		ViewContainer.mouse_filter = Control.MOUSE_FILTER_STOP
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-		ShaderEffects.play_transition(0, 1000, 2.0)
 	else:
+		MouseManager.hide_cursor()
 		disable()
-		ViewContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+
 	
 	emit_signal("pause_toggle", $ViewportContainer.visible)
 

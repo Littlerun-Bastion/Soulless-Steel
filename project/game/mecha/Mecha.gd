@@ -573,7 +573,6 @@ func set_generator(part_name):
 	else:
 		generator = false
 	update_max_shield_from_parts()
-	print ("Generator set" + str(part_name))
 	total_weight = get_stat("weight")
 
 
@@ -809,7 +808,9 @@ func dash(dir):
 
 func apply_movement(dt, direction):
 	if is_sprinting:
-		direction.x = 0 #Disable horizontal movement when sprinting
+		#Disable horizontal and backwards movement when sprinting
+		direction.x = 0
+		direction.y = min(direction.y, 0.0)
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
 	if thruster:
@@ -818,8 +819,8 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
-		else:
-			target_speed.y += (max_speed*mult - max_speed)*sprinting_ending_correction*sign(target_speed.y)
+#		else:
+#			target_speed.y += (max_speed*mult - max_speed)*sprinting_ending_correction*sign(target_speed.y)
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -962,6 +963,7 @@ func update_chassis_visuals(dt):
 func stop_sprinting():
 	if is_sprinting:
 		sprinting_ending_correction = 1.0
+		stun(0.9)
 	is_sprinting = false
 
 #COMBAT METHODS

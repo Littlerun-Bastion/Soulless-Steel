@@ -30,11 +30,8 @@ var body
 
 signal bullet_impact
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-	
-func _process(dt): 
+
+func _physics_process(dt): 
 	var cast_point := cast_to
 	if not hit:
 		body = get_collider()
@@ -56,7 +53,6 @@ func _process(dt):
 					var final_damage = damage if not is_overtime else damage * get_process_delta_time()
 					body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, original_mecha_info, weapon_name, calibre)
 					if not is_overtime:
-						pass
 						body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))
 					mech_hit = true
 					hit = true
@@ -75,15 +71,11 @@ func _process(dt):
 				miss = true
 		else:
 			effect_data.points[1] = (cast_point)
-		$Tween.interpolate_property(self, "modulate:a", 1, 0, lifetime, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween2.interpolate_property(effect_data, "width", effect_data.width, 0, lifetime, Tween.TRANS_LINEAR, Tween.EASE_IN)
-		$Tween.start()
-		$Tween2.start()
 	if miss:
 		effect_data.points[1] = (cast_point)
-	if lifetime_tick > 0:
-		lifetime_tick -= dt
-	else:
+	
+	lifetime_tick = max(lifetime_tick - dt, 0.0)
+	if lifetime_tick <= 0.0:
 		die()
 
 func setup(mecha, args):
@@ -112,9 +104,13 @@ func setup(mecha, args):
 	position = args.pos
 	cast_to = dir*args.beam_range
 	add_exception(original_mecha_info.body)
-	
 
 
 func die():
+	if dying:
+		return
+	dying = true
+	$DeathTween.interpolate_property(self, "modulate:a", 1.0, 0.0, 1.0, Tween.TRANS_CUBIC, Tween.EASE_IN)
+	$DeathTween.start()
+	yield($DeathTween, "tween_completed")
 	queue_free()
-	

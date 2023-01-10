@@ -25,6 +25,7 @@ change_scaling = 1.6
 change_scaling_var = 0.2
 life_time = 2.5
 life_time_var = 0.4
+random_rotation = true
 
 [node name="Image" type="Sprite" parent="."]
 texture = ExtResource( 1 )

@@ -18,6 +18,7 @@ export var change_scaling = 0.0 #How much scaling it gets overtime
 export var change_scaling_var = 0.0 #How much to vary scaling
 export var life_time = -1.0 #-1 means it won't disappear
 export var life_time_var = 0.0 #How much to vary from base life_time
+export var random_rotation := false
 
 var part_id
 

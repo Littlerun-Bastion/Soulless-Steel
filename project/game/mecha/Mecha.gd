@@ -206,9 +206,11 @@ func _physics_process(dt):
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
 	
-	if moving and not MovementAnimation.is_playing():
+	if moving and not MovementAnimation.is_playing() and\
+	   not is_sprinting and dash_velocity.length() <= 0.0:
 		MovementAnimation.play("Walking")
-	elif not moving and velocity.length() <= 2.0:
+	elif (not moving and velocity.length() <= 2.0) or\
+		 (is_sprinting or dash_velocity.length() > 0):
 		MovementAnimation.stop()
 	
 	update_heat(dt)
@@ -728,15 +730,15 @@ func dash(dir):
 
 
 func apply_movement(dt, direction):
-	var target_max_speed = max_speed
 	var target_move_acc = move_acc
+	var target_speed = direction.normalized() * max_speed
 	if thruster and is_sprinting:
-		target_max_speed *= thruster.thrust_speed_multiplier
+		target_speed.y *= thruster.thrust_speed_multiplier
 		target_move_acc *= thruster.thrust_speed_multiplier
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
+			velocity = lerp(velocity, target_speed, target_move_acc*dt)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -747,28 +749,8 @@ func apply_movement(dt, direction):
 			moving = true
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
-			match get_direction_from_vector(direction, true):
-				"down":
-					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
-				"downleft":
-					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					direction += -Vector2(1,0).rotated(deg2rad(rotation_degrees))
-				"left":
-					direction = -Vector2(1,0).rotated(deg2rad(rotation_degrees))
-				"upleft":
-					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					direction += -Vector2(1,0).rotated(deg2rad(rotation_degrees))
-				"up":
-					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
-				"upright":
-					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					direction += Vector2(1,0).rotated(deg2rad(rotation_degrees))
-				"right":
-					direction = Vector2(1,0).rotated(deg2rad(rotation_degrees))
-				"downright":
-					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					direction += Vector2(1,0).rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
+			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
+			velocity = lerp(velocity, target_speed, target_move_acc*dt)
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -794,7 +776,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
-				velocity = lerp(velocity, direction.normalized() * target_max_speed, target_move_acc*dt)
+				velocity = lerp(velocity, target_speed, target_move_acc*dt)
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			move(velocity)
 

@@ -221,6 +221,7 @@ func get_input():
 			invert_controls.x = false
 		if mov_vec.y == 0:
 			invert_controls.y = false
+		# warning-ignore:narrowing_conversion
 		var angle = posmod(rotation_degrees, 360)
 		if angle > 180 - Profile.get_option("invert_deadzone_angle")/2 and\
 		   angle < 180 + Profile.get_option("invert_deadzone_angle")/2:

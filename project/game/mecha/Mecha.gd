@@ -180,7 +180,8 @@ func _physics_process(dt):
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
 		if shield_regen_cooldown <= 0 and electrified_status_time <= 0.0:
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
-			emit_signal("take_damage", self, true)
+			shield = round(shield)
+			emit_signal("took_damage", self, true)
 
 	#Handle sprinting
 	sprinting_ending_correction = max(sprinting_ending_correction - SPRINTING_COOLDOWN_SPEED*dt, 0.0)
@@ -385,8 +386,6 @@ func take_status_damage(dt):
 	if is_dead:
 		return
 
-	if generator:
-		shield_regen_cooldown = generator.shield_regen_delay
 
 	if fire_status_time > 0.0:
 		mecha_heat += dt * 10
@@ -394,6 +393,8 @@ func take_status_damage(dt):
 	if electrified_status_time > 0.0:
 		shield = round(max(shield - (dt * 100), 0))
 		emit_signal("took_damage", self, true)
+		if generator:
+			shield_regen_cooldown = generator.shield_regen_delay
 
 	if corrode_status_time > 0.0:
 		hp = round(max(hp - (dt * 100), 1))

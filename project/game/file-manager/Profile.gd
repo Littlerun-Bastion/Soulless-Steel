@@ -19,6 +19,9 @@ var options = {
 	"window_size": 3,
 	"screen_shake": true,
 	"locale": 0,
+	"invert_x": true,
+	"invert_y": false,
+	"invert_deadzone_angle": 90,
 }
 
 var controls = {

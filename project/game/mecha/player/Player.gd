@@ -216,23 +216,23 @@ func get_input():
 	if Input.is_action_pressed('up'):
 		mov_vec.y -= 1
 	
-	var left_margin = 135
-	var right_margin = 225
-	var angle = posmod(rotation_degrees, 360)
-	if mov_vec.x == 0:
-		invert_controls.x = false
-	if mov_vec.y == 0:
-		invert_controls.y = false
-	elif movement_type == "relative" and \
-	   angle > left_margin and angle < right_margin:
-		if not moving_axis.x:
-			invert_controls.x = mov_vec.x != 0
-		if not moving_axis.y:
-			invert_controls.y = mov_vec.y != 0
+	if movement_type == "relative":
+		if mov_vec.x == 0:
+			invert_controls.x = false
+		if mov_vec.y == 0:
+			invert_controls.y = false
+		# warning-ignore:narrowing_conversion
+		var angle = posmod(rotation_degrees, 360)
+		if angle > 180 - Profile.get_option("invert_deadzone_angle")/2 and\
+		   angle < 180 + Profile.get_option("invert_deadzone_angle")/2:
+			if not moving_axis.x:
+				invert_controls.x = mov_vec.x != 0
+			if not moving_axis.y:
+				invert_controls.y = mov_vec.y != 0
 	
-	if invert_controls.x:
+	if Profile.get_option("invert_x") and invert_controls.x:
 		mov_vec.x *= -1
-	if invert_controls.y:
+	if Profile.get_option("invert_y") and invert_controls.y:
 		mov_vec.y *= -1
 	
 	return mov_vec

@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://game/fx/explosion.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/fx/explosion_flash_3.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/fx/explosion_flash_2.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/fx/explosion_flash_1.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/fx/spark_long.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/fx/cloud_small.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/fx/long_spark.png" type="Texture" id=6]
 
 [sub_resource type="Animation" id=1]
 length = 0.001
@@ -80,30 +81,6 @@ tracks/5/keys = {
 "update": 0,
 "values": [ Vector2( 1, 1 ) ]
 }
-tracks/6/type = "value"
-tracks/6/path = NodePath("sparks_mech:emitting")
-tracks/6/interp = 1
-tracks/6/loop_wrap = true
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ false ]
-}
-tracks/7/type = "value"
-tracks/7/path = NodePath("sparks_miss:emitting")
-tracks/7/interp = 1
-tracks/7/loop_wrap = true
-tracks/7/imported = false
-tracks/7/enabled = true
-tracks/7/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ false ]
-}
 
 [sub_resource type="Animation" id=2]
 resource_name = "impact1"
@@ -154,30 +131,6 @@ tracks/3/keys = {
 "transitions": PoolRealArray( 1 ),
 "update": 1,
 "values": [ false ]
-}
-tracks/4/type = "value"
-tracks/4/path = NodePath("sparks_mech:emitting")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/keys = {
-"times": PoolRealArray( 0, 0.001, 1 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 1,
-"values": [ false, true, false ]
-}
-tracks/5/type = "value"
-tracks/5/path = NodePath("sparks_miss:emitting")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 1,
-"values": [ true ]
 }
 
 [sub_resource type="Animation" id=3]
@@ -230,30 +183,6 @@ tracks/3/keys = {
 "update": 1,
 "values": [ false ]
 }
-tracks/4/type = "value"
-tracks/4/path = NodePath("sparks_mech:emitting")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/keys = {
-"times": PoolRealArray( 0, 0.001, 1 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 1,
-"values": [ false, true, false ]
-}
-tracks/5/type = "value"
-tracks/5/path = NodePath("sparks_miss:emitting")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 1,
-"values": [ true ]
-}
 
 [sub_resource type="Animation" id=4]
 resource_name = "impact3"
@@ -305,45 +234,114 @@ tracks/3/keys = {
 "update": 1,
 "values": [ false, false ]
 }
-tracks/4/type = "value"
-tracks/4/path = NodePath("sparks_mech:emitting")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/keys = {
-"times": PoolRealArray( 0, 0.001, 1 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
-"update": 1,
-"values": [ false, true, false ]
-}
-tracks/5/type = "value"
-tracks/5/path = NodePath("sparks_miss:emitting")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 1,
-"values": [ true ]
-}
 
-[sub_resource type="Gradient" id=5]
-offsets = PoolRealArray( 0.0927835, 1 )
-colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+[sub_resource type="Gradient" id=14]
+offsets = PoolRealArray( 0, 0.0588235, 1 )
+colors = PoolColorArray( 1, 1, 1, 0, 0.713726, 0.713726, 0.713726, 0.729412, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=7]
+gradient = SubResource( 14 )
+
+[sub_resource type="Curve" id=8]
+min_value = -918.07
+max_value = 0.0
+_data = [ Vector2( 0, 0 ), 0.0, -648.719, 0, 0, Vector2( 0.62037, -348.449 ), -154.522, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=9]
+curve = SubResource( 8 )
+
+[sub_resource type="Curve" id=10]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.111111, 1 ), 0.281374, 0.281374, 0, 0, Vector2( 1, 0 ), -1.09011, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=11]
+curve = SubResource( 10 )
+
+[sub_resource type="ParticlesMaterial" id=12]
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 400.0
+initial_velocity_random = 0.24
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -10.0
+linear_accel_curve = SubResource( 9 )
+scale_random = 0.3
+scale_curve = SubResource( 11 )
+color_ramp = SubResource( 7 )
+
+[sub_resource type="ParticlesMaterial" id=13]
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 90.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 400.0
+initial_velocity_random = 0.73
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -10.0
+linear_accel_curve = SubResource( 9 )
+scale_random = 0.3
+scale_curve = SubResource( 11 )
+color_ramp = SubResource( 7 )
+
+[sub_resource type="Curve" id=15]
+min_value = -10.0
+max_value = 0.0
+_data = [ Vector2( 0, 0 ), 0.0, 2.48961, 0, 0, Vector2( 1, -10 ), -10.6364, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=16]
+curve = SubResource( 15 )
+
+[sub_resource type="ParticlesMaterial" id=18]
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 60.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 45.0
+initial_velocity_random = 0.73
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -10.0
+linear_accel_curve = SubResource( 16 )
+scale = 5.0
+scale_random = 1.0
+scale_curve = SubResource( 11 )
+color_ramp = SubResource( 7 )
+
+[sub_resource type="ParticlesMaterial" id=17]
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 90.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 45.0
+initial_velocity_random = 0.73
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -10.0
+linear_accel_curve = SubResource( 16 )
+scale = 3.5
+scale_random = 1.0
+scale_curve = SubResource( 11 )
+color_ramp = SubResource( 7 )
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource( 1 )
 
 [node name="Sprite1" type="Sprite" parent="."]
+visible = false
 texture = ExtResource( 4 )
 
 [node name="Sprite2" type="Sprite" parent="."]
+visible = false
 texture = ExtResource( 3 )
 
 [node name="Sprite3" type="Sprite" parent="."]
+visible = false
 texture = ExtResource( 2 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
@@ -352,44 +350,50 @@ anims/impact1 = SubResource( 2 )
 anims/impact2 = SubResource( 3 )
 anims/impact3 = SubResource( 4 )
 
-[node name="sparks_mech" type="CPUParticles2D" parent="."]
+[node name="sparks_mech" type="Particles2D" parent="."]
+position = Vector2( -4.76221, 1.5874 )
 emitting = false
-amount = 40
+amount = 7
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+process_material = SubResource( 12 )
+texture = ExtResource( 6 )
+
+[node name="sparks_miss" type="Particles2D" parent="."]
+position = Vector2( -4.76221, 1.5874 )
+emitting = false
+amount = 5
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+process_material = SubResource( 13 )
+texture = ExtResource( 6 )
+
+[node name="hit_smoke" type="Particles2D" parent="."]
+position = Vector2( -4.76221, 1.5874 )
+emitting = false
+amount = 12
 lifetime = 5.0
 one_shot = true
-speed_scale = 10.0
-explosiveness = 1.0
-lifetime_randomness = 0.11
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+process_material = SubResource( 18 )
 texture = ExtResource( 5 )
-flag_align_y = true
-direction = Vector2( 0, -1 )
-gravity = Vector2( 0, 0 )
-initial_velocity = 107.38
-initial_velocity_random = 0.42
-linear_accel_random = 0.24
-scale_amount = 0.15
-scale_amount_random = 0.15
-color_ramp = SubResource( 5 )
 
-[node name="sparks_miss" type="CPUParticles2D" parent="."]
+[node name="miss_smoke" type="Particles2D" parent="."]
+position = Vector2( -4.76221, 1.5874 )
 emitting = false
-amount = 15
-lifetime = 3.0
+amount = 5
+lifetime = 5.0
 one_shot = true
-speed_scale = 10.0
-explosiveness = 1.0
-lifetime_randomness = 0.11
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+process_material = SubResource( 17 )
 texture = ExtResource( 5 )
-flag_align_y = true
-direction = Vector2( 0, 1 )
-spread = 90.0
-gravity = Vector2( 0, 0 )
-initial_velocity = 107.38
-initial_velocity_random = 0.58
-linear_accel = -7.56
-linear_accel_random = 0.24
-scale_amount = 0.1
-scale_amount_random = 0.15
-color_ramp = SubResource( 5 )
 
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]

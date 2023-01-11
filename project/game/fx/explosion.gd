@@ -8,13 +8,15 @@ func _ready():
 
 func setup(size, rot, isMech, vel):
 	if isMech:
-		$sparks_mech.visible = true
+		$sparks_mech.emitting = true
 		$sparks_miss.visible = false
+		$hit_smoke.amount = 8*size
+		$hit_smoke.emitting = true
 	else:
-		$sparks_miss.visible = true
+		$sparks_miss.emitting = true
 		$sparks_mech.visible = false
-	$sparks_mech.initial_velocity = vel/16
-	$sparks_mech.linear_accel = -(vel/64)
+		$miss_smoke.amount = 12*size
+		$miss_smoke.emitting = true
 	
 	scale = Vector2(size,size)
 	self.global_rotation = rot

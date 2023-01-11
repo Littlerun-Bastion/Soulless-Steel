@@ -234,8 +234,8 @@ orbit_velocity = 0.0
 orbit_velocity_random = 0.0
 linear_accel = -5.0
 linear_accel_random = 0.44
-scale = 0.15
-scale_random = 0.68
+scale = 0.33
+scale_random = 0.5
 color_ramp = SubResource( 71 )
 
 [sub_resource type="ParticlesMaterial" id=75]
@@ -806,7 +806,8 @@ emitting = false
 amount = 20
 lifetime = 0.75
 one_shot = true
-explosiveness = 0.86
+explosiveness = 0.65
+randomness = 0.46
 local_coords = false
 process_material = SubResource( 84 )
 texture = ExtResource( 43 )

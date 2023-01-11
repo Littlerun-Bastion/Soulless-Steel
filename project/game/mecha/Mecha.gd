@@ -146,6 +146,12 @@ var corrode_status_time = 0.0
 var overheat_status_time = 0.0
 var general_status_time = 0.0
 
+var fwd_thruster_cooldown = 0.0
+var rwd_thruster_cooldown = 0.0
+var right_thruster_cooldown = 0.0
+var left_thruster_cooldown = 0.0
+var thruster_cooldown = 0.0
+
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
@@ -298,6 +304,15 @@ func _physics_process(dt):
 		$OverheatSparks.emitting = false
 		for child in $OverheatParticlesGroup.get_children():
 			child.emitting = false
+	
+	if fwd_thruster_cooldown > 0.0:
+		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
+	if rwd_thruster_cooldown > 0.0:
+		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
+	if right_thruster_cooldown > 0.0:
+		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
+	if left_thruster_cooldown > 0.0:
+		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
 
 	take_status_damage(dt)
 
@@ -868,7 +883,18 @@ func move(vec):
 
 
 func dash(dir):
-	if dash_velocity.length() == 0 and dir.length() > 0 and freezing_status_time <= 0.0:
+	var thruster_cooldown = 0.0
+	if dir == Vector2(0,-1): #FWD
+		thruster_cooldown = fwd_thruster_cooldown
+	elif dir == Vector2(0,1): #RWD
+		thruster_cooldown = rwd_thruster_cooldown
+	elif dir == Vector2(1,0): #RIGHT
+		thruster_cooldown = right_thruster_cooldown
+	elif dir == Vector2(-1,0): #LEFT
+		thruster_cooldown = left_thruster_cooldown
+	else:
+		return
+	if thruster_cooldown <= 0.0 and freezing_status_time <= 0.0:
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
@@ -884,6 +910,17 @@ func dash(dir):
 		$GrindParticles.emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
+		print(thruster_cooldown)
+		if dir == Vector2(0,-1): #FWD
+			fwd_thruster_cooldown = thruster.dash_cooldown
+		elif dir == Vector2(0,1): #RWD
+			rwd_thruster_cooldown = thruster.dash_cooldown
+		elif dir == Vector2(1,0): #RIGHT
+			right_thruster_cooldown = thruster.dash_cooldown
+		elif dir == Vector2(-1,0): #LEFT
+			left_thruster_cooldown = thruster.dash_cooldown
+		else:
+			return
 
 
 func apply_movement(dt, direction):

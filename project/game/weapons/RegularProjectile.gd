@@ -17,6 +17,7 @@ var health_mult = 0.0
 var heat_damage = 0.0
 var status_damage = 0.0
 var status_type
+var hitstop
 var is_overtime = false
 var decal_type = "bullet_hole"
 var original_mecha_info
@@ -117,6 +118,7 @@ func setup(mecha, args):
 	seek_time = args.seek_time
 	seeker_angle = args.seeker_angle
 	local_scale = args.projectile_size
+	hitstop = args.hitstop
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
@@ -172,7 +174,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			body.add_decal(body_shape_id, collision_point, decal_type, size)
 	
 			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
-			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, original_mecha_info, weapon_name, calibre)
+			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
 			if not is_overtime:
 				pass
 				#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))

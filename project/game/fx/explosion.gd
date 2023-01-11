@@ -6,7 +6,7 @@ func _ready():
 	var num = randi() % 2
 	Player.play("impact" + str(num + 1))
 
-func setup(size, rot, isMech, vel):
+func setup(size, rot, isMech):
 	if isMech:
 		$sparks_mech.emitting = true
 		$sparks_miss.visible = false

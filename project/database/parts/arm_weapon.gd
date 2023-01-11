@@ -47,7 +47,11 @@ export var projectile_size := 1.0
 export var projectile_size_scaling := 0.0
 export var projectile_size_scaling_var := 0.0
 export var lifetime := 2.0
-export var beam_range := 2000.0
+
+#---BEAM BEHAVIOUR---#
+export var beam_range := 0.0
+export var constant_beam := false
+export var beam_effect : Resource
 
 #---TRAILS AND IMPACTS---
 export var has_trail := false
@@ -64,6 +68,7 @@ export var smoke_trail_material : ParticlesMaterial
 export var smoke_texture : Texture
 
 export var impact_size := 1.0
+export var hitstop := false
 #---MISSILE/ROCKET BEHAVIOURS---
 export var has_wiggle := false
 export var wiggle_amount := 2.0
@@ -107,6 +112,7 @@ func get_stat(stat_name):
 	else:
 		stat = get(stat_name)
 	return stat
+
 	
 
 

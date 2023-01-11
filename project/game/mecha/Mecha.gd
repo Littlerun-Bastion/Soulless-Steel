@@ -14,6 +14,8 @@ const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
+const HITSTOP_TIMESCALE = 0.1
+const HITSTOP_DURATION = 0.25
 
 signal create_projectile
 signal shoot
@@ -406,9 +408,13 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
+	
+	if hitstop: 
+		if source_info.name == "Player" or self.name == "Player":
+			do_hitstop()
 
 	if amount > 0 and generator:
 		shield_regen_cooldown = generator.shield_regen_delay
@@ -442,6 +448,11 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	if hp <= 0:
 		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
+
+func do_hitstop():
+	Engine.time_scale = HITSTOP_TIMESCALE
+	yield(get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE), "timeout")
+	Engine.time_scale = 1.0
 
 func take_status_damage(dt):
 	if is_dead:
@@ -883,15 +894,15 @@ func move(vec):
 
 
 func dash(dir):
-	var thruster_cooldown = 0.0
+	var _thruster_cooldown = 0.0
 	if dir == Vector2(0,-1): #FWD
-		thruster_cooldown = fwd_thruster_cooldown
+		_thruster_cooldown = fwd_thruster_cooldown
 	elif dir == Vector2(0,1): #RWD
-		thruster_cooldown = rwd_thruster_cooldown
+		_thruster_cooldown = rwd_thruster_cooldown
 	elif dir == Vector2(1,0): #RIGHT
-		thruster_cooldown = right_thruster_cooldown
+		_thruster_cooldown = right_thruster_cooldown
 	elif dir == Vector2(-1,0): #LEFT
-		thruster_cooldown = left_thruster_cooldown
+		_thruster_cooldown = left_thruster_cooldown
 	else:
 		return
 	if thruster_cooldown <= 0.0 and freezing_status_time <= 0.0:
@@ -1208,7 +1219,8 @@ func shoot(type, is_auto_fire = false):
 						"seek_agility": weapon_ref.seeker_agility,
 						"seeker_angle": weapon_ref.seeker_angle,
 
-						"impact_size": weapon_ref.impact_size
+						"impact_size": weapon_ref.impact_size,
+						"hitstop": weapon_ref.hitstop,
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
 	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)

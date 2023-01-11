@@ -259,7 +259,6 @@ func random_wind_sound():
 	var sound_pos = Vector2(x,y)
 	var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
 	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
-	print("Sound playing at location: " + str(x) + ", " + str(y))
 
 
 func set_mechas_block_status(status):
@@ -339,12 +338,9 @@ func _on_mecha_create_projectile(mecha, args):
 
 func _on_bullet_impact(projectile):
 	var impact_effect = ProjectileManager.create_explosion(projectile)
-	impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit, projectile.speed)
+	impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
 	Explosions.add_child(impact_effect)
 
-func _on_beam_impact(beam, impact_position):
-	var impact_effect = ProjectileManager.create_explosion(beam)
-	
 
 func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)

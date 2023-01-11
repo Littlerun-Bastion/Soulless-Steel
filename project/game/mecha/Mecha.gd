@@ -12,7 +12,7 @@ const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
-const DASH_DECAY = 3
+const DASH_DECAY = 4
 
 signal create_projectile
 signal shoot
@@ -133,7 +133,7 @@ var total_weight = 0.0
 var weight_capacity = 0.0
 
 var fire_status_time = 0.0
-var electrified_status_time = 2.0
+var electrified_status_time = 0.0
 var freezing_status_time = 0.0
 var corrode_status_time = 0.0
 
@@ -805,6 +805,11 @@ func move(vec):
 func dash(dir):
 	if dash_velocity.length() == 0 and dir.length() > 0:
 		dash_velocity = dir.normalized()*dash_strength
+		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
+		$BoostThrust2.rotation_degrees = rad2deg(dir.angle()) + 90
+		$BoostThrust.emitting = true
+		$BoostThrust2.emitting = true
+		$GrindParticles.emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
 
@@ -822,6 +827,10 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
+			$SprintThrust.emitting = true
+			$SprintThrust2.emitting = true
+			$SprintGlow.visible = true
+			$GrindParticles2.emitting = true
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -965,7 +974,12 @@ func stop_sprinting():
 	if is_sprinting:
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5)
+		$GrindParticles.emitting = true
 	is_sprinting = false
+	$SprintThrust.emitting = false
+	$SprintThrust2.emitting = false
+	$SprintGlow.visible = false
+	$GrindParticles2.emitting = false
 
 #COMBAT METHODS
 
@@ -1044,10 +1058,13 @@ func shoot(type, is_auto_fire = false):
 						"status_type": weapon_ref.status_type,
 						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 						"bullet_velocity": weapon_ref.bullet_velocity,
+						"bullet_drag": weapon_ref.bullet_drag,
+						"bullet_drag_var": weapon_ref.bullet_drag_var,
 						"projectile_size": weapon_ref.projectile_size,
+						"projectile_size_scaling": weapon_ref.projectile_size_scaling,
+						"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
 						"lifetime": weapon_ref.lifetime,
 						"beam_range": weapon_ref.beam_range,
-
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,
 						"trail_lifetime_range": weapon_ref.trail_lifetime_range,

@@ -12,7 +12,7 @@ const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
-const DASH_DECAY = 25000
+const DASH_DECAY = 3
 
 signal create_projectile
 signal shoot
@@ -90,7 +90,7 @@ var velocity = Vector2()
 var is_sprinting = false
 var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
-var dash_strength = 5000
+var dash_strength = 2000
 var moving = false
 var moving_axis = {
 	"x": false,
@@ -212,14 +212,14 @@ func _physics_process(dt):
 	if not is_stunned() and dash_velocity.length() > 0:
 		move(dash_velocity)
 		if dash_velocity.x > 0:
-			dash_velocity.x = max(dash_velocity.x - DASH_DECAY*dt, 0)
+			dash_velocity.x = max(dash_velocity.x * (1 - DASH_DECAY*dt), 0)
 		else:
-			dash_velocity.x = min(dash_velocity.x + DASH_DECAY*dt, 0)
+			dash_velocity.x = min(dash_velocity.x * (1 - DASH_DECAY*dt), 0)
 
 		if dash_velocity.y > 0:
-			dash_velocity.y = max(dash_velocity.y - DASH_DECAY*dt, 0)
+			dash_velocity.y = max(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		else:
-			dash_velocity.y = min(dash_velocity.y + DASH_DECAY*dt, 0)
+			dash_velocity.y = min(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
 

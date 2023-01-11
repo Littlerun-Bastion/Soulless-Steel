@@ -906,7 +906,7 @@ material = SubResource( 33 )
 texture = ExtResource( 27 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponRight"]
-position = Vector2( 6, -90 )
+position = Vector2( -2.60697, -88.1452 )
 
 [node name="ShoulderWeaponLeft" type="Sprite" parent="."]
 material = SubResource( 12 )

@@ -1083,7 +1083,15 @@ func stop_sprinting():
 	if is_sprinting:
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5)
+		$GrindParticles.restart()
 		$GrindParticles.emitting = true
+		$BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+		$BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+		$BoostThrust.restart()
+		$BoostThrust2.restart()
+		$BoostThrust.emitting = true
+		$BoostThrust2.emitting = true
+		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
 	$SprintThrust.emitting = false
 	$SprintThrust2.emitting = false

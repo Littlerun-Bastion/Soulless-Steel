@@ -13,6 +13,6 @@ thrust_speed_multiplier = 3.0
 sprinting_heat = 30
 dash_distance = 2
 dash_cooldown = 4
-dash_heat = 40
+dash_heat = 20
 walk_heat = 5
 weight = 1.0

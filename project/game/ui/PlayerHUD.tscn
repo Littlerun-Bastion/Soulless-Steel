@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=2]
+[gd_scene load_steps=26 format=2]
 
 [ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/HUDFont.tres" type="Theme" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://assets/images/ui/player_ui/small_bullethole2.png" type="Texture" id=9]
 [ext_resource path="res://assets/audio/sfx/example_locked_tone.ogg" type="AudioStream" id=10]
 [ext_resource path="res://assets/shaders/ScreenWarp.tres" type="Material" id=11]
+[ext_resource path="res://assets/audio/sfx/status_effect_chirp.ogg" type="AudioStream" id=12]
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
 
@@ -94,6 +95,18 @@ texture = ExtResource( 5 )
 region_rect = Rect2( 0, 0, 330, 27 )
 
 [sub_resource type="StyleBoxEmpty" id=16]
+
+[sub_resource type="DynamicFont" id=20]
+size = 35
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 3 )
+
+[sub_resource type="DynamicFont" id=21]
+size = 15
+use_mipmaps = true
+use_filter = true
+font_data = ExtResource( 3 )
 
 [node name="PlayerHUD" type="CanvasLayer"]
 script = ExtResource( 1 )
@@ -250,15 +263,110 @@ rect_scale = Vector2( 3.069, 1.783 )
 texture = ExtResource( 4 )
 flip_h = true
 
-[node name="EnergyBarLabel" type="Label" parent="ViewportContainer/Viewport/HeatBar"]
-margin_left = -38.8584
-margin_top = 32.8014
-margin_right = 1.1416
-margin_bottom = 83.8014
+[node name="TemperatureErrorLabel" type="Label" parent="ViewportContainer/Viewport/HeatBar"]
+visible = false
+margin_left = -40.0
+margin_top = -50.0
+margin_right = 60.0
+margin_bottom = -14.0
+grow_horizontal = 0
+grow_vertical = 0
 rect_rotation = 90.0
-rect_scale = Vector2( 1, 1.8333 )
+rect_scale = Vector2( 2.2, 2.2 )
 theme = ExtResource( 2 )
-text = "H"
+custom_fonts/font = SubResource( 20 )
+text = "ERROR"
+align = 2
+
+[node name="TemperatureLabel" type="Label" parent="ViewportContainer/Viewport/HeatBar"]
+margin_left = -40.0
+margin_top = -200.0
+margin_right = 60.0
+margin_bottom = -164.0
+grow_horizontal = 0
+grow_vertical = 0
+rect_rotation = 90.0
+rect_scale = Vector2( 2.2, 2.2 )
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "28"
+align = 2
+
+[node name="DegreesSymbol" type="Label" parent="ViewportContainer/Viewport/HeatBar/TemperatureLabel"]
+margin_left = 100.054
+margin_top = -3.64307
+margin_right = 108.054
+margin_bottom = 12.3569
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 21 )
+text = "o"
+align = 2
+
+[node name="Celsius" type="Label" parent="ViewportContainer/Viewport/HeatBar/TemperatureLabel"]
+margin_left = 108.598
+margin_top = -0.195984
+margin_right = 126.598
+margin_bottom = 35.804
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "C"
+align = 2
+
+[node name="StatusContainer" type="VBoxContainer" parent="ViewportContainer/Viewport"]
+margin_left = 1638.39
+margin_top = 406.73
+margin_right = 1800.39
+margin_bottom = 827.73
+alignment = 2
+
+[node name="FreezingLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+margin_top = 385.0
+margin_right = 162.0
+margin_bottom = 421.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN FRZN"
+align = 2
+
+[node name="CorrodeLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+visible = false
+margin_top = 385.0
+margin_right = 162.0
+margin_bottom = 421.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN CHEM"
+align = 2
+
+[node name="ElectrifyLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+visible = false
+margin_top = 305.0
+margin_right = 162.0
+margin_bottom = 341.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN ELCT"
+align = 2
+
+[node name="FireLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+visible = false
+margin_top = 345.0
+margin_right = 162.0
+margin_bottom = 381.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN FIRE"
+align = 2
+
+[node name="OverheatLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+visible = false
+margin_top = 385.0
+margin_right = 162.0
+margin_bottom = 421.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN HEAT"
+align = 2
 
 [node name="WeaponSlots" type="VBoxContainer" parent="ViewportContainer/Viewport"]
 anchor_left = 1.0
@@ -286,7 +394,6 @@ margin_bottom = 253.244
 rect_scale = Vector2( 0.3, 0.3 )
 
 [node name="ExtractingLabel" type="Label" parent="ViewportContainer/Viewport"]
-visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -457,6 +564,12 @@ texture = ExtResource( 9 )
 [node name="ConstantBlinkingSFX" type="AudioStreamPlayer" parent="ViewportContainer/Viewport"]
 stream = ExtResource( 10 )
 volume_db = -6.0
+bus = "SFX"
+
+[node name="StatusChirpSFX" type="AudioStreamPlayer" parent="ViewportContainer/Viewport"]
+stream = ExtResource( 12 )
+volume_db = -25.0
+pitch_scale = 1.51
 bus = "SFX"
 
 [connection signal="value_changed" from="ViewportContainer/Viewport/LifeBar" to="." method="_on_LifeBar_value_changed"]

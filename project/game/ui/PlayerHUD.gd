@@ -12,7 +12,8 @@ const LOCKING_INIT_SCALE = .15
 const LOCKING_FINAL_SCALE = .25
 const LOCKING_INIT_BLINK = .7
 const LOCKING_FINAL_BLINK = 15.0
-const BLINK_PITCH_TARGET_MOD = .40 
+const BLINK_PITCH_TARGET_MOD = .40
+const STATUS_BLINK_SPEED = 0.66
 
 onready var LifeBar = $ViewportContainer/Viewport/LifeBar
 onready var ShieldBar = $ViewportContainer/Viewport/ShieldBar
@@ -26,18 +27,75 @@ onready var LockingAnim = $ViewportContainer/Viewport/LockingSprite/AnimationPla
 onready var ConstantBlinkingSFX = $ViewportContainer/Viewport/ConstantBlinkingSFX
 onready var ExtractingLabel = $ViewportContainer/Viewport/ExtractingLabel
 onready var Tw = $ViewportContainer/Viewport/Tween
+onready var FreezingLabel = $ViewportContainer/Viewport/StatusContainer/FreezingLabel
+onready var CorrodeLabel = $ViewportContainer/Viewport/StatusContainer/CorrodeLabel
+onready var ElectrifyLabel = $ViewportContainer/Viewport/StatusContainer/ElectrifyLabel
+onready var FireLabel = $ViewportContainer/Viewport/StatusContainer/FireLabel
+onready var OverheatLabel = $ViewportContainer/Viewport/StatusContainer/OverheatLabel
+onready var StatusContainer = $ViewportContainer/Viewport/StatusContainer
+onready var StatusChirpSFX = $ViewportContainer/Viewport/StatusChirpSFX
+onready var TemperatureLabel = $ViewportContainer/Viewport/HeatBar/TemperatureLabel
+onready var TemperatureErrorLabel = $ViewportContainer/Viewport/HeatBar/TemperatureErrorLabel
 
 
 var player = false
 var mechas
+var blink_timer = 0.66
 
 
 func _process(_delta):
 	if player:
 		update_shieldbar(player.shield)
 		update_lifebar(player.hp)
-		update_heatbar(player.mecha_heat)
+		update_heatbar(player.mecha_heat_visible)
+		if player.mecha_heat_visible > player.max_heat:
+			TemperatureLabel.visible = false
+			TemperatureErrorLabel.visible = true
+		else:
+			TemperatureLabel.text = str(round(player.mecha_heat_visible) * 8)
+			TemperatureLabel.visible = true
+			TemperatureErrorLabel.visible = false
 		ShieldBar.get_node("Label").text = str(player.shield)
+		
+		if player.fire_status_time > 0.0:
+			FireLabel.visible = true
+		else:
+			FireLabel.visible = false
+			
+		if player.overheat_status_time > 0.0:
+			OverheatLabel.visible = true
+		else:
+			OverheatLabel.visible = false
+			
+		if player.electrified_status_time > 0.0:
+			ElectrifyLabel.visible = true
+		else:
+			ElectrifyLabel.visible = false
+			
+		if player.corrode_status_time > 0.0:
+			CorrodeLabel.visible = true
+		else:
+			CorrodeLabel.visible = false
+			
+		if player.freezing_status_time > 0.0:
+			FreezingLabel.visible = true
+		else:
+			FreezingLabel.visible = false
+		
+		if player.general_status_time > 0.0:
+			if StatusChirpSFX.playing == false:
+				StatusChirpSFX.play()
+		else:
+			StatusChirpSFX.playing = false
+		
+		if blink_timer < 0.0:
+			if StatusContainer.visible == true:
+				StatusContainer.visible = false
+			else:
+				StatusContainer.visible = true
+			blink_timer = STATUS_BLINK_SPEED
+		else:
+			blink_timer -= _delta
 		
 		var v_trans = get_viewport().canvas_transform
 		if player.get_locked_to():
@@ -110,7 +168,7 @@ func setup_shieldbar():
 
 func setup_heatbar():
 	HeatBar.max_value = player.max_heat
-	HeatBar.value = player.mecha_heat
+	HeatBar.value = player.mecha_heat_visible
 
 
 func setup_weapon_slots():

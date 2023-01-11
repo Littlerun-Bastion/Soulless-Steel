@@ -86,7 +86,7 @@ var total_kills = 0
 var mecha_heat = 0
 var mecha_heat_visible = 0
 var max_heat = 100
-var idle_threshold = 0.33
+var idle_threshold = 0.15
 var move_heat = 70
 
 var movement_type = "free"
@@ -144,6 +144,7 @@ var electrified_status_time = 0.0
 var freezing_status_time = 0.0
 var corrode_status_time = 0.0
 var overheat_status_time = 0.0
+var general_status_time = 0.0
 
 
 func _ready():
@@ -279,6 +280,9 @@ func _physics_process(dt):
 	elif corrode_status_time <= 0.0:
 		$CorrosionParticles.emitting = false
 		$CorrosionParticles2.emitting = false
+		
+	if general_status_time >= 0.0:
+		general_status_time = max(general_status_time - dt, 0.0)
 	
 	if overheat_status_time > 0.0:
 		overheat_status_time = max(overheat_status_time - dt, 0.0)
@@ -287,9 +291,11 @@ func _physics_process(dt):
 		if hp <= 0:
 			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 			die(last_damage_source, last_damage_weapon)
+		$OverheatSparks.emitting = true
 		for child in $OverheatParticlesGroup.get_children():
 			child.emitting = true
 	elif overheat_status_time <= 0.0:
+		$OverheatSparks.emitting = false
 		for child in $OverheatParticlesGroup.get_children():
 			child.emitting = false
 
@@ -396,6 +402,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	amount = max(amount - temp_shield, 0)
 	
 	if status_type and status_amount > 0.0:
+		if general_status_time < status_amount:
+			general_status_time = status_amount
 		if status_type == "Fire":
 			fire_status_time = status_amount
 		elif status_type == "Electrified":
@@ -519,7 +527,9 @@ func update_heat(dt):
 			weapon.update_heat(generator.heat_dispersion, dt)
 	if generator:
 		if mecha_heat >= max_heat:
-			overheat_status_time = 5.0		
+			overheat_status_time = 5.0
+			if general_status_time < 5.0:
+				general_status_time = 5.0		
 	if overheat_status_time <= 0.0:
 		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
@@ -863,8 +873,14 @@ func dash(dir):
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
 		$BoostThrust2.rotation_degrees = rad2deg(dir.angle()) + 90
+		$BoostThrust3.rotation_degrees = rad2deg(dir.angle()) + 90
+		$BoostThrust.restart()
+		$BoostThrust2.restart()
+		$BoostThrust3.restart()
 		$BoostThrust.emitting = true
 		$BoostThrust2.emitting = true
+		$BoostThrust3.emitting = true
+		$GrindParticles.restart()
 		$GrindParticles.emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))

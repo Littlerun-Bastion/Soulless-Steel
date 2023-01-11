@@ -1,4 +1,4 @@
-[gd_scene load_steps=123 format=2]
+[gd_scene load_steps=126 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -42,6 +42,7 @@
 [ext_resource path="res://assets/images/fx/long_spark.png" type="Texture" id=40]
 [ext_resource path="res://assets/images/light_sources/light_point_soft.png" type="Texture" id=41]
 [ext_resource path="res://assets/images/fx/cloud_small.png" type="Texture" id=42]
+[ext_resource path="res://assets/images/fx/spark_long.png" type="Texture" id=43]
 
 [sub_resource type="Gradient" id=77]
 offsets = PoolRealArray( 0, 0.517647, 0.917647 )
@@ -217,6 +218,24 @@ orbit_velocity_random = 0.0
 linear_accel = -54.54
 scale = 0.75
 scale_random = 0.39
+color_ramp = SubResource( 71 )
+
+[sub_resource type="ParticlesMaterial" id=84]
+emission_shape = 1
+emission_sphere_radius = 80.0
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 30.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 120.0
+initial_velocity_random = 0.33
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -5.0
+linear_accel_random = 0.44
+scale = 0.15
+scale_random = 0.68
 color_ramp = SubResource( 71 )
 
 [sub_resource type="ParticlesMaterial" id=75]
@@ -610,8 +629,8 @@ scale_curve = SubResource( 65 )
 color_ramp = SubResource( 68 )
 
 [sub_resource type="Gradient" id=40]
-offsets = PoolRealArray( 0.0588235, 0.247059, 0.811765, 1 )
-colors = PoolColorArray( 1, 1, 1, 0.0745098, 1, 1, 1, 0.207843, 0.878906, 0.878906, 0.878906, 0.0313726, 0.458824, 0.458824, 0.458824, 0 )
+offsets = PoolRealArray( 0.0705882, 0.282353, 0.423529, 1 )
+colors = PoolColorArray( 1, 1, 1, 0, 1, 1, 1, 0.815686, 0.878906, 0.878906, 0.878906, 0.0313726, 0.458824, 0.458824, 0.458824, 0 )
 
 [sub_resource type="GradientTexture" id=41]
 gradient = SubResource( 40 )
@@ -639,6 +658,22 @@ angle_random = 1.0
 scale = 3.0
 scale_random = 1.0
 scale_curve = SubResource( 43 )
+color_ramp = SubResource( 41 )
+
+[sub_resource type="ParticlesMaterial" id=83]
+emission_shape = 1
+emission_sphere_radius = 70.81
+flag_align_y = true
+flag_disable_z = true
+spread = 180.0
+gravity = Vector3( 0, 5, 0 )
+initial_velocity = 150.0
+initial_velocity_random = 0.4
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -16.67
+scale = 0.2
+scale_random = 1.0
 color_ramp = SubResource( 41 )
 
 [sub_resource type="ParticlesMaterial" id=82]
@@ -764,6 +799,17 @@ speed_scale = 4.0
 local_coords = false
 process_material = SubResource( 73 )
 texture = ExtResource( 40 )
+
+[node name="BoostThrust3" type="Particles2D" parent="."]
+position = Vector2( 0, 80.9086 )
+emitting = false
+amount = 20
+lifetime = 0.75
+one_shot = true
+explosiveness = 0.86
+local_coords = false
+process_material = SubResource( 84 )
+texture = ExtResource( 43 )
 
 [node name="BoostThrust2" type="Particles2D" parent="."]
 position = Vector2( 0, 2.33624 )
@@ -1022,6 +1068,18 @@ amount = 200
 local_coords = false
 process_material = SubResource( 44 )
 texture = ExtResource( 30 )
+
+[node name="OverheatSparks" type="Particles2D" parent="."]
+position = Vector2( 0.710999, 1.0609 )
+emitting = false
+amount = 50
+lifetime = 2.0
+speed_scale = 5.0
+explosiveness = 0.45
+randomness = 0.75
+local_coords = false
+process_material = SubResource( 83 )
+texture = ExtResource( 40 )
 
 [node name="OverheatParticlesGroup" type="Node2D" parent="."]
 

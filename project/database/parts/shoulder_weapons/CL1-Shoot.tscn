@@ -20,6 +20,7 @@ auto_fire = false
 total_ammo = 15
 max_ammo = 15
 clip_size = 10
+muzzle_heat = 34
 ammo_cost = 4500
 soundEffect = "large_shotA"
 sound_max_range = 8000

@@ -25,6 +25,7 @@ total_ammo = 3000
 max_ammo = 3000
 clip_size = 600
 reload_speed = 1.4
+muzzle_heat = 3
 ammo_cost = 25
 soundEffect = ""
 sound_max_range = 1000

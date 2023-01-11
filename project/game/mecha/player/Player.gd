@@ -27,7 +27,7 @@ func _ready():
 		set_thruster("test1")
 		set_head("head_test")
 		set_chassis("legs_test")
-		set_arm_weapon("testlaser", SIDE.LEFT)
+		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
 		set_arm_weapon("TT1-Flamethrower", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.LEFT)

@@ -25,6 +25,7 @@ total_ammo = 400
 max_ammo = 400
 clip_size = 80
 reload_speed = 1.4
+muzzle_heat = 20
 ammo_cost = 25
 soundEffect = "shotgun_shotA"
 sound_max_range = 1000

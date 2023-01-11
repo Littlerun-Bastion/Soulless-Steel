@@ -932,7 +932,7 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * max_speed
 	if thruster:
 		var mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
-		if is_sprinting and freezing_status_time <= 0.0:
+		if is_sprinting and freezing_status_time <= 0.0 and direction != Vector2(0,0):
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
@@ -940,6 +940,11 @@ func apply_movement(dt, direction):
 			$SprintThrust2.emitting = true
 			$SprintGlow.visible = true
 			$GrindParticles2.emitting = true
+		elif direction == Vector2(0,0):
+			$SprintThrust.emitting = false
+			$SprintThrust2.emitting = false
+			$SprintGlow.visible = false
+			$GrindParticles2.emitting = false
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -1091,7 +1096,7 @@ func stop_sprinting():
 		$BoostThrust2.restart()
 		$BoostThrust.emitting = true
 		$BoostThrust2.emitting = true
-		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
+		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
 	$SprintThrust.emitting = false
 	$SprintThrust2.emitting = false

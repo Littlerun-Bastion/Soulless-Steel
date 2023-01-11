@@ -44,7 +44,17 @@ texture = ExtResource( 5 )
 [node name="CoreGlow" type="Sprite" parent="."]
 texture = ExtResource( 10 )
 
+[node name="OverheatOffset1" type="Position2D" parent="."]
+position = Vector2( 0, -51 )
+
+[node name="OverheatOffset2" type="Position2D" parent="."]
+position = Vector2( 26, 22 )
+
+[node name="OverheatOffset3" type="Position2D" parent="."]
+position = Vector2( -27, 22 )
+
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( -40, -13 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
@@ -52,6 +62,7 @@ texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( 40, -13 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
@@ -60,6 +71,7 @@ texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
 [node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( -30, 17 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
@@ -67,6 +79,7 @@ texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
 [node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( 30, 17 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]

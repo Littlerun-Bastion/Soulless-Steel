@@ -13,6 +13,7 @@ tagline = "Bipedal"
 movement_type = "relative"
 accuracy_modifier = 1.33
 health = 2200.0
+move_heat = 20
 weight = 400.0
 weight_capacity = 1400.0
 

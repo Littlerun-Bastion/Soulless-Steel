@@ -46,6 +46,15 @@ texture = ExtResource( 5 )
 [node name="CoreGlow" type="Sprite" parent="."]
 texture = ExtResource( 10 )
 
+[node name="OverheatOffset1" type="Position2D" parent="."]
+position = Vector2( 0, -51 )
+
+[node name="OverheatOffset2" type="Position2D" parent="."]
+position = Vector2( 26, 22 )
+
+[node name="OverheatOffset3" type="Position2D" parent="."]
+position = Vector2( -27, 22 )
+
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
 position = Vector2( -40, -13 )
 

@@ -74,3 +74,9 @@ func get_chassis_offset(side):
 		return $RightChassisOffset.position
 	else:
 		push_error("Not a valid side: " + str(side))
+		
+func get_overheat_offset(num):
+	var node = get_node_or_null("OverheatOffset" + str(num))
+	if node:
+		return node.position
+	

@@ -16,7 +16,7 @@ const BLINK_PITCH_TARGET_MOD = .40
 
 onready var LifeBar = $ViewportContainer/Viewport/LifeBar
 onready var ShieldBar = $ViewportContainer/Viewport/ShieldBar
-onready var EnergyBar = $ViewportContainer/Viewport/EnergyBar
+onready var HeatBar = $ViewportContainer/Viewport/HeatBar
 onready var WeaponSlots = $ViewportContainer/Viewport/WeaponSlots
 onready var Cursor = $ViewportContainer/Viewport/MechaCursorCrosshair
 onready var PlayerRadar = $ViewportContainer/Viewport/PlayerRadar
@@ -35,6 +35,8 @@ var mechas
 func _process(_delta):
 	if player:
 		update_shieldbar(player.shield)
+		update_lifebar(player.hp)
+		update_heatbar(player.mecha_heat)
 		ShieldBar.get_node("Label").text = str(player.shield)
 		
 		var v_trans = get_viewport().canvas_transform
@@ -75,7 +77,7 @@ func setup(player_ref, mechas_ref):
 	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
 	setup_lifebar()
 	setup_shieldbar()
-	setup_energybar()
+	setup_heatbar()
 	setup_weapon_slots()
 	setup_cursor()
 	if player.chipset.has_radar:
@@ -106,9 +108,9 @@ func setup_shieldbar():
 	ShieldBar.value = player.shield
 
 
-func setup_energybar():
-	EnergyBar.max_value = player.max_energy
-	EnergyBar.value = player.energy
+func setup_heatbar():
+	HeatBar.max_value = player.max_heat
+	HeatBar.value = player.mecha_heat
 
 
 func setup_weapon_slots():
@@ -135,8 +137,8 @@ func update_shieldbar(value):
 	ShieldBar.value = value
 
 
-func update_energybar(value):
-	EnergyBar.value = value
+func update_heatbar(value):
+	HeatBar.value = value
 
 
 func update_cursor():

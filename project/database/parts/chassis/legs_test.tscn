@@ -16,6 +16,7 @@ tagline = "Bipedal"
 is_legs = true
 movement_type = "relative"
 accuracy_modifier = 1.33
+move_heat = 15
 
 [node name="SingleSide" type="Node2D" parent="."]
 

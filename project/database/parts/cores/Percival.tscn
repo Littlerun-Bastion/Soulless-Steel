@@ -47,7 +47,17 @@ texture = ExtResource( 8 )
 modulate = Color( 1, 1, 1, 0.556863 )
 texture = ExtResource( 2 )
 
+[node name="OverheatOffset1" type="Position2D" parent="."]
+position = Vector2( -14.8726, -32.1988 )
+
+[node name="OverheatOffset2" type="Position2D" parent="."]
+position = Vector2( 15.6005, -32.1421 )
+
+[node name="OverheatOffset3" type="Position2D" parent="."]
+position = Vector2( 0.395134, 69.8858 )
+
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( -40, -13 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
@@ -55,6 +65,7 @@ texture = ExtResource( 12 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( 40, -13 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
@@ -63,6 +74,7 @@ texture = ExtResource( 12 )
 offset = Vector2( 4, -36 )
 
 [node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( -30, 17 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
@@ -70,6 +82,7 @@ texture = ExtResource( 11 )
 offset = Vector2( -9, -23 )
 
 [node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
+visible = false
 position = Vector2( 30, 17 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]

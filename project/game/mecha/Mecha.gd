@@ -13,6 +13,7 @@ const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 1.5
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
+const OVERHEAT_BUFFER = 1.1
 
 signal create_projectile
 signal shoot
@@ -83,6 +84,9 @@ var max_energy = 100
 var energy = 100
 var total_kills = 0
 var mecha_heat = 0
+var mecha_heat_visible = 0
+var max_heat = 100
+var idle_threshold = 0.33
 var move_heat = 70
 
 var movement_type = "free"
@@ -102,6 +106,9 @@ var move_acc = 50
 var rotation_acc = 5
 var arm_accuracy_mod := 0.0
 var stability := 1.0
+
+var last_damage_source
+var last_damage_weapon
 
 
 var right_arm_bloom_time := 0.0
@@ -134,8 +141,9 @@ var weight_capacity = 0.0
 
 var fire_status_time = 0.0
 var electrified_status_time = 0.0
-var freezing_status_time = 5.0
+var freezing_status_time = 0.0
 var corrode_status_time = 0.0
+var overheat_status_time = 0.0
 
 
 func _ready():
@@ -271,6 +279,19 @@ func _physics_process(dt):
 	elif corrode_status_time <= 0.0:
 		$CorrosionParticles.emitting = false
 		$CorrosionParticles2.emitting = false
+	
+	if overheat_status_time > 0.0:
+		overheat_status_time = max(overheat_status_time - dt, 0.0)
+		hp -= (max_hp * 0.02 * dt)
+		hp = round(hp)
+		if hp <= 0:
+			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
+			die(last_damage_source, last_damage_weapon)
+		for child in $OverheatParticlesGroup.get_children():
+			child.emitting = true
+	elif overheat_status_time <= 0.0:
+		for child in $OverheatParticlesGroup.get_children():
+			child.emitting = false
 
 	take_status_damage(dt)
 
@@ -385,12 +406,16 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 			freezing_status_time = status_amount
 
 	hp = max(hp - (health_mult * amount), 0)
-	mecha_heat += heat_damage
+	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
 	if shield <= 0:
 		select_impact(calibre, false)
 	else:
 		select_impact(calibre, true)
 	emit_signal("took_damage", self, false)
+	
+	last_damage_source = source_info
+	last_damage_weapon = weapon_name
+	
 	if hp <= 0:
 		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
@@ -401,7 +426,7 @@ func take_status_damage(dt):
 
 
 	if fire_status_time > 0.0:
-		mecha_heat += dt * 10
+		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
 
 	if electrified_status_time > 0.0:
 		shield = round(max(shield - (dt * 100), 0))
@@ -425,14 +450,15 @@ func freezing_status_heat(heat_disp):
 
 func die(source_info, weapon_name):
 	is_dead = true
-	TickerManager.new_message({
-		"type": "mecha_died",
-		"source": source_info.name,
-		"self": self.mecha_name,
-		"weapon_name": weapon_name,
-		})
-	if source_info.name == "Player":
-		emit_signal("player_kill")
+	#TickerManager.new_message({
+	#	"type": "mecha_died",
+	#	"source": source_info.name,
+	#	"self": self.mecha_name,
+	#	"weapon_name": weapon_name,
+	#	})
+	if is_instance_valid(source_info):
+		if source_info.name == "Player":
+			emit_signal("player_kill")
 	emit_signal("died", self)
 
 
@@ -482,16 +508,26 @@ func add_decal(id, decal_position, type, size):
 func update_heat(dt):
 	#Main Mecha Heat
 	if display_mode == true:
-		mecha_heat = 100
+		mecha_heat = max_heat - 1
 		return
 	if generator and fire_status_time <= 0.0:
-		mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, 0)
+		if mecha_heat > max_heat*idle_threshold:
+			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, 0)
+		else:
+			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion * 0.2)*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(generator.heat_dispersion, dt)
+	if generator:
+		if mecha_heat >= max_heat:
+			overheat_status_time = 5.0		
+	if overheat_status_time <= 0.0:
+		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
+	else:
+		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				 RightChassis, RightChassisSub, RightChassisGlow]:
-		node.material.set_shader_param("heat", mecha_heat)
+		node.material.set_shader_param("heat", mecha_heat_visible)
 
 
 #PARTS SETTERS
@@ -571,6 +607,13 @@ func set_core(part_name):
 		$HeadPort.position = core.get_head_port_offset()
 	else:
 		$HeadPort.texture = null
+	var index = 1
+	for x in $OverheatParticlesGroup.get_children():
+		if core.get_overheat_offset(index):
+			x.position = core.get_overheat_offset(index)
+		else:
+			x.visible = false
+		index += 1
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
@@ -583,6 +626,8 @@ func set_generator(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
 		generator = part_data
+		generator.heat_capacity = max_heat
+		idle_threshold = generator.idle_threshold / 100
 	else:
 		generator = false
 	update_max_shield_from_parts()
@@ -814,6 +859,7 @@ func move(vec):
 
 func dash(dir):
 	if dash_velocity.length() == 0 and dir.length() > 0 and freezing_status_time <= 0.0:
+		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
 		$BoostThrust2.rotation_degrees = rad2deg(dir.angle()) + 90
@@ -834,7 +880,7 @@ func apply_movement(dt, direction):
 	if thruster:
 		var mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
 		if is_sprinting and freezing_status_time <= 0.0:
-			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
+			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 			$SprintThrust.emitting = true
@@ -845,7 +891,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
-			mecha_heat = min(mecha_heat + move_heat*dt, 100)
+			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
 			velocity = lerp(velocity, Vector2.ZERO, friction)
@@ -857,7 +903,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
 			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
-			mecha_heat = min(mecha_heat + move_heat*dt, 100)
+			mecha_heat += move_heat*dt
 		else:
 			moving = false
 			moving_axis.x = false
@@ -883,7 +929,7 @@ func apply_movement(dt, direction):
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
 				velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
-				mecha_heat = min(mecha_heat + move_heat*dt, 100)
+				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 			move(velocity)
 
 		else:
@@ -1099,6 +1145,7 @@ func shoot(type, is_auto_fire = false):
 						"impact_size": weapon_ref.impact_size
 					})
 	apply_recoil(type, weapon_ref.recoil_force)
+	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 	emit_signal("shoot")
 
 func apply_recoil(type, recoil):

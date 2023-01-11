@@ -59,12 +59,7 @@ func _process(dt):
 		return
 	change_scaling(scaling_variance*dt)
 	lifetime += dt
-	if decaying_speed_ratio < 1.0:
-		var time_elapsed = dt
-		while time_elapsed > 1.0:
-			speed *= decaying_speed_ratio
-			time_elapsed -= 1.0
-		speed *= decaying_speed_ratio*(1.0 - dt)
+	speed *= decaying_speed_ratio
 	position += dir*speed*dt
 	rotation_degrees = rad2deg(dir.angle()) + 90
 	# --- keeping this as an option because it's cool, but honestly i want a better missile tracking script that more accurately reflects missile trajectory
@@ -133,8 +128,8 @@ func setup(mecha, args):
 		$LifeTimer.wait_time = data.life_time + rand_range(-data.life_time_var, data.life_time_var)
 		$LifeTimer.autostart = true
 	
-	decaying_speed_ratio = data.decaying_speed_ratio + rand_range(-data.decaying_speed_ratio_var, data.decaying_speed_ratio_var)
-	scaling_variance = data.change_scaling + rand_range(-data.change_scaling_var, data.change_scaling_var)
+	decaying_speed_ratio = args.bullet_drag + rand_range(-args.bullet_drag_var, args.bullet_drag_var)
+	scaling_variance = args.projectile_size_scaling + rand_range(-args.projectile_size_scaling_var, args.projectile_size_scaling_var)
 	
 
 

@@ -41,7 +41,11 @@ export var sound_att := 1.00
 export var battery_drain := 1.00
 export var weight := 1.0
 export var bullet_velocity := 2000
+export var bullet_drag := 1.0
+export var bullet_drag_var := 0.0
 export var projectile_size := 1.0
+export var projectile_size_scaling := 0.0
+export var projectile_size_scaling_var := 0.0
 export var lifetime := 2.0
 export var beam_range := 2000.0
 

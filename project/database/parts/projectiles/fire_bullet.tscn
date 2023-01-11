@@ -18,13 +18,12 @@ decal_type = "bullet_hole_small"
 texture_variations = [ ExtResource( 8 ), ExtResource( 5 ), ExtResource( 6 ), ExtResource( 3 ), ExtResource( 4 ), ExtResource( 7 ) ]
 calibre = 3
 light_energy = 0.05
-speed = 800
-decaying_speed_ratio = 0.98
-decaying_speed_ratio_var = 0.01
-change_scaling = 1.6
+decaying_speed_ratio = 20.0
+decaying_speed_ratio_var = 0.5
+change_scaling = 1.0
 change_scaling_var = 0.2
-life_time = 2.5
-life_time_var = 0.4
+life_time = 1.5
+life_time_var = 0.2
 random_rotation = true
 
 [node name="Image" type="Sprite" parent="."]

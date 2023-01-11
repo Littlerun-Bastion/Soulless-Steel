@@ -134,7 +134,7 @@ var weight_capacity = 0.0
 
 var fire_status_time = 0.0
 var electrified_status_time = 0.0
-var freezing_status_time = 0.0
+var freezing_status_time = 5.0
 var corrode_status_time = 0.0
 
 
@@ -413,6 +413,16 @@ func take_status_damage(dt):
 		hp = round(max(hp - (dt * 100), 1))
 		emit_signal("took_damage", self, true)
 
+func freezing_status_slowdown(speed):
+	if freezing_status_time > 0.0:
+		speed *= 0.5
+	return speed
+
+func freezing_status_heat(heat_disp):
+	if freezing_status_time > 0.0:
+		heat_disp *= 2
+	return heat_disp
+
 func die(source_info, weapon_name):
 	is_dead = true
 	TickerManager.new_message({
@@ -475,7 +485,7 @@ func update_heat(dt):
 		mecha_heat = 100
 		return
 	if generator and fire_status_time <= 0.0:
-		mecha_heat = max(mecha_heat - generator.heat_dispersion*dt, 0)
+		mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(generator.heat_dispersion, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
@@ -803,7 +813,7 @@ func move(vec):
 
 
 func dash(dir):
-	if dash_velocity.length() == 0 and dir.length() > 0:
+	if dash_velocity.length() == 0 and dir.length() > 0 and freezing_status_time <= 0.0:
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
 		$BoostThrust2.rotation_degrees = rad2deg(dir.angle()) + 90
@@ -822,8 +832,8 @@ func apply_movement(dt, direction):
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
 	if thruster:
-		var mult = thruster.thrust_speed_multiplier
-		if is_sprinting:
+		var mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
+		if is_sprinting and freezing_status_time <= 0.0:
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, 100)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
@@ -834,7 +844,7 @@ func apply_movement(dt, direction):
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, target_speed, target_move_acc)
+			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -846,7 +856,7 @@ func apply_movement(dt, direction):
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, target_speed, target_move_acc)
+			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
 			mecha_heat = min(mecha_heat + move_heat*dt, 100)
 		else:
 			moving = false
@@ -872,7 +882,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
-				velocity = lerp(velocity, target_speed, target_move_acc)
+				velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
 				mecha_heat = min(mecha_heat + move_heat*dt, 100)
 			move(velocity)
 

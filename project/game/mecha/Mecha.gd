@@ -150,7 +150,7 @@ var weight_capacity = 0.0
 var fire_status_time = 0.0
 var electrified_status_time = 0.0
 var freezing_status_time = 0.0
-var corrode_status_time = 0.0
+var corrode_status_time = 15.0
 var overheat_status_time = 0.0
 var general_status_time = 0.0
 
@@ -163,6 +163,8 @@ var thruster_cooldown = 0.0
 var ecm_attempt_cooldown = 0.0
 var ecm_strength_difference = 0.0
 
+var rng
+var bleed_timer = 0.0
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
@@ -174,11 +176,25 @@ func _ready():
 				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				 RightChassis, RightChassisSub, RightChassisGlow]:
 		node.material = CoreSub.material.duplicate(true)
+		rng = RandomNumberGenerator.new()
 
 
 func _physics_process(dt):
 	if paused:
 		return
+	
+	#Blood
+	if hp / max_hp < 0.8:
+		if bleed_timer < 0.0:
+			rng.randomize()
+			bleed_timer = rng.randf_range(1,1.1/(hp/max_hp))
+			$Blood.emitting = !$Blood.emitting
+			if hp / max_hp < 0.3:
+				$Blood2.emitting = !$Blood2.emitting
+			else:
+				$Blood2.emitting = false
+		else:
+			bleed_timer -= dt
 	
 	#ecm
 	if ecm_attempt_cooldown > 0.0:
@@ -451,6 +467,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 			freezing_status_time = status_amount
 
 	hp = max(hp - (health_mult * amount), 0)
+	if amount > max_hp/0.25:
+		$Blood3.emitting = true
 	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
 	if shield <= 0:
 		select_impact(calibre, false)

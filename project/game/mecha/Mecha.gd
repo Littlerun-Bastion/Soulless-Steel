@@ -517,7 +517,10 @@ func freezing_status_heat(heat_disp):
 	return heat_disp
 
 func die(source_info, weapon_name):
+	if is_dead:
+		return
 	is_dead = true
+	yield(get_tree().create_timer(3.0), "timeout")
 	#TickerManager.new_message({
 	#	"type": "mecha_died",
 	#	"source": source_info.name,
@@ -525,7 +528,7 @@ func die(source_info, weapon_name):
 	#	"weapon_name": weapon_name,
 	#	})
 	if is_instance_valid(source_info):
-		if source_info.name == "Player":
+		if is_player():
 			emit_signal("player_kill")
 	emit_signal("died", self)
 

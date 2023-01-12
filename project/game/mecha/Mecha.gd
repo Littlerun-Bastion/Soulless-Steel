@@ -185,6 +185,9 @@ func _physics_process(dt):
 		return
 	
 	#Blood
+	if is_dead:
+		return
+		
 	if hp / max_hp < 0.8:
 		if bleed_timer < 0.0:
 			rng.randomize()
@@ -1211,14 +1214,14 @@ func shoot(type, is_auto_fire = false):
 
 	var variation = weapon_ref.bullet_spread/float(amount + 1)
 	var angle_offset = -weapon_ref.bullet_spread /2
-	var total_accuracy = weapon_ref.base_accuracy
+	var total_accuracy = weapon_ref.base_accuracy * head.accuracy_modifier
 	total_accuracy += bloom
 	if type == "arm_weapon_left" or type == "arm_weapon_right":
 		total_accuracy = total_accuracy / arm_accuracy_mod
 	if locked_to:
 		total_accuracy = total_accuracy/chipset.accuracy_modifier
-	if total_accuracy > weapon_ref.base_accuracy * weapon_ref.max_bloom_factor:
-		total_accuracy = weapon_ref.base_accuracy * weapon_ref.max_bloom_factor
+	if total_accuracy > weapon_ref.base_accuracy * weapon_ref.max_bloom_factor * head.accuracy_modifier:
+		total_accuracy = weapon_ref.base_accuracy * weapon_ref.max_bloom_factor * head.accuracy_modifier
 	for _i in range(weapon_ref.number_projectiles):
 		angle_offset += variation
 		emit_signal("create_projectile", self,

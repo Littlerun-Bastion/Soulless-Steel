@@ -12,6 +12,7 @@ var mechas
 var range_radius
 var pointers
 var update_cooldown
+var radar_cooldown := 0.0
 
 
 func _process(_dt):
@@ -20,7 +21,7 @@ func _process(_dt):
 		clear_dead_mechas()
 		if not update_cooldown:
 			update_mecha_position()	
-		update_pointers()
+			update_pointers()
 
 
 func setup(mechas_ref, player_ref, radius, update_timer):
@@ -30,6 +31,7 @@ func setup(mechas_ref, player_ref, radius, update_timer):
 	range_radius = radius
 	if update_timer:
 		update_cooldown = true
+		radar_cooldown = update_timer
 		$UpdateTimer.wait_time = update_timer
 		$UpdateTimer.start()
 	pointers = []
@@ -116,7 +118,9 @@ func _on_UpdateTimer_timeout():
 	$Tween.start()
 	yield($Tween, "tween_completed")
 	update_mecha_position()
+	update_pointers()
 	$Tween.interpolate_property($Circle, "rect_scale", t_scale, Vector2(1,1), .5, Tween.TRANS_CUBIC, Tween.EASE_OUT)
 	$Tween.start()
+	$Tween.interpolate_property($Pointers, "modulate:a", 1, 0, radar_cooldown / 1.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
 	
 	

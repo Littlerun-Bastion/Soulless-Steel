@@ -20,4 +20,5 @@ ECM_frequency = 1.0
 has_radar = false
 radar_refresh_rate = 1.0
 loot_search_time = 1.0
+radar_range = 1000.0
 weight = 1.0

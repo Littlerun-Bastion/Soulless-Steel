@@ -152,7 +152,7 @@ func setup(player_ref, mechas_ref):
 	setup_weapon_slots()
 	setup_cursor()
 	if player.chipset.has_radar:
-		PlayerRadar.setup(mechas, player, 5000, 2)
+		PlayerRadar.setup(mechas, player, player.chipset.radar_range, player.chipset.radar_refresh_rate)
 		PlayerRadar.show()
 	else:
 		PlayerRadar.hide()

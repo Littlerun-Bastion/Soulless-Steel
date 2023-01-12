@@ -4,6 +4,7 @@ const WEAPON_SLOT = preload("res://game/ui/weapon_slot/WeaponSlot.tscn")
 const LOCKING_SPRITES = {
 	"locking": preload("res://assets/images/ui/player_ui/locking_on_highlight.png"),
 	"locked": preload("res://assets/images/ui/player_ui/locked_on_highlight.png"),
+	"locking_ecm": preload("res://assets/images/ui/player_ui/locking_on_ecm_highlight.png")
 }
 const HOLE_FADE_DUR = .1
 const BULLET_THRESHOLD = .75 #On what percent of max helth should player start getting holes
@@ -36,6 +37,8 @@ onready var StatusContainer = $ViewportContainer/Viewport/StatusContainer
 onready var StatusChirpSFX = $ViewportContainer/Viewport/StatusChirpSFX
 onready var TemperatureLabel = $ViewportContainer/Viewport/HeatBar/TemperatureLabel
 onready var TemperatureErrorLabel = $ViewportContainer/Viewport/HeatBar/TemperatureErrorLabel
+onready var ECMLabel = $ViewportContainer/Viewport/ECMLabel
+onready var ECMFreqLabel = $ViewportContainer/Viewport/ECMLabel/ECMFreqLabel
 
 
 var player = false
@@ -115,11 +118,20 @@ func _process(_delta):
 			var pos = player.global_position + dist*prog
 			var sc = LOCKING_INIT_SCALE -  LOCKING_INIT_SCALE*prog + LOCKING_FINAL_SCALE*prog
 			var blink_speed = LOCKING_INIT_BLINK -  LOCKING_INIT_BLINK*prog + LOCKING_FINAL_BLINK*prog
+			if player.ecm_strength_difference > 0.0:
+				LockingSprite.texture = LOCKING_SPRITES.locking_ecm
+				ECMLabel.visible = true
+				ECMLabel.text = str("WRN ECM -" + str(player.ecm_strength_difference * 100) + "%")
+				var ecm_progress = (player.ecm_attempt_cooldown / player.locking_to.mecha.ecm_frequency) * 100
+				ECMFreqLabel.value = ecm_progress
+			else:
+				ECMLabel.visible = false
 			LockingSprite.scale = Vector2(sc, sc)
 			LockingSprite.global_position = v_trans * pos
 			LockingAnim.play("blinking")
 			LockingAnim.playback_speed = blink_speed
 		else:
+			ECMLabel.visible = false
 			ConstantBlinkingSFX.stop()
 			LockingAnim.stop()
 			LockingSprite.hide()

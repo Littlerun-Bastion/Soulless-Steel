@@ -93,6 +93,9 @@ var move_heat = 70
 var battery = 0.0
 var battery_capacity = 0.0
 var battery_recharge_rate = 0.0
+var ecm = 0.0
+var ecm_frequency = 0.0
+var lock_strength = 1.0
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -157,6 +160,9 @@ var right_thruster_cooldown = 0.0
 var left_thruster_cooldown = 0.0
 var thruster_cooldown = 0.0
 
+var ecm_attempt_cooldown = 0.0
+var ecm_strength_difference = 0.0
+
 
 func _ready():
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
@@ -173,6 +179,10 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
+	
+	#ecm
+	if ecm_attempt_cooldown > 0.0:
+		ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
 
 	#Bloom
 	if right_arm_bloom_time > 0:
@@ -683,9 +693,13 @@ func set_chipset(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("chipset", part_name)
 		chipset = part_data
+		ecm = chipset.ECM
+		ecm_frequency = chipset.ECM_frequency
+		lock_strength = chipset.lock_on_strength
 	else:
 		chipset = false
 	total_weight = get_stat("weight")
+	
 
 
 func set_thruster(part_name):
@@ -1318,6 +1332,13 @@ func update_locking(dt):
 					locking_to = target
 					min_dist = dist
 		if locking_to:
+			if locking_to.mecha.ecm > lock_strength:
+				if ecm_attempt_cooldown <= 0.0:
+					ecm_strength_difference = (locking_to.mecha.ecm - lock_strength) * 0.05
+					var percent = randf()
+					if (percent < ecm_strength_difference):
+						locking_to.progress = 0
+					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
 			if electrified_status_time > 0.0:
 				locking_to.progress = min(locking_to.progress + (dt*chipset.lock_on_speed * 0.5), 1.0)
 			else:

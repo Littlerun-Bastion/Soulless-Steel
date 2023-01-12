@@ -382,6 +382,42 @@ rect_pivot_offset = Vector2( 244.234, 379.71 )
 custom_constants/separation = 10
 alignment = 2
 
+[node name="ECMLabel" type="Label" parent="ViewportContainer/Viewport"]
+margin_left = 1600.0
+margin_top = 880.0
+margin_right = 1842.0
+margin_bottom = 916.0
+grow_horizontal = 0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 20 )
+text = "WRN ECM -5.55%"
+align = 2
+
+[node name="ECMFreqLabel" type="ProgressBar" parent="ViewportContainer/Viewport/ECMLabel"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -5.73199
+margin_top = -8.807
+margin_right = 249.266
+margin_bottom = 34.1931
+rect_min_size = Vector2( 200, 0 )
+rect_scale = Vector2( -0.7, 0.5 )
+custom_styles/fg = SubResource( 10 )
+custom_styles/bg = SubResource( 11 )
+value = 100.0
+percent_visible = false
+
+[node name="bar_back" type="TextureRect" parent="ViewportContainer/Viewport/ECMLabel/ECMFreqLabel"]
+margin_left = -8.96045
+margin_top = -4.23608
+margin_right = 341.04
+margin_bottom = 45.7639
+rect_scale = Vector2( 0.78, 1 )
+texture = ExtResource( 4 )
+flip_h = true
+
 [node name="MechaCursorCrosshair" parent="ViewportContainer/Viewport" instance=ExtResource( 13 )]
 margin_right = 0.0
 margin_bottom = 0.0

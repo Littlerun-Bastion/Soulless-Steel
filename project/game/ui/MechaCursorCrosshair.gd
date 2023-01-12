@@ -10,6 +10,7 @@ const LOCKING_TIME_COOLDOWN = 1.0
 const CROSSHAIRS = {
 	"regular": preload("res://assets/images/ui/player_ui/cursor_crosshair.png"),
 	"lock": preload("res://assets/images/ui/player_ui/lockon_crosshair.png"),
+	"lock_large": preload("res://assets/images/ui/player_ui/lockon_crosshair_large.png")
 }
 
 onready var LeftWeapon = $LeftWeapon
@@ -62,6 +63,9 @@ func _process(dt):
 	if cur_mode == MODES.LOCK:
 		Crosshair.texture = CROSSHAIRS.lock
 		var sc = (2*lock_reticle_size)/float(Crosshair.texture.get_width())
+		if sc > 3:
+			sc /= 2
+			Crosshair.texture = CROSSHAIRS.lock_large
 		Crosshair.scale = Vector2(sc, sc)
 	else:
 		Crosshair.texture = CROSSHAIRS.regular

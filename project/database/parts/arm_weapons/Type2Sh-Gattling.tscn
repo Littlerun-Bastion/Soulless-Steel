@@ -30,6 +30,7 @@ ammo_cost = 1
 soundEffect = "small_auto1"
 sound_max_range = 7500
 sound_att = 1.75
+battery_drain = 0.0
 projectile_size = 0.25
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0

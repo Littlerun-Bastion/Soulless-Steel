@@ -90,6 +90,9 @@ var mecha_heat_visible = 0
 var max_heat = 100
 var idle_threshold = 0.15
 var move_heat = 70
+var battery = 0.0
+var battery_capacity = 0.0
+var battery_recharge_rate = 0.0
 
 var movement_type = "free"
 var velocity = Vector2()
@@ -251,6 +254,9 @@ func _physics_process(dt):
 		speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
 
 	update_heat(dt)
+	
+	if battery < battery_capacity and electrified_status_time <= 0.0:
+		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 
 	update_locking(dt)
 
@@ -664,6 +670,9 @@ func set_generator(part_name):
 		generator = part_data
 		generator.heat_capacity = max_heat
 		idle_threshold = generator.idle_threshold / 100
+		battery_capacity = generator.battery_capacity
+		battery = generator.battery_capacity
+		battery_recharge_rate = generator.battery_recharge_rate
 	else:
 		generator = false
 	update_max_shield_from_parts()
@@ -816,7 +825,16 @@ func get_weapon_part(part_name):
 func get_clip_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.clip_ammo
+		if part.uses_battery:
+			return battery
+		else:
+			return part.clip_ammo
+	return false
+
+func get_battery_drain(part_name):
+	var part = get_weapon_part(part_name)
+	if part:
+		return part.battery_drain
 	return false
 
 
@@ -830,7 +848,10 @@ func get_clip_size(part_name):
 func get_total_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
+		if part.uses_battery:
+			return battery
+		else:
+			return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
 	return false
 
 func get_max_ammo(part_name):
@@ -1151,19 +1172,22 @@ func shoot(type, is_auto_fire = false):
 
 
 	if weapon_ref.uses_battery:
-		amount = min(weapon_ref.number_projectiles, get_clip_ammo(type))
+		amount = weapon_ref.number_projectiles
+		if not node.can_shoot_battery(weapon_ref.battery_drain, battery):
+			if is_player() and not is_auto_fire:
+				AudioManager.play_sfx("no_ammo", global_position)
+			return
+		node.shoot_battery(amount)
+		battery = max(battery - weapon_ref.battery_drain, 0)
 
 	else:
 		amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
 		amount = max(amount, 1) #Tries to shoot at least 1 projectile
-
-
 		if not node.can_shoot(amount):
 			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
-
-	node.shoot(amount)
+		node.shoot(amount)
 
 	var variation = weapon_ref.bullet_spread/float(amount + 1)
 	var angle_offset = -weapon_ref.bullet_spread /2

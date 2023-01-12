@@ -320,9 +320,9 @@ margin_bottom = 827.73
 alignment = 2
 
 [node name="FreezingLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
-margin_top = 385.0
+margin_top = 384.0
 margin_right = 162.0
-margin_bottom = 421.0
+margin_bottom = 420.0
 theme = ExtResource( 2 )
 custom_fonts/font = SubResource( 20 )
 text = "WRN FRZN"

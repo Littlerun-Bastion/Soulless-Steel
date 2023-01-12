@@ -45,6 +45,7 @@ var blink_timer = 0.66
 
 func _process(_delta):
 	if player:
+		update_cursor()
 		update_shieldbar(player.shield)
 		update_lifebar(player.hp)
 		update_heatbar(player.mecha_heat_visible)

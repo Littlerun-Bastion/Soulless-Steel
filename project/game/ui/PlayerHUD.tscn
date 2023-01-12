@@ -85,6 +85,8 @@ region_rect = Rect2( 0, 0, 328.149, 33.9862 )
 
 [sub_resource type="DynamicFont" id=12]
 size = 35
+use_mipmaps = true
+use_filter = true
 font_data = ExtResource( 3 )
 
 [sub_resource type="Theme" id=13]
@@ -116,6 +118,9 @@ material = ExtResource( 11 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Viewport" type="Viewport" parent="ViewportContainer"]
 size = Vector2( 1920, 1080 )

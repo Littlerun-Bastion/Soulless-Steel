@@ -58,10 +58,11 @@ func clear_dead_mechas():
 		pointers.erase(pointer)
 
 
-func update_pointers():	
-	for mecha in mechas:
-		if mecha != player:
-			update_pointer(get_mecha_pointer(mecha))
+func update_pointers():
+	if player:
+		for mecha in mechas:
+			if mecha != player:
+				update_pointer(get_mecha_pointer(mecha))
 
 
 func clear_pointers():

@@ -27,11 +27,13 @@ beam_range = 1000.0
 trail_min_spawn_distance = 5.0
 wiggle_amount = 0.05
 seek_time = 0.5
+is_melee = true
 
 [node name="Blade" type="Sprite" parent="."]
 texture = ExtResource( 4 )
 
 [node name="Sub" type="Sprite" parent="."]
+position = Vector2( -24.5, 0 )
 
 [node name="Main" type="Sprite" parent="."]
 position = Vector2( 0.878418, 34.6922 )

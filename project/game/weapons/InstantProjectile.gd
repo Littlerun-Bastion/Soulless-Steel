@@ -31,7 +31,6 @@ var body
 
 signal bullet_impact
 
-
 func _physics_process(dt): 
 	var cast_point := cast_to
 	if not hit:

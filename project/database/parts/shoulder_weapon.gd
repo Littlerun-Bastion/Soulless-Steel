@@ -17,7 +17,8 @@ export var health_mult := 1.0
 export var heat_damage := 10.0
 export var status_damage := 0.0
 export var status_type : String
-export var recoil_force := 0.0
+export var rotation_acc := .8
+export var recoil_force := 20.0
 export var fire_rate := .3
 export var auto_fire := true
 export var base_accuracy := 0

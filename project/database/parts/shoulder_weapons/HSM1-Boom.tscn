@@ -14,7 +14,6 @@ tagline = "Heavy Ordnance"
 type = "Big Weapon"
 projectile = ExtResource( 3 )
 damage_modifier = 20.0
-recoil_force = 20.0
 fire_rate = 1.0
 auto_fire = false
 clip_size = 5

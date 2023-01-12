@@ -30,7 +30,7 @@ func _ready():
 		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
 		set_arm_weapon("testlaser", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
-		set_shoulder_weapon(false, SIDE.LEFT)
+		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 		set_shoulders("shoulder_test")
 	if Debug.get_setting("player_zoom"):
 		Cam.zoom = Debug.get_setting("player_zoom")
@@ -151,8 +151,8 @@ func knockback(pos, strength, should_rotate = true):
 		Cam.shake(dur, freq, amp, strength)
 
 
-func apply_recoil(type, recoil):
-	.apply_recoil(type, recoil)
+func apply_recoil(type, node, recoil):
+	.apply_recoil(type, node, recoil)
 	if recoil > 0:
 		var dur = sqrt(recoil)/10
 		var freq = pow(recoil, .3)*5

@@ -8,6 +8,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const SPEED_MOD_CORRECTION = 3
+const WEAPON_RECOIL_MOD = .9
 const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 1.5
@@ -254,7 +255,13 @@ func _physics_process(dt):
 			move(sprinting_ending_correction)
 		else:
 			apply_movement(dt, Vector2())
+	
+	#Update shoulder weapons rotation
+	for data in [[shoulder_weapon_left, LeftShoulderWeapon], [shoulder_weapon_right, RightShoulderWeapon]]:
+		if data[0]:
+			data[1].rotation_degrees += get_best_rotation_diff(data[1].rotation_degrees, 0)*data[0].rotation_acc*dt
 
+	
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
 		move(dash_velocity)
@@ -269,32 +276,29 @@ func _physics_process(dt):
 			dash_velocity.y = min(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
-
+	
+	#Walking animation
 	if moving and not MovementAnimation.is_playing() and\
 	   not is_sprinting and dash_velocity.length() <= 0.0:
 		MovementAnimation.play("Walking")
 	elif (not moving and velocity.length() <= 2.0) or\
 		 (is_sprinting or dash_velocity.length() > 0):
 		MovementAnimation.stop()
-
 	if not MovementAnimation.is_playing():
 		speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
-
-	update_heat(dt)
 	
-	if battery < battery_capacity and not has_status("electrified"):
-		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
-
+	#Locking mechanic
 	update_locking(dt)
-
 	if get_locked_to():
 		var target_pos = locked_to.global_position
 		apply_rotation_by_point(dt, target_pos, false)
 
 	#Status Effects
+	update_heat(dt)
+	if battery < battery_capacity and not has_status("electrified"):
+		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time.keys():
 		decrease_status(status, dt)
-	
 	$FireParticles2.emitting = has_status("fire")
 	$FireParticles.emitting = has_status("fire")
 	$ElectricParticles.emitting = has_status("electrified")
@@ -305,7 +309,8 @@ func _physics_process(dt):
 	$OverheatSparks.emitting = has_status("overheat")
 	for child in $OverheatParticlesGroup.get_children():
 		child.emitting = has_status("overheat")
-
+	
+	#Thrusters cooldowns
 	if fwd_thruster_cooldown > 0.0:
 		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
 	if rwd_thruster_cooldown > 0.0:
@@ -1068,7 +1073,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 	if is_sprinting == true:
 		_rotation_acc = rotation_acc/5
 	if not stand_still:
-		rotation_degrees += get_target_rotation_diff(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
+		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
 
 
 	#Rotate Arm Weapons
@@ -1078,23 +1083,24 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		if node_ref:
 			var node = data[0]
 			var actual_rot = node.rotation_degrees + rotation_degrees
-			node.rotation_degrees += get_target_rotation_diff(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
+			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
 
-
-func get_target_rotation_diff(dt, origin, target_pos, cur_rotation, acc):
-	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
-	var diff = target_rot - cur_rotation
+#Return the proper direction diff to rotate given a current and target rotation
+func get_best_rotation_diff(cur_rot, target_rot):
+	var diff = target_rot - cur_rot
 	if diff > 180:
 		diff -= 360
 	elif diff < -180:
 		diff += 360
+	return diff
 
-	#Rotate properly clock or counter-clockwise fastest to target rotation
-	if diff > 0:
-		return abs(diff)*acc*dt
-	else:
-		return -abs(diff)*acc*dt
+func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
+	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
+	var diff = target_rot - cur_rot
+	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
+
+
 
 
 func knockback(pos, strength, should_rotate = true):
@@ -1263,16 +1269,17 @@ func shoot(type, is_auto_fire = false):
 
 						"impact_size": weapon_ref.impact_size,
 						"hitstop": weapon_ref.hitstop,
-					})
-	apply_recoil(type, weapon_ref.recoil_force)
+					}) #TODO: FIX THIS
+	apply_recoil(type, node, weapon_ref.recoil_force)
 	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 	emit_signal("shoot")
 
-func apply_recoil(type, recoil):
+func apply_recoil(type, node, recoil):
 	var rotation = recoil*300/get_stat("weight")
 	if "left" in type:
 		rotation *= -1
 	rotation_degrees += rotation
+	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
 
 func is_stunned():

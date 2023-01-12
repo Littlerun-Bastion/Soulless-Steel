@@ -926,7 +926,7 @@ func dash(dir):
 		_thruster_cooldown = left_thruster_cooldown
 	else:
 		return
-	if thruster_cooldown <= 0.0 and freezing_status_time <= 0.0:
+	if _thruster_cooldown <= 0.0 and freezing_status_time <= 0.0:
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
@@ -942,7 +942,6 @@ func dash(dir):
 		$GrindParticles.emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
-		print(thruster_cooldown)
 		if dir == Vector2(0,-1): #FWD
 			fwd_thruster_cooldown = thruster.dash_cooldown
 		elif dir == Vector2(0,1): #RWD
@@ -1116,8 +1115,8 @@ func update_chassis_visuals(dt):
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
 										  dt*CHASSIS_SPEED)
 
-func stop_sprinting():
-	if is_sprinting:
+func stop_sprinting(dir):
+	if is_sprinting and dir != Vector2(0,0):
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5)
 		$GrindParticles.restart()

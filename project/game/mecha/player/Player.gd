@@ -99,7 +99,7 @@ func _input(event):
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0:
 			dash(get_input().normalized())
-		stop_sprinting()
+		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
@@ -168,7 +168,7 @@ func check_input():
 	
 	#Safety check for sprinting, since it was bugging sometimes
 	if not Input.is_action_pressed("thruster_dash"):
-		stop_sprinting()
+		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
 
 func check_weapon_input(name, node, weapon_ref):

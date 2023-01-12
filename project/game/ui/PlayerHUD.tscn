@@ -85,6 +85,8 @@ region_rect = Rect2( 0, 0, 328.149, 33.9862 )
 
 [sub_resource type="DynamicFont" id=12]
 size = 35
+use_mipmaps = true
+use_filter = true
 font_data = ExtResource( 3 )
 
 [sub_resource type="Theme" id=13]
@@ -148,7 +150,7 @@ margin_top = -63.7816
 margin_right = 171.686
 margin_bottom = -20.7816
 rect_min_size = Vector2( 200, 0 )
-rect_scale = Vector2( -0.8, 0.8 )
+rect_scale = Vector2( -1, 1 )
 custom_styles/fg = SubResource( 10 )
 custom_styles/bg = SubResource( 11 )
 value = 100.0
@@ -192,12 +194,12 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -83.3119
-margin_top = -101.782
+margin_left = -83.312
+margin_top = -114.038
 margin_right = 171.687
-margin_bottom = -58.7817
+margin_bottom = -71.0377
 rect_min_size = Vector2( 200, 0 )
-rect_scale = Vector2( -0.8, 0.8 )
+rect_scale = Vector2( -1, 1 )
 custom_styles/fg = SubResource( 10 )
 custom_styles/bg = SubResource( 11 )
 value = 100.0

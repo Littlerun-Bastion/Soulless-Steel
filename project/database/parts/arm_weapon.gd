@@ -5,7 +5,6 @@ export var manufacturer_name : String
 export var tagline : String
 export var description : String
 export var type: String
-export var image : Texture
 export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource
@@ -77,12 +76,12 @@ export var seeker_agility := 0.01
 export var seek_time := 1.0
 export var seeker_angle := 90
 
+#---MELEE BEHAVIOURS---
+export var is_melee := false
+
 var firing_timer = 0.0
 var part_id
 
-#---MELEE BEHAVIOURS---
-export var is_melee := false
-export var idle_rotation := 30.0
 
 func get_sub():
 	return $Sub.texture

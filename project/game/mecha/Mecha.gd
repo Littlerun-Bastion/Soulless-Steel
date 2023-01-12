@@ -504,7 +504,7 @@ func freezing_status_heat(heat_disp):
 		heat_disp *= 2
 	return heat_disp
 
-func die(source_info, weapon_name):
+func die(source_info, _weapon_name):
 	if is_dead:
 		return
 	is_dead = true
@@ -1188,16 +1188,14 @@ func shoot(type, is_auto_fire = false):
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 
-	var amount = 1
-
-
+	var amount
 	if weapon_ref.uses_battery:
 		amount = weapon_ref.number_projectiles
 		if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
 			if is_player() and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
-		node.shoot_battery(amount)
+		node.shoot_battery()
 		battery = max(battery - weapon_ref.battery_drain, 0)
 
 	else:

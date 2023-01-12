@@ -105,9 +105,11 @@ func is_reloading():
 func can_shoot(amount := 1):
 	return timer <= 0.0 and (clip_ammo is bool or clip_ammo >= amount) and not is_reloading()
 
+
 func can_shoot_battery(drain, battery):
 	if drain <= battery:
 		return timer <= 0.0
+
 
 func shoot(amount := 1):
 	add_time(fire_rate)
@@ -116,11 +118,13 @@ func shoot(amount := 1):
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
 
-func shoot_battery(amount := 1):
+
+func shoot_battery():
 	add_time(fire_rate)
 	heat = min(heat + muzzle_heat, 100)
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
+
 
 func set_shooting_pos(pos):
 	ShootingPos.position = pos

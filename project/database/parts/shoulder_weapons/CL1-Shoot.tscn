@@ -6,7 +6,7 @@
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_main.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=5]
 
-[node name="Part" type="Node"]
+[node name="Part2" type="Node"]
 script = ExtResource( 2 )
 part_name = "Test Cannon"
 manufacturer_name = "Test"

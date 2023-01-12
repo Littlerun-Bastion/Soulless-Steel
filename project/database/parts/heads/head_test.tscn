@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_glow.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_main.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/heads/msv-l3j_head_sub.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_glow.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_sub.png" type="Texture" id=3]
 [ext_resource path="res://database/parts/head.gd" type="Script" id=4]
 
 [node name="Part" type="Node2D"]

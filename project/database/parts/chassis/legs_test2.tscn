@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://assets/images/mechas/legs/percival_leg_glow.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/legs/percival_leg_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/legs/percival_leg.png" type="Texture" id=3]
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=7]
 

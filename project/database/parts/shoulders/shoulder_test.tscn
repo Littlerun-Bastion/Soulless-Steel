@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_rshoulder_main.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/msv-l3j_lshoulder_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
 
 [node name="Part" type="Node"]

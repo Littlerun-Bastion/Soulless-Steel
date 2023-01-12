@@ -29,6 +29,7 @@ wiggle_amount = 0.05
 seek_time = 0.5
 
 [node name="Blade" type="Sprite" parent="."]
+position = Vector2( 1.33635, 1.33634 )
 texture = ExtResource( 4 )
 
 [node name="Sub" type="Sprite" parent="."]

@@ -147,12 +147,13 @@ var chassis = null
 var total_weight = 0.0
 var weight_capacity = 0.0
 
-var fire_status_time = 0.0
-var electrified_status_time = 0.0
-var freezing_status_time = 0.0
-var corrode_status_time = 15.0
-var overheat_status_time = 0.0
-var general_status_time = 0.0
+var status_time = {
+	"fire": 0.0,
+	"electrified": 0.0,
+	"freezing": 0.0,
+	"corrode": 0.0,
+	"overheat": 0.0,
+}
 
 var fwd_thruster_cooldown = 0.0
 var rwd_thruster_cooldown = 0.0
@@ -224,7 +225,7 @@ func _physics_process(dt):
 	#Handle shield
 	if generator and shield < max_shield:
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
-		if shield_regen_cooldown <= 0 and electrified_status_time <= 0.0:
+		if shield_regen_cooldown <= 0 and has_status("electrified"):
 			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
@@ -281,7 +282,7 @@ func _physics_process(dt):
 
 	update_heat(dt)
 	
-	if battery < battery_capacity and electrified_status_time <= 0.0:
+	if battery < battery_capacity and not has_status("electrified"):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 
 	update_locking(dt)
@@ -291,54 +292,20 @@ func _physics_process(dt):
 		apply_rotation_by_point(dt, target_pos, false)
 
 	#Status Effects
-	if fire_status_time > 0.0:
-		fire_status_time = max(fire_status_time - dt, 0.0)
-		$FireParticles2.emitting = true
-		$FireParticles.emitting = true
-	elif fire_status_time <= 0.0:
-		$FireParticles2.emitting = false
-		$FireParticles.emitting = false
-
-	if electrified_status_time > 0.0:
-		electrified_status_time = max(electrified_status_time - dt, 0.0)
-		$ElectricParticles.emitting = true
-	elif electrified_status_time <= 0.0:
-		$ElectricParticles.emitting = false
-
-	if freezing_status_time > 0.0:
-		freezing_status_time = max(freezing_status_time - dt, 0.0)
-		$FreezingParticles2.emitting = true
-		$FreezingParticles.emitting = true
-	elif freezing_status_time <= 0.0:
-		$FreezingParticles2.emitting = false
-		$FreezingParticles.emitting = false
-
-	if corrode_status_time > 0.0:
-		corrode_status_time = max(corrode_status_time - dt, 0.0)
-		$CorrosionParticles.emitting = true
-		$CorrosionParticles2.emitting = true
-	elif corrode_status_time <= 0.0:
-		$CorrosionParticles.emitting = false
-		$CorrosionParticles2.emitting = false
-		
-	if general_status_time >= 0.0:
-		general_status_time = max(general_status_time - dt, 0.0)
+	for status in status_time.keys():
+		decrease_status(status, dt)
 	
-	if overheat_status_time > 0.0:
-		overheat_status_time = max(overheat_status_time - dt, 0.0)
-		hp -= (max_hp * 0.02 * dt)
-		hp = round(hp)
-		if hp <= 0:
-			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
-			die(last_damage_source, last_damage_weapon)
-		$OverheatSparks.emitting = true
-		for child in $OverheatParticlesGroup.get_children():
-			child.emitting = true
-	elif overheat_status_time <= 0.0:
-		$OverheatSparks.emitting = false
-		for child in $OverheatParticlesGroup.get_children():
-			child.emitting = false
-	
+	$FireParticles2.emitting = has_status("fire")
+	$FireParticles.emitting = has_status("fire")
+	$ElectricParticles.emitting = has_status("electrified")
+	$FreezingParticles2.emitting = has_status("freezing")
+	$FreezingParticles.emitting = has_status("freezing")
+	$CorrosionParticles.emitting = has_status("corrode")
+	$CorrosionParticles2.emitting = has_status("corrode")
+	$OverheatSparks.emitting = has_status("overheat")
+	for child in $OverheatParticlesGroup.get_children():
+		child.emitting = has_status("overheat")
+
 	if fwd_thruster_cooldown > 0.0:
 		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
 	if rwd_thruster_cooldown > 0.0:
@@ -455,16 +422,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	amount = max(amount - temp_shield, 0)
 	
 	if status_type and status_amount > 0.0:
-		if general_status_time < status_amount:
-			general_status_time = status_amount
-		if status_type == "Fire":
-			fire_status_time = status_amount
-		elif status_type == "Electrified":
-			electrified_status_time = status_amount
-		elif status_type == "Corrode":
-			corrode_status_time = status_amount
-		elif status_type == "Freezing":
-			freezing_status_time = status_amount
+		set_status(status_type, status_amount)
 
 	hp = max(hp - (health_mult * amount), 0)
 	if amount > max_hp/0.25:
@@ -483,36 +441,66 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
 
+
 func do_hitstop():
 	Engine.time_scale = HITSTOP_TIMESCALE
 	yield(get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE), "timeout")
 	Engine.time_scale = 1.0
 
+
+func has_status(status_name):
+	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	return status_time[status_name] > 0.0
+
+
+func has_any_status():
+	for status in status_time.values():
+		if status > 0.0:
+			return true
+	return false
+
+
+func set_status(status_name, amount):
+	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	status_time[status_name] = amount
+
+
+func decrease_status(status_name, amount):
+	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	status_time[status_name] = max(status_time[status_name] - amount, 0.0)
+
+
 func take_status_damage(dt):
 	if is_dead:
 		return
-
-
-	if fire_status_time > 0.0:
+	
+	if has_status("overheat"):
+		hp -= (max_hp * 0.02 * dt)
+		hp = round(hp)
+		if hp <= 0:
+			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
+			die(last_damage_source, last_damage_weapon)
+	
+	if has_status("fire"):
 		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
 
-	if electrified_status_time > 0.0:
+	if has_status("electrified"):
 		shield = round(max(shield - (dt * 100), 0))
 		emit_signal("took_damage", self, true)
 		if generator:
 			shield_regen_cooldown = generator.shield_regen_delay
 
-	if corrode_status_time > 0.0:
+	if has_status("corrode"):
 		hp = round(max(hp - (dt * 100), 1))
 		emit_signal("took_damage", self, true)
 
 func freezing_status_slowdown(speed):
-	if freezing_status_time > 0.0:
+	if has_status("freezing"):
 		speed *= 0.5
 	return speed
 
 func freezing_status_heat(heat_disp):
-	if freezing_status_time > 0.0:
+	if has_status("freezing"):
 		heat_disp *= 2
 	return heat_disp
 
@@ -581,7 +569,7 @@ func update_heat(dt):
 	if display_mode == true:
 		mecha_heat = max_heat - 1
 		return
-	if generator and fire_status_time <= 0.0:
+	if generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
 			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, 0)
 		else:
@@ -590,10 +578,8 @@ func update_heat(dt):
 			weapon.update_heat(generator.heat_dispersion, dt)
 	if generator:
 		if mecha_heat >= max_heat:
-			overheat_status_time = 5.0
-			if general_status_time < 5.0:
-				general_status_time = 5.0		
-	if overheat_status_time <= 0.0:
+			set_status("overheat", 5.0)
+	if not has_status("overheat"):
 		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
 		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)
@@ -961,7 +947,7 @@ func dash(dir):
 		_thruster_cooldown = left_thruster_cooldown
 	else:
 		return
-	if _thruster_cooldown <= 0.0 and freezing_status_time <= 0.0:
+	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dir.normalized()*dash_strength
 		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
@@ -998,7 +984,7 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * max_speed
 	if thruster:
 		var mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
-		if is_sprinting and freezing_status_time <= 0.0 and direction != Vector2(0,0):
+		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			target_speed.y *= mult
 			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
@@ -1207,7 +1193,7 @@ func shoot(type, is_auto_fire = false):
 
 	if weapon_ref.uses_battery:
 		amount = weapon_ref.number_projectiles
-		if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or electrified_status_time > 0.0:
+		if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
 			if is_player() and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
@@ -1360,7 +1346,7 @@ func update_locking(dt):
 					if (percent < ecm_strength_difference):
 						locking_to.progress = 0
 					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
-			if electrified_status_time > 0.0:
+			if has_status("electrified"):
 				locking_to.progress = min(locking_to.progress + (dt*chipset.lock_on_speed * 0.5), 1.0)
 			else:
 				locking_to.progress = min(locking_to.progress + dt*chipset.lock_on_speed, 1.0)

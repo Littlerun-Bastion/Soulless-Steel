@@ -28,11 +28,13 @@ onready var LockingAnim = $ViewportContainer/Viewport/LockingSprite/AnimationPla
 onready var ConstantBlinkingSFX = $ViewportContainer/Viewport/ConstantBlinkingSFX
 onready var ExtractingLabel = $ViewportContainer/Viewport/ExtractingLabel
 onready var Tw = $ViewportContainer/Viewport/Tween
-onready var FreezingLabel = $ViewportContainer/Viewport/StatusContainer/FreezingLabel
-onready var CorrodeLabel = $ViewportContainer/Viewport/StatusContainer/CorrodeLabel
-onready var ElectrifyLabel = $ViewportContainer/Viewport/StatusContainer/ElectrifyLabel
-onready var FireLabel = $ViewportContainer/Viewport/StatusContainer/FireLabel
-onready var OverheatLabel = $ViewportContainer/Viewport/StatusContainer/OverheatLabel
+onready var StatusLabels = {
+	"freezing": $ViewportContainer/Viewport/StatusContainer/FreezingLabel,
+	"corrode": $ViewportContainer/Viewport/StatusContainer/CorrodeLabel,
+	"electrified": $ViewportContainer/Viewport/StatusContainer/ElectrifyLabel,
+	"fire": $ViewportContainer/Viewport/StatusContainer/FireLabel,
+	"overheat":$ViewportContainer/Viewport/StatusContainer/OverheatLabel,
+}
 onready var StatusContainer = $ViewportContainer/Viewport/StatusContainer
 onready var StatusChirpSFX = $ViewportContainer/Viewport/StatusChirpSFX
 onready var TemperatureLabel = $ViewportContainer/Viewport/HeatBar/TemperatureLabel
@@ -61,33 +63,12 @@ func _process(_delta):
 			TemperatureErrorLabel.visible = false
 		ShieldBar.get_node("Label").text = str(player.shield)
 		
-		if player.fire_status_time > 0.0:
-			FireLabel.visible = true
-		else:
-			FireLabel.visible = false
-			
-		if player.overheat_status_time > 0.0:
-			OverheatLabel.visible = true
-		else:
-			OverheatLabel.visible = false
-			
-		if player.electrified_status_time > 0.0:
-			ElectrifyLabel.visible = true
-		else:
-			ElectrifyLabel.visible = false
-			
-		if player.corrode_status_time > 0.0:
-			CorrodeLabel.visible = true
-		else:
-			CorrodeLabel.visible = false
-			
-		if player.freezing_status_time > 0.0:
-			FreezingLabel.visible = true
-		else:
-			FreezingLabel.visible = false
-		
-		if player.general_status_time > 0.0:
-			if StatusChirpSFX.playing == false:
+		for status in player.status_time:
+			if StatusLabels.has(status):
+				StatusLabels[status].visible = player.has_status(status)
+
+		if player.has_any_status():
+			if not StatusChirpSFX.playing:
 				StatusChirpSFX.play()
 		else:
 			StatusChirpSFX.playing = false

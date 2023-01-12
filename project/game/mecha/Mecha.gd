@@ -1173,7 +1173,7 @@ func shoot(type, is_auto_fire = false):
 
 	if weapon_ref.uses_battery:
 		amount = weapon_ref.number_projectiles
-		if not node.can_shoot_battery(weapon_ref.battery_drain, battery):
+		if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or electrified_status_time > 0.0:
 			if is_player() and not is_auto_fire:
 				AudioManager.play_sfx("no_ammo", global_position)
 			return

@@ -186,6 +186,18 @@ func _physics_process(dt):
 	if paused:
 		return
 	
+	if impact_velocity.length() > 0:
+		move(impact_velocity)
+		if impact_velocity.x > 0:
+			impact_velocity.x = max(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
+		else:
+			impact_velocity.x = min(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
+
+		if impact_velocity.y > 0:
+			impact_velocity.y = max(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
+		else:
+			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
+			
 	#Blood
 	if is_dead:
 		return
@@ -268,7 +280,6 @@ func _physics_process(dt):
 	
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
-		print(dash_velocity)
 		move(dash_velocity)
 		if dash_velocity.x > 0:
 			dash_velocity.x = max(dash_velocity.x * (1 - DASH_DECAY*dt), 0)
@@ -281,21 +292,6 @@ func _physics_process(dt):
 			dash_velocity.y = min(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
-	
-	if impact_velocity.length() > 0:
-		print(impact_velocity)
-		move(impact_velocity)
-		if impact_velocity.x > 0:
-			impact_velocity.x = max(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
-		else:
-			impact_velocity.x = min(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
-
-		if impact_velocity.y > 0:
-			impact_velocity.y = max(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
-		else:
-			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
-		if impact_velocity.length() < 1:
-			impact_velocity = Vector2()
 	
 	#Walking animation
 	if moving and not MovementAnimation.is_playing() and\
@@ -1132,10 +1128,8 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 
-
-
 func knockback(pos, strength, dir, should_rotate = true):
-	impact_velocity += dir.normalized()*strength
+	impact_velocity += (dir.normalized()*strength) * get_stability()
 	if should_rotate:
 		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), dir, false)
 
@@ -1201,25 +1195,25 @@ func shoot(type, is_auto_fire = false):
 	if type == "arm_weapon_left":
 		node = $ArmWeaponLeft
 		weapon_ref = arm_weapon_left
-		left_arm_bloom_time = weapon_ref.instability
+		left_arm_bloom_time = weapon_ref.instability * get_stability()
 		bloom = left_arm_bloom_count * weapon_ref.accuracy_bloom
 		left_arm_bloom_count += 1
 	elif type ==  "arm_weapon_right":
 		node = $ArmWeaponRight
 		weapon_ref = arm_weapon_right
-		right_arm_bloom_time = weapon_ref.instability
+		right_arm_bloom_time = weapon_ref.instability * get_stability()
 		bloom = right_arm_bloom_count * weapon_ref.accuracy_bloom
 		right_arm_bloom_count += 1
 	elif type == "shoulder_weapon_left":
 		node = $ShoulderWeaponLeft
 		weapon_ref = shoulder_weapon_left
-		left_shoulder_bloom_time = weapon_ref.instability
+		left_shoulder_bloom_time = weapon_ref.instability * get_stability()
 		bloom = left_shoulder_bloom_count * weapon_ref.accuracy_bloom
 		left_shoulder_bloom_count += 1
 	elif type ==  "shoulder_weapon_right":
 		node = $ShoulderWeaponRight
 		weapon_ref = shoulder_weapon_right
-		right_shoulder_bloom_time = weapon_ref.instability
+		right_shoulder_bloom_time = weapon_ref.instability * get_stability()
 		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
 		right_shoulder_bloom_count += 1
 	else:
@@ -1311,6 +1305,9 @@ func apply_recoil(type, node, recoil):
 	rotation_degrees += rotation
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
+func get_stability():
+	var sum = get_stat("stability")
+	return (1.5 - sum)
 
 func is_stunned():
 	return not $StunTimer.is_stopped()
@@ -1321,7 +1318,7 @@ func is_movement_locked():
 
 
 func stun(time):
-	$StunTimer.wait_time = time
+	$StunTimer.wait_time += time * get_stability()
 	$StunTimer.start()
 
 

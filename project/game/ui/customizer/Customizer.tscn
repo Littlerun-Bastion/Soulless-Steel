@@ -487,7 +487,7 @@ margin_bottom = 1007.0
 grow_horizontal = 0
 grow_vertical = 0
 custom_fonts/font = SubResource( 21 )
-text = "kg"
+text = "tn"
 align = 2
 valign = 2
 
@@ -499,7 +499,7 @@ margin_bottom = 1050.0
 grow_horizontal = 0
 grow_vertical = 0
 custom_fonts/font = SubResource( 21 )
-text = "kg"
+text = "tn"
 align = 2
 valign = 2
 

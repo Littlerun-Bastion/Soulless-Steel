@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
+[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_main.png" type="Texture" id=3]
+[ext_resource path="res://database/parts/head.gd" type="Script" id=4]
+[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_glow.png" type="Texture" id=5]
+
+[node name="Part" type="Node2D"]
+script = ExtResource( 4 )
+part_name = "O30-Head"
+manufacturer_name = "Orontes"
+tagline = "Test"
+description = "Lighter than the O10 series, the O30 series features competitive visual sensors and stability, but sacrifices a lot of the armor plating that made the O10 so exceptional. "
+accuracy_modifier = 1.35
+visual_range = 700
+health = 1350
+weight = 5.0
+
+[node name="Sub" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Main" type="Sprite" parent="."]
+texture = ExtResource( 3 )
+
+[node name="Glow" type="Sprite" parent="."]
+material = ExtResource( 1 )
+texture = ExtResource( 5 )

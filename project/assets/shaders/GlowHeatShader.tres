@@ -3,7 +3,7 @@
 [sub_resource type="Shader" id=31]
 code = "shader_type canvas_item;
 
-uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float heat : hint_range(10.0, 100.0) = 100.0;
 uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
 uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
 

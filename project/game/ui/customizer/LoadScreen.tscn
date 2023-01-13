@@ -1,12 +1,10 @@
-[gd_scene load_steps=33 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=2]
-[ext_resource path="res://assets/fonts/general_font.tres" type="DynamicFont" id=3]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=4]
 [ext_resource path="res://assets/fonts/non_caps_general.tres" type="DynamicFont" id=5]
 [ext_resource path="res://assets/images/ui/menu/x_button_black_bordered.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/ui/menu/files.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/ui/menu/x_button_grey.png" type="Texture" id=8]
 [ext_resource path="res://assets/images/ui/menu/x_button_black.png" type="Texture" id=9]
 [ext_resource path="res://game/ui/customizer/LoadScreen.gd" type="Script" id=10]
@@ -26,164 +24,6 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="DynamicFont" id=31]
-size = 11
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="StyleBoxFlat" id=32]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-corner_detail = 1
-expand_margin_left = 2.0
-expand_margin_right = 2.0
-expand_margin_top = 2.0
-expand_margin_bottom = 2.0
-shadow_color = Color( 1, 1, 1, 1 )
-anti_aliasing = false
-anti_aliasing_size = 0.01
-
-[sub_resource type="StyleBoxFlat" id=36]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 0.054902, 0.054902, 0.054902, 1 )
-border_width_bottom = 3
-border_color = Color( 1, 1, 1, 1 )
-corner_detail = 1
-expand_margin_left = 2.0
-expand_margin_right = 2.0
-expand_margin_top = 2.0
-expand_margin_bottom = 1.0
-shadow_color = Color( 1, 1, 1, 1 )
-anti_aliasing = false
-anti_aliasing_size = 0.01
-
-[sub_resource type="StyleBoxFlat" id=37]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-corner_detail = 1
-expand_margin_left = 2.0
-expand_margin_right = 2.0
-expand_margin_top = 2.0
-expand_margin_bottom = 2.0
-shadow_color = Color( 1, 1, 1, 1 )
-anti_aliasing = false
-anti_aliasing_size = 0.01
-
-[sub_resource type="StyleBoxFlat" id=38]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 1, 1, 1, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 3
-border_color = Color( 0, 0, 0, 1 )
-corner_detail = 1
-expand_margin_left = 1.0
-expand_margin_right = 1.0
-expand_margin_top = 1.0
-expand_margin_bottom = 1.0
-shadow_color = Color( 1, 1, 1, 1 )
-anti_aliasing = false
-anti_aliasing_size = 0.01
-
-[sub_resource type="DynamicFont" id=6]
-size = 10
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="StyleBoxFlat" id=7]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 1, 1, 1, 1 )
-expand_margin_left = 8.0
-expand_margin_right = 8.0
-expand_margin_top = 8.0
-expand_margin_bottom = 6.0
-
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-
-[sub_resource type="StyleBoxFlat" id=2]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="StyleBoxFlat" id=3]
-bg_color = Color( 1, 1, 1, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="StyleBoxFlat" id=4]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 0.290196, 0.290196, 0.290196, 1 )
-
-[sub_resource type="StyleBoxFlat" id=5]
-content_margin_left = 5.0
-content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 0.513726, 0.513726, 0.513726, 1 )
-
-[sub_resource type="Theme" id=30]
-default_font = ExtResource( 3 )
-Button/colors/font_color = Color( 1, 1, 1, 1 )
-Button/colors/font_color_disabled = Color( 1, 1, 1, 0.2 )
-Button/colors/font_color_focus = Color( 1, 1, 1, 1 )
-Button/colors/font_color_hover = Color( 0.552941, 0.552941, 0.552941, 1 )
-Button/colors/font_color_pressed = Color( 0, 0, 0, 1 )
-Button/fonts/font = SubResource( 31 )
-Button/styles/disabled = SubResource( 32 )
-Button/styles/hover = SubResource( 36 )
-Button/styles/normal = SubResource( 37 )
-Button/styles/pressed = SubResource( 38 )
-TooltipLabel/colors/font_color = Color( 1, 1, 1, 1 )
-TooltipLabel/fonts/font = SubResource( 6 )
-TooltipPanel/styles/panel = SubResource( 7 )
-VScrollBar/styles/grabber = SubResource( 1 )
-VScrollBar/styles/grabber_highlight = SubResource( 2 )
-VScrollBar/styles/grabber_pressed = SubResource( 3 )
-VScrollBar/styles/scroll = SubResource( 4 )
-VScrollBar/styles/scroll_focus = SubResource( 5 )
 
 [sub_resource type="StyleBoxEmpty" id=43]
 
@@ -255,153 +95,9 @@ margin_bottom = 448.0
 theme = ExtResource( 2 )
 scroll_horizontal_enabled = false
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer2/ScrollContainer"]
+[node name="DesignContainer" type="VBoxContainer" parent="PanelContainer2/ScrollContainer"]
 margin_right = 500.0
-margin_bottom = 644.0
 rect_min_size = Vector2( 500, 0 )
-
-[node name="Button" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_right = 500.0
-margin_bottom = 50.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button2" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 54.0
-margin_right = 500.0
-margin_bottom = 104.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button3" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 108.0
-margin_right = 500.0
-margin_bottom = 158.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button4" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 162.0
-margin_right = 500.0
-margin_bottom = 212.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button5" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 216.0
-margin_right = 500.0
-margin_bottom = 266.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button6" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 270.0
-margin_right = 500.0
-margin_bottom = 320.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button7" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 324.0
-margin_right = 500.0
-margin_bottom = 374.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button8" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 378.0
-margin_right = 500.0
-margin_bottom = 428.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button9" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 432.0
-margin_right = 500.0
-margin_bottom = 482.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button10" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 486.0
-margin_right = 500.0
-margin_bottom = 536.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button11" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 540.0
-margin_right = 500.0
-margin_bottom = 590.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
-
-[node name="Button12" type="Button" parent="PanelContainer2/ScrollContainer/VBoxContainer"]
-margin_top = 594.0
-margin_right = 500.0
-margin_bottom = 644.0
-rect_min_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/hseparation = 10
-text = "TestDesign1.bp"
-icon = ExtResource( 7 )
-align = 0
-expand_icon = true
 
 [node name="PanelContainer4" type="PanelContainer" parent="."]
 margin_left = 553.0
@@ -760,7 +456,7 @@ custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
 custom_fonts/font = SubResource( 46 )
 text = "sav_hunteros.exe -builddata"
 
-[node name="LineEdit" type="LineEdit" parent="."]
+[node name="DesignNameEntry" type="LineEdit" parent="."]
 margin_left = 18.0
 margin_top = 514.0
 margin_right = 404.0
@@ -780,6 +476,17 @@ theme = ExtResource( 2 )
 custom_fonts/font = SubResource( 42 )
 text = "Save"
 align = 0
+
+[node name="SaveSuccessful" type="Label" parent="."]
+visible = false
+margin_left = 552.0
+margin_top = 520.0
+margin_right = 956.0
+margin_bottom = 541.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_outline_modulate = Color( 1, 1, 1, 1 )
+custom_fonts/font = SubResource( 46 )
+text = "SAVE SUCCESSFUL."
 
 [node name="RenameButton" type="Button" parent="."]
 margin_left = 415.0
@@ -802,4 +509,16 @@ custom_fonts/font = SubResource( 42 )
 text = "Load"
 align = 0
 
+[node name="RefreshButton" type="Button" parent="."]
+margin_left = 861.0
+margin_top = 557.0
+margin_right = 987.0
+margin_bottom = 587.0
+theme = ExtResource( 2 )
+custom_fonts/font = SubResource( 42 )
+text = "REFRESH"
+align = 0
+
 [connection signal="pressed" from="topbar/exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="SaveButton" to="." method="_on_SaveButton_pressed"]
+[connection signal="pressed" from="RefreshButton" to="." method="_on_RefreshButton_pressed"]

@@ -852,8 +852,6 @@ func get_stat(stat_name):
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
 			num_parts += 1
-	if stat_name == "stability":
-		total_stat = total_stat/num_parts
 	return float(total_stat)
 
 func get_weapon_part(part_name):
@@ -1170,7 +1168,7 @@ func update_chassis_visuals(dt):
 func stop_sprinting(dir):
 	if is_sprinting and dir != Vector2(0,0):
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
-		lock_movement(0.5)
+		lock_movement(0.5 * get_stability())
 		$GrindParticles.restart()
 		$GrindParticles.emitting = true
 		$BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
@@ -1306,8 +1304,10 @@ func apply_recoil(type, node, recoil):
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
 func get_stability():
-	var sum = get_stat("stability")
-	return (1.5 - sum)
+	var sum = get_stat("stability")/1000
+	if has_status("freezing"):
+		sum *= 0.5
+	return max((1.5 - sum), 0)
 
 func is_stunned():
 	return not $StunTimer.is_stopped()

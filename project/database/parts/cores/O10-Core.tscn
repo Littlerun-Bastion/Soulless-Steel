@@ -1,66 +1,71 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_sub.png" type="Texture" id=2]
+[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
 [ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_main.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_glow.png" type="Texture" id=10]
+[ext_resource path="res://assets/images/mechas/cores/O10/O10-Core_glow.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-rshoulder_main.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-lshoulder_main.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/legs/O10/O10-lleg_main.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/legs/O10/O10-rleg_main.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/cores/O10/O10-Core_sub.png" type="Texture" id=10]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/cores/O10/O10-Core_main.png" type="Texture" id=13]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-part_name = "MSV-L3J"
-manufacturer_name = "Martel"
+part_name = "O10-Core"
+manufacturer_name = "Orontes"
 tagline = "Light Core"
-description = "A light, scrapyard core part manufactured solely for its cheapness. Has no merit other than its light weight. No space for shoulder-mounted equipment."
-health = 2475.0
-shield = 1250.0
-stability = 0.0
-weight = 15.7
+description = "A well-rounded defensive core part with space for ordnance, good quality shield projectors, and good weight efficiency for its size and weight bracket. Poor stability amongst its peers."
+health = 5400.0
+shield = 3125.0
+stability = 110.0
+has_left_shoulder = true
+weight = 31.5
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
-position = Vector2( -31.25, 70 )
+position = Vector2( -33, 45 )
 
 [node name="Reference" type="Sprite" parent="LeftChassisOffset"]
-visible = false
-texture = ExtResource( 9 )
-
-[node name="RightChassisOffset" type="Position2D" parent="."]
-position = Vector2( 31, 70 )
-
-[node name="Reference" type="Sprite" parent="RightChassisOffset"]
-visible = false
 texture = ExtResource( 8 )
 
+[node name="RightChassisOffset" type="Position2D" parent="."]
+position = Vector2( 33, 44 )
+
+[node name="Reference" type="Sprite" parent="RightChassisOffset"]
+texture = ExtResource( 9 )
+
 [node name="HeadPort" type="Sprite" parent="."]
+position = Vector2( 0, -31 )
 texture = ExtResource( 3 )
 
 [node name="CoreSub" type="Sprite" parent="."]
-texture = ExtResource( 2 )
-
-[node name="Core" type="Sprite" parent="."]
-texture = ExtResource( 5 )
-
-[node name="CoreGlow" type="Sprite" parent="."]
 texture = ExtResource( 10 )
 
+[node name="Core" type="Sprite" parent="."]
+texture = ExtResource( 13 )
+
+[node name="CoreGlow" type="Sprite" parent="."]
+material = ExtResource( 2 )
+texture = ExtResource( 5 )
+
 [node name="OverheatOffset1" type="Position2D" parent="."]
-position = Vector2( 0, -51 )
+position = Vector2( -42, -51 )
 
 [node name="OverheatOffset2" type="Position2D" parent="."]
-position = Vector2( 26, 22 )
+position = Vector2( 43, -51 )
 
 [node name="OverheatOffset3" type="Position2D" parent="."]
-position = Vector2( -27, 22 )
+position = Vector2( -10, 38 )
+
+[node name="OverheatOffset4" type="Position2D" parent="."]
+position = Vector2( 10, 38 )
 
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
-position = Vector2( -40, -13 )
+position = Vector2( -42, -21 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
 visible = false
@@ -68,7 +73,7 @@ texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
-position = Vector2( 40, -13 )
+position = Vector2( 42, -21 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
 visible = false
@@ -77,41 +82,42 @@ texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
 [node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
-position = Vector2( -30, 17 )
+visible = false
+position = Vector2( -30, 1 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
-visible = false
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
 [node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
-position = Vector2( 30, 17 )
+visible = false
+position = Vector2( 30, 1 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
-visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
+position = Vector2( 0, -31 )
 
 [node name="Reference" type="Sprite" parent="HeadOffset"]
 visible = false
 texture = ExtResource( 4 )
 
 [node name="LeftShoulderOffset" type="Position2D" parent="."]
-position = Vector2( -49, 12 )
+position = Vector2( -33, -10 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
 visible = false
-texture = ExtResource( 6 )
+texture = ExtResource( 7 )
 
 [node name="RightShoulderOffset" type="Position2D" parent="."]
-position = Vector2( 49, 12 )
+position = Vector2( 33, -10 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]
 visible = false
-texture = ExtResource( 7 )
+texture = ExtResource( 6 )
 
 [node name="Collision" type="Polygon2D" parent="."]
 visible = false

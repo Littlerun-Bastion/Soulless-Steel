@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/head_slot_rusty.png-9d543f674dc46d25edb849a8756b86e2.stex"
+path="res://.import/O10-rshoulder_main.png-c6cd5adb640c0cdad7e754a1d15b9601.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/cores/head_slot_rusty.png"
-dest_files=[ "res://.import/head_slot_rusty.png-9d543f674dc46d25edb849a8756b86e2.stex" ]
+source_file="res://assets/images/mechas/shoulders/O10/O10-rshoulder_main.png"
+dest_files=[ "res://.import/O10-rshoulder_main.png-c6cd5adb640c0cdad7e754a1d15b9601.stex" ]
 
 [params]
 

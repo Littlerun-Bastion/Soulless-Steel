@@ -47,15 +47,19 @@ onready var LeftShoulder = $LeftShoulder
 onready var RightShoulder = $RightShoulder
 #Weapons
 onready var LeftArmWeapon = $ArmWeaponLeft
+onready var LeftArmWeaponMain = $ArmWeaponLeft/Main
 onready var LeftArmWeaponSub = $ArmWeaponLeft/Sub
 onready var LeftArmWeaponGlow = $ArmWeaponLeft/Glow
 onready var RightArmWeapon = $ArmWeaponRight
+onready var RightArmWeaponMain = $ArmWeaponRight/Main
 onready var RightArmWeaponSub = $ArmWeaponRight/Sub
 onready var RightArmWeaponGlow = $ArmWeaponRight/Glow
 onready var LeftShoulderWeapon = $ShoulderWeaponLeft
+onready var LeftShoulderWeaponMain = $ShoulderWeaponLeft/Main
 onready var LeftShoulderWeaponSub = $ShoulderWeaponLeft/Sub
 onready var LeftShoulderWeaponGlow = $ShoulderWeaponLeft/Glow
 onready var RightShoulderWeapon = $ShoulderWeaponRight
+onready var RightShoulderWeaponMain = $ShoulderWeaponRight/Main
 onready var RightShoulderWeaponSub = $ShoulderWeaponRight/Sub
 onready var RightShoulderWeaponGlow = $ShoulderWeaponRight/Glow
 #Chassis
@@ -146,9 +150,6 @@ var chipset = null
 var thruster = null
 var chassis = null
 
-var total_weight = 0.0
-var weight_capacity = 0.0
-
 var status_time = {
 	"fire": 0.0,
 	"electrified": 0.0,
@@ -166,20 +167,24 @@ var thruster_cooldown = 0.0
 var ecm_attempt_cooldown = 0.0
 var ecm_strength_difference = 0.0
 
-var rng
 var bleed_timer = 0.0
 
 func _ready():
-	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort,
+	for node in [Core, CoreSub, Head, HeadSub, HeadPort,
 				 LeftShoulder, RightShoulder,\
-				 LeftArmWeapon, LeftArmWeaponSub, LeftArmWeaponGlow,\
-				 RightArmWeapon, RightArmWeaponSub, RightArmWeaponGlow,\
-				 LeftShoulderWeapon, LeftShoulderWeaponSub, LeftShoulderWeaponGlow,\
-				 RightShoulderWeapon, RightShoulderWeaponSub, RightShoulderWeaponGlow,\
-				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
-				 RightChassis, RightChassisSub, RightChassisGlow]:
+				 LeftArmWeaponMain, LeftArmWeaponSub,\
+				 RightArmWeaponMain, RightArmWeaponSub,\
+				 LeftShoulderWeaponMain, LeftShoulderWeaponSub,\
+				 RightShoulderWeaponMain, RightShoulderWeaponSub,\
+				 SingleChassis, SingleChassisSub,\
+				 LeftChassis, LeftChassisSub,\
+				 RightChassis, RightChassisSub]:
 		node.material = CoreSub.material.duplicate(true)
-		rng = RandomNumberGenerator.new()
+	for node in [CoreGlow, HeadGlow,\
+				 LeftArmWeaponGlow, RightArmWeaponGlow,\
+				 LeftShoulderWeaponGlow, RightShoulderWeaponGlow,\
+				 SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
+		node.material = CoreGlow.material.duplicate(true)
 
 
 func _physics_process(dt):
@@ -204,8 +209,7 @@ func _physics_process(dt):
 		
 	if hp / max_hp < 0.8:
 		if bleed_timer < 0.0:
-			rng.randomize()
-			bleed_timer = rng.randf_range(1,1.1/(hp/max_hp))
+			bleed_timer = rand_range(1,1.1/(hp/float(max_hp)))
 			$Blood.emitting = !$Blood.emitting
 			if hp / max_hp < 0.3:
 				$Blood2.emitting = !$Blood2.emitting
@@ -613,6 +617,10 @@ func update_heat(dt):
 #PARTS SETTERS
 
 func set_arm_weapon(part_name, side):
+	if part_name and not core:
+		push_error("Mecha doesn't have a core to assign arm weapon")
+		return
+	
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
@@ -628,7 +636,7 @@ func set_arm_weapon(part_name, side):
 			arm_weapon_right = null
 		node.set_images(null, null, null)
 		return
-
+	
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
 		arm_weapon_left = part_data
@@ -637,35 +645,32 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.position = core.get_arm_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
-	if core:
-		node.position = core.get_arm_weapon_offset(side)
-	node.set_shooting_pos(part_data.get_shooting_pos())
+	
+	if node.has_node("AttackAnimation"):
+		node.get_node("AttackAnimation").queue_free()
+	if not part_data.is_melee:
+		node.set_shooting_pos(part_data.get_shooting_pos())
+	else:
+		node.add_child(part_data.get_attack_animation().duplicate())
+		
 	node.setup(part_data)
-	total_weight = get_stat("weight")
 
 
-func set_shoulder_weapon(part_name, side):
+func set_shoulder_weapon(part_name, side):	
+	if part_name and not core:
+		push_error("Mecha doesn't have a core to assign shoulder weapon")
+		return
+
 	var node
-	if core:
-		if side == SIDE.LEFT:
-			node = $ShoulderWeaponLeft
-			if not core.has_left_shoulder:
-				shoulder_weapon_left = null
-				node.set_images(null, null, null)
-				print(mecha_name + " tried to set left shoulder weapon on core that doesn't allow left shoulder weapons.")
-				return
-		elif side == SIDE.RIGHT:
-			node = $ShoulderWeaponRight
-			if not core.has_right_shoulder:
-				shoulder_weapon_right = null
-				node.set_images(null, null, null)
-				print("tried to set right shoulder weapon on core that doesn't allow right shoulder weapons.")
-				return
-		else:
-			push_error("Not a valid side: " + str(side))
-
-
+	if side == SIDE.LEFT:
+		node = $ShoulderWeaponLeft
+	elif side == SIDE.RIGHT:
+		node = $ShoulderWeaponRight
+	else:
+		push_error("Not a valid side: " + str(side))
+	
 	if not part_name:
 		if side == SIDE.LEFT:
 			shoulder_weapon_left = null
@@ -673,19 +678,17 @@ func set_shoulder_weapon(part_name, side):
 			shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return
-
+	
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
 		shoulder_weapon_left = part_data
 	else:
 		shoulder_weapon_right = part_data
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.position = core.get_shoulder_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
-	if core:
-		node.position = core.get_shoulder_weapon_offset(side)
 	node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
-	total_weight = get_stat("weight")
 
 
 func set_core(part_name):
@@ -709,7 +712,6 @@ func set_core(part_name):
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
 	update_max_shield_from_parts()
-	total_weight = get_stat("weight")
 	stability = get_stat("stability")
 
 
@@ -725,7 +727,6 @@ func set_generator(part_name):
 	else:
 		generator = false
 	update_max_shield_from_parts()
-	total_weight = get_stat("weight")
 
 
 func set_chipset(part_name):
@@ -737,8 +738,6 @@ func set_chipset(part_name):
 		lock_strength = chipset.lock_on_strength
 	else:
 		chipset = false
-	total_weight = get_stat("weight")
-	
 
 
 func set_thruster(part_name):
@@ -747,7 +746,6 @@ func set_thruster(part_name):
 		thruster = part_data
 	else:
 		thruster = false
-	total_weight = get_stat("weight")
 
 
 func set_chassis(part_name):
@@ -764,8 +762,6 @@ func set_chassis(part_name):
 	else:
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
-	weight_capacity = chassis.weight_capacity
-	total_weight = get_stat("weight")
 	stability = get_stat("stability")
 
 
@@ -784,7 +780,7 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	move_heat = chassis.move_heat
 	set_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
-	total_weight = get_stat("weight")
+
 
 func remove_chassis(type):
 	if type == "single":
@@ -812,7 +808,6 @@ func set_head(part_name):
 	if core:
 		Head.position = core.get_head_port_offset()
 	update_max_life_from_parts()
-	total_weight = get_stat("weight")
 
 
 func set_shoulders(part_name):
@@ -831,7 +826,6 @@ func set_shoulders(part_name):
 	$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
 	$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	update_max_shield_from_parts()
-	total_weight = get_stat("weight")
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
 
@@ -843,7 +837,6 @@ func get_max_hp():
 
 func get_stat(stat_name):
 	var total_stat = 0.0
-	var num_parts = 0
 	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
 				 shoulder_weapon_left, shoulder_weapon_right,\
 				 head, core, generator, chipset, thruster,\
@@ -851,8 +844,8 @@ func get_stat(stat_name):
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
-			num_parts += 1
 	return float(total_stat)
+
 
 func get_weapon_part(part_name):
 	if part_name == "arm_weapon_left":
@@ -1101,7 +1094,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
 
 
-	#Rotate Arm Weapons
+	#Rotate Non-Melee Arm Weapons
 	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right],\
 				 [$Head, head]]:
 		var node_ref = data[1]
@@ -1122,11 +1115,10 @@ func get_best_rotation_diff(cur_rot, target_rot):
 
 func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
-	var diff = target_rot - cur_rot
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 
-func knockback(pos, strength, dir, should_rotate = true):
+func knockback(strength, dir, should_rotate = true):
 	impact_velocity += (dir.normalized()*strength) * get_stability()
 	if should_rotate:
 		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), dir, false)
@@ -1226,7 +1218,8 @@ func shoot(type, is_auto_fire = false):
 			return
 		node.shoot_battery()
 		battery = max(battery - weapon_ref.battery_drain, 0)
-
+	elif weapon_ref.is_melee:
+		node.light_attack()
 	else:
 		amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
 		amount = max(amount, 1) #Tries to shoot at least 1 projectile
@@ -1235,64 +1228,66 @@ func shoot(type, is_auto_fire = false):
 				AudioManager.play_sfx("no_ammo", global_position)
 			return
 		node.shoot(amount)
+	
+	#Create projectile
+	if not weapon_ref.is_melee:
+		var variation = weapon_ref.bullet_spread/float(amount + 1)
+		var angle_offset = -weapon_ref.bullet_spread /2
+		var total_accuracy = weapon_ref.base_accuracy * head.accuracy_modifier
+		total_accuracy = min(total_accuracy + bloom, (weapon_ref.base_accuracy * weapon_ref.max_bloom_factor))/head.accuracy_modifier
+		if type == "arm_weapon_left" or type == "arm_weapon_right":
+			total_accuracy = total_accuracy / arm_accuracy_mod
+		if locked_to:
+			total_accuracy = total_accuracy/chipset.accuracy_modifier
+		for _i in range(weapon_ref.number_projectiles):
+			angle_offset += variation
+			emit_signal("create_projectile", self,
+						{
+							"weapon_data": weapon_ref.projectile,
+							"weapon_name": weapon_ref.part_name,
+							"pos": node.get_shoot_position(),
+							"dir": node.get_direction(angle_offset, total_accuracy),
+							"damage_mod": weapon_ref.damage_modifier,
+							"shield_mult": weapon_ref.shield_mult,
+							"health_mult": weapon_ref.health_mult,
+							"heat_damage": weapon_ref.heat_damage,
+							"status_damage": weapon_ref.status_damage,
+							"status_type": weapon_ref.status_type,
+							"delay": rand_range(0, weapon_ref.bullet_spread_delay),
+							"bullet_velocity": weapon_ref.bullet_velocity,
+							"bullet_drag": weapon_ref.bullet_drag,
+							"bullet_drag_var": weapon_ref.bullet_drag_var,
+							"projectile_size": weapon_ref.projectile_size,
+							"projectile_size_scaling": weapon_ref.projectile_size_scaling,
+							"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
+							"lifetime": weapon_ref.lifetime,
+							"impact_force": weapon_ref.impact_force,
+							"beam_range": weapon_ref.beam_range,
+							"has_trail": weapon_ref.has_trail,
+							"trail_lifetime": weapon_ref.trail_lifetime,
+							"trail_lifetime_range": weapon_ref.trail_lifetime_range,
+							"trail_eccentricity": weapon_ref.trail_eccentricity,
+							"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
+							"trail_width" : weapon_ref.trail_width,
 
-	var variation = weapon_ref.bullet_spread/float(amount + 1)
-	var angle_offset = -weapon_ref.bullet_spread /2
-	var total_accuracy = weapon_ref.base_accuracy * head.accuracy_modifier
-	total_accuracy = min(total_accuracy + bloom, (weapon_ref.base_accuracy * weapon_ref.max_bloom_factor))/head.accuracy_modifier
-	if type == "arm_weapon_left" or type == "arm_weapon_right":
-		total_accuracy = total_accuracy / arm_accuracy_mod
-	if locked_to:
-		total_accuracy = total_accuracy/chipset.accuracy_modifier
-	for _i in range(weapon_ref.number_projectiles):
-		angle_offset += variation
-		emit_signal("create_projectile", self,
-					{
-						"weapon_data": weapon_ref.projectile,
-						"weapon_name": weapon_ref.part_name,
-						"pos": node.get_shoot_position(),
-						"dir": node.get_direction(angle_offset, total_accuracy),
-						"damage_mod": weapon_ref.damage_modifier,
-						"shield_mult": weapon_ref.shield_mult,
-						"health_mult": weapon_ref.health_mult,
-						"heat_damage": weapon_ref.heat_damage,
-						"status_damage": weapon_ref.status_damage,
-						"status_type": weapon_ref.status_type,
-						"delay": rand_range(0, weapon_ref.bullet_spread_delay),
-						"bullet_velocity": weapon_ref.bullet_velocity,
-						"bullet_drag": weapon_ref.bullet_drag,
-						"bullet_drag_var": weapon_ref.bullet_drag_var,
-						"projectile_size": weapon_ref.projectile_size,
-						"projectile_size_scaling": weapon_ref.projectile_size_scaling,
-						"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
-						"lifetime": weapon_ref.lifetime,
-						"impact_force": weapon_ref.impact_force,
-						"beam_range": weapon_ref.beam_range,
-						"has_trail": weapon_ref.has_trail,
-						"trail_lifetime": weapon_ref.trail_lifetime,
-						"trail_lifetime_range": weapon_ref.trail_lifetime_range,
-						"trail_eccentricity": weapon_ref.trail_eccentricity,
-						"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
-						"trail_width" : weapon_ref.trail_width,
+							"has_smoke": weapon_ref.has_smoke,
+							"smoke_density": weapon_ref.smoke_density,
+							"smoke_lifetime": weapon_ref.smoke_lifetime,
+							"smoke_trail_material": weapon_ref.smoke_trail_material,
+							"smoke_texture": weapon_ref.smoke_texture,
 
-						"has_smoke": weapon_ref.has_smoke,
-						"smoke_density": weapon_ref.smoke_density,
-						"smoke_lifetime": weapon_ref.smoke_lifetime,
-						"smoke_trail_material": weapon_ref.smoke_trail_material,
-						"smoke_texture": weapon_ref.smoke_texture,
+							"has_wiggle": weapon_ref.has_wiggle,
+							"wiggle_amount": weapon_ref.wiggle_amount,
+							"is_seeker": weapon_ref.is_seeker,
+							"seeker_target": locked_to,
+							"seek_time": weapon_ref.seek_time,
+							"seek_agility": weapon_ref.seeker_agility,
+							"seeker_angle": weapon_ref.seeker_angle,
 
-						"has_wiggle": weapon_ref.has_wiggle,
-						"wiggle_amount": weapon_ref.wiggle_amount,
-						"is_seeker": weapon_ref.is_seeker,
-						"seeker_target": locked_to,
-						"seek_time": weapon_ref.seek_time,
-						"seek_agility": weapon_ref.seeker_agility,
-						"seeker_angle": weapon_ref.seeker_angle,
-
-						"impact_size": weapon_ref.impact_size,
-						"hitstop": weapon_ref.hitstop,
-					}) #TODO: FIX THIS
-	apply_recoil(type, node, weapon_ref.recoil_force)
+							"impact_size": weapon_ref.impact_size,
+							"hitstop": weapon_ref.hitstop,
+						}) #TODO: FIX THIS
+		apply_recoil(type, node, weapon_ref.recoil_force)
 	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 	emit_signal("shoot")
 

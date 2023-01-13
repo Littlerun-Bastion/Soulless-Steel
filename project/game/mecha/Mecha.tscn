@@ -1,4 +1,4 @@
-[gd_scene load_steps=134 format=2]
+[gd_scene load_steps=136 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -390,11 +390,6 @@ shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
-[sub_resource type="ShaderMaterial" id=10]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
 [sub_resource type="Shader" id=28]
 code = "shader_type canvas_item;
 
@@ -414,6 +409,25 @@ shader = SubResource( 28 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
 
+[sub_resource type="Shader" id=92]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = (heat/100.0)*(1.0 - min_darkness) + min_darkness;
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=93]
+shader = SubResource( 92 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
+
 [sub_resource type="Shader" id=31]
 code = "shader_type canvas_item;
 
@@ -432,15 +446,15 @@ shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
-[sub_resource type="ShaderMaterial" id=11]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
 [sub_resource type="ShaderMaterial" id=30]
 shader = SubResource( 28 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=94]
+shader = SubResource( 92 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=33]
 shader = SubResource( 31 )
@@ -448,15 +462,15 @@ shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
-[sub_resource type="ShaderMaterial" id=12]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
 [sub_resource type="ShaderMaterial" id=34]
 shader = SubResource( 28 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=97]
+shader = SubResource( 92 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=35]
 shader = SubResource( 31 )
@@ -473,6 +487,11 @@ shader_param/min_darkness = 0.3
 shader = SubResource( 28 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.2
+
+[sub_resource type="ShaderMaterial" id=96]
+shader = SubResource( 92 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=37]
 shader = SubResource( 31 )
@@ -959,81 +978,99 @@ texture = ExtResource( 7 )
 material = SubResource( 15 )
 texture = ExtResource( 15 )
 
-[node name="ArmWeaponLeft" type="Sprite" parent="."]
-material = SubResource( 10 )
+[node name="ArmWeaponLeft" type="Node2D" parent="."]
 position = Vector2( -40, 13 )
-texture = ExtResource( 25 )
-offset = Vector2( 1, -21 )
 script = ExtResource( 10 )
 
 [node name="Sub" type="Sprite" parent="ArmWeaponLeft"]
-show_behind_parent = true
 material = SubResource( 29 )
 texture = ExtResource( 2 )
+
+[node name="Main" type="Sprite" parent="ArmWeaponLeft"]
+show_behind_parent = true
+material = SubResource( 93 )
+texture = ExtResource( 25 )
+offset = Vector2( 1, -21 )
 
 [node name="Glow" type="Sprite" parent="ArmWeaponLeft"]
 material = SubResource( 38 )
 texture = ExtResource( 5 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponLeft"]
-position = Vector2( 6, -110 )
+position = Vector2( -0.607117, -42.041 )
 
-[node name="ArmWeaponRight" type="Sprite" parent="."]
-material = SubResource( 11 )
-position = Vector2( 73, -30 )
-rotation = 0.15708
+[node name="ArmWeaponRight" type="Node2D" parent="."]
+position = Vector2( 52, 20 )
 scale = Vector2( -1, 1 )
-texture = ExtResource( 28 )
 script = ExtResource( 10 )
 
 [node name="Sub" type="Sprite" parent="ArmWeaponRight"]
-show_behind_parent = true
 material = SubResource( 30 )
+position = Vector2( -9, -58 )
 texture = ExtResource( 26 )
+
+[node name="Main" type="Sprite" parent="ArmWeaponRight"]
+show_behind_parent = true
+material = SubResource( 94 )
+position = Vector2( -9, -58 )
+texture = ExtResource( 28 )
 
 [node name="Glow" type="Sprite" parent="ArmWeaponRight"]
 material = SubResource( 33 )
+position = Vector2( -9, -58 )
 texture = ExtResource( 27 )
 
 [node name="ShootingPos" type="Position2D" parent="ArmWeaponRight"]
-position = Vector2( -2.60697, -88.1452 )
+position = Vector2( -11.5738, -144.778 )
 
-[node name="ShoulderWeaponLeft" type="Sprite" parent="."]
-material = SubResource( 12 )
-position = Vector2( -58, -26 )
-texture = ExtResource( 28 )
+[node name="ShoulderWeaponLeft" type="Node2D" parent="."]
+position = Vector2( -40.4205, 13 )
 script = ExtResource( 10 )
 
 [node name="Sub" type="Sprite" parent="ShoulderWeaponLeft"]
-show_behind_parent = true
 material = SubResource( 34 )
+position = Vector2( -9, -57 )
 texture = ExtResource( 26 )
+
+[node name="Main" type="Sprite" parent="ShoulderWeaponLeft"]
+show_behind_parent = true
+material = SubResource( 97 )
+position = Vector2( -9, -57 )
+texture = ExtResource( 28 )
 
 [node name="Glow" type="Sprite" parent="ShoulderWeaponLeft"]
 material = SubResource( 35 )
+position = Vector2( -9, -57 )
 texture = ExtResource( 27 )
 
 [node name="ShootingPos" type="Position2D" parent="ShoulderWeaponLeft"]
-position = Vector2( -2.37842, -86.1629 )
+position = Vector2( -11.8172, -143.739 )
 
-[node name="ShoulderWeaponRight" type="Sprite" parent="."]
+[node name="ShoulderWeaponRight" type="Node2D" parent="."]
 material = SubResource( 13 )
-position = Vector2( 58, -26 )
+position = Vector2( 52, 20 )
 scale = Vector2( -1, 1 )
-texture = ExtResource( 12 )
 script = ExtResource( 10 )
 
 [node name="Sub" type="Sprite" parent="ShoulderWeaponRight"]
 show_behind_parent = true
 material = SubResource( 36 )
+position = Vector2( -13, -25 )
 texture = ExtResource( 29 )
+
+[node name="Main" type="Sprite" parent="ShoulderWeaponRight"]
+show_behind_parent = true
+material = SubResource( 96 )
+position = Vector2( -13, -25 )
+texture = ExtResource( 12 )
 
 [node name="Glow" type="Sprite" parent="ShoulderWeaponRight"]
 material = SubResource( 37 )
+position = Vector2( -13, -25 )
 texture = ExtResource( 8 )
 
 [node name="ShootingPos" type="Position2D" parent="ShoulderWeaponRight"]
-position = Vector2( 7.64874, -60.4322 )
+position = Vector2( -6.50937, -84.9729 )
 
 [node name="LeftShoulder" type="Sprite" parent="."]
 material = SubResource( 8 )
@@ -1060,6 +1097,7 @@ shadow_filter = 1
 shadow_filter_smooth = 4.4
 
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
 
 [node name="ChassisSingleCollision" type="CollisionPolygon2D" parent="."]
@@ -1075,9 +1113,11 @@ visible = false
 polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
 
 [node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
 
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
 polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
 
 [node name="CoreDecals" type="Node2D" parent="."]
@@ -1230,6 +1270,7 @@ process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
 [node name="LockCollision" type="Area2D" parent="."]
+visible = false
 collision_layer = 0
 collision_mask = 0
 monitoring = false

@@ -102,7 +102,12 @@ func get_shooting_pos():
 
 func get_attach_pos():
 	return $AttachPos.position
-	
+
+
+func get_attack_animation():
+	return $AttackAnimation
+
+
 func get_stat(stat_name):
 	var stat
 	if stat_name == "armor_damage":

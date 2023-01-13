@@ -27,8 +27,8 @@ func _process(dt):
 		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, $WeightBar.value, LERP_WEIGHT*dt)
 		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, $WeightBar.max_value, LERP_WEIGHT*dt)
 	else:
-		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, ComparisonMecha.total_weight, LERP_WEIGHT*dt)
-		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, ComparisonMecha.weight_capacity, LERP_WEIGHT*dt)
+		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, ComparisonMecha.get_stat("weight"), LERP_WEIGHT*dt)
+		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, ComparisonMecha.get_stat("weight_capacity"), LERP_WEIGHT*dt)
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
@@ -151,10 +151,10 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side):
 	comparing_part = false
 
 func update_weight():
-	$WeightBar.max_value = DisplayMecha.weight_capacity
-	$WeightBar.value = DisplayMecha.total_weight
-	$CurrentWeightLabel.text = str(DisplayMecha.total_weight) 
-	$MaxWeightLabel.text = str(DisplayMecha.weight_capacity)
+	$WeightBar.max_value = DisplayMecha.get_stat("weight_capacity")
+	$WeightBar.value = DisplayMecha.get_stat("weight")
+	$CurrentWeightLabel.text = str(DisplayMecha.get_stat("weight")) 
+	$MaxWeightLabel.text = str(DisplayMecha.get_stat("weight_capacity"))
 
 
 func _on_Save_pressed():

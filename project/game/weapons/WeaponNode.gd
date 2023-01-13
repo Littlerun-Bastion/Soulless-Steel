@@ -1,9 +1,10 @@
-extends Sprite
+extends Node2D
 
 signal reloading
 signal finished_reloading
 
 onready var ShootingPos = $ShootingPos
+onready var Main = $Main
 onready var Sub = $Sub
 onready var Glow = $Glow
 
@@ -24,6 +25,8 @@ var sfx_max_range = 4000
 var sfx_att = 1.0
 var uses_battery = false
 var battery_drain = 0.00
+var is_melee = false
+var melee_anim = null
 
 
 func _process(dt):
@@ -44,23 +47,29 @@ func setup(weapon_ref):
 	sfx_att = weapon_ref.sound_att
 	uses_battery = weapon_ref.uses_battery
 	battery_drain = weapon_ref.battery_drain
+	is_melee = weapon_ref.get("is_melee")
+	
+	if is_melee:
+		melee_anim = $AttackAnimation
+	else:
+		melee_anim = null
 	
 
 func set_images(main_image, sub_image, glow_image):
-	self.texture = main_image
+	Main.texture = main_image
 	Sub.texture = sub_image
 	Glow.texture = glow_image
 
 
 func set_offsets(off):
-	self.offset = off
-	Sub.offset = off
-	Glow.offset = off
+	Main.position = off
+	Sub.position = off
+	Glow.position = off
 
 
 func update_heat(heat_dispersion, dt):
 	heat = max(heat - heat_dispersion*dt, 0)
-	material.set_shader_param("heat", heat) 
+	Main.material.set_shader_param("heat", heat) 
 	Sub.material.set_shader_param("heat", heat)
 	Glow.material.set_shader_param("heat", heat)
 
@@ -109,6 +118,10 @@ func can_shoot(amount := 1):
 func can_shoot_battery(drain, battery):
 	if drain <= battery:
 		return timer <= 0.0
+
+func light_attack():
+	add_time(.9)
+	melee_anim.play("light_attack")
 
 
 func shoot(amount := 1):

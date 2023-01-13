@@ -27,10 +27,12 @@ func _ready():
 		set_thruster("test1")
 		set_head("O10-Head")
 		set_chassis("legs_test")
-		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
-		set_arm_weapon("testlaser", SIDE.RIGHT)
-		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
-		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
+		set_arm_weapon("Type1-Massive", SIDE.LEFT)
+		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
+		set_shoulder_weapon(false, SIDE.RIGHT)
+		set_shoulder_weapon(false, SIDE.LEFT)
+		#set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
+		#set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 		set_shoulders("shoulder_test")
 	if Debug.get_setting("player_zoom"):
 		Cam.zoom = Debug.get_setting("player_zoom")
@@ -142,8 +144,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 func do_hitstop():
 	Cam.shake((HITSTOP_DURATION + 1) * HITSTOP_TIMESCALE, 15, 50, 10)
 
-func knockback(pos, strength, dir, should_rotate = true):
-	.knockback(pos, strength, dir, should_rotate)
+func knockback(strength, dir, should_rotate = true):
+	.knockback(strength, dir, should_rotate)
 	if strength > 0:
 		var dur = sqrt(strength)/10
 		var freq = pow(strength, .3)*5
@@ -192,7 +194,7 @@ func setup(arena_ref):
 		#Use to test free mode
 		set_chassis("legs_test")
 		#Use to test tank mode
-		#set_chassis("T-01-TR", SIDE.SINGLE)
+		#set_chassis("T-01-TR")
 		set_arm_weapon("TT1-Flamethrower", SIDE.LEFT)
 		set_arm_weapon("Type1-Massive", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)

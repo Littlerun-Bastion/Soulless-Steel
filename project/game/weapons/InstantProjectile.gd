@@ -53,7 +53,7 @@ func _physics_process(dt):
 					var final_damage = damage if not is_overtime else damage * get_process_delta_time()
 					body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
 					#if not is_overtime:
-						#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))
+						#body.knockback(0*final_damage/float(body.get_max_hp()))
 					mech_hit = true
 					hit = true
 			if not body.is_in_group("mecha") or\

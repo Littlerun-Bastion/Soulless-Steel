@@ -349,7 +349,7 @@ shader_param/min_darkness = 0.3
 [sub_resource type="ShaderMaterial" id=4]
 shader = SubResource( 26 )
 shader_param/heat = 100.0
-shader_param/min_darkness = 0.2
+shader_param/min_darkness = 0.05
 
 [sub_resource type="Shader" id=27]
 code = "shader_type canvas_item;
@@ -366,8 +366,8 @@ void fragment(){
 [sub_resource type="ShaderMaterial" id=14]
 shader = SubResource( 27 )
 shader_param/heat = 100.0
-shader_param/lower_threshold = 20.0
-shader_param/upper_threshold = 90.0
+shader_param/lower_threshold = 0.0
+shader_param/upper_threshold = 100.0
 
 [sub_resource type="ShaderMaterial" id=9]
 shader = SubResource( 26 )

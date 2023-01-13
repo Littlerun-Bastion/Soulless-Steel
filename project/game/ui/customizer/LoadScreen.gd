@@ -19,12 +19,14 @@ func _ready():
 func reload_designs():
 	designs = FileManager.get_all_mecha_design_names()
 	current_design = self.get_parent().DisplayMecha
+	for x in DesignContainer.get_children():
+		x.queue_free()
 	for design in designs:
 		var new_panel = DESIGN_BUTTON.instance()
 		var design_data = FileManager.load_mecha_design(design)
 		if design_data:
 			new_panel.connect("design_pressed", self, "_on_design_pressed")
-			design.setup(name, design_data)
+			new_panel.setup(design, design_data)
 			DesignContainer.add_child(new_panel)
 		else:
 			print("No design data to load.")
@@ -36,9 +38,9 @@ func save_design():
 		FileManager.save_mecha_design(mecha, design_name)
 	if FileManager.load_mecha_design(design_name):
 		$SaveSuccessful.visible = true
+		reload_designs()
 		yield(get_tree().create_timer(3), "timeout")
 		$SaveSuccessful.visible = false
-	reload_designs()
 	
 func _on_design_pressed():
 	pass

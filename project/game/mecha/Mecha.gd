@@ -170,15 +170,16 @@ var ecm_strength_difference = 0.0
 var bleed_timer = 0.0
 
 func _ready():
-	for node in [Core, CoreSub, Head, HeadSub, HeadPort,
+	for node in [Core, Head, HeadPort,\
 				 LeftShoulder, RightShoulder,\
-				 LeftArmWeaponMain, LeftArmWeaponSub,\
-				 RightArmWeaponMain, RightArmWeaponSub,\
-				 LeftShoulderWeaponMain, LeftShoulderWeaponSub,\
-				 RightShoulderWeaponMain, RightShoulderWeaponSub,\
-				 SingleChassis, SingleChassisSub,\
-				 LeftChassis, LeftChassisSub,\
-				 RightChassis, RightChassisSub]:
+				 LeftArmWeaponMain, RightArmWeaponMain,\
+				 LeftShoulderWeaponMain, RightShoulderWeaponMain,\
+				 SingleChassis, LeftChassis, RightChassis]:
+		node.material = Core.material.duplicate(true)
+	for node in [CoreSub, HeadSub,\
+				 LeftArmWeaponSub, RightArmWeaponSub,\
+				 LeftShoulderWeaponSub, RightShoulderWeaponSub,\
+				 SingleChassisSub, LeftChassisSub, RightChassisSub]:
 		node.material = CoreSub.material.duplicate(true)
 	for node in [CoreGlow, HeadGlow,\
 				 LeftArmWeaponGlow, RightArmWeaponGlow,\

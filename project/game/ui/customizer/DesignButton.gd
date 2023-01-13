@@ -8,7 +8,7 @@ signal design_pressed
 var stored_design
 
 func setup(name, design):
-	self.text = str(name + ".bp")
+	self.text = str(name + ".design")
 	stored_design = design
 
 

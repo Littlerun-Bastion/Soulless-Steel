@@ -114,7 +114,10 @@ func has_mecha_design(name):
 	var dir = Directory.new()
 	if not dir.dir_exists("user://mecha_designs"):
 		push_warning("Making mecha designs directory")
-		dir.make_dir("user://mecha_design")
+		var err = dir.make_dir("user://mecha_design")
+		if err != OK:
+			push_error("Error trying to create design directory: " + str(err))
+			return false
 	return dir.file_exists("user://mecha_designs/"+str(name)+".design")
 
 

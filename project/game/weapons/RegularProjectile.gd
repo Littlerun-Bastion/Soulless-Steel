@@ -43,6 +43,7 @@ var seek_time_expired := false
 
 
 var impact_size := 1.0
+var impact_force := 0.0
 
 var lifetime := 0.0
 
@@ -118,6 +119,7 @@ func setup(mecha, args):
 	seek_time = args.seek_time
 	seeker_angle = args.seeker_angle
 	local_scale = args.projectile_size
+	impact_force = args.impact_force
 	hitstop = args.hitstop
 	if args.seeker_target:
 		seeker_target = args.seeker_target
@@ -175,9 +177,8 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 	
 			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
 			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
-			if not is_overtime:
-				pass
-				#body.knockback(collision_point, 0*final_damage/float(body.get_max_hp()))
+			if not is_overtime and impact_force > 0.0:
+				body.knockback(collision_point, impact_force, dir, false)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\

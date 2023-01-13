@@ -142,8 +142,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 func do_hitstop():
 	Cam.shake((HITSTOP_DURATION + 1) * HITSTOP_TIMESCALE, 15, 50, 10)
 
-func knockback(pos, strength, should_rotate = true):
-	.knockback(pos, strength, should_rotate)
+func knockback(pos, strength, dir, should_rotate = true):
+	.knockback(pos, strength, dir, should_rotate)
 	if strength > 0:
 		var dur = sqrt(strength)/10
 		var freq = pow(strength, .3)*5

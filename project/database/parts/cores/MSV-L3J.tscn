@@ -21,17 +21,21 @@ tagline = "Light Core"
 health = 3500.0
 shield = 3400.0
 stability = 0.8
+has_left_shoulder = true
+has_right_shoulder = true
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
 position = Vector2( -31.25, 70 )
 
 [node name="Reference" type="Sprite" parent="LeftChassisOffset"]
+visible = false
 texture = ExtResource( 9 )
 
 [node name="RightChassisOffset" type="Position2D" parent="."]
 position = Vector2( 37, 70 )
 
 [node name="Reference" type="Sprite" parent="RightChassisOffset"]
+visible = false
 texture = ExtResource( 8 )
 
 [node name="HeadPort" type="Sprite" parent="."]
@@ -59,6 +63,7 @@ position = Vector2( -27, 22 )
 position = Vector2( -40, -13 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
+visible = false
 texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
@@ -66,6 +71,7 @@ offset = Vector2( 4, -36 )
 position = Vector2( 40, -13 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
@@ -74,6 +80,7 @@ offset = Vector2( 4, -36 )
 position = Vector2( -30, 17 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
+visible = false
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
@@ -81,6 +88,7 @@ offset = Vector2( -9, -23 )
 position = Vector2( 30, 17 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
+visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
@@ -88,18 +96,21 @@ offset = Vector2( -9, -23 )
 [node name="HeadOffset" type="Position2D" parent="."]
 
 [node name="Reference" type="Sprite" parent="HeadOffset"]
+visible = false
 texture = ExtResource( 4 )
 
 [node name="LeftShoulderOffset" type="Position2D" parent="."]
 position = Vector2( -49, 12 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
+visible = false
 texture = ExtResource( 6 )
 
 [node name="RightShoulderOffset" type="Position2D" parent="."]
 position = Vector2( 49, 12 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]
+visible = false
 texture = ExtResource( 7 )
 
 [node name="Collision" type="Polygon2D" parent="."]

@@ -103,6 +103,7 @@ var velocity = Vector2()
 var is_sprinting = false
 var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
+var impact_velocity = Vector2()
 var dash_strength = 2000
 var moving = false
 var moving_axis = {
@@ -267,6 +268,7 @@ func _physics_process(dt):
 	
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
+		print(dash_velocity)
 		move(dash_velocity)
 		if dash_velocity.x > 0:
 			dash_velocity.x = max(dash_velocity.x * (1 - DASH_DECAY*dt), 0)
@@ -279,6 +281,21 @@ func _physics_process(dt):
 			dash_velocity.y = min(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
+	
+	if impact_velocity.length() > 0:
+		print(impact_velocity)
+		move(impact_velocity)
+		if impact_velocity.x > 0:
+			impact_velocity.x = max(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
+		else:
+			impact_velocity.x = min(impact_velocity.x * (1 - DASH_DECAY*dt), 0)
+
+		if impact_velocity.y > 0:
+			impact_velocity.y = max(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
+		else:
+			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
+		if impact_velocity.length() < 1:
+			impact_velocity = Vector2()
 	
 	#Walking animation
 	if moving and not MovementAnimation.is_playing() and\
@@ -634,18 +651,29 @@ func set_arm_weapon(part_name, side):
 
 func set_shoulder_weapon(part_name, side):
 	var node
-	if side == SIDE.LEFT:
-		node = $ShoulderWeaponLeft
-	elif side == SIDE.RIGHT:
-		node = $ShoulderWeaponRight
-	else:
-		push_error("Not a valid side: " + str(side))
+	if core:
+		if side == SIDE.LEFT:
+			node = $ShoulderWeaponLeft
+			if not core.has_left_shoulder:
+				shoulder_weapon_left = null
+				node.set_images(null, null, null)
+				print(mecha_name + " tried to set left shoulder weapon on core that doesn't allow left shoulder weapons.")
+				return
+		elif side == SIDE.RIGHT:
+			node = $ShoulderWeaponRight
+			if not core.has_right_shoulder:
+				shoulder_weapon_right = null
+				node.set_images(null, null, null)
+				print("tried to set right shoulder weapon on core that doesn't allow right shoulder weapons.")
+				return
+		else:
+			push_error("Not a valid side: " + str(side))
 
 
 	if not part_name:
 		if side == SIDE.LEFT:
 			shoulder_weapon_left = null
-		else:
+		elif side == SIDE.RIGHT:
 			shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return
@@ -1106,10 +1134,10 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 
 
 
-func knockback(pos, strength, should_rotate = true):
-	apply_movement(sqrt(strength)*2/get_stat("weight"), global_position - pos)
+func knockback(pos, strength, dir, should_rotate = true):
+	impact_velocity += dir.normalized()*strength
 	if should_rotate:
-		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), pos, false)
+		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), dir, false)
 
 
 func update_chassis_visuals(dt):
@@ -1246,6 +1274,7 @@ func shoot(type, is_auto_fire = false):
 						"projectile_size_scaling": weapon_ref.projectile_size_scaling,
 						"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
 						"lifetime": weapon_ref.lifetime,
+						"impact_force": weapon_ref.impact_force,
 						"beam_range": weapon_ref.beam_range,
 						"has_trail": weapon_ref.has_trail,
 						"trail_lifetime": weapon_ref.trail_lifetime,

@@ -46,6 +46,7 @@ export var projectile_size := 1.0
 export var projectile_size_scaling := 0.0
 export var projectile_size_scaling_var := 0.0
 export var lifetime := 2.0
+export var impact_force := 0.0
 
 #---BEAM BEHAVIOUR---#
 export var beam_range := 0.0

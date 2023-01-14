@@ -1,79 +1,84 @@
 [gd_scene load_steps=13 format=2]
 
-[ext_resource path="res://database/parts/core.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/cores/Percival/percival_core_glow.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/cores/Percival/percival_core_sub.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/cores/Percival/percival_core_main.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=10]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=5]
+[ext_resource path="res://database/parts/core.gd" type="Script" id=6]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_main.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_sub.png" type="Texture" id=10]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=11]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" type="Texture" id=12]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
-part_name = "Percival-Core"
-manufacturer_name = "Claymore International"
+script = ExtResource( 6 )
+part_name = "Crawler C-type"
+manufacturer_name = "Nomhoyi Superheavy"
 tagline = "Light Core"
-description = "A lightweight core with moderately powerful shield projectors and excellent weight efficiency. While it has almost no armor defenses, its stability is excellent."
-health = 2700.0
-shield = 1875.0
-stability = 140.0
-weight = 13.5
+description = "Heavyweight core with excellent defensive capabilities and top-of-class stability. Its heavy plating comes at the cost of its very restrictive weight."
+health = 6525.0
+shield = 3750.0
+stability = 170.0
+has_left_shoulder = true
+has_right_shoulder = true
+weight = 38.2
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
-position = Vector2( -30, 70 )
+position = Vector2( -30, 50 )
 
 [node name="Reference" type="Sprite" parent="LeftChassisOffset"]
-texture = ExtResource( 10 )
+texture = ExtResource( 5 )
 
 [node name="RightChassisOffset" type="Position2D" parent="."]
-position = Vector2( 30, 70 )
+position = Vector2( 30, 50 )
 
 [node name="Reference" type="Sprite" parent="RightChassisOffset"]
-texture = ExtResource( 9 )
+texture = ExtResource( 4 )
 
 [node name="HeadPort" type="Sprite" parent="."]
-position = Vector2( 0, 0.501537 )
+position = Vector2( 0.5, -32 )
 texture = ExtResource( 3 )
 
 [node name="CoreSub" type="Sprite" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource( 10 )
 
 [node name="Core" type="Sprite" parent="."]
 texture = ExtResource( 8 )
 
 [node name="CoreGlow" type="Sprite" parent="."]
 modulate = Color( 1, 1, 1, 0.556863 )
-texture = ExtResource( 2 )
+texture = ExtResource( 12 )
 
 [node name="OverheatOffset1" type="Position2D" parent="."]
-position = Vector2( -14.8726, -32.1988 )
+position = Vector2( -13, 27 )
 
 [node name="OverheatOffset2" type="Position2D" parent="."]
-position = Vector2( 15.6005, -32.1421 )
+position = Vector2( 13, 27 )
 
 [node name="OverheatOffset3" type="Position2D" parent="."]
-position = Vector2( 0.395134, 69.8858 )
+position = Vector2( -13, 47 )
+
+[node name="OverheatOffset4" type="Position2D" parent="."]
+position = Vector2( 13, 47 )
 
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( -46, 4 )
+position = Vector2( -46, -20 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
-texture = ExtResource( 12 )
+visible = false
+texture = ExtResource( 9 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( 46, 4 )
+position = Vector2( 46, -20 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+visible = false
 scale = Vector2( -1, 1 )
-texture = ExtResource( 12 )
+texture = ExtResource( 9 )
 offset = Vector2( 4, -36 )
 
 [node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
@@ -81,7 +86,7 @@ visible = false
 position = Vector2( -30, 17 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
-texture = ExtResource( 11 )
+texture = ExtResource( 1 )
 offset = Vector2( -9, -23 )
 
 [node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
@@ -90,27 +95,29 @@ position = Vector2( 30, 17 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
 scale = Vector2( -1, 1 )
-texture = ExtResource( 11 )
+texture = ExtResource( 1 )
 offset = Vector2( -9, -23 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
+position = Vector2( 0, -31 )
 
 [node name="Reference" type="Sprite" parent="HeadOffset"]
-texture = ExtResource( 4 )
+visible = false
+texture = ExtResource( 2 )
 
 [node name="LeftShoulderOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( -41, 4 )
+position = Vector2( -52, -20 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
-texture = ExtResource( 7 )
+visible = false
+texture = ExtResource( 11 )
 
 [node name="RightShoulderOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( 41, 4 )
+position = Vector2( 52, -20 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]
-texture = ExtResource( 6 )
+visible = false
+texture = ExtResource( 7 )
 
 [node name="Collision" type="Polygon2D" parent="."]
 visible = false

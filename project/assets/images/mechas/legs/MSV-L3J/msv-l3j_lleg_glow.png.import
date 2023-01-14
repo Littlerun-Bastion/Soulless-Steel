@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/msv-l3j_lleg_heat_glow.png-af86e9e6e798dfd46a664edb4cadef2f.stex"
+path="res://.import/msv-l3j_lleg_glow.png-7fa6e2fdd9094c266b2321c32d381926.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_heat_glow.png"
-dest_files=[ "res://.import/msv-l3j_lleg_heat_glow.png-af86e9e6e798dfd46a664edb4cadef2f.stex" ]
+source_file="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_glow.png"
+dest_files=[ "res://.import/msv-l3j_lleg_glow.png-7fa6e2fdd9094c266b2321c32d381926.stex" ]
 
 [params]
 

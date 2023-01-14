@@ -506,6 +506,7 @@ func take_status_damage(dt):
 		if hp <= 0:
 			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 			die(last_damage_source, last_damage_weapon)
+			die(last_damage_source, last_damage_weapon)
 	
 	if has_status("fire"):
 		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
@@ -699,7 +700,7 @@ func set_core(part_name):
 	core = part_data
 	if core.get_head_port() != null:
 		$HeadPort.texture = core.get_head_port()
-		$HeadPort.position = core.get_head_port_offset()
+		$HeadPort.position = core.get_head_offset()
 	else:
 		$HeadPort.texture = null
 	var index = 1
@@ -714,6 +715,7 @@ func set_core(part_name):
 	update_max_life_from_parts()
 	update_max_shield_from_parts()
 	stability = get_stat("stability")
+	reset_offsets()
 
 
 func set_generator(part_name):
@@ -756,6 +758,10 @@ func set_chassis(part_name):
 		movement_type = "free"
 		return
 	chassis = PartManager.get_part("chassis", part_name)
+	set_chassis_parts(chassis)
+	
+	
+func set_chassis_parts(chassis):
 	if chassis.is_legs:
 			remove_chassis("single")
 			set_chassis_nodes(RightChassis, RightChassisSub, RightChassisGlow, $ChassisRightCollision, SIDE.RIGHT)
@@ -807,7 +813,7 @@ func set_head(part_name):
 	HeadGlow.texture = part_data.get_glow()
 	head = part_data
 	if core:
-		Head.position = core.get_head_port_offset()
+		Head.position = core.get_head_offset()
 	update_max_life_from_parts()
 
 
@@ -830,6 +836,21 @@ func set_shoulders(part_name):
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
 
+func reset_offsets():
+	if core:
+		$Head.position = core.get_head_offset()
+		$HeadPort.position = core.get_headport_offset()
+		$LeftShoulder.position = core.get_shoulder_offset(SIDE.LEFT)
+		$LeftShoulderCollision.position = core.get_shoulder_offset(SIDE.LEFT)
+		$RightShoulder.position = core.get_shoulder_offset(SIDE.RIGHT)
+		$RightShoulderCollision.position = core.get_shoulder_offset(SIDE.RIGHT)
+		$ArmWeaponLeft.position = core.get_arm_weapon_offset(SIDE.LEFT)
+		$ArmWeaponRight.position = core.get_arm_weapon_offset(SIDE.RIGHT)
+		$ShoulderWeaponLeft.position = core.get_shoulder_weapon_offset(SIDE.LEFT)
+		$ShoulderWeaponRight.position = core.get_shoulder_weapon_offset(SIDE.RIGHT)
+		if chassis:
+			set_chassis_parts(chassis)
+		
 #ATTRIBUTE METHODS
 
 func get_max_hp():

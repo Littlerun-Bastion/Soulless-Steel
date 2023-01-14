@@ -8,9 +8,10 @@
 
 [node name="Part2" type="Node2D"]
 script = ExtResource( 4 )
-part_name = "Test Head 2"
-manufacturer_name = "Test"
+part_name = "MSV-L3J-H"
+manufacturer_name = "Martel"
 tagline = "Test"
+description = "A cheap lightweight head part cobbled from scrap metal and spare parts. Poorly designed, though its visual sensors are surprisingly not the worst offering on the market."
 accuracy_modifier = 1.2
 visual_range = 300
 health = 825

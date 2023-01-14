@@ -186,7 +186,7 @@ func setup(arena_ref):
 		hp = PlayerStatManager.PlayerHP
 		emit_signal("lost_health")
 	if not Debug.get_setting("player_loadout"):
-		set_core("MSV-L3J")
+		set_core("MSV-L3J-C")
 		set_generator("type_1")
 		set_chipset("type_1")
 		set_thruster("test1")

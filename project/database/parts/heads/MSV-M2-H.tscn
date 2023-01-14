@@ -8,8 +8,8 @@
 
 [node name="Part" type="Node2D"]
 script = ExtResource( 3 )
-part_name = "Test Head 1"
-manufacturer_name = "Test"
+part_name = "MSV-M2-H"
+manufacturer_name = "Martel"
 tagline = "Test"
 description = "An upgraded middleweight head with upgraded visual sensors and better stabilization. Its armor is thicker, but still comprised of second-hand salvaged metal."
 accuracy_modifier = 1.35

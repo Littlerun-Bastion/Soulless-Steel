@@ -39,7 +39,7 @@ func setup(arena_ref, is_tutorial):
 	if is_tutorial:
 		set_generator("type_2")
 		set_chipset("type_2")
-		set_core("MSV-L3J")
+		set_core("MSV-L3J-C")
 		set_head(PartManager.get_random_part_name("head"))
 		set_chassis(PartManager.get_random_part_name("chassis"))
 		set_arm_weapon(false, SIDE.RIGHT)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=136 format=2]
+[gd_scene load_steps=137 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -19,11 +19,9 @@
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=17]
 [ext_resource path="res://assets/shaders/HeatShader.tres" type="Material" id=18]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_sub.png" type="Texture" id=19]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_heat_glow.png" type="Texture" id=20]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_sub.png" type="Texture" id=21]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=22]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=23]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_heat_glow.png" type="Texture" id=24]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=25]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=26]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=27]
@@ -206,6 +204,10 @@ shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
 
+[sub_resource type="StreamTexture" id=98]
+flags = 4
+load_path = "res://.import/msv-l3j_lleg_heat_glow.png-af86e9e6e798dfd46a664edb4cadef2f.stex"
+
 [sub_resource type="ShaderMaterial" id=22]
 shader = SubResource( 3 )
 shader_param/heat = 100.0
@@ -221,6 +223,10 @@ shader = SubResource( 1 )
 shader_param/heat = 100.0
 shader_param/lower_threshold = 20.0
 shader_param/upper_threshold = 90.0
+
+[sub_resource type="StreamTexture" id=99]
+flags = 4
+load_path = "res://.import/msv-l3j_rleg_heat_glow.png-ea73f0606ce2aae4ad5d198a0b677739.stex"
 
 [sub_resource type="ShaderMaterial" id=25]
 shader = SubResource( 3 )
@@ -327,6 +333,66 @@ scale = 1.5
 scale_random = 1.0
 color_ramp = SubResource( 71 )
 
+[sub_resource type="Shader" id=100]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+uniform float max_brightness : hint_range(0.0, 2) = 2.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = min((heat/100.0)*(1.0 - min_darkness) + min_darkness, max_brightness);
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 100 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.33
+shader_param/max_brightness = 1.0
+
+[sub_resource type="Shader" id=101]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 100.0) = 100.0;
+uniform float min_darkness : hint_range(0.0, 1.0) = .2;
+uniform float max_brightness : hint_range(0.0, 2) = 2.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	float dark = min((heat/100.0)*2.0*(1.0 - min_darkness) + min_darkness, max_brightness);
+	COLOR.r *= dark;
+	COLOR.g *= dark;
+	COLOR.b *= dark;
+}"
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = SubResource( 101 )
+shader_param/heat = 100.0
+shader_param/min_darkness = 0.05
+shader_param/max_brightness = 2.0
+
+[sub_resource type="Shader" id=27]
+code = "shader_type canvas_item;
+
+uniform float heat : hint_range(0.0, 200.0) = 100.0;
+uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
+uniform float upper_threshold: hint_range(0.0, 200.0) = 90.0;
+
+void fragment(){
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
+}"
+
+[sub_resource type="ShaderMaterial" id=14]
+shader = SubResource( 27 )
+shader_param/heat = 100.0
+shader_param/lower_threshold = 0.0
+shader_param/upper_threshold = 200.0
+
 [sub_resource type="Shader" id=26]
 code = "shader_type canvas_item;
 
@@ -341,42 +407,9 @@ void fragment(){
 	COLOR.b *= dark;
 }"
 
-[sub_resource type="ShaderMaterial" id=5]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
-[sub_resource type="ShaderMaterial" id=4]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.05
-
-[sub_resource type="Shader" id=27]
-code = "shader_type canvas_item;
-
-uniform float heat : hint_range(0.0, 100.0) = 100.0;
-uniform float lower_threshold: hint_range(0.0, 100.0) = 20.0;
-uniform float upper_threshold: hint_range(0.0, 100.0) = 90.0;
-
-void fragment(){
-	COLOR = texture(TEXTURE, UV);
-	COLOR.a = smoothstep(lower_threshold, upper_threshold, heat)*COLOR.a;
-}"
-
-[sub_resource type="ShaderMaterial" id=14]
-shader = SubResource( 27 )
-shader_param/heat = 100.0
-shader_param/lower_threshold = 0.0
-shader_param/upper_threshold = 100.0
-
-[sub_resource type="ShaderMaterial" id=9]
-shader = SubResource( 26 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-
 [sub_resource type="ShaderMaterial" id=7]
 shader = SubResource( 26 )
-shader_param/heat = 100.0
+shader_param/heat = 66.0
 shader_param/min_darkness = 0.3
 
 [sub_resource type="ShaderMaterial" id=6]
@@ -861,7 +894,7 @@ texture = ExtResource( 19 )
 
 [node name="Glow" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 21 )
-texture = ExtResource( 20 )
+texture = SubResource( 98 )
 
 [node name="Main" type="Sprite" parent="Chassis/Left"]
 material = SubResource( 22 )
@@ -875,7 +908,7 @@ texture = ExtResource( 21 )
 
 [node name="Glow" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 24 )
-texture = ExtResource( 24 )
+texture = SubResource( 99 )
 
 [node name="Main" type="Sprite" parent="Chassis/Right"]
 material = SubResource( 25 )
@@ -961,7 +994,7 @@ texture = ExtResource( 16 )
 light_mask = 32
 
 [node name="HeadPort" type="Sprite" parent="."]
-material = SubResource( 9 )
+material = SubResource( 7 )
 texture = ExtResource( 11 )
 
 [node name="Head" type="Sprite" parent="."]

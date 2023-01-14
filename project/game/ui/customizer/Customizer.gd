@@ -41,10 +41,10 @@ func _input(event):
 
 
 func default_loadout():
-	DisplayMecha.set_core("MSV-L3J")
+	DisplayMecha.set_core("MSV-L3J-C")
 	DisplayMecha.set_generator("type_1")
 	DisplayMecha.set_chipset("type_1")
-	DisplayMecha.set_head("head_test")
+	DisplayMecha.set_head("MSV-L3J-H")
 	DisplayMecha.set_chassis("legs_test")
 	DisplayMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
@@ -53,10 +53,10 @@ func default_loadout():
 	DisplayMecha.set_shoulders("shoulder_test")
 	
 	
-	ComparisonMecha.set_core("MSV-L3J")
+	ComparisonMecha.set_core("MSV-L3J-C")
 	ComparisonMecha.set_generator("type_1")
 	ComparisonMecha.set_chipset("type_1")
-	ComparisonMecha.set_head("head_test")
+	ComparisonMecha.set_head("MSV-L3J-H")
 	ComparisonMecha.set_chassis("legs_test")
 	ComparisonMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 	ComparisonMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)

@@ -18,5 +18,5 @@ void fragment(){
 [resource]
 shader = SubResource( 100 )
 shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
-shader_param/max_brightness = 2.0
+shader_param/min_darkness = 0.33
+shader_param/max_brightness = 0.66

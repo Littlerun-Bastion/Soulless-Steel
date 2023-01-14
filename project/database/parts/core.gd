@@ -35,8 +35,10 @@ func get_glow():
 func get_head_port():
 	return $HeadPort.texture
 
+func get_headport_offset():
+	return $HeadPort.position
 
-func get_head_port_offset():
+func get_head_offset():
 	return $HeadOffset.position
 
 

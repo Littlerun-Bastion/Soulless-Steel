@@ -1,73 +1,82 @@
 [gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_main.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_main.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_glow.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_glow.png" type="Texture" id=10]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_sub.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=10]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=11]
+[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=12]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
-part_name = "MSV-L3J TEST"
-manufacturer_name = "Test"
+part_name = "Lancelot-Core"
+manufacturer_name = "Claymore International"
 tagline = "Light Core"
-stability = 0.8
+description = "An ultralight core constructed only from a bare skeleton and paper-thin plating suitable only for protecting against armor. Revered for its excellent stability and mobility performance. No space for shoulder armament."
+health = 2250.0
+shield = 2000.0
+stability = 140.0
+weight = 11.0
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]
-position = Vector2( -31, 70 )
+position = Vector2( -28, 52 )
 
 [node name="Reference" type="Sprite" parent="LeftChassisOffset"]
-texture = ExtResource( 9 )
+texture = ExtResource( 10 )
 
 [node name="RightChassisOffset" type="Position2D" parent="."]
-position = Vector2( 37, 70 )
+position = Vector2( 28, 52 )
 
 [node name="Reference" type="Sprite" parent="RightChassisOffset"]
-texture = ExtResource( 8 )
+texture = ExtResource( 9 )
 
 [node name="HeadPort" type="Sprite" parent="."]
+position = Vector2( 0, -13.7985 )
 texture = ExtResource( 3 )
 
 [node name="CoreSub" type="Sprite" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource( 8 )
 
 [node name="Core" type="Sprite" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource( 2 )
 
 [node name="CoreGlow" type="Sprite" parent="."]
-texture = ExtResource( 10 )
+modulate = Color( 1, 1, 1, 0.556863 )
+texture = ExtResource( 5 )
 
 [node name="OverheatOffset1" type="Position2D" parent="."]
-position = Vector2( 0, -51 )
+position = Vector2( 0, -53 )
 
 [node name="OverheatOffset2" type="Position2D" parent="."]
-position = Vector2( 26, 22 )
+position = Vector2( 0, 43 )
 
 [node name="OverheatOffset3" type="Position2D" parent="."]
-position = Vector2( -27, 22 )
+position = Vector2( -28, -10 )
+
+[node name="OverheatOffset4" type="Position2D" parent="."]
+position = Vector2( 28, -10 )
 
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( -40, -13 )
+position = Vector2( -47, -14 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
-texture = ExtResource( 11 )
+visible = false
+texture = ExtResource( 12 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
-visible = false
-position = Vector2( 40, -13 )
+position = Vector2( 47, -14 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+visible = false
 scale = Vector2( -1, 1 )
-texture = ExtResource( 11 )
+texture = ExtResource( 12 )
 offset = Vector2( 4, -36 )
 
 [node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
@@ -75,7 +84,7 @@ visible = false
 position = Vector2( -30, 17 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
-texture = ExtResource( 12 )
+texture = ExtResource( 11 )
 offset = Vector2( -9, -23 )
 
 [node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
@@ -84,27 +93,31 @@ position = Vector2( 30, 17 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
 scale = Vector2( -1, 1 )
-texture = ExtResource( 12 )
+texture = ExtResource( 11 )
 offset = Vector2( -9, -23 )
 
 [node name="HeadOffset" type="Position2D" parent="."]
+position = Vector2( 0, -14 )
 
 [node name="Reference" type="Sprite" parent="HeadOffset"]
+visible = false
 texture = ExtResource( 4 )
 
 [node name="LeftShoulderOffset" type="Position2D" parent="."]
-position = Vector2( -49, 12 )
+position = Vector2( -44, -9 )
 
 [node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
+visible = false
 texture = ExtResource( 6 )
 
 [node name="RightShoulderOffset" type="Position2D" parent="."]
-position = Vector2( 49, 12 )
+position = Vector2( 44, -9 )
 
 [node name="Reference" type="Sprite" parent="RightShoulderOffset"]
+visible = false
 texture = ExtResource( 7 )
 
 [node name="Collision" type="Polygon2D" parent="."]
 visible = false
 color = Color( 1, 0, 0, 0.176471 )
-polygon = PoolVector2Array( -22.1892, -81.2839, -12.8317, -81.3289, -10.472, -78.7332, 9.11337, -78.0253, 12.4169, -81.5649, 22.3276, -81.3289, 22.5636, -70.2384, 29.8786, -63.6313, 29.6426, -42.866, 32.0023, -40.9783, 31.2944, -21.3929, 39.7893, -29.6518, 65.0379, -5.11105, 61.7344, 3.6198, 62.6782, 7.39529, 63.1502, 46.5661, 53.0035, 58.6005, 45.9245, 51.9934, 45.75, 81.25, -45.75, 81.5, -45.5, 52, -52.5, 58.25, -63.75, 48, -63.75, 8.5, -61.5, 3.75, -64.25, -6.5, -40, -30.25, -31.7978, -22.193, -31.75, -40.75, -29.75, -42.75, -30, -63.25, -23, -70.25 )
+polygon = PoolVector2Array( -20.4516, -64.6066, 19.2783, -65.1363, 24.0458, -61.6931, 50.5231, 0.274078, 49.5781, 19.1729, 37.2939, 66.7349, 19.1079, 83.9845, -20.0922, 83.7196, -37.3085, 67.0331, -50.2869, 18.2978, -51.3464, 0.28693, -24.8807, -61.0352 )

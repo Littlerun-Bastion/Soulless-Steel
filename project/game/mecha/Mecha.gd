@@ -162,6 +162,12 @@ var fwd_thruster_cooldown = 0.0
 var rwd_thruster_cooldown = 0.0
 var right_thruster_cooldown = 0.0
 var left_thruster_cooldown = 0.0
+
+var fwd_thruster_ready = false
+var rwd_thruster_ready = false
+var right_thruster_ready = false
+var left_thruster_ready = false
+
 var thruster_cooldown = 0.0
 
 var ecm_attempt_cooldown = 0.0
@@ -332,14 +338,28 @@ func _physics_process(dt):
 		child.emitting = has_status("overheat")
 	
 	#Thrusters cooldowns
-	if fwd_thruster_cooldown > 0.0:
+	if fwd_thruster_cooldown > 0.0 and not fwd_thruster_ready:
 		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
-	if rwd_thruster_cooldown > 0.0:
+	elif fwd_thruster_cooldown <= 0.0 and not fwd_thruster_ready:
+		fwd_thruster_ready = true
+		$BoostReadyFwd2.emitting = true
+	if rwd_thruster_cooldown > 0.0 and not rwd_thruster_ready:
 		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
-	if right_thruster_cooldown > 0.0:
+	elif rwd_thruster_cooldown <= 0.0 and not rwd_thruster_ready:
+		rwd_thruster_ready = true
+		$BoostReadyRwd2.emitting = true
+	if right_thruster_cooldown > 0.0 and not right_thruster_ready:
 		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
-	if left_thruster_cooldown > 0.0:
+	elif right_thruster_cooldown <= 0.0 and not right_thruster_ready:
+		right_thruster_ready = true
+		$BoostReadyRight2.emitting = true
+	if left_thruster_cooldown > 0.0 and not left_thruster_ready:
 		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
+	elif left_thruster_cooldown <= 0.0 and not left_thruster_ready:
+		left_thruster_ready = true
+		$BoostReadyLeft2.emitting = true
+	
+	thruster_cooldown_visuals()
 
 	take_status_damage(dt)
 
@@ -1010,15 +1030,28 @@ func dash(dir):
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
 		if dir == Vector2(0,-1): #FWD
 			fwd_thruster_cooldown = thruster.dash_cooldown
+			fwd_thruster_ready = false
 		elif dir == Vector2(0,1): #RWD
 			rwd_thruster_cooldown = thruster.dash_cooldown
+			rwd_thruster_ready = false
 		elif dir == Vector2(1,0): #RIGHT
 			right_thruster_cooldown = thruster.dash_cooldown
+			right_thruster_ready = false
 		elif dir == Vector2(-1,0): #LEFT
 			left_thruster_cooldown = thruster.dash_cooldown
+			left_thruster_ready = false
 		else:
 			return
 
+func thruster_cooldown_visuals():
+	if is_dead:
+		pass
+	if thruster:
+		$BoostReadyFwd.modulate = Color(1, 1, 1, (fwd_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyRwd.modulate = Color(1, 1, 1, (rwd_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyLeft.modulate = Color(1, 1, 1, (left_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyRight.modulate = Color(1, 1, 1, (right_thruster_cooldown / thruster.dash_cooldown))
+			
 
 func apply_movement(dt, direction):
 	if is_sprinting:

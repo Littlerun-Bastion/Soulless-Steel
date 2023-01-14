@@ -1,4 +1,4 @@
-[gd_scene load_steps=137 format=2]
+[gd_scene load_steps=141 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -259,6 +259,43 @@ scale_random = 1.0
 color_ramp = SubResource( 71 )
 
 [sub_resource type="ParticlesMaterial" id=73]
+emission_shape = 1
+emission_sphere_radius = 30.0
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 20.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 150.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -54.54
+scale = 0.75
+scale_random = 0.39
+color_ramp = SubResource( 71 )
+
+[sub_resource type="Gradient" id=102]
+offsets = PoolRealArray( 0.247059, 0.858824 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=103]
+gradient = SubResource( 102 )
+
+[sub_resource type="ParticlesMaterial" id=104]
+emission_shape = 1
+emission_sphere_radius = 10.0
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 15.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 106.06
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+scale_random = 1.0
+color_ramp = SubResource( 103 )
+
+[sub_resource type="ParticlesMaterial" id=105]
 emission_shape = 1
 emission_sphere_radius = 30.0
 flag_align_y = true
@@ -940,6 +977,96 @@ lifetime = 0.75
 speed_scale = 4.0
 local_coords = false
 process_material = SubResource( 73 )
+texture = ExtResource( 40 )
+
+[node name="BoostReadyFwd" type="Particles2D" parent="."]
+modulate = Color( 1, 1, 1, 0.0784314 )
+position = Vector2( -0.053, 30 )
+amount = 30
+lifetime = 1.25
+speed_scale = 8.0
+randomness = 1.0
+process_material = SubResource( 104 )
+texture = ExtResource( 39 )
+
+[node name="BoostReadyLeft" type="Particles2D" parent="."]
+modulate = Color( 1, 1, 1, 0.0784314 )
+position = Vector2( -0.053, 0.864761 )
+rotation = 4.71239
+amount = 30
+lifetime = 1.25
+speed_scale = 8.0
+randomness = 1.0
+process_material = SubResource( 104 )
+texture = ExtResource( 39 )
+
+[node name="BoostReadyRight" type="Particles2D" parent="."]
+modulate = Color( 1, 1, 1, 0.0784314 )
+position = Vector2( -0.053, 0.864761 )
+rotation = 1.5708
+amount = 30
+lifetime = 1.25
+speed_scale = 8.0
+randomness = 1.0
+process_material = SubResource( 104 )
+texture = ExtResource( 39 )
+
+[node name="BoostReadyRwd" type="Particles2D" parent="."]
+modulate = Color( 1, 1, 1, 0.0784314 )
+position = Vector2( -0.053, 0.864761 )
+rotation = 3.14159
+amount = 30
+lifetime = 1.25
+speed_scale = 8.0
+randomness = 1.0
+process_material = SubResource( 104 )
+texture = ExtResource( 39 )
+
+[node name="BoostReadyFwd2" type="Particles2D" parent="."]
+position = Vector2( 0, 2.33624 )
+emitting = false
+amount = 30
+lifetime = 1.5
+one_shot = true
+speed_scale = 8.0
+local_coords = false
+process_material = SubResource( 105 )
+texture = ExtResource( 40 )
+
+[node name="BoostReadyRwd2" type="Particles2D" parent="."]
+position = Vector2( 0, 2.33624 )
+rotation = 3.14159
+emitting = false
+amount = 30
+lifetime = 1.5
+one_shot = true
+speed_scale = 8.0
+local_coords = false
+process_material = SubResource( 105 )
+texture = ExtResource( 40 )
+
+[node name="BoostReadyLeft2" type="Particles2D" parent="."]
+position = Vector2( 0, 2.33624 )
+rotation = 4.71239
+emitting = false
+amount = 30
+lifetime = 1.5
+one_shot = true
+speed_scale = 8.0
+local_coords = false
+process_material = SubResource( 105 )
+texture = ExtResource( 40 )
+
+[node name="BoostReadyRight2" type="Particles2D" parent="."]
+position = Vector2( 0, 2.33624 )
+rotation = 1.5708
+emitting = false
+amount = 30
+lifetime = 1.5
+one_shot = true
+speed_scale = 8.0
+local_coords = false
+process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
 [node name="BoostThrust3" type="Particles2D" parent="."]

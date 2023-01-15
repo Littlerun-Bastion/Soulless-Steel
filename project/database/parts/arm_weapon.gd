@@ -97,7 +97,7 @@ func get_glow():
 
 
 func get_shooting_pos():
-	return $ShootingPos.position
+	return $ShootingPosArray.get_children()
 
 
 func get_attach_pos():

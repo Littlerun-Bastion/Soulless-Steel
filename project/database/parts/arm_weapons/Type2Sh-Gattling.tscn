@@ -55,5 +55,10 @@ texture = ExtResource( 4 )
 [node name="AttachPos" type="Position2D" parent="."]
 position = Vector2( -1, 21 )
 
-[node name="ShootingPos" type="Position2D" parent="."]
-position = Vector2( -1, -43 )
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
+position = Vector2( -6, -42 )
+
+[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
+position = Vector2( 3, -42 )

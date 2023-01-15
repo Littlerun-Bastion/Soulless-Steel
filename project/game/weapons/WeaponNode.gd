@@ -27,6 +27,8 @@ var uses_battery = false
 var battery_drain = 0.00
 var is_melee = false
 var melee_anim = null
+var shooting_pos_array = []
+var shooting_pos_idx = 0
 
 
 func _process(dt):
@@ -140,8 +142,10 @@ func shoot_battery():
 
 
 func set_shooting_pos(pos):
-	ShootingPos.position = pos
+	shooting_pos_array.append(pos)
 
+func clear_shooting_pos():
+	shooting_pos_array = []
 
 func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	var offset = Vector2()
@@ -153,4 +157,9 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 
 
 func get_shoot_position():
+	ShootingPos.position = shooting_pos_array[shooting_pos_idx]
+	print(shooting_pos_array[shooting_pos_idx])
+	shooting_pos_idx += 1
+	if shooting_pos_idx > (shooting_pos_array.size() - 1):
+		shooting_pos_idx = 0
 	return ShootingPos.global_position

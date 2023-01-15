@@ -673,7 +673,9 @@ func set_arm_weapon(part_name, side):
 	if node.has_node("AttackAnimation"):
 		node.get_node("AttackAnimation").queue_free()
 	if not part_data.is_melee:
-		node.set_shooting_pos(part_data.get_shooting_pos())
+		node.clear_shooting_pos()
+		for child in part_data.get_shooting_pos():
+			node.set_shooting_pos(child.position)
 	else:
 		node.add_child(part_data.get_attack_animation().duplicate())
 		
@@ -709,7 +711,10 @@ func set_shoulder_weapon(part_name, side):
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.position = core.get_shoulder_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
-	node.set_shooting_pos(part_data.get_shooting_pos())
+	node.clear_shooting_pos()
+	for child in part_data.get_shooting_pos():
+		node.set_shooting_pos(child.position)
+	#node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
 

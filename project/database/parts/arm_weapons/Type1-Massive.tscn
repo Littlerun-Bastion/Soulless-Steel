@@ -28,6 +28,8 @@ ammo_cost = 500
 soundEffect = "medium_shotA"
 sound_max_range = 4000
 sound_att = 1.5
+projectile_size = 0.5
+impact_force = 100.0
 hitstop = true
 
 [node name="Sub" type="Sprite" parent="."]
@@ -48,5 +50,7 @@ offset = Vector2( -1.86224, -50.1892 )
 [node name="AttachPos" type="Position2D" parent="."]
 position = Vector2( 2, 36 )
 
-[node name="ShootingPos" type="Position2D" parent="."]
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
 position = Vector2( 1, -58 )

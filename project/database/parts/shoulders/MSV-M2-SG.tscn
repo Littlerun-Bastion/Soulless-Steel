@@ -9,9 +9,10 @@ script = ExtResource( 3 )
 part_name = "MSV-M2-SG"
 manufacturer_name = "Martel"
 tagline = "Test"
+description = "A middleweight shoulderguard comprised of salvaged material. Poor shielding performance as with all Martel offerings, but does little to compensate for this fact save for the middling weapon accuracy performance."
 shield = 1250.0
 stability = 50.0
-arms_accuracy_modifier = 1.45
+arms_accuracy_modifier = 1.3
 weight = 4.1
 
 [node name="ShoulderLeft" type="Sprite" parent="."]

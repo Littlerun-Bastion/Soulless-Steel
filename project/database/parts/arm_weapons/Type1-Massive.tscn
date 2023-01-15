@@ -30,6 +30,8 @@ sound_max_range = 4000
 sound_att = 1.5
 projectile_size = 0.5
 impact_force = 100.0
+eject_casings = true
+casing_size = 1.25
 hitstop = true
 
 [node name="Sub" type="Sprite" parent="."]
@@ -49,6 +51,9 @@ offset = Vector2( -1.86224, -50.1892 )
 
 [node name="AttachPos" type="Position2D" parent="."]
 position = Vector2( 2, 36 )
+
+[node name="EjectorPos" type="Position2D" parent="."]
+position = Vector2( -0.713493, 33.1072 )
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 

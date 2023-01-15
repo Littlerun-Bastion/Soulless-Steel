@@ -176,6 +176,7 @@ func add_player():
 	player.setup(self)
 	player.position = get_start_position(0)
 	player.connect("create_projectile", self, "_on_mecha_create_projectile")
+	player.connect("create_casing", self, "_on_mecha_create_casing")
 	player.connect("died", self, "_on_mecha_died")
 	player.connect("lost_health", self, "_on_player_lost_health")
 	player.connect("mecha_extracted", self, "_on_player_mech_extracted")
@@ -189,6 +190,7 @@ func add_enemy():
 	Mechas.add_child(enemy)
 	enemy.position = get_random_start_position([0])
 	enemy.connect("create_projectile", self, "_on_mecha_create_projectile")
+	enemy.connect("create_casing", self, "_on_mecha_create_casing")
 	enemy.connect("died", self, "_on_mecha_died")
 	enemy.connect("player_kill", self, "_on_mecha_player_kill")
 	all_mechas.push_back(enemy)
@@ -335,6 +337,12 @@ func _on_mecha_create_projectile(mecha, args):
 			if data:
 				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, args)
 				Smoke.add_child(smoke_trail)
+
+func _on_mecha_create_casing(args):
+	var next_casing = $Casings.get_next_particle()
+	next_casing.global_position = args.casing_ejector_pos
+	next_casing.rotation_degrees = args.casing_eject_angle
+	$Casings.trigger()
 
 func _on_bullet_impact(projectile):
 	var impact_effect = ProjectileManager.create_explosion(projectile)

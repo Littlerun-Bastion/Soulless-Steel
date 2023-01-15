@@ -63,9 +63,9 @@ func _process(dt):
 	lifetime += dt
 	speed *= decaying_speed_ratio
 	position += dir*speed*dt
-	rotation_degrees = rad2deg(dir.angle()) + 90
 	# --- keeping this as an option because it's cool, but honestly i want a better missile tracking script that more accurately reflects missile trajectory
 	if is_seeker:
+		rotation_degrees = rad2deg(dir.angle()) + 90
 		if seeker_target and is_instance_valid(seeker_target):
 			if lifetime < seek_time:
 				dir = lerp(dir.rotated(rand_range(-wiggle_amount, wiggle_amount)), position.direction_to(seeker_target.position), seek_agility)
@@ -74,6 +74,7 @@ func _process(dt):
 				wiggle_amount = wiggle_amount/2
 				seek_time_expired = true
 	if has_wiggle:
+		rotation_degrees = rad2deg(dir.angle()) + 90
 		if not seeker_target or not is_seeker or not is_instance_valid(seeker_target) or lifetime > seek_time:
 			dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
 	

@@ -1,10 +1,12 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game/ui/IntroAnimation.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
+[ext_resource path="res://game/arena/CasingsQueue.gd" type="Script" id=6]
+[ext_resource path="res://game/EjectorParticle.tscn" type="PackedScene" id=7]
 [ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://game/arena/GameOver.tscn" type="PackedScene" id=58]
 
@@ -41,6 +43,11 @@ rotation = -0.000512852
 [node name="Smoke" type="Node2D" parent="."]
 
 [node name="Explosions" type="Node2D" parent="."]
+
+[node name="Casings" type="Node2D" parent="."]
+script = ExtResource( 6 )
+casing = ExtResource( 7 )
+casings_count = 500
 
 [node name="Projectiles" type="Node2D" parent="."]
 

@@ -10,7 +10,8 @@ export var description : String
 export var image : Texture
 export var shield := 1500.0
 export var stability := 1.0
-export var arms_accuracy_modifier := 10.0
+export var arms_accuracy_modifier := 1.0
+export var melee_modifier := 0.8
 export var weight := 20.0
 
 var part_id

@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=2]
+[ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+
+[node name="Part" type="Node"]
+script = ExtResource( 3 )
+part_name = "O10-Shoulderguard"
+manufacturer_name = "Orontes"
+tagline = "Test"
+description = "A light scrapyard shoulderguard with very poor shielding, abysmal stability, and terrible melee performance. Decent weapon accuracy."
+shield = 3125.0
+stability = 110.0
+arms_accuracy_modifier = 1.3
+melee_modifier = 1.1
+weight = 6.6
+
+[node name="ShoulderLeft" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
+polygon = PoolVector2Array( -0.482304, -32.3179, -0.51284, 34.3789, -30.121, 34.5364, -30.2785, -0.111389, -26.9712, -2.94621, -16.5768, -3.1037, -16.7343, -27.6722, -4.76508, -28.1446 )
+
+[node name="ShoulderRight" type="Sprite" parent="."]
+position = Vector2( 107.127, 0 )
+texture = ExtResource( 1 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
+polygon = PoolVector2Array( 0.504349, -33.336, 0.626396, 34.4225, 29.9537, 33.874, 30.1305, 0.109625, 26.0646, -2.89558, 17.1374, -2.80719, 17.2667, -27.9983, 5.2802, -27.9047 )

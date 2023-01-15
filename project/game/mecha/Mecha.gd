@@ -19,6 +19,7 @@ const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 
 signal create_projectile
+signal create_casing
 signal shoot
 signal took_damage
 signal died
@@ -209,7 +210,9 @@ func _physics_process(dt):
 			impact_velocity.y = max(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
 		else:
 			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
-			
+			if impact_velocity.length() < 1:
+				impact_velocity = Vector2()
+	
 	#Blood
 	if is_dead:
 		return
@@ -273,8 +276,8 @@ func _physics_process(dt):
 				collided = true
 				var mod = 2.0
 				var rand = rand_range(-PI/8, PI/8)
-				var dir = (global_position - collision.collider.global_position).rotated(rand)
-				apply_movement(mod*dt, dir)
+				var collision_dir = (global_position - collision.collider.global_position).rotated(rand)
+				apply_movement(mod*dt, collision_dir)
 		if collided:
 			lock_movement(0.1)
 	else:
@@ -615,6 +618,10 @@ func update_heat(dt):
 	#Main Mecha Heat
 	if display_mode == true:
 		mecha_heat = max_heat - 1
+		$BoostReadyFwd.emitting = false
+		$BoostReadyRwd.emitting = false
+		$BoostReadyRight.emitting = false
+		$BoostReadyLeft.emitting = false
 		return
 	if generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
@@ -1005,24 +1012,24 @@ func move(vec):
 		NavAgent.set_velocity(vec)
 
 
-func dash(dir):
+func dash(dash_dir):
 	var _thruster_cooldown = 0.0
-	if dir == Vector2(0,-1): #FWD
+	if dash_dir == Vector2(0,-1): #FWD
 		_thruster_cooldown = fwd_thruster_cooldown
-	elif dir == Vector2(0,1): #RWD
+	elif dash_dir == Vector2(0,1): #RWD
 		_thruster_cooldown = rwd_thruster_cooldown
-	elif dir == Vector2(1,0): #RIGHT
+	elif dash_dir == Vector2(1,0): #RIGHT
 		_thruster_cooldown = right_thruster_cooldown
-	elif dir == Vector2(-1,0): #LEFT
+	elif dash_dir == Vector2(-1,0): #LEFT
 		_thruster_cooldown = left_thruster_cooldown
 	else:
 		return
 	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
-		dash_velocity = dir.normalized()*dash_strength
-		$BoostThrust.rotation_degrees = rad2deg(dir.angle()) + 90
-		$BoostThrust2.rotation_degrees = rad2deg(dir.angle()) + 90
-		$BoostThrust3.rotation_degrees = rad2deg(dir.angle()) + 90
+		dash_velocity = dash_dir.normalized()*dash_strength
+		$BoostThrust.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+		$BoostThrust2.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+		$BoostThrust3.rotation_degrees = rad2deg(dash_dir.angle()) + 90
 		$BoostThrust.restart()
 		$BoostThrust2.restart()
 		$BoostThrust3.restart()
@@ -1033,16 +1040,16 @@ func dash(dir):
 		$GrindParticles.emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
-		if dir == Vector2(0,-1): #FWD
+		if dash_dir == Vector2(0,-1): #FWD
 			fwd_thruster_cooldown = thruster.dash_cooldown
 			fwd_thruster_ready = false
-		elif dir == Vector2(0,1): #RWD
+		elif dash_dir == Vector2(0,1): #RWD
 			rwd_thruster_cooldown = thruster.dash_cooldown
 			rwd_thruster_ready = false
-		elif dir == Vector2(1,0): #RIGHT
+		elif dash_dir == Vector2(1,0): #RIGHT
 			right_thruster_cooldown = thruster.dash_cooldown
 			right_thruster_ready = false
-		elif dir == Vector2(-1,0): #LEFT
+		elif dash_dir == Vector2(-1,0): #LEFT
 			left_thruster_cooldown = thruster.dash_cooldown
 			left_thruster_ready = false
 		else:
@@ -1052,10 +1059,10 @@ func thruster_cooldown_visuals():
 	if is_dead:
 		pass
 	if thruster:
-		$BoostReadyFwd.modulate = Color(1, 1, 1, (fwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRwd.modulate = Color(1, 1, 1, (rwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyLeft.modulate = Color(1, 1, 1, (left_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRight.modulate = Color(1, 1, 1, (right_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyFwd.modulate = Color(1, 1, 1, 0.33*(fwd_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyRwd.modulate = Color(1, 1, 1, 0.33*(rwd_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyLeft.modulate = Color(1, 1, 1, 0.33*(left_thruster_cooldown / thruster.dash_cooldown))
+		$BoostReadyRight.modulate = Color(1, 1, 1, 0.33*(right_thruster_cooldown / thruster.dash_cooldown))
 			
 
 func apply_movement(dt, direction):
@@ -1178,10 +1185,10 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 
-func knockback(strength, dir, should_rotate = true):
-	impact_velocity += (dir.normalized()*strength) * get_stability()
+func knockback(strength, knockback_dir, should_rotate = true):
+	impact_velocity += (knockback_dir.normalized() * (strength * get_stability()))
 	if should_rotate:
-		apply_rotation_by_point(sqrt(strength)*2/get_stat("weight"), dir, false)
+		apply_rotation_by_point(sqrt(strength) * 2 * get_stability(), knockback_dir, false)
 
 
 func update_chassis_visuals(dt):
@@ -1217,8 +1224,8 @@ func update_chassis_visuals(dt):
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
 										  dt*CHASSIS_SPEED)
 
-func stop_sprinting(dir):
-	if is_sprinting and dir != Vector2(0,0):
+func stop_sprinting(sprint_dir):
+	if is_sprinting and sprint_dir != Vector2(0,0):
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5 * get_stability())
 		$GrindParticles.restart()
@@ -1242,12 +1249,14 @@ func shoot(type, is_auto_fire = false):
 	var node
 	var weapon_ref
 	var bloom
+	var eject_angle = 0.0
 	if type == "arm_weapon_left":
 		node = $ArmWeaponLeft
 		weapon_ref = arm_weapon_left
 		left_arm_bloom_time = weapon_ref.instability * get_stability()
 		bloom = left_arm_bloom_count * weapon_ref.accuracy_bloom
 		left_arm_bloom_count += 1
+		eject_angle = 180.0
 	elif type ==  "arm_weapon_right":
 		node = $ArmWeaponRight
 		weapon_ref = arm_weapon_right
@@ -1260,6 +1269,7 @@ func shoot(type, is_auto_fire = false):
 		left_shoulder_bloom_time = weapon_ref.instability * get_stability()
 		bloom = left_shoulder_bloom_count * weapon_ref.accuracy_bloom
 		left_shoulder_bloom_count += 1
+		eject_angle = 180.0
 	elif type ==  "shoulder_weapon_right":
 		node = $ShoulderWeaponRight
 		weapon_ref = shoulder_weapon_right
@@ -1348,6 +1358,13 @@ func shoot(type, is_auto_fire = false):
 							"hitstop": weapon_ref.hitstop,
 						}) #TODO: FIX THIS
 		apply_recoil(type, node, weapon_ref.recoil_force)
+	if weapon_ref.eject_casings:
+		emit_signal("create_casing",
+						{
+							"casing_ejector_pos": node.global_position,
+							"casing_eject_angle": eject_angle + self.global_rotation_degrees,
+							"casing_size": weapon_ref.casing_size,
+						})
 	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 	emit_signal("shoot")
 

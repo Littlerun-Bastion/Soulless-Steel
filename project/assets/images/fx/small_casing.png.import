@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/MSV-M2_rshoulder_main.png-3e017648e062ab01bf444fcc8f352b81.stex"
+path="res://.import/small_casing.png-92086ffed14ea37866ea718c2a1a5a6a.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/shoulders/MSV-M2/MSV-M2_rshoulder_main.png"
-dest_files=[ "res://.import/MSV-M2_rshoulder_main.png-3e017648e062ab01bf444fcc8f352b81.stex" ]
+source_file="res://assets/images/fx/small_casing.png"
+dest_files=[ "res://.import/small_casing.png-92086ffed14ea37866ea718c2a1a5a6a.stex" ]
 
 [params]
 

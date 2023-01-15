@@ -55,6 +55,9 @@ offset = Vector2( 2.76584, -59.556 )
 [node name="AttachPos" type="Position2D" parent="."]
 position = Vector2( -1, 55 )
 
+[node name="EjectorPos" type="Position2D" parent="."]
+position = Vector2( -4, 76 )
+
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]

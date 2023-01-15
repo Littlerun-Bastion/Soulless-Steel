@@ -12,6 +12,8 @@ func _ready():
 func get_next_particle():
 	return get_child(index)
 
-func trigger():
-	get_next_particle().restart()
+func trigger(scale):
+	var next_particle = get_next_particle()
+	next_particle.scale *= scale
+	next_particle.restart()
 	index = (index + 1) % casings_count 

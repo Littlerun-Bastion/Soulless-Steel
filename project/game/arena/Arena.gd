@@ -342,7 +342,7 @@ func _on_mecha_create_casing(args):
 	var next_casing = $Casings.get_next_particle()
 	next_casing.global_position = args.casing_ejector_pos
 	next_casing.rotation_degrees = args.casing_eject_angle
-	$Casings.trigger()
+	$Casings.trigger(args.casing_size)
 
 func _on_bullet_impact(projectile):
 	var impact_effect = ProjectileManager.create_explosion(projectile)

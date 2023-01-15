@@ -47,7 +47,7 @@ rotation = -0.000512852
 [node name="Casings" type="Node2D" parent="."]
 script = ExtResource( 6 )
 casing = ExtResource( 7 )
-casings_count = 500
+casings_count = 2000
 
 [node name="Projectiles" type="Node2D" parent="."]
 

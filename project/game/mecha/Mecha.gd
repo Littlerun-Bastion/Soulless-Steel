@@ -103,6 +103,9 @@ var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
 
+var weight_capacity = 100.0
+var is_overweight = false
+
 var movement_type = "free"
 var velocity = Vector2()
 var tank_move_target = Vector2(1,0)
@@ -233,6 +236,8 @@ func _physics_process(dt):
 				$Blood2.emitting = false
 		else:
 			bleed_timer -= dt
+	
+	weight_speed_modifier(1)
 	
 	#ecm
 	if ecm_attempt_cooldown > 0.0:
@@ -801,6 +806,7 @@ func set_chassis(part_name):
 		movement_type = "free"
 		return
 	chassis = PartManager.get_part("chassis", part_name)
+	weight_capacity = chassis.weight_capacity
 	set_chassis_parts(chassis)
 	
 	
@@ -1083,6 +1089,17 @@ func thruster_cooldown_visuals():
 		$BoostReadyRight.modulate = Color(1, 1, 1, 0.33*(right_thruster_cooldown / thruster.dash_cooldown))
 			
 
+func weight_speed_modifier(speed):
+	if get_stat("weight") > weight_capacity:
+		if get_stat("weight") > weight_capacity * 0.75:
+			is_overweight = true
+			speed -= speed * (0.5 * (get_stat("weight")*0.25)/(weight_capacity*0.25))
+		else:
+			speed *= 0.33
+	else:
+		is_overweight = false
+	return speed
+
 func apply_movement(dt, direction):
 	if is_sprinting:
 		#Disable horizontal and backwards movement when sprinting
@@ -1095,9 +1112,10 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * max_speed
 	var mult = 1.0
 	if thruster:
-		var thrust_max_speed = max_speed + thruster.thrust_max_speed
+		var thrust_max_speed = weight_speed_modifier(max_speed + thruster.thrust_max_speed)
+		
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
-			mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
+			mult = freezing_status_slowdown(weight_speed_modifier(thruster.thrust_speed_multiplier))
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			$Chassis/SprintThrust.emitting = true
 			$Chassis/SprintThrust2.emitting = true
@@ -1115,7 +1133,7 @@ func apply_movement(dt, direction):
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
+			velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
 			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
@@ -1127,7 +1145,7 @@ func apply_movement(dt, direction):
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
+			velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
 			mecha_heat += move_heat*dt
 		else:
 			moving = false
@@ -1148,7 +1166,7 @@ func apply_movement(dt, direction):
 				var thrust_max_speed = max_speed + thruster.thrust_max_speed
 				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
 					target_speed = target_speed.normalized() * thrust_max_speed
-			var _rotation_acc = freezing_status_slowdown(chassis.rotation_acc * 50)
+			var _rotation_acc = freezing_status_slowdown(weight_speed_modifier(chassis.rotation_acc * 50))
 			if direction.y == 0:
 				_rotation_acc *= 2
 			if direction.x > 0:
@@ -1160,7 +1178,7 @@ func apply_movement(dt, direction):
 			if not moving:
 				velocity *= 1 - chassis.friction
 			else:
-				velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
+				velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
 				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			if chassis:

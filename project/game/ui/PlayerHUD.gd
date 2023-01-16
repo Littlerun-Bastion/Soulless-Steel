@@ -41,6 +41,7 @@ onready var TemperatureLabel = $ViewportContainer/Viewport/HeatBar/TemperatureLa
 onready var TemperatureErrorLabel = $ViewportContainer/Viewport/HeatBar/TemperatureErrorLabel
 onready var ECMLabel = $ViewportContainer/Viewport/ECMLabel
 onready var ECMFreqLabel = $ViewportContainer/Viewport/ECMLabel/ECMFreqLabel
+onready var OverweightLabel = $ViewportContainer/Viewport/StatusContainer/OverweightLabel
 
 
 var player = false
@@ -72,6 +73,11 @@ func _process(_delta):
 				StatusChirpSFX.play()
 		else:
 			StatusChirpSFX.playing = false
+		
+		if player.is_overweight:
+			OverweightLabel.visible = true
+		else:
+			OverweightLabel.visible = false
 		
 		if blink_timer < 0.0:
 			if StatusContainer.visible == true:

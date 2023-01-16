@@ -1163,7 +1163,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 
 	#Rotate Non-Melee Arm Weapons
 	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right],\
-				 [$Head, head]]:
+				 [$Head, head], [$LeftShoulder, shoulders], [$RightShoulder, shoulders]]:
 		var node_ref = data[1]
 		if node_ref:
 			var node = data[0]

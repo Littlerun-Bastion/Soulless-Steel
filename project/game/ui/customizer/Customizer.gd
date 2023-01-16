@@ -50,7 +50,7 @@ func default_loadout():
 	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	DisplayMecha.set_shoulders("shoulder_test")
+	DisplayMecha.set_shoulders("MSV-L3J-SG")
 	
 	
 	ComparisonMecha.set_core("MSV-L3J-C")
@@ -62,7 +62,7 @@ func default_loadout():
 	ComparisonMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	ComparisonMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	ComparisonMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	ComparisonMecha.set_shoulders("shoulder_test")
+	ComparisonMecha.set_shoulders("MSV-M2-SG")
 
 
 func show_category_button(parts, selected):

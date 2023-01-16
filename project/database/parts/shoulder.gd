@@ -13,6 +13,8 @@ export var stability := 1.0
 export var arms_accuracy_modifier := 1.0
 export var melee_modifier := 0.8
 export var weight := 20.0
+export var rotation_acc := 5
+export var rotation_range := 10.0
 
 var part_id
 

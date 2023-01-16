@@ -33,7 +33,7 @@ func _ready():
 		set_shoulder_weapon(false, SIDE.LEFT)
 		#set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 		#set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
-		set_shoulders("shoulder_test")
+		set_shoulders("Lancelot-Pauldron")
 	if Debug.get_setting("player_zoom"):
 		Cam.zoom = Debug.get_setting("player_zoom")
 
@@ -199,7 +199,7 @@ func setup(arena_ref):
 		set_arm_weapon("Type1-Massive", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.LEFT)
-		set_shoulders("shoulder_test")
+		set_shoulders("Lancelot-Pauldron")
 
 
 func set_arm_weapon(part_name, side):

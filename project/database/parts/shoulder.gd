@@ -28,6 +28,6 @@ func get_collision(side):
 	if side == SIDE.LEFT:
 		return $ShoulderLeft/Collision.polygon
 	elif side == SIDE.RIGHT:
-		return $ShoulderRight/Collision.polygon
+ 		return $ShoulderRight/Collision.polygon
 	else: 
 		push_error("Not a valid side:" + str(side))

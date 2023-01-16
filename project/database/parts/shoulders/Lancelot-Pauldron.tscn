@@ -10,6 +10,7 @@ part_name = "Lancelot-Pauldron"
 manufacturer_name = "Claymore International"
 tagline = "Test"
 description = "The lightest shoulderguard part on the market. Shielding is very poor and comes with a significant accuracy error margin, but has incredible handling stats. Very popular among niche markets."
+shield = null
 stability = 160.0
 arms_accuracy_modifier = 0.8
 melee_modifier = 1.3
@@ -25,5 +26,5 @@ polygon = PoolVector2Array( -3.52847, 26.0355, -5.875, 66.9375, -17.501, 46.0911
 position = Vector2( 107.127, 0 )
 texture = ExtResource( 2 )
 
-[node name="Collision2" type="CollisionPolygon2D" parent="ShoulderRight"]
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
 polygon = PoolVector2Array( 3.86305, 25.7517, 5.76847, 66.9702, 17.5781, 47.9849, 24.6561, -12.519, 9.22206, -31.4178, -1.48727, -10.7866, -4.14104, 13.4986 )

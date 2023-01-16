@@ -11,7 +11,7 @@ const SPEED_MOD_CORRECTION = 3
 const WEAPON_RECOIL_MOD = .9
 const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2
-const SPRINTING_ACC_MOD = 1.5
+const SPRINTING_ACC_MOD = 0.2
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
@@ -118,7 +118,7 @@ var moving_axis = {
 	"y": false,
 }
 var max_speed = 500
-var friction = 0.1
+var friction = 0.01
 var move_acc = 50
 var rotation_acc = 5
 var arm_accuracy_mod := 0.0
@@ -314,14 +314,15 @@ func _physics_process(dt):
 			dash_velocity = Vector2()
 	
 	#Walking animation
-	if moving and not MovementAnimation.is_playing() and\
-	   not is_sprinting and dash_velocity.length() <= 0.0:
-		MovementAnimation.play("Walking")
-	elif (not moving and velocity.length() <= 2.0) or\
-		 (is_sprinting or dash_velocity.length() > 0):
-		MovementAnimation.stop()
-	if not MovementAnimation.is_playing():
-		speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
+	if chassis and chassis.is_legs:
+		if moving and not MovementAnimation.is_playing() and\
+		   not is_sprinting and dash_velocity.length() <= 0.0:
+			MovementAnimation.play("Walking")
+		elif (not moving and velocity.length() <= 2.0) or\
+			 (is_sprinting or dash_velocity.length() > 0):
+			MovementAnimation.stop()
+		if not MovementAnimation.is_playing():
+			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
 	
 	#Locking mechanic
 	update_locking(dt)
@@ -371,6 +372,10 @@ func _physics_process(dt):
 	thruster_cooldown_visuals()
 
 	take_status_damage(dt)
+	
+	if chassis and chassis.hover_particles:
+		$Chassis/HoverParticles1.speed_scale = max(0.2,velocity.length()/100)
+		$Chassis/HoverParticles1.modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 
 
 func is_player():
@@ -808,6 +813,13 @@ func set_chassis_parts(chassis):
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	stability = get_stat("stability")
+	if chassis.hover_particles:
+		$Chassis/HoverParticles1.emitting = true
+		$Chassis/HoverParticles2.emitting = true
+	else:
+		$Chassis/HoverParticles1.emitting = false
+		$Chassis/HoverParticles2.emitting = false
+		
 
 
 func set_chassis_nodes(main,sub,glow,collision,side = false):
@@ -1033,15 +1045,15 @@ func dash(dash_dir):
 	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
-		$BoostThrust.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$BoostThrust2.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$BoostThrust3.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$BoostThrust.restart()
-		$BoostThrust2.restart()
-		$BoostThrust3.restart()
-		$BoostThrust.emitting = true
-		$BoostThrust2.emitting = true
-		$BoostThrust3.emitting = true
+		$Chassis/BoostThrust.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+		$Chassis/BoostThrust2.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+		$Chassis/BoostThrust3.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+		$Chassis/BoostThrust.restart()
+		$Chassis/BoostThrust2.restart()
+		$Chassis/BoostThrust3.restart()
+		$Chassis/BoostThrust.emitting = true
+		$Chassis/BoostThrust2.emitting = true
+		$Chassis/BoostThrust3.emitting = true
 		$GrindParticles.restart()
 		$GrindParticles.emitting = true
 		if movement_type == "relative":
@@ -1077,10 +1089,13 @@ func apply_movement(dt, direction):
 		if movement_type != "tank":
 			direction.x = 0
 		direction.y = min(direction.y, 0.0)
+	if chassis and movement_type == "relative":
+		move_acc *= 50
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
 	var mult = 1.0
 	if thruster:
+		var thrust_max_speed = max_speed + thruster.thrust_max_speed
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
@@ -1089,8 +1104,9 @@ func apply_movement(dt, direction):
 			$Chassis/SprintGlow.visible = true
 			$GrindParticles2.emitting = true
 			if movement_type != "tank":
-				target_speed.y *= mult
+				target_speed.y = min(target_speed.y * mult, target_speed.y + thruster.thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
+				print(target_move_acc)
 		elif direction == Vector2(0,0):
 			$Chassis/SprintThrust.emitting = false
 			$Chassis/SprintThrust2.emitting = false
@@ -1103,7 +1119,7 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
-			velocity = lerp(velocity, Vector2.ZERO, friction)
+			velocity *= 1 - chassis.friction
 		move(velocity*speed_modifier)
 	elif movement_type == "relative":
 		if direction.length() > 0:
@@ -1117,18 +1133,22 @@ func apply_movement(dt, direction):
 			moving = false
 			moving_axis.x = false
 			moving_axis.y = false
-			velocity = lerp(velocity, Vector2.ZERO, friction)
+			velocity *= 1 - chassis.friction
 		move(velocity*speed_modifier)
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false
 			if direction.y > 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg2rad(90)) * max_speed * mult
+				target_speed = tank_move_target.rotated(deg2rad(90)) * max_speed * mult/1.5
 			if direction.y < 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg2rad(270)) * max_speed * mult
-			var _rotation_acc = chassis.rotation_acc
+				target_speed = tank_move_target.rotated(deg2rad(270)) * max_speed * mult/1.5
+			if thruster:
+				var thrust_max_speed = max_speed + thruster.thrust_max_speed
+				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
+					target_speed = target_speed.normalized() * thrust_max_speed
+			var _rotation_acc = freezing_status_slowdown(chassis.rotation_acc * 50)
 			if direction.y == 0:
 				_rotation_acc *= 2
 			if direction.x > 0:
@@ -1138,15 +1158,14 @@ func apply_movement(dt, direction):
 				tank_move_target = tank_move_target.rotated(deg2rad(-_rotation_acc*dt))
 				global_rotation_degrees -= _rotation_acc*dt
 			if not moving:
-				velocity = lerp(velocity, Vector2.ZERO, friction)
+				velocity *= 1 - chassis.friction
 			else:
 				velocity = lerp(velocity, freezing_status_slowdown(target_speed), freezing_status_slowdown(target_move_acc))
 				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
-			move(velocity)
-
 		else:
-			velocity = lerp(velocity, Vector2.ZERO, friction)
-			move(velocity*speed_modifier)
+			if chassis:
+				velocity *= 1 - chassis.friction/2
+		move(velocity)
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 	update_chassis_visuals(dt)
@@ -1170,20 +1189,27 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 	if movement_type == "tank" and chassis:
 		_rotation_acc = chassis.trim_acc
 	if is_sprinting == true and movement_type != "tank":
-		_rotation_acc = rotation_acc/5
+		_rotation_acc = rotation_acc/2
 	if not stand_still:
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
 
 
 	#Rotate Non-Melee Arm Weapons
-	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right],\
-				 [$Head, head], [$LeftShoulder, shoulders], [$RightShoulder, shoulders]]:
+	for data in [[$Head, head], [$LeftShoulder, shoulders], [$RightShoulder, shoulders]]:
 		var node_ref = data[1]
 		if node_ref:
 			var node = data[0]
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
+			
+	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right]]:
+		var node_ref = data[1]
+		if node_ref:
+			var node = data[0]
+			var actual_rot = node.rotation_degrees + rotation_degrees
+			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
+			node.rotation_degrees = clamp(node.rotation_degrees, -core.rotation_range, core.rotation_range)
 	
 	for data in	[[$Chassis/Left, chassis], [$Chassis/Right, chassis]]:
 		var node_ref = data[1]
@@ -1252,12 +1278,12 @@ func stop_sprinting(sprint_dir):
 		lock_movement(0.5 * get_stability())
 		$GrindParticles.restart()
 		$GrindParticles.emitting = true
-		$BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$BoostThrust.restart()
-		$BoostThrust2.restart()
-		$BoostThrust.emitting = true
-		$BoostThrust2.emitting = true
+		$Chassis/BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+		$Chassis/BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+		$Chassis/BoostThrust.restart()
+		$Chassis/BoostThrust2.restart()
+		$Chassis/BoostThrust.emitting = true
+		$Chassis/BoostThrust2.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
 	$Chassis/SprintThrust.emitting = false

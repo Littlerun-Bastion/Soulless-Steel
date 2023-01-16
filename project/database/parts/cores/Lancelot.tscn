@@ -22,6 +22,7 @@ description = "An ultralight core constructed only from a bare skeleton and pape
 health = 2250.0
 shield = 2000.0
 stability = 140.0
+rotation_range = 46.0
 weight = 11.0
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]

@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_glow.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_main.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_sub.png" type="Texture" id=4]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+part_name = "O30-Chassis12w"
+manufacturer_name = "Orontes"
+tagline = "Wheeled"
+movement_type = "tank"
+max_speed = 760
+move_acc = 1.12
+accuracy_modifier = 1.24
+friction = 0.12
+rotation_acc = 1.1
+trim_acc = 1.04
+rotation_range = 180.0
+health = 3600.0
+move_heat = 23
+weight = 17.5
+weight_capacity = 80.2
+stability = 90.0
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="ChassisSub" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 4 )
+
+[node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 2 )
+
+[node name="Chassis" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 3 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+polygon = PoolVector2Array( -61, -96, -22, -95, -21, -53, 21, -53, 21, -94, 61, -96, 62, -46, 41, -45, 43, 93, 19, 93, 14, 99, -14, 100, -19, 94, -43, 92, -41, -46, -62, -46 )
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2( 46, 0 )
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2( -16, 0 )

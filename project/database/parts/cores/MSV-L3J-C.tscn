@@ -22,6 +22,7 @@ description = "A light, scrapyard core part manufactured solely for its cheapnes
 health = 2475.0
 shield = 1250.0
 stability = 0.0
+rotation_range = 28.0
 weight = 15.7
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]

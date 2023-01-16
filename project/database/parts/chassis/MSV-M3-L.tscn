@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_sub.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_glow.png" type="Texture" id=4]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+part_name = "MSV-M3-L"
+manufacturer_name = "Martel"
+tagline = "Wheeled"
+movement_type = "tank"
+max_speed = 430
+move_acc = 0.8
+accuracy_modifier = 1.35
+friction = 0.11
+rotation_acc = 1.05
+trim_acc = 0.98
+rotation_range = 180.0
+health = 3800.0
+move_heat = 19
+weight = 16.5
+weight_capacity = 92.2
+stability = 75.0
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="ChassisSub" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 3 )
+
+[node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 4 )
+
+[node name="Chassis" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 2 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+polygon = PoolVector2Array( -61.9649, -85.5904, -33.3271, -85.2369, -32.9735, -67.5592, 33.141, -67.9128, 33.141, -85.5904, 62.1323, -85.2369, 62.1323, 8.45479, 37.03, 8.80833, 37.03, 85.5294, -36.8626, 85.1759, -35.802, 8.45479, -62.3185, 8.10123 )
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2( 46, 0 )
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2( -16, 0 )

@@ -22,6 +22,7 @@ description = "A lightweight core with moderately powerful shield projectors and
 health = 2700.0
 shield = 1875.0
 stability = 140.0
+rotation_range = 40.0
 weight = 13.5
 
 [node name="LeftChassisOffset" type="Position2D" parent="."]

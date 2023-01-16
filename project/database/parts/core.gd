@@ -10,6 +10,7 @@ export var image : Texture
 export var health := 4500.0
 export var shield := 4500.0
 export var stability := 1.0
+export var rotation_range := 20.0
 export var has_left_shoulder := false 
 export var has_right_shoulder := false 
 export var weight:= 300.0

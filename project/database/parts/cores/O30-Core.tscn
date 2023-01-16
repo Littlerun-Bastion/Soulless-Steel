@@ -23,6 +23,7 @@ description = "A middleweight core with great defensive stats for its weight bra
 health = 4050.0
 shield = 2250.0
 stability = 90.0
+rotation_range = 17.0
 has_left_shoulder = true
 weight = 19.5
 

@@ -15,7 +15,10 @@ manufacturer_name = "Test Legged Chassis"
 tagline = "Bipedal"
 is_legs = true
 movement_type = "relative"
+move_acc = 45.0
 accuracy_modifier = 1.33
+rotation_acc = 1.5
+health = 2200.0
 move_heat = 15
 
 [node name="SingleSide" type="Node2D" parent="."]

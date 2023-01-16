@@ -10,6 +10,7 @@ tagline = "Test"
 description = ""
 walk_speed_multiplier = 1.0
 thrust_speed_multiplier = 3.0
+thrust_max_speed = 300
 sprinting_heat = 30
 dash_distance = 2
 dash_cooldown = 4

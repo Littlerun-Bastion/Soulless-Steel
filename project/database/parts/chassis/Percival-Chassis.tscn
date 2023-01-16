@@ -1,37 +1,40 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_main.png" type="Texture" id=3]
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=7]
+[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" type="Texture" id=4]
 
 [node name="Part" type="Node"]
-script = ExtResource( 7 )
-part_name = "Test 2 L3J"
-manufacturer_name = "Test Tank Chassis"
-tagline = "Bipedal"
+script = ExtResource( 1 )
+part_name = "Percival-Chassis"
+manufacturer_name = "Claymore International"
+tagline = "Wheeled"
 movement_type = "tank"
-accuracy_modifier = 1.33
-rotation_acc = 100.0
+max_speed = 920
+move_acc = 1.25
+accuracy_modifier = 0.85
+rotation_acc = 1.25
+trim_acc = 1.1
 rotation_range = 180.0
-health = 2200.0
-move_heat = 20
-has_thrusters = true
-weight = 400.0
-weight_capacity = 1400.0
+health = 2400.0
+move_heat = 25
+weight = 10.5
+weight_capacity = 60.0
+stability = 140.0
 
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="ChassisSub" type="Sprite" parent="SingleSide"]
 visible = false
-texture = ExtResource( 2 )
+texture = ExtResource( 4 )
 
 [node name="ChassisGlow" type="Sprite" parent="SingleSide"]
 visible = false
-texture = ExtResource( 1 )
+texture = ExtResource( 3 )
 
 [node name="Chassis" type="Sprite" parent="SingleSide"]
-texture = ExtResource( 3 )
+texture = ExtResource( 2 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
 visible = false

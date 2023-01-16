@@ -1,4 +1,4 @@
-[gd_scene load_steps=139 format=2]
+[gd_scene load_steps=151 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -151,6 +151,71 @@ scale = 0.5
 scale_random = 1.0
 color_ramp = SubResource( 62 )
 
+[sub_resource type="Gradient" id=106]
+offsets = PoolRealArray( 0.0941176, 0.388235, 0.705882, 1 )
+colors = PoolColorArray( 1, 1, 1, 0.101961, 1, 1, 1, 0.635294, 1, 1, 1, 0, 1, 1, 1, 0.0705882 )
+
+[sub_resource type="GradientTexture" id=107]
+gradient = SubResource( 106 )
+
+[sub_resource type="Curve" id=108]
+max_value = 1024.0
+_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.305556, 1024 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=109]
+curve = SubResource( 108 )
+
+[sub_resource type="Curve" id=110]
+max_value = 2.0
+_data = [ Vector2( 0, 0.318182 ), 0.0, 0.0, 0, 0, Vector2( 0.398148, 2 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=111]
+curve = SubResource( 110 )
+
+[sub_resource type="ParticlesMaterial" id=112]
+flag_align_y = true
+flag_disable_z = true
+spread = 180.0
+gravity = Vector3( 0, 98, 0 )
+initial_velocity = 500.0
+initial_velocity_random = 0.27
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+damping = 100.0
+damping_random = 0.27
+damping_curve = SubResource( 109 )
+scale_curve = SubResource( 111 )
+color_ramp = SubResource( 107 )
+
+[sub_resource type="Gradient" id=117]
+offsets = PoolRealArray( 0.0117647, 0.376471, 0.670588 )
+colors = PoolColorArray( 1, 1, 1, 0, 0.90332, 0.90332, 0.90332, 0.258824, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=118]
+gradient = SubResource( 117 )
+
+[sub_resource type="Curve" id=114]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.194444, 0.629545 ), 0.0, 0.0, 0, 0, Vector2( 0.759259, 0 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=115]
+curve = SubResource( 114 )
+
+[sub_resource type="ParticlesMaterial" id=116]
+flag_align_y = true
+flag_disable_z = true
+spread = 180.0
+gravity = Vector3( 0, 98, 0 )
+initial_velocity = 500.0
+initial_velocity_random = 0.27
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+damping = 100.0
+damping_random = 0.27
+damping_curve = SubResource( 109 )
+scale_random = 0.18
+scale_curve = SubResource( 115 )
+color_ramp = SubResource( 118 )
+
 [sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
 
@@ -266,28 +331,7 @@ scale = 0.75
 scale_random = 0.39
 color_ramp = SubResource( 71 )
 
-[sub_resource type="Gradient" id=102]
-offsets = PoolRealArray( 0.247059, 0.858824 )
-colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
-
-[sub_resource type="GradientTexture" id=103]
-gradient = SubResource( 102 )
-
-[sub_resource type="ParticlesMaterial" id=104]
-emission_shape = 1
-emission_sphere_radius = 10.0
-flag_align_y = true
-flag_disable_z = true
-direction = Vector3( 0, 1, 0 )
-spread = 15.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 106.06
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-scale_random = 1.0
-color_ramp = SubResource( 103 )
-
-[sub_resource type="ParticlesMaterial" id=105]
+[sub_resource type="ParticlesMaterial" id=75]
 emission_shape = 1
 emission_sphere_radius = 30.0
 flag_align_y = true
@@ -330,22 +374,6 @@ scale = 0.1
 scale_random = 0.23
 color_ramp = SubResource( 71 )
 
-[sub_resource type="ParticlesMaterial" id=75]
-emission_shape = 1
-emission_sphere_radius = 30.0
-flag_align_y = true
-flag_disable_z = true
-direction = Vector3( 0, 1, 0 )
-spread = 20.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 150.0
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-linear_accel = -54.54
-scale = 0.75
-scale_random = 0.39
-color_ramp = SubResource( 71 )
-
 [sub_resource type="ParticlesMaterial" id=76]
 emission_shape = 1
 emission_sphere_radius = 20.0
@@ -360,6 +388,43 @@ orbit_velocity_random = 0.0
 linear_accel = -54.54
 scale = 1.5
 scale_random = 1.0
+color_ramp = SubResource( 71 )
+
+[sub_resource type="Gradient" id=102]
+offsets = PoolRealArray( 0.247059, 0.858824 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=103]
+gradient = SubResource( 102 )
+
+[sub_resource type="ParticlesMaterial" id=104]
+emission_shape = 1
+emission_sphere_radius = 10.0
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 15.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 106.06
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+scale_random = 1.0
+color_ramp = SubResource( 103 )
+
+[sub_resource type="ParticlesMaterial" id=105]
+emission_shape = 1
+emission_sphere_radius = 30.0
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, 1, 0 )
+spread = 20.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 150.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+linear_accel = -54.54
+scale = 0.75
+scale_random = 0.39
 color_ramp = SubResource( 71 )
 
 [sub_resource type="Shader" id=100]
@@ -901,6 +966,22 @@ texture = ExtResource( 38 )
 
 [node name="Chassis" type="Node2D" parent="."]
 
+[node name="HoverParticles1" type="Particles2D" parent="Chassis"]
+position = Vector2( 0, 0.0913391 )
+amount = 50
+lifetime = 0.2
+speed_scale = 4.46
+local_coords = false
+process_material = SubResource( 112 )
+texture = ExtResource( 39 )
+
+[node name="HoverParticles2" type="Particles2D" parent="Chassis"]
+position = Vector2( 0, 0.0913391 )
+amount = 10
+speed_scale = 4.0
+process_material = SubResource( 116 )
+texture = ExtResource( 40 )
+
 [node name="Single" type="Node2D" parent="Chassis"]
 
 [node name="Sub" type="Sprite" parent="Chassis/Single"]
@@ -968,6 +1049,41 @@ speed_scale = 4.0
 local_coords = false
 process_material = SubResource( 73 )
 texture = ExtResource( 40 )
+
+[node name="BoostThrust2" type="Particles2D" parent="Chassis"]
+position = Vector2( 0, 2.33624 )
+emitting = false
+amount = 30
+lifetime = 1.5
+one_shot = true
+speed_scale = 8.0
+local_coords = false
+process_material = SubResource( 75 )
+texture = ExtResource( 40 )
+
+[node name="BoostThrust3" type="Particles2D" parent="Chassis"]
+position = Vector2( 0, 80.9086 )
+emitting = false
+amount = 60
+lifetime = 0.75
+one_shot = true
+explosiveness = 0.5
+randomness = 0.46
+local_coords = false
+process_material = SubResource( 84 )
+texture = ExtResource( 43 )
+
+[node name="BoostThrust" type="Particles2D" parent="Chassis"]
+position = Vector2( 0, 0.0913391 )
+emitting = false
+amount = 40
+lifetime = 2.0
+one_shot = true
+speed_scale = 12.0
+fract_delta = false
+local_coords = false
+process_material = SubResource( 76 )
+texture = ExtResource( 39 )
 
 [node name="BoostReadyFwd" type="Particles2D" parent="."]
 modulate = Color( 1, 1, 1, 0.0784314 )
@@ -1062,41 +1178,6 @@ speed_scale = 10.0
 local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
-
-[node name="BoostThrust3" type="Particles2D" parent="."]
-position = Vector2( 0, 80.9086 )
-emitting = false
-amount = 60
-lifetime = 0.75
-one_shot = true
-explosiveness = 0.5
-randomness = 0.46
-local_coords = false
-process_material = SubResource( 84 )
-texture = ExtResource( 43 )
-
-[node name="BoostThrust2" type="Particles2D" parent="."]
-position = Vector2( 0, 2.33624 )
-emitting = false
-amount = 30
-lifetime = 1.5
-one_shot = true
-speed_scale = 8.0
-local_coords = false
-process_material = SubResource( 75 )
-texture = ExtResource( 40 )
-
-[node name="BoostThrust" type="Particles2D" parent="."]
-position = Vector2( 0, 0.0913391 )
-emitting = false
-amount = 40
-lifetime = 2.0
-one_shot = true
-speed_scale = 12.0
-fract_delta = false
-local_coords = false
-process_material = SubResource( 76 )
-texture = ExtResource( 39 )
 
 [node name="Core" type="Sprite" parent="."]
 material = SubResource( 5 )

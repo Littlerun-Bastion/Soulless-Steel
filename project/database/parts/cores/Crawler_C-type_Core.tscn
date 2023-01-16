@@ -22,6 +22,7 @@ description = "Heavyweight core with excellent defensive capabilities and top-of
 health = 6525.0
 shield = 3750.0
 stability = 100.0
+rotation_range = 15.0
 has_left_shoulder = true
 has_right_shoulder = true
 weight = 38.2

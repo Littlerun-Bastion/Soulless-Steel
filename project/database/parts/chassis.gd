@@ -11,18 +11,18 @@ export var image : Texture
 export var is_legs := false
 export(String, "free", "tank", "relative") var movement_type = "free"
 export var max_speed = 500
-export var move_acc = 50
+export var move_acc = 1.0
 export var accuracy_modifier = 1.0
-export var friction = 0.1
+export var friction = 0.1 
 export var rotation_acc = 5.0
 export var trim_acc = 1.0
 export var rotation_range = 10.0
 export var health := 1000.0
 export var move_heat = 35
-export var has_thrusters = false
 export var weight := 300.0
 export var weight_capacity := 1000.0
 export var stability := 1.0
+export var hover_particles := false
 
 var part_id
 

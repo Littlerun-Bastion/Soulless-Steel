@@ -23,6 +23,7 @@ description = "A well-rounded defensive core part with space for ordnance, good 
 health = 5400.0
 shield = 3125.0
 stability = 110.0
+rotation_range = 22.0
 has_left_shoulder = true
 has_right_shoulder = true
 weight = 31.5

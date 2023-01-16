@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_sub.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" type="Texture" id=4]
+
+[node name="Part" type="Node"]
+script = ExtResource( 1 )
+part_name = "Lancelot-Chassis"
+manufacturer_name = "Claymore International"
+tagline = "Wheeled"
+movement_type = "tank"
+max_speed = 1000
+move_acc = 1.3
+accuracy_modifier = 0.8
+friction = 0.01
+rotation_acc = 1.3
+trim_acc = 1.4
+rotation_range = 180.0
+health = 2000.0
+move_heat = 33
+weight = 9.4
+weight_capacity = 55.2
+stability = 160.0
+hover_particles = true
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="ChassisSub" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 3 )
+
+[node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 4 )
+
+[node name="Chassis" type="Sprite" parent="SingleSide"]
+texture = ExtResource( 2 )
+
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+visible = false
+polygon = PoolVector2Array( -81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112 )
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2( 46, 0 )
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2( -16, 0 )

@@ -23,6 +23,7 @@ description = "A more robust, updated version of the L3J, the M2 is a middleweig
 health = 3825.0
 shield = 1250.0
 stability = 120.0
+rotation_range = 25.0
 has_left_shoulder = true
 has_right_shoulder = true
 weight = 20.3

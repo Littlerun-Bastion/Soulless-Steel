@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/MSV-M3_leg_glow.png-65018360974eecf33f157a2ce44488ac.stex"
+path="res://.import/MSV-M3_leg_main.png-69b52d0095b89e01e45f5bb8aeb1ea65.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/legs/MSV-M2/MSV-M3_leg_glow.png"
-dest_files=[ "res://.import/MSV-M3_leg_glow.png-65018360974eecf33f157a2ce44488ac.stex" ]
+source_file="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_main.png"
+dest_files=[ "res://.import/MSV-M3_leg_main.png-69b52d0095b89e01e45f5bb8aeb1ea65.stex" ]
 
 [params]
 
@@ -20,7 +20,7 @@ compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
-flags/filter=true
+flags/filter=false
 flags/mipmaps=false
 flags/anisotropic=false
 flags/srgb=2
@@ -31,5 +31,5 @@ process/invert_color=false
 process/normal_map_invert_y=false
 stream=false
 size_limit=0
-detect_3d=true
+detect_3d=false
 svg/scale=1.0

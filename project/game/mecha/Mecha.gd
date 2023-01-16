@@ -358,22 +358,25 @@ func _physics_process(dt):
 	elif fwd_thruster_cooldown <= 0.0 and not fwd_thruster_ready:
 		fwd_thruster_ready = true
 		$BoostReadyFwd2.emitting = true
+		$BoostReadyFwd.emitting = true
 	if rwd_thruster_cooldown > 0.0 and not rwd_thruster_ready:
 		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
 	elif rwd_thruster_cooldown <= 0.0 and not rwd_thruster_ready:
 		rwd_thruster_ready = true
 		$BoostReadyRwd2.emitting = true
+		$BoostReadyRwd.emitting = true
 	if right_thruster_cooldown > 0.0 and not right_thruster_ready:
 		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
 	elif right_thruster_cooldown <= 0.0 and not right_thruster_ready:
 		right_thruster_ready = true
 		$BoostReadyRight2.emitting = true
+		$BoostReadyRight.emitting = true
 	if left_thruster_cooldown > 0.0 and not left_thruster_ready:
 		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
 	elif left_thruster_cooldown <= 0.0 and not left_thruster_ready:
 		left_thruster_ready = true
 		$BoostReadyLeft2.emitting = true
-	
+		$BoostReadyLeft.emitting = true
 	thruster_cooldown_visuals()
 
 	take_status_damage(dt)
@@ -634,10 +637,6 @@ func update_heat(dt):
 	#Main Mecha Heat
 	if display_mode == true:
 		mecha_heat = max_heat - 1
-		$BoostReadyFwd.emitting = false
-		$BoostReadyRwd.emitting = false
-		$BoostReadyRight.emitting = false
-		$BoostReadyLeft.emitting = false
 		return
 	if generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
@@ -1067,15 +1066,19 @@ func dash(dash_dir):
 		if dash_dir == Vector2(0,-1): #FWD
 			fwd_thruster_cooldown = thruster.dash_cooldown
 			fwd_thruster_ready = false
+			$BoostReadyFwd.emitting = true
 		elif dash_dir == Vector2(0,1): #RWD
 			rwd_thruster_cooldown = thruster.dash_cooldown
 			rwd_thruster_ready = false
+			$BoostReadyRwd.emitting = true
 		elif dash_dir == Vector2(1,0): #RIGHT
 			right_thruster_cooldown = thruster.dash_cooldown
 			right_thruster_ready = false
+			$BoostReadyRight.emitting = true
 		elif dash_dir == Vector2(-1,0): #LEFT
 			left_thruster_cooldown = thruster.dash_cooldown
 			left_thruster_ready = false
+			$BoostReadyLeft.emitting = true
 		else:
 			return
 

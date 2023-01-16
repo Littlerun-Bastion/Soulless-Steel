@@ -2,7 +2,7 @@
 
 [ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/legs/percival_leg.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_main.png" type="Texture" id=3]
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=7]
 
 [node name="Part" type="Node"]
@@ -12,6 +12,8 @@ manufacturer_name = "Test Tank Chassis"
 tagline = "Bipedal"
 movement_type = "tank"
 accuracy_modifier = 1.33
+rotation_acc = 100.0
+rotation_range = 180.0
 health = 2200.0
 move_heat = 20
 has_thrusters = true
@@ -21,9 +23,11 @@ weight_capacity = 1400.0
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="ChassisSub" type="Sprite" parent="SingleSide"]
+visible = false
 texture = ExtResource( 2 )
 
 [node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+visible = false
 texture = ExtResource( 1 )
 
 [node name="Chassis" type="Sprite" parent="SingleSide"]

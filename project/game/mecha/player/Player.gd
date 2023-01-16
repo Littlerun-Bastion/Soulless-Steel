@@ -26,7 +26,7 @@ func _ready():
 		set_chipset("type_1")
 		set_thruster("test1")
 		set_head("O10-Head")
-		set_chassis("legs_test")
+		set_chassis("legs_test2")
 		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
 		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 		set_shoulder_weapon(false, SIDE.RIGHT)
@@ -55,8 +55,7 @@ func _physics_process(delta):
 	if not get_locked_to():
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-			apply_rotation_by_point(delta, target_pos, \
-						   movement_type == "tank" or Input.is_action_pressed("strafe"))
+			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
 	
 	update_camera_offset(delta)
 
@@ -99,7 +98,7 @@ func _input(event):
 	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked():
 		sprinting_timer = SPRINTING_TIMEOUT
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
-		if sprinting_timer > 0.0:
+		if sprinting_timer > 0.0 and movement_type != "tank":
 			dash(get_input().normalized())
 		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0

@@ -105,6 +105,8 @@ var lock_strength = 1.0
 
 var movement_type = "free"
 var velocity = Vector2()
+var tank_move_target = Vector2(0,1)
+var tank_lookat_target = Vector2()
 var is_sprinting = false
 var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
@@ -198,6 +200,10 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
+	
+	tank_lookat_target = global_position + tank_move_target
+	if movement_type == "tank":
+		$Chassis.look_at(tank_lookat_target)
 	
 	if impact_velocity.length() > 0:
 		move(impact_velocity)
@@ -1068,24 +1074,27 @@ func thruster_cooldown_visuals():
 func apply_movement(dt, direction):
 	if is_sprinting:
 		#Disable horizontal and backwards movement when sprinting
-		direction.x = 0
+		if movement_type != "tank":
+			direction.x = 0
 		direction.y = min(direction.y, 0.0)
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
+	var mult = 1.0
 	if thruster:
-		var mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
+			mult = freezing_status_slowdown(thruster.thrust_speed_multiplier)
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
-			target_speed.y *= mult
-			target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
-			$SprintThrust.emitting = true
-			$SprintThrust2.emitting = true
-			$SprintGlow.visible = true
+			$Chassis/SprintThrust.emitting = true
+			$Chassis/SprintThrust2.emitting = true
+			$Chassis/SprintGlow.visible = true
 			$GrindParticles2.emitting = true
+			if movement_type != "tank":
+				target_speed.y *= mult
+				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		elif direction == Vector2(0,0):
-			$SprintThrust.emitting = false
-			$SprintThrust2.emitting = false
-			$SprintGlow.visible = false
+			$Chassis/SprintThrust.emitting = false
+			$Chassis/SprintThrust2.emitting = false
+			$Chassis/SprintGlow.visible = false
 			$GrindParticles2.emitting = false
 	if movement_type == "free":
 		if direction.length() > 0:
@@ -1113,18 +1122,19 @@ func apply_movement(dt, direction):
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false
-			match get_direction_from_vector(direction):
-				"down":
-					direction = Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					moving = true
-				"left":
-					apply_rotation_by_direction(dt, "counter")
-				"up":
-					direction = -Vector2(0,1).rotated(deg2rad(rotation_degrees))
-					moving = true
-				"right":
-					apply_rotation_by_direction(dt, "clock")
-
+			if direction.y > 0:
+				moving = true
+				target_speed = tank_move_target.rotated(deg2rad(90)) * max_speed * mult
+			if direction.y < 0:
+				moving = true
+				target_speed = tank_move_target.rotated(deg2rad(270)) * max_speed * mult
+			var _rotation_acc = chassis.rotation_acc
+			if direction.y == 0:
+				_rotation_acc *= 2
+			if direction.x > 0:
+				tank_move_target = tank_move_target.rotated(deg2rad(_rotation_acc*dt))
+			elif direction.x < 0:
+				tank_move_target = tank_move_target.rotated(deg2rad(-_rotation_acc*dt))
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:
@@ -1155,7 +1165,9 @@ func apply_rotation_by_direction(dt, direction):
 func apply_rotation_by_point(dt, target_pos, stand_still):
 	#Rotate Body
 	var _rotation_acc = rotation_acc
-	if is_sprinting == true:
+	if movement_type == "tank" and chassis:
+		_rotation_acc = chassis.trim_acc
+	if is_sprinting == true and movement_type != "tank":
 		_rotation_acc = rotation_acc/5
 	if not stand_still:
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
@@ -1176,7 +1188,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		if node_ref:
 			var node = data[0]
 			var actual_rot = node.rotation_degrees + rotation_degrees
-			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.vis_rotation_acc)
+			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.trim_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
 
 #Return the proper direction diff to rotate given a current and target rotation
@@ -1246,9 +1258,9 @@ func stop_sprinting(sprint_dir):
 		$BoostThrust2.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
-	$SprintThrust.emitting = false
-	$SprintThrust2.emitting = false
-	$SprintGlow.visible = false
+	$Chassis/SprintThrust.emitting = false
+	$Chassis/SprintThrust2.emitting = false
+	$Chassis/SprintGlow.visible = false
 	$GrindParticles2.emitting = false
 
 #COMBAT METHODS

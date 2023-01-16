@@ -941,14 +941,14 @@ material = SubResource( 24 )
 material = SubResource( 25 )
 texture = ExtResource( 22 )
 
-[node name="SprintGlow" type="Sprite" parent="."]
+[node name="SprintGlow" type="Sprite" parent="Chassis"]
 visible = false
 material = SubResource( 74 )
 position = Vector2( 0, 81.8525 )
 scale = Vector2( 2, 2 )
 texture = ExtResource( 41 )
 
-[node name="SprintThrust" type="Particles2D" parent="."]
+[node name="SprintThrust" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 80.9086 )
 emitting = false
 amount = 10
@@ -959,7 +959,7 @@ local_coords = false
 process_material = SubResource( 72 )
 texture = ExtResource( 39 )
 
-[node name="SprintThrust2" type="Particles2D" parent="."]
+[node name="SprintThrust2" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 80.9086 )
 emitting = false
 amount = 10

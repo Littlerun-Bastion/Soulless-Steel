@@ -105,7 +105,7 @@ var lock_strength = 1.0
 
 var movement_type = "free"
 var velocity = Vector2()
-var tank_move_target = Vector2(0,1)
+var tank_move_target = Vector2(1,0)
 var tank_lookat_target = Vector2()
 var is_sprinting = false
 var sprinting_ending_correction = Vector2()
@@ -373,7 +373,7 @@ func _physics_process(dt):
 
 	take_status_damage(dt)
 	
-	if chassis and chassis.hover_particles:
+	if chassis and chassis.hover_particles and not display_mode:
 		$Chassis/HoverParticles1.speed_scale = max(0.2,velocity.length()/100)
 		$Chassis/HoverParticles1.modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 
@@ -813,7 +813,7 @@ func set_chassis_parts(chassis):
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	stability = get_stat("stability")
-	if chassis.hover_particles:
+	if chassis.hover_particles and not display_mode:
 		$Chassis/HoverParticles1.emitting = true
 		$Chassis/HoverParticles2.emitting = true
 	else:

@@ -21,11 +21,11 @@ var invert_controls = {
 
 func _ready():
 	if Debug.get_setting("player_loadout"):
-		set_core("O10-Core")
+		set_core("Lancelot-Core")
 		set_generator("type_1")
 		set_chipset("type_1")
 		set_thruster("test1")
-		set_head("O10-Head")
+		set_head("Lancelot-Head")
 		set_chassis("Lancelot-Chassis")
 		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
 		set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)

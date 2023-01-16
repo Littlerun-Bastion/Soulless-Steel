@@ -355,28 +355,32 @@ func _physics_process(dt):
 	#Thrusters cooldowns
 	if fwd_thruster_cooldown > 0.0 and not fwd_thruster_ready:
 		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
+		$BoostReadyFwd.emitting = true
 	elif fwd_thruster_cooldown <= 0.0 and not fwd_thruster_ready:
 		fwd_thruster_ready = true
 		$BoostReadyFwd2.emitting = true
-		$BoostReadyFwd.emitting = true
+		$BoostReadyFwd.emitting = false
 	if rwd_thruster_cooldown > 0.0 and not rwd_thruster_ready:
 		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
+		$BoostReadyFwd.emitting = true
 	elif rwd_thruster_cooldown <= 0.0 and not rwd_thruster_ready:
 		rwd_thruster_ready = true
 		$BoostReadyRwd2.emitting = true
-		$BoostReadyRwd.emitting = true
+		$BoostReadyRwd.emitting = false
 	if right_thruster_cooldown > 0.0 and not right_thruster_ready:
 		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
+		$BoostReadyFwd.emitting = true
 	elif right_thruster_cooldown <= 0.0 and not right_thruster_ready:
 		right_thruster_ready = true
 		$BoostReadyRight2.emitting = true
-		$BoostReadyRight.emitting = true
+		$BoostReadyRight.emitting = false
 	if left_thruster_cooldown > 0.0 and not left_thruster_ready:
 		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
+		$BoostReadyFwd.emitting = true
 	elif left_thruster_cooldown <= 0.0 and not left_thruster_ready:
 		left_thruster_ready = true
 		$BoostReadyLeft2.emitting = true
-		$BoostReadyLeft.emitting = true
+		$BoostReadyLeft.emitting = false
 	thruster_cooldown_visuals()
 
 	take_status_damage(dt)

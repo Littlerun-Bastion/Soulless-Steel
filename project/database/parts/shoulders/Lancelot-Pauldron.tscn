@@ -10,7 +10,6 @@ part_name = "Lancelot-Pauldron"
 manufacturer_name = "Claymore International"
 tagline = "Test"
 description = "The lightest shoulderguard part on the market. Shielding is very poor and comes with a significant accuracy error margin, but has incredible handling stats. Very popular among niche markets."
-shield = null
 stability = 160.0
 arms_accuracy_modifier = 0.8
 melee_modifier = 1.3

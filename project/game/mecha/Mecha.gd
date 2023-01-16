@@ -1133,8 +1133,10 @@ func apply_movement(dt, direction):
 				_rotation_acc *= 2
 			if direction.x > 0:
 				tank_move_target = tank_move_target.rotated(deg2rad(_rotation_acc*dt))
+				global_rotation_degrees += _rotation_acc*dt
 			elif direction.x < 0:
 				tank_move_target = tank_move_target.rotated(deg2rad(-_rotation_acc*dt))
+				global_rotation_degrees -= _rotation_acc*dt
 			if not moving:
 				velocity = lerp(velocity, Vector2.ZERO, friction)
 			else:

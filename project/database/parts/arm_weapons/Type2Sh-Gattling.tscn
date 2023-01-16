@@ -8,7 +8,7 @@
 [ext_resource path="res://game/fx/BasicMissileSmoke.tres" type="Material" id=6]
 [ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=7]
 
-[node name="Part" type="Node"]
+[node name="Part2" type="Node"]
 script = ExtResource( 1 )
 part_name = "Test Chaingun"
 manufacturer_name = "Test"
@@ -17,7 +17,7 @@ type = "PewPew"
 projectile = ExtResource( 3 )
 damage_modifier = 0.5
 heat_damage = 0.0
-recoil_force = 1.0
+recoil_force = 0.1
 fire_rate = 0.05
 base_accuracy = 5.0
 accuracy_bloom = 0.5

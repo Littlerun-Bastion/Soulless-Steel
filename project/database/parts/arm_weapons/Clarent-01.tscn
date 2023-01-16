@@ -1,0 +1,65 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
+[ext_resource path="res://database/parts/projectiles/laser_bullet.tscn" type="PackedScene" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Main.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" type="Texture" id=5]
+
+[node name="Part2" type="Node"]
+script = ExtResource( 1 )
+part_name = "Clarent-01"
+manufacturer_name = "Claymore International"
+tagline = "Laser-Rifle"
+type = "Multi-PewPew"
+projectile = ExtResource( 2 )
+projectile_type = "Flame"
+number_projectiles = 5
+damage_modifier = 75.0
+uses_battery = true
+shield_mult = 1.5
+health_mult = 0.5
+heat_damage = 20.0
+fire_rate = 0.33
+base_accuracy = 0.1
+max_bloom_factor = 1.8
+bullet_spread = 0.1
+bullet_spread_delay = 0.03
+total_ammo = 3000
+max_ammo = 3000
+clip_size = 600
+reload_speed = 1.4
+muzzle_heat = 3
+ammo_cost = 25
+soundEffect = ""
+sound_max_range = 1000
+sound_att = 1.75
+battery_drain = 12.0
+weight = 3.3
+bullet_velocity = 5000
+projectile_size = 0.5
+
+[node name="Sub" type="Sprite" parent="."]
+texture = ExtResource( 5 )
+
+[node name="Main" type="Sprite" parent="."]
+position = Vector2( -1.08598, 38.6246 )
+texture = ExtResource( 3 )
+offset = Vector2( 1.08598, -38.6246 )
+
+[node name="Glow" type="Sprite" parent="."]
+texture = ExtResource( 4 )
+
+[node name="AttachPos" type="Position2D" parent="."]
+position = Vector2( -6.29844, 21.7108 )
+
+[node name="EjectorPos" type="Position2D" parent="."]
+position = Vector2( -5.74732, 52.3138 )
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
+position = Vector2( -4, -58.9403 )
+
+[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
+position = Vector2( -9.03267, -58.9403 )

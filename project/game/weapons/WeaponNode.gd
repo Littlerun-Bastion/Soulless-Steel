@@ -29,6 +29,7 @@ var is_melee = false
 var melee_anim = null
 var shooting_pos_array = []
 var shooting_pos_idx = 0
+var offset = Vector2()
 
 
 func _process(dt):
@@ -67,6 +68,7 @@ func set_offsets(off):
 	Main.position = off
 	Sub.position = off
 	Glow.position = off
+	offset = off
 
 
 func update_heat(heat_dispersion, dt):
@@ -142,7 +144,7 @@ func shoot_battery():
 
 
 func set_shooting_pos(pos):
-	shooting_pos_array.append(pos)
+	shooting_pos_array.append(pos+offset)
 
 func clear_shooting_pos():
 	shooting_pos_array = []

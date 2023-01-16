@@ -158,7 +158,6 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 
 func get_shoot_position():
 	ShootingPos.position = shooting_pos_array[shooting_pos_idx]
-	print(shooting_pos_array[shooting_pos_idx])
 	shooting_pos_idx += 1
 	if shooting_pos_idx > (shooting_pos_array.size() - 1):
 		shooting_pos_idx = 0

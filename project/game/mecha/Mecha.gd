@@ -1170,6 +1170,14 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
+	
+	for data in	[[$Chassis/Left, chassis], [$Chassis/Right, chassis]]:
+		var node_ref = data[1]
+		if node_ref:
+			var node = data[0]
+			var actual_rot = node.rotation_degrees + rotation_degrees
+			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.vis_rotation_acc)
+			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
 
 #Return the proper direction diff to rotate given a current and target rotation
 func get_best_rotation_diff(cur_rot, target_rot):

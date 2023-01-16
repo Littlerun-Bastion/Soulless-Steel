@@ -10,10 +10,11 @@ script = ExtResource( 7 )
 part_name = "Test 2 L3J"
 manufacturer_name = "Test Tank Chassis"
 tagline = "Bipedal"
-movement_type = "relative"
+movement_type = "tank"
 accuracy_modifier = 1.33
 health = 2200.0
 move_heat = 20
+has_thrusters = true
 weight = 400.0
 weight_capacity = 1400.0
 

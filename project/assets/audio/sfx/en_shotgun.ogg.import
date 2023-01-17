@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/en_shotgun.ogg-4151116e3bc9ec95619131710f3e04d8.oggstr"
+
+[deps]
+
+source_file="res://assets/audio/sfx/en_shotgun.ogg"
+dest_files=[ "res://.import/en_shotgun.ogg-4151116e3bc9ec95619131710f3e04d8.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

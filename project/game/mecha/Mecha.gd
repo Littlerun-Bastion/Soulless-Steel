@@ -224,8 +224,6 @@ func _physics_process(dt):
 				impact_velocity = Vector2()
 	
 	if impact_rotation_velocity > 0 or impact_rotation_velocity < 0:
-		print(impact_rotation_velocity)
-		print(1.6 - get_stability())
 		global_rotation += impact_rotation_velocity * dt
 		impact_rotation_velocity *= 0.95
 		if abs(impact_rotation_velocity) < 0.001:
@@ -706,7 +704,6 @@ func set_arm_weapon(part_name, side):
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.position = core.get_arm_weapon_offset(side)
-	print(part_data.get_attach_pos())
 	node.set_offsets(-part_data.get_attach_pos())
 	
 	if node.has_node("AttackAnimation"):
@@ -1157,7 +1154,6 @@ func apply_movement(dt, direction):
 			if movement_type != "tank":
 				target_speed.y = min(target_speed.y * mult, target_speed.y + thruster.thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
-				print(target_move_acc)
 		elif direction == Vector2(0,0):
 			$Chassis/SprintThrust.emitting = false
 			$Chassis/SprintThrust2.emitting = false

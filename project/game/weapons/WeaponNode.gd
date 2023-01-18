@@ -70,7 +70,6 @@ func set_images(main_image, sub_image, glow_image):
 
 
 func set_offsets(off):
-	print(off)
 	Main.position = off
 	Sub.position = off
 	Glow.position = off
@@ -167,7 +166,6 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 		#offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
 		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
 		offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
-		print(offset)
 		dirA += offset
 	var dir = Vector2(cos(dirA), sin(dirA)).rotated(angle_offset).normalized()
 	return dir

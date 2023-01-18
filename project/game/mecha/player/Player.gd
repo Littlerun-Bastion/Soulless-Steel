@@ -31,7 +31,7 @@ func _ready():
 		set_arm_weapon("Clarent-01", SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.LEFT)
-		set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
+		set_shoulder_weapon("Arend", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 		set_shoulders("Crawler_C-type_SG")
 	if Debug.get_setting("player_zoom"):

@@ -349,10 +349,11 @@ func _on_mecha_create_casing(args):
 	next_casing.rotation_degrees = args.casing_eject_angle
 	$Casings.trigger(args.casing_size)
 
-func _on_bullet_impact(projectile):
-	var impact_effect = ProjectileManager.create_explosion(projectile)
-	impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
-	Explosions.add_child(impact_effect)
+func _on_bullet_impact(projectile, effect):
+	if effect:
+		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
+		impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
+		Explosions.add_child(impact_effect)
 
 
 func _on_mecha_died(mecha):

@@ -13,15 +13,12 @@ func _process(dt):
 			die()
 
 
-func setup(projectile, mat, args):
+func setup(projectile, args):
 	home_projectile = projectile
-	self.process_material = mat
 	self.amount = args.smoke_density
 	self.lifetime = args.smoke_lifetime
 	tickdown = args.smoke_lifetime
-	self.process_material = mat
 	self.emitting = true
-	self.texture = args.smoke_texture
 
 
 func die():

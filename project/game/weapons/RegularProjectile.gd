@@ -26,6 +26,8 @@ var calibre
 var seeker_target : Object = null
 var mech_hit = false
 
+var impact_effect
+
 var trail_enabled := false
 var trail_lifetime := 1.0
 var trail_lifetime_range := 0.25
@@ -68,7 +70,7 @@ func _process(dt):
 		rotation_degrees = rad2deg(dir.angle()) + 90
 		if seeker_target and is_instance_valid(seeker_target):
 			if lifetime < seek_time:
-				dir = lerp(dir.rotated(rand_range(-wiggle_amount, wiggle_amount)), position.direction_to(seeker_target.position), seek_agility)
+				dir = lerp(dir.rotated(deg2rad(rand_range(-wiggle_amount, wiggle_amount))), position.direction_to(seeker_target.position), seek_agility)
 			elif not seek_time_expired:
 				dir = lerp(dir, position.direction_to(seeker_target.position), seek_agility)
 				wiggle_amount = wiggle_amount/2
@@ -76,7 +78,7 @@ func _process(dt):
 	if has_wiggle:
 		rotation_degrees = rad2deg(dir.angle()) + 90
 		if not seeker_target or not is_seeker or not is_instance_valid(seeker_target) or lifetime > seek_time:
-			dir = dir.rotated(rand_range(-wiggle_amount, wiggle_amount))
+			dir = dir.rotated(deg2rad(rand_range(-wiggle_amount, wiggle_amount)))
 	
 	
 	
@@ -122,6 +124,7 @@ func setup(mecha, args):
 	local_scale = args.projectile_size
 	impact_force = args.impact_force
 	hitstop = args.hitstop
+	impact_effect = args.impact_effect
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
@@ -150,7 +153,7 @@ func die():
 		return
 	dying = true
 	if not is_overtime:
-		emit_signal("bullet_impact", self)
+		emit_signal("bullet_impact", self, impact_effect)
 	#var dur = rand_range(.2, .4)
 	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
 	#$Tween.start()

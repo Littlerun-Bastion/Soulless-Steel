@@ -4,9 +4,6 @@ enum TYPE {INSTANT, REGULAR}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
-const TRAIL = preload("res://game/weapons/Trail.tscn")
-const SMOKETRAIL = preload("res://game/weapons/SmokeTrail.tscn")
-const IMPACT = preload("res://game/fx/impact_master.tscn")
 
 func create(mecha, args):
 	var wr = weakref(mecha)
@@ -39,18 +36,18 @@ func create_muzzle_flash(weapon, args):
 	return flash
 
 func create_trail(projectile, args):
-		var trail = TRAIL.instance()
+		var trail = args.has_trail.instance()
 		trail.setup(args.trail_lifetime, args.trail_lifetime_range, args.trail_eccentricity, args.trail_min_spawn_distance, trail.width, projectile)
 		return trail
 
-func create_explosion(pos):
-	var explosion = IMPACT.instance()
+func create_explosion(pos, impact_effect):
+	var explosion = impact_effect.instance()
 	explosion.position = pos.position
 	return explosion
 
 func create_smoke_trail(projectile, args):
-	var smoke_trail = SMOKETRAIL.instance()
-	smoke_trail.setup(projectile, args.smoke_trail_material, args)
+	var smoke_trail = args.has_smoke.instance()
+	smoke_trail.setup(projectile, args)
 	return smoke_trail
 
 #Given two polygons and their transforms, return an array with all points where they collide

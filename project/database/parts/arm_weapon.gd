@@ -60,19 +60,18 @@ export var constant_beam := false
 export var beam_effect : Resource
 
 #---TRAILS AND IMPACTS---
-export var has_trail := false
+export (PackedScene) var has_trail
 export var trail_lifetime := 1.0
 export var trail_lifetime_range := 0.25
 export var trail_eccentricity := 5.0
 export var trail_min_spawn_distance := 20.0
 export var trail_width := 20
 
-export var has_smoke := false
+export (PackedScene) var has_smoke
 export var smoke_density := 400
 export var smoke_lifetime := 5.0
-export var smoke_trail_material : ParticlesMaterial
-export var smoke_texture : Texture
 
+export (PackedScene) var impact_effect
 export var impact_size := 1.0
 export var hitstop := false
 #---MISSILE/ROCKET BEHAVIOURS---

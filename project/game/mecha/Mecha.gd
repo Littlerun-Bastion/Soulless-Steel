@@ -1436,8 +1436,6 @@ func shoot(type, is_auto_fire = false):
 							"has_smoke": weapon_ref.has_smoke,
 							"smoke_density": weapon_ref.smoke_density,
 							"smoke_lifetime": weapon_ref.smoke_lifetime,
-							"smoke_trail_material": weapon_ref.smoke_trail_material,
-							"smoke_texture": weapon_ref.smoke_texture,
 
 							"has_wiggle": weapon_ref.has_wiggle,
 							"wiggle_amount": weapon_ref.wiggle_amount,
@@ -1447,6 +1445,7 @@ func shoot(type, is_auto_fire = false):
 							"seek_agility": weapon_ref.seeker_agility,
 							"seeker_angle": weapon_ref.seeker_angle,
 
+							"impact_effect": weapon_ref.impact_effect,
 							"impact_size": weapon_ref.impact_size,
 							"hitstop": weapon_ref.hitstop,
 						}, node) #TODO: FIX THIS

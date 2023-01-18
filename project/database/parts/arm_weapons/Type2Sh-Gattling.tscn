@@ -1,12 +1,11 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
-[ext_resource path="res://game/fx/BasicMissileSmoke.tres" type="Material" id=6]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=7]
+[ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
 [node name="Part2" type="Node"]
@@ -43,8 +42,7 @@ eject_casings = true
 casing_size = 0.75
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
-smoke_trail_material = ExtResource( 6 )
-smoke_texture = ExtResource( 7 )
+impact_effect = ExtResource( 6 )
 wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5

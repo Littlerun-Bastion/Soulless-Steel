@@ -155,6 +155,7 @@ func play_sfx(name: String, pos = false, override_pitch = false, override_db = f
 	var sfx = SFXS[name]
 	var player = get_sfx_player(pos)
 	player.stop()
+	print(sfx)
 	
 	player.stream.audio_stream = sfx.asset
 	player.volume_db = override_db if override_db else sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)

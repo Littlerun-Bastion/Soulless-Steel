@@ -23,6 +23,8 @@ is_tutorial = true
 
 [node name="BG" type="Sprite" parent="."]
 scale = Vector2( 3, 3 )
+z_index = -15
+z_as_relative = false
 texture = ExtResource( 12 )
 
 [node name="Bushes" type="Node2D" parent="."]

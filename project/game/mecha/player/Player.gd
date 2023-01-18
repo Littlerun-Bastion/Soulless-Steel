@@ -27,7 +27,7 @@ func _ready():
 		set_thruster("test1")
 		set_head("Crawler_C-type_Head")
 		set_chassis("Crawler_C-type_Chassis")
-		set_arm_weapon("Clarent-01", SIDE.LEFT)
+		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
 		set_arm_weapon("Clarent-01", SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.LEFT)

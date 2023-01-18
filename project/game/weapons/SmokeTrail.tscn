@@ -8,7 +8,7 @@
 pause_mode = 2
 physics_interpolation_mode = 2
 amount = 400
-visibility_rect = Rect2( -10000, -10000, 20000, 20000 )
+visibility_rect = Rect2( -100000, -100000, 200000, 200000 )
 local_coords = false
 process_material = ExtResource( 2 )
 texture = ExtResource( 3 )

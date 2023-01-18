@@ -182,7 +182,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
 			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
 			if not is_overtime and impact_force > 0.0:
-				body.knockback(impact_force, dir, false)
+				body.knockback(impact_force, dir, true)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\

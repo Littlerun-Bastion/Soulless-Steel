@@ -114,6 +114,7 @@ var is_sprinting = false
 var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
 var impact_velocity = Vector2()
+var impact_rotation_velocity = 0.0
 var dash_strength = 2000
 var moving = false
 var moving_axis = {
@@ -221,6 +222,15 @@ func _physics_process(dt):
 			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
 			if impact_velocity.length() < 1:
 				impact_velocity = Vector2()
+	
+	if impact_rotation_velocity > 0 or impact_rotation_velocity < 0:
+		print(impact_rotation_velocity)
+		print(1.6 - get_stability())
+		global_rotation += impact_rotation_velocity * dt
+		impact_rotation_velocity *= 0.95
+		if abs(impact_rotation_velocity) < 0.001:
+			impact_rotation_velocity = 0
+		
 	
 	#Blood
 	if is_dead:
@@ -1277,7 +1287,15 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 func knockback(strength, knockback_dir, should_rotate = true):
 	impact_velocity += (knockback_dir.normalized() * (strength * get_stability()))
 	if should_rotate:
-		apply_rotation_by_point(sqrt(strength) * 2 * get_stability(), knockback_dir, false)
+		if impact_rotation_velocity > 0:
+			impact_rotation_velocity += strength / (get_stat("stability")*10)
+		elif impact_rotation_velocity < 0:
+			impact_rotation_velocity -= strength / (get_stat("stability")*10)
+		else:
+			if randi()%2 == 1:
+				impact_rotation_velocity += strength / (get_stat("stability")*10)
+			else:
+				impact_rotation_velocity -= strength / (get_stat("stability")*10)
 
 
 func update_chassis_visuals(dt):

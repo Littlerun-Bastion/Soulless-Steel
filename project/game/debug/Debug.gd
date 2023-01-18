@@ -6,7 +6,7 @@ const MARKER = preload("res://game/debug/Marker.tscn")
 onready var Markers = $Markers
 
 var debug_settings = {
-	"window": true,
+	"window": false,
 	"navigation": false,
 	"enemy_state": false,
 	"player_loadout": true,

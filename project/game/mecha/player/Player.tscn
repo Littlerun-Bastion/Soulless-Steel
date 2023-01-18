@@ -21,17 +21,11 @@ drag_margin_bottom = 0.0
 [node name="ArmWeaponLeft" parent="." index="19"]
 position = Vector2( -44.8525, 23.4889 )
 
-[node name="ShootingPos" parent="ArmWeaponLeft" index="3"]
-position = Vector2( -12.3322, -85.5814 )
-
 [node name="Sub" parent="ArmWeaponRight" index="0"]
 texture = ExtResource( 7 )
 
 [node name="Glow" parent="ArmWeaponRight" index="2"]
 texture = ExtResource( 4 )
-
-[node name="ShootingPos" parent="ArmWeaponRight" index="3"]
-position = Vector2( 14.2824, -113.812 )
 
 [node name="Sub" parent="ShoulderWeaponRight" index="0"]
 texture = ExtResource( 2 )

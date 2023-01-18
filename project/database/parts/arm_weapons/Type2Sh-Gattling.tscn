@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
 [ext_resource path="res://game/fx/BasicMissileSmoke.tres" type="Material" id=6]
 [ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=7]
+[ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
 [node name="Part2" type="Node"]
 script = ExtResource( 1 )
@@ -14,6 +15,9 @@ part_name = "Test Chaingun"
 manufacturer_name = "Test"
 tagline = "Chaingun"
 type = "PewPew"
+muzzle_flash = ExtResource( 8 )
+muzzle_flash_size = 0.25
+muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
 damage_modifier = 0.5
 heat_damage = 0.0

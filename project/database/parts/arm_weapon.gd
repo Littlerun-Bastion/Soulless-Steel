@@ -5,6 +5,9 @@ export var manufacturer_name : String
 export var tagline : String
 export var description : String
 export var type: String
+export (PackedScene) var muzzle_flash
+export var muzzle_flash_size := 1.0
+export var muzzle_flash_speed := 1.0
 export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource
@@ -49,6 +52,7 @@ export var lifetime := 2.0
 export var impact_force := 0.0
 export var eject_casings := false
 export var casing_size := 1.0
+
 
 #---BEAM BEHAVIOUR---#
 export var beam_range := 0.0
@@ -97,9 +101,14 @@ func get_image():
 func get_glow():
 	return $Glow.texture
 
+func get_num_shooting_pos():
+	return $ShootingPosArray.get_children().size()
 
-func get_shooting_pos():
-	return $ShootingPosArray.get_children()
+func get_shooting_pos(idx):	
+	if idx == 1:
+		return get_node_or_null("ShootingPosArray/ShootingPos")
+	else: 
+		return get_node_or_null("ShootingPosArray/ShootingPos" + str(idx))
 
 
 func get_attach_pos():

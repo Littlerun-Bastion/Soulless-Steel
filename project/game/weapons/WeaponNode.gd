@@ -3,7 +3,6 @@ extends Node2D
 signal reloading
 signal finished_reloading
 
-onready var ShootingPos = $ShootingPos
 onready var Main = $Main
 onready var Sub = $Sub
 onready var Glow = $Glow
@@ -30,6 +29,7 @@ var melee_anim = null
 var shooting_pos_array = []
 var shooting_pos_idx = 0
 var offset = Vector2()
+var cur_shooting_pos
 
 
 func _process(dt):
@@ -133,34 +133,34 @@ func shoot(amount := 1):
 	clip_ammo -= amount
 	heat = min(heat + muzzle_heat, 100)
 	if soundEffect:
-		AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
+		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
 
 func shoot_battery():
 	add_time(fire_rate)
 	heat = min(heat + muzzle_heat, 100)
 	if soundEffect:
-		AudioManager.play_sfx(soundEffect, get_shoot_position(), null, null, sfx_att, sfx_max_range)
+		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
 
 func set_shooting_pos(pos):
-	shooting_pos_array.append(pos+offset)
+	shooting_pos_array.append(pos)
 
 func clear_shooting_pos():
 	shooting_pos_array = []
 
 func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	var offset = Vector2()
-	var dir = (ShootingPos.global_position - global_position).normalized()
+	var dir = (cur_shooting_pos.global_position - global_position).normalized()
 	if accuracy_margin > 0:
 		offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
-		dir = (ShootingPos.global_position + offset - global_position).rotated(angle_offset).normalized()
+		dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
 	return dir
 
 
 func get_shoot_position():
-	ShootingPos.position = shooting_pos_array[shooting_pos_idx]
+	cur_shooting_pos = shooting_pos_array[shooting_pos_idx]
 	shooting_pos_idx += 1
 	if shooting_pos_idx > (shooting_pos_array.size() - 1):
 		shooting_pos_idx = 0
-	return ShootingPos.global_position
+	return cur_shooting_pos

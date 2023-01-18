@@ -6,6 +6,9 @@ export var tagline : String
 export var description : String
 export var image : Texture
 export var type: String
+export (PackedScene) var muzzle_flash
+export var muzzle_flash_size := 1.0
+export var muzzle_flash_speed := 1.0
 export var projectile : Resource
 export var projectile_type : String
 export var requires_lock := false
@@ -94,9 +97,14 @@ func get_image():
 func get_glow():
 	return $Glow.texture
 
+func get_num_shooting_pos():
+	return $ShootingPosArray.get_children().size()
 
-func get_shooting_pos():
-	return $ShootingPosArray.get_children()
+func get_shooting_pos(idx):	
+	if idx == 1:
+		return get_node_or_null("ShootingPosArray/ShootingPos")
+	else: 
+		return get_node_or_null("ShootingPosArray/ShootingPos" + str(idx))
 
 
 func get_attach_pos():

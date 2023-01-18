@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/projectiles/laser_bullet.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Main.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" type="Texture" id=5]
+[ext_resource path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" type="PackedScene" id=6]
 
 [node name="Part2" type="Node"]
 script = ExtResource( 1 )
@@ -13,6 +14,9 @@ manufacturer_name = "Claymore International"
 tagline = "EN Shotgun"
 description = "An automatic energy shotgun made by Claymore International, designed for mechs with poor visual sensors to lay down a wall of fire without relying on accuracy. While the damage on impact is poor, especially against Armor, it imparts quite a lot of heat."
 type = "Multi-PewPew"
+muzzle_flash = ExtResource( 6 )
+muzzle_flash_size = 0.5
+muzzle_flash_speed = 1.5
 projectile = ExtResource( 2 )
 projectile_type = "Flame"
 number_projectiles = 5
@@ -21,7 +25,6 @@ uses_battery = true
 shield_mult = 1.5
 health_mult = 0.5
 heat_damage = 20.0
-recoil_force = 1.0
 fire_rate = 0.33
 base_accuracy = 2.0
 accuracy_bloom = 0.25
@@ -43,15 +46,13 @@ projectile_size = 0.5
 texture = ExtResource( 5 )
 
 [node name="Main" type="Sprite" parent="."]
-position = Vector2( -1.08598, 38.6246 )
 texture = ExtResource( 3 )
-offset = Vector2( 1.08598, -38.6246 )
 
 [node name="Glow" type="Sprite" parent="."]
 texture = ExtResource( 4 )
 
 [node name="AttachPos" type="Position2D" parent="."]
-position = Vector2( -6.29844, 21.7108 )
+position = Vector2( 14.3378, 21.7108 )
 
 [node name="EjectorPos" type="Position2D" parent="."]
 position = Vector2( -5.74732, 52.3138 )

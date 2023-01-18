@@ -40,6 +40,8 @@ rotation = -0.000512852
 
 [node name="Trails" type="Node2D" parent="."]
 
+[node name="Flashes" type="Node2D" parent="."]
+
 [node name="Smoke" type="Node2D" parent="."]
 
 [node name="Explosions" type="Node2D" parent="."]

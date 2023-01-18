@@ -10,6 +10,7 @@ onready var Mechas = $Mechas
 onready var Projectiles = $Projectiles
 onready var Trails = $Trails
 onready var Smoke = $Smoke
+onready var Flashes = $Flashes
 onready var Explosions = $Trails
 onready var ScrapParts = $ScrapParts
 onready var PlayerHUD = $PlayerHUD
@@ -316,7 +317,7 @@ func _on_player_lost_health():
 	ShaderEffects.damage_burst_effect()
 
 
-func _on_mecha_create_projectile(mecha, args):
+func _on_mecha_create_projectile(mecha, args, weapon):
 	#To avoid warning when mecha is killed during delay
 	if args.delay > 0:
 		var timer = Timer.new()
@@ -337,6 +338,10 @@ func _on_mecha_create_projectile(mecha, args):
 			if data:
 				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, args)
 				Smoke.add_child(smoke_trail)
+		if args.muzzle_flash:
+			if data:
+				var flash = ProjectileManager.create_muzzle_flash(weapon, args)
+				Flashes.add_child(flash)
 
 func _on_mecha_create_casing(args):
 	var next_casing = $Casings.get_next_particle()

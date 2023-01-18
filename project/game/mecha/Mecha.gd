@@ -700,8 +700,13 @@ func set_arm_weapon(part_name, side):
 		node.get_node("AttackAnimation").queue_free()
 	if not part_data.is_melee:
 		node.clear_shooting_pos()
-		for child in part_data.get_shooting_pos():
-			node.set_shooting_pos(child.position)
+		if part_data.get_num_shooting_pos() > 0:
+			for idx in part_data.get_num_shooting_pos():
+				var defined_pos = part_data.get_shooting_pos(idx + 1)
+				var shooting_position = Position2D.new()
+				shooting_position.position = defined_pos.position + node.offset
+				node.add_child(shooting_position)
+				node.set_shooting_pos(shooting_position)
 	else:
 		node.add_child(part_data.get_attack_animation().duplicate())
 		
@@ -738,8 +743,13 @@ func set_shoulder_weapon(part_name, side):
 	node.position = core.get_shoulder_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
 	node.clear_shooting_pos()
-	for child in part_data.get_shooting_pos():
-		node.set_shooting_pos(child.position)
+	if part_data.get_num_shooting_pos() > 0:
+		for idx in part_data.get_num_shooting_pos():
+			var defined_pos = part_data.get_shooting_pos(idx)
+			var shooting_position = Position2D.new()
+			shooting_position.position = defined_pos.position + node.offset
+			node.add_child(shooting_position)
+			node.set_shooting_pos(shooting_position)
 	#node.set_shooting_pos(part_data.get_shooting_pos())
 	node.setup(part_data)
 
@@ -1388,8 +1398,12 @@ func shoot(type, is_auto_fire = false):
 						{
 							"weapon_data": weapon_ref.projectile,
 							"weapon_name": weapon_ref.part_name,
-							"pos": node.get_shoot_position(),
+							"pos": node.get_shoot_position().global_position,
+							"pos_reference": node.get_shoot_position(),
 							"dir": node.get_direction(angle_offset, total_accuracy),
+							"muzzle_flash": weapon_ref.muzzle_flash,
+							"muzzle_flash_size": weapon_ref.muzzle_flash_size,
+							"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
 							"damage_mod": weapon_ref.damage_modifier,
 							"shield_mult": weapon_ref.shield_mult,
 							"health_mult": weapon_ref.health_mult,
@@ -1429,7 +1443,7 @@ func shoot(type, is_auto_fire = false):
 
 							"impact_size": weapon_ref.impact_size,
 							"hitstop": weapon_ref.hitstop,
-						}) #TODO: FIX THIS
+						}, node) #TODO: FIX THIS
 		apply_recoil(type, node, weapon_ref.recoil_force)
 	if weapon_ref.eject_casings:
 		emit_signal("create_casing",

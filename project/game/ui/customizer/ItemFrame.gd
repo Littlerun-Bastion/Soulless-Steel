@@ -13,7 +13,8 @@ func setup(part):
 		$TaglineLabel.text = part.tagline
 	else:
 		$TaglineLabel.text = "???"
-	$PartPreview.texture = part.image
+	if part.image:
+		$PartPreview.texture = part.image
 
 func get_button():
 	return $Button

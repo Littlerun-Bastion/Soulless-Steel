@@ -1861,7 +1861,7 @@ position = Vector2( -13292.8, 4087.64 )
 rotation = 0.937557
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource( 3 )]
-position = Vector2( -2773.14, -5119.43 )
+position = Vector2( -3115.73, -5340.87 )
 rotation = -2.16741
 
 [node name="Pos3" parent="StartPositions" instance=ExtResource( 3 )]
@@ -1901,7 +1901,7 @@ position = Vector2( -7131.19, -9330.16 )
 rotation = 0.705731
 
 [node name="Pos12" parent="StartPositions" instance=ExtResource( 3 )]
-position = Vector2( 1465.12, -9128.53 )
+position = Vector2( -11483.7, 2575.13 )
 rotation = 0.94085
 
 [node name="Exits" type="Node2D" parent="."]

@@ -21,19 +21,20 @@ var invert_controls = {
 
 func _ready():
 	if Debug.get_setting("player_loadout"):
-		set_core("Crawler_C-type_Core")
+		set_core("Percival-Core")
 		set_generator("type_1")
 		set_chipset("type_1")
 		set_thruster("test1")
-		set_head("Crawler_C-type_Head")
-		set_chassis("Crawler_C-type_Chassis")
-		set_arm_weapon("Type2Sh-Gattling", SIDE.LEFT)
-		set_arm_weapon("Clarent-01", SIDE.RIGHT)
+		set_head("Lancelot-Head")
+		set_chassis("O10-Chassis15k")
+		set_arm_weapon("TT1-Flamethrower", SIDE.LEFT)
+		set_arm_weapon("TT1-Flamethrower", SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.RIGHT)
 		#set_shoulder_weapon(false, SIDE.LEFT)
 		set_shoulder_weapon("Arend", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
-		set_shoulders("Crawler_C-type_SG")
+		set_shoulders("Lancelot-Pauldron")
+		print(get_stat("weight"))
 	if Debug.get_setting("player_zoom"):
 		Cam.zoom = Debug.get_setting("player_zoom")
 

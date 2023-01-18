@@ -21,6 +21,7 @@ func _ready():
 	default_loadout()
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
+	DisplayMecha.global_rotation = 0
 
 func _process(dt):
 	if not comparing_part:

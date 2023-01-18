@@ -199,6 +199,7 @@ func _ready():
 				 LeftShoulderWeaponGlow, RightShoulderWeaponGlow,\
 				 SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
 		node.material = CoreGlow.material.duplicate(true)
+	global_rotation_degrees = rand_range(0, 360)
 
 
 func _physics_process(dt):
@@ -244,8 +245,6 @@ func _physics_process(dt):
 				$Blood2.emitting = false
 		else:
 			bleed_timer -= dt
-	
-	weight_speed_modifier(1)
 	
 	#ecm
 	if ecm_attempt_cooldown > 0.0:
@@ -440,7 +439,9 @@ func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
 	friction = _friction
 	rotation_acc = _rotation_acc
-	move_acc = min(_move_acc, 100.0)
+	move_acc = _move_acc
+	if chassis and chassis.is_legs:
+		move_acc *= 50
 	MovementAnimation.playback_speed = max_speed/200
 	var animation = MovementAnimation.get_animation("Walking")
 	var track = 0 #animation.find_track("Mecha:speed_modifier")
@@ -1120,15 +1121,16 @@ func thruster_cooldown_visuals():
 			
 
 func weight_speed_modifier(speed):
-	if get_stat("weight") > weight_capacity:
-		if get_stat("weight") > weight_capacity * 0.75:
-			is_overweight = true
-			speed -= speed * (0.5 * (get_stat("weight")*0.25)/(weight_capacity*0.25))
-		else:
-			speed *= 0.33
-	else:
-		is_overweight = false
 	return speed
+	#if get_stat("weight") > weight_capacity * 0.75:
+	#	is_overweight = true
+	#	if get_stat("weight") > weight_capacity:
+	#		speed *= 0.33
+	#	else:
+	#		speed *= 0.5
+	#else:
+	#	is_overweight = false
+	#return speed
 
 func apply_movement(dt, direction):
 	if is_sprinting:
@@ -1136,8 +1138,6 @@ func apply_movement(dt, direction):
 		if movement_type != "tank":
 			direction.x = 0
 		direction.y = min(direction.y, 0.0)
-	if chassis and movement_type == "relative":
-		move_acc *= 50
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
 	var mult = 1.0

@@ -157,6 +157,8 @@ process_material = SubResource( 12 )
 texture = ExtResource( 3 )
 
 [node name="Effect1" type="Particles2D" parent="."]
+z_index = -1
+z_as_relative = false
 emitting = false
 amount = 1
 lifetime = 4.0

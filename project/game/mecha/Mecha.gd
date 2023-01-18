@@ -672,8 +672,10 @@ func set_arm_weapon(part_name, side):
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
+		node.side = SIDE.LEFT
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
+		node.side = SIDE.RIGHT
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -721,8 +723,10 @@ func set_shoulder_weapon(part_name, side):
 	var node
 	if side == SIDE.LEFT:
 		node = $ShoulderWeaponLeft
+		node.side = SIDE.LEFT
 	elif side == SIDE.RIGHT:
 		node = $ShoulderWeaponRight
+		node.side = SIDE.RIGHT
 	else:
 		push_error("Not a valid side: " + str(side))
 	

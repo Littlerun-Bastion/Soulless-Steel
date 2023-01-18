@@ -1,5 +1,8 @@
 extends Node2D
 
+
+enum SIDE {LEFT, RIGHT, SINGLE}
+
 signal reloading
 signal finished_reloading
 
@@ -30,6 +33,8 @@ var shooting_pos_array = []
 var shooting_pos_idx = 0
 var offset = Vector2()
 var cur_shooting_pos
+var side
+
 
 
 func _process(dt):
@@ -151,10 +156,19 @@ func clear_shooting_pos():
 
 func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	var offset = Vector2()
-	var dir = (cur_shooting_pos.global_position - global_position).normalized()
+	#var dir = (cur_shooting_pos.global_position - global_position).normalized()
+	var dirA = global_rotation
+	if side == SIDE.LEFT:
+		dirA -= (PI/2)
+	else:
+		dirA += (PI/2)
 	if accuracy_margin > 0:
-		offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
-		dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
+		#offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
+		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
+		offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
+		print(offset)
+		dirA += offset
+	var dir = Vector2(cos(dirA), sin(dirA))
 	return dir
 
 

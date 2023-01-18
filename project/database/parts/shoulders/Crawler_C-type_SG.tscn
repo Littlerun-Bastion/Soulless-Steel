@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-rshoulder_main.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-lshoulder_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_rshoulder_main.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_lshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
 
 [node name="Part" type="Node"]

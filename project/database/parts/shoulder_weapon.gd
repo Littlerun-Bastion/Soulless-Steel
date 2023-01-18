@@ -82,6 +82,7 @@ export var seeker_agility := 0.01
 export var seek_time := 1.0
 export var seeker_angle := 90
 
+var is_melee = false
 
 var firing_timer = 0.0
 var part_id

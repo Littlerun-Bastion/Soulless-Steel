@@ -53,9 +53,7 @@ seek_time = 0.5
 texture = ExtResource( 2 )
 
 [node name="Main" type="Sprite" parent="."]
-position = Vector2( 0.878418, 34.6922 )
 texture = ExtResource( 5 )
-offset = Vector2( -0.878418, -34.6922 )
 
 [node name="Glow" type="Sprite" parent="."]
 texture = ExtResource( 4 )

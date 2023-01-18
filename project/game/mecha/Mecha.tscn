@@ -1225,7 +1225,6 @@ texture = ExtResource( 2 )
 show_behind_parent = true
 material = SubResource( 93 )
 texture = ExtResource( 25 )
-offset = Vector2( 1, -21 )
 
 [node name="Glow" type="Sprite" parent="ArmWeaponLeft"]
 material = SubResource( 38 )
@@ -1244,7 +1243,6 @@ texture = ExtResource( 26 )
 [node name="Main" type="Sprite" parent="ArmWeaponRight"]
 show_behind_parent = true
 material = SubResource( 94 )
-position = Vector2( -9, -58 )
 texture = ExtResource( 28 )
 
 [node name="Glow" type="Sprite" parent="ArmWeaponRight"]

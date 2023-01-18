@@ -70,6 +70,7 @@ func set_images(main_image, sub_image, glow_image):
 
 
 func set_offsets(off):
+	print(off)
 	Main.position = off
 	Sub.position = off
 	Glow.position = off
@@ -77,7 +78,7 @@ func set_offsets(off):
 
 
 func update_heat(heat_dispersion, dt):
-	heat = max(heat - heat_dispersion*dt, 0)
+	heat = max(heat - heat_dispersion*dt/4, 0)
 	Main.material.set_shader_param("heat", heat) 
 	Sub.material.set_shader_param("heat", heat)
 	Glow.material.set_shader_param("heat", heat)
@@ -136,7 +137,7 @@ func light_attack():
 func shoot(amount := 1):
 	add_time(fire_rate)
 	clip_ammo -= amount
-	heat = min(heat + muzzle_heat, 100)
+	heat += muzzle_heat*4
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
@@ -168,7 +169,7 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 		offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
 		print(offset)
 		dirA += offset
-	var dir = Vector2(cos(dirA), sin(dirA))
+	var dir = Vector2(cos(dirA), sin(dirA)).rotated(angle_offset).normalized()
 	return dir
 
 

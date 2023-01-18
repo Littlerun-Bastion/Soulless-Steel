@@ -696,6 +696,7 @@ func set_arm_weapon(part_name, side):
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.position = core.get_arm_weapon_offset(side)
+	print(part_data.get_attach_pos())
 	node.set_offsets(-part_data.get_attach_pos())
 	
 	if node.has_node("AttackAnimation"):
@@ -747,11 +748,12 @@ func set_shoulder_weapon(part_name, side):
 	node.position = core.get_shoulder_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
 	node.clear_shooting_pos()
-	if part_data.get_num_shooting_pos() > 0:
+	if part_data.get_num_shooting_pos() > 0 and not display_mode:
 		for idx in part_data.get_num_shooting_pos():
 			var defined_pos = part_data.get_shooting_pos(idx)
 			var shooting_position = Position2D.new()
-			shooting_position.position = defined_pos.position + node.offset
+			if defined_pos:
+				shooting_position.position = defined_pos.position + node.offset
 			node.add_child(shooting_position)
 			node.set_shooting_pos(shooting_position)
 	#node.set_shooting_pos(part_data.get_shooting_pos())

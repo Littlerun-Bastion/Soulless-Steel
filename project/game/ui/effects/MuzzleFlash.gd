@@ -3,7 +3,7 @@ extends Particles2D
 var attach_reference
 var node_reference
 
-func _process(dt):
+func _physics_process(_dt):
 	if attach_reference and node_reference:
 		global_position = attach_reference.global_position
 		global_rotation = node_reference.get_direction(0, 0).angle() + (PI/2)

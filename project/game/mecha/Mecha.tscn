@@ -1325,7 +1325,7 @@ lifetime = 2.0
 process_material = SubResource( 58 )
 texture = ExtResource( 36 )
 
-[node name="FreezingParticles" type="Particles2D" parent="ParticlesLayer3"]
+[node name="FreezingParticles1" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 lifetime = 5.0
@@ -1341,7 +1341,7 @@ local_coords = false
 process_material = SubResource( 55 )
 texture = ExtResource( 36 )
 
-[node name="ElectricParticles" type="Particles2D" parent="ParticlesLayer3"]
+[node name="ElectrifiedParticles" type="Particles2D" parent="ParticlesLayer3"]
 material = SubResource( 49 )
 emitting = false
 amount = 20
@@ -1350,7 +1350,7 @@ local_coords = false
 process_material = SubResource( 47 )
 texture = SubResource( 48 )
 
-[node name="FireParticles2" type="Particles2D" parent="ParticlesLayer3"]
+[node name="FireParticles1" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 40
 lifetime = 5.0
@@ -1358,7 +1358,7 @@ local_coords = false
 process_material = SubResource( 66 )
 texture = ExtResource( 37 )
 
-[node name="FireParticles" type="Particles2D" parent="ParticlesLayer3"]
+[node name="FireParticles2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 local_coords = false

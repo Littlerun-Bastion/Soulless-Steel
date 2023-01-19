@@ -79,7 +79,12 @@ onready var RightChassisSub = $Chassis/Right/Sub
 onready var RightChassisGlow = $Chassis/Right/Glow
 #Particles
 onready var Particle = {
-	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3]
+	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
+	"fire": [$ParticlesLayer3/FireParticles1, $ParticlesLayer3/FireParticles2],
+	"corrosion": [$ParticlesLayer1/CorrosionParticles1, $ParticlesLayer3/CorrosionParticles2],
+	"electrified": [],
+	
+	
 } 
 
 var mecha_name = "Mecha Name"
@@ -166,8 +171,8 @@ var status_time = {
 	"fire": 0.0,
 	"electrified": 0.0,
 	"freezing": 0.0,
-	"corrode": 0.0,
-	"overheat": 0.0,
+	"corrosion": 0.0,
+	"overheating": 0.0,
 }
 
 var fwd_thruster_cooldown = 0.0
@@ -297,7 +302,6 @@ func _physics_process(dt):
 		if data[0]:
 			data[1].rotation_degrees += get_best_rotation_diff(data[1].rotation_degrees, 0)*data[0].rotation_acc*dt
 
-	
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
 		move(dash_velocity)
@@ -336,16 +340,16 @@ func _physics_process(dt):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time.keys():
 		decrease_status(status, dt)
-	$FireParticles2.emitting = has_status("fire")
 	$FireParticles.emitting = has_status("fire")
+	$FireParticles2.emitting = has_status("fire")
 	$ElectricParticles.emitting = has_status("electrified")
 	$FreezingParticles2.emitting = has_status("freezing")
 	$FreezingParticles.emitting = has_status("freezing")
-	$CorrosionParticles.emitting = has_status("corrode")
-	$CorrosionParticles2.emitting = has_status("corrode")
-	$OverheatSparks.emitting = has_status("overheat")
+	$CorrosionParticles.emitting = has_status("corrosion")
+	$CorrosionParticles2.emitting = has_status("corrosion")
+	$OverheatSparks.emitting = has_status("overheating")
 	for child in $OverheatParticlesGroup.get_children():
-		child.emitting = has_status("overheat")
+		child.emitting = has_status("overheating")
 	if has_status("fire"):
 		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
 	else:
@@ -548,7 +552,7 @@ func take_status_damage(dt):
 	if is_dead:
 		return
 	
-	if has_status("overheat"):
+	if has_status("overheating"):
 		hp -= (max_hp * 0.02 * dt)
 		hp = round(hp)
 		if hp <= 0:
@@ -565,7 +569,7 @@ func take_status_damage(dt):
 		if generator:
 			shield_regen_cooldown = generator.shield_regen_delay
 
-	if has_status("corrode"):
+	if has_status("corrosion"):
 		hp = round(max(hp - (dt * 100), 1))
 		emit_signal("took_damage", self, true)
 
@@ -653,8 +657,8 @@ func update_heat(dt):
 			weapon.update_heat(generator.heat_dispersion, dt)
 	if generator:
 		if mecha_heat >= max_heat:
-			set_status("overheat", 5.0)
-	if not has_status("overheat"):
+			set_status("overheating", 5.0)
+	if not has_status("overheating"):
 		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
 		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)

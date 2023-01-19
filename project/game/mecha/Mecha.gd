@@ -37,6 +37,7 @@ onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
 onready var LockCollision = $LockCollision
 
+#Main Parts
 onready var Core = $Core
 onready var CoreSub = $Core/Sub
 onready var CoreGlow = $Core/Glow
@@ -76,6 +77,10 @@ onready var RightChassisRoot = $Chassis/Right
 onready var RightChassis = $Chassis/Right/Main
 onready var RightChassisSub = $Chassis/Right/Sub
 onready var RightChassisGlow = $Chassis/Right/Glow
+#Particles
+onready var Particle = {
+	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3]
+} 
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -238,11 +243,11 @@ func _physics_process(dt):
 	if hp / max_hp < 0.8:
 		if bleed_timer < 0.0:
 			bleed_timer = rand_range(1,1.1/(hp/float(max_hp)))
-			$Blood.emitting = !$Blood.emitting
+			Particle.blood[0].emitting = !Particle.blood[0].emitting
 			if hp / max_hp < 0.3:
-				$Blood2.emitting = !$Blood2.emitting
+				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
-				$Blood2.emitting = false
+				Particle.blood[1].emitting = false
 		else:
 			bleed_timer -= dt
 	
@@ -512,7 +517,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 	hp = max(hp - (health_mult * amount), 0)
 	if amount > max_hp/0.25:
-		$Blood3.emitting = true
+		Particle.blood[2].emitting = true
 	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
 	if shield <= 0:
 		select_impact(calibre, false)

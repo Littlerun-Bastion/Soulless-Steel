@@ -56,23 +56,6 @@ colors = PoolColorArray( 0.858824, 0.858824, 0.858824, 1, 0.923828, 0.923828, 0.
 [sub_resource type="GradientTexture" id=89]
 gradient = SubResource( 88 )
 
-[sub_resource type="ParticlesMaterial" id=91]
-lifetime_randomness = 0.36
-emission_shape = 1
-emission_sphere_radius = 50.0
-flag_disable_z = true
-spread = 180.0
-gravity = Vector3( 0, 0, 0 )
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-angle = 720.0
-angle_random = 1.0
-scale = 3.5
-scale_random = 1.0
-color_ramp = SubResource( 89 )
-anim_offset = 0.42
-anim_offset_random = 1.0
-
 [sub_resource type="ParticlesMaterial" id=90]
 lifetime_randomness = 0.36
 emission_shape = 1
@@ -85,6 +68,23 @@ orbit_velocity_random = 0.0
 angle = 720.0
 angle_random = 1.0
 scale = 2.5
+scale_random = 1.0
+color_ramp = SubResource( 89 )
+anim_offset = 0.42
+anim_offset_random = 1.0
+
+[sub_resource type="ParticlesMaterial" id=91]
+lifetime_randomness = 0.36
+emission_shape = 1
+emission_sphere_radius = 50.0
+flag_disable_z = true
+spread = 180.0
+gravity = Vector3( 0, 0, 0 )
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+angle = 720.0
+angle_random = 1.0
+scale = 3.5
 scale_random = 1.0
 color_ramp = SubResource( 89 )
 anim_offset = 0.42
@@ -631,54 +631,6 @@ shader = SubResource( 26 )
 shader_param/heat = 100.0
 shader_param/min_darkness = 0.3
 
-[sub_resource type="Animation" id=2]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:speed_modifier")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ 1.0 ]
-}
-
-[sub_resource type="Animation" id=16]
-length = 3.2
-loop = true
-tracks/0/type = "value"
-tracks/0/path = NodePath(".:speed_modifier")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 0.2, 0.9, 1.6, 1.8, 2.5, 3.2 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
-"update": 0,
-"values": [ 1.0, 1.0, 0.5, 1.0, 1.0, 0.5, 1.0 ]
-}
-tracks/1/type = "method"
-tracks/1/path = NodePath(".")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/keys = {
-"times": PoolRealArray( 0, 1.6 ),
-"transitions": PoolRealArray( 1, 1 ),
-"values": [ {
-"args": [ true ],
-"method": "play_step_sound"
-}, {
-"args": [ false ],
-"method": "play_step_sound"
-} ]
-}
-
 [sub_resource type="Curve" id=59]
 min_value = -0.1
 max_value = 0.1
@@ -900,22 +852,61 @@ color_ramp = SubResource( 41 )
 [sub_resource type="CircleShape2D" id=39]
 radius = 206.0
 
+[sub_resource type="Animation" id=2]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:speed_modifier")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 1.0 ]
+}
+
+[sub_resource type="Animation" id=16]
+length = 3.2
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:speed_modifier")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.9, 1.6, 1.8, 2.5, 3.2 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ 1.0, 1.0, 0.5, 1.0, 1.0, 0.5, 1.0 ]
+}
+tracks/1/type = "method"
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1.6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [ true ],
+"method": "play_step_sound"
+}, {
+"args": [ false ],
+"method": "play_step_sound"
+} ]
+}
+
 [node name="Mecha" type="KinematicBody2D" groups=["mecha"]]
 position = Vector2( 0.667419, 0 )
 script = ExtResource( 1 )
 
-[node name="Blood3" type="Particles2D" parent="."]
-material = SubResource( 87 )
-emitting = false
-lifetime = 5.0
-one_shot = true
-explosiveness = 0.93
-randomness = 0.28
-local_coords = false
-process_material = SubResource( 91 )
-texture = ExtResource( 44 )
+[node name="ParticlesLayer1" type="Node2D" parent="."]
 
-[node name="Blood" type="Particles2D" parent="."]
+[node name="Blood1" type="Particles2D" parent="ParticlesLayer1"]
 material = SubResource( 87 )
 emitting = false
 amount = 30
@@ -926,7 +917,7 @@ local_coords = false
 process_material = SubResource( 90 )
 texture = ExtResource( 44 )
 
-[node name="Blood2" type="Particles2D" parent="."]
+[node name="Blood2" type="Particles2D" parent="ParticlesLayer1"]
 material = SubResource( 87 )
 emitting = false
 amount = 20
@@ -937,7 +928,18 @@ local_coords = false
 process_material = SubResource( 91 )
 texture = ExtResource( 44 )
 
-[node name="GrindParticles" type="Particles2D" parent="."]
+[node name="Blood3" type="Particles2D" parent="ParticlesLayer1"]
+material = SubResource( 87 )
+emitting = false
+lifetime = 5.0
+one_shot = true
+explosiveness = 0.93
+randomness = 0.28
+local_coords = false
+process_material = SubResource( 91 )
+texture = ExtResource( 44 )
+
+[node name="GrindParticles1" type="Particles2D" parent="ParticlesLayer1"]
 position = Vector2( 0, 0.0913391 )
 emitting = false
 amount = 50
@@ -948,7 +950,7 @@ local_coords = false
 process_material = SubResource( 79 )
 texture = ExtResource( 42 )
 
-[node name="GrindParticles2" type="Particles2D" parent="."]
+[node name="GrindParticles2" type="Particles2D" parent="ParticlesLayer1"]
 position = Vector2( 0, 0.0913391 )
 emitting = false
 amount = 50
@@ -957,7 +959,7 @@ local_coords = false
 process_material = SubResource( 79 )
 texture = ExtResource( 42 )
 
-[node name="CorrosionParticles2" type="Particles2D" parent="."]
+[node name="CorrosionParticles1" type="Particles2D" parent="ParticlesLayer1"]
 emitting = false
 amount = 100
 lifetime = 20.0
@@ -1086,7 +1088,9 @@ local_coords = false
 process_material = SubResource( 76 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyFwd" type="Particles2D" parent="."]
+[node name="ParticlesLayer2" type="Node2D" parent="."]
+
+[node name="BoostReadyFwd" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 30 )
 amount = 30
@@ -1097,10 +1101,10 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyLeft" type="Particles2D" parent="."]
+[node name="BoostReadyLeft" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
-rotation = 4.71239
+rotation = -1.5708
 amount = 30
 lifetime = 2.0
 speed_scale = 8.0
@@ -1109,7 +1113,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyRight" type="Particles2D" parent="."]
+[node name="BoostReadyRight" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
 rotation = 1.5708
@@ -1121,7 +1125,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyRwd" type="Particles2D" parent="."]
+[node name="BoostReadyRwd" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
 rotation = 3.14159
@@ -1133,7 +1137,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyFwd2" type="Particles2D" parent="."]
+[node name="BoostReadyFwd2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 emitting = false
 amount = 15
@@ -1144,7 +1148,7 @@ local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
-[node name="BoostReadyRwd2" type="Particles2D" parent="."]
+[node name="BoostReadyRwd2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 rotation = 3.14159
 emitting = false
@@ -1156,9 +1160,9 @@ local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
-[node name="BoostReadyLeft2" type="Particles2D" parent="."]
+[node name="BoostReadyLeft2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
-rotation = 4.71239
+rotation = -1.5708
 emitting = false
 amount = 15
 lifetime = 2.25
@@ -1168,7 +1172,7 @@ local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
-[node name="BoostReadyRight2" type="Particles2D" parent="."]
+[node name="BoostReadyRight2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 rotation = 1.5708
 emitting = false
@@ -1310,79 +1314,18 @@ texture = ExtResource( 14 )
 [node name="Decals" type="Node2D" parent="RightShoulder"]
 light_mask = 128
 
-[node name="MechaLight" type="Light2D" parent="."]
-texture = ExtResource( 9 )
-mode = 2
-range_item_cull_mask = 2
-shadow_enabled = true
-shadow_filter = 1
-shadow_filter_smooth = 4.4
-
-[node name="CoreCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
-
-[node name="ChassisSingleCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
-
-[node name="ChassisLeftCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
-
-[node name="ChassisRightCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
-
-[node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
-
-[node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
-visible = false
-polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
-
 [node name="CoreDecals" type="Node2D" parent="."]
 
-[node name="StunTimer" type="Timer" parent="."]
-one_shot = true
+[node name="ParticlesLayer3" type="Node2D" parent="."]
 
-[node name="LockMovementTimer" type="Timer" parent="."]
-one_shot = true
-
-[node name="MovementAnimation" type="AnimationPlayer" parent="."]
-autoplay = "RESET"
-playback_speed = 5.0
-anims/RESET = SubResource( 2 )
-anims/Walking = SubResource( 16 )
-
-[node name="ExtractTimer" type="Timer" parent="."]
-wait_time = 5.0
-one_shot = true
-
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-path_desired_distance = 50.0
-target_desired_distance = 50.0
-path_max_distance = 20.0
-avoidance_enabled = true
-radius = 200.0
-neighbor_dist = 1200.0
-max_neighbors = 1000
-time_horizon = 10000.0
-max_speed = 700.0
-
-[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
-estimate_radius = false
-radius = 200.0
-
-[node name="CorrosionParticles" type="Particles2D" parent="."]
+[node name="CorrosionParticles2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 50
 lifetime = 2.0
 process_material = SubResource( 58 )
 texture = ExtResource( 36 )
 
-[node name="FreezingParticles" type="Particles2D" parent="."]
+[node name="FreezingParticles" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 lifetime = 5.0
@@ -1390,7 +1333,7 @@ local_coords = false
 process_material = SubResource( 52 )
 texture = ExtResource( 37 )
 
-[node name="FreezingParticles2" type="Particles2D" parent="."]
+[node name="FreezingParticles2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 13
 lifetime = 0.2
@@ -1398,7 +1341,7 @@ local_coords = false
 process_material = SubResource( 55 )
 texture = ExtResource( 36 )
 
-[node name="ElectricParticles" type="Particles2D" parent="."]
+[node name="ElectricParticles" type="Particles2D" parent="ParticlesLayer3"]
 material = SubResource( 49 )
 emitting = false
 amount = 20
@@ -1407,7 +1350,7 @@ local_coords = false
 process_material = SubResource( 47 )
 texture = SubResource( 48 )
 
-[node name="FireParticles2" type="Particles2D" parent="."]
+[node name="FireParticles2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 40
 lifetime = 5.0
@@ -1415,14 +1358,14 @@ local_coords = false
 process_material = SubResource( 66 )
 texture = ExtResource( 37 )
 
-[node name="FireParticles" type="Particles2D" parent="."]
+[node name="FireParticles" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 local_coords = false
 process_material = SubResource( 44 )
 texture = ExtResource( 30 )
 
-[node name="OverheatSparks" type="Particles2D" parent="."]
+[node name="OverheatSparks" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 0.710999, 1.0609 )
 emitting = false
 amount = 50
@@ -1491,6 +1434,30 @@ local_coords = false
 process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
+[node name="CoreCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696 )
+
+[node name="ChassisSingleCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
+
+[node name="ChassisLeftCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
+
+[node name="ChassisRightCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 0, 0, 0, 0, 0, 0 )
+
+[node name="LeftShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( -74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29.5015, -47.766, 48.5833, -39.9088, 64.2978, -97.1543, 100.217, -107.256, 86.747, -109.501, 55.3181, -100.522, 19.3994 )
+
+[node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PoolVector2Array( 79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397 )
+
 [node name="LockCollision" type="Area2D" parent="."]
 visible = false
 collision_layer = 0
@@ -1505,5 +1472,44 @@ shape = SubResource( 39 )
 texture = ExtResource( 41 )
 texture_scale = 4.0
 energy = 1.2
+
+[node name="MechaLight" type="Light2D" parent="."]
+texture = ExtResource( 9 )
+mode = 2
+range_item_cull_mask = 2
+shadow_enabled = true
+shadow_filter = 1
+shadow_filter_smooth = 4.4
+
+[node name="StunTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="LockMovementTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="ExtractTimer" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="MovementAnimation" type="AnimationPlayer" parent="."]
+autoplay = "RESET"
+playback_speed = 5.0
+anims/RESET = SubResource( 2 )
+anims/Walking = SubResource( 16 )
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 50.0
+target_desired_distance = 50.0
+path_max_distance = 20.0
+avoidance_enabled = true
+radius = 200.0
+neighbor_dist = 1200.0
+max_neighbors = 1000
+time_horizon = 10000.0
+max_speed = 700.0
+
+[node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
+estimate_radius = false
+radius = 200.0
 
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]

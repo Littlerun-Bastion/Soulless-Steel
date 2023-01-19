@@ -234,47 +234,30 @@ func _physics_process(dt):
 		impact_rotation_velocity *= 0.95
 		if abs(impact_rotation_velocity) < 0.001:
 			impact_rotation_velocity = 0
-		
-	
-	#Blood
+
 	if is_dead:
 		return
-		
+	
+	#Blood
 	if hp / max_hp < 0.8:
-		if bleed_timer < 0.0:
-			bleed_timer = rand_range(1,1.1/(hp/float(max_hp)))
+		bleed_timer = max(bleed_timer - dt, 0.0)
+		if bleed_timer <= 0.0:
+			bleed_timer = rand_range(1, 1.1*max_hp/hp)
 			Particle.blood[0].emitting = !Particle.blood[0].emitting
 			if hp / max_hp < 0.3:
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
-		else:
-			bleed_timer -= dt
 	
-	#ecm
-	if ecm_attempt_cooldown > 0.0:
-		ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
+	#ECM
+	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
 
 	#Bloom
-	if right_arm_bloom_time > 0:
-		right_arm_bloom_time -= dt
-	else:
-		right_arm_bloom_count = 0
-
-	if left_arm_bloom_time > 0:
-		left_arm_bloom_time -= dt
-	else:
-		left_arm_bloom_count = 0
-
-	if right_shoulder_bloom_time > 0:
-		right_shoulder_bloom_time -= dt
-	else:
-		right_shoulder_bloom_count = 0
-
-	if left_shoulder_bloom_time > 0:
-		left_shoulder_bloom_time -= dt
-	else:
-		left_shoulder_bloom_count = 0
+	for part in ["right_arm", "left_arm", "right_shoulder", "left_shoulder"]:
+		if get(part+"_bloom_time") > 0:
+			set(part+"_bloom_time", max(get(part+"_bloom_time") - dt, 0))
+		else:
+			set(part+"_bloom_count", 0)
 
 	#Handle shield
 	if generator and shield < max_shield:

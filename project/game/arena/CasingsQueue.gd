@@ -6,7 +6,7 @@ export var casings_count := 100
 var index = 0
 
 func _ready():
-	for x in range(casings_count):
+	for _x in range(casings_count):
 		add_child(casing.instance())
 	
 func get_next_particle():

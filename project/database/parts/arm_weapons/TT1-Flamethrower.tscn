@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/projectiles/fire_bullet.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" type="Texture" id=5]
+[ext_resource path="res://game/ui/effects/FlamethrowerMuzzleFlash.tscn" type="PackedScene" id=6]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -12,6 +13,9 @@ part_name = "Test Flamethrower"
 manufacturer_name = "Test"
 tagline = "Flamethrower"
 type = "Multi-PewPew"
+muzzle_flash = ExtResource( 6 )
+muzzle_flash_size = 0.5
+muzzle_flash_speed = 3.0
 projectile = ExtResource( 2 )
 projectile_type = "Flame"
 number_projectiles = 4
@@ -30,7 +34,7 @@ ammo_cost = 25
 soundEffect = ""
 sound_max_range = 1000
 sound_att = 1.75
-bullet_drag = 0.995
+bullet_drag = 0.98
 bullet_drag_var = 0.001
 projectile_size = -0.9
 projectile_size_scaling = 2.0

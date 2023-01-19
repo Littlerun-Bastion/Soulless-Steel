@@ -155,7 +155,7 @@ func clear_shooting_pos():
 	shooting_pos_array = []
 
 func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
-	var offset = Vector2()
+	var dir_offset = Vector2()
 	#var dir = (cur_shooting_pos.global_position - global_position).normalized()
 	var dirA = global_rotation
 	if side == SIDE.LEFT:
@@ -165,8 +165,8 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	if accuracy_margin > 0:
 		#offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
 		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
-		offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
-		dirA += offset
+		dir_offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
+		dirA += dir_offset
 	var dir = Vector2(cos(dirA), sin(dirA)).rotated(angle_offset).normalized()
 	return dir
 

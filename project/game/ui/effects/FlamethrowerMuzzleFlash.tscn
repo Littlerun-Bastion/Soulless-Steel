@@ -1,0 +1,160 @@
+[gd_scene load_steps=25 format=2]
+
+[ext_resource path="res://assets/images/fx/directional_flame.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/fx/cold_cloud.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/fx/long_spark.png" type="Texture" id=4]
+[ext_resource path="res://game/ui/effects/MuzzleFlash.gd" type="Script" id=5]
+
+[sub_resource type="CanvasItemMaterial" id=1]
+blend_mode = 1
+
+[sub_resource type="Curve" id=2]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.0383481, 0.979545 ), 1.64078, 1.64078, 0, 0, Vector2( 0.39823, 0 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=3]
+curve = SubResource( 2 )
+
+[sub_resource type="ParticlesMaterial" id=22]
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 0.0
+gravity = Vector3( 0, 98, 0 )
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+angle = 201.8
+angle_random = 0.21
+scale = 0.4
+scale_curve = SubResource( 3 )
+
+[sub_resource type="CanvasItemMaterial" id=21]
+blend_mode = 1
+
+[sub_resource type="Gradient" id=23]
+offsets = PoolRealArray( 0.694118, 1 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=24]
+gradient = SubResource( 23 )
+
+[sub_resource type="Curve" id=25]
+_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0 ), -2.50057, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=26]
+curve = SubResource( 25 )
+
+[sub_resource type="ParticlesMaterial" id=27]
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 10.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 1000.0
+initial_velocity_random = 0.5
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+damping = 46.97
+scale = 0.5
+scale_curve = SubResource( 26 )
+color_ramp = SubResource( 24 )
+
+[sub_resource type="Gradient" id=28]
+offsets = PoolRealArray( 0.211765, 1 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=29]
+gradient = SubResource( 28 )
+
+[sub_resource type="Curve" id=36]
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 1, 1 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=37]
+curve = SubResource( 36 )
+
+[sub_resource type="ParticlesMaterial" id=30]
+lifetime_randomness = 0.3
+flag_align_y = true
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 3.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 1000.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+scale_curve = SubResource( 37 )
+color_ramp = SubResource( 29 )
+
+[sub_resource type="Gradient" id=31]
+offsets = PoolRealArray( 0.258824, 0.952941 )
+colors = PoolColorArray( 0.760742, 0.760742, 0.760742, 1, 0.352941, 0.352941, 0.352941, 0 )
+
+[sub_resource type="GradientTexture" id=32]
+gradient = SubResource( 31 )
+
+[sub_resource type="Curve" id=33]
+max_value = 2.0
+_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.231481, 0.927273 ), 1.64521, 1.64521, 0, 0, Vector2( 1, 2 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=34]
+curve = SubResource( 33 )
+
+[sub_resource type="ParticlesMaterial" id=35]
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 7.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 700.0
+initial_velocity_random = 0.14
+angular_velocity = -104.81
+angular_velocity_random = 0.27
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+angle = 720.0
+angle_random = 1.0
+scale = 0.2
+scale_curve = SubResource( 34 )
+color_ramp = SubResource( 32 )
+
+[node name="Flash" type="Particles2D"]
+material = SubResource( 1 )
+emitting = false
+amount = 3
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource( 22 )
+texture = ExtResource( 1 )
+script = ExtResource( 5 )
+
+[node name="Effect2" type="Particles2D" parent="."]
+material = SubResource( 21 )
+emitting = false
+amount = 1
+lifetime = 2.0
+one_shot = true
+speed_scale = 1.5
+explosiveness = 1.0
+randomness = 0.45
+local_coords = false
+process_material = SubResource( 27 )
+texture = ExtResource( 4 )
+
+[node name="Effect1" type="Particles2D" parent="."]
+emitting = false
+amount = 4
+lifetime = 0.25
+one_shot = true
+speed_scale = 2.0
+explosiveness = 0.8
+local_coords = false
+process_material = SubResource( 30 )
+texture = ExtResource( 1 )
+
+[node name="Linger" type="Particles2D" parent="."]
+emitting = false
+amount = 5
+lifetime = 2.5
+one_shot = true
+explosiveness = 1.0
+local_coords = false
+process_material = SubResource( 35 )
+texture = ExtResource( 2 )

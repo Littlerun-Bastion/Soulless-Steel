@@ -358,6 +358,11 @@ func _physics_process(dt):
 	$OverheatSparks.emitting = has_status("overheat")
 	for child in $OverheatParticlesGroup.get_children():
 		child.emitting = has_status("overheat")
+	if has_status("fire"):
+		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
+	else:
+		$FireGlow.energy = max($FireGlow.energy - dt*2, 0)
+		
 	
 	#Thrusters cooldowns
 	if fwd_thruster_cooldown > 0.0 and not fwd_thruster_ready:
@@ -440,9 +445,9 @@ func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	friction = _friction
 	rotation_acc = _rotation_acc
 	move_acc = _move_acc
+	MovementAnimation.playback_speed = move_acc
 	if chassis and chassis.is_legs:
 		move_acc *= 50
-	MovementAnimation.playback_speed = max_speed/200
 	var animation = MovementAnimation.get_animation("Walking")
 	var track = 0 #animation.find_track("Mecha:speed_modifier")
 	animation.track_set_key_value(track, 2, move_acc/100.0)
@@ -834,10 +839,10 @@ func set_chassis(part_name):
 		return
 	chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = chassis.weight_capacity
-	set_chassis_parts(chassis)
+	set_chassis_parts()
 	
 	
-func set_chassis_parts(chassis):
+func set_chassis_parts():
 	if chassis.is_legs:
 			remove_chassis("single")
 			set_chassis_nodes(RightChassis, RightChassisSub, RightChassisGlow, $ChassisRightCollision, SIDE.RIGHT)
@@ -932,7 +937,7 @@ func reset_offsets():
 		$ShoulderWeaponLeft.position = core.get_shoulder_weapon_offset(SIDE.LEFT)
 		$ShoulderWeaponRight.position = core.get_shoulder_weapon_offset(SIDE.RIGHT)
 		if chassis:
-			set_chassis_parts(chassis)
+			set_chassis_parts()
 		
 #ATTRIBUTE METHODS
 
@@ -1152,7 +1157,7 @@ func apply_movement(dt, direction):
 			$Chassis/SprintGlow.visible = true
 			$GrindParticles2.emitting = true
 			if movement_type != "tank":
-				target_speed.y = min(target_speed.y * mult, target_speed.y + thruster.thrust_max_speed)
+				target_speed.y = min(target_speed.y * mult, target_speed.y + thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		elif direction == Vector2(0,0):
 			$Chassis/SprintThrust.emitting = false

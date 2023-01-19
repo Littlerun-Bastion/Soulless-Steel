@@ -1501,4 +1501,9 @@ monitorable = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="LockCollision"]
 shape = SubResource( 39 )
 
+[node name="FireGlow" type="Light2D" parent="."]
+texture = ExtResource( 41 )
+texture_scale = 4.0
+energy = 1.2
+
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]

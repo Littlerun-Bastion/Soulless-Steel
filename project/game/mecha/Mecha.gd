@@ -88,11 +88,23 @@ onready var Particle = {
 					$ParticlesLayer3/Overheating3, $ParticlesLayer3/Overheating4,\
 					$ParticlesLayer3/Overheating5, $ParticlesLayer3/OverheatingSparks],
 	"grind": [$ParticlesLayer1/Grind1, $ParticlesLayer1/Grind2],
-	"dash_ready": {
-		"fwd": [$ParticlesLayer2/DashReadyFwd1, $ParticlesLayer2/DashReadyFwd2],
-		"rwd": [$ParticlesLayer2/DashReadyRwd1, $ParticlesLayer2/DashReadyRwd2],
-		"left": [$ParticlesLayer2/DashReadyLeft1, $ParticlesLayer2/DashReadyLeft2],
-		"right": [$ParticlesLayer2/DashReadyRight1, $ParticlesLayer2/DashReadyRight2],
+	"dash": {
+		"fwd": {
+			"cooldown": $ParticlesLayer2/DashCooldownFwd,
+			"ready": $ParticlesLayer2/DashReadyFwd,
+		},
+		"rwd": {
+			"cooldown": $ParticlesLayer2/DashCooldownRwd,
+			"ready": $ParticlesLayer2/DashReadyRwd,
+		},
+		"left": {
+			"cooldown": $ParticlesLayer2/DashCooldownLeft,
+			"ready": $ParticlesLayer2/DashReadyLeft,
+		},
+		"right": {
+			"cooldown": $ParticlesLayer2/DashCooldownRight,
+			"ready": $ParticlesLayer2/DashReadyRight,
+		},
 	},
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_boost": [$Chassis/BoostThrust1, $Chassis/BoostThrust2, $Chassis/BoostThrust3]
@@ -185,20 +197,13 @@ var status_time = {
 	"corrosion": 0.0,
 	"overheating": 0.0,
 }
-
-
 var dash_cooldown = {
 	"fwd": 0.0,
 	"rwd": 0.0,
 	"left": 0.0,
 	"right": 0.0,
 }
-var dash_ready = {
-	"fwd": true,
-	"rwd": true,
-	"left": true,
-	"right": true,
-}
+
 
 var thruster_cooldown = 0.0
 
@@ -366,13 +371,11 @@ func _physics_process(dt):
 	
 	#Thrusters cooldowns
 	for dir in ["fwd", "rwd", "left", "right"]:
-		if dash_cooldown[dir] > 0 and not dash_ready[dir]:
-			dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
-			Particle.dash_ready[dir][0].emitting = true
-		elif dash_cooldown[dir] <= 0.0 and not dash_ready[dir]:
-			dash_ready[dir] = true
-			Particle.dash_ready[dir][0].emitting = false
-			Particle.dash_ready[dir][1].emitting = true
+		var ready = dash_cooldown[dir] <= 0
+		dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
+		Particle.dash[dir].cooldown.emitting = dash_cooldown[dir] > 0
+		if dash_cooldown[dir] <= 0 and not ready:
+			Particle.dash[dir].ready.emitting = true
 	update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
@@ -1076,15 +1079,14 @@ func dash(dash_dir):
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
 		dash_cooldown[dir] = thruster.dash_cooldown
-		dash_ready[dir] = false
-		Particle.dash_ready[dir][0].emitting = true
+		Particle.dash[dir].cooldown.emitting = true
 
 
 func update_dash_cooldown_visuals():
 	if is_dead or not thruster:
 		return
 	for dir in ["fwd", "rwd", "left", "right"]:
-		Particle.dash_ready[dir][0].modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
+		Particle.dash[dir].cooldown.modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
 
 
 func weight_speed_modifier(speed):

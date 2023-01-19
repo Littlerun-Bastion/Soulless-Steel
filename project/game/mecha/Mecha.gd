@@ -1373,8 +1373,6 @@ func shoot(type, is_auto_fire = false):
 	
 	#Create projectile
 	if not weapon_ref.is_melee:
-		var variation = weapon_ref.bullet_spread/float(amount + 1)
-		var angle_offset = -weapon_ref.bullet_spread /2
 		var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier
 		print(bloom)
 		if type == "arm_weapon_left" or type == "arm_weapon_right":
@@ -1383,14 +1381,13 @@ func shoot(type, is_auto_fire = false):
 			max_angle = max_angle/chipset.accuracy_modifier
 		var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
 		for _i in range(weapon_ref.number_projectiles):
-			angle_offset += variation
 			emit_signal("create_projectile", self,
 						{
 							"weapon_data": weapon_ref.projectile,
 							"weapon_name": weapon_ref.part_name,
 							"pos": node.get_shoot_position().global_position,
 							"pos_reference": node.get_shoot_position(),
-							"dir": node.get_direction(angle_offset, total_accuracy),
+							"dir": node.get_direction(weapon_ref.bullet_spread, total_accuracy),
 							"muzzle_flash": weapon_ref.muzzle_flash,
 							"muzzle_flash_size": weapon_ref.muzzle_flash_size,
 							"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,

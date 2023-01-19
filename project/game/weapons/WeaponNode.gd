@@ -158,6 +158,7 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 	var dir_offset = Vector2()
 	#var dir = (cur_shooting_pos.global_position - global_position).normalized()
 	var dirA = global_rotation
+	var multishot_offset = deg2rad(rand_range(-angle_offset, angle_offset))
 	if side == SIDE.LEFT:
 		dirA -= (PI/2)
 	else:
@@ -167,7 +168,7 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
 		dir_offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
 		dirA += dir_offset
-	var dir = Vector2(cos(dirA), sin(dirA)).rotated(deg2rad(angle_offset)).normalized()
+	var dir = Vector2(cos(dirA), sin(dirA)).rotated(deg2rad(multishot_offset)).normalized()
 	return dir
 
 

@@ -89,6 +89,7 @@ onready var Particle = {
 					$ParticlesLayer3/Overheating5, $ParticlesLayer3/OverheatingSparks],
 	"grind": [$ParticlesLayer1/Grind1, $ParticlesLayer1/Grind2],
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
+	"chassis_boost": [$Chassis/BoostThrust1, $Chassis/BoostThrust2, $Chassis/BoostThrust3]
 } 
 
 var mecha_name = "Mecha Name"
@@ -1070,15 +1071,10 @@ func dash(dash_dir):
 	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
-		$Chassis/BoostThrust.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust2.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust3.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust.restart()
-		$Chassis/BoostThrust2.restart()
-		$Chassis/BoostThrust3.restart()
-		$Chassis/BoostThrust.emitting = true
-		$Chassis/BoostThrust2.emitting = true
-		$Chassis/BoostThrust3.emitting = true
+		for node in Particle.chassis_boost:
+			node.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+			node.restart()
+			node.emitting = true
 		Particle.grind[0].restart()
 		Particle.grind[0].emitting = true
 		if movement_type == "relative":
@@ -1325,12 +1321,10 @@ func stop_sprinting(sprint_dir):
 		lock_movement(0.5 * get_stability())
 		Particle.grind[0].restart()
 		Particle.grind[0].emitting = true
-		$Chassis/BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$Chassis/BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$Chassis/BoostThrust.restart()
-		$Chassis/BoostThrust2.restart()
-		$Chassis/BoostThrust.emitting = true
-		$Chassis/BoostThrust2.emitting = true
+		for node in [Particle.chassis_boost[0], Particle.chassis_boost[2]]:
+			node.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+			node.restart()
+			node.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
 	$Chassis/SprintThrust.emitting = false

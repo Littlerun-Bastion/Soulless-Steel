@@ -1032,7 +1032,7 @@ position = Vector2( 0, 81.8525 )
 scale = Vector2( 2, 2 )
 texture = ExtResource( 41 )
 
-[node name="SprintThrust" type="Particles2D" parent="Chassis"]
+[node name="SprintThrust1" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 80.9086 )
 emitting = false
 amount = 10
@@ -1053,7 +1053,7 @@ local_coords = false
 process_material = SubResource( 73 )
 texture = ExtResource( 40 )
 
-[node name="BoostThrust1" type="Particles2D" parent="Chassis"]
+[node name="DashThrust1" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 2.33624 )
 emitting = false
 amount = 30
@@ -1064,7 +1064,7 @@ local_coords = false
 process_material = SubResource( 75 )
 texture = ExtResource( 40 )
 
-[node name="BoostThrust2" type="Particles2D" parent="Chassis"]
+[node name="DashThrust2" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 80.9086 )
 emitting = false
 amount = 60
@@ -1076,7 +1076,7 @@ local_coords = false
 process_material = SubResource( 84 )
 texture = ExtResource( 43 )
 
-[node name="BoostThrust3" type="Particles2D" parent="Chassis"]
+[node name="DashThrust3" type="Particles2D" parent="Chassis"]
 position = Vector2( 0, 0.0913391 )
 emitting = false
 amount = 40

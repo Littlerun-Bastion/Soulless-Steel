@@ -106,9 +106,11 @@ onready var Particle = {
 			"ready": $ParticlesLayer2/DashReadyRight,
 		},
 	},
+	"chassis_dash": [$Chassis/DashThrust1, $Chassis/DashThrust2, $Chassis/DashThrust3],
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
-	"chassis_boost": [$Chassis/BoostThrust1, $Chassis/BoostThrust2, $Chassis/BoostThrust3]
+	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
 } 
+onready var ChassisSprintGlow = $Chassis/SprintGlow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -1070,7 +1072,7 @@ func dash(dash_dir):
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
-		for node in Particle.chassis_boost:
+		for node in Particle.chassis_dash:
 			node.rotation_degrees = rad2deg(dash_dir.angle()) + 90
 			node.restart()
 			node.emitting = true
@@ -1116,17 +1118,17 @@ func apply_movement(dt, direction):
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = freezing_status_slowdown(weight_speed_modifier(thruster.thrust_speed_multiplier))
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
-			$Chassis/SprintThrust.emitting = true
-			$Chassis/SprintThrust2.emitting = true
-			$Chassis/SprintGlow.visible = true
+			for node in Particle.chassis_sprint:
+				node.emitting = true
+			ChassisSprintGlow.visible = true
 			Particle.grind[1].emitting = true
 			if movement_type != "tank":
 				target_speed.y = min(target_speed.y * mult, target_speed.y + thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		elif direction == Vector2(0,0):
-			$Chassis/SprintThrust.emitting = false
-			$Chassis/SprintThrust2.emitting = false
-			$Chassis/SprintGlow.visible = false
+			for node in Particle.chassis_sprint:
+				node.emitting = false
+			ChassisSprintGlow.visible = false
 			Particle.grind[1].emitting = false
 	if movement_type == "free":
 		if direction.length() > 0:
@@ -1302,15 +1304,15 @@ func stop_sprinting(sprint_dir):
 		lock_movement(0.5 * get_stability())
 		Particle.grind[0].restart()
 		Particle.grind[0].emitting = true
-		for node in [Particle.chassis_boost[0], Particle.chassis_boost[2]]:
+		for node in [Particle.chassis_dash[0], Particle.chassis_dash[2]]:
 			node.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
 			node.restart()
 			node.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
-	$Chassis/SprintThrust.emitting = false
-	$Chassis/SprintThrust2.emitting = false
-	$Chassis/SprintGlow.visible = false
+	for node in Particle.chassis_sprint:
+		node.emitting = false
+	ChassisSprintGlow.visible = false
 	Particle.grind[1].emitting = false
 
 #COMBAT METHODS

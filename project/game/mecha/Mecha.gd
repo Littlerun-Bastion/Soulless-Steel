@@ -87,7 +87,8 @@ onready var Particle = {
 	"overheating": [$ParticlesLayer3/OverheatingParticles1, $ParticlesLayer3/OverheatingParticles2,\
 					$ParticlesLayer3/OverheatingParticles3, $ParticlesLayer3/OverheatingParticles4,\
 					$ParticlesLayer3/OverheatingParticles5, $ParticlesLayer3/OverheatingSparks],
-	
+	"grind": [$ParticlesLayer1/GrindParticles1, $ParticlesLayer1/GrindParticles2],
+	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 } 
 
 var mecha_name = "Mecha Name"
@@ -386,8 +387,8 @@ func _physics_process(dt):
 	take_status_damage(dt)
 	
 	if chassis and chassis.hover_particles and not display_mode:
-		$Chassis/HoverParticles1.speed_scale = max(0.2,velocity.length()/100)
-		$Chassis/HoverParticles1.modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
+		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
+		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 
 
 func is_player():
@@ -842,13 +843,8 @@ func set_chassis_parts():
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	stability = get_stat("stability")
-	if chassis.hover_particles and not display_mode:
-		$Chassis/HoverParticles1.emitting = true
-		$Chassis/HoverParticles2.emitting = true
-	else:
-		$Chassis/HoverParticles1.emitting = false
-		$Chassis/HoverParticles2.emitting = false
-		
+	Particle.chassis_hover[0].emitting = (chassis.hover_particles and not display_mode)
+	Particle.chassis_hover[1].emitting = (chassis.hover_particles and not display_mode)
 
 
 func set_chassis_nodes(main,sub,glow,collision,side = false):
@@ -1083,8 +1079,8 @@ func dash(dash_dir):
 		$Chassis/BoostThrust.emitting = true
 		$Chassis/BoostThrust2.emitting = true
 		$Chassis/BoostThrust3.emitting = true
-		$GrindParticles.restart()
-		$GrindParticles.emitting = true
+		Particle.grind[0].restart()
+		Particle.grind[0].emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
 		if dash_dir == Vector2(0,-1): #FWD
@@ -1327,8 +1323,8 @@ func stop_sprinting(sprint_dir):
 	if is_sprinting and sprint_dir != Vector2(0,0):
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5 * get_stability())
-		$GrindParticles.restart()
-		$GrindParticles.emitting = true
+		Particle.grind[0].restart()
+		Particle.grind[0].emitting = true
 		$Chassis/BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
 		$Chassis/BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
 		$Chassis/BoostThrust.restart()

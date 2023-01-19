@@ -82,8 +82,11 @@ onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
 	"fire": [$ParticlesLayer3/FireParticles1, $ParticlesLayer3/FireParticles2],
 	"corrosion": [$ParticlesLayer1/CorrosionParticles1, $ParticlesLayer3/CorrosionParticles2],
-	"electrified": [],
-	
+	"electrified": [$ParticlesLayer3/ElectrifiedParticles],
+	"freezing": [$ParticlesLayer3/FreezingParticles1, $ParticlesLayer3/FreezingParticles2],
+	"overheating": [$ParticlesLayer3/OverheatingParticles1, $ParticlesLayer3/OverheatingParticles2,\
+					$ParticlesLayer3/OverheatingParticles3, $ParticlesLayer3/OverheatingParticles4,\
+					$ParticlesLayer3/OverheatingParticles5, $ParticlesLayer3/OverheatingSparks],
 	
 } 
 
@@ -340,16 +343,9 @@ func _physics_process(dt):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time.keys():
 		decrease_status(status, dt)
-	$FireParticles.emitting = has_status("fire")
-	$FireParticles2.emitting = has_status("fire")
-	$ElectricParticles.emitting = has_status("electrified")
-	$FreezingParticles2.emitting = has_status("freezing")
-	$FreezingParticles.emitting = has_status("freezing")
-	$CorrosionParticles.emitting = has_status("corrosion")
-	$CorrosionParticles2.emitting = has_status("corrosion")
-	$OverheatSparks.emitting = has_status("overheating")
-	for child in $OverheatParticlesGroup.get_children():
-		child.emitting = has_status("overheating")
+	for status in ["fire", "electrified", "freezing", "corrosion", "overheating"]:
+		for node in Particle[status]:
+			node.emitting =  has_status(status)
 	if has_status("fire"):
 		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
 	else:
@@ -776,12 +772,15 @@ func set_core(part_name):
 	else:
 		$HeadPort.texture = null
 	var index = 1
-	for x in $OverheatParticlesGroup.get_children():
-		if core.get_overheat_offset(index):
-			x.position = core.get_overheat_offset(index)
-		else:
-			x.visible = false
-		index += 1
+	for node in Particle.overheating:
+		#Ignores "OverheatingSparks"
+		if node.name.find("Particles") != -1:
+			var offset = core.get_overheat_offset(index)
+			if offset:
+				node.position = offset
+			else:
+				node.visible = false
+			index += 1
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()

@@ -1146,7 +1146,7 @@ func apply_movement(dt, direction):
 			$Chassis/SprintThrust.emitting = true
 			$Chassis/SprintThrust2.emitting = true
 			$Chassis/SprintGlow.visible = true
-			$GrindParticles2.emitting = true
+			Particle.grind[1].emitting = true
 			if movement_type != "tank":
 				target_speed.y = min(target_speed.y * mult, target_speed.y + thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
@@ -1154,7 +1154,7 @@ func apply_movement(dt, direction):
 			$Chassis/SprintThrust.emitting = false
 			$Chassis/SprintThrust2.emitting = false
 			$Chassis/SprintGlow.visible = false
-			$GrindParticles2.emitting = false
+			Particle.grind[1].emitting = false
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -1340,7 +1340,7 @@ func stop_sprinting(sprint_dir):
 	$Chassis/SprintThrust.emitting = false
 	$Chassis/SprintThrust2.emitting = false
 	$Chassis/SprintGlow.visible = false
-	$GrindParticles2.emitting = false
+	Particle.grind[1].emitting = false
 
 #COMBAT METHODS
 

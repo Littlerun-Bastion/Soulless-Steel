@@ -340,7 +340,7 @@ custom_fonts/font = SubResource( 20 )
 text = "WRN WGHT"
 align = 2
 
-[node name="CorrodeLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+[node name="CorrosionLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
 visible = false
 margin_top = 385.0
 margin_right = 162.0
@@ -350,7 +350,7 @@ custom_fonts/font = SubResource( 20 )
 text = "WRN CHEM"
 align = 2
 
-[node name="ElectrifyLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+[node name="ElectrifiedLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
 visible = false
 margin_top = 305.0
 margin_right = 162.0
@@ -370,7 +370,7 @@ custom_fonts/font = SubResource( 20 )
 text = "WRN FIRE"
 align = 2
 
-[node name="OverheatLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
+[node name="OverheatingLabel" type="Label" parent="ViewportContainer/Viewport/StatusContainer"]
 visible = false
 margin_top = 385.0
 margin_right = 162.0

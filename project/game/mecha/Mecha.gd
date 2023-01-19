@@ -37,6 +37,7 @@ onready var RightShoulderDecals = $RightShoulder/Decals
 onready var MovementAnimation = $MovementAnimation
 onready var LockCollision = $LockCollision
 
+#Main Parts
 onready var Core = $Core
 onready var CoreSub = $Core/Sub
 onready var CoreGlow = $Core/Glow
@@ -76,6 +77,40 @@ onready var RightChassisRoot = $Chassis/Right
 onready var RightChassis = $Chassis/Right/Main
 onready var RightChassisSub = $Chassis/Right/Sub
 onready var RightChassisGlow = $Chassis/Right/Glow
+#Particles
+onready var Particle = {
+	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
+	"fire": [$ParticlesLayer3/Fire1, $ParticlesLayer3/Fire2],
+	"corrosion": [$ParticlesLayer1/Corrosion1, $ParticlesLayer3/Corrosion2],
+	"electrified": [$ParticlesLayer3/Electrified],
+	"freezing": [$ParticlesLayer3/Freezing1, $ParticlesLayer3/Freezing2],
+	"overheating": [$ParticlesLayer3/Overheating1, $ParticlesLayer3/Overheating2,\
+					$ParticlesLayer3/Overheating3, $ParticlesLayer3/Overheating4,\
+					$ParticlesLayer3/Overheating5, $ParticlesLayer3/OverheatingSparks],
+	"grind": [$ParticlesLayer1/Grind1, $ParticlesLayer1/Grind2],
+	"dash": {
+		"fwd": {
+			"cooldown": $ParticlesLayer2/DashCooldownFwd,
+			"ready": $ParticlesLayer2/DashReadyFwd,
+		},
+		"rwd": {
+			"cooldown": $ParticlesLayer2/DashCooldownRwd,
+			"ready": $ParticlesLayer2/DashReadyRwd,
+		},
+		"left": {
+			"cooldown": $ParticlesLayer2/DashCooldownLeft,
+			"ready": $ParticlesLayer2/DashReadyLeft,
+		},
+		"right": {
+			"cooldown": $ParticlesLayer2/DashCooldownRight,
+			"ready": $ParticlesLayer2/DashReadyRight,
+		},
+	},
+	"chassis_dash": [$Chassis/DashThrust1, $Chassis/DashThrust2, $Chassis/DashThrust3],
+	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
+	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
+} 
+onready var ChassisSprintGlow = $Chassis/SprintGlow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -161,19 +196,16 @@ var status_time = {
 	"fire": 0.0,
 	"electrified": 0.0,
 	"freezing": 0.0,
-	"corrode": 0.0,
-	"overheat": 0.0,
+	"corrosion": 0.0,
+	"overheating": 0.0,
+}
+var dash_cooldown = {
+	"fwd": 0.0,
+	"rwd": 0.0,
+	"left": 0.0,
+	"right": 0.0,
 }
 
-var fwd_thruster_cooldown = 0.0
-var rwd_thruster_cooldown = 0.0
-var right_thruster_cooldown = 0.0
-var left_thruster_cooldown = 0.0
-
-var fwd_thruster_ready = false
-var rwd_thruster_ready = false
-var right_thruster_ready = false
-var left_thruster_ready = false
 
 var thruster_cooldown = 0.0
 
@@ -229,47 +261,30 @@ func _physics_process(dt):
 		impact_rotation_velocity *= 0.95
 		if abs(impact_rotation_velocity) < 0.001:
 			impact_rotation_velocity = 0
-		
-	
-	#Blood
+
 	if is_dead:
 		return
-		
-	if hp / max_hp < 0.8:
-		if bleed_timer < 0.0:
-			bleed_timer = rand_range(1,1.1/(hp/float(max_hp)))
-			$Blood.emitting = !$Blood.emitting
-			if hp / max_hp < 0.3:
-				$Blood2.emitting = !$Blood2.emitting
-			else:
-				$Blood2.emitting = false
-		else:
-			bleed_timer -= dt
 	
-	#ecm
-	if ecm_attempt_cooldown > 0.0:
-		ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
+	#Blood
+	if hp / max_hp < 0.8:
+		bleed_timer = max(bleed_timer - dt, 0.0)
+		if bleed_timer <= 0.0:
+			bleed_timer = rand_range(1, 1.1*max_hp/hp)
+			Particle.blood[0].emitting = !Particle.blood[0].emitting
+			if hp / max_hp < 0.3:
+				Particle.blood[1].emitting = !Particle.blood[1].emitting
+			else:
+				Particle.blood[1].emitting = false
+	
+	#ECM
+	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
 
 	#Bloom
-	if right_arm_bloom_time > 0:
-		right_arm_bloom_time -= dt
-	else:
-		right_arm_bloom_count = 0
-
-	if left_arm_bloom_time > 0:
-		left_arm_bloom_time -= dt
-	else:
-		left_arm_bloom_count = 0
-
-	if right_shoulder_bloom_time > 0:
-		right_shoulder_bloom_time -= dt
-	else:
-		right_shoulder_bloom_count = 0
-
-	if left_shoulder_bloom_time > 0:
-		left_shoulder_bloom_time -= dt
-	else:
-		left_shoulder_bloom_count = 0
+	for part in ["right_arm", "left_arm", "right_shoulder", "left_shoulder"]:
+		if get(part+"_bloom_time") > 0:
+			set(part+"_bloom_time", max(get(part+"_bloom_time") - dt, 0))
+		else:
+			set(part+"_bloom_count", 0)
 
 	#Handle shield
 	if generator and shield < max_shield:
@@ -309,7 +324,6 @@ func _physics_process(dt):
 		if data[0]:
 			data[1].rotation_degrees += get_best_rotation_diff(data[1].rotation_degrees, 0)*data[0].rotation_acc*dt
 
-	
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
 		move(dash_velocity)
@@ -348,16 +362,9 @@ func _physics_process(dt):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time.keys():
 		decrease_status(status, dt)
-	$FireParticles2.emitting = has_status("fire")
-	$FireParticles.emitting = has_status("fire")
-	$ElectricParticles.emitting = has_status("electrified")
-	$FreezingParticles2.emitting = has_status("freezing")
-	$FreezingParticles.emitting = has_status("freezing")
-	$CorrosionParticles.emitting = has_status("corrode")
-	$CorrosionParticles2.emitting = has_status("corrode")
-	$OverheatSparks.emitting = has_status("overheat")
-	for child in $OverheatParticlesGroup.get_children():
-		child.emitting = has_status("overheat")
+	for status in ["fire", "electrified", "freezing", "corrosion", "overheating"]:
+		for node in Particle[status]:
+			node.emitting =  has_status(status)
 	if has_status("fire"):
 		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
 	else:
@@ -365,41 +372,19 @@ func _physics_process(dt):
 		
 	
 	#Thrusters cooldowns
-	if fwd_thruster_cooldown > 0.0 and not fwd_thruster_ready:
-		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif fwd_thruster_cooldown <= 0.0 and not fwd_thruster_ready:
-		fwd_thruster_ready = true
-		$BoostReadyFwd2.emitting = true
-		$BoostReadyFwd.emitting = false
-	if rwd_thruster_cooldown > 0.0 and not rwd_thruster_ready:
-		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif rwd_thruster_cooldown <= 0.0 and not rwd_thruster_ready:
-		rwd_thruster_ready = true
-		$BoostReadyRwd2.emitting = true
-		$BoostReadyRwd.emitting = false
-	if right_thruster_cooldown > 0.0 and not right_thruster_ready:
-		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif right_thruster_cooldown <= 0.0 and not right_thruster_ready:
-		right_thruster_ready = true
-		$BoostReadyRight2.emitting = true
-		$BoostReadyRight.emitting = false
-	if left_thruster_cooldown > 0.0 and not left_thruster_ready:
-		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif left_thruster_cooldown <= 0.0 and not left_thruster_ready:
-		left_thruster_ready = true
-		$BoostReadyLeft2.emitting = true
-		$BoostReadyLeft.emitting = false
-	thruster_cooldown_visuals()
+	for dir in ["fwd", "rwd", "left", "right"]:
+		var ready = dash_cooldown[dir] <= 0
+		dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
+		Particle.dash[dir].cooldown.emitting = dash_cooldown[dir] > 0
+		if dash_cooldown[dir] <= 0 and not ready:
+			Particle.dash[dir].ready.emitting = true
+	update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
 	
 	if chassis and chassis.hover_particles and not display_mode:
-		$Chassis/HoverParticles1.speed_scale = max(0.2,velocity.length()/100)
-		$Chassis/HoverParticles1.modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
+		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
+		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 
 
 func is_player():
@@ -512,7 +497,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 	hp = max(hp - (health_mult * amount), 0)
 	if amount > max_hp/0.25:
-		$Blood3.emitting = true
+		Particle.blood[2].emitting = true
 	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
 	if shield <= 0:
 		select_impact(calibre, false)
@@ -560,7 +545,7 @@ func take_status_damage(dt):
 	if is_dead:
 		return
 	
-	if has_status("overheat"):
+	if has_status("overheating"):
 		hp -= (max_hp * 0.02 * dt)
 		hp = round(hp)
 		if hp <= 0:
@@ -577,7 +562,7 @@ func take_status_damage(dt):
 		if generator:
 			shield_regen_cooldown = generator.shield_regen_delay
 
-	if has_status("corrode"):
+	if has_status("corrosion"):
 		hp = round(max(hp - (dt * 100), 1))
 		emit_signal("took_damage", self, true)
 
@@ -665,8 +650,8 @@ func update_heat(dt):
 			weapon.update_heat(generator.heat_dispersion, dt)
 	if generator:
 		if mecha_heat >= max_heat:
-			set_status("overheat", 5.0)
-	if not has_status("overheat"):
+			set_status("overheating", 5.0)
+	if not has_status("overheating"):
 		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
 		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)
@@ -784,12 +769,15 @@ func set_core(part_name):
 	else:
 		$HeadPort.texture = null
 	var index = 1
-	for x in $OverheatParticlesGroup.get_children():
-		if core.get_overheat_offset(index):
-			x.position = core.get_overheat_offset(index)
-		else:
-			x.visible = false
-		index += 1
+	for node in Particle.overheating:
+		#Ignores "OverheatingSparks"
+		if node.name.find("Sparks") == -1:
+			var offset = core.get_overheat_offset(index)
+			if offset:
+				node.position = offset
+			else:
+				node.visible = false
+			index += 1
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()
@@ -851,13 +839,8 @@ func set_chassis_parts():
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	stability = get_stat("stability")
-	if chassis.hover_particles and not display_mode:
-		$Chassis/HoverParticles1.emitting = true
-		$Chassis/HoverParticles2.emitting = true
-	else:
-		$Chassis/HoverParticles1.emitting = false
-		$Chassis/HoverParticles2.emitting = false
-		
+	Particle.chassis_hover[0].emitting = (chassis.hover_particles and not display_mode)
+	Particle.chassis_hover[1].emitting = (chassis.hover_particles and not display_mode)
 
 
 func set_chassis_nodes(main,sub,glow,collision,side = false):
@@ -1068,62 +1051,45 @@ func move(vec):
 		NavAgent.set_velocity(vec)
 
 
-func dash(dash_dir):
-	var _thruster_cooldown = 0.0
-	if dash_dir == Vector2(0,-1): #FWD
-		_thruster_cooldown = fwd_thruster_cooldown
-	elif dash_dir == Vector2(0,1): #RWD
-		_thruster_cooldown = rwd_thruster_cooldown
-	elif dash_dir == Vector2(1,0): #RIGHT
-		_thruster_cooldown = right_thruster_cooldown
-	elif dash_dir == Vector2(-1,0): #LEFT
-		_thruster_cooldown = left_thruster_cooldown
+func get_dir_name(dir):
+	if dir == Vector2(0,-1):
+		return "fwd"
+	elif dir == Vector2(0,1):
+		return "rwd"
+	elif dir == Vector2(1,0):
+		return "right"
+	elif dir == Vector2(-1,0):
+		return "left"
 	else:
-		return
-	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
+		return false
+
+
+func dash(dash_dir):
+	var dir = get_dir_name(dash_dir)
+	if not dir:
+		return #Not a valid dash direction
+
+	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
-		$Chassis/BoostThrust.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust2.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust3.rotation_degrees = rad2deg(dash_dir.angle()) + 90
-		$Chassis/BoostThrust.restart()
-		$Chassis/BoostThrust2.restart()
-		$Chassis/BoostThrust3.restart()
-		$Chassis/BoostThrust.emitting = true
-		$Chassis/BoostThrust2.emitting = true
-		$Chassis/BoostThrust3.emitting = true
-		$GrindParticles.restart()
-		$GrindParticles.emitting = true
+		for node in Particle.chassis_dash:
+			node.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+			node.restart()
+			node.emitting = true
+		Particle.grind[0].restart()
+		Particle.grind[0].emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
-		if dash_dir == Vector2(0,-1): #FWD
-			fwd_thruster_cooldown = thruster.dash_cooldown
-			fwd_thruster_ready = false
-			$BoostReadyFwd.emitting = true
-		elif dash_dir == Vector2(0,1): #RWD
-			rwd_thruster_cooldown = thruster.dash_cooldown
-			rwd_thruster_ready = false
-			$BoostReadyRwd.emitting = true
-		elif dash_dir == Vector2(1,0): #RIGHT
-			right_thruster_cooldown = thruster.dash_cooldown
-			right_thruster_ready = false
-			$BoostReadyRight.emitting = true
-		elif dash_dir == Vector2(-1,0): #LEFT
-			left_thruster_cooldown = thruster.dash_cooldown
-			left_thruster_ready = false
-			$BoostReadyLeft.emitting = true
-		else:
-			return
+		dash_cooldown[dir] = thruster.dash_cooldown
+		Particle.dash[dir].cooldown.emitting = true
 
-func thruster_cooldown_visuals():
-	if is_dead:
-		pass
-	if thruster:
-		$BoostReadyFwd.modulate = Color(1, 1, 1, 0.33*(fwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRwd.modulate = Color(1, 1, 1, 0.33*(rwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyLeft.modulate = Color(1, 1, 1, 0.33*(left_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRight.modulate = Color(1, 1, 1, 0.33*(right_thruster_cooldown / thruster.dash_cooldown))
-			
+
+func update_dash_cooldown_visuals():
+	if is_dead or not thruster:
+		return
+	for dir in ["fwd", "rwd", "left", "right"]:
+		Particle.dash[dir].cooldown.modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
+
 
 func weight_speed_modifier(speed):
 	return speed
@@ -1152,18 +1118,18 @@ func apply_movement(dt, direction):
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = freezing_status_slowdown(weight_speed_modifier(thruster.thrust_speed_multiplier))
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
-			$Chassis/SprintThrust.emitting = true
-			$Chassis/SprintThrust2.emitting = true
-			$Chassis/SprintGlow.visible = true
-			$GrindParticles2.emitting = true
+			for node in Particle.chassis_sprint:
+				node.emitting = true
+			ChassisSprintGlow.visible = true
+			Particle.grind[1].emitting = true
 			if movement_type != "tank":
 				target_speed.y = min(target_speed.y * mult, target_speed.y + thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		elif direction == Vector2(0,0):
-			$Chassis/SprintThrust.emitting = false
-			$Chassis/SprintThrust2.emitting = false
-			$Chassis/SprintGlow.visible = false
-			$GrindParticles2.emitting = false
+			for node in Particle.chassis_sprint:
+				node.emitting = false
+			ChassisSprintGlow.visible = false
+			Particle.grind[1].emitting = false
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
@@ -1336,20 +1302,18 @@ func stop_sprinting(sprint_dir):
 	if is_sprinting and sprint_dir != Vector2(0,0):
 		sprinting_ending_correction = Vector2(velocity.x, velocity.y)
 		lock_movement(0.5 * get_stability())
-		$GrindParticles.restart()
-		$GrindParticles.emitting = true
-		$Chassis/BoostThrust.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$Chassis/BoostThrust2.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
-		$Chassis/BoostThrust.restart()
-		$Chassis/BoostThrust2.restart()
-		$Chassis/BoostThrust.emitting = true
-		$Chassis/BoostThrust2.emitting = true
+		Particle.grind[0].restart()
+		Particle.grind[0].emitting = true
+		for node in [Particle.chassis_dash[0], Particle.chassis_dash[2]]:
+			node.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+			node.restart()
+			node.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
-	$Chassis/SprintThrust.emitting = false
-	$Chassis/SprintThrust2.emitting = false
-	$Chassis/SprintGlow.visible = false
-	$GrindParticles2.emitting = false
+	for node in Particle.chassis_sprint:
+		node.emitting = false
+	ChassisSprintGlow.visible = false
+	Particle.grind[1].emitting = false
 
 #COMBAT METHODS
 

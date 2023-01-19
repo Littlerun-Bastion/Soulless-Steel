@@ -30,10 +30,10 @@ onready var ExtractingLabel = $ViewportContainer/Viewport/ExtractingLabel
 onready var Tw = $ViewportContainer/Viewport/Tween
 onready var StatusLabels = {
 	"freezing": $ViewportContainer/Viewport/StatusContainer/FreezingLabel,
-	"corrode": $ViewportContainer/Viewport/StatusContainer/CorrodeLabel,
-	"electrified": $ViewportContainer/Viewport/StatusContainer/ElectrifyLabel,
+	"corrosion": $ViewportContainer/Viewport/StatusContainer/CorrosionLabel,
+	"electrified": $ViewportContainer/Viewport/StatusContainer/ElectrifiedLabel,
 	"fire": $ViewportContainer/Viewport/StatusContainer/FireLabel,
-	"overheat":$ViewportContainer/Viewport/StatusContainer/OverheatLabel,
+	"overheating":$ViewportContainer/Viewport/StatusContainer/OverheatingLabel,
 }
 onready var StatusContainer = $ViewportContainer/Viewport/StatusContainer
 onready var StatusChirpSFX = $ViewportContainer/Viewport/StatusChirpSFX

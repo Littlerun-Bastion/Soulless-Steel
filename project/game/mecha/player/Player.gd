@@ -34,7 +34,6 @@ func _ready():
 		set_shoulder_weapon("Arend", SIDE.RIGHT)
 		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 		set_shoulders("Lancelot-Pauldron")
-		print(get_stat("weight"))
 	if Debug.get_setting("player_zoom"):
 		Cam.zoom = Debug.get_setting("player_zoom")
 

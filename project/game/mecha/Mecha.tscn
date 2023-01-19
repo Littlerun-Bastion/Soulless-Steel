@@ -1090,7 +1090,7 @@ texture = ExtResource( 39 )
 
 [node name="ParticlesLayer2" type="Node2D" parent="."]
 
-[node name="BoostReadyFwd" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyFwd1" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 30 )
 amount = 30
@@ -1101,7 +1101,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyLeft" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyLeft1" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
 rotation = -1.5708
@@ -1113,7 +1113,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyRight" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyRight1" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
 rotation = 1.5708
@@ -1125,7 +1125,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyRwd" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyRwd1" type="Particles2D" parent="ParticlesLayer2"]
 modulate = Color( 1, 1, 1, 0.0784314 )
 position = Vector2( -0.053, 0.864761 )
 rotation = 3.14159
@@ -1137,7 +1137,7 @@ local_coords = false
 process_material = SubResource( 104 )
 texture = ExtResource( 39 )
 
-[node name="BoostReadyFwd2" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyFwd2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 emitting = false
 amount = 15
@@ -1148,19 +1148,7 @@ local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
-[node name="BoostReadyRwd2" type="Particles2D" parent="ParticlesLayer2"]
-position = Vector2( 0, 2.33624 )
-rotation = 3.14159
-emitting = false
-amount = 15
-lifetime = 2.25
-one_shot = true
-speed_scale = 10.0
-local_coords = false
-process_material = SubResource( 105 )
-texture = ExtResource( 40 )
-
-[node name="BoostReadyLeft2" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyLeft2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 rotation = -1.5708
 emitting = false
@@ -1172,9 +1160,21 @@ local_coords = false
 process_material = SubResource( 105 )
 texture = ExtResource( 40 )
 
-[node name="BoostReadyRight2" type="Particles2D" parent="ParticlesLayer2"]
+[node name="DashReadyRight2" type="Particles2D" parent="ParticlesLayer2"]
 position = Vector2( 0, 2.33624 )
 rotation = 1.5708
+emitting = false
+amount = 15
+lifetime = 2.25
+one_shot = true
+speed_scale = 10.0
+local_coords = false
+process_material = SubResource( 105 )
+texture = ExtResource( 40 )
+
+[node name="DashReadyRwd2" type="Particles2D" parent="ParticlesLayer2"]
+position = Vector2( 0, 2.33624 )
+rotation = 3.14159
 emitting = false
 amount = 15
 lifetime = 2.25

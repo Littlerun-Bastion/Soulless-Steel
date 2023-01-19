@@ -88,6 +88,12 @@ onready var Particle = {
 					$ParticlesLayer3/Overheating3, $ParticlesLayer3/Overheating4,\
 					$ParticlesLayer3/Overheating5, $ParticlesLayer3/OverheatingSparks],
 	"grind": [$ParticlesLayer1/Grind1, $ParticlesLayer1/Grind2],
+	"dash_ready": {
+		"fwd": [$ParticlesLayer2/DashReadyFwd1, $ParticlesLayer2/DashReadyFwd2],
+		"rwd": [$ParticlesLayer2/DashReadyRwd1, $ParticlesLayer2/DashReadyRwd2],
+		"left": [$ParticlesLayer2/DashReadyLeft1, $ParticlesLayer2/DashReadyLeft2],
+		"right": [$ParticlesLayer2/DashReadyRight1, $ParticlesLayer2/DashReadyRight2],
+	},
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_boost": [$Chassis/BoostThrust1, $Chassis/BoostThrust2, $Chassis/BoostThrust3]
 } 
@@ -180,15 +186,19 @@ var status_time = {
 	"overheating": 0.0,
 }
 
-var fwd_thruster_cooldown = 0.0
-var rwd_thruster_cooldown = 0.0
-var right_thruster_cooldown = 0.0
-var left_thruster_cooldown = 0.0
 
-var fwd_thruster_ready = false
-var rwd_thruster_ready = false
-var right_thruster_ready = false
-var left_thruster_ready = false
+var dash_cooldown = {
+	"fwd": 0.0,
+	"rwd": 0.0,
+	"left": 0.0,
+	"right": 0.0,
+}
+var dash_ready = {
+	"fwd": true,
+	"rwd": true,
+	"left": true,
+	"right": true,
+}
 
 var thruster_cooldown = 0.0
 
@@ -355,35 +365,15 @@ func _physics_process(dt):
 		
 	
 	#Thrusters cooldowns
-	if fwd_thruster_cooldown > 0.0 and not fwd_thruster_ready:
-		fwd_thruster_cooldown = max(fwd_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif fwd_thruster_cooldown <= 0.0 and not fwd_thruster_ready:
-		fwd_thruster_ready = true
-		$BoostReadyFwd2.emitting = true
-		$BoostReadyFwd.emitting = false
-	if rwd_thruster_cooldown > 0.0 and not rwd_thruster_ready:
-		rwd_thruster_cooldown = max(rwd_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif rwd_thruster_cooldown <= 0.0 and not rwd_thruster_ready:
-		rwd_thruster_ready = true
-		$BoostReadyRwd2.emitting = true
-		$BoostReadyRwd.emitting = false
-	if right_thruster_cooldown > 0.0 and not right_thruster_ready:
-		right_thruster_cooldown = max(right_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif right_thruster_cooldown <= 0.0 and not right_thruster_ready:
-		right_thruster_ready = true
-		$BoostReadyRight2.emitting = true
-		$BoostReadyRight.emitting = false
-	if left_thruster_cooldown > 0.0 and not left_thruster_ready:
-		left_thruster_cooldown = max(left_thruster_cooldown - dt, 0.0)
-		$BoostReadyFwd.emitting = true
-	elif left_thruster_cooldown <= 0.0 and not left_thruster_ready:
-		left_thruster_ready = true
-		$BoostReadyLeft2.emitting = true
-		$BoostReadyLeft.emitting = false
-	thruster_cooldown_visuals()
+	for dir in ["fwd", "rwd", "left", "right"]:
+		if dash_cooldown[dir] > 0 and not dash_ready[dir]:
+			dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
+			Particle.dash_ready[dir][0].emitting = true
+		elif dash_cooldown[dir] <= 0.0 and not dash_ready[dir]:
+			dash_ready[dir] = true
+			Particle.dash_ready[dir][0].emitting = false
+			Particle.dash_ready[dir][1].emitting = true
+	update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
 	
@@ -1056,19 +1046,25 @@ func move(vec):
 		NavAgent.set_velocity(vec)
 
 
-func dash(dash_dir):
-	var _thruster_cooldown = 0.0
-	if dash_dir == Vector2(0,-1): #FWD
-		_thruster_cooldown = fwd_thruster_cooldown
-	elif dash_dir == Vector2(0,1): #RWD
-		_thruster_cooldown = rwd_thruster_cooldown
-	elif dash_dir == Vector2(1,0): #RIGHT
-		_thruster_cooldown = right_thruster_cooldown
-	elif dash_dir == Vector2(-1,0): #LEFT
-		_thruster_cooldown = left_thruster_cooldown
+func get_dir_name(dir):
+	if dir == Vector2(0,-1):
+		return "fwd"
+	elif dir == Vector2(0,1):
+		return "rwd"
+	elif dir == Vector2(1,0):
+		return "right"
+	elif dir == Vector2(-1,0):
+		return "left"
 	else:
-		return
-	if _thruster_cooldown <= 0.0 and not has_status("freezing"):
+		return false
+
+
+func dash(dash_dir):
+	var dir = get_dir_name(dash_dir)
+	if not dir:
+		return #Not a valid dash direction
+
+	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
 		for node in Particle.chassis_boost:
@@ -1079,34 +1075,17 @@ func dash(dash_dir):
 		Particle.grind[0].emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
-		if dash_dir == Vector2(0,-1): #FWD
-			fwd_thruster_cooldown = thruster.dash_cooldown
-			fwd_thruster_ready = false
-			$BoostReadyFwd.emitting = true
-		elif dash_dir == Vector2(0,1): #RWD
-			rwd_thruster_cooldown = thruster.dash_cooldown
-			rwd_thruster_ready = false
-			$BoostReadyRwd.emitting = true
-		elif dash_dir == Vector2(1,0): #RIGHT
-			right_thruster_cooldown = thruster.dash_cooldown
-			right_thruster_ready = false
-			$BoostReadyRight.emitting = true
-		elif dash_dir == Vector2(-1,0): #LEFT
-			left_thruster_cooldown = thruster.dash_cooldown
-			left_thruster_ready = false
-			$BoostReadyLeft.emitting = true
-		else:
-			return
+		dash_cooldown[dir] = thruster.dash_cooldown
+		dash_ready[dir] = false
+		Particle.dash_ready[dir][0].emitting = true
 
-func thruster_cooldown_visuals():
-	if is_dead:
-		pass
-	if thruster:
-		$BoostReadyFwd.modulate = Color(1, 1, 1, 0.33*(fwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRwd.modulate = Color(1, 1, 1, 0.33*(rwd_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyLeft.modulate = Color(1, 1, 1, 0.33*(left_thruster_cooldown / thruster.dash_cooldown))
-		$BoostReadyRight.modulate = Color(1, 1, 1, 0.33*(right_thruster_cooldown / thruster.dash_cooldown))
-			
+
+func update_dash_cooldown_visuals():
+	if is_dead or not thruster:
+		return
+	for dir in ["fwd", "rwd", "left", "right"]:
+		Particle.dash_ready[dir][0].modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
+
 
 func weight_speed_modifier(speed):
 	return speed

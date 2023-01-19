@@ -80,14 +80,14 @@ onready var RightChassisGlow = $Chassis/Right/Glow
 #Particles
 onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
-	"fire": [$ParticlesLayer3/FireParticles1, $ParticlesLayer3/FireParticles2],
-	"corrosion": [$ParticlesLayer1/CorrosionParticles1, $ParticlesLayer3/CorrosionParticles2],
-	"electrified": [$ParticlesLayer3/ElectrifiedParticles],
-	"freezing": [$ParticlesLayer3/FreezingParticles1, $ParticlesLayer3/FreezingParticles2],
-	"overheating": [$ParticlesLayer3/OverheatingParticles1, $ParticlesLayer3/OverheatingParticles2,\
-					$ParticlesLayer3/OverheatingParticles3, $ParticlesLayer3/OverheatingParticles4,\
-					$ParticlesLayer3/OverheatingParticles5, $ParticlesLayer3/OverheatingSparks],
-	"grind": [$ParticlesLayer1/GrindParticles1, $ParticlesLayer1/GrindParticles2],
+	"fire": [$ParticlesLayer3/Fire1, $ParticlesLayer3/Fire2],
+	"corrosion": [$ParticlesLayer1/Corrosion1, $ParticlesLayer3/Corrosion2],
+	"electrified": [$ParticlesLayer3/Electrified],
+	"freezing": [$ParticlesLayer3/Freezing1, $ParticlesLayer3/Freezing2],
+	"overheating": [$ParticlesLayer3/Overheating1, $ParticlesLayer3/Overheating2,\
+					$ParticlesLayer3/Overheating3, $ParticlesLayer3/Overheating4,\
+					$ParticlesLayer3/Overheating5, $ParticlesLayer3/OverheatingSparks],
+	"grind": [$ParticlesLayer1/Grind1, $ParticlesLayer1/Grind2],
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 } 
 
@@ -775,7 +775,7 @@ func set_core(part_name):
 	var index = 1
 	for node in Particle.overheating:
 		#Ignores "OverheatingSparks"
-		if node.name.find("Particles") != -1:
+		if node.name.find("Sparks") == -1:
 			var offset = core.get_overheat_offset(index)
 			if offset:
 				node.position = offset

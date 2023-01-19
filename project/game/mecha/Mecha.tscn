@@ -939,7 +939,7 @@ local_coords = false
 process_material = SubResource( 91 )
 texture = ExtResource( 44 )
 
-[node name="GrindParticles1" type="Particles2D" parent="ParticlesLayer1"]
+[node name="Grind1" type="Particles2D" parent="ParticlesLayer1"]
 position = Vector2( 0, 0.0913391 )
 emitting = false
 amount = 50
@@ -950,7 +950,7 @@ local_coords = false
 process_material = SubResource( 79 )
 texture = ExtResource( 42 )
 
-[node name="GrindParticles2" type="Particles2D" parent="ParticlesLayer1"]
+[node name="Grind2" type="Particles2D" parent="ParticlesLayer1"]
 position = Vector2( 0, 0.0913391 )
 emitting = false
 amount = 50
@@ -959,7 +959,7 @@ local_coords = false
 process_material = SubResource( 79 )
 texture = ExtResource( 42 )
 
-[node name="CorrosionParticles1" type="Particles2D" parent="ParticlesLayer1"]
+[node name="Corrosion1" type="Particles2D" parent="ParticlesLayer1"]
 emitting = false
 amount = 100
 lifetime = 20.0
@@ -1318,14 +1318,14 @@ light_mask = 128
 
 [node name="ParticlesLayer3" type="Node2D" parent="."]
 
-[node name="CorrosionParticles2" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Corrosion2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 50
 lifetime = 2.0
 process_material = SubResource( 58 )
 texture = ExtResource( 36 )
 
-[node name="FreezingParticles1" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Freezing1" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 lifetime = 5.0
@@ -1333,7 +1333,7 @@ local_coords = false
 process_material = SubResource( 52 )
 texture = ExtResource( 37 )
 
-[node name="FreezingParticles2" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Freezing2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 13
 lifetime = 0.2
@@ -1341,7 +1341,7 @@ local_coords = false
 process_material = SubResource( 55 )
 texture = ExtResource( 36 )
 
-[node name="ElectrifiedParticles" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Electrified" type="Particles2D" parent="ParticlesLayer3"]
 material = SubResource( 49 )
 emitting = false
 amount = 20
@@ -1350,7 +1350,7 @@ local_coords = false
 process_material = SubResource( 47 )
 texture = SubResource( 48 )
 
-[node name="FireParticles1" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Fire1" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 40
 lifetime = 5.0
@@ -1358,7 +1358,7 @@ local_coords = false
 process_material = SubResource( 66 )
 texture = ExtResource( 37 )
 
-[node name="FireParticles2" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Fire2" type="Particles2D" parent="ParticlesLayer3"]
 emitting = false
 amount = 200
 local_coords = false
@@ -1377,7 +1377,7 @@ local_coords = false
 process_material = SubResource( 83 )
 texture = ExtResource( 40 )
 
-[node name="OverheatingParticles1" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Overheating1" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 27.6968, 74.0813 )
 emitting = false
 amount = 200
@@ -1388,7 +1388,7 @@ local_coords = false
 process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
-[node name="OverheatingParticles2" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Overheating2" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 3.67419, 20.3484 )
 emitting = false
 amount = 200
@@ -1399,7 +1399,7 @@ local_coords = false
 process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
-[node name="OverheatingParticles3" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Overheating3" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 52.8042, 19.931 )
 emitting = false
 amount = 200
@@ -1410,7 +1410,7 @@ local_coords = false
 process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
-[node name="OverheatingParticles4" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Overheating4" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 52.8042, 19.931 )
 emitting = false
 amount = 200
@@ -1421,7 +1421,7 @@ local_coords = false
 process_material = SubResource( 82 )
 texture = ExtResource( 30 )
 
-[node name="OverheatingParticles5" type="Particles2D" parent="ParticlesLayer3"]
+[node name="Overheating5" type="Particles2D" parent="ParticlesLayer3"]
 position = Vector2( 52.8042, 19.931 )
 emitting = false
 amount = 200

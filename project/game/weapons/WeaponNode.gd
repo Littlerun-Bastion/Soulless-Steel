@@ -167,7 +167,7 @@ func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
 		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
 		dir_offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
 		dirA += dir_offset
-	var dir = Vector2(cos(dirA), sin(dirA)).rotated(angle_offset).normalized()
+	var dir = Vector2(cos(dirA), sin(dirA)).rotated(deg2rad(angle_offset)).normalized()
 	return dir
 
 

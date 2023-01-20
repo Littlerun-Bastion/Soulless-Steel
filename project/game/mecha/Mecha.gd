@@ -1227,6 +1227,10 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			var node = data[0]
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
+			if node == $ArmWeaponLeft:
+				node.rotation_degrees += node_ref.parallax_offset
+			else: 
+				node.rotation_degrees -= node_ref.parallax_offset
 			node.rotation_degrees = clamp(node.rotation_degrees, -core.rotation_range, core.rotation_range)
 	
 	for data in	[[$Chassis/Left, chassis], [$Chassis/Right, chassis]]:
@@ -1387,6 +1391,7 @@ func shoot(type, is_auto_fire = false):
 			if locked_to:
 				max_angle = max_angle/chipset.accuracy_modifier
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
+			var current_accuracy = rand_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
@@ -1394,7 +1399,7 @@ func shoot(type, is_auto_fire = false):
 								"weapon_name": weapon_ref.part_name,
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),
-								"dir": node.get_direction(weapon_ref.bullet_spread, total_accuracy),
+								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
 								"muzzle_flash": weapon_ref.muzzle_flash,
 								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
 								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,

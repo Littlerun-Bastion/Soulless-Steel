@@ -12,6 +12,7 @@ export var rotation_acc := 5
 export var rotation_range := 10.0
 export var projectile : Resource
 export var projectile_type : String
+export var parallax_offset := 0.0
 export var number_projectiles := 1
 export var burst_ammo_cost := 1
 export var damage_modifier := 1.0

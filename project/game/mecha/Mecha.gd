@@ -1362,14 +1362,13 @@ func shoot(type, is_auto_fire = false):
 		return
 	
 	while node.burst_count < weapon_ref.burst_size:
-		print(node.burst_count)
 		if is_dead:
 			return
 		var amount
 		if weapon_ref.uses_battery:
 			amount = weapon_ref.number_projectiles
 			if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
-				if is_player() and not is_auto_fire:
+				if is_player() and weapon_ref.battery_drain > battery and not is_auto_fire:
 					AudioManager.play_sfx("no_ammo", global_position)
 				return
 			node.shoot_battery()

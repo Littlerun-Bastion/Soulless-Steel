@@ -116,6 +116,8 @@ func reload():
 	total_ammo -= ammo
 	clip_ammo += ammo
 	reloading = false
+	burst_count = 0
+	timer = 0
 	emit_signal("finished_reloading")
 
 
@@ -163,21 +165,14 @@ func set_shooting_pos(pos):
 func clear_shooting_pos():
 	shooting_pos_array = []
 
-func get_direction(angle_offset := 0.0, accuracy_margin := 0.0):
-	var dir_offset = Vector2()
-	#var dir = (cur_shooting_pos.global_position - global_position).normalized()
-	var dirA = global_rotation
-	var multishot_offset = deg2rad(rand_range(-angle_offset, angle_offset))
+func get_direction(multishot_offset := 0.0, angle := 0.0):
+	var angle_offset = rand_range(-multishot_offset, multishot_offset)
+	var dirA = global_rotation + deg2rad(angle) + deg2rad(angle_offset)
 	if side == SIDE.LEFT:
 		dirA -= (PI/2)
 	else:
 		dirA += (PI/2)
-	if accuracy_margin > 0:
-		#offset = dir.rotated(PI/2)*rand_range(-accuracy_margin, accuracy_margin)
-		#dir = (cur_shooting_pos.global_position + offset - global_position).rotated(angle_offset).normalized()
-		dir_offset = deg2rad(rand_range(-accuracy_margin, accuracy_margin))
-		dirA += dir_offset
-	var dir = Vector2(cos(dirA), sin(dirA)).rotated(deg2rad(multishot_offset)).normalized()
+	var dir = Vector2(cos(dirA), sin(dirA)).normalized()
 	return dir
 
 

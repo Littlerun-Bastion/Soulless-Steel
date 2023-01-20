@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/projectiles/testlaser_effect.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Blade.png" type="Texture" id=4]
+[ext_resource path="res://game/mecha/MeleeHitboxes.gd" type="Script" id=5]
+[ext_resource path="res://game/mecha/Hitbox.tscn" type="PackedScene" id=6]
 
 [sub_resource type="Animation" id=1]
 length = 0.001
@@ -32,24 +34,12 @@ tracks/1/keys = {
 "values": [ 0.0 ]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("Sub:position")
+tracks/2/path = NodePath("Sub:offset")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
-"update": 0,
-"values": [ Vector2( 0, 0 ) ]
-}
-tracks/3/type = "value"
-tracks/3/path = NodePath("Sub:offset")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/keys = {
 "times": PoolRealArray( 0 ),
 "transitions": PoolRealArray( 1 ),
 "update": 0,
@@ -95,6 +85,20 @@ tracks/2/keys = {
 "update": 0,
 "values": [ Vector2( 0, 0 ), Vector2( 0, 0 ), Vector2( 0, -28 ), Vector2( -1, -12 ), Vector2( 0, 0 ) ]
 }
+tracks/3/type = "method"
+tracks/3/path = NodePath("MeleeHitboxes")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 0.3 ),
+"transitions": PoolRealArray( 1 ),
+"values": [ {
+"args": [ Vector2( -28, -106 ), 20.0, 1.0, 0.1 ],
+"method": "create_hitbox"
+} ]
+}
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -136,6 +140,15 @@ texture = ExtResource( 2 )
 [node name="AttachPos" type="Position2D" parent="."]
 position = Vector2( -15.7904, 15.1032 )
 
+[node name="MeleeHitboxes" type="Node2D" parent="."]
+scale = Vector2( 1, 1 )
+script = ExtResource( 5 )
+
+[node name="Hitbox" parent="MeleeHitboxes" instance=ExtResource( 6 )]
+position = Vector2( -28, -106 )
+
 [node name="AttackAnimation" type="AnimationPlayer" parent="."]
 anims/RESET = SubResource( 1 )
 anims/light_attack = SubResource( 2 )
+
+[editable path="MeleeHitboxes/Hitbox"]

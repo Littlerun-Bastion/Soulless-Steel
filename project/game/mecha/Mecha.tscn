@@ -1,4 +1,4 @@
-[gd_scene load_steps=151 format=2]
+[gd_scene load_steps=152 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -19,6 +19,7 @@
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=17]
 [ext_resource path="res://assets/shaders/HeatShader.tres" type="Material" id=18]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_sub.png" type="Texture" id=19]
+[ext_resource path="res://game/mecha/MeleeHitboxes.gd" type="Script" id=20]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_sub.png" type="Texture" id=21]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=22]
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=23]
@@ -1234,6 +1235,9 @@ texture = ExtResource( 25 )
 material = SubResource( 38 )
 texture = ExtResource( 5 )
 
+[node name="MeleeHitboxes" type="Node2D" parent="ArmWeaponLeft"]
+script = ExtResource( 20 )
+
 [node name="ArmWeaponRight" type="Node2D" parent="."]
 position = Vector2( 52, 20 )
 scale = Vector2( -1, 1 )
@@ -1252,6 +1256,9 @@ texture = ExtResource( 28 )
 material = SubResource( 33 )
 position = Vector2( -9, -58 )
 texture = ExtResource( 27 )
+
+[node name="MeleeHitboxes" type="Node2D" parent="ArmWeaponRight"]
+script = ExtResource( 20 )
 
 [node name="ShoulderWeaponLeft" type="Node2D" parent="."]
 position = Vector2( -40.4205, 13 )

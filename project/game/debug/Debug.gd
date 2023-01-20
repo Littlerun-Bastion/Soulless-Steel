@@ -10,7 +10,7 @@ var debug_settings = {
 	"navigation": false,
 	"enemy_state": false,
 	"player_loadout": true,
-	"player_zoom": false,
+	"player_zoom": false,#Vector2(.3,.3),
 	"ai_behaviour": "idle",
 	"go_to_mode": false,
 	"skip_intro": false,

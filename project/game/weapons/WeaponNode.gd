@@ -76,6 +76,8 @@ func set_offsets(off):
 	Main.position = off
 	Sub.position = off
 	Glow.position = off
+	if is_melee:
+		$MeleeHitboxes.position = off 
 	offset = off
 
 

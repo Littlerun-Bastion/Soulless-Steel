@@ -34,6 +34,8 @@ var shooting_pos_idx = 0
 var offset = Vector2()
 var cur_shooting_pos
 var side
+var burst_count = 0
+var burst_fire_rate = 0.0
 
 
 
@@ -46,7 +48,8 @@ func setup(weapon_ref):
 	clip_size = weapon_ref.clip_size
 	clip_ammo = clip_size
 	reload_time = weapon_ref.reload_speed
-	fire_rate = weapon_ref.fire_rate
+	fire_rate = weapon_ref.fire_rate + weapon_ref.burst_fire_rate
+	burst_fire_rate = weapon_ref.burst_fire_rate
 	max_ammo = weapon_ref.max_ammo
 	ammo_cost = weapon_ref.ammo_cost
 	muzzle_heat = weapon_ref.muzzle_heat
@@ -134,15 +137,21 @@ func light_attack():
 
 
 func shoot(amount := 1):
-	add_time(fire_rate)
+	burst_count += 1
+	add_time(burst_fire_rate)
 	clip_ammo -= amount
 	heat += muzzle_heat*4
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
+func burst_cooldown():
+	add_time(fire_rate)
+	burst_count = 0
+
 
 func shoot_battery():
-	add_time(fire_rate)
+	burst_count += 1
+	add_time(burst_fire_rate)
 	heat = min(heat + muzzle_heat, 100)
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)

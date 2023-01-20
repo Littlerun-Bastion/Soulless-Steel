@@ -1315,7 +1315,7 @@ func stop_sprinting(sprint_dir):
 	ChassisSprintGlow.visible = false
 	Particle.grind[1].emitting = false
 
-#COMBAT METHODS
+#COMBAT METHODS	
 
 func shoot(type, is_auto_fire = false):
 	var node
@@ -1350,96 +1350,104 @@ func shoot(type, is_auto_fire = false):
 		right_shoulder_bloom_count += 1
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-
-	var amount
-	if weapon_ref.uses_battery:
-		amount = weapon_ref.number_projectiles
-		if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
-			if is_player() and not is_auto_fire:
-				AudioManager.play_sfx("no_ammo", global_position)
-			return
-		node.shoot_battery()
-		battery = max(battery - weapon_ref.battery_drain, 0)
-	elif weapon_ref.is_melee:
-		node.light_attack()
-	else:
-		amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
-		amount = max(amount, 1) #Tries to shoot at least 1 projectile
-		if not node.can_shoot(amount):
-			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
-				AudioManager.play_sfx("no_ammo", global_position)
-			return
-		node.shoot(amount)
 	
-	#Create projectile
-	if not weapon_ref.is_melee:
-		var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier
-		print(bloom)
-		if type == "arm_weapon_left" or type == "arm_weapon_right":
-			max_angle = max_angle/arm_accuracy_mod
-		if locked_to:
-			max_angle = max_angle/chipset.accuracy_modifier
-		var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
-		for _i in range(weapon_ref.number_projectiles):
-			emit_signal("create_projectile", self,
-						{
-							"weapon_data": weapon_ref.projectile,
-							"weapon_name": weapon_ref.part_name,
-							"pos": node.get_shoot_position().global_position,
-							"pos_reference": node.get_shoot_position(),
-							"dir": node.get_direction(weapon_ref.bullet_spread, total_accuracy),
-							"muzzle_flash": weapon_ref.muzzle_flash,
-							"muzzle_flash_size": weapon_ref.muzzle_flash_size,
-							"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
-							"damage_mod": weapon_ref.damage_modifier,
-							"shield_mult": weapon_ref.shield_mult,
-							"health_mult": weapon_ref.health_mult,
-							"heat_damage": weapon_ref.heat_damage,
-							"status_damage": weapon_ref.status_damage,
-							"status_type": weapon_ref.status_type,
-							"delay": rand_range(0, weapon_ref.bullet_spread_delay),
-							"bullet_velocity": weapon_ref.bullet_velocity,
-							"bullet_drag": weapon_ref.bullet_drag,
-							"bullet_drag_var": weapon_ref.bullet_drag_var,
-							"projectile_size": weapon_ref.projectile_size,
-							"projectile_size_scaling": weapon_ref.projectile_size_scaling,
-							"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
-							"lifetime": weapon_ref.lifetime,
-							"impact_force": weapon_ref.impact_force,
-							"beam_range": weapon_ref.beam_range,
-							"has_trail": weapon_ref.has_trail,
-							"trail_lifetime": weapon_ref.trail_lifetime,
-							"trail_lifetime_range": weapon_ref.trail_lifetime_range,
-							"trail_eccentricity": weapon_ref.trail_eccentricity,
-							"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
-							"trail_width" : weapon_ref.trail_width,
+	if weapon_ref.is_melee:
+		node.light_attack()
+		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
+		emit_signal("shoot")
+		return
+	
+	while node.burst_count < weapon_ref.burst_size:
+		print(node.burst_count)
+		if is_dead:
+			return
+		var amount
+		if weapon_ref.uses_battery:
+			amount = weapon_ref.number_projectiles
+			if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
+				if is_player() and not is_auto_fire:
+					AudioManager.play_sfx("no_ammo", global_position)
+				return
+			node.shoot_battery()
+			battery = max(battery - weapon_ref.battery_drain, 0)
+		else:
+			amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
+			amount = max(amount, 1) #Tries to shoot at least 1 projectile
+			if not node.can_shoot(amount):
+				if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
+					AudioManager.play_sfx("no_ammo", global_position)
+				return
+			node.shoot(amount)
+		
+		#Create projectile
+		if not weapon_ref.is_melee:
+			var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier
+			if type == "arm_weapon_left" or type == "arm_weapon_right":
+				max_angle = max_angle/arm_accuracy_mod
+			if locked_to:
+				max_angle = max_angle/chipset.accuracy_modifier
+			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
+			for _i in range(weapon_ref.number_projectiles):
+				emit_signal("create_projectile", self,
+							{
+								"weapon_data": weapon_ref.projectile,
+								"weapon_name": weapon_ref.part_name,
+								"pos": node.get_shoot_position().global_position,
+								"pos_reference": node.get_shoot_position(),
+								"dir": node.get_direction(weapon_ref.bullet_spread, total_accuracy),
+								"muzzle_flash": weapon_ref.muzzle_flash,
+								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
+								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
+								"damage_mod": weapon_ref.damage_modifier,
+								"shield_mult": weapon_ref.shield_mult,
+								"health_mult": weapon_ref.health_mult,
+								"heat_damage": weapon_ref.heat_damage,
+								"status_damage": weapon_ref.status_damage,
+								"status_type": weapon_ref.status_type,
+								"delay": rand_range(0, weapon_ref.bullet_spread_delay),
+								"bullet_velocity": weapon_ref.bullet_velocity,
+								"bullet_drag": weapon_ref.bullet_drag,
+								"bullet_drag_var": weapon_ref.bullet_drag_var,
+								"projectile_size": weapon_ref.projectile_size,
+								"projectile_size_scaling": weapon_ref.projectile_size_scaling,
+								"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
+								"lifetime": weapon_ref.lifetime,
+								"impact_force": weapon_ref.impact_force,
+								"beam_range": weapon_ref.beam_range,
+								"has_trail": weapon_ref.has_trail,
+								"trail_lifetime": weapon_ref.trail_lifetime,
+								"trail_lifetime_range": weapon_ref.trail_lifetime_range,
+								"trail_eccentricity": weapon_ref.trail_eccentricity,
+								"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
+								"trail_width" : weapon_ref.trail_width,
 
-							"has_smoke": weapon_ref.has_smoke,
-							"smoke_density": weapon_ref.smoke_density,
-							"smoke_lifetime": weapon_ref.smoke_lifetime,
+								"has_smoke": weapon_ref.has_smoke,
+								"smoke_density": weapon_ref.smoke_density,
+								"smoke_lifetime": weapon_ref.smoke_lifetime,
 
-							"has_wiggle": weapon_ref.has_wiggle,
-							"wiggle_amount": weapon_ref.wiggle_amount,
-							"is_seeker": weapon_ref.is_seeker,
-							"seeker_target": locked_to,
-							"seek_time": weapon_ref.seek_time,
-							"seek_agility": weapon_ref.seeker_agility,
-							"seeker_angle": weapon_ref.seeker_angle,
+								"has_wiggle": weapon_ref.has_wiggle,
+								"wiggle_amount": weapon_ref.wiggle_amount,
+								"is_seeker": weapon_ref.is_seeker,
+								"seeker_target": locked_to,
+								"seek_time": weapon_ref.seek_time,
+								"seek_agility": weapon_ref.seeker_agility,
+								"seeker_angle": weapon_ref.seeker_angle,
 
-							"impact_effect": weapon_ref.impact_effect,
-							"impact_size": weapon_ref.impact_size,
-							"hitstop": weapon_ref.hitstop,
-						}, node) #TODO: FIX THIS
-		apply_recoil(type, node, weapon_ref.recoil_force)
-	if weapon_ref.eject_casings:
-		emit_signal("create_casing",
-						{
-							"casing_ejector_pos": node.global_position,
-							"casing_eject_angle": eject_angle + self.global_rotation_degrees,
-							"casing_size": weapon_ref.casing_size,
-						})
-	mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
-	emit_signal("shoot")
+								"impact_effect": weapon_ref.impact_effect,
+								"impact_size": weapon_ref.impact_size,
+								"hitstop": weapon_ref.hitstop,
+							}, node) #TODO: FIX THIS
+			apply_recoil(type, node, weapon_ref.recoil_force)
+		if weapon_ref.eject_casings:
+			emit_signal("create_casing",
+							{
+								"casing_ejector_pos": node.global_position,
+								"casing_eject_angle": eject_angle + self.global_rotation_degrees,
+								"casing_size": weapon_ref.casing_size,
+							})
+		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
+		emit_signal("shoot")
+	node.burst_cooldown()
 
 func apply_recoil(type, node, recoil):
 	var rotation = recoil*300/get_stat("weight")

@@ -25,6 +25,8 @@ export var status_type : String
 export var recoil_force := 0.0
 export var bloom_reset_time := 1.0
 export var fire_rate := .3
+export var burst_size := 1
+export var burst_fire_rate := 0.0
 export var auto_fire := true
 export var base_accuracy := 0.0
 export var accuracy_bloom := 0.0

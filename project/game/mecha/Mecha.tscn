@@ -1227,7 +1227,6 @@ material = SubResource( 29 )
 texture = ExtResource( 2 )
 
 [node name="Main" type="Sprite" parent="ArmWeaponLeft"]
-show_behind_parent = true
 material = SubResource( 93 )
 texture = ExtResource( 25 )
 
@@ -1246,7 +1245,6 @@ position = Vector2( -9, -58 )
 texture = ExtResource( 26 )
 
 [node name="Main" type="Sprite" parent="ArmWeaponRight"]
-show_behind_parent = true
 material = SubResource( 94 )
 texture = ExtResource( 28 )
 
@@ -1265,7 +1263,6 @@ position = Vector2( -9, -57 )
 texture = ExtResource( 26 )
 
 [node name="Main" type="Sprite" parent="ShoulderWeaponLeft"]
-show_behind_parent = true
 material = SubResource( 97 )
 position = Vector2( -9, -57 )
 texture = ExtResource( 28 )
@@ -1288,7 +1285,6 @@ position = Vector2( -13, -25 )
 texture = ExtResource( 29 )
 
 [node name="Main" type="Sprite" parent="ShoulderWeaponRight"]
-show_behind_parent = true
 material = SubResource( 96 )
 position = Vector2( -13, -25 )
 texture = ExtResource( 12 )

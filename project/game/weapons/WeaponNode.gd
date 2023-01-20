@@ -134,7 +134,7 @@ func can_shoot_battery(drain, battery):
 		return timer <= 0.0
 
 func light_attack():
-	add_time(.9)
+	add_time(melee_anim.get_animation("light_attack").length)
 	melee_anim.play("light_attack")
 
 

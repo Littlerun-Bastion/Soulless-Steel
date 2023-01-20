@@ -689,10 +689,10 @@ func set_arm_weapon(part_name, side):
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
 		arm_weapon_left = part_data
-		node.rotation_degrees = -ARM_WEAPON_INITIAL_ROT
+		node.rotation_degrees = -ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 	else:
 		arm_weapon_right = part_data
-		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT
+		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.position = core.get_arm_weapon_offset(side)
 	node.set_offsets(-part_data.get_attach_pos())
@@ -1212,7 +1212,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
 
 
-	#Rotate Non-Melee Arm Weapons
+	#Rotate Head and Shoulders
 	for data in [[$Head, head], [$LeftShoulder, shoulders], [$RightShoulder, shoulders]]:
 		var node_ref = data[1]
 		if node_ref:
@@ -1221,9 +1221,10 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
 			
+	#Rotate Non-Melee Arm Weapons
 	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right]]:
 		var node_ref = data[1]
-		if node_ref:
+		if node_ref and not node_ref.is_melee:
 			var node = data[0]
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/arena/CasingsQueue.gd" type="Script" id=6]
 [ext_resource path="res://game/EjectorParticle.tscn" type="PackedScene" id=7]
+[ext_resource path="res://game/ui/HeatmapEffects.tscn" type="PackedScene" id=8]
 [ext_resource path="res://game/pause/PauseMenu.tscn" type="PackedScene" id=49]
 [ext_resource path="res://game/arena/GameOver.tscn" type="PackedScene" id=58]
 
@@ -74,6 +75,8 @@ zoom = Vector2( 10, 10 )
 drag_margin_h_enabled = false
 drag_margin_v_enabled = false
 smoothing_speed = 10.0
+
+[node name="HeatmapEffects" parent="." instance=ExtResource( 8 )]
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
 layer = 2

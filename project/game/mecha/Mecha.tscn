@@ -433,11 +433,11 @@ code = "shader_type canvas_item;
 
 uniform float heat : hint_range(0.0, 100.0) = 100.0;
 uniform float min_darkness : hint_range(0.0, 1.0) = .2;
-uniform float max_brightness : hint_range(0.0, 2) = 2.0;
+uniform float max_brightness : hint_range(0.0, 3) = 3.0;
 
 void fragment(){
 	COLOR = texture(TEXTURE, UV);
-	float dark = min((heat/100.0)*(1.0 - min_darkness) + min_darkness, max_brightness);
+	float dark = min((heat/100.0)*(2.0 - min_darkness) + min_darkness, max_brightness);
 	COLOR.r *= dark;
 	COLOR.g *= dark;
 	COLOR.b *= dark;
@@ -446,8 +446,8 @@ void fragment(){
 [sub_resource type="ShaderMaterial" id=5]
 shader = SubResource( 100 )
 shader_param/heat = 100.0
-shader_param/min_darkness = 0.33
-shader_param/max_brightness = 1.0
+shader_param/min_darkness = 0.3
+shader_param/max_brightness = 1.25
 
 [sub_resource type="Shader" id=101]
 code = "shader_type canvas_item;

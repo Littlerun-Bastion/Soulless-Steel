@@ -144,7 +144,7 @@ func shoot(amount := 1):
 	burst_count += 1
 	add_time(burst_fire_rate)
 	clip_ammo -= amount
-	heat += muzzle_heat*4
+	heat = min(heat + muzzle_heat*4, 200)
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
@@ -156,7 +156,7 @@ func burst_cooldown():
 func shoot_battery():
 	burst_count += 1
 	add_time(burst_fire_rate)
-	heat = min(heat + muzzle_heat, 100)
+	heat = min(heat + muzzle_heat*4, 200)
 	if soundEffect:
 		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 

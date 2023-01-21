@@ -97,7 +97,6 @@ script = ExtResource( 3 )
 
 [node name="Mecha" parent="." instance=ExtResource( 9 )]
 position = Vector2( 619, 671 )
-z_index = 0
 display_mode = true
 
 [node name="ComparisonMecha" parent="." instance=ExtResource( 9 )]

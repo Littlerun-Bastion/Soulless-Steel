@@ -43,6 +43,8 @@ float verticalBar(float pos, float uvY, float offset)
 
 void fragment()
 {
+	// screen distort
+	
 	vec2 warp_uv = warp(UV);
 	float uvX, uvY;
 	uvX = warp_uv.x;

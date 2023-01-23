@@ -8,6 +8,9 @@ var parallaxMult = 30.0
 func _ready():
 	FileManager.load_game()
 	
+	if Debug.get_setting("window"):
+		Debug.window_debug_mode()
+	
 	randomize()
 	MouseManager.show_cursor()
 	ShaderEffects.reset_shader_effect("main_menu")
@@ -80,6 +83,6 @@ func _on_SettingsButton_pressed():
 
 func _on_ExitButton_pressed():
 	AudioManager.play_sfx("back")
-	get_tree().quit()
+	FileManager.save_and_quit()
 
 

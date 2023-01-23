@@ -37,7 +37,8 @@ func _ready():
 		set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 		set_shoulders("Lancelot-Pauldron")
 	if Debug.get_setting("player_zoom"):
-		Cam.zoom = Debug.get_setting("player_zoom")
+		var zoom = Debug.get_setting("player_zoom")
+		Cam.zoom = Vector2(zoom, zoom)
 
 
 func _physics_process(delta):

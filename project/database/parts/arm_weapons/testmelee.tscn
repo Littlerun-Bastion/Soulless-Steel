@@ -146,7 +146,6 @@ total_ammo = 0
 max_ammo = 0
 clip_size = 0
 reload_speed = 0.0
-muzzle_heat = 0
 ammo_cost = 0
 soundEffect = ""
 sound_max_range = 7500
@@ -159,6 +158,7 @@ trail_min_spawn_distance = 5.0
 wiggle_amount = 0.05
 seek_time = 0.5
 is_melee = true
+melee_damage = 4000
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 4 )

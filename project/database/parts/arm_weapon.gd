@@ -87,6 +87,7 @@ export var seeker_angle := 90
 
 #---MELEE BEHAVIOURS---
 export var is_melee := false
+export var melee_damage := 0
 
 var firing_timer = 0.0
 var part_id
@@ -103,8 +104,10 @@ func get_image():
 func get_glow():
 	return $Glow.texture
 
+
 func get_num_shooting_pos():
 	return $ShootingPosArray.get_children().size()
+
 
 func get_shooting_pos(idx):	
 	if idx == 1:

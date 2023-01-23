@@ -26,7 +26,7 @@ func _ready():
 		set_chipset("type_1")
 		set_thruster("test1")
 		set_head("Crawler_C-type_Head")
-		set_chassis("Crawler_C-type_Chassis")
+		set_chassis("MSV-L3J-L")
 		set_arm_weapon("testmelee", SIDE.LEFT)
 		set_arm_weapon("testmelee", SIDE.RIGHT)
 #		set_arm_weapon("MA-H250", SIDE.LEFT)

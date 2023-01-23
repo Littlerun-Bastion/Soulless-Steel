@@ -1389,7 +1389,7 @@ func shoot(type, is_auto_fire = false):
 				max_angle = max_angle/chipset.accuracy_modifier
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
 			var current_accuracy = rand_range(-total_accuracy, total_accuracy)
-			print(total_accuracy)
+
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{

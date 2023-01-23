@@ -28,6 +28,7 @@ var sfx_att = 1.0
 var uses_battery = false
 var battery_drain = 0.00
 var is_melee = false
+var melee_damage = 0
 var melee_anim = null
 var shooting_pos_array = []
 var shooting_pos_idx = 0
@@ -62,6 +63,7 @@ func setup(weapon_ref):
 	
 	if is_melee:
 		melee_anim = $AttackAnimation
+		melee_damage = weapon_ref.melee_damage
 	else:
 		melee_anim = null
 	

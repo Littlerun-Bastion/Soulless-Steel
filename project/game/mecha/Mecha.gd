@@ -729,10 +729,10 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-	if not part_name:
-		if side == SIDE.LEFT:
+	if not part_name or not core.has_left_shoulder or not core.has_right_shoulder:
+		if side == SIDE.LEFT or not core.has_left_shoulder:
 			shoulder_weapon_left = null
-		elif side == SIDE.RIGHT:
+		elif side == SIDE.RIGHT or not core.has_right_shoulder:
 			shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return

@@ -15,6 +15,8 @@ onready var CHIPSETS = {}
 onready var THRUSTERS = {}
 onready var PROJECTILES = {}
 
+var current_player_mech
+
 
 func _ready():
 	setup_parts()
@@ -99,3 +101,7 @@ func get_max_stat_value(stat_name):
 				current_max = part.get(stat_name)
 		max_value += current_max
 	return float(max_value)
+
+func get_player_mech():
+	pass
+	#if current_player_mech:

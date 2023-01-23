@@ -167,34 +167,13 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
-	var data = FileManager.load_mecha_design("test")
-	if data:
-		DisplayMecha.set_parts_from_design(data)
+	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
 
 func _on_Load_pressed():
 	$LoadScreen.visible = true
 
 func _LoadScreen_on_load_pressed(design):
-	DisplayMecha.set_core(design.core)
-	DisplayMecha.set_generator(design.generator)
-	DisplayMecha.set_chipset(design.chipset)
-	DisplayMecha.set_head(design.head)
-	DisplayMecha.set_chassis(design.chassis)
-	DisplayMecha.set_arm_weapon(design.arm_weapon_left, SIDE.LEFT)
-	DisplayMecha.set_arm_weapon(design.arm_weapon_right, SIDE.RIGHT)
-	DisplayMecha.set_shoulder_weapon(design.shoulder_weapon_right, SIDE.RIGHT)
-	DisplayMecha.set_shoulder_weapon(design.shoulder_weapon_left, SIDE.LEFT)
-	DisplayMecha.set_shoulders(design.shoulders)
-	
-	ComparisonMecha.set_core(design.core)
-	ComparisonMecha.set_generator(design.generator)
-	ComparisonMecha.set_chipset(design.chipset)
-	ComparisonMecha.set_head(design.head)
-	ComparisonMecha.set_chassis(design.chassis)
-	ComparisonMecha.set_arm_weapon(design.arm_weapon_left, SIDE.LEFT)
-	ComparisonMecha.set_arm_weapon(design.arm_weapon_right, SIDE.RIGHT)
-	ComparisonMecha.set_shoulder_weapon(design.shoulder_weapon_right, SIDE.RIGHT)
-	ComparisonMecha.set_shoulder_weapon(design.shoulder_weapon_left, SIDE.LEFT)
-	ComparisonMecha.set_shoulders(design.shoulders)
+	DisplayMecha.set_parts_from_design(design)
+	ComparisonMecha.set_parts_from_design(design)
 	
 	update_weight()

@@ -19,7 +19,11 @@ var category_visible = false
 var comparing_part = false
 
 func _ready():
-	default_loadout()
+	if Profile.stats.current_mecha:
+		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
+		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
+	else:
+		default_loadout()
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	DisplayMecha.global_rotation = 0
@@ -185,6 +189,8 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
+	Profile.stats.current_mecha = DisplayMecha.get_design_data()
+	print(Profile.stats.current_mecha)
 	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
 
 func _on_Load_pressed():

@@ -397,9 +397,9 @@ func set_pause(value):
 
 func get_design_data():
 	var data = {}
-	for part_type in ["arm_weapon_left", "arm_weapon_right", "shoulders", \
-					  "shoulder_weapon_left", "shoulder_weapon_right", \
-					  "head", "core", "generator", "chipset", "thruster", "chassis"]:
+	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
+					  "thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					  "shoulder_weapon_left", "shoulder_weapon_right",]:
 		var part = get(part_type)
 		data[part_type] = part.part_id if part else false
 
@@ -407,9 +407,9 @@ func get_design_data():
 
 
 func set_parts_from_design(data):
-	for part_name in ["arm_weapon_left", "arm_weapon_right", "shoulders", \
-					  "shoulder_weapon_left", "shoulder_weapon_right", \
-					  "head", "core", "generator", "chipset", "thruster", "chassis"]:
+	for part_name in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
+					  "thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					  "shoulder_weapon_left", "shoulder_weapon_right",]:
 		var type = part_name.replace("_left", "").replace("_right", "")
 		var side = false
 		if part_name.find("left") != -1:

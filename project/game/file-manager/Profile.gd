@@ -31,6 +31,7 @@ var controls = {
 
 var stats = {
 	"gameover": 0,
+	"current_mecha" : false,
 }
 
 

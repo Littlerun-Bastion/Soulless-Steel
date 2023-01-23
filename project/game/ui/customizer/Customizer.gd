@@ -67,6 +67,7 @@ func default_loadout():
 	ComparisonMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	ComparisonMecha.set_shoulders("MSV-M2-SG")
 	
+	shoulder_weapon_check()
 	update_weight()
 
 
@@ -138,6 +139,7 @@ func _on_ItemFrame_pressed(part_name,type,side):
 		ComparisonMecha.callv("set_" + str(type), [part_name])
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
+	shoulder_weapon_check()
 	comparing_part = false
 
 
@@ -150,6 +152,22 @@ func _on_ItemFrame_mouse_entered(part_name,type,side):
 	StatBars.set_comparing_part(ComparisonMecha)
 	comparing_part = true
 
+func shoulder_weapon_check():
+	var core
+	if DisplayMecha.core:
+		core = DisplayMecha.core
+	else:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
+		return
+	if not core.has_left_shoulder:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
+	else:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = false
+	if not core.has_right_shoulder:
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
+	else:
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
 
 func _on_ItemFrame_mouse_exited(_part_name,_type,_side):
 	StatBars.reset_comparing_part()
@@ -175,5 +193,5 @@ func _on_Load_pressed():
 func _LoadScreen_on_load_pressed(design):
 	DisplayMecha.set_parts_from_design(design)
 	ComparisonMecha.set_parts_from_design(design)
-	
+	shoulder_weapon_check()
 	update_weight()

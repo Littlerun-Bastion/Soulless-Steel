@@ -778,6 +778,10 @@ func set_core(part_name):
 			else:
 				node.visible = false
 			index += 1
+	if not core.has_left_shoulder:
+		set_shoulder_weapon(null, SIDE.LEFT)
+	if not core.has_right_shoulder:
+		set_shoulder_weapon(null, SIDE.RIGHT)
 	CoreSub.texture = core.get_sub()
 	CoreGlow.texture = core.get_glow()
 	update_max_life_from_parts()

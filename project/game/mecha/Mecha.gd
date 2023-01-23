@@ -6,6 +6,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
+const HITBOX = preload("res://game/mecha/Hitbox.tscn")
 const ARM_WEAPON_INITIAL_ROT = 9
 const SPEED_MOD_CORRECTION = 3
 const WEAPON_RECOIL_MOD = .9
@@ -52,10 +53,12 @@ onready var LeftArmWeapon = $ArmWeaponLeft
 onready var LeftArmWeaponMain = $ArmWeaponLeft/Main
 onready var LeftArmWeaponSub = $ArmWeaponLeft/Sub
 onready var LeftArmWeaponGlow = $ArmWeaponLeft/Glow
+onready var LeftArmWeaponHitboxes = $ArmWeaponLeft/MeleeHitboxes
 onready var RightArmWeapon = $ArmWeaponRight
 onready var RightArmWeaponMain = $ArmWeaponRight/Main
 onready var RightArmWeaponSub = $ArmWeaponRight/Sub
 onready var RightArmWeaponGlow = $ArmWeaponRight/Glow
+onready var RightArmWeaponHitboxes = $ArmWeaponRight/MeleeHitboxes
 onready var LeftShoulderWeapon = $ShoulderWeaponLeft
 onready var LeftShoulderWeaponMain = $ShoulderWeaponLeft/Main
 onready var LeftShoulderWeaponSub = $ShoulderWeaponLeft/Sub
@@ -165,6 +168,8 @@ var stability := 1.0
 
 var last_damage_source
 var last_damage_weapon
+var processed_hitboxes = []
+var lingering_hitboxes = []
 
 
 var right_arm_bloom_time := 0.0
@@ -381,7 +386,9 @@ func _physics_process(dt):
 	update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
-
+	
+	process_hitboxes(dt)
+	
 	if chassis and chassis.hover_particles and not display_mode:
 		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
 		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
@@ -1574,34 +1581,59 @@ func _on_enter_lock_mode():
 	cur_mode = MODES.LOCK
 
 
+# MELEE METHODS
+
+#Check if hitbox is valid, and if so, erases all other lower priorities hitboxes
+func check_valid_hitbox_and_update(hitbox_data):
+	#Check if mecha was already affected by this hitbox lately
+	for data in processed_hitboxes:
+		if data[0] == hitbox_data.id:
+			return false
+	
+	var to_erase = []
+	for data in lingering_hitboxes:
+		if data.id == hitbox_data.id:
+			if data.priority >= hitbox_data.priority:
+				assert(to_erase.empty(), "This shouldn't happen, problem with lingering hitboxes usage")
+				return false
+			else:
+				to_erase.append(data)
+	#Since it's valid, erase any other same-id hitbox
+	for data in to_erase:
+		lingering_hitboxes.erase(data)
+	return true
+
+#Assumes it is a valid hitbox
+func add_lingering_hitbox(data):
+	lingering_hitboxes.append(data)
+
+
+func process_hitboxes(dt):
+	#Process lingering hitboxes
+	for data in lingering_hitboxes:
+		add_decal(data.body_shape_id, data.collision_point, data.decal_type, data.decal_size)
+		
+		take_damage(data.damage, 1.0, 1.0, 10, 0, false, false, false)
+		if data.knockback > 0.0:
+			knockback(data.knockback, data.collision_point - data.hitbox_position, true)
+		processed_hitboxes.append([data.id, data.dur])
+	lingering_hitboxes.clear()
+	
+	#Process hitboxes that happened to free them up again
+	var to_erase = []
+	for data in processed_hitboxes:
+		data[1] -= dt
+		if data[1] <= 0:
+			to_erase.append(data)
+	for data in to_erase:
+		processed_hitboxes.erase(data)
+
 # MISC METHODS
-
-func play_step_sound(is_left := true):
-	if mecha_name != "Player" or not moving:
-		return
-	var pitch
-	if is_left:
-		pitch = rand_range(.7, .72)
-	else:
-		pitch = rand_range(.95, .97)
-
-	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
-	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
-
-func extracting():
-	$ExtractTimer.start()
-
-
-func _on_ExtractTimer_timeout():
-	if self.name == "Player":
-		emit_signal("mecha_extracted", self)
-	else:
-		emit_signal("died", self)
-
 
 func cancel_extract():
 	$ExtractTimer.stop()
 	$ExtractTimer.wait_time = 5
+
 
 func select_impact(calibre, is_shield):
 	var sfx_idx
@@ -1628,3 +1660,43 @@ func select_impact(calibre, is_shield):
 
 	if sfx_idx:
 		AudioManager.play_sfx(sfx_idx, global_position)
+
+
+func play_step_sound(is_left := true):
+	if mecha_name != "Player" or not moving:
+		return
+	var pitch
+	if is_left:
+		pitch = rand_range(.7, .72)
+	else:
+		pitch = rand_range(.95, .97)
+
+	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
+	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
+
+
+func extracting():
+	$ExtractTimer.start()
+
+# CALLBACKS
+
+func _on_ExtractTimer_timeout():
+	if self.name == "Player":
+		emit_signal("mecha_extracted", self)
+	else:
+		emit_signal("died", self)
+
+
+func _on_MeleeHitboxes_create_hitbox(data, side):
+	var hitbox = HITBOX.instance()
+	var node
+	if side == "left":
+		node = LeftArmWeaponHitboxes
+	elif side == "right":
+		node = RightArmWeaponHitboxes
+	else:
+		push_error("Not a valid side for creating hitboxes:" + str(side))
+
+	data.owner = self
+	hitbox.setup(data)
+	node.add_child(hitbox)

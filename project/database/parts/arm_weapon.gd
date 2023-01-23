@@ -88,7 +88,8 @@ export var seeker_angle := 90
 
 #---MELEE BEHAVIOURS---
 export var is_melee := false
-export var melee_damage := 0
+export var melee_damage := 20
+export var melee_knockback := 20
 
 var firing_timer = 0.0
 var part_id

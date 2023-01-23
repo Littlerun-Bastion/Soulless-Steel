@@ -50,6 +50,17 @@ func create_smoke_trail(projectile, args):
 	smoke_trail.setup(projectile, args)
 	return smoke_trail
 
+#Return all positions where a polygon intersects with a circle
+func get_intersection_circle_polygon(circ_center, circ_radius, circ_trans, poly, poly_trans):
+	var result = []
+	for i in range(0, poly.size()):
+		var p1 = poly_trans.xform(poly[i])
+		var p2 = poly_trans.xform(poly[i + 1]) if i + 1 < poly.size() else poly_trans.xform(poly[0])
+		var inter = Geometry.segment_intersects_circle(p1, p2, circ_trans.xform(circ_center), circ_radius)
+		if inter != -1:
+			result.append(p1 + inter*(p2-p1))
+	return result
+
 #Given two polygons and their transforms, return an array with all points where they collide
 func get_intersection_points(poly1, trans1, poly2, trans2):
 	var result = []

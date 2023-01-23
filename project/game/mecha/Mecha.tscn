@@ -1513,4 +1513,6 @@ max_speed = 700.0
 estimate_radius = false
 radius = 200.0
 
+[connection signal="create_hitbox" from="ArmWeaponLeft/MeleeHitboxes" to="." method="_on_MeleeHitboxes_create_hitbox" binds= [ "left" ]]
+[connection signal="create_hitbox" from="ArmWeaponRight/MeleeHitboxes" to="." method="_on_MeleeHitboxes_create_hitbox" binds= [ "right" ]]
 [connection signal="timeout" from="ExtractTimer" to="." method="_on_ExtractTimer_timeout"]

@@ -29,6 +29,7 @@ var uses_battery = false
 var battery_drain = 0.00
 var is_melee = false
 var melee_damage = 0
+var melee_knockback = 0
 var melee_anim = null
 var shooting_pos_array = []
 var shooting_pos_idx = 0
@@ -64,6 +65,7 @@ func setup(weapon_ref):
 	if is_melee:
 		melee_anim = $AttackAnimation
 		melee_damage = weapon_ref.melee_damage
+		melee_knockback = weapon_ref.melee_knockback
 	else:
 		melee_anim = null
 	
@@ -139,6 +141,7 @@ func can_shoot_battery(drain, battery):
 
 func light_attack():
 	add_time(melee_anim.get_animation("light_attack").length)
+	$MeleeHitboxes.attack_id = randi()
 	melee_anim.play("light_attack")
 
 

@@ -98,7 +98,7 @@ tracks/3/keys = {
 "times": PoolRealArray( 0.3 ),
 "transitions": PoolRealArray( 1 ),
 "values": [ {
-"args": [ Vector2( -32, -126 ), 27.0, 1.0, 0.1 ],
+"args": [ Vector2( -32, -126 ), 27.0, 1.0, 1.0, "frame_1", 0, 0.1 ],
 "method": "create_hitbox"
 } ]
 }
@@ -112,7 +112,7 @@ tracks/4/keys = {
 "times": PoolRealArray( 0.3 ),
 "transitions": PoolRealArray( 1 ),
 "values": [ {
-"args": [ Vector2( -50, -94 ), 20.0, 0.8, 0.1 ],
+"args": [ Vector2( -50, -94 ), 20.0, 0.8, 0.3, "frame_1", 1, 0.1 ],
 "method": "create_hitbox"
 } ]
 }
@@ -126,7 +126,7 @@ tracks/5/keys = {
 "times": PoolRealArray( 0.3 ),
 "transitions": PoolRealArray( 1 ),
 "values": [ {
-"args": [ Vector2( -2, -105 ), 20.0, 0.8, 0.1 ],
+"args": [ Vector2( -2, -105 ), 20.0, 0.8, 0.3, "frame_1", 1, 0.1 ],
 "method": "create_hitbox"
 } ]
 }
@@ -175,9 +175,10 @@ position = Vector2( -15.7904, 15.1032 )
 script = ExtResource( 5 )
 
 [node name="Hitbox" parent="MeleeHitboxes" instance=ExtResource( 6 )]
-position = Vector2( -32, -123 )
+position = Vector2( -44.6135, -152.431 )
 
 [node name="CollisionShape2D" parent="MeleeHitboxes/Hitbox" index="0"]
+position = Vector2( 11.7726, 29.4314 )
 shape = SubResource( 3 )
 
 [node name="Hitbox2" parent="MeleeHitboxes" instance=ExtResource( 6 )]

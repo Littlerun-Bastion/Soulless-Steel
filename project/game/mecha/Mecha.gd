@@ -406,7 +406,7 @@ func get_design_data():
 	var data = {}
 	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
 					  "thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
-					  "shoulder_weapon_left", "shoulder_weapon_right",]:
+					  "shoulder_weapon_left", "shoulder_weapon_right"]:
 		var part = get(part_type)
 		data[part_type] = part.part_id if part else false
 

@@ -189,8 +189,8 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
-	Profile.stats.current_mecha = DisplayMecha.get_design_data()
-	print(Profile.stats.current_mecha)
+	Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
 
 func _on_Load_pressed():

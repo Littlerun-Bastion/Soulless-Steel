@@ -47,7 +47,7 @@ func load_parts(name, dict):
 				dict[key] = load(path + file_name)
 				if dict[key] is PackedScene:
 					dict[key] = dict[key].instance()
-					dict[key].part_id = key
+				dict[key].part_id = key
 			file_name = dir.get_next()
 	else:
 		push_error("An error occurred when trying to access part path.")
@@ -83,7 +83,7 @@ func get_parts(type):
 
 func get_part(type, name):
 	var table = get_parts(type)
-	assert(table.has(name), "Not a existent part: " + str(name))
+	assert(table.has(name), "Not a existent part: " + str(name) + " for part type: " + str(type))
 	return table[name]
 
 

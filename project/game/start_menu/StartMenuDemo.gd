@@ -73,6 +73,7 @@ func _on_ExitButton_pressed():
 	FileManager.save_and_quit()
 
 func _on_Hangar_pressed():
+# warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/ui/customizer/Customizer.tscn")
 
 

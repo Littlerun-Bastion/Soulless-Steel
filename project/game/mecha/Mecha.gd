@@ -109,7 +109,7 @@ onready var Particle = {
 	"chassis_dash": [$Chassis/DashThrust1, $Chassis/DashThrust2, $Chassis/DashThrust3],
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
-} 
+}
 onready var ChassisSprintGlow = $Chassis/SprintGlow
 
 var mecha_name = "Mecha Name"
@@ -237,11 +237,11 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
-	
+
 	tank_lookat_target = global_position + tank_move_target
 	if movement_type == "tank":
 		$Chassis.look_at(tank_lookat_target)
-	
+
 	if impact_velocity.length() > 0:
 		move(impact_velocity)
 		if impact_velocity.x > 0:
@@ -255,7 +255,7 @@ func _physics_process(dt):
 			impact_velocity.y = min(impact_velocity.y * (1 - DASH_DECAY*dt), 0)
 			if impact_velocity.length() < 1:
 				impact_velocity = Vector2()
-	
+
 	if impact_rotation_velocity > 0 or impact_rotation_velocity < 0:
 		global_rotation += impact_rotation_velocity * dt
 		impact_rotation_velocity *= 0.95
@@ -264,7 +264,7 @@ func _physics_process(dt):
 
 	if is_dead:
 		return
-	
+
 	#Blood
 	if hp / max_hp < 0.8:
 		bleed_timer = max(bleed_timer - dt, 0.0)
@@ -275,7 +275,7 @@ func _physics_process(dt):
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
-	
+
 	#ECM
 	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
 
@@ -318,7 +318,7 @@ func _physics_process(dt):
 			move(sprinting_ending_correction)
 		else:
 			apply_movement(dt, Vector2())
-	
+
 	#Update shoulder weapons rotation
 	for data in [[shoulder_weapon_left, LeftShoulderWeapon], [shoulder_weapon_right, RightShoulderWeapon]]:
 		if data[0]:
@@ -338,7 +338,7 @@ func _physics_process(dt):
 			dash_velocity.y = min(dash_velocity.y * (1 - DASH_DECAY*dt), 0)
 		if dash_velocity.length() < 1:
 			dash_velocity = Vector2()
-	
+
 	#Walking animation
 	if chassis and chassis.is_legs:
 		if moving and not MovementAnimation.is_playing() and\
@@ -349,7 +349,7 @@ func _physics_process(dt):
 			MovementAnimation.stop()
 		if not MovementAnimation.is_playing():
 			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
-	
+
 	#Locking mechanic
 	update_locking(dt)
 	if get_locked_to():
@@ -369,8 +369,8 @@ func _physics_process(dt):
 		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
 	else:
 		$FireGlow.energy = max($FireGlow.energy - dt*2, 0)
-		
-	
+
+
 	#Thrusters cooldowns
 	for dir in ["fwd", "rwd", "left", "right"]:
 		var ready = dash_cooldown[dir] <= 0
@@ -381,7 +381,7 @@ func _physics_process(dt):
 	update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
-	
+
 	if chassis and chassis.hover_particles and not display_mode:
 		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
 		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
@@ -481,8 +481,8 @@ func set_max_energy(value):
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	if is_dead:
 		return
-	
-	if hitstop: 
+
+	if hitstop:
 		if source_info.name == "Player" or self.name == "Player":
 			do_hitstop()
 
@@ -491,7 +491,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	var temp_shield = shield
 	shield = max(shield - (shield_mult * amount), 0)
 	amount = max(amount - temp_shield, 0)
-	
+
 	if status_type and status_amount > 0.0:
 		set_status(status_type, status_amount)
 
@@ -504,10 +504,10 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	else:
 		select_impact(calibre, true)
 	emit_signal("took_damage", self, false)
-	
+
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
-	
+
 	if hp <= 0:
 		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 		die(source_info, weapon_name)
@@ -544,7 +544,7 @@ func decrease_status(status_name, amount):
 func take_status_damage(dt):
 	if is_dead:
 		return
-	
+
 	if has_status("overheating"):
 		hp -= (max_hp * 0.02 * dt)
 		hp = round(hp)
@@ -552,7 +552,7 @@ func take_status_damage(dt):
 			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
 			die(last_damage_source, last_damage_weapon)
 			die(last_damage_source, last_damage_weapon)
-	
+
 	if has_status("fire"):
 		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
 
@@ -667,7 +667,7 @@ func set_arm_weapon(part_name, side):
 	if part_name and not core:
 		push_error("Mecha doesn't have a core to assign arm weapon")
 		return
-	
+
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
@@ -685,7 +685,7 @@ func set_arm_weapon(part_name, side):
 			arm_weapon_right = null
 		node.set_images(null, null, null)
 		return
-	
+
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
 		arm_weapon_left = part_data
@@ -693,10 +693,7 @@ func set_arm_weapon(part_name, side):
 	else:
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
-	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
-	node.position = core.get_arm_weapon_offset(side)
-	node.set_offsets(-part_data.get_attach_pos())
-	
+
 	if node.has_node("AttackAnimation"):
 		node.get_node("AttackAnimation").queue_free()
 	if not part_data.is_melee:
@@ -710,11 +707,14 @@ func set_arm_weapon(part_name, side):
 				node.set_shooting_pos(shooting_position)
 	else:
 		node.add_child(part_data.get_attack_animation().duplicate())
-		
+
 	node.setup(part_data)
+	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.position = core.get_arm_weapon_offset(side)
+	node.set_offsets(-part_data.get_attach_pos())
 
 
-func set_shoulder_weapon(part_name, side):	
+func set_shoulder_weapon(part_name, side):
 	if part_name and not core:
 		push_error("Mecha doesn't have a core to assign shoulder weapon")
 		return
@@ -728,7 +728,7 @@ func set_shoulder_weapon(part_name, side):
 		node.side = SIDE.RIGHT
 	else:
 		push_error("Not a valid side: " + str(side))
-	
+
 	if not part_name:
 		if side == SIDE.LEFT:
 			shoulder_weapon_left = null
@@ -736,7 +736,7 @@ func set_shoulder_weapon(part_name, side):
 			shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return
-	
+
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
 		shoulder_weapon_left = part_data
@@ -828,8 +828,8 @@ func set_chassis(part_name):
 	chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = chassis.weight_capacity
 	set_chassis_parts()
-	
-	
+
+
 func set_chassis_parts():
 	if chassis.is_legs:
 			remove_chassis("single")
@@ -921,7 +921,7 @@ func reset_offsets():
 		$ShoulderWeaponRight.position = core.get_shoulder_weapon_offset(SIDE.RIGHT)
 		if chassis:
 			set_chassis_parts()
-		
+
 #ATTRIBUTE METHODS
 
 func get_max_hp():
@@ -1114,7 +1114,7 @@ func apply_movement(dt, direction):
 	var mult = 1.0
 	if thruster:
 		var thrust_max_speed = weight_speed_modifier(max_speed + thruster.thrust_max_speed)
-		
+
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = freezing_status_slowdown(weight_speed_modifier(thruster.thrust_speed_multiplier))
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
@@ -1220,7 +1220,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			var actual_rot = node.rotation_degrees + rotation_degrees
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
-			
+
 	#Rotate Non-Melee Arm Weapons
 	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right]]:
 		var node_ref = data[1]
@@ -1230,10 +1230,10 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
 			if node == $ArmWeaponLeft:
 				node.rotation_degrees += node_ref.parallax_offset
-			else: 
+			else:
 				node.rotation_degrees -= node_ref.parallax_offset
 			node.rotation_degrees = clamp(node.rotation_degrees, -core.rotation_range, core.rotation_range)
-	
+
 	for data in	[[$Chassis/Left, chassis], [$Chassis/Right, chassis]]:
 		var node_ref = data[1]
 		if node_ref:
@@ -1320,7 +1320,7 @@ func stop_sprinting(sprint_dir):
 	ChassisSprintGlow.visible = false
 	Particle.grind[1].emitting = false
 
-#COMBAT METHODS	
+#COMBAT METHODS
 
 func shoot(type, is_auto_fire = false):
 	var node
@@ -1351,13 +1351,13 @@ func shoot(type, is_auto_fire = false):
 		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-	
+
 	if weapon_ref.is_melee:
 		node.light_attack()
 		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 		emit_signal("shoot")
 		return
-	
+
 	while node.burst_count < weapon_ref.burst_size:
 		if is_dead:
 			return
@@ -1378,7 +1378,7 @@ func shoot(type, is_auto_fire = false):
 					AudioManager.play_sfx("no_ammo", global_position)
 				return
 			node.shoot(amount)
-		
+
 		#Create projectile
 		if not weapon_ref.is_melee:
 			var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier

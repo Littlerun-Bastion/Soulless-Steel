@@ -54,6 +54,7 @@ func get_save_data():
 		"options": options,
 		"controls": controls,
 		"stats": stats,
+		"debug": Debug.debug_settings,
 	}
 	
 	return data
@@ -66,11 +67,10 @@ func set_save_data(data):
 		push_warning("Properly updating to new save version")
 		push_warning("Profile updated!")
 	
-	
 	set_data(data, "options", options)
 	set_data(data, "controls", controls)
 	set_data(data, "stats", stats)
-	
+	set_data(data, "debug", Debug.debug_settings)
 	
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)

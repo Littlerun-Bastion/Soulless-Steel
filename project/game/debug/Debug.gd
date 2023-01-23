@@ -10,17 +10,12 @@ var debug_settings = {
 	"navigation": false,
 	"enemy_state": false,
 	"player_loadout": true,
-	"player_zoom": false,#Vector2(.3,.3),
-	"ai_behaviour": "idle",
+	"player_zoom": false,
+	"ai_behaviour": false,
 	"go_to_mode": false,
 	"skip_intro": false,
 	"disable_projectiles_light": false,
 }
-
-
-func _ready():
-	if get_setting("window"):
-		window_debug_mode()
 
 
 func get_setting(mode):

@@ -30,6 +30,12 @@ signal load_pressed
 func _ready():
 	reload_designs()
 
+func check_pressed_design():
+	if pressed_design == null:
+		$LoadButton.disabled = true
+	else:
+		$LoadButton.disabled = false
+
 func reload_designs():
 	designs = FileManager.get_all_mecha_design_names()
 	current_design = self.get_parent().DisplayMecha
@@ -44,6 +50,9 @@ func reload_designs():
 			DesignContainer.add_child(new_panel)
 		else:
 			print("No design data to load.")
+	
+	check_pressed_design()
+			
 
 func save_design():
 	var design_name = $DesignNameEntry.text
@@ -55,8 +64,11 @@ func save_design():
 		reload_designs()
 		yield(get_tree().create_timer(3), "timeout")
 		$SaveSuccessful.visible = false
+	check_pressed_design()
 
 func _on_design_pressed(design):
+	pressed_design = design
+	check_pressed_design()
 	if design.head:
 		HeadName.text = "- " + design.head
 	else:
@@ -103,8 +115,8 @@ func _on_design_pressed(design):
 		LeftShoulderName.text = ""
 
 func _on_exit_pressed():
+	check_pressed_design()
 	self.visible = false
-	pass # Replace with function body.
 
 
 func _on_RefreshButton_pressed():
@@ -116,4 +128,5 @@ func _on_SaveButton_pressed():
 
 
 func _on_LoadButton_pressed():
-	emit_signal("load_pressed", curren)
+	self.visible = false
+	emit_signal("load_pressed", pressed_design)

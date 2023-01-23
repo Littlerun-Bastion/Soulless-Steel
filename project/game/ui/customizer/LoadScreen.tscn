@@ -495,6 +495,7 @@ margin_right = 288.0
 margin_bottom = 587.0
 theme = ExtResource( 2 )
 custom_fonts/font = SubResource( 42 )
+disabled = true
 text = "Load"
 align = 0
 
@@ -510,4 +511,5 @@ align = 0
 
 [connection signal="pressed" from="topbar/exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="SaveButton" to="." method="_on_SaveButton_pressed"]
+[connection signal="pressed" from="LoadButton" to="." method="_on_LoadButton_pressed"]
 [connection signal="pressed" from="RefreshButton" to="." method="_on_RefreshButton_pressed"]

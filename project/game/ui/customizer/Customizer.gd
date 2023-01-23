@@ -13,6 +13,7 @@ onready var PartCategories = $PartCategories
 onready var DisplayMecha = $Mecha
 onready var ComparisonMecha = $ComparisonMecha
 onready var StatBars = $Statbars
+onready var LoadScreen = $LoadScreen
 
 var category_visible = false
 var comparing_part = false
@@ -22,6 +23,7 @@ func _ready():
 	$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	DisplayMecha.global_rotation = 0
+	LoadScreen.connect("load_pressed", self, "_LoadScreen_on_load_pressed")
 
 func _process(dt):
 	if not comparing_part:
@@ -46,7 +48,7 @@ func default_loadout():
 	DisplayMecha.set_generator("type_1")
 	DisplayMecha.set_chipset("type_1")
 	DisplayMecha.set_head("MSV-L3J-H")
-	DisplayMecha.set_chassis("legs_test")
+	DisplayMecha.set_chassis("MSV-L3J-L")
 	DisplayMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 	DisplayMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
@@ -58,12 +60,14 @@ func default_loadout():
 	ComparisonMecha.set_generator("type_1")
 	ComparisonMecha.set_chipset("type_1")
 	ComparisonMecha.set_head("MSV-L3J-H")
-	ComparisonMecha.set_chassis("legs_test")
+	ComparisonMecha.set_chassis("MSV-L3J-L")
 	ComparisonMecha.set_arm_weapon("TT1-Shotgun", SIDE.LEFT)
 	ComparisonMecha.set_arm_weapon("Type2Sh-Gattling", SIDE.RIGHT)
 	ComparisonMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	ComparisonMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	ComparisonMecha.set_shoulders("MSV-M2-SG")
+	
+	update_weight()
 
 
 func show_category_button(parts, selected):
@@ -169,4 +173,28 @@ func _on_Exit_pressed():
 
 func _on_Load_pressed():
 	$LoadScreen.visible = true
+
+func _LoadScreen_on_load_pressed(design):
+	DisplayMecha.set_core(design.core)
+	DisplayMecha.set_generator(design.generator)
+	DisplayMecha.set_chipset(design.chipset)
+	DisplayMecha.set_head(design.head)
+	DisplayMecha.set_chassis(design.chassis)
+	DisplayMecha.set_arm_weapon(design.arm_weapon_left, SIDE.LEFT)
+	DisplayMecha.set_arm_weapon(design.arm_weapon_right, SIDE.RIGHT)
+	DisplayMecha.set_shoulder_weapon(design.shoulder_weapon_right, SIDE.RIGHT)
+	DisplayMecha.set_shoulder_weapon(design.shoulder_weapon_left, SIDE.LEFT)
+	DisplayMecha.set_shoulders(design.shoulders)
 	
+	ComparisonMecha.set_core(design.core)
+	ComparisonMecha.set_generator(design.generator)
+	ComparisonMecha.set_chipset(design.chipset)
+	ComparisonMecha.set_head(design.head)
+	ComparisonMecha.set_chassis(design.chassis)
+	ComparisonMecha.set_arm_weapon(design.arm_weapon_left, SIDE.LEFT)
+	ComparisonMecha.set_arm_weapon(design.arm_weapon_right, SIDE.RIGHT)
+	ComparisonMecha.set_shoulder_weapon(design.shoulder_weapon_right, SIDE.RIGHT)
+	ComparisonMecha.set_shoulder_weapon(design.shoulder_weapon_left, SIDE.LEFT)
+	ComparisonMecha.set_shoulders(design.shoulders)
+	
+	update_weight()

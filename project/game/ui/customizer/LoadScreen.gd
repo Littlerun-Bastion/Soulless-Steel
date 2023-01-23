@@ -1,11 +1,25 @@
 extends Control
 
 onready var DesignContainer = $PanelContainer2/ScrollContainer/DesignContainer
+onready var HeadName = $PanelContainer3/ScrollContainer/VBoxContainer/HeadName
+onready var CoreName = $PanelContainer3/ScrollContainer/VBoxContainer/CoreName
+onready var ShouldersName = $PanelContainer3/ScrollContainer/VBoxContainer/ShouldersName
+onready var ChassisName = $PanelContainer3/ScrollContainer/VBoxContainer/ChassisName
+onready var GeneratorName = $PanelContainer3/ScrollContainer/VBoxContainer/GeneratorName
+onready var ChipsetName = $PanelContainer3/ScrollContainer/VBoxContainer/ChipsetName
+onready var ThrusterName = $PanelContainer3/ScrollContainer/VBoxContainer/ThrusterName
+onready var RightArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
+onready var LeftArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
+onready var RightShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/RightShoulderName
+onready var LeftShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/LeftShoulderName
 
 const DESIGN_BUTTON = preload("res://game/ui/customizer/DesignButton.tscn")
 
 var designs = []
 var current_design
+var pressed_design
+
+signal load_pressed
 
 # Declare member variables here. Examples:
 # var a = 2
@@ -41,9 +55,52 @@ func save_design():
 		reload_designs()
 		yield(get_tree().create_timer(3), "timeout")
 		$SaveSuccessful.visible = false
-	
-func _on_design_pressed():
-	pass
+
+func _on_design_pressed(design):
+	if design.head:
+		HeadName.text = "- " + design.head
+	else:
+		HeadName.text = ""
+	if design.core:
+		CoreName.text = "- " + design.core
+	else:
+		CoreName.text = ""
+	if design.shoulders:
+		ShouldersName.text = "- " + design.shoulders
+	else:
+		ShouldersName.text = ""
+	if design.chassis:
+		ChassisName.text = "- " + design.chassis
+	else:
+		ChassisName.text = ""
+	if design.generator:
+		GeneratorName.text = "- " + design.generator
+	else:
+		GeneratorName.text = ""
+	if design.chipset:
+		ChipsetName.text = "- " + design.chipset
+	else:
+		ChipsetName.text = ""
+	if design.thruster:
+		ThrusterName.text = "- " + design.thruster
+	else:
+		ThrusterName.text = ""
+	if design.arm_weapon_right:
+		RightArmName.text = "- " + design.arm_weapon_right
+	else:
+		RightArmName.text = ""
+	if design.arm_weapon_left:
+		LeftArmName.text = "- " + design.arm_weapon_left
+	else:
+		LeftArmName.text = ""
+	if design.shoulder_weapon_right:
+		RightShoulderName.text = "- " + design.shoulder_weapon_right
+	else:
+		RightShoulderName.text = ""
+	if design.shoulder_weapon_left:
+		LeftShoulderName.text = "- " + design.shoulder_weapon_left
+	else:
+		LeftShoulderName.text = ""
 
 func _on_exit_pressed():
 	self.visible = false
@@ -56,3 +113,7 @@ func _on_RefreshButton_pressed():
 
 func _on_SaveButton_pressed():
 	save_design()
+
+
+func _on_LoadButton_pressed():
+	emit_signal("load_pressed", curren)

@@ -19,7 +19,9 @@ move_acc = 45.0
 accuracy_modifier = 1.33
 rotation_acc = 1.5
 health = 2200.0
-move_heat = 15
+move_heat = 20
+weight = 12.3
+weight_capacity = 62.5
 
 [node name="SingleSide" type="Node2D" parent="."]
 

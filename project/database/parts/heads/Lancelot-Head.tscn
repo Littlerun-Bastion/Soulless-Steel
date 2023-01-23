@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
 [ext_resource path="res://assets/images/mechas/heads/Lancelot/Lancelot-Head_sub.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/heads/Lancelot/Lancelot-Head_glow.png" type="Texture" id=3]
 [ext_resource path="res://database/parts/head.gd" type="Script" id=4]
 [ext_resource path="res://assets/images/mechas/heads/Lancelot/Lancelot-Head_main.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/heads/Lancelot/Lancelot-Head_pv.png" type="Texture" id=6]
+[ext_resource path="res://game/fx/Heatmaps/NVGreen.tres" type="Texture" id=7]
 
 [node name="Part" type="Node2D"]
 script = ExtResource( 4 )
@@ -12,6 +14,8 @@ part_name = "Lancelot-Head"
 manufacturer_name = "Claymore"
 tagline = "Test"
 description = "With a homogenous titanium skeleton, aluminium plating and completely exposed internals, the Lancelot-Head weighs next-to-nothing and has no speakable capabilities. Revered by the SAV racing community for its striking aesthetic and its incredibly light weight."
+image = ExtResource( 6 )
+heatmap = ExtResource( 7 )
 accuracy_modifier = 1.0
 visual_range = 300
 health = 750

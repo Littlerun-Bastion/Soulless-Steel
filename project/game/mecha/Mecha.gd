@@ -643,9 +643,9 @@ func update_heat(dt):
 		return
 	if generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
-			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, 0)
+			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, max_heat*idle_threshold)
 		else:
-			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion * 0.2)*dt, 0)
+			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion * (mecha_heat/max_heat))*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(generator.heat_dispersion, dt)
 	if generator:
@@ -1389,7 +1389,6 @@ func shoot(type, is_auto_fire = false):
 				max_angle = max_angle/chipset.accuracy_modifier
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
 			var current_accuracy = rand_range(-total_accuracy, total_accuracy)
-			print(total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{

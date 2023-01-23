@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/cores/Percival/percival_core_glow.png" type="Texture" id=2]
@@ -12,6 +12,7 @@
 [ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=10]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/cores/Percival/percival_core_PV.png" type="Texture" id=13]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -19,6 +20,7 @@ part_name = "Percival-Core"
 manufacturer_name = "Claymore International"
 tagline = "Light Core"
 description = "A lightweight core with moderately powerful shield projectors and excellent weight efficiency. While it has almost no armor defenses, its stability is excellent."
+image = ExtResource( 13 )
 health = 2700.0
 shield = 1875.0
 stability = 140.0

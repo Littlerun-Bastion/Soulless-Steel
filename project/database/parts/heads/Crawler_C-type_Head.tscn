@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
 [ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_sub.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_glow.png" type="Texture" id=3]
 [ext_resource path="res://database/parts/head.gd" type="Script" id=4]
 [ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_main.png" type="Texture" id=5]
+[ext_resource path="res://game/fx/Heatmaps/Ironbow.tres" type="Texture" id=6]
 
 [node name="Part" type="Node2D"]
 script = ExtResource( 4 )
@@ -12,6 +13,7 @@ part_name = "Crawler C-type Head"
 manufacturer_name = "Nomhoyi"
 tagline = "Test"
 description = "Quite heavy head model with a unique visual sensor layout that grants 225 degrees of full-complement sight. Incredibly well protected and equipped with a best-in-class sensor suite and stabilization. Comes at a hefty price tag."
+heatmap = ExtResource( 6 )
 accuracy_modifier = 1.5
 visual_range = 700
 health = 2175

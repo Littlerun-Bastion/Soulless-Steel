@@ -148,7 +148,6 @@ margin_top = 60.0
 margin_right = 415.0
 margin_bottom = 81.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Headname"
 
 [node name="Blank2" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 85.0
@@ -175,7 +174,6 @@ margin_top = 145.0
 margin_right = 415.0
 margin_bottom = 166.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Corename"
 
 [node name="Blank12" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 170.0
@@ -202,7 +200,6 @@ margin_top = 230.0
 margin_right = 415.0
 margin_bottom = 251.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Corename"
 
 [node name="Blank3" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 255.0
@@ -229,7 +226,6 @@ margin_top = 315.0
 margin_right = 415.0
 margin_bottom = 336.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Chassisname"
 
 [node name="Blank4" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 340.0
@@ -256,7 +252,6 @@ margin_top = 400.0
 margin_right = 415.0
 margin_bottom = 421.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Generatorname"
 
 [node name="Blank5" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 425.0
@@ -283,7 +278,6 @@ margin_top = 485.0
 margin_right = 415.0
 margin_bottom = 506.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Chipsetname"
 
 [node name="Blank6" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 510.0
@@ -310,7 +304,6 @@ margin_top = 570.0
 margin_right = 415.0
 margin_bottom = 591.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Chipsetname"
 
 [node name="Blank7" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 595.0
@@ -337,7 +330,6 @@ margin_top = 655.0
 margin_right = 415.0
 margin_bottom = 676.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Rightarmname"
 
 [node name="Blank8" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 680.0
@@ -364,7 +356,6 @@ margin_top = 740.0
 margin_right = 415.0
 margin_bottom = 761.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Leftarmname"
 
 [node name="Blank9" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 765.0
@@ -391,7 +382,6 @@ margin_top = 825.0
 margin_right = 415.0
 margin_bottom = 846.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Rightshouldername"
 
 [node name="Blank10" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 850.0
@@ -418,7 +408,6 @@ margin_top = 910.0
 margin_right = 415.0
 margin_bottom = 931.0
 custom_fonts/font = ExtResource( 5 )
-text = "- Leftshouldername"
 
 [node name="Blank11" type="Panel" parent="PanelContainer3/ScrollContainer/VBoxContainer"]
 margin_top = 935.0

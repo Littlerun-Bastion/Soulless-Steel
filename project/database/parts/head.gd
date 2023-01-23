@@ -5,6 +5,7 @@ export var manufacturer_name : String
 export var tagline : String
 export var description : String
 export var image : Texture
+export var heatmap : Resource
 export var rotation_acc := 8
 export var rotation_range := 45.0
 export var accuracy_modifier := -1.0 

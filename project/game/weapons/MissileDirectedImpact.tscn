@@ -1,12 +1,16 @@
-[gd_scene load_steps=37 format=2]
+[gd_scene load_steps=39 format=2]
 
 [ext_resource path="res://assets/images/fx/explosion_directed_1.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/light_sources/light_point_hard.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/fx/long_spark.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/fx/explosion_directed_2.png" type="Texture" id=4]
 [ext_resource path="res://game/fx/explosion.gd" type="Script" id=5]
 [ext_resource path="res://assets/images/fx/explosion_directed_3.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/spark_fx.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/fx/cold_cloud.png" type="Texture" id=8]
+
+[sub_resource type="CanvasItemMaterial" id=38]
+blend_mode = 1
 
 [sub_resource type="Animation" id=1]
 length = 0.001
@@ -314,7 +318,7 @@ colors = PoolColorArray( 1, 1, 1, 1, 0.34375, 0.34375, 0.34375, 1 )
 gradient = SubResource( 33 )
 
 [sub_resource type="Gradient" id=17]
-offsets = PoolRealArray( 0, 0.0518519, 0.113636, 0.267045, 0.886364, 1 )
+offsets = PoolRealArray( 0, 0.0229885, 0.0421456, 0.267045, 0.886364, 1 )
 colors = PoolColorArray( 1, 1, 1, 0, 1, 1, 1, 1, 0.516602, 0.516602, 0.516602, 1, 0.171875, 0.171875, 0.171875, 0.812907, 0.0585938, 0.0585938, 0.0585938, 0.286275, 0, 0, 0, 0 )
 
 [sub_resource type="GradientTexture" id=18]
@@ -381,6 +385,12 @@ color_initial_ramp = SubResource( 34 )
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource( 5 )
+light_decay_rate = 2.0
+
+[node name="LightEffect" type="Sprite" parent="."]
+material = SubResource( 38 )
+scale = Vector2( 3, 3 )
+texture = ExtResource( 2 )
 
 [node name="Sprite1" type="Sprite" parent="."]
 texture = ExtResource( 1 )
@@ -422,6 +432,7 @@ texture = ExtResource( 3 )
 
 [node name="hit_smoke" type="Particles2D" parent="."]
 material = SubResource( 35 )
+z_index = 1
 emitting = false
 amount = 50
 lifetime = 5.0
@@ -434,6 +445,7 @@ texture = ExtResource( 8 )
 
 [node name="miss_smoke" type="Particles2D" parent="."]
 material = SubResource( 36 )
+z_index = 1
 emitting = false
 amount = 50
 lifetime = 5.0

@@ -1,6 +1,7 @@
 extends Node2D
 
 onready var Player = $AnimationPlayer
+export var light_decay_rate := 1.0
 var lifetime := 5.0
 
 func _ready():
@@ -12,6 +13,7 @@ func _process(delta):
 		queue_free()
 	else:
 		lifetime -= delta
+	$LightEffect.modulate.a -= delta * light_decay_rate
 
 func setup(size, rot, isMech):
 	if isMech:

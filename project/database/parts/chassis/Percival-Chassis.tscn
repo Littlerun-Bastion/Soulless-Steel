@@ -1,15 +1,17 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_main.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg.png" type="Texture" id=5]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Percival-Chassis"
 manufacturer_name = "Claymore International"
 tagline = "Wheeled"
+image = ExtResource( 5 )
 movement_type = "tank"
 max_speed = 920
 move_acc = 1.25

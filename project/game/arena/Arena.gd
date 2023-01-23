@@ -19,6 +19,7 @@ onready var ArenaCam = $ArenaCamera
 onready var PauseMenu = $PauseMenu
 onready var DebugNavigation = $DebugNavigation
 onready var IntroAnimation = $Intro/IntroAnimation
+onready var Heatmap = $HeatmapEffects
 
 var player
 var all_mechas = []
@@ -50,6 +51,9 @@ func _ready():
 	
 	
 	set_mechas_block_status(true)
+	
+	if player and player.head and player.head.heatmap:
+		Heatmap.change_heatmap(player.head.heatmap)
 	
 	if is_tutorial:
 		IntroAnimation.play("simEntrance")

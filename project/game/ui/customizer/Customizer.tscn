@@ -174,7 +174,8 @@ color = Color( 0, 0, 0, 1 )
 [node name="UpperBar" type="ColorRect" parent="BackgroundElements"]
 anchor_right = 1.0
 margin_top = 3.0
-margin_bottom = 257.0
+margin_right = 1878.0
+margin_bottom = 205.0
 rect_min_size = Vector2( 0, 40 )
 color = Color( 0, 0, 0, 1 )
 
@@ -524,27 +525,15 @@ __meta__ = {
 
 [node name="Statbars" parent="." instance=ExtResource( 10 )]
 
-[node name="Save" type="Button" parent="."]
-margin_left = 41.0
-margin_top = 1011.0
-margin_right = 361.0
-margin_bottom = 1071.0
-rect_min_size = Vector2( 300, 60 )
-rect_scale = Vector2( 0.66, 0.66 )
-theme = ExtResource( 8 )
-text = "SAVE design"
-align = 0
-icon_align = 2
-
 [node name="Load" type="Button" parent="."]
-margin_left = 41.0
-margin_top = 959.0
-margin_right = 361.0
-margin_bottom = 1019.0
+margin_left = 1428.63
+margin_top = 152.333
+margin_right = 1748.63
+margin_bottom = 212.333
 rect_min_size = Vector2( 300, 60 )
 rect_scale = Vector2( 0.66, 0.66 )
 theme = ExtResource( 8 )
-text = "Load design"
+text = "SAVE/LOAD"
 align = 0
 icon_align = 2
 
@@ -592,6 +581,5 @@ margin_bottom = -743.0
 [connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
-[connection signal="pressed" from="Save" to="." method="_on_Save_pressed"]
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]

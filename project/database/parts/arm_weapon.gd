@@ -5,6 +5,7 @@ export var manufacturer_name : String
 export var tagline : String
 export var description : String
 export var type: String
+export var image : Texture
 export (PackedScene) var muzzle_flash
 export var muzzle_flash_size := 1.0
 export var muzzle_flash_speed := 1.0

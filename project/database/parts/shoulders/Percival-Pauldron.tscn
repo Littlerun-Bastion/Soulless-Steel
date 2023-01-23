@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_shoulder_pv.png" type="Texture" id=4]
 
 [node name="Part" type="Node"]
 script = ExtResource( 3 )
@@ -10,6 +11,7 @@ part_name = "Percival-Pauldron"
 manufacturer_name = "Claymore International"
 tagline = "Test"
 description = "An ultralight part with surprisingly strong shield projectors despite its light weight. Outstanding performance for its tech bracket, but terrible when paired with a need for accuracy."
+image = ExtResource( 4 )
 shield = 1875.0
 stability = 140.0
 arms_accuracy_modifier = 0.85

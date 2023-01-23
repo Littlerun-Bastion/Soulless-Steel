@@ -6,6 +6,7 @@ func setup(pos : Vector2, radius : float, dmg_mul : float, dur : float):
 	position = pos
 	self.damage_mul = dmg_mul
 	$Timer.wait_time = dur
+	$CollisionShape2D.shape = $CollisionShape2D.shape.duplicate()
 	$CollisionShape2D.shape.radius = radius
 
 

@@ -3,6 +3,7 @@
 [ext_resource path="res://game/arena/ExitPoint.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/props/exit point.png" type="Texture" id=2]
 
+
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 400, 400 )
 

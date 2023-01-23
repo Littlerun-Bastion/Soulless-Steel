@@ -1,74 +1,74 @@
 [gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-127_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-127_glow.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-127_sub.png" type="Texture" id=5]
 [ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
 [node name="Part2" type="Node"]
 script = ExtResource( 1 )
-part_name = "Test Chaingun"
-manufacturer_name = "Test"
-tagline = "Chaingun"
+part_name = "MA-L127"
+manufacturer_name = "Martel"
+tagline = "Machine Gun"
 type = "PewPew"
 muzzle_flash = ExtResource( 8 )
 muzzle_flash_size = 0.33
 muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
-damage_modifier = 102.0
+projectile_type = ".50cal AP-I"
+damage_modifier = 88.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0
 recoil_force = 0.2
 bloom_reset_time = 2.4
 fire_rate = 0.11
-base_accuracy = 1.0
-accuracy_bloom = 0.13
-max_bloom_angle = 5.0
+base_accuracy = 1.5
+accuracy_bloom = 1.2
+max_bloom_angle = 12.0
 bullet_spread = 0.0
 total_ammo = 400
 max_ammo = 400
 clip_size = 50
 reload_speed = 1.3
 ammo_cost = 1
-soundEffect = "small_auto1"
+soundEffect = "small_auto2"
 sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0
-bullet_velocity = 4000
+weight = 3.25
+bullet_velocity = 3800
 projectile_size = 0.15
-impact_force = 100.0
+impact_force = 5.0
 eject_casings = true
-casing_size = 0.75
+casing_size = 0.5
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
 impact_effect = ExtResource( 6 )
+impact_size = 0.75
 wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5
 
 [node name="Sub" type="Sprite" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource( 5 )
 
 [node name="Main" type="Sprite" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource( 2 )
 
 [node name="Glow" type="Sprite" parent="."]
 texture = ExtResource( 4 )
 
 [node name="AttachPos" type="Position2D" parent="."]
-position = Vector2( -1, 21 )
+position = Vector2( 9.54659, 34.773 )
 
 [node name="EjectorPos" type="Position2D" parent="."]
-position = Vector2( -3.01159, 17.0206 )
+position = Vector2( 0, 11.772 )
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( -6, -42 )
-
-[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( 3, -42 )
+position = Vector2( 0.0135689, -66.0543 )

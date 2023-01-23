@@ -1332,27 +1332,23 @@ func shoot(type, is_auto_fire = false):
 		weapon_ref = arm_weapon_left
 		left_arm_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = left_arm_bloom_count * weapon_ref.accuracy_bloom
-		left_arm_bloom_count += 1
 		eject_angle = 180.0
 	elif type ==  "arm_weapon_right":
 		node = $ArmWeaponRight
 		weapon_ref = arm_weapon_right
 		right_arm_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_arm_bloom_count * weapon_ref.accuracy_bloom
-		right_arm_bloom_count += 1
 	elif type == "shoulder_weapon_left":
 		node = $ShoulderWeaponLeft
 		weapon_ref = shoulder_weapon_left
 		left_shoulder_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = left_shoulder_bloom_count * weapon_ref.accuracy_bloom
-		left_shoulder_bloom_count += 1
 		eject_angle = 180.0
 	elif type ==  "shoulder_weapon_right":
 		node = $ShoulderWeaponRight
 		weapon_ref = shoulder_weapon_right
 		right_shoulder_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
-		right_shoulder_bloom_count += 1
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 	
@@ -1388,10 +1384,12 @@ func shoot(type, is_auto_fire = false):
 			var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier
 			if type == "arm_weapon_left" or type == "arm_weapon_right":
 				max_angle = max_angle/arm_accuracy_mod
+				bloom /= arm_accuracy_mod
 			if locked_to:
 				max_angle = max_angle/chipset.accuracy_modifier
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
 			var current_accuracy = rand_range(-total_accuracy, total_accuracy)
+			print(total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
@@ -1451,6 +1449,14 @@ func shoot(type, is_auto_fire = false):
 								"casing_size": weapon_ref.casing_size,
 							})
 		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
+		if type == "arm_weapon_left":
+			left_arm_bloom_count += 1
+		elif type ==  "arm_weapon_right":
+			right_arm_bloom_count += 1
+		elif type == "shoulder_weapon_left":
+			left_shoulder_bloom_count += 1
+		elif type ==  "shoulder_weapon_right":
+			right_shoulder_bloom_count += 1
 		emit_signal("shoot")
 	node.burst_cooldown()
 

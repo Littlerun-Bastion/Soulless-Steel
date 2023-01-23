@@ -1,0 +1,74 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_main.png" type="Texture" id=2]
+[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_sub.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_glow.png" type="Texture" id=5]
+[ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
+[ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
+
+[node name="Part2" type="Node"]
+script = ExtResource( 1 )
+part_name = "MA-L178"
+manufacturer_name = "Martel"
+tagline = "Machine Gun"
+type = "PewPew"
+muzzle_flash = ExtResource( 8 )
+muzzle_flash_size = 0.4
+muzzle_flash_speed = 1.9
+projectile = ExtResource( 3 )
+projectile_type = ".70cal AP-I"
+damage_modifier = 210.0
+shield_mult = 0.5
+health_mult = 1.5
+heat_damage = 0.0
+recoil_force = 0.3
+bloom_reset_time = 2.9
+fire_rate = 0.17
+base_accuracy = 0.8
+accuracy_bloom = 0.9
+max_bloom_angle = 9.7
+bullet_spread = 0.0
+total_ammo = 350
+max_ammo = 350
+clip_size = 35
+reload_speed = 2.4
+muzzle_heat = 12.2
+ammo_cost = 1
+soundEffect = "medium_auto3"
+sound_max_range = 7500
+sound_att = 1.75
+battery_drain = 0.0
+weight = 4.1
+bullet_velocity = 4100
+projectile_size = 0.2
+impact_force = 7.0
+eject_casings = true
+casing_size = 0.75
+trail_lifetime_range = 5.0
+trail_min_spawn_distance = 5.0
+impact_effect = ExtResource( 6 )
+wiggle_amount = 0.01
+seeker_agility = 0.003
+seek_time = 0.5
+
+[node name="Sub" type="Sprite" parent="."]
+texture = ExtResource( 4 )
+
+[node name="Main" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Glow" type="Sprite" parent="."]
+texture = ExtResource( 5 )
+
+[node name="AttachPos" type="Position2D" parent="."]
+position = Vector2( 14.909, 35.9012 )
+
+[node name="EjectorPos" type="Position2D" parent="."]
+position = Vector2( -0.646783, 40.2722 )
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
+position = Vector2( 0, -63.403 )

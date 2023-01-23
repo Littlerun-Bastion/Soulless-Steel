@@ -2,6 +2,7 @@
 
 [ext_resource path="res://assets/images/props/trees/bush1.png" type="Texture" id=1]
 
+
 [sub_resource type="OccluderPolygon2D" id=1]
 polygon = PoolVector2Array( -83.5306, -56.1397, -105.887, -5.16733, -83.6636, 66.2657, -41.5975, 104.363, 67.9332, 86.1082, 83.0135, 12.2941, 75.8702, -48.0272, 48.0907, -83.7437, -6.67468, -100.411, -65.4085, -72.6319 )
 

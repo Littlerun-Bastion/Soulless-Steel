@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=16 format=2]
+[gd_resource type="Theme" load_steps=17 format=2]
 
 [ext_resource path="res://game/ui/theme_folder/basic_button_normal.tres" type="StyleBox" id=1]
 [ext_resource path="res://game/ui/theme_folder/basic_button_pressed.tres" type="StyleBox" id=2]
@@ -7,6 +7,39 @@
 [ext_resource path="res://game/ui/theme_folder/basic_button_disabled.tres" type="StyleBox" id=5]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=6]
 [ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=7]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="StyleBoxFlat" id=3]
+bg_color = Color( 1, 1, 1, 1 )
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="StyleBoxFlat" id=10]
+content_margin_left = 0.0
+content_margin_top = 5.0
+content_margin_bottom = 5.0
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 
 [sub_resource type="DynamicFont" id=8]
 size = 50
@@ -32,29 +65,6 @@ expand_margin_right = 8.0
 expand_margin_top = 8.0
 expand_margin_bottom = 6.0
 
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-
-[sub_resource type="StyleBoxFlat" id=2]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="StyleBoxFlat" id=3]
-bg_color = Color( 1, 1, 1, 1 )
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color( 1, 1, 1, 1 )
-
 [sub_resource type="StyleBoxFlat" id=4]
 content_margin_left = 5.0
 content_margin_right = 5.0
@@ -66,8 +76,6 @@ border_width_bottom = 1
 border_color = Color( 0.290196, 0.290196, 0.290196, 1 )
 
 [sub_resource type="StyleBoxFlat" id=5]
-content_margin_left = 5.0
-content_margin_right = 5.0
 bg_color = Color( 0, 0, 0, 1 )
 border_width_left = 1
 border_width_top = 1
@@ -86,6 +94,11 @@ Button/styles/disabled = ExtResource( 5 )
 Button/styles/hover = ExtResource( 4 )
 Button/styles/normal = ExtResource( 1 )
 Button/styles/pressed = ExtResource( 2 )
+HScrollBar/styles/grabber = SubResource( 1 )
+HScrollBar/styles/grabber_highlight = SubResource( 2 )
+HScrollBar/styles/grabber_pressed = SubResource( 3 )
+HScrollBar/styles/scroll = SubResource( 10 )
+HScrollBar/styles/scroll_focus = null
 LineEdit/fonts/font = SubResource( 8 )
 TooltipLabel/colors/font_color = Color( 1, 1, 1, 1 )
 TooltipLabel/fonts/font = SubResource( 9 )

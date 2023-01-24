@@ -1,5 +1,7 @@
 extends Control
 
+var is_disabled = false
+
 func setup(part): 
 	if part.part_name.empty() == false:
 		$PartLabel.text = part.part_name

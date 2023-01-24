@@ -889,31 +889,41 @@ func remove_chassis(type):
 
 
 func set_head(part_name):
-	var part_data = PartManager.get_part("head", part_name)
-	Head.texture = part_data.get_image()
-	HeadSub.texture = part_data.get_sub()
-	HeadGlow.texture = part_data.get_glow()
-	head = part_data
-	if core:
-		Head.position = core.get_head_offset()
+	if part_name:
+		var part_data = PartManager.get_part("head", part_name)
+		Head.texture = part_data.get_image()
+		HeadSub.texture = part_data.get_sub()
+		HeadGlow.texture = part_data.get_glow()
+		head = part_data
+		if core:
+			Head.position = core.get_head_offset()
+	else:
+		Head.texture = null
+		HeadSub.texture = null
+		HeadGlow.texture = null
+		head = null
 	update_max_life_from_parts()
 
 
 func set_shoulders(part_name):
-	var part_data = PartManager.get_part("shoulders", part_name)
-	shoulders = part_data
-	if core:
-		$LeftShoulder.position = core.get_shoulder_offset(SIDE.LEFT)
-		$LeftShoulderCollision.position = core.get_shoulder_offset(SIDE.LEFT)
-		$RightShoulder.position = core.get_shoulder_offset(SIDE.RIGHT)
-		$RightShoulderCollision.position = core.get_shoulder_offset(SIDE.RIGHT)
+	if part_name:
+		var part_data = PartManager.get_part("shoulders", part_name)
+		shoulders = part_data
+		if core:
+			$LeftShoulder.position = core.get_shoulder_offset(SIDE.LEFT)
+			$LeftShoulderCollision.position = core.get_shoulder_offset(SIDE.LEFT)
+			$RightShoulder.position = core.get_shoulder_offset(SIDE.RIGHT)
+			$RightShoulderCollision.position = core.get_shoulder_offset(SIDE.RIGHT)
+		else:
+			push_error("No core for putting on shoulders.")
+		$LeftShoulder.texture = part_data.get_image(SIDE.LEFT)
+		$RightShoulder.texture = part_data.get_image(SIDE.RIGHT)
+		$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
+		$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	else:
-		push_error("No core for putting on shoulders.")
-
-	$LeftShoulder.texture = part_data.get_image(SIDE.LEFT)
-	$RightShoulder.texture = part_data.get_image(SIDE.RIGHT)
-	$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
-	$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
+		shoulders = null
+		$LeftShoulder.texture = null
+		$RightShoulder.texture = null
 	update_max_shield_from_parts()
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")

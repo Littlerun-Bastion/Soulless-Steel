@@ -77,7 +77,7 @@ void fragment()
 shader = SubResource( 7 )
 shader_param/barRange = 0.01
 shader_param/barOffsetIntensity = 0.003
-shader_param/noiseQuality = 1667.33
+shader_param/noiseQuality = 1600.0
 shader_param/noiseIntensity = 0.0
 shader_param/colorOffsetIntensity = 0.373
 shader_param/redMultiplier = 0.002

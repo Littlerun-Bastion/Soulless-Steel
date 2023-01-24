@@ -108,10 +108,14 @@ func _on_Category_pressed(type,group,side = false):
 			var part = parts[part_key]
 			var item = ITEMFRAME.instance()
 			item.setup(part)
+			if DisplayMecha.get(type_name):
+				if DisplayMecha.get(type_name) == part:
+					item.get_button().disabled = true
+					item.is_disabled = true
 			PartList.add_child(item)
-			item.get_button().connect("pressed",self,"_on_ItemFrame_pressed",[part_key,type,side])
-			item.get_button().connect("mouse_entered",self,"_on_ItemFrame_mouse_entered",[part_key,type,side])
-			item.get_button().connect("mouse_exited",self,"_on_ItemFrame_mouse_exited",[part_key,type,side])
+			item.get_button().connect("pressed",self,"_on_ItemFrame_pressed",[part_key,type,side,item])
+			item.get_button().connect("mouse_entered",self,"_on_ItemFrame_mouse_entered",[part_key,type,side,item])
+			item.get_button().connect("mouse_exited",self,"_on_ItemFrame_mouse_exited",[part_key,type,side,item])
 	else:
 		category_visible = false
 		for child in group_node.get_children():
@@ -133,7 +137,22 @@ func _on_EquipmentButton_pressed():
 	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
-func _on_ItemFrame_pressed(part_name,type,side):
+func _on_ItemFrame_pressed(part_name,type,side,item):
+	if item.is_disabled == true:
+		if type == "core":
+			$MissingPartsScroll/MissingParts.text = ""
+			return
+		item.get_button().disabled = false
+		item.is_disabled = false
+		part_name = false
+		print("Disable")
+	else:
+		for child in item.get_parent().get_children():
+			child.get_button().disabled = false
+			child.is_disabled = false
+		item.is_disabled = true
+		item.get_button().disabled = true
+		item.get_button().pressed = false
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
@@ -147,7 +166,9 @@ func _on_ItemFrame_pressed(part_name,type,side):
 	comparing_part = false
 
 
-func _on_ItemFrame_mouse_entered(part_name,type,side):
+func _on_ItemFrame_mouse_entered(part_name,type,side,item):
+	if item.is_disabled == true:
+		item.get_button().disabled = false
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		ComparisonMecha.callv("set_" + str(type), [part_name,side])
@@ -173,7 +194,24 @@ func shoulder_weapon_check():
 	else:
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
 
-func _on_ItemFrame_mouse_exited(_part_name,_type,_side):
+func is_build_valid():
+	var build_valid = true
+	var missing_parts : String
+	for part in ["head", "core", "shoulders", "generator",\
+				"chipset", "chassis", "thruster", "shoulders"]:
+		if not DisplayMecha.get(part):
+			build_valid = false
+			missing_parts = missing_parts + "WARN: " + part + " "
+	if not build_valid:
+		$MissingPartsScroll/MissingParts.text = missing_parts
+		$MissingPartsScroll/MissingParts.visible = true
+	else:
+		$MissingPartsScroll/MissingParts.visible = false
+	return build_valid
+
+func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
+	if item.is_disabled == true:
+		item.get_button().disabled = true
 	StatBars.reset_comparing_part()
 	comparing_part = false
 
@@ -189,9 +227,11 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
-	Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
+	if is_build_valid():
+		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+		get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
+	else:
+		print("Build invalid")
 
 func _on_Load_pressed():
 	$LoadScreen.visible = true

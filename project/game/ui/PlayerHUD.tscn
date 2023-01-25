@@ -15,7 +15,6 @@
 [ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
 [ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
 
-
 [sub_resource type="Animation" id=17]
 length = 0.001
 tracks/0/type = "value"

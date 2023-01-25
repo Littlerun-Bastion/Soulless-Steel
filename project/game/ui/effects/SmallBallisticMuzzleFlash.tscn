@@ -113,6 +113,7 @@ emitting = false
 amount = 3
 lifetime = 0.3
 one_shot = true
+speed_scale = 2.0
 explosiveness = 1.0
 process_material = SubResource( 4 )
 texture = SubResource( 5 )

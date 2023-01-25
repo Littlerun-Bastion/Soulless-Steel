@@ -66,7 +66,7 @@ position = Vector2( -13, 47 )
 position = Vector2( 13, 47 )
 
 [node name="LeftArmWeaponOffset" type="Position2D" parent="."]
-position = Vector2( -46, -20 )
+position = Vector2( -50, -23 )
 
 [node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
 visible = false
@@ -74,7 +74,7 @@ texture = ExtResource( 9 )
 offset = Vector2( 4, -36 )
 
 [node name="RightArmWeaponOffset" type="Position2D" parent="."]
-position = Vector2( 46, -20 )
+position = Vector2( 50, -23 )
 
 [node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
 visible = false

@@ -7,7 +7,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const HITBOX = preload("res://game/mecha/Hitbox.tscn")
-const ARM_WEAPON_INITIAL_ROT = 9
+const ARM_WEAPON_INITIAL_ROT =  9
 const SPEED_MOD_CORRECTION = 3
 const WEAPON_RECOIL_MOD = .9
 const CHASSIS_SPEED = 20
@@ -703,6 +703,11 @@ func set_arm_weapon(part_name, side):
 
 	if node.has_node("AttackAnimation"):
 		node.get_node("AttackAnimation").queue_free()
+
+	node.setup(part_data)
+	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
+	node.position = core.get_arm_weapon_offset(side)
+	node.set_offsets(-part_data.get_attach_pos())
 	if not part_data.is_melee:
 		node.clear_shooting_pos()
 		if part_data.get_num_shooting_pos() > 0:
@@ -714,11 +719,6 @@ func set_arm_weapon(part_name, side):
 				node.set_shooting_pos(shooting_position)
 	else:
 		node.add_child(part_data.get_attack_animation().duplicate())
-
-	node.setup(part_data)
-	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
-	node.position = core.get_arm_weapon_offset(side)
-	node.set_offsets(-part_data.get_attach_pos())
 
 
 func set_shoulder_weapon(part_name, side):

@@ -40,7 +40,7 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	for _i in range(10):
+	for _i in range(2):
 		add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
@@ -63,6 +63,8 @@ func _ready():
 	if Debug.get_setting("skip_intro"):
 		yield(get_tree().create_timer(.01), "timeout")
 		IntroAnimation.stop_animation()
+	if Debug.get_setting("use_debug_cam"):
+		activate_debug_cam()
 
 
 func _input(event):
@@ -70,11 +72,10 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
 		elif event.pressed and event.scancode == KEY_P:
-			ArenaCam.current = true
-			allow_debug_cam = true
+			activate_debug_cam()
 		elif event.pressed and event.scancode == KEY_L:
 			if player:
-				player.take_damage(10, player)
+				player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 	if event is InputEventMouseButton:
 		if allow_debug_cam and ArenaCam.current:
 			var amount = Vector2(.8, .8)
@@ -308,6 +309,12 @@ func get_lock_areas():
 	for mecha in all_mechas:
 		areas.append(mecha.get_lock_area())
 	return areas
+
+
+func activate_debug_cam():
+	ArenaCam.current = true
+	allow_debug_cam = true
+
 
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:

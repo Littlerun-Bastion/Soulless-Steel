@@ -15,6 +15,7 @@ var debug_settings = {
 	"go_to_mode": false,
 	"skip_intro": false,
 	"disable_projectiles_light": false,
+	"use_debug_cam": false,
 }
 
 

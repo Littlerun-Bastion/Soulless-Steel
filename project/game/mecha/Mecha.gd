@@ -1159,7 +1159,8 @@ func apply_movement(dt, direction):
 		else:
 			moving = false
 			velocity *= 1 - chassis.friction
-		move(velocity*speed_modifier)
+		var mod = 1.0 if is_sprinting else speed_modifier
+		move(velocity*mod)
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
@@ -1173,7 +1174,8 @@ func apply_movement(dt, direction):
 			moving_axis.x = false
 			moving_axis.y = false
 			velocity *= 1 - chassis.friction
-		move(velocity*speed_modifier)
+		var mod = 1.0 if is_sprinting else speed_modifier
+		move(velocity*mod)
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false

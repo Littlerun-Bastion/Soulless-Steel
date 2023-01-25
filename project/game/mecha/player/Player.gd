@@ -9,7 +9,7 @@ signal lost_health
 const ROTATION_DEADZONE = 20
 const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
-const SPRINTING_TIMEOUT = .2 #How much the player needs to hold the button to enter sprint mode
+const SPRINTING_TIMEOUT = .13 #How much the player needs to hold the button to enter sprint mode
 
 onready var Cam = $Camera2D
 

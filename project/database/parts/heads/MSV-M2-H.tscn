@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
 [ext_resource path="res://assets/images/mechas/heads/MSV-M2/MSV-M2_head_glow.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/head.gd" type="Script" id=3]
 [ext_resource path="res://assets/images/mechas/heads/MSV-M2/MSV-M2_head_main.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/heads/MSV-M2/MSV-M2_head_pv.png" type="Texture" id=5]
 [ext_resource path="res://assets/images/mechas/heads/MSV-M2/MSV-M2_head_sub.png" type="Texture" id=6]
+[ext_resource path="res://game/fx/Heatmaps/Whitehot.tres" type="Texture" id=7]
 
 [node name="Part" type="Node2D"]
 script = ExtResource( 3 )
@@ -12,6 +14,8 @@ part_name = "MSV-M2-H"
 manufacturer_name = "Martel"
 tagline = "Test"
 description = "An upgraded middleweight head with upgraded visual sensors and better stabilization. Its armor is thicker, but still comprised of second-hand salvaged metal."
+image = ExtResource( 5 )
+heatmap = ExtResource( 7 )
 accuracy_modifier = 1.35
 visual_range = 550
 health = 1275

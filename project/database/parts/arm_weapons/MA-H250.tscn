@@ -62,7 +62,7 @@ texture = ExtResource( 4 )
 texture = ExtResource( 3 )
 
 [node name="AttachPos" type="Position2D" parent="."]
-position = Vector2( 14.909, 35.9012 )
+position = Vector2( 13.4073, 26.0568 )
 
 [node name="EjectorPos" type="Position2D" parent="."]
 position = Vector2( -0.646783, 40.2722 )
@@ -70,4 +70,4 @@ position = Vector2( -0.646783, 40.2722 )
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( 0, -63.403 )
+position = Vector2( 0, -71.2815 )

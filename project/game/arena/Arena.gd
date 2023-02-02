@@ -346,13 +346,13 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 			if data:
 				var trail = ProjectileManager.create_trail(data.node, data.weapon_data)
 				Trails.add_child(trail)
-		if args.has_smoke:
+		if args.weapon_data.has_smoke:
 			if data:
 				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, data.weapon_data)
 				Smoke.add_child(smoke_trail)
-		if args.muzzle_flash:
+		if args.weapon_data.muzzle_flash:
 			if data:
-				var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data)
+				var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data, args.pos_reference)
 				Flashes.add_child(flash)
 
 func _on_mecha_create_casing(args):

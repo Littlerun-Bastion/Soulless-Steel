@@ -37,13 +37,13 @@ func _physics_process(dt):
 						body.add_decal(body_shape_id, collision_point, decal_type, size)
 					
 					var damage = data.projectile.damage * data.damage
-					var final_damage = damage if not data.projectile.is_overtime else damage * get_process_delta_time()
+					var final_damage = damage if not proj_data.is_overtime else damage * get_process_delta_time()
 					body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
 									 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.weapon_name, data.projectile.calibre)
 					mech_hit = true
 					hit = true
 			if not body.is_in_group("mecha") or\
-			  (not data.projectile.is_overtime and original_mecha_info and body != original_mecha_info.body):
+			  (not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 				if not body.is_in_group("mecha"):
 					force_raycast_update()
 					mech_hit = false

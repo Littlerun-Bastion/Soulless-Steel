@@ -10,7 +10,7 @@ func create(mecha, args):
 	if not wr.get_ref():
 		return false
 
-	var projectile_data = args.weapon_data.instance()
+	var projectile_data = args.weapon_data.projectile.instance()
 	var data = {
 		"create_node": false,
 		"node": null,

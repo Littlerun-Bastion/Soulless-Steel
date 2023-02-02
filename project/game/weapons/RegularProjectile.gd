@@ -5,13 +5,13 @@ onready var Collision = $CollisionShape2D
 
 signal bullet_impact
 
+var data
 var dying = false
 var speed = 0
 var local_scale = 1.0
 var decaying_speed_ratio = 1.0
 var scaling_variance = 0.0
 var dir = Vector2()
-var damage = 0
 var shield_mult = 0.0
 var health_mult = 0.0
 var heat_damage = 0.0
@@ -19,9 +19,7 @@ var status_damage = 0.0
 var status_type
 var hitstop
 var is_overtime = false
-var decal_type = "bullet_hole"
 var original_mecha_info
-var weapon_name
 var calibre
 var seeker_target : Object = null
 var mech_hit = false
@@ -87,27 +85,25 @@ func _process(dt):
 
 
 func setup(mecha, args):
-	var data = args.weapon_data.instance()
-	$Sprite.texture = data.get_image()
-	$CollisionShape2D.polygon = data.get_collision()
-	if data.random_rotation:
+	data = args.weapon_data
+	var proj_data = data.projectile.instance()
+	$Sprite.texture = proj_data.get_image()
+	$CollisionShape2D.polygon = proj_data.get_collision()
+	if proj_data.random_rotation:
 		$Sprite.rotation_degrees = rand_range(0, 360)
 	
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
 	}
-	weapon_name = args.weapon_name
-	decal_type = data.decal_type
-	speed = args.bullet_velocity
-	$Sprite/LightEffect.modulate.a = data.light_energy
-	damage = args.damage_mod
+	speed = data.bullet_velocity
+	$Sprite/LightEffect.modulate.a = proj_data.light_energy
 	shield_mult = args.shield_mult
 	health_mult = args.health_mult
 	heat_damage = args.heat_damage
 	status_damage = args.status_damage
 	status_type = args.status_type
-	is_overtime = data.is_overtime
+	is_overtime = proj_data.is_overtime
 	trail_lifetime = args.trail_lifetime
 	trail_lifetime_range = args.trail_lifetime_range
 	trail_eccentricity = args.trail_eccentricity
@@ -115,7 +111,7 @@ func setup(mecha, args):
 	trail_width = args.trail_width
 	has_wiggle = args.has_wiggle
 	wiggle_amount = args.wiggle_amount
-	calibre = data.calibre
+	calibre = proj_data.calibre
 	impact_size = args.impact_size
 	is_seeker = args.is_seeker
 	seek_agility = args.seek_agility
@@ -132,8 +128,8 @@ func setup(mecha, args):
 	rotation_degrees = rad2deg(dir.angle()) + 90
 	change_scaling(local_scale)
 	
-	if data.life_time > 0 :
-		$LifeTimer.wait_time = data.life_time + rand_range(-data.life_time_var, data.life_time_var)
+	if proj_data.life_time > 0 :
+		$LifeTimer.wait_time = proj_data.life_time + rand_range(-proj_data.life_time_var, proj_data.life_time_var)
 		$LifeTimer.autostart = true
 	
 	decaying_speed_ratio = args.bullet_drag + rand_range(-args.bullet_drag_var, args.bullet_drag_var)
@@ -177,10 +173,10 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 				collision_point = global_position
 			
 			var size = Vector2(40,40)
-			body.add_decal(body_shape_id, collision_point, decal_type, size)
+			body.add_decal(body_shape_id, collision_point, data.projectile.decal_type, size)
 	
-			var final_damage = damage if not is_overtime else damage * get_process_delta_time()
-			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
+			var final_damage = data.damage_mod if not is_overtime else data.damage_mod * get_process_delta_time()
+			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, data.weapon_name, calibre)
 			if not is_overtime and impact_force > 0.0:
 				body.knockback(impact_force, dir, true)
 			mech_hit = true

@@ -14,7 +14,7 @@ export var projectile_type : String
 export var requires_lock := false
 export var number_projectiles := 1
 export var burst_ammo_cost := 1
-export var damage_modifier := 1.0
+export var damage := 1.0
 export var shield_mult := 1.0
 export var health_mult := 1.0
 export var heat_damage := 10.0

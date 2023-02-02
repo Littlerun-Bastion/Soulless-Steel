@@ -7,7 +7,7 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" type="Texture" id=5]
 [ext_resource path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" type="PackedScene" id=6]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Clarent-01"
 manufacturer_name = "Claymore International"
@@ -20,7 +20,7 @@ muzzle_flash_speed = 1.5
 projectile = ExtResource( 2 )
 projectile_type = "Flame"
 number_projectiles = 5
-damage_modifier = 75.0
+damage = 75.0
 uses_battery = true
 shield_mult = 1.5
 health_mult = 0.5

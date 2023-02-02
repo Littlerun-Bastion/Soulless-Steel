@@ -8,7 +8,7 @@
 [ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Test Chaingun"
 manufacturer_name = "Test"
@@ -18,7 +18,6 @@ muzzle_flash = ExtResource( 8 )
 muzzle_flash_size = 0.25
 muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
-damage_modifier = 40.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0

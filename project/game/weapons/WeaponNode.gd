@@ -64,7 +64,7 @@ func setup(weapon_ref):
 	
 	if is_melee:
 		melee_anim = $AttackAnimation
-		melee_damage = weapon_ref.melee_damage
+		melee_damage = weapon_ref.damage
 		melee_knockback = weapon_ref.melee_knockback
 	else:
 		melee_anim = null

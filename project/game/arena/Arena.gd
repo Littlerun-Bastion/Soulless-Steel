@@ -343,11 +343,11 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 		data.node.connect("bullet_impact",self,"_on_bullet_impact")
 		if args.has_trail:
 			if data:
-				var trail = ProjectileManager.create_trail(data.node, args)
+				var trail = ProjectileManager.create_trail(data.node, data.weapon_data)
 				Trails.add_child(trail)
 		if args.has_smoke:
 			if data:
-				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, args)
+				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, data.weapon_data)
 				Smoke.add_child(smoke_trail)
 		if args.muzzle_flash:
 			if data:

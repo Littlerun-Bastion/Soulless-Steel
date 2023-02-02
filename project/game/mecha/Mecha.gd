@@ -1432,19 +1432,12 @@ func shoot(type, is_auto_fire = false):
 								"lifetime": weapon_ref.lifetime,
 								"impact_force": weapon_ref.impact_force,
 								"beam_range": weapon_ref.beam_range,
-								"has_trail": weapon_ref.has_trail,
-								"trail_lifetime": weapon_ref.trail_lifetime,
-								"trail_lifetime_range": weapon_ref.trail_lifetime_range,
-								"trail_eccentricity": weapon_ref.trail_eccentricity,
-								"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
-								"trail_width" : weapon_ref.trail_width,
+
 
 								"has_smoke": weapon_ref.has_smoke,
 								"smoke_density": weapon_ref.smoke_density,
 								"smoke_lifetime": weapon_ref.smoke_lifetime,
 
-								"has_wiggle": weapon_ref.has_wiggle,
-								"wiggle_amount": weapon_ref.wiggle_amount,
 								"is_seeker": weapon_ref.is_seeker,
 								"seeker_target": locked_to,
 								"seek_time": weapon_ref.seek_time,

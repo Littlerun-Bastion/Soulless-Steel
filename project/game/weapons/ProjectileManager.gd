@@ -35,9 +35,9 @@ func create_muzzle_flash(weapon, args):
 	flash.setup(weapon, args.muzzle_flash_size, args.muzzle_flash_speed, args.pos_reference)
 	return flash
 
-func create_trail(projectile, args):
-		var trail = args.has_trail.instance()
-		trail.setup(args.trail_lifetime, args.trail_lifetime_range, args.trail_eccentricity, args.trail_min_spawn_distance, trail.width, projectile)
+func create_trail(projectile, data):
+		var trail = data.has_trail.instance()
+		trail.setup(data, projectile)
 		return trail
 
 func create_explosion(pos, impact_effect):
@@ -45,9 +45,9 @@ func create_explosion(pos, impact_effect):
 	explosion.position = pos.position
 	return explosion
 
-func create_smoke_trail(projectile, args):
-	var smoke_trail = args.has_smoke.instance()
-	smoke_trail.setup(projectile, args)
+func create_smoke_trail(projectile, data):
+	var smoke_trail = data.has_smoke.instance()
+	smoke_trail.setup(data, projectile)
 	return smoke_trail
 
 #Return all positions where a polygon intersects with a circle

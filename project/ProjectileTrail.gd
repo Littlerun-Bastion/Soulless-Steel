@@ -18,13 +18,13 @@ func _ready():
 	clear_points()
 	tween.start()
 
-func setup(trail_lifetime, trail_lifetime_range, trail_eccentricity, trail_min_spawn_distance, trail_width, target):
-	lifetime = trail_lifetime
-	lifetime_range = trail_lifetime_range
-	eccentricity = trail_eccentricity
-	min_spawn_distance = trail_min_spawn_distance
-	self.width = trail_width
-	home_projectile = target
+func setup(data, projectile):
+	lifetime = data.trail_lifetime
+	lifetime_range = data.trail_lifetime_range
+	eccentricity = data.trail_eccentricity
+	min_spawn_distance = data.trail_min_spawn_distance
+	width = data.trail_width
+	home_projectile = projectile
 	add_point(home_projectile.global_position)
 
 func _process(dt):

@@ -22,15 +22,6 @@ var mech_hit = false
 
 var impact_effect
 
-var trail_enabled := false
-var trail_lifetime := 1.0
-var trail_lifetime_range := 0.25
-var trail_eccentricity := 5.0
-var trail_min_spawn_distance := 20.0
-var trail_width := 20
-
-var has_wiggle := false
-var wiggle_amount := 2.0
 var is_seeker := false
 var seek_agility := 0.01
 var seek_time := 1.0
@@ -64,15 +55,15 @@ func _process(dt):
 		rotation_degrees = rad2deg(dir.angle()) + 90
 		if seeker_target and is_instance_valid(seeker_target):
 			if lifetime < seek_time:
-				dir = lerp(dir.rotated(deg2rad(rand_range(-wiggle_amount, wiggle_amount))), position.direction_to(seeker_target.position), seek_agility)
+				dir = lerp(dir.rotated(deg2rad(rand_range(-data.wiggle_amount, data.wiggle_amount))), position.direction_to(seeker_target.position), seek_agility)
 			elif not seek_time_expired:
 				dir = lerp(dir, position.direction_to(seeker_target.position), seek_agility)
-				wiggle_amount = wiggle_amount/2
+				data.wiggle_amount = data.wiggle_amount/2
 				seek_time_expired = true
-	if has_wiggle:
+	if data.has_wiggle:
 		rotation_degrees = rad2deg(dir.angle()) + 90
 		if not seeker_target or not is_seeker or not is_instance_valid(seeker_target) or lifetime > seek_time:
-			dir = dir.rotated(deg2rad(rand_range(-wiggle_amount, wiggle_amount)))
+			dir = dir.rotated(deg2rad(rand_range(-data.wiggle_amount, data.wiggle_amount)))
 	
 	
 	
@@ -95,13 +86,6 @@ func setup(mecha, args):
 	speed = data.bullet_velocity
 	$Sprite/LightEffect.modulate.a = proj_data.light_energy
 	status_type = args.status_type
-	trail_lifetime = args.trail_lifetime
-	trail_lifetime_range = args.trail_lifetime_range
-	trail_eccentricity = args.trail_eccentricity
-	trail_min_spawn_distance = args.trail_min_spawn_distance
-	trail_width = args.trail_width
-	has_wiggle = args.has_wiggle
-	wiggle_amount = args.wiggle_amount
 	calibre = proj_data.calibre
 	impact_size = args.impact_size
 	is_seeker = args.is_seeker

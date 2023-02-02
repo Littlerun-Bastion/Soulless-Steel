@@ -13,8 +13,6 @@ var decaying_speed_ratio = 1.0
 var scaling_variance = 0.0
 var dir = Vector2()
 var status_damage = 0.0
-var status_type
-var hitstop
 var original_mecha_info
 var calibre
 var seeker_target : Object = null
@@ -27,10 +25,6 @@ var seek_agility := 0.01
 var seek_time := 1.0
 var seeker_angle := 90.0
 var seek_time_expired := false
-
-
-var impact_size := 1.0
-var impact_force := 0.0
 
 var lifetime := 0.0
 
@@ -85,17 +79,12 @@ func setup(mecha, args):
 	}
 	speed = data.bullet_velocity
 	$Sprite/LightEffect.modulate.a = proj_data.light_energy
-	status_type = args.status_type
 	calibre = proj_data.calibre
-	impact_size = args.impact_size
 	is_seeker = args.is_seeker
 	seek_agility = args.seek_agility
 	seek_time = args.seek_time
 	seeker_angle = args.seeker_angle
 	local_scale = args.projectile_size
-	impact_force = args.impact_force
-	hitstop = args.hitstop
-	impact_effect = args.impact_effect
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
@@ -153,9 +142,9 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			var overtime = data.projectile.is_overtime
 			var final_damage = data.damage if not overtime else data.damage * get_process_delta_time()
 			body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-							 data.status_damage, status_type, hitstop, original_mecha_info, data.weapon_name, calibre)
-			if not overtime and impact_force > 0.0:
-				body.knockback(impact_force, dir, true)
+							 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.weapon_name, calibre)
+			if not overtime and data.impact_force > 0.0:
+				body.knockback(data.impact_force, dir, true)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\

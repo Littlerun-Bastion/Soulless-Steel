@@ -1422,7 +1422,6 @@ func shoot(type, is_auto_fire = false):
 								"muzzle_flash": weapon_ref.muzzle_flash,
 								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
 								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
-								"status_type": weapon_ref.status_type,
 								"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 								"bullet_drag": weapon_ref.bullet_drag,
 								"bullet_drag_var": weapon_ref.bullet_drag_var,
@@ -1430,7 +1429,6 @@ func shoot(type, is_auto_fire = false):
 								"projectile_size_scaling": weapon_ref.projectile_size_scaling,
 								"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
 								"lifetime": weapon_ref.lifetime,
-								"impact_force": weapon_ref.impact_force,
 								"beam_range": weapon_ref.beam_range,
 
 
@@ -1444,9 +1442,6 @@ func shoot(type, is_auto_fire = false):
 								"seek_agility": weapon_ref.seeker_agility,
 								"seeker_angle": weapon_ref.seeker_angle,
 
-								"impact_effect": weapon_ref.impact_effect,
-								"impact_size": weapon_ref.impact_size,
-								"hitstop": weapon_ref.hitstop,
 							}, node) #TODO: FIX THIS
 			apply_recoil(type, node, weapon_ref.recoil_force)
 		if weapon_ref.eject_casings:

@@ -363,7 +363,7 @@ func _on_mecha_create_casing(args):
 func _on_bullet_impact(projectile, effect):
 	if effect:
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
-		impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
+		impact_effect.setup(projectile.data.impact_size, projectile.global_rotation, projectile.mech_hit)
 		Explosions.add_child(impact_effect)
 
 

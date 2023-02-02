@@ -30,9 +30,9 @@ func create(mecha, args):
 	
 	return data
 
-func create_muzzle_flash(weapon, args):
-	var flash = args.muzzle_flash.instance()
-	flash.setup(weapon, args.muzzle_flash_size, args.muzzle_flash_speed, args.pos_reference)
+func create_muzzle_flash(weapon, data):
+	var flash = data.muzzle_flash.instance()
+	flash.setup(weapon, data.muzzle_flash_size, data.muzzle_flash_speed, data.pos_reference)
 	return flash
 
 func create_trail(projectile, data):

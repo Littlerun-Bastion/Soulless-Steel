@@ -1419,30 +1419,8 @@ func shoot(type, is_auto_fire = false):
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),
 								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
-								"muzzle_flash": weapon_ref.muzzle_flash,
-								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
-								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
-								"delay": rand_range(0, weapon_ref.bullet_spread_delay),
-								"bullet_drag": weapon_ref.bullet_drag,
-								"bullet_drag_var": weapon_ref.bullet_drag_var,
-								"projectile_size": weapon_ref.projectile_size,
-								"projectile_size_scaling": weapon_ref.projectile_size_scaling,
-								"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
-								"lifetime": weapon_ref.lifetime,
-								"beam_range": weapon_ref.beam_range,
-
-
-								"has_smoke": weapon_ref.has_smoke,
-								"smoke_density": weapon_ref.smoke_density,
-								"smoke_lifetime": weapon_ref.smoke_lifetime,
-
-								"is_seeker": weapon_ref.is_seeker,
 								"seeker_target": locked_to,
-								"seek_time": weapon_ref.seek_time,
-								"seek_agility": weapon_ref.seeker_agility,
-								"seeker_angle": weapon_ref.seeker_angle,
-
-							}, node) #TODO: FIX THIS
+							}, node)
 			apply_recoil(type, node, weapon_ref.recoil_force)
 		if weapon_ref.eject_casings:
 			emit_signal("create_casing",

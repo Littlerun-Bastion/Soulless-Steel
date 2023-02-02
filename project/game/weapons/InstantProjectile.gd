@@ -7,21 +7,11 @@ var proj_data
 var dying = false
 var speed = 0
 var local_scale = 1.0
-var decaying_speed_ratio = 1.0
-var scaling_variance = 0.0
 var dir = Vector2()
-var status_type
-var hitstop = false
-var is_overtime = false
 var decal_type = "bullet_hole_small"
-var weapon_name
-var calibre 
-var seeker_target : Object = null
 var hit = false
 var miss = false
 var mech_hit = false
-var impact_size := 1.0
-var lifetime = 2.0
 var lifetime_tick = 1.0
 var body
 
@@ -47,13 +37,13 @@ func _physics_process(dt):
 						body.add_decal(body_shape_id, collision_point, decal_type, size)
 					
 					var damage = data.projectile.damage * data.damage
-					var final_damage = damage if not is_overtime else damage * get_process_delta_time()
+					var final_damage = damage if not data.projectile.is_overtime else damage * get_process_delta_time()
 					body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-									 data.status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
+									 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.weapon_name, data.projectile.calibre)
 					mech_hit = true
 					hit = true
 			if not body.is_in_group("mecha") or\
-			  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
+			  (not data.projectile.is_overtime and original_mecha_info and body != original_mecha_info.body):
 				if not body.is_in_group("mecha"):
 					force_raycast_update()
 					mech_hit = false
@@ -85,17 +75,10 @@ func setup(mecha, args):
 		"body": mecha,
 		"name": mecha.mecha_name,
 	}
-	weapon_name = args.weapon_name
-	calibre = proj_data.calibre
-	status_type = args.status_type
-	impact_size = args.impact_size
-	proj_data.width = args.projectile_size*10
-	lifetime = args.lifetime
-	hitstop = args.hitstop
-	lifetime_tick = lifetime
+	proj_data.width = data.projectile_size*10
 	dir = args.dir.normalized()
 	position = args.pos
-	cast_to = dir*args.beam_range
+	cast_to = dir*data.beam_range
 	add_exception(original_mecha_info.body)
 
 

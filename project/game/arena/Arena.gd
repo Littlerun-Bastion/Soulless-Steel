@@ -330,9 +330,10 @@ func _on_player_lost_health():
 
 func _on_mecha_create_projectile(mecha, args, weapon):
 	#To avoid warning when mecha is killed during delay
-	if args.delay > 0:
+	var delay = rand_range(0, args.weapon_data.bullet_spread_delay)
+	if delay > 0:
 		var timer = Timer.new()
-		timer.wait_time = args.delay
+		timer.wait_time = delay
 		add_child(timer)
 		timer.start()
 		yield(timer, "timeout")
@@ -341,7 +342,7 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
 		data.node.connect("bullet_impact",self,"_on_bullet_impact")
-		if args.has_trail:
+		if args.weapon_data.has_trail:
 			if data:
 				var trail = ProjectileManager.create_trail(data.node, data.weapon_data)
 				Trails.add_child(trail)
@@ -351,7 +352,7 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 				Smoke.add_child(smoke_trail)
 		if args.muzzle_flash:
 			if data:
-				var flash = ProjectileManager.create_muzzle_flash(weapon, args)
+				var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data)
 				Flashes.add_child(flash)
 
 func _on_mecha_create_casing(args):

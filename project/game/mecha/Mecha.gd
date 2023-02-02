@@ -712,7 +712,7 @@ func set_arm_weapon(part_name, side):
 		node.clear_shooting_pos()
 		if part_data.get_num_shooting_pos() > 0:
 			for idx in part_data.get_num_shooting_pos():
-				var defined_pos = part_data.get_shooting_pos(idx + 1)
+				var defined_pos = part_data.get_shooting_pos(idx)
 				var shooting_position = Position2D.new()
 				shooting_position.position = defined_pos.position + node.offset
 				node.add_child(shooting_position)
@@ -1422,11 +1422,6 @@ func shoot(type, is_auto_fire = false):
 								"muzzle_flash": weapon_ref.muzzle_flash,
 								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
 								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
-								"damage_mod": weapon_ref.damage,
-								"shield_mult": weapon_ref.shield_mult,
-								"health_mult": weapon_ref.health_mult,
-								"heat_damage": weapon_ref.heat_damage,
-								"status_damage": weapon_ref.status_damage,
 								"status_type": weapon_ref.status_type,
 								"delay": rand_range(0, weapon_ref.bullet_spread_delay),
 								"bullet_drag": weapon_ref.bullet_drag,

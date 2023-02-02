@@ -12,13 +12,9 @@ var local_scale = 1.0
 var decaying_speed_ratio = 1.0
 var scaling_variance = 0.0
 var dir = Vector2()
-var shield_mult = 0.0
-var health_mult = 0.0
-var heat_damage = 0.0
 var status_damage = 0.0
 var status_type
 var hitstop
-var is_overtime = false
 var original_mecha_info
 var calibre
 var seeker_target : Object = null
@@ -98,12 +94,7 @@ func setup(mecha, args):
 	}
 	speed = data.bullet_velocity
 	$Sprite/LightEffect.modulate.a = proj_data.light_energy
-	shield_mult = args.shield_mult
-	health_mult = args.health_mult
-	heat_damage = args.heat_damage
-	status_damage = args.status_damage
 	status_type = args.status_type
-	is_overtime = proj_data.is_overtime
 	trail_lifetime = args.trail_lifetime
 	trail_lifetime_range = args.trail_lifetime_range
 	trail_eccentricity = args.trail_eccentricity
@@ -148,7 +139,7 @@ func die():
 	if dying:
 		return
 	dying = true
-	if not is_overtime:
+	if not data.projectile.is_overtime:
 		emit_signal("bullet_impact", self, impact_effect)
 	#var dur = rand_range(.2, .4)
 	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
@@ -174,15 +165,17 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			
 			var size = Vector2(40,40)
 			body.add_decal(body_shape_id, collision_point, data.projectile.decal_type, size)
-	
-			var final_damage = data.damage_mod if not is_overtime else data.damage_mod * get_process_delta_time()
-			body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, data.weapon_name, calibre)
-			if not is_overtime and impact_force > 0.0:
+			
+			var overtime = data.projectile.is_overtime
+			var final_damage = data.damage if not overtime else data.damage * get_process_delta_time()
+			body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
+							 data.status_damage, status_type, hitstop, original_mecha_info, data.weapon_name, calibre)
+			if not overtime and impact_force > 0.0:
 				body.knockback(impact_force, dir, true)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\
-	  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
+	  (not data.projectile.is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		die()

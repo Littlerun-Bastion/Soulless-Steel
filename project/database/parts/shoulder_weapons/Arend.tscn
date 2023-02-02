@@ -9,7 +9,7 @@
 [ext_resource path="res://game/weapons/MissileDirectedImpact.tscn" type="PackedScene" id=7]
 [ext_resource path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" type="PackedScene" id=8]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 2 )
 part_name = "Arend ASV-12"
 manufacturer_name = "Nomhoyi Superheavy"
@@ -21,7 +21,7 @@ projectile = ExtResource( 3 )
 projectile_type = "Chipset-Guided Missile"
 number_projectiles = 4
 burst_ammo_cost = 4
-damage_modifier = 850.0
+damage = 850.0
 shield_mult = 0.5
 health_mult = 1.5
 recoil_force = 0.0

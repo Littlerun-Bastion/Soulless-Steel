@@ -18,6 +18,7 @@ muzzle_flash = ExtResource( 8 )
 muzzle_flash_size = 0.25
 muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
+damage = 40.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0

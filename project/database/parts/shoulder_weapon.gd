@@ -99,14 +99,14 @@ func get_image():
 func get_glow():
 	return $Glow.texture
 
+
 func get_num_shooting_pos():
 	return $ShootingPosArray.get_children().size()
 
+
 func get_shooting_pos(idx):	
-	if idx == 1:
-		return get_node_or_null("ShootingPosArray/ShootingPos")
-	else: 
-		return get_node_or_null("ShootingPosArray/ShootingPos" + str(idx))
+	assert($ShootingPosArray.get_child_count() >= idx + 1, "Not a valid shooting pos index: " + str(idx))
+	return $ShootingPosArray.get_child(idx)
 
 
 func get_attach_pos():

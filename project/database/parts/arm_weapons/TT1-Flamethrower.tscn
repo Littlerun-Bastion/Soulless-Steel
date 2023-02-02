@@ -19,6 +19,7 @@ muzzle_flash_speed = 3.0
 projectile = ExtResource( 2 )
 projectile_type = "Flame"
 number_projectiles = 4
+damage = 2.0
 status_damage = 5.0
 status_type = "fire"
 fire_rate = 0.05

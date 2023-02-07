@@ -23,7 +23,7 @@ func create_hitbox(pos : Vector2, radius : float, damage_mul : float, knockback_
 
 #Disgusting function, but gambiarra it is for now
 func get_melee_damage(mul):
-	return get_parent().melee_damage*mul
+	return get_parent().damage*mul
 
 
 #Disgusting function, but gambiarra it is for now

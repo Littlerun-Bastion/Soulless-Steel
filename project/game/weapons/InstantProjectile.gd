@@ -2,30 +2,16 @@ extends RayCast2D
 
 var original_mecha_info
 
+var data
+var proj_data
 var dying = false
 var speed = 0
 var local_scale = 1.0
-var decaying_speed_ratio = 1.0
-var scaling_variance = 0.0
 var dir = Vector2()
-var damage = 0
-var shield_mult = 0.0
-var health_mult = 0.0
-var heat_damage = 0.0
-var status_damage = 0.0
-var status_type
-var hitstop = false
-var is_overtime = false
 var decal_type = "bullet_hole_small"
-var weapon_name
-var calibre 
-var seeker_target : Object = null
 var hit = false
 var miss = false
 var mech_hit = false
-var impact_size := 1.0
-var effect_data 
-var lifetime = 2.0
 var lifetime_tick = 1.0
 var body
 
@@ -49,15 +35,15 @@ func _physics_process(dt):
 					var size = Vector2(40,40)
 					if collision_point:
 						body.add_decal(body_shape_id, collision_point, decal_type, size)
-			
-					var final_damage = damage if not is_overtime else damage * get_process_delta_time()
-					body.take_damage(final_damage, shield_mult, health_mult, heat_damage, status_damage, status_type, hitstop, original_mecha_info, weapon_name, calibre)
-					#if not is_overtime:
-						#body.knockback(0*final_damage/float(body.get_max_hp()))
+					
+					var damage = data.projectile.damage * data.damage
+					var final_damage = damage if not proj_data.is_overtime else damage * get_process_delta_time()
+					body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
+									 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, data.projectile.calibre)
 					mech_hit = true
 					hit = true
 			if not body.is_in_group("mecha") or\
-			  (not is_overtime and original_mecha_info and body != original_mecha_info.body):
+			  (not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 				if not body.is_in_group("mecha"):
 					force_raycast_update()
 					mech_hit = false
@@ -65,45 +51,34 @@ func _physics_process(dt):
 			cast_point = to_local(get_collision_point())
 			force_raycast_update()
 			if cast_point != cast_to:
-				effect_data.points[1] = (cast_point)
+				proj_data.points[1] = (cast_point)
 			else:
 				force_raycast_update()
 				miss = true
 		else:
-			effect_data.points[1] = (cast_point)
+			proj_data.points[1] = (cast_point)
 	if miss:
-		effect_data.points[1] = (cast_point)
+		proj_data.points[1] = (cast_point)
 	
 	lifetime_tick = max(lifetime_tick - dt, 0.0)
 	if lifetime_tick <= 0.0:
 		die()
 
 func setup(mecha, args):
-	effect_data = args.weapon_data.instance()
-	if effect_data:
-		self.add_child(effect_data)
+	data = args.weapon_data
+	proj_data  = data.projectile.instance()
+	if proj_data:
+		add_child(proj_data)
 	else:
-		effect_data = $Basic
+		proj_data = $Basic
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
 	}
-	weapon_name = args.weapon_name
-	damage = effect_data.damage * args.damage_mod
-	calibre = effect_data.calibre
-	shield_mult = args.shield_mult
-	health_mult = args.health_mult
-	heat_damage = args.heat_damage
-	status_damage = args.status_damage
-	status_type = args.status_type
-	impact_size = args.impact_size
-	effect_data.width = args.projectile_size*10
-	lifetime = args.lifetime
-	hitstop = args.hitstop
-	lifetime_tick = lifetime
+	proj_data.width = data.projectile_size*10
 	dir = args.dir.normalized()
 	position = args.pos
-	cast_to = dir*args.beam_range
+	cast_to = dir*data.beam_range
 	add_exception(original_mecha_info.body)
 
 

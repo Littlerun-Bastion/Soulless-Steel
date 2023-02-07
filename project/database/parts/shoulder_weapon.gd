@@ -14,7 +14,7 @@ export var projectile_type : String
 export var requires_lock := false
 export var number_projectiles := 1
 export var burst_ammo_cost := 1
-export var damage_modifier := 1.0
+export var damage := 1.0
 export var shield_mult := 1.0
 export var health_mult := 1.0
 export var heat_damage := 10.0
@@ -99,14 +99,14 @@ func get_image():
 func get_glow():
 	return $Glow.texture
 
+
 func get_num_shooting_pos():
 	return $ShootingPosArray.get_children().size()
 
+
 func get_shooting_pos(idx):	
-	if idx == 1:
-		return get_node_or_null("ShootingPosArray/ShootingPos")
-	else: 
-		return get_node_or_null("ShootingPosArray/ShootingPos" + str(idx))
+	assert($ShootingPosArray.get_child_count() >= idx + 1, "Not a valid shooting pos index: " + str(idx))
+	return $ShootingPosArray.get_child(idx)
 
 
 func get_attach_pos():

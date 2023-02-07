@@ -13,12 +13,12 @@ func _process(dt):
 			die()
 
 
-func setup(projectile, args):
+func setup(data, projectile):
 	home_projectile = projectile
-	self.amount = args.smoke_density
-	self.lifetime = args.smoke_lifetime
-	tickdown = args.smoke_lifetime
-	self.emitting = true
+	amount = data.smoke_density
+	lifetime = data.smoke_lifetime
+	tickdown = data.smoke_lifetime
+	emitting = true
 
 
 func die():

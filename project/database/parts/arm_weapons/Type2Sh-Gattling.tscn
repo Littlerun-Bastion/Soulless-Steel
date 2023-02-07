@@ -8,7 +8,7 @@
 [ext_resource path="res://game/weapons/BallisticImpactMini.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/MinigunMuzzleFlash.tscn" type="PackedScene" id=7]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Minigun"
 manufacturer_name = "Test"

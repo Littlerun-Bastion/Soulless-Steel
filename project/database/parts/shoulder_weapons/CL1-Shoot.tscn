@@ -9,7 +9,7 @@
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=7]
 [ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=8]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 2 )
 part_name = "Test Cannon"
 manufacturer_name = "Test"
@@ -18,7 +18,7 @@ type = "Long_range Missile"
 muzzle_flash = ExtResource( 7 )
 muzzle_flash_speed = 1.2
 projectile = ExtResource( 3 )
-damage_modifier = 4000.0
+damage = 4000.0
 shield_mult = 0.5
 health_mult = 1.5
 recoil_force = 3.0
@@ -27,7 +27,6 @@ auto_fire = false
 total_ammo = 15
 max_ammo = 15
 clip_size = 10
-muzzle_heat = 34
 ammo_cost = 4500
 soundEffect = "large_shotA"
 sound_max_range = 8000

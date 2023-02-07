@@ -40,7 +40,7 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	for _i in range(10):
+	for _i in range(2):
 		add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
@@ -63,6 +63,8 @@ func _ready():
 	if Debug.get_setting("skip_intro"):
 		yield(get_tree().create_timer(.01), "timeout")
 		IntroAnimation.stop_animation()
+	if Debug.get_setting("use_debug_cam"):
+		activate_debug_cam()
 
 
 func _input(event):
@@ -70,11 +72,10 @@ func _input(event):
 		if event.pressed and event.scancode == KEY_ESCAPE:
 			PauseMenu.toggle_pause()
 		elif event.pressed and event.scancode == KEY_P:
-			ArenaCam.current = true
-			allow_debug_cam = true
+			activate_debug_cam()
 		elif event.pressed and event.scancode == KEY_L:
 			if player:
-				player.take_damage(10, player)
+				player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 	if event is InputEventMouseButton:
 		if allow_debug_cam and ArenaCam.current:
 			var amount = Vector2(.8, .8)
@@ -309,6 +310,12 @@ func get_lock_areas():
 		areas.append(mecha.get_lock_area())
 	return areas
 
+
+func activate_debug_cam():
+	ArenaCam.current = true
+	allow_debug_cam = true
+
+
 func _on_PauseMenu_pause_toggle(paused):
 	if not paused:
 		ShaderEffects.play_transition(0.0, 5000.0, 2.0)
@@ -323,9 +330,10 @@ func _on_player_lost_health():
 
 func _on_mecha_create_projectile(mecha, args, weapon):
 	#To avoid warning when mecha is killed during delay
-	if args.delay > 0:
+	var delay = rand_range(0, args.weapon_data.bullet_spread_delay)
+	if delay > 0:
 		var timer = Timer.new()
-		timer.wait_time = args.delay
+		timer.wait_time = delay
 		add_child(timer)
 		timer.start()
 		yield(timer, "timeout")
@@ -334,17 +342,17 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
 		data.node.connect("bullet_impact",self,"_on_bullet_impact")
-		if args.has_trail:
+		if args.weapon_data.has_trail:
 			if data:
-				var trail = ProjectileManager.create_trail(data.node, args)
+				var trail = ProjectileManager.create_trail(data.node, data.weapon_data)
 				Trails.add_child(trail)
-		if args.has_smoke:
+		if args.weapon_data.has_smoke:
 			if data:
-				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, args)
+				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, data.weapon_data)
 				Smoke.add_child(smoke_trail)
-		if args.muzzle_flash:
+		if args.weapon_data.muzzle_flash:
 			if data:
-				var flash = ProjectileManager.create_muzzle_flash(weapon, args)
+				var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data, args.pos_reference)
 				Flashes.add_child(flash)
 
 func _on_mecha_create_casing(args):
@@ -356,7 +364,7 @@ func _on_mecha_create_casing(args):
 func _on_bullet_impact(projectile, effect):
 	if effect:
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
-		impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
+		impact_effect.setup(projectile.data.impact_size, projectile.global_rotation, projectile.mech_hit)
 		Explosions.add_child(impact_effect)
 
 

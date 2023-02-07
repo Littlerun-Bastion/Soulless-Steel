@@ -140,6 +140,7 @@ type = "Melee"
 rotation_range = 0.0
 projectile = ExtResource( 3 )
 number_projectiles = 0
+damage = 4000.0
 auto_fire = false
 bullet_spread = 0.0
 total_ammo = 0
@@ -158,7 +159,6 @@ trail_min_spawn_distance = 5.0
 wiggle_amount = 0.05
 seek_time = 0.5
 is_melee = true
-melee_damage = 4000
 
 [node name="Sub" type="Sprite" parent="."]
 texture = ExtResource( 4 )

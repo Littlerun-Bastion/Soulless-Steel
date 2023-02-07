@@ -16,7 +16,7 @@ export var projectile_type : String
 export var parallax_offset := 0.0
 export var number_projectiles := 1
 export var burst_ammo_cost := 1
-export var damage_modifier := 1.0
+export var damage := 10.0
 export var requires_lock := false
 export var uses_battery := false
 export var shield_mult := 1.0
@@ -88,7 +88,6 @@ export var seeker_angle := 90
 
 #---MELEE BEHAVIOURS---
 export var is_melee := false
-export var melee_damage := 20
 export var melee_knockback := 20
 
 var firing_timer = 0.0
@@ -111,11 +110,9 @@ func get_num_shooting_pos():
 	return $ShootingPosArray.get_children().size()
 
 
-func get_shooting_pos(idx):	
-	if idx == 1:
-		return get_node_or_null("ShootingPosArray/ShootingPos")
-	else: 
-		return get_node_or_null("ShootingPosArray/ShootingPos" + str(idx))
+func get_shooting_pos(idx):
+	assert($ShootingPosArray.get_child_count() >= idx + 1, "Not a valid shooting pos index: " + str(idx))
+	return $ShootingPosArray.get_child(idx)
 
 
 func get_attach_pos():
@@ -129,9 +126,9 @@ func get_attack_animation():
 func get_stat(stat_name):
 	var stat
 	if stat_name == "armor_damage":
-		stat = 100 * damage_modifier * health_mult
+		stat = 100 * damage * health_mult
 	elif stat_name == "shield_damage":
-		stat = 100 * damage_modifier * shield_mult
+		stat = 100 * damage * shield_mult
 	else:
 		stat = get(stat_name)
 	return stat

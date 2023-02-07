@@ -712,7 +712,7 @@ func set_arm_weapon(part_name, side):
 		node.clear_shooting_pos()
 		if part_data.get_num_shooting_pos() > 0:
 			for idx in part_data.get_num_shooting_pos():
-				var defined_pos = part_data.get_shooting_pos(idx + 1)
+				var defined_pos = part_data.get_shooting_pos(idx)
 				var shooting_position = Position2D.new()
 				shooting_position.position = defined_pos.position + node.offset
 				node.add_child(shooting_position)
@@ -1415,53 +1415,12 @@ func shoot(type, is_auto_fire = false):
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
-								"weapon_data": weapon_ref.projectile,
-								"weapon_name": weapon_ref.part_name,
+								"weapon_data": weapon_ref,
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),
 								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
-								"muzzle_flash": weapon_ref.muzzle_flash,
-								"muzzle_flash_size": weapon_ref.muzzle_flash_size,
-								"muzzle_flash_speed": weapon_ref.muzzle_flash_speed,
-								"damage_mod": weapon_ref.damage_modifier,
-								"shield_mult": weapon_ref.shield_mult,
-								"health_mult": weapon_ref.health_mult,
-								"heat_damage": weapon_ref.heat_damage,
-								"status_damage": weapon_ref.status_damage,
-								"status_type": weapon_ref.status_type,
-								"delay": rand_range(0, weapon_ref.bullet_spread_delay),
-								"bullet_velocity": weapon_ref.bullet_velocity,
-								"bullet_drag": weapon_ref.bullet_drag,
-								"bullet_drag_var": weapon_ref.bullet_drag_var,
-								"projectile_size": weapon_ref.projectile_size,
-								"projectile_size_scaling": weapon_ref.projectile_size_scaling,
-								"projectile_size_scaling_var": weapon_ref.projectile_size_scaling_var,
-								"lifetime": weapon_ref.lifetime,
-								"impact_force": weapon_ref.impact_force,
-								"beam_range": weapon_ref.beam_range,
-								"has_trail": weapon_ref.has_trail,
-								"trail_lifetime": weapon_ref.trail_lifetime,
-								"trail_lifetime_range": weapon_ref.trail_lifetime_range,
-								"trail_eccentricity": weapon_ref.trail_eccentricity,
-								"trail_min_spawn_distance" : weapon_ref.trail_min_spawn_distance,
-								"trail_width" : weapon_ref.trail_width,
-
-								"has_smoke": weapon_ref.has_smoke,
-								"smoke_density": weapon_ref.smoke_density,
-								"smoke_lifetime": weapon_ref.smoke_lifetime,
-
-								"has_wiggle": weapon_ref.has_wiggle,
-								"wiggle_amount": weapon_ref.wiggle_amount,
-								"is_seeker": weapon_ref.is_seeker,
 								"seeker_target": locked_to,
-								"seek_time": weapon_ref.seek_time,
-								"seek_agility": weapon_ref.seeker_agility,
-								"seeker_angle": weapon_ref.seeker_angle,
-
-								"impact_effect": weapon_ref.impact_effect,
-								"impact_size": weapon_ref.impact_size,
-								"hitstop": weapon_ref.hitstop,
-							}, node) #TODO: FIX THIS
+							}, node)
 			apply_recoil(type, node, weapon_ref.recoil_force)
 		if weapon_ref.eject_casings:
 			emit_signal("create_casing",

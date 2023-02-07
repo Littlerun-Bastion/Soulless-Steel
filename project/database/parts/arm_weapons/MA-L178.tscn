@@ -8,7 +8,7 @@
 [ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "MA-L178"
 manufacturer_name = "Martel"
@@ -19,7 +19,7 @@ muzzle_flash_size = 0.4
 muzzle_flash_speed = 1.9
 projectile = ExtResource( 3 )
 projectile_type = ".70cal AP-I"
-damage_modifier = 210.0
+damage = 210.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0

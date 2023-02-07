@@ -8,7 +8,7 @@
 [ext_resource path="res://game/weapons/MissileDirectedImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" type="PackedScene" id=7]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "MA-ASR1"
 manufacturer_name = "Martel"
@@ -19,7 +19,7 @@ muzzle_flash_size = 0.33
 muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
 projectile_type = ".50cal AP-I"
-damage_modifier = 1200.0
+damage = 1200.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0

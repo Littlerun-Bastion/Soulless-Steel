@@ -9,7 +9,7 @@ var debug_settings = {
 	"window": false,
 	"navigation": false,
 	"enemy_state": false,
-	"player_loadout": true,
+	"debug_loadout": false,
 	"player_zoom": false,
 	"ai_behaviour": false,
 	"go_to_mode": false,

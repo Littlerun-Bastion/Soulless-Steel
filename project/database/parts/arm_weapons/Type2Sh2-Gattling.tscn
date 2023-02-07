@@ -2,10 +2,10 @@
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
-[ext_resource path="res://database/parts/projectiles/mini_bullet.tscn" type="PackedScene" id=3]
+[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
-[ext_resource path="res://game/weapons/BallisticImpactMini.tscn" type="PackedScene" id=6]
+[ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/MinigunMuzzleFlash.tscn" type="PackedScene" id=7]
 
 [node name="Part2" type="Node"]
@@ -18,9 +18,7 @@ muzzle_flash = ExtResource( 7 )
 muzzle_flash_size = 0.25
 muzzle_flash_speed = 2.0
 projectile = ExtResource( 3 )
-number_projectiles = 2
-burst_ammo_cost = 2
-damage_modifier = 20.0
+damage_modifier = 40.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0
@@ -41,14 +39,13 @@ sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0
 bullet_velocity = 3500
-projectile_size = 0.05
+projectile_size = 0.1
 impact_force = 100.0
 eject_casings = true
 casing_size = 0.75
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
 impact_effect = ExtResource( 6 )
-impact_size = 0.3
 wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5

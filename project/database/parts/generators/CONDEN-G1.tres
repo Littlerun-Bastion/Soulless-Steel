@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=2]
+
+[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+
+[resource]
+script = ExtResource( 1 )
+part_name = "EGV-P1L"
+manufacturer_name = "Espada Electronica"
+tagline = ""
+description = "Heavier version of the P1 generator, with upgraded shield and heat capacity. Battery performance remains poor. Fairly effective but unnecessarily heavy."
+shield = 6600.0
+shield_regen_speed = 430
+shield_regen_delay = 9
+heat_dispersion = 138
+heat_capacity = 272
+idle_threshold = 24.0
+battery_capacity = 50
+battery_recharge_rate = 25
+power_output = 0.75
+weight = 13.4

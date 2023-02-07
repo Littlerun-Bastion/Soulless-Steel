@@ -701,9 +701,6 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
-	if node.has_node("AttackAnimation"):
-		node.get_node("AttackAnimation").queue_free()
-
 	node.setup(part_data)
 	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
 	node.position = core.get_arm_weapon_offset(side)

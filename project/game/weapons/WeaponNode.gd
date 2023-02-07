@@ -63,10 +63,13 @@ func setup(weapon_ref):
 	is_melee = weapon_ref.get("is_melee")
 	
 	if is_melee:
+		add_child(weapon_ref.get_node("AttackAnimation").duplicate())
 		melee_anim = $AttackAnimation
 		melee_damage = weapon_ref.damage
 		melee_knockback = weapon_ref.melee_knockback
 	else:
+		if has_node("AttackAnimation"):
+			$AttackAnimation.queue_free()
 		melee_anim = null
 	
 

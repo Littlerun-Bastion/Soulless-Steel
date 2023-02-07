@@ -12,6 +12,7 @@ func create(mecha, args):
 
 	var projectile_data = args.weapon_data.projectile.instance()
 	var data = {
+		"weapon_data": args.weapon_data,
 		"create_node": false,
 		"node": null,
 	}

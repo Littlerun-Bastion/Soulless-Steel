@@ -11,17 +11,11 @@ onready var Sub = $Sub
 onready var Glow = $Glow
 
 var timer:= 0.0
+var data
 var total_ammo = false
-var max_ammo = false
-var clip_size = false
 var clip_ammo = false
-var reload_time = false
 var reloading := false
-var fire_rate = false
-var ammo_cost = false
-var muzzle_heat = 0
 var heat = 0.0
-var soundEffect = "test"
 var shotPos = false
 var sfx_max_range = 4000
 var sfx_att = 1.0
@@ -37,7 +31,6 @@ var offset = Vector2()
 var cur_shooting_pos
 var side
 var burst_count = 0
-var burst_fire_rate = 0.0
 
 
 
@@ -46,17 +39,10 @@ func _process(dt):
 
 
 func setup(weapon_ref, core, _side):
+	data = weapon_ref
 	side = _side
-	total_ammo = weapon_ref.total_ammo
-	clip_size = weapon_ref.clip_size
-	clip_ammo = clip_size
-	reload_time = weapon_ref.reload_speed
-	fire_rate = weapon_ref.fire_rate + weapon_ref.burst_fire_rate
-	burst_fire_rate = weapon_ref.burst_fire_rate
-	max_ammo = weapon_ref.max_ammo
-	ammo_cost = weapon_ref.ammo_cost
-	muzzle_heat = weapon_ref.muzzle_heat
-	soundEffect = weapon_ref.soundEffect
+	total_ammo = data.total_ammo
+	clip_ammo = data.clip_size
 	sfx_max_range = weapon_ref.sound_max_range
 	sfx_att = weapon_ref.sound_att
 	uses_battery = weapon_ref.uses_battery
@@ -114,7 +100,7 @@ func add_time(time):
 
 
 func can_reload():
-	if reloading or clip_ammo == clip_size:
+	if reloading or clip_ammo == data.clip_size:
 		return "no"
 	if total_ammo == 0:
 		#Eventually put a sfx here? Should only do it for the player
@@ -131,11 +117,11 @@ func reload():
 		return
 	
 	reloading = true
-	emit_signal("reloading", reload_time)
+	emit_signal("reloading", data.reload_speed)
 	var temp_timer = Timer.new()
 	add_child(temp_timer)
-	temp_timer.start(reload_time); yield(temp_timer, "timeout")
-	var ammo = min(clip_size - clip_ammo, total_ammo)
+	temp_timer.start(data.reload_speed); yield(temp_timer, "timeout")
+	var ammo = min(data.clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo
 	reloading = false
@@ -164,23 +150,23 @@ func light_attack():
 
 func shoot(amount := 1):
 	burst_count += 1
-	add_time(burst_fire_rate)
+	add_time(data.burst_fire_rate)
 	clip_ammo -= amount
-	heat = min(heat + muzzle_heat*4, 200)
-	if soundEffect:
-		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
+	heat = min(heat + data.muzzle_heat*4, 200)
+	if data.sound_effect:
+		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
 func burst_cooldown():
-	add_time(fire_rate)
+	add_time(data.fire_rate + data.burst_fire_rate)
 	burst_count = 0
 
 
 func shoot_battery():
 	burst_count += 1
-	add_time(burst_fire_rate)
-	heat = min(heat + muzzle_heat*4, 200)
-	if soundEffect:
-		AudioManager.play_sfx(soundEffect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
+	add_time(data.burst_fire_rate)
+	heat = min(heat + data.muzzle_heat*4, 200)
+	if data.sound_effect:
+		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
 
 
 func set_shooting_pos(pos):

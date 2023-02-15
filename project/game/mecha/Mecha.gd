@@ -980,17 +980,20 @@ func get_total_ammo(part_name):
 			return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
 	return false
 
+
 func get_max_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
 		return part.data.max_ammo
 	return false
 
+
 func get_ammo_cost(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
 		return part.data.ammo_cost
 	return false
+
 
 func set_ammo(part_name, target_val):
 	var part = get_weapon_part(part_name)
@@ -1552,9 +1555,12 @@ func process_hitboxes(dt):
 	for data in lingering_hitboxes:
 		add_decal(data.body_shape_id, data.collision_point, data.decal_type, data.decal_size)
 		
-		take_damage(data.damage, 1.0, 1.0, 10, 0, false, false, false)
-		if data.knockback > 0.0:
-			knockback(data.knockback, data.collision_point - data.hitbox_position, true)
+		var weapon_ref = data.data
+		take_damage(weapon_ref.damage*data.damage_mul, weapon_ref.shield_mult,\
+					weapon_ref.health_mult, weapon_ref.heat_damage, weapon_ref.status_damage,\
+					weapon_ref.status_type, weapon_ref.hitstop, data.origin)
+		if weapon_ref.melee_knockback > 0.0 and data.knockback_mul > 0.0:
+			knockback(weapon_ref.melee_knockback*data.knockback_mul, data.collision_point - data.hitbox_position, true)
 		processed_hitboxes.append([data.id, data.dur])
 	lingering_hitboxes.clear()
 	

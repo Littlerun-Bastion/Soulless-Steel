@@ -148,7 +148,6 @@ max_ammo = 0
 clip_size = 0
 reload_speed = 0.0
 ammo_cost = 0
-soundEffect = ""
 sound_max_range = 7500
 sound_att = 1.75
 bullet_velocity = 1000

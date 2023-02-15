@@ -13,19 +13,16 @@ func create_hitbox(pos : Vector2, radius : float, damage_mul : float, knockback_
 	emit_signal("create_hitbox", {
 		"id": str(attack_id) + "_" + str(id),
 		"priority": priority,
+		"origin": get_origin(),
 		"pos": pos,
 		"radius": radius,
-		"damage": get_melee_damage(damage_mul),
-		"knockback": get_melee_knockback(knockback_mul),
+		"data": get_parent().data,
+		"damage_mul": damage_mul,
+		"knockback_mul": knockback_mul,
 		"dur": dur,
 	})
 
 
 #Disgusting function, but gambiarra it is for now
-func get_melee_damage(mul):
-	return get_parent().melee_damage*mul
-
-
-#Disgusting function, but gambiarra it is for now
-func get_melee_knockback(mul):
-	return get_parent().melee_knockback*mul
+func get_origin():
+	return get_parent().get_parent()

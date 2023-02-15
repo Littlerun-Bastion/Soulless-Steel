@@ -950,30 +950,31 @@ func get_weapon_part(part_name):
 func get_clip_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		if part.uses_battery:
+		if part.data.uses_battery:
 			return battery
 		else:
 			return part.clip_ammo
 	return false
 
+
 func get_battery_drain(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.battery_drain
+		return part.data.battery_drain
 	return false
 
 
 func get_clip_size(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.clip_size
+		return part.data.clip_size
 	return false
 
 
 func get_total_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		if part.uses_battery:
+		if part.data.uses_battery:
 			return battery
 		else:
 			return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
@@ -982,19 +983,19 @@ func get_total_ammo(part_name):
 func get_max_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.max_ammo
+		return part.data.max_ammo
 	return false
 
 func get_ammo_cost(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.ammo_cost
+		return part.data.ammo_cost
 	return false
 
 func set_ammo(part_name, target_val):
 	var part = get_weapon_part(part_name)
 	if typeof(target_val) == TYPE_INT:
-		part.total_ammo = target_val
+		part.data.total_ammo = target_val
 
 #MOVEMENT METHODS
 

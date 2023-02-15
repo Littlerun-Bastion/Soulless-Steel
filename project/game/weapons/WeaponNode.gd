@@ -17,11 +17,6 @@ var clip_ammo = false
 var reloading := false
 var heat = 0.0
 var shotPos = false
-var sfx_max_range = 4000
-var sfx_att = 1.0
-var uses_battery = false
-var battery_drain = 0.00
-var is_melee = false
 var melee_damage = 0
 var melee_knockback = 0
 var melee_anim = null
@@ -43,13 +38,8 @@ func setup(weapon_ref, core, _side):
 	side = _side
 	total_ammo = data.total_ammo
 	clip_ammo = data.clip_size
-	sfx_max_range = weapon_ref.sound_max_range
-	sfx_att = weapon_ref.sound_att
-	uses_battery = weapon_ref.uses_battery
-	battery_drain = weapon_ref.battery_drain
-	is_melee = weapon_ref.get("is_melee")
 	
-	if is_melee:
+	if data.is_melee:
 		add_child(weapon_ref.get_attack_animation())
 		melee_anim = $AttackAnimation
 		melee_damage = weapon_ref.damage
@@ -62,7 +52,7 @@ func setup(weapon_ref, core, _side):
 	set_images(weapon_ref.get_image(), weapon_ref.get_sub(), weapon_ref.get_glow())
 	position = core.get_arm_weapon_offset(side)
 	set_offsets(-weapon_ref.get_attach_pos())
-	if not weapon_ref.is_melee:
+	if not data.is_melee:
 		clear_shooting_pos()
 		if weapon_ref.get_num_shooting_pos() > 0:
 			for idx in weapon_ref.get_num_shooting_pos():
@@ -83,7 +73,7 @@ func set_offsets(off):
 	Main.position = off
 	Sub.position = off
 	Glow.position = off
-	if is_melee:
+	if data.is_melee:
 		$MeleeHitboxes.position = off 
 	offset = off
 
@@ -154,7 +144,7 @@ func shoot(amount := 1):
 	clip_ammo -= amount
 	heat = min(heat + data.muzzle_heat*4, 200)
 	if data.sound_effect:
-		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
+		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 
 func burst_cooldown():
 	add_time(data.fire_rate + data.burst_fire_rate)
@@ -166,7 +156,7 @@ func shoot_battery():
 	add_time(data.burst_fire_rate)
 	heat = min(heat + data.muzzle_heat*4, 200)
 	if data.sound_effect:
-		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, sfx_att, sfx_max_range)
+		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 
 
 func set_shooting_pos(pos):

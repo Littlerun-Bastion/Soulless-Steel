@@ -30,7 +30,6 @@ max_ammo = 3000
 clip_size = 600
 reload_speed = 1.4
 ammo_cost = 25
-soundEffect = ""
 sound_max_range = 1000
 sound_att = 1.75
 bullet_drag = 0.98

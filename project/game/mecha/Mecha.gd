@@ -678,10 +678,8 @@ func set_arm_weapon(part_name, side):
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
-		node.side = SIDE.LEFT
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
-		node.side = SIDE.RIGHT
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -701,21 +699,7 @@ func set_arm_weapon(part_name, side):
 		arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
-	node.setup(part_data)
-	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
-	node.position = core.get_arm_weapon_offset(side)
-	node.set_offsets(-part_data.get_attach_pos())
-	if not part_data.is_melee:
-		node.clear_shooting_pos()
-		if part_data.get_num_shooting_pos() > 0:
-			for idx in part_data.get_num_shooting_pos():
-				var defined_pos = part_data.get_shooting_pos(idx)
-				var shooting_position = Position2D.new()
-				shooting_position.position = defined_pos.position + node.offset
-				node.add_child(shooting_position)
-				node.set_shooting_pos(shooting_position)
-	else:
-		node.add_child(part_data.get_attack_animation().duplicate())
+	node.setup(part_data, core, side)
 
 
 func set_shoulder_weapon(part_name, side):
@@ -726,10 +710,8 @@ func set_shoulder_weapon(part_name, side):
 	var node
 	if side == SIDE.LEFT:
 		node = $ShoulderWeaponLeft
-		node.side = SIDE.LEFT
 	elif side == SIDE.RIGHT:
 		node = $ShoulderWeaponRight
-		node.side = SIDE.RIGHT
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -746,20 +728,8 @@ func set_shoulder_weapon(part_name, side):
 		shoulder_weapon_left = part_data
 	else:
 		shoulder_weapon_right = part_data
-	node.set_images(part_data.get_image(), part_data.get_sub(), part_data.get_glow())
-	node.position = core.get_shoulder_weapon_offset(side)
-	node.set_offsets(-part_data.get_attach_pos())
-	node.clear_shooting_pos()
-	if part_data.get_num_shooting_pos() > 0 and not display_mode:
-		for idx in part_data.get_num_shooting_pos():
-			var defined_pos = part_data.get_shooting_pos(idx)
-			var shooting_position = Position2D.new()
-			if defined_pos:
-				shooting_position.position = defined_pos.position + node.offset
-			node.add_child(shooting_position)
-			node.set_shooting_pos(shooting_position)
-	#node.set_shooting_pos(part_data.get_shooting_pos())
-	node.setup(part_data)
+
+	node.setup(part_data, core, side)
 
 
 func set_core(part_name):

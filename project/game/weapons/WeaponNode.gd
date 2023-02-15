@@ -45,7 +45,8 @@ func _process(dt):
 	timer = max(timer - dt, 0.0)
 
 
-func setup(weapon_ref):
+func setup(weapon_ref, core, _side):
+	side = _side
 	total_ammo = weapon_ref.total_ammo
 	clip_size = weapon_ref.clip_size
 	clip_ammo = clip_size
@@ -63,7 +64,7 @@ func setup(weapon_ref):
 	is_melee = weapon_ref.get("is_melee")
 	
 	if is_melee:
-		add_child(weapon_ref.get_node("AttackAnimation").duplicate())
+		add_child(weapon_ref.get_attack_animation())
 		melee_anim = $AttackAnimation
 		melee_damage = weapon_ref.damage
 		melee_knockback = weapon_ref.melee_knockback
@@ -71,6 +72,19 @@ func setup(weapon_ref):
 		if has_node("AttackAnimation"):
 			$AttackAnimation.queue_free()
 		melee_anim = null
+	
+	set_images(weapon_ref.get_image(), weapon_ref.get_sub(), weapon_ref.get_glow())
+	position = core.get_arm_weapon_offset(side)
+	set_offsets(-weapon_ref.get_attach_pos())
+	if not weapon_ref.is_melee:
+		clear_shooting_pos()
+		if weapon_ref.get_num_shooting_pos() > 0:
+			for idx in weapon_ref.get_num_shooting_pos():
+				var defined_pos = weapon_ref.get_shooting_pos(idx)
+				var shooting_position = Position2D.new()
+				shooting_position.position = defined_pos.position + offset
+				add_child(shooting_position)
+				set_shooting_pos(shooting_position)
 	
 
 func set_images(main_image, sub_image, glow_image):

@@ -120,7 +120,7 @@ func get_attach_pos():
 
 
 func get_attack_animation():
-	return $AttackAnimation
+	return $AttackAnimation.duplicate()
 
 
 func get_stat(stat_name):

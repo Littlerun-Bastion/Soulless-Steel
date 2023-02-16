@@ -120,6 +120,7 @@ var paused = false
 var is_dead = false
 var cur_mode = MODES.NEUTRAL
 var arena = false
+var is_inside_building = false
 
 var max_hp = 10
 var hp = 10
@@ -1572,6 +1573,16 @@ func process_hitboxes(dt):
 			to_erase.append(data)
 	for data in to_erase:
 		processed_hitboxes.erase(data)
+
+
+# BUILDING METHODS
+
+func entered_building():
+	is_inside_building = true
+
+
+func exited_building():
+	is_inside_building = false
 
 # MISC METHODS
 

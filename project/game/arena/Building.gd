@@ -25,11 +25,13 @@ func player_exited():
 
 func _on_BuildingArea_body_entered(body):
 	if body.is_in_group("mecha"):
+		body.entered_building()
 		if body.is_player():
 			player_entered()
 
 
 func _on_BuildingArea_body_exited(body):
 	if body.is_in_group("mecha"):
+		body.exited_building()
 		if body.is_player():
 			player_exited()

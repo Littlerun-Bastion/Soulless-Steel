@@ -6,6 +6,10 @@ signal reloading
 signal finished_reloading
 signal lost_health
 
+const INSIDE_BUILDING_ZOOM_MUL = .7
+const DEFAULT_CAM_ZOOM = Vector2(2,2)
+const ZOOM_SPEED = 2
+
 const ROTATION_DEADZONE = 20
 const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
@@ -23,12 +27,14 @@ func _ready():
 	if Debug.get_setting("player_zoom"):
 		var zoom = Debug.get_setting("player_zoom")
 		Cam.zoom = Vector2(zoom, zoom)
+	else:
+		Cam.zoom = DEFAULT_CAM_ZOOM 
 
 
 func _physics_process(delta):
 	if paused or is_stunned():
 		return
-
+	
 	check_input()
 	
 	apply_movement(delta, get_input())
@@ -44,6 +50,7 @@ func _physics_process(delta):
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
 	
+	update_camera_zoom(delta)
 	update_camera_offset(delta)
 
 
@@ -91,10 +98,23 @@ func _input(event):
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_1"):
 		die(self, "Myself")
-	
+
+
 func get_camera():
 	return Cam
 
+
+func update_camera_zoom(dt):
+	var target
+	if Debug.get_setting("player_zoom"):
+		var zoom = Debug.get_setting("player_zoom")
+		target = Vector2(zoom, zoom)
+	else:
+		target = DEFAULT_CAM_ZOOM 
+	if is_inside_building:
+		target *= INSIDE_BUILDING_ZOOM_MUL
+	
+	Cam.zoom = lerp(Cam.zoom, target, clamp(dt*ZOOM_SPEED, 0.0, 1.0))
 
 func update_camera_offset(dt):
 	if head and head.visual_range > 0:
@@ -248,6 +268,9 @@ func get_input():
 
 func get_cam():
 	return Cam
+
+
+# CALLBACKS
 
 
 func _on_finished_reloading():

@@ -2,6 +2,7 @@ extends Mecha
 
 signal update_reload_mode
 signal update_lock_mode
+signal update_building_status
 signal reloading
 signal finished_reloading
 signal lost_health
@@ -268,6 +269,18 @@ func get_input():
 
 func get_cam():
 	return Cam
+
+
+# BUILDING METHODS
+
+func entered_building():
+	.entered_building()
+	emit_signal("update_building_status", true)
+
+
+func exited_building():
+	.exited_building()
+	emit_signal("update_building_status", false)
 
 
 # CALLBACKS

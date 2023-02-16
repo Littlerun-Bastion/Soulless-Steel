@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://game/arena/Building.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/buildings/building_square_top2.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/buildings/building_square_interior1.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/white_pixel.png" type="Texture" id=4]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 40, 480 )
@@ -59,6 +60,14 @@ monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D4"]
 shape = SubResource( 3 )
+
+[node name="Light2D" type="Light2D" parent="."]
+light_mask = 0
+scale = Vector2( 1000, 1000 )
+texture = ExtResource( 4 )
+energy = 0.0
+mode = 3
+range_item_cull_mask = 16
 
 [connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]
 [connection signal="body_exited" from="BuildingArea" to="." method="_on_BuildingArea_body_exited"]

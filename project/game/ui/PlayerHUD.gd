@@ -15,6 +15,7 @@ const LOCKING_INIT_BLINK = .7
 const LOCKING_FINAL_BLINK = 15.0
 const BLINK_PITCH_TARGET_MOD = .40
 const STATUS_BLINK_SPEED = 0.66
+const BUILDING_SPEED = 1.5
 
 onready var LifeBar = $ViewportContainer/Viewport/LifeBar
 onready var ShieldBar = $ViewportContainer/Viewport/ShieldBar
@@ -42,14 +43,20 @@ onready var TemperatureErrorLabel = $ViewportContainer/Viewport/HeatBar/Temperat
 onready var ECMLabel = $ViewportContainer/Viewport/ECMLabel
 onready var ECMFreqLabel = $ViewportContainer/Viewport/ECMLabel/ECMFreqLabel
 onready var OverweightLabel = $ViewportContainer/Viewport/StatusContainer/OverweightLabel
+onready var BuildingEffect = $ViewportContainer/Viewport/BuildingEffect
 
 
 var player = false
 var mechas
 var blink_timer = 0.66
+var building_effect_active = false
 
 
-func _process(_delta):
+func _ready():
+	BuildingEffect.modulate.a = 0
+
+
+func _process(dt):
 	if player:
 		update_cursor()
 		update_shieldbar(player.shield)
@@ -79,14 +86,14 @@ func _process(_delta):
 		else:
 			OverweightLabel.visible = false
 		
-		if blink_timer < 0.0:
+		if blink_timer <= 0.0:
 			if StatusContainer.visible == true:
 				StatusContainer.visible = false
 			else:
 				StatusContainer.visible = true
 			blink_timer = STATUS_BLINK_SPEED
 		else:
-			blink_timer -= _delta
+			blink_timer -= dt
 		
 		var v_trans = get_viewport().canvas_transform
 		if player.get_locked_to():
@@ -122,6 +129,11 @@ func _process(_delta):
 			ConstantBlinkingSFX.stop()
 			LockingAnim.stop()
 			LockingSprite.hide()
+		
+		if building_effect_active:
+			BuildingEffect.modulate.a = min(1.0, BuildingEffect.modulate.a + BUILDING_SPEED*dt)
+		else:
+			BuildingEffect.modulate.a = max(0.0, BuildingEffect.modulate.a - BUILDING_SPEED*dt)
 
 func setup(player_ref, mechas_ref):
 	player = player_ref
@@ -132,6 +144,7 @@ func setup(player_ref, mechas_ref):
 	player.connect("update_lock_mode", self, "_on_lock_mode_update")
 	player.connect("reloading", self, "_on_reloading")
 	player.connect("finished_reloading", self, "update_cursor")
+	player.connect("update_building_status", self, "_on_player_update_building_status")
 	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
 	setup_lifebar()
 	setup_shieldbar()
@@ -239,6 +252,10 @@ func _on_player_took_damage(_p, is_status):
 			var hole = visible_holes[randi() % visible_holes.size()]
 			Tw.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
 			Tw.start()
+
+
+func _on_player_update_building_status(value):
+	building_effect_active = value
 
 
 func _on_player_shoot():

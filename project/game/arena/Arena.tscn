@@ -42,6 +42,8 @@ script = ExtResource( 6 )
 casing = ExtResource( 7 )
 casings_count = 2000
 
+[node name="Buildings" type="Node2D" parent="."]
+
 [node name="Mechas" type="Node2D" parent="."]
 
 [node name="ScrapParts" type="Node2D" parent="."]
@@ -57,7 +59,6 @@ casings_count = 2000
 [node name="Explosions" type="Node2D" parent="."]
 
 [node name="Trees" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
 
 [node name="DebugNavigation" type="Node2D" parent="."]
 

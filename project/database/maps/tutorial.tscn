@@ -56,6 +56,8 @@ script = ExtResource( 5 )
 position = Vector2( 635, -6832 )
 polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
 
+[node name="Buildings" type="Node2D" parent="."]
+
 [node name="StartPositions" type="Node2D" parent="."]
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource( 6 )]

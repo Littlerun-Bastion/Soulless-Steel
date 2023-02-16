@@ -41,7 +41,8 @@ func _ready():
 	
 	add_player()
 	for _i in range(2):
-		add_enemy()
+		#add_enemy()
+		pass
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")
@@ -125,6 +126,8 @@ func setup_arena():
 		$Exits.add_child(child.duplicate(7))
 	for child in arena_data.get_trees():
 		$Trees.add_child(child.duplicate(7))
+	for child in arena_data.get_buildings():
+		$Buildings.add_child(child.duplicate(7))
 	for child in arena_data.get_texts():
 		$Texts.add_child(child.duplicate(7))
 	

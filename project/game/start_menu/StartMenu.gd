@@ -49,6 +49,8 @@ func start_game(mode):
 			ArenaManager.set_map_to_load("map1")
 		"tutorial":
 			ArenaManager.set_map_to_load("tutorial")
+		"test":
+			ArenaManager.set_map_to_load("test_buildings")
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)

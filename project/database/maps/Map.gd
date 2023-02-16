@@ -31,6 +31,10 @@ func get_trees():
 	return $Trees.get_children()
 
 
+func get_buildings():
+	return $Buildings.get_children()
+
+
 func get_texts():
 	return $Texts.get_children()
 

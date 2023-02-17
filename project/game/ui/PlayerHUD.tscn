@@ -110,7 +110,7 @@ use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 3 )
 
-[sub_resource type="Shader" id=22]
+[sub_resource type="Shader" id=26]
 code = "shader_type canvas_item;
 render_mode blend_mix;
 
@@ -172,14 +172,14 @@ period = 98.1
 persistence = 1.0
 lacunarity = 2.36
 
-[sub_resource type="NoiseTexture" id=24]
+[sub_resource type="NoiseTexture" id=27]
 width = 1024
 height = 1024
 seamless = true
 noise = SubResource( 23 )
 
 [sub_resource type="ShaderMaterial" id=25]
-shader = SubResource( 22 )
+shader = SubResource( 26 )
 shader_param/_size = 5.0
 shader_param/moving_offset = Vector2( 0.05, 0.03 )
 shader_param/shadow_strength = 0.5
@@ -189,9 +189,10 @@ shader_param/brightness_variance = 0.01
 shader_param/brightness_frequency = 4.0
 shader_param/rotation_intensity = 26.0
 shader_param/rotation_frequency = 0.03
-shader_param/noise = SubResource( 24 )
+shader_param/noise = SubResource( 27 )
 
 [node name="PlayerHUD" type="CanvasLayer"]
+layer = 2
 script = ExtResource( 1 )
 
 [node name="ViewportContainer" type="ViewportContainer" parent="."]
@@ -688,14 +689,6 @@ rect_rotation = -120.339
 rect_scale = Vector2( 0.593004, 0.622497 )
 texture = ExtResource( 9 )
 
-[node name="BuildingEffect" type="ColorRect" parent="ViewportContainer/Viewport"]
-modulate = Color( 0, 0, 0, 1 )
-light_mask = 16
-material = SubResource( 25 )
-margin_right = 1920.0
-margin_bottom = 1080.0
-color = Color( 0, 0, 0, 1 )
-
 [node name="Tween" type="Tween" parent="ViewportContainer/Viewport"]
 
 [node name="ConstantBlinkingSFX" type="AudioStreamPlayer" parent="ViewportContainer/Viewport"]
@@ -708,6 +701,21 @@ stream = ExtResource( 12 )
 volume_db = -25.0
 pitch_scale = 1.51
 bus = "SFX"
+
+[node name="BuildingLightsCanvas" type="CanvasLayer" parent="."]
+follow_viewport_enable = true
+
+[node name="BuildingLights" type="Node2D" parent="BuildingLightsCanvas"]
+
+[node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
+
+[node name="BuildingEffect" type="ColorRect" parent="BuildingEffectCanvas"]
+modulate = Color( 0, 0, 0, 1 )
+light_mask = 16
+material = SubResource( 25 )
+margin_right = 1920.0
+margin_bottom = 1080.0
+color = Color( 0, 0, 0, 1 )
 
 [connection signal="value_changed" from="ViewportContainer/Viewport/LifeBar" to="." method="_on_LifeBar_value_changed"]
 [connection signal="value_changed" from="ViewportContainer/Viewport/ShieldBar" to="." method="_on_ShieldBar_value_changed"]

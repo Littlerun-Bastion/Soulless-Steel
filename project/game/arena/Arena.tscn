@@ -80,7 +80,6 @@ smoothing_speed = 10.0
 [node name="HeatmapEffects" parent="." instance=ExtResource( 8 )]
 
 [node name="PlayerHUD" parent="." instance=ExtResource( 2 )]
-layer = 2
 
 [node name="GameOver" parent="." instance=ExtResource( 58 )]
 

@@ -61,12 +61,16 @@ monitoring = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D4"]
 shape = SubResource( 3 )
 
-[node name="Light2D" type="Light2D" parent="."]
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="Light2D" type="Light2D" parent="Lights"]
 light_mask = 0
 scale = Vector2( 1000, 1000 )
+enabled = false
 texture = ExtResource( 4 )
 energy = 0.0
 mode = 3
+range_layer_max = 2
 range_item_cull_mask = 16
 
 [connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]

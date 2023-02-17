@@ -273,14 +273,14 @@ func get_cam():
 
 # BUILDING METHODS
 
-func entered_building():
-	.entered_building()
-	emit_signal("update_building_status", true)
+func entered_building(lights):
+	.entered_building(lights)
+	emit_signal("update_building_status", true, lights)
 
 
 func exited_building():
 	.exited_building()
-	emit_signal("update_building_status", false)
+	emit_signal("update_building_status", false, [])
 
 
 # CALLBACKS

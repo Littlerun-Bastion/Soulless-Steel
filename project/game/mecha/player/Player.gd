@@ -203,16 +203,14 @@ func setup(arena_ref):
 
 
 func set_debug_loadout():
-	set_core("Crawler_C-type_Core")
+	set_core("Lancelot-Core")
 	set_generator("avg_civ_generator")
 	set_chipset("type_1")
 	set_thruster("test1")
-	set_head("MSV-L3J-H")
-	set_chassis("MSV-L3J-L")
-	set_arm_weapon("testmelee", SIDE.LEFT)
-	set_arm_weapon("testmelee", SIDE.RIGHT)
-	set_shoulder_weapon(false, SIDE.RIGHT)
-	set_shoulder_weapon(false, SIDE.LEFT)
+	set_head("Lancelot-Head")
+	set_chassis("Lancelot-Chassis")
+	set_arm_weapon("Clarent-01", SIDE.LEFT)
+	set_arm_weapon("MA-ASR1", SIDE.RIGHT)
 	set_shoulder_weapon("Arend", SIDE.RIGHT)
 	set_shoulder_weapon("CL1-Shoot", SIDE.LEFT)
 	set_shoulders("Lancelot-Pauldron")

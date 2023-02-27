@@ -6,7 +6,7 @@
 [ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_PV.png" type="Texture" id=5]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Lancelot-Chassis"
 manufacturer_name = "Claymore International"

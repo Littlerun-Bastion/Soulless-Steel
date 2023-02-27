@@ -37,12 +37,12 @@ scale = Vector2( 2, 2 )
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
 
+[node name="Buildings" type="Node2D" parent="."]
+
 [node name="Casings" type="Node2D" parent="."]
 script = ExtResource( 6 )
 casing = ExtResource( 7 )
 casings_count = 2000
-
-[node name="Buildings" type="Node2D" parent="."]
 
 [node name="Mechas" type="Node2D" parent="."]
 

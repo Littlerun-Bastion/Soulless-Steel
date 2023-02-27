@@ -5,7 +5,7 @@
 [ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_main.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_sub.png" type="Texture" id=4]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource( 1 )
 part_name = "Crawler C-type Chassis"
 manufacturer_name = "Nomhoyi Superheavy"

@@ -1,18 +1,9 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://game/arena/Building.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/buildings/building_square_top2.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/buildings/building_square_interior1.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/white_pixel.png" type="Texture" id=4]
-
-[sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 40, 480 )
-
-[sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 40, 480 )
-
-[sub_resource type="RectangleShape2D" id=3]
-extents = Vector2( 480, 40 )
 
 [node name="Building" type="Node2D"]
 script = ExtResource( 1 )
@@ -30,36 +21,11 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea"]
 polygon = PoolVector2Array( -459, 460, 464, 465, 468, -458, -463, -460 )
 
-[node name="Perimeter" type="Node2D" parent="."]
-
-[node name="Area2D" type="Area2D" parent="Perimeter" groups=["building_perimeter"]]
+[node name="Perimeter" type="Area2D" parent="." groups=["building_perimeter"]]
 position = Vector2( -527, -2 )
 monitoring = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D"]
-shape = SubResource( 1 )
-
-[node name="Area2D2" type="Area2D" parent="Perimeter" groups=["building_perimeter"]]
-position = Vector2( 526, 2 )
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D2"]
-position = Vector2( -8, -6 )
-shape = SubResource( 2 )
-
-[node name="Area2D3" type="Area2D" parent="Perimeter" groups=["building_perimeter"]]
-position = Vector2( -7, 523 )
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D3"]
-shape = SubResource( 3 )
-
-[node name="Area2D4" type="Area2D" parent="Perimeter" groups=["building_perimeter"]]
-position = Vector2( -7, -525 )
-monitoring = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Perimeter/Area2D4"]
-shape = SubResource( 3 )
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Perimeter"]
 
 [node name="Lights" type="Node2D" parent="."]
 

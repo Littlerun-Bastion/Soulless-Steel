@@ -13,6 +13,8 @@ const WEAPON_RECOIL_MOD = .9
 const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 0.2
+const ENTERING_BUILDING_SPEED_MOD = .96
+const FREEZING_SPEED_MOD = .95
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
@@ -121,6 +123,7 @@ var is_dead = false
 var cur_mode = MODES.NEUTRAL
 var arena = false
 var is_inside_building = false
+var is_entering_building = false
 
 var max_hp = 10
 var hp = 10
@@ -574,15 +577,20 @@ func take_status_damage(dt):
 		hp = round(max(hp - (dt * 100), 1))
 		emit_signal("took_damage", self, true)
 
-func freezing_status_slowdown(speed):
+
+func apply_movement_modifiers(speed):
 	if has_status("freezing"):
-		speed *= 0.5
+		speed *= FREEZING_SPEED_MOD
+	if is_entering_building:
+		speed *= ENTERING_BUILDING_SPEED_MOD
 	return speed
+
 
 func freezing_status_heat(heat_disp):
 	if has_status("freezing"):
 		heat_disp *= 2
 	return heat_disp
+
 
 func die(source_info, _weapon_name):
 	if is_dead:
@@ -1084,18 +1092,6 @@ func update_dash_cooldown_visuals():
 		Particle.dash[dir].cooldown.modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
 
 
-func weight_speed_modifier(speed):
-	return speed
-	#if get_stat("weight") > weight_capacity * 0.75:
-	#	is_overweight = true
-	#	if get_stat("weight") > weight_capacity:
-	#		speed *= 0.33
-	#	else:
-	#		speed *= 0.5
-	#else:
-	#	is_overweight = false
-	#return speed
-
 func apply_movement(dt, direction):
 	if is_sprinting:
 		#Disable horizontal and backwards movement when sprinting
@@ -1106,10 +1102,10 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * max_speed
 	var mult = 1.0
 	if thruster:
-		var thrust_max_speed = weight_speed_modifier(max_speed + thruster.thrust_max_speed)
+		var thrust_max_speed = max_speed + thruster.thrust_max_speed
 
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
-			mult = freezing_status_slowdown(weight_speed_modifier(thruster.thrust_speed_multiplier))
+			mult = apply_movement_modifiers(thruster.thrust_speed_multiplier)
 			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			for node in Particle.chassis_sprint:
 				node.emitting = true
@@ -1126,20 +1122,20 @@ func apply_movement(dt, direction):
 	if movement_type == "free":
 		if direction.length() > 0:
 			moving = true
-			velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
 			velocity *= 1 - chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
-		move(velocity*mod)
+		move(apply_movement_modifiers(velocity*mod))
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
-			velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
+			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat += move_heat*dt
 		else:
 			moving = false
@@ -1147,7 +1143,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = false
 			velocity *= 1 - chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
-		move(velocity*mod)
+		move(apply_movement_modifiers(velocity*mod))
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false
@@ -1161,24 +1157,24 @@ func apply_movement(dt, direction):
 				var thrust_max_speed = max_speed + thruster.thrust_max_speed
 				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
 					target_speed = target_speed.normalized() * thrust_max_speed
-			var _rotation_acc = freezing_status_slowdown(weight_speed_modifier(chassis.rotation_acc * 50))
+			var target_rotation_acc = apply_movement_modifiers(chassis.rotation_acc * 50)
 			if direction.y == 0:
-				_rotation_acc *= 2
+				target_rotation_acc *= 2
 			if direction.x > 0:
-				tank_move_target = tank_move_target.rotated(deg2rad(_rotation_acc*dt))
-				global_rotation_degrees += _rotation_acc*dt
+				tank_move_target = tank_move_target.rotated(deg2rad(target_rotation_acc*dt))
+				global_rotation_degrees += target_rotation_acc*dt
 			elif direction.x < 0:
-				tank_move_target = tank_move_target.rotated(deg2rad(-_rotation_acc*dt))
-				global_rotation_degrees -= _rotation_acc*dt
+				tank_move_target = tank_move_target.rotated(deg2rad(-target_rotation_acc*dt))
+				global_rotation_degrees -= target_rotation_acc*dt
 			if not moving:
 				velocity *= 1 - chassis.friction
 			else:
-				velocity = lerp(velocity, freezing_status_slowdown(weight_speed_modifier(target_speed)), freezing_status_slowdown(weight_speed_modifier(target_move_acc)))
+				velocity = lerp(velocity, target_speed, target_move_acc)
 				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			if chassis:
 				velocity *= 1 - chassis.friction/2
-		move(velocity)
+		move(apply_movement_modifiers(velocity))
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 	update_chassis_visuals(dt)
@@ -1245,6 +1241,7 @@ func get_best_rotation_diff(cur_rot, target_rot):
 	elif diff < -180:
 		diff += 360
 	return diff
+
 
 func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
@@ -1583,6 +1580,10 @@ func entered_building(_lights):
 
 func exited_building():
 	is_inside_building = false
+
+
+func entering_building(value):
+	is_entering_building = value
 
 # MISC METHODS
 

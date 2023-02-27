@@ -22,10 +22,11 @@ monitorable = false
 polygon = PoolVector2Array( -459, 460, 464, 465, 468, -458, -463, -460 )
 
 [node name="Perimeter" type="Area2D" parent="." groups=["building_perimeter"]]
-position = Vector2( -527, -2 )
-monitoring = false
+monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Perimeter"]
+build_mode = 1
+polygon = PoolVector2Array( -529, -526, 523, -522, 527, 522, -525, 530 )
 
 [node name="Lights" type="Node2D" parent="."]
 
@@ -41,3 +42,5 @@ range_item_cull_mask = 16
 
 [connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]
 [connection signal="body_exited" from="BuildingArea" to="." method="_on_BuildingArea_body_exited"]
+[connection signal="body_entered" from="Perimeter" to="." method="_on_Perimeter_body_entered"]
+[connection signal="body_exited" from="Perimeter" to="." method="_on_Perimeter_body_exited"]

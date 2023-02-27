@@ -42,3 +42,13 @@ func _on_BuildingArea_body_exited(body):
 		body.exited_building()
 		if body.is_player():
 			player_exited()
+
+
+func _on_Perimeter_body_entered(body):
+	if body.is_in_group("mecha"):
+		body.entering_building(true)
+
+
+func _on_Perimeter_body_exited(body):
+	if body.is_in_group("mecha"):
+		body.entering_building(false)

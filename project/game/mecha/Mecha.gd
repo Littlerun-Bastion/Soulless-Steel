@@ -1574,7 +1574,7 @@ func process_hitboxes(dt):
 
 # BUILDING METHODS
 
-func entered_building(_lights):
+func entered_building():
 	is_inside_building = true
 
 

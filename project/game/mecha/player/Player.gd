@@ -207,8 +207,8 @@ func set_debug_loadout():
 	set_generator("avg_civ_generator")
 	set_chipset("type_1")
 	set_thruster("test1")
-	set_head("Lancelot-Head")
-	set_chassis("Lancelot-Chassis")
+	set_head("MSV-L3J-H")
+	set_chassis("MSV-L3J-L")
 	set_arm_weapon("Clarent-01", SIDE.LEFT)
 	set_arm_weapon("MA-ASR1", SIDE.RIGHT)
 	set_shoulder_weapon("Arend", SIDE.RIGHT)
@@ -271,14 +271,14 @@ func get_cam():
 
 # BUILDING METHODS
 
-func entered_building(lights):
-	.entered_building(lights)
-	emit_signal("update_building_status", true, lights)
+func entered_building():
+	.entered_building()
+	emit_signal("update_building_status", true)
 
 
 func exited_building():
 	.exited_building()
-	emit_signal("update_building_status", false, [])
+	emit_signal("update_building_status", false)
 
 
 # CALLBACKS

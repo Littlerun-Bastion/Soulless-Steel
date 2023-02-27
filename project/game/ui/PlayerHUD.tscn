@@ -702,11 +702,6 @@ volume_db = -25.0
 pitch_scale = 1.51
 bus = "SFX"
 
-[node name="BuildingLightsCanvas" type="CanvasLayer" parent="."]
-follow_viewport_enable = true
-
-[node name="BuildingLights" type="Node2D" parent="BuildingLightsCanvas"]
-
 [node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
 
 [node name="BuildingEffect" type="ColorRect" parent="BuildingEffectCanvas"]

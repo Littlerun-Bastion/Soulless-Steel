@@ -44,7 +44,6 @@ onready var ECMLabel = $ViewportContainer/Viewport/ECMLabel
 onready var ECMFreqLabel = $ViewportContainer/Viewport/ECMLabel/ECMFreqLabel
 onready var OverweightLabel = $ViewportContainer/Viewport/StatusContainer/OverweightLabel
 onready var BuildingEffect = $BuildingEffectCanvas/BuildingEffect
-onready var BuildingLights = $BuildingLightsCanvas/BuildingLights
 
 
 var player = false
@@ -255,17 +254,8 @@ func _on_player_took_damage(_p, is_status):
 			Tw.start()
 
 
-func _on_player_update_building_status(value, lights):
+func _on_player_update_building_status(value):
 	building_effect_active = value
-	if building_effect_active:
-		for light_data in lights:
-			var light = light_data[0]
-			BuildingLights.add_child(light_data[0])
-			light.global_position = light_data[1]
-			light.enabled = true
-	else:
-		for child in BuildingLights.get_children():
-			BuildingLights.remove_child(child)
 
 
 func _on_player_shoot():

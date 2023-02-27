@@ -15,24 +15,21 @@ func _process(dt):
 		FG.modulate.a = min(1, FG.modulate.a + ALPHA_SPEED*dt)
 
 
-func get_lights():
-	var lights = []
-	for child in Lights.get_children():
-		lights.append([child.duplicate(7), child.global_position])
-	return lights
-
-
 func player_entered():
 	player_inside = true
+	for child in Lights.get_children():
+		child.enabled = true
 
 
 func player_exited():
 	player_inside = false
+	for child in Lights.get_children():
+		child.enabled = false
 
 
 func _on_BuildingArea_body_entered(body):
 	if body.is_in_group("mecha"):
-		body.entered_building(get_lights())
+		body.entered_building()
 		if body.is_player():
 			player_entered()
 

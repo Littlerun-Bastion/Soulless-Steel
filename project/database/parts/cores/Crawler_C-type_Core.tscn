@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=2]
@@ -12,13 +12,15 @@
 [ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_sub.png" type="Texture" id=10]
 [ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" type="Texture" id=13]
 
-[node name="Part" type="Node"]
+[node name="Part2" type="Node"]
 script = ExtResource( 6 )
 part_name = "Crawler C-type"
 manufacturer_name = "Nomhoyi Superheavy"
-tagline = "Light Core"
+tagline = "Heavy Core"
 description = "Heavyweight core with excellent defensive capabilities and top-of-class stability. Its heavy plating comes at the cost of its very restrictive weight."
+image = ExtResource( 13 )
 health = 6525.0
 shield = 3750.0
 stability = 100.0

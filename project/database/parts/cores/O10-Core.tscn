@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
@@ -13,13 +13,15 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
 [ext_resource path="res://assets/images/mechas/cores/O10/O10-Core_main.png" type="Texture" id=13]
+[ext_resource path="res://assets/images/mechas/cores/O10/O10-Core_pv.png" type="Texture" id=14]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 1 )
 part_name = "O10-Core"
 manufacturer_name = "Orontes"
 tagline = "Light Core"
 description = "A well-rounded defensive core part with space for ordnance, good quality shield projectors, and good weight efficiency for its size and weight bracket. Poor stability amongst its peers."
+image = ExtResource( 14 )
 health = 5400.0
 shield = 3125.0
 stability = 110.0

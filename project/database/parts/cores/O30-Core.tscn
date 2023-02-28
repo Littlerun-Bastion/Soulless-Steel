@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
@@ -13,13 +13,15 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
 [ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_glow.png" type="Texture" id=13]
+[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_pv.png" type="Texture" id=14]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 1 )
 part_name = "O30-Core"
 manufacturer_name = "Orontes"
 tagline = "Light Core"
 description = "A middleweight core with great defensive stats for its weight bracket. Very weight efficient, but poor stability and reduced space for shoulder-mounted weaponry."
+image = ExtResource( 14 )
 health = 4050.0
 shield = 2250.0
 stability = 90.0

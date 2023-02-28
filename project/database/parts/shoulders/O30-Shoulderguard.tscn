@@ -1,15 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulders/O30/O30-lshoulder_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/shoulders/O30/O30-rshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/O30/O30-shoulder_pv.png" type="Texture" id=4]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 3 )
 part_name = "O30-Shoulderguard"
 manufacturer_name = "Orontes"
 tagline = "Test"
 description = "A lighter middle-weight part with decent overall stats and better melee weapon handling. Fairly inaccurate unlike its bigger brother, the O10."
+image = ExtResource( 4 )
 shield = 2250.0
 stability = 90.0
 arms_accuracy_modifier = 1.1

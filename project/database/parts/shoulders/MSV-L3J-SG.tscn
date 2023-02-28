@@ -1,15 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_shoulder_pv.png" type="Texture" id=4]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 3 )
 part_name = "O10-Shoulderguard"
 manufacturer_name = "Orontes"
-tagline = "Test"
+tagline = "Lightweight"
 description = "A light scrapyard shoulderguard with very poor shielding, abysmal stability, and terrible melee performance. Decent weapon accuracy."
+image = ExtResource( 4 )
 shield = 3125.0
 stability = 110.0
 arms_accuracy_modifier = 1.2

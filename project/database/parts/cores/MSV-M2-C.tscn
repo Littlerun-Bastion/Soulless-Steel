@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
@@ -13,13 +13,15 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
 [ext_resource path="res://assets/images/mechas/cores/MSV-M2/MSV-M2_core_main.png" type="Texture" id=13]
+[ext_resource path="res://assets/images/mechas/cores/MSV-M2/MSV-M2_core_pv.png" type="Texture" id=14]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 1 )
 part_name = "MSV-M2"
 manufacturer_name = "Martel"
 tagline = "Light Core"
 description = "A more robust, updated version of the L3J, the M2 is a middleweight core part with moderate defenses and space for shoulder-mounted ordnance. Very weight inefficient."
+image = ExtResource( 14 )
 health = 3825.0
 shield = 1250.0
 stability = 120.0

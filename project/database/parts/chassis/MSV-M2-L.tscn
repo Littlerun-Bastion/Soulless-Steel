@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_glow.png" type="Texture" id=2]
@@ -7,12 +7,14 @@
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=5]
 [ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_sub.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_main.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_leg_pv.png" type="Texture" id=8]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 5 )
-part_name = "MSV-L3J-L"
+part_name = "MSV-M2-L"
 manufacturer_name = "Test Legged Chassis"
 tagline = "Bipedal"
+image = ExtResource( 8 )
 is_legs = true
 movement_type = "relative"
 max_speed = 350

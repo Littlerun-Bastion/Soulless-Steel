@@ -1,15 +1,17 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_glow.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_main.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_sub.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_pv.png" type="Texture" id=5]
 
-[node name="Part" type="Node"]
+[node name="Part2" type="Node"]
 script = ExtResource( 1 )
 part_name = "Crawler C-type Chassis"
 manufacturer_name = "Nomhoyi Superheavy"
 tagline = "Tank"
+image = ExtResource( 5 )
 movement_type = "tank"
 max_speed = 280
 move_acc = 0.88

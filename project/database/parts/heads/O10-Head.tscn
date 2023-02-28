@@ -7,7 +7,7 @@
 [ext_resource path="res://assets/images/mechas/heads/O10/O10-Head_main.png" type="Texture" id=5]
 [ext_resource path="res://game/fx/Heatmaps/Sepia.tres" type="Texture" id=6]
 
-[node name="Part" type="Node2D"]
+[node name="Part3" type="Node2D"]
 script = ExtResource( 1 )
 part_name = "O10-Head"
 manufacturer_name = "Orontes"

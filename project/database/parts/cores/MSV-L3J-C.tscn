@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_glow.png" type="Texture" id=2]
@@ -12,13 +12,15 @@
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture" id=10]
 [ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
 [ext_resource path="res://database/parts/core.gd" type="Script" id=12]
+[ext_resource path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_pv.png" type="Texture" id=13]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 12 )
 part_name = "MSV-L3J"
 manufacturer_name = "Martel"
 tagline = "Light Core"
 description = "A light, scrapyard core part manufactured solely for its cheapness. Has no merit other than its light weight. No space for shoulder-mounted equipment."
+image = ExtResource( 13 )
 health = 2475.0
 shield = 1250.0
 stability = 0.0

@@ -1,15 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-M2/MSV-M2_rshoulder_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-M2/MSV-M2_lshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/MSV-M2/MSV-M2_shoulder_pv.png" type="Texture" id=4]
 
-[node name="Part" type="Node"]
+[node name="Part3" type="Node"]
 script = ExtResource( 3 )
 part_name = "MSV-M2-SG"
 manufacturer_name = "Martel"
-tagline = "Test"
+tagline = "Middleweight"
 description = "A middleweight shoulderguard comprised of salvaged material. Poor shielding performance as with all Martel offerings, but does little to compensate for this fact save for the middling weapon accuracy performance."
+image = ExtResource( 4 )
 shield = 1250.0
 stability = 50.0
 arms_accuracy_modifier = 1.3

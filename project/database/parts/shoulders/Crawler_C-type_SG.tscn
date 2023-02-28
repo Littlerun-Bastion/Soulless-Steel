@@ -1,15 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_rshoulder_main.png" type="Texture" id=1]
 [ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_lshoulder_main.png" type="Texture" id=2]
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_shoulder_pv.png" type="Texture" id=4]
 
-[node name="Part" type="Node"]
+[node name="Part2" type="Node"]
 script = ExtResource( 3 )
 part_name = "Crawler C-type SG"
 manufacturer_name = "Nomhoyi Superheavy"
 tagline = "Test"
 description = "Heavyweight shoulderguard, built with shield projectors that can withstand significant punishment. Otherwise, it has below-average performance across the board."
+image = ExtResource( 4 )
 shield = 3750.0
 stability = 100.0
 arms_accuracy_modifier = 1.15

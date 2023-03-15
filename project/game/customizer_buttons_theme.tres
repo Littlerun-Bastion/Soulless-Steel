@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=17 format=2]
+[gd_resource type="Theme" load_steps=18 format=2]
 
 [ext_resource path="res://game/ui/theme_folder/basic_button_normal.tres" type="StyleBox" id=1]
 [ext_resource path="res://game/ui/theme_folder/basic_button_pressed.tres" type="StyleBox" id=2]
@@ -48,6 +48,14 @@ extra_spacing_bottom = -6
 extra_spacing_char = 2
 extra_spacing_space = 2
 font_data = ExtResource( 6 )
+
+[sub_resource type="StyleBoxFlat" id=11]
+bg_color = Color( 0, 0, 0, 1 )
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color( 1, 1, 1, 1 )
 
 [sub_resource type="DynamicFont" id=9]
 size = 50
@@ -100,6 +108,7 @@ HScrollBar/styles/grabber_pressed = SubResource( 3 )
 HScrollBar/styles/scroll = SubResource( 10 )
 HScrollBar/styles/scroll_focus = null
 LineEdit/fonts/font = SubResource( 8 )
+PanelContainer/styles/panel = SubResource( 11 )
 TooltipLabel/colors/font_color = Color( 1, 1, 1, 1 )
 TooltipLabel/fonts/font = SubResource( 9 )
 TooltipPanel/styles/panel = SubResource( 7 )

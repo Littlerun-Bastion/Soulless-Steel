@@ -15,6 +15,7 @@ const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 0.2
 const ENTERING_BUILDING_SPEED_MOD = .96
 const FREEZING_SPEED_MOD = .95
+const OVERWEIGHT_SPEED_MOD = 4
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
@@ -144,6 +145,7 @@ var battery_recharge_rate = 0.0
 var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
+var weight = 0.0
 
 var weight_capacity = 100.0
 var is_overweight = false
@@ -244,6 +246,7 @@ func _ready():
 
 
 func _physics_process(dt):
+	overweight_check()
 	if paused:
 		return
 
@@ -473,6 +476,16 @@ func update_max_shield_from_parts():
 
 	set_max_shield(value)
 
+func set_max_heat():
+	max_heat = get_stat("heat_capacity")
+	
+func overweight_check():
+	weight = get_stat("weight")
+	weight_capacity = get_stat("weight_capacity")
+	if weight > weight_capacity: 
+		is_overweight = true
+	else: 
+		is_overweight = false
 
 func set_max_life(value):
 	max_hp = value
@@ -579,6 +592,8 @@ func take_status_damage(dt):
 
 
 func apply_movement_modifiers(speed):
+	if is_overweight:
+		speed /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
 	if has_status("freezing"):
 		speed *= FREEZING_SPEED_MOD
 	if is_entering_building:
@@ -709,6 +724,8 @@ func set_arm_weapon(part_name, side):
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
 	node.setup(part_data, core, side)
+	set_max_heat()
+	
 
 
 func set_shoulder_weapon(part_name, side):
@@ -739,6 +756,7 @@ func set_shoulder_weapon(part_name, side):
 		shoulder_weapon_right = part_data
 
 	node.setup(part_data, core, side)
+	set_max_heat()
 
 
 func set_core(part_name):
@@ -771,13 +789,13 @@ func set_core(part_name):
 	update_max_shield_from_parts()
 	stability = get_stat("stability")
 	reset_offsets()
+	set_max_heat()
 
 
 func set_generator(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
 		generator = part_data
-		generator.heat_capacity = max_heat
 		idle_threshold = generator.idle_threshold / 100
 		battery_capacity = generator.battery_capacity
 		battery = generator.battery_capacity
@@ -785,6 +803,7 @@ func set_generator(part_name):
 	else:
 		generator = false
 	update_max_shield_from_parts()
+	set_max_heat()
 
 
 func set_chipset(part_name):
@@ -814,7 +833,9 @@ func set_chassis(part_name):
 		return
 	chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = chassis.weight_capacity
+	overweight_check()
 	set_chassis_parts()
+	set_max_heat()
 
 
 func set_chassis_parts():
@@ -879,6 +900,7 @@ func set_head(part_name):
 		HeadGlow.texture = null
 		head = null
 	update_max_life_from_parts()
+	set_max_heat()
 
 
 func set_shoulders(part_name):
@@ -903,6 +925,7 @@ func set_shoulders(part_name):
 	update_max_shield_from_parts()
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
+	set_max_heat()
 
 func reset_offsets():
 	if core:
@@ -934,6 +957,9 @@ func get_stat(stat_name):
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
+	if stat_name == "max_speed" and is_overweight:
+		total_stat /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
+		total_stat = round(total_stat)
 	return float(total_stat)
 
 

@@ -12,11 +12,13 @@ onready var CategoryButtons = $CategoryButtons
 onready var PartCategories = $PartCategories
 onready var DisplayMecha = $Mecha
 onready var ComparisonMecha = $ComparisonMecha
-onready var StatBars = $Statbars
+#onready var StatBars = $Statbars
+onready var Statcard = $Statcard
 onready var LoadScreen = $LoadScreen
 
 var category_visible = false
 var comparing_part = false
+var type_name
 
 func _ready():
 	if Profile.stats.current_mecha:
@@ -24,10 +26,12 @@ func _ready():
 		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 	else:
 		default_loadout()
-	$Statbars.update_stats(DisplayMecha)
+	#$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed", self, "_LoadScreen_on_load_pressed")
+	for child in $TopBar.get_children():
+		child.reset_comparison(DisplayMecha)
 
 func _process(dt):
 	if not comparing_part:
@@ -91,7 +95,7 @@ func show_category_button(parts, selected):
 
 func _on_Category_pressed(type,group,side = false):
 	var group_node = PartCategories.get_node(group)
-	var type_name = type
+	type_name = type
 	if side:
 		type_name = type + "_" + side
 	if category_visible == false:
@@ -160,7 +164,7 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
 		ComparisonMecha.callv("set_" + str(type), [part_name])
-	$Statbars.update_stats(DisplayMecha)
+	#$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	shoulder_weapon_check()
 	comparing_part = false
@@ -174,7 +178,17 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 		ComparisonMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		ComparisonMecha.callv("set_" + str(type), [part_name])
-	StatBars.set_comparing_part(ComparisonMecha)
+	#StatBars.set_comparing_part(ComparisonMecha)
+	for child in $TopBar.get_children():
+		child.set_comparing_part(DisplayMecha,ComparisonMecha)
+	var current_part = DisplayMecha.get(type_name)
+	var new_part = ComparisonMecha.get(type_name)
+	if ComparisonMecha.is_overweight:
+		$overweight.visible = true
+	else:
+		$overweight.visible = false
+	Statcard.display_part_stats(current_part, new_part, type_name)
+	Statcard.visible = true
 	comparing_part = true
 
 func shoulder_weapon_check():
@@ -212,8 +226,15 @@ func is_build_valid():
 func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	if item.is_disabled == true:
 		item.get_button().disabled = true
-	StatBars.reset_comparing_part()
+	#StatBars.reset_comparing_part()
+	for child in $TopBar.get_children():
+		child.reset_comparison(DisplayMecha)
 	comparing_part = false
+	if DisplayMecha.is_overweight:
+		$overweight.visible = true
+	else:
+		$overweight.visible = false
+	Statcard.visible = false
 
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.get_stat("weight_capacity")

@@ -40,9 +40,7 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	for _i in range(2):
-		#add_enemy()
-		pass
+	add_enemy()
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting", self, "_on_ExitPos_mecha_extracting")
 		exitposition.connect("extracting_cancelled", self, "_on_ExitPos_extracting_cancelled")

@@ -6,7 +6,6 @@
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=7]
 
-
 [sub_resource type="DynamicFont" id=1]
 size = 42
 use_mipmaps = true

@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://game/arena/Building.gd" type="Script" id=1]
+[ext_resource path="res://assets/images/buildings/old_gate_building_1_bottom.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/buildings/old_gate_building_1_top.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/white_pixel.png" type="Texture" id=4]
+
+[node name="Building" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Background" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="Foreground" type="Sprite" parent="."]
+z_index = 1
+texture = ExtResource( 3 )
+
+[node name="BuildingArea" type="Area2D" parent="." groups=["building_area"]]
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea"]
+polygon = PoolVector2Array( -51.9656, 232.509, 301.079, 232.342, 301.169, -90.6687, 325.941, -109.073, 325.816, -238.557, -326.233, -238.681, -325.696, 63.5161, -196.881, 63.3162, -189.75, 42.5, -175.808, 22.3046, -159.122, 6.95389, -138.099, -4.39225, -113.988, -11.7957, -91.2553, -12.6154, -74.2744, -9.52178, -56.8763, -2.78701, -42.0036, 5.63145, -29.9372, 16.0142, -18.9932, 29.4838, -11.164, 42.1464, -2.99748, 63.0129, -0.87616, 88.1152, -2.99748, 108.975, -7.23579, 124.561, -16.771, 142.837, -26.8359, 154.756, -40.0791, 166.675, -52, 176.438 )
+
+[node name="Perimeter" type="Area2D" parent="." groups=["building_perimeter"]]
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Perimeter"]
+build_mode = 1
+polygon = PoolVector2Array( -341.206, -256.071, 345.764, -256.254, 344.96, -97.5199, 319.885, -74.7255, 316.041, 252.561, -67.1533, 252.464, -68.2277, 193.119, -115.371, 195.364, -160.27, 177.404, -191.137, 148.781, -209.437, 112.637, -339.508, 113.527 )
+
+[node name="Lights" type="Node2D" parent="."]
+
+[node name="Light2D" type="Light2D" parent="Lights"]
+light_mask = 0
+position = Vector2( 6.3496, -6.74644 )
+scale = Vector2( 1000, 1000 )
+enabled = false
+texture = ExtResource( 4 )
+energy = 0.0
+mode = 3
+range_layer_max = 2
+range_item_cull_mask = 16
+
+[connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]
+[connection signal="body_exited" from="BuildingArea" to="." method="_on_BuildingArea_body_exited"]
+[connection signal="body_entered" from="Perimeter" to="." method="_on_Perimeter_body_entered"]
+[connection signal="body_exited" from="Perimeter" to="." method="_on_Perimeter_body_exited"]

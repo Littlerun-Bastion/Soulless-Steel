@@ -1951,6 +1951,7 @@ scale = Vector2( 0.33, 0.33 )
 
 [node name="Trees" type="Node2D" parent="."]
 scale = Vector2( 2, 2 )
+z_index = 1
 
 [node name="tree1_1" parent="Trees" instance=ExtResource( 2 )]
 position = Vector2( -2186.44, -1788.5 )

@@ -9,18 +9,15 @@ polygon = PoolVector2Array( -11.6521, -22.5943, -23.1335, -6.83515, -18.9291, 13
 
 [node name="tree1_prop" type="Node2D"]
 
-[node name="Sprite" type="Sprite" parent="."]
-
-texture = ExtResource( 1 )
-
 [node name="Sprite2" type="Sprite" parent="."]
-
 texture = ExtResource( 3 )
 
 [node name="Sprite3" type="Sprite" parent="."]
 rotation = -0.424055
-
 texture = ExtResource( 2 )
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 1 )
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource( 1 )

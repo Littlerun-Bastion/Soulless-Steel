@@ -54,12 +54,12 @@ func setup(arena_ref, is_tutorial):
 		set_head(PartManager.get_random_part_name("head"))
 		set_chassis(PartManager.get_random_part_name("chassis"))
 		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
-		set_arm_weapon(PartManager.get_random_part_name("arm_weapon") if randf() > .5 else false, SIDE.LEFT)
+		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.LEFT)
 		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
 		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
 	
-	#For the moment hard set enemies' movement type to free
+	#For the moment hard set ies' movement type to free
 	movement_type = "free"
 
 #Combat functions

@@ -46,7 +46,7 @@ func start_game(mode):
 	PlayerStatManager.Credits = 0
 	match mode:
 		"main":
-			ArenaManager.set_map_to_load("map1")
+			ArenaManager.set_map_to_load("arena_oldgate")
 		"tutorial":
 			ArenaManager.set_map_to_load("tutorial")
 		"test":
@@ -78,6 +78,9 @@ func _on_Hangar_pressed():
 # warning-ignore:return_value_discarded
 	get_tree().change_scene("res://game/ui/customizer/Customizer.tscn")
 
+func _on_Arena_pressed():
+	AudioManager.play_sfx("confirm")
+	start_game("main")
 
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")

@@ -213,9 +213,6 @@ margin_bottom = 518.021
 rect_min_size = Vector2( 750, 0 )
 rect_scale = Vector2( 0.36, 0.36 )
 custom_constants/separation = 100
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="NewGameContainer" type="VBoxContainer" parent="MainButtons"]
 margin_right = 1055.0
@@ -483,6 +480,7 @@ anims/Typewrite = SubResource( 15 )
 
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_Arena_pressed"]
 [connection signal="mouse_entered" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/TestModeContainer/Button" to="." method="_on_TestMode_pressed"]

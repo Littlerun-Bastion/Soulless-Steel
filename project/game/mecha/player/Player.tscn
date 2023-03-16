@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/white_circle.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=6]
@@ -18,7 +19,14 @@ drag_margin_top = 0.0
 drag_margin_right = 0.0
 drag_margin_bottom = 0.0
 
-[node name="ArmWeaponLeft" parent="." index="7"]
+[node name="OutlineLight" type="Light2D" parent="." index="1"]
+position = Vector2( -2.49219, 2.0788 )
+texture = ExtResource( 3 )
+texture_scale = 4.91
+mode = 2
+range_item_cull_mask = 32
+
+[node name="ArmWeaponLeft" parent="." index="8"]
 position = Vector2( -44.8525, 23.4889 )
 
 [node name="Sub" parent="ArmWeaponRight" index="0"]
@@ -33,8 +41,8 @@ texture = ExtResource( 2 )
 [node name="Glow" parent="ShoulderWeaponRight" index="2"]
 texture = ExtResource( 9 )
 
-[node name="LeftShoulder" parent="." index="11"]
+[node name="LeftShoulder" parent="." index="12"]
 position = Vector2( -49.7729, 16 )
 
-[node name="RightShoulder" parent="." index="12"]
+[node name="RightShoulder" parent="." index="13"]
 position = Vector2( 51.6457, 16 )

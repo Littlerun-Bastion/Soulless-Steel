@@ -55,7 +55,7 @@ light_mask = 32
 material = SubResource( 2 )
 texture = ExtResource( 5 )
 invert_enable = true
-invert_border = 3151.9
+invert_border = 3150.0
 polygon = PoolVector2Array( -2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11 )
 
 [node name="Buildings" type="Node2D" parent="."]

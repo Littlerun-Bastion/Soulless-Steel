@@ -28,11 +28,9 @@ monitorable = false
 build_mode = 1
 polygon = PoolVector2Array( -548, 448.101, 548, 448, 548, -448, 478.776, -447.002, 478.443, -468.693, -29.353, -468.925, -28.1984, -447.984, -548, -448 )
 
-[node name="Lights" type="Node2D" parent="."]
-
-[node name="Light2D" type="Light2D" parent="Lights"]
+[node name="Light2D" type="Light2D" parent="."]
 light_mask = 0
-scale = Vector2( 1000, 1000 )
+scale = Vector2( 1100, 900 )
 enabled = false
 texture = ExtResource( 4 )
 energy = 0.0

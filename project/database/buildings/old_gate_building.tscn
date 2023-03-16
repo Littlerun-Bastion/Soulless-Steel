@@ -3,7 +3,7 @@
 [ext_resource path="res://game/arena/Building.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/buildings/old_gate_building_1_bottom.png" type="Texture" id=2]
 [ext_resource path="res://assets/images/buildings/old_gate_building_1_top.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/white_pixel.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/buildings/old_gate_building_1_light.png" type="Texture" id=4]
 
 [node name="Building" type="Node2D"]
 script = ExtResource( 1 )
@@ -28,12 +28,8 @@ monitorable = false
 build_mode = 1
 polygon = PoolVector2Array( -341.206, -256.071, 345.764, -256.254, 344.96, -97.5199, 319.885, -74.7255, 316.041, 252.561, -67.1533, 252.464, -68.2277, 193.119, -115.371, 195.364, -160.27, 177.404, -191.137, 148.781, -209.437, 112.637, -339.508, 113.527 )
 
-[node name="Lights" type="Node2D" parent="."]
-
-[node name="Light2D" type="Light2D" parent="Lights"]
+[node name="Light2D" type="Light2D" parent="."]
 light_mask = 0
-position = Vector2( 6.3496, -6.74644 )
-scale = Vector2( 1000, 1000 )
 enabled = false
 texture = ExtResource( 4 )
 energy = 0.0

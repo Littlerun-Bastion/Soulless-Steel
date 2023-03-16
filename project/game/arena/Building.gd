@@ -5,7 +5,7 @@ const OUTLINE_SHADER = preload("res://assets/shaders/OutlineShader.tres")
 const LIGHT_MASK = 32
 
 onready var FG = $Foreground
-onready var Lights = $Lights
+onready var LightEffect = $Light2D
 onready var Background = $Background
 
 var player_inside = false
@@ -31,14 +31,12 @@ func _process(dt):
 
 func player_entered():
 	player_inside = true
-	for child in Lights.get_children():
-		child.enabled = true
+	LightEffect.enabled = true
 
 
 func player_exited():
 	player_inside = false
-	for child in Lights.get_children():
-		child.enabled = false
+	LightEffect.enabled = false
 
 
 func _on_BuildingArea_body_entered(body):

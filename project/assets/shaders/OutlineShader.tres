@@ -6,9 +6,12 @@ render_mode light_only;
 
 uniform vec4 color : hint_color = vec4(1.0);
 uniform float width : hint_range(0, 100) = 1.0;
+uniform float margin_distance : hint_range(0, 100.0) = 0.0;
+
+const vec4 MASK_COLOR = vec4(1.0, 0.0, 0.84, 1.0);
 
 void vertex() {
-	VERTEX += (UV * 2.0 - 1.0) * width;
+	VERTEX += (UV * (2.0 + margin_distance) - (1.0 + margin_distance/2.0)) * width;
 }
 
 bool hasContraryNeighbour(vec2 uv, vec2 texture_pixel_size, sampler2D texture) {
@@ -54,13 +57,19 @@ void fragment() {
 	}
 	
 	if ((COLOR.a <= 0.0) && hasContraryNeighbour(uv, TEXTURE_PIXEL_SIZE, TEXTURE)) {
-		COLOR.rgb = color.rgb;
+		COLOR.rgb = MASK_COLOR.rgb;
 		COLOR.a += (1.0 - COLOR.a) * color.a;
 	}
 	
+	if (COLOR == MASK_COLOR) {
+		COLOR = color;
+	} else {
+		COLOR.a = 0.0;
+	}
 }"
 
 [resource]
 shader = SubResource( 1 )
 shader_param/color = Color( 1, 1, 1, 1 )
 shader_param/width = 30.0
+shader_param/margin_distance = 7.0

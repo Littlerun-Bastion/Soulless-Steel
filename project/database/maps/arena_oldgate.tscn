@@ -1,9 +1,10 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/map/floor/arena_oldgate.png" type="Texture" id=2]
 [ext_resource path="res://database/buildings/building2_long.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/buildings/old_gate_building2.tscn" type="PackedScene" id=4]
+[ext_resource path="res://assets/images/map/border_texture.png" type="Texture" id=5]
 [ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
 [ext_resource path="res://database/buildings/building3_long.tscn" type="PackedScene" id=7]
 [ext_resource path="res://database/buildings/building4_long.tscn" type="PackedScene" id=8]
@@ -17,6 +18,9 @@
 [ext_resource path="res://database/props/tree3_prop.tscn" type="PackedScene" id=16]
 [ext_resource path="res://database/props/tree_leafless_1_prop.tscn" type="PackedScene" id=17]
 [ext_resource path="res://database/buildings/old_gate_building4.tscn" type="PackedScene" id=18]
+
+[sub_resource type="CanvasItemMaterial" id=2]
+light_mode = 2
 
 [sub_resource type="NavigationPolygon" id=1]
 vertices = PoolVector2Array( 6957.82, 1319.28, -3712.78, 11985.3, -8495.09, 7070.75, -8500.68, 3540.09, -2265.59, -2716.53, 7043.76, -10371.4, -2268.24, -10403.4 )
@@ -40,10 +44,19 @@ scale = Vector2( 2, 2 )
 [node name="tutorial_wall" type="Node2D" parent="Walls"]
 
 [node name="StaticBody2D" type="StaticBody2D" parent="Walls/tutorial_wall"]
+visible = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
 position = Vector2( 635, -6832 )
-polygon = PoolVector2Array( -12828.8, -5168.76, -12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12021.5, -2370.26, -4404.4, -2013.11, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -2894.72, -2037.88, -4888.97, -1767.45, -12156.5, -2110.36, -12382.7, -5029.29 )
+polygon = PoolVector2Array( -12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12220.3, -1987.14, -3046.23, -2034.83, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -3042.04, -2033.03, -12433.2, -1885.03 )
+
+[node name="BorderTexture" type="Polygon2D" parent="Walls"]
+light_mask = 32
+material = SubResource( 2 )
+texture = ExtResource( 5 )
+invert_enable = true
+invert_border = 3151.9
+polygon = PoolVector2Array( -2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11 )
 
 [node name="Buildings" type="Node2D" parent="."]
 

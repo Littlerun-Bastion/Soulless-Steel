@@ -22,7 +22,7 @@ drag_margin_bottom = 0.0
 [node name="OutlineLight" type="Light2D" parent="." index="1"]
 position = Vector2( -2.49219, 2.0788 )
 texture = ExtResource( 3 )
-texture_scale = 5.0
+texture_scale = 6.5
 mode = 2
 range_item_cull_mask = 32
 

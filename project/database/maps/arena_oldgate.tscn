@@ -1,10 +1,9 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/map/floor/arena_oldgate.png" type="Texture" id=2]
 [ext_resource path="res://database/buildings/building2_long.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/buildings/old_gate_building2.tscn" type="PackedScene" id=4]
-[ext_resource path="res://database/props/Prop.gd" type="Script" id=5]
 [ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
 [ext_resource path="res://database/buildings/building3_long.tscn" type="PackedScene" id=7]
 [ext_resource path="res://database/buildings/building4_long.tscn" type="PackedScene" id=8]
@@ -39,7 +38,6 @@ scale = Vector2( 2, 2 )
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="tutorial_wall" type="Node2D" parent="Walls"]
-script = ExtResource( 5 )
 
 [node name="StaticBody2D" type="StaticBody2D" parent="Walls/tutorial_wall"]
 

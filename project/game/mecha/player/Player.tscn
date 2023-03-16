@@ -2,7 +2,7 @@
 
 [ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/white_circle.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/faded_white_circle.png" type="Texture" id=3]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=6]
@@ -22,7 +22,7 @@ drag_margin_bottom = 0.0
 [node name="OutlineLight" type="Light2D" parent="." index="1"]
 position = Vector2( -2.49219, 2.0788 )
 texture = ExtResource( 3 )
-texture_scale = 4.91
+texture_scale = 5.0
 mode = 2
 range_item_cull_mask = 32
 

@@ -18,6 +18,6 @@ texture = ExtResource( 3 )
 [node name="Light2D" type="Light2D" parent="."]
 position = Vector2( 53, -57 )
 texture = ExtResource( 1 )
-texture_scale = 9.74
+texture_scale = 20.0
 mode = 2
 range_item_cull_mask = 32

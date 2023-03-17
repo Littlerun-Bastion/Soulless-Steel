@@ -1,59 +1,59 @@
 [gd_scene load_steps=31 format=2]
 
 [ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=2]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
+[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="FontFile" id=3]
 [ext_resource path="res://game/arena/ScoreScreen.gd" type="Script" id=4]
-[ext_resource path="res://assets/images/ui/menu/play_button.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/ui/menu/exit_button_highlight.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/ui/menu/play_button_highlight.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/ui/menu/exit_button.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/ui/menu/exit_button_pressed.png" type="Texture" id=10]
-[ext_resource path="res://assets/images/ui/menu/play_button_pressed.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/ui/menu/repair_button.png" type="Texture" id=12]
-[ext_resource path="res://assets/images/ui/menu/repair_button_pressed.png" type="Texture" id=13]
-[ext_resource path="res://assets/images/ui/menu/reload_button.png" type="Texture" id=14]
-[ext_resource path="res://assets/images/ui/menu/repair_button_highlight.png" type="Texture" id=15]
-[ext_resource path="res://assets/images/ui/menu/reload_button_pressed.png" type="Texture" id=16]
-[ext_resource path="res://assets/images/ui/menu/reload_button_highlight.png" type="Texture" id=17]
-[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button.png" type="Texture" id=18]
-[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_highlight.png" type="Texture" id=19]
-[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_pressed.png" type="Texture" id=20]
+[ext_resource path="res://assets/images/ui/menu/play_button.png" type="Texture2D" id=6]
+[ext_resource path="res://assets/images/ui/menu/exit_button_highlight.png" type="Texture2D" id=7]
+[ext_resource path="res://assets/images/ui/menu/play_button_highlight.png" type="Texture2D" id=8]
+[ext_resource path="res://assets/images/ui/menu/exit_button.png" type="Texture2D" id=9]
+[ext_resource path="res://assets/images/ui/menu/exit_button_pressed.png" type="Texture2D" id=10]
+[ext_resource path="res://assets/images/ui/menu/play_button_pressed.png" type="Texture2D" id=11]
+[ext_resource path="res://assets/images/ui/menu/repair_button.png" type="Texture2D" id=12]
+[ext_resource path="res://assets/images/ui/menu/repair_button_pressed.png" type="Texture2D" id=13]
+[ext_resource path="res://assets/images/ui/menu/reload_button.png" type="Texture2D" id=14]
+[ext_resource path="res://assets/images/ui/menu/repair_button_highlight.png" type="Texture2D" id=15]
+[ext_resource path="res://assets/images/ui/menu/reload_button_pressed.png" type="Texture2D" id=16]
+[ext_resource path="res://assets/images/ui/menu/reload_button_highlight.png" type="Texture2D" id=17]
+[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button.png" type="Texture2D" id=18]
+[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_highlight.png" type="Texture2D" id=19]
+[ext_resource path="res://assets/images/ui/menu/ammo_purchase_button_pressed.png" type="Texture2D" id=20]
 
 [sub_resource type="Theme" id=1]
 
-[sub_resource type="DynamicFont" id=5]
+[sub_resource type="FontFile" id=5]
 size = 50
 outline_size = 1
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=2]
+[sub_resource type="FontFile" id=2]
 size = 45
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=6]
+[sub_resource type="FontFile" id=6]
 size = 55
 outline_size = 1
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=8]
+[sub_resource type="FontFile" id=8]
 size = 150
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=11]
+[sub_resource type="FontFile" id=11]
 size = 150
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=10]
+[sub_resource type="FontFile" id=10]
 size = 200
 outline_size = 1
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=7]
+[sub_resource type="FontFile" id=7]
 size = 40
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=9]
+[sub_resource type="FontFile" id=9]
 size = 60
 extra_spacing_char = 1
 font_data = ExtResource( 3 )
@@ -67,8 +67,8 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0 ),
+"transitions": PackedFloat32Array( 1 ),
 "update": 0,
 "values": [ 0.0 ]
 }
@@ -83,8 +83,8 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 2, 3, 4 ),
-"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"times": PackedFloat32Array( 0, 2, 3, 4 ),
+"transitions": PackedFloat32Array( 1, 1, 1, 1 ),
 "update": 0,
 "values": [ 0.0, 1.0, 1.0, 0.0 ]
 }
@@ -105,10 +105,10 @@ motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
 show_behind_parent = true
-margin_left = -605.0
-margin_top = -726.0
-margin_right = 7395.0
-margin_bottom = 7274.0
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = SubResource( 1 )
@@ -118,10 +118,10 @@ color = Color( 0, 0, 0, 1 )
 motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
 texture = ExtResource( 2 )
 
 [node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
@@ -130,19 +130,19 @@ motion_scale = Vector2( -0.5, 1 )
 motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
 texture = ExtResource( 2 )
 
 [node name="Title" type="Label" parent="."]
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_left = 7.44904
-margin_top = -86.5229
-margin_right = 739.449
-margin_bottom = -20.5228
+offset_left = 7.44904
+offset_top = -86.5229
+offset_right = 739.449
+offset_bottom = -20.5228
 custom_fonts/font = SubResource( 5 )
 text = "Extraction Successful"
 
@@ -150,40 +150,40 @@ text = "Extraction Successful"
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_top = -25.3165
-margin_bottom = -10.3165
-rect_min_size = Vector2( 10, 15 )
+offset_top = -25.3165
+offset_bottom = -10.3165
+custom_minimum_size = Vector2( 10, 15 )
 
 [node name="ColorRect2" type="ColorRect" parent="."]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_top = -34.671
-margin_bottom = -29.671
-rect_min_size = Vector2( 10, 5 )
+offset_top = -34.671
+offset_bottom = -29.671
+custom_minimum_size = Vector2( 10, 5 )
 
 [node name="PlayerKills" type="Label" parent="."]
-margin_left = 17.1683
-margin_top = 868.516
-margin_right = 254.168
-margin_bottom = 904.516
+offset_left = 17.1683
+offset_top = 868.516
+offset_right = 254.168
+offset_bottom = 904.516
 custom_fonts/font = SubResource( 2 )
 text = "Player Kills: "
 
 [node name="insufficientcredits" type="Label" parent="."]
-margin_left = 17.1683
-margin_top = 687.497
-margin_right = 480.168
-margin_bottom = 758.497
+offset_left = 17.1683
+offset_top = 687.497
+offset_right = 480.168
+offset_bottom = 758.497
 custom_fonts/font = SubResource( 2 )
 text = "Insufficient credits."
 percent_visible = 0.0
 
 [node name="EarnedCredits" type="Label" parent="."]
-margin_left = 16.1089
-margin_top = 808.414
-margin_right = 626.109
-margin_bottom = 888.414
+offset_left = 16.1089
+offset_top = 808.414
+offset_right = 626.109
+offset_bottom = 888.414
 custom_fonts/font = SubResource( 6 )
 text = "Earned Credits: "
 
@@ -192,207 +192,207 @@ anchor_left = 0.703
 anchor_top = 0.05
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 149.088
-margin_top = 226.063
-margin_right = 2103.69
-margin_bottom = 1540.14
-rect_scale = Vector2( 0.15, 0.15 )
+offset_left = 149.088
+offset_top = 226.063
+offset_right = 2103.69
+offset_bottom = 1540.14
+scale = Vector2( 0.15, 0.15 )
 custom_constants/separation = 75
 alignment = 2
 
 [node name="RightArmBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 136.0
-margin_right = 2524.0
-margin_bottom = 336.0
+offset_top = 136.0
+offset_right = 2524.0
+offset_bottom = 336.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="RightArmLabel" type="Label" parent="VBoxContainer2/RightArmBox"]
-margin_left = 415.0
-margin_top = 24.0
-margin_right = 1700.0
-margin_bottom = 175.0
+offset_left = 415.0
+offset_top = 24.0
+offset_right = 1700.0
+offset_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Right Arm Ammo - "
 align = 2
 valign = 1
 
 [node name="RightArmAmmo" type="Label" parent="VBoxContainer2/RightArmBox"]
-margin_left = 1750.0
-margin_top = 24.0
-margin_right = 1974.0
-margin_bottom = 175.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 1750.0
+offset_top = 24.0
+offset_right = 1974.0
+offset_bottom = 175.0
+custom_minimum_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
 text = "N/A"
 align = 2
 valign = 1
 
 [node name="RABuy" type="TextureButton" parent="VBoxContainer2/RightArmBox"]
-margin_left = 2024.0
-margin_right = 2524.0
-margin_bottom = 200.0
+offset_left = 2024.0
+offset_right = 2524.0
+offset_bottom = 200.0
 texture_normal = ExtResource( 18 )
 texture_pressed = ExtResource( 20 )
 texture_hover = ExtResource( 19 )
 texture_focused = ExtResource( 19 )
 
 [node name="RACost" type="Label" parent="VBoxContainer2"]
-margin_top = 411.0
-margin_right = 2524.0
-margin_bottom = 562.0
+offset_top = 411.0
+offset_right = 2524.0
+offset_bottom = 562.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="LeftArmBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 637.0
-margin_right = 2524.0
-margin_bottom = 837.0
+offset_top = 637.0
+offset_right = 2524.0
+offset_bottom = 837.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="LeftArmLabel" type="Label" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 499.0
-margin_top = 24.0
-margin_right = 1700.0
-margin_bottom = 175.0
+offset_left = 499.0
+offset_top = 24.0
+offset_right = 1700.0
+offset_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Left Arm AmmO - "
 align = 2
 
 [node name="LeftArmAmmo" type="Label" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 1750.0
-margin_top = 24.0
-margin_right = 1974.0
-margin_bottom = 175.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 1750.0
+offset_top = 24.0
+offset_right = 1974.0
+offset_bottom = 175.0
+custom_minimum_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
 text = "N/A"
 align = 2
 
 [node name="LABuy" type="TextureButton" parent="VBoxContainer2/LeftArmBox"]
-margin_left = 2024.0
-margin_right = 2524.0
-margin_bottom = 200.0
+offset_left = 2024.0
+offset_right = 2524.0
+offset_bottom = 200.0
 texture_normal = ExtResource( 18 )
 texture_pressed = ExtResource( 20 )
 texture_hover = ExtResource( 19 )
 texture_focused = ExtResource( 19 )
 
 [node name="LACost" type="Label" parent="VBoxContainer2"]
-margin_top = 912.0
-margin_right = 2524.0
-margin_bottom = 1063.0
+offset_top = 912.0
+offset_right = 2524.0
+offset_bottom = 1063.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="RightShoulderBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 1138.0
-margin_right = 2524.0
-margin_bottom = 1338.0
+offset_top = 1138.0
+offset_right = 2524.0
+offset_bottom = 1338.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="RightShoulderLabel" type="Label" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 51.0
-margin_top = 24.0
-margin_right = 1700.0
-margin_bottom = 175.0
+offset_left = 51.0
+offset_top = 24.0
+offset_right = 1700.0
+offset_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Right Shoulder AmmO - "
 align = 2
 
 [node name="RightShoulderAmmo" type="Label" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 1750.0
-margin_top = 24.0
-margin_right = 1974.0
-margin_bottom = 175.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 1750.0
+offset_top = 24.0
+offset_right = 1974.0
+offset_bottom = 175.0
+custom_minimum_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
 text = "N/A"
 align = 2
 
 [node name="RSBuy" type="TextureButton" parent="VBoxContainer2/RightShoulderBox"]
-margin_left = 2024.0
-margin_right = 2524.0
-margin_bottom = 200.0
+offset_left = 2024.0
+offset_right = 2524.0
+offset_bottom = 200.0
 texture_normal = ExtResource( 18 )
 texture_pressed = ExtResource( 20 )
 texture_hover = ExtResource( 19 )
 texture_focused = ExtResource( 19 )
 
 [node name="RSCost" type="Label" parent="VBoxContainer2"]
-margin_top = 1413.0
-margin_right = 2524.0
-margin_bottom = 1564.0
+offset_top = 1413.0
+offset_right = 2524.0
+offset_bottom = 1564.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="LeftShoulderBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 1639.0
-margin_right = 2524.0
-margin_bottom = 1839.0
+offset_top = 1639.0
+offset_right = 2524.0
+offset_bottom = 1839.0
 custom_constants/separation = 50
 alignment = 2
 
 [node name="LeftShoulderLabel" type="Label" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 135.0
-margin_top = 24.0
-margin_right = 1700.0
-margin_bottom = 175.0
+offset_left = 135.0
+offset_top = 24.0
+offset_right = 1700.0
+offset_bottom = 175.0
 custom_fonts/font = SubResource( 8 )
 text = "Left Shoulder AmmO - "
 align = 2
 
 [node name="LeftShoulderAmmo" type="Label" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 1750.0
-margin_top = 24.0
-margin_right = 1974.0
-margin_bottom = 175.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 1750.0
+offset_top = 24.0
+offset_right = 1974.0
+offset_bottom = 175.0
+custom_minimum_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 8 )
 text = "N/A"
 align = 2
 
 [node name="LSBuy" type="TextureButton" parent="VBoxContainer2/LeftShoulderBox"]
-margin_left = 2024.0
-margin_right = 2524.0
-margin_bottom = 200.0
+offset_left = 2024.0
+offset_right = 2524.0
+offset_bottom = 200.0
 texture_normal = ExtResource( 18 )
 texture_pressed = ExtResource( 20 )
 texture_hover = ExtResource( 19 )
 texture_focused = ExtResource( 19 )
 
 [node name="LSCost" type="Label" parent="VBoxContainer2"]
-margin_top = 1914.0
-margin_right = 2524.0
-margin_bottom = 2065.0
+offset_top = 1914.0
+offset_right = 2524.0
+offset_bottom = 2065.0
 custom_fonts/font = SubResource( 11 )
 text = "0c"
 align = 2
 
 [node name="ArmorBox" type="HBoxContainer" parent="VBoxContainer2"]
-margin_top = 2140.0
-margin_right = 2524.0
-margin_bottom = 2340.0
+offset_top = 2140.0
+offset_right = 2524.0
+offset_bottom = 2340.0
 alignment = 2
 
 [node name="RemainingArmorLabel" type="Label" parent="VBoxContainer2/ArmorBox"]
-margin_left = 1487.0
-margin_right = 2259.0
-margin_bottom = 200.0
+offset_left = 1487.0
+offset_right = 2259.0
+offset_bottom = 200.0
 custom_fonts/font = SubResource( 10 )
 text = "Armor - "
 align = 2
 
 [node name="RemainingArmor" type="Label" parent="VBoxContainer2/ArmorBox"]
-margin_left = 2263.0
-margin_right = 2524.0
-margin_bottom = 200.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 2263.0
+offset_right = 2524.0
+offset_bottom = 200.0
+custom_minimum_size = Vector2( 200, 0 )
 custom_fonts/font = SubResource( 10 )
 text = "100"
 align = 2
@@ -402,33 +402,33 @@ anchor_left = 0.015
 anchor_top = 0.025
 anchor_right = 0.015
 anchor_bottom = 0.025
-margin_left = -8.47571
-margin_top = 260.628
-margin_right = 916.524
-margin_bottom = 980.628
-rect_scale = Vector2( 0.36, 0.36 )
+offset_left = -8.47571
+offset_top = 260.628
+offset_right = 916.524
+offset_bottom = 980.628
+scale = Vector2( 0.36, 0.36 )
 custom_constants/separation = 15
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
-margin_right = 730.0
-margin_bottom = 720.0
+offset_right = 730.0
+offset_bottom = 720.0
 grow_vertical = 0
 custom_constants/separation = 100
 
 [node name="ReloadButton2" type="TextureButton" parent="HBoxContainer/VBoxContainer"]
-margin_right = 730.0
-margin_bottom = 105.0
+offset_right = 730.0
+offset_bottom = 105.0
 texture_normal = ExtResource( 14 )
 texture_pressed = ExtResource( 16 )
 texture_hover = ExtResource( 17 )
 texture_focused = ExtResource( 17 )
 
 [node name="descriptor" type="Label" parent="HBoxContainer/VBoxContainer/ReloadButton2"]
-margin_left = 20.0
-margin_top = 109.0
-margin_right = 730.0
-margin_bottom = 140.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 20.0
+offset_top = 109.0
+offset_right = 730.0
+offset_bottom = 140.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_fonts/font = SubResource( 7 )
 text = "Restock Munitions."
 
@@ -437,31 +437,31 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -160.876
-margin_top = -0.105103
-margin_right = -0.875977
-margin_bottom = 59.8949
-rect_pivot_offset = Vector2( 160.466, 0.0320892 )
+offset_left = -160.876
+offset_top = -0.105103
+offset_right = -0.875977
+offset_bottom = 59.8949
+pivot_offset = Vector2( 160.466, 0.0320892 )
 custom_fonts/font = SubResource( 9 )
 text = "00000C"
 align = 2
 valign = 2
 
 [node name="RepairButton" type="TextureButton" parent="HBoxContainer/VBoxContainer"]
-margin_top = 205.0
-margin_right = 730.0
-margin_bottom = 310.0
+offset_top = 205.0
+offset_right = 730.0
+offset_bottom = 310.0
 texture_normal = ExtResource( 12 )
 texture_pressed = ExtResource( 13 )
 texture_hover = ExtResource( 15 )
 texture_focused = ExtResource( 15 )
 
 [node name="descriptor" type="Label" parent="HBoxContainer/VBoxContainer/RepairButton"]
-margin_left = 20.0
-margin_top = 109.0
-margin_right = 730.0
-margin_bottom = 140.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 20.0
+offset_top = 109.0
+offset_right = 730.0
+offset_bottom = 140.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_fonts/font = SubResource( 7 )
 text = "Repair hardware by 10%. "
 
@@ -470,69 +470,69 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -160.876
-margin_top = 0.627686
-margin_right = 4.12402
-margin_bottom = 60.6277
-rect_pivot_offset = Vector2( 160.466, 0.0320892 )
+offset_left = -160.876
+offset_top = 0.627686
+offset_right = 4.12402
+offset_bottom = 60.6277
+pivot_offset = Vector2( 160.466, 0.0320892 )
 custom_fonts/font = SubResource( 9 )
 text = "00000C"
 align = 2
 valign = 2
 
 [node name="ContinueButton" type="TextureButton" parent="HBoxContainer/VBoxContainer"]
-margin_top = 410.0
-margin_right = 730.0
-margin_bottom = 515.0
+offset_top = 410.0
+offset_right = 730.0
+offset_bottom = 515.0
 texture_normal = ExtResource( 6 )
 texture_pressed = ExtResource( 11 )
 texture_hover = ExtResource( 8 )
 texture_focused = ExtResource( 8 )
 
 [node name="descriptor" type="Label" parent="HBoxContainer/VBoxContainer/ContinueButton"]
-margin_left = 20.0
-margin_top = 109.0
-margin_right = 730.0
-margin_bottom = 140.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 20.0
+offset_top = 109.0
+offset_right = 730.0
+offset_bottom = 140.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_fonts/font = SubResource( 7 )
 text = "Continue sortie."
 
 [node name="ExitButton" type="TextureButton" parent="HBoxContainer/VBoxContainer"]
-margin_top = 615.0
-margin_right = 730.0
-margin_bottom = 720.0
+offset_top = 615.0
+offset_right = 730.0
+offset_bottom = 720.0
 texture_normal = ExtResource( 9 )
 texture_pressed = ExtResource( 10 )
 texture_hover = ExtResource( 7 )
 texture_focused = ExtResource( 7 )
 
 [node name="descriptor" type="Label" parent="HBoxContainer/VBoxContainer/ExitButton"]
-margin_left = 20.0
-margin_top = 109.0
-margin_right = 730.0
-margin_bottom = 140.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 20.0
+offset_top = 109.0
+offset_right = 730.0
+offset_bottom = 140.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_fonts/font = SubResource( 7 )
 text = "return from sortie."
 
 [node name="ColorRect" type="ColorRect" parent="HBoxContainer"]
-margin_left = 745.0
-margin_right = 765.0
-margin_bottom = 720.0
-rect_min_size = Vector2( 20, 0 )
+offset_left = 745.0
+offset_right = 765.0
+offset_bottom = 720.0
+custom_minimum_size = Vector2( 20, 0 )
 
 [node name="ColorRect2" type="ColorRect" parent="HBoxContainer"]
-margin_left = 780.0
-margin_right = 810.0
-margin_bottom = 720.0
-rect_min_size = Vector2( 30, 0 )
+offset_left = 780.0
+offset_right = 810.0
+offset_bottom = 720.0
+custom_minimum_size = Vector2( 30, 0 )
 
 [node name="ColorRect3" type="ColorRect" parent="HBoxContainer"]
-margin_left = 825.0
-margin_right = 925.0
-margin_bottom = 720.0
-rect_min_size = Vector2( 100, 0 )
+offset_left = 825.0
+offset_right = 925.0
+offset_bottom = 720.0
+custom_minimum_size = Vector2( 100, 0 )
 color = Color( 1, 1, 1, 0 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

@@ -2,16 +2,16 @@ extends CanvasLayer
 
 signal pause_toggle
 
-onready var ViewContainer = $ViewportContainer/Viewport/Control
-onready var ResumeButton = $ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Resume
-onready var QuitButton = $ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Quit
+@onready var ViewContainer = $SubViewportContainer/SubViewport/Control
+@onready var ResumeButton = $SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Resume
+@onready var QuitButton = $SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Quit
 
 func _ready():
-	$ViewportContainer.hide()
+	$SubViewportContainer.hide()
 	disable()
 
 func is_paused():
-	return $ViewportContainer.visible
+	return $SubViewportContainer.visible
 
 
 func enable():
@@ -30,17 +30,17 @@ func disable():
 
 
 func toggle_pause():
-	$ViewportContainer.visible = not $ViewportContainer.visible
+	$SubViewportContainer.visible = not $SubViewportContainer.visible
 	$ParallaxBackground/GridLayer.visible = not $ParallaxBackground/GridLayer.visible
 	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
-	if $ViewportContainer.visible:
+	if $SubViewportContainer.visible:
 		enable()
 	else:
 		MouseManager.hide_cursor()
 		disable()
 
 	
-	emit_signal("pause_toggle", $ViewportContainer.visible)
+	emit_signal("pause_toggle", $SubViewportContainer.visible)
 
 func _on_Button_mouse_entered():
 	if is_paused():
@@ -50,7 +50,7 @@ func _on_Button_mouse_entered():
 func _on_Quit_pressed():
 	AudioManager.play_sfx("back")
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
+	get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
 
 
 func _on_Resume_pressed():

@@ -1,7 +1,7 @@
 extends Control
 
-export var stat_name = ""
-export var stat_label = ""
+@export var stat_name = ""
+@export var stat_label = ""
 
 var compared_part = false
 

@@ -11,15 +11,13 @@ const FADEIN_SPEED = 60
 
 #BGM
 const BGM_PATH = "res://database/audio/bgm/"
-onready var BGMS = {}
+@onready var BGMS = {}
 
 #SFX
 const MAX_SFX_NODES = 30
 const MAX_POS_SFX_NODES = 200
 const SFX_PATH = "res://database/audio/sfx/"
-onready var SFXS = {}
-
-onready var FadeTween = $FadeTween
+@onready var SFXS = {}
 
 var bgms_last_pos = {}
 var cur_bgm
@@ -35,20 +33,20 @@ func _ready():
 func setup_nodes():
 	for node in MAX_SFX_NODES:
 		var player = AudioStreamPlayer.new()
-		player.stream = AudioStreamRandomPitch.new()
+		player.stream = AudioStreamRandomizer.new()
 		player.bus = "SFX"
 		$SFXS.add_child(player)
 	for node in MAX_POS_SFX_NODES:
 		var player = AudioStreamPlayer2D.new()
-		player.stream = AudioStreamRandomPitch.new()
+		player.stream = AudioStreamRandomizer.new()
 		player.bus = "SFX"
 		$PositionalSFXS.add_child(player)
 
 
 func setup_bgms():
-	var dir = Directory.new()
-	if dir.open(BGM_PATH) == OK:
-		dir.list_dir_begin()
+	var dir = DirAccess.open(BGM_PATH)
+	if dir:
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name != "." and file_name != "..":
@@ -57,22 +55,20 @@ func setup_bgms():
 				
 			file_name = dir.get_next()
 	else:
-		push_error("An error occurred when trying to access bgms path.")
-		assert(false)
+		push_error("An error occurred when trying to access bgms path: " + str(DirAccess.get_open_error()))
 
 
 func setup_sfxs():
-	var dir = Directory.new()
-	if dir.open(SFX_PATH) == OK:
-		dir.list_dir_begin()
+	var dir = DirAccess.open(SFX_PATH)
+	if dir:
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
 				SFXS[file_name.replace(".tres", "")] = load(SFX_PATH + file_name)
 			file_name = dir.get_next()
 	else:
-		push_error("An error occurred when trying to access sfxs path.")
-		assert(false)
+		push_error("An error occurred when trying to access sfxs path: " + str(DirAccess.get_open_error()))
 
 #Bus methods
 
@@ -87,35 +83,34 @@ func set_bus_volume(which_bus: int, value: float):
 	if which_bus in [MASTER_BUS, BGM_BUS, SFX_BUS]:
 		AudioServer.set_bus_volume_db(which_bus, db)
 	else:
-		assert(false, "Not a valid bus to set volume: " + str(which_bus))
+		push_error("Not a valid bus to set volume: " + str(which_bus))
 
 
 func get_bus_volume(which_bus: int):
 	if which_bus in [MASTER_BUS, SFX_BUS, BGM_BUS]:
 		return clamp(1.0 - AudioServer.get_bus_volume_db(which_bus)/float(MUTE_DB/CONTROL_MULTIPLIER), 0.0, 1.0)
 	else:
-		assert(false, "Not a valid bus to set volume: " + str(which_bus))
+		push_error("Not a valid bus to set volume: " + str(which_bus))
 
 #BGM methods
 
-func play_bgm(name, start_from_beginning = false, fade_in_speed_override = false):
+func play_bgm(bgm_name, start_from_beginning = false, fade_in_speed_override = false):
 	if cur_bgm:
 		stop_bgm()
 	
-	assert(BGMS.has(name), "Not a valid bgm name: " + str(name))
-	cur_bgm = name
+	assert(BGMS.has(bgm_name),"Not a valid bgm name: " + str(bgm_name))
+	cur_bgm = bgm_name
 	var player = $BGMS/BGMPlayer1
-	player.stream = BGMS[name].asset
+	player.stream = BGMS[bgm_name].asset
 	player.volume_db = MUTE_DB
 	if start_from_beginning:
 		player.play(0)
 	else:
-		player.play(get_bgm_last_pos(name))
+		player.play(get_bgm_last_pos(bgm_name))
 	var fade_speed = FADEIN_SPEED if not fade_in_speed_override else fade_in_speed_override
-	var duration = (BGMS[name].base_db - MUTE_DB)/float(fade_speed)
-	FadeTween.remove(player, "volume_db")
-	FadeTween.interpolate_property(player, "volume_db", MUTE_DB, BGMS[name].base_db, duration, Tween.TRANS_LINEAR, Tween.EASE_IN, 0)
-	FadeTween.start()
+	var duration = (BGMS[bgm_name].base_db - MUTE_DB)/float(fade_speed)
+	var tween = get_tree().create_tween()
+	tween.tween_property(player, "volume_db", BGMS[bgm_name].base_db, duration)
 
 
 func stop_bgm():
@@ -131,33 +126,31 @@ func stop_bgm():
 		fadeout.stream = fadein.stream
 		fadeout.play(pos)
 		var duration = (vol - MUTE_DB)/FADEOUT_SPEED
-		FadeTween.remove(fadeout, "volume_db")
-		FadeTween.interpolate_property(fadeout, "volume_db", vol, MUTE_DB, duration, Tween.TRANS_LINEAR, Tween.EASE_IN, 0)
-		FadeTween.start()
+		var tween = get_tree().create_tween()
+		tween.tween_property(fadeout, "volume_db", MUTE_DB, duration)
 
 
-func get_bgm_last_pos(name):
-	if not bgms_last_pos.has(name):
-		bgms_last_pos[name] = 0
-	return bgms_last_pos[name]
+func get_bgm_last_pos(bgm_name):
+	if not bgms_last_pos.has(bgm_name):
+		bgms_last_pos[bgm_name] = 0
+	return bgms_last_pos[bgm_name]
 
 
-func set_bgm_last_pos(name, pos):
-	bgms_last_pos[name] = pos
+func set_bgm_last_pos(bgm_name, pos):
+	bgms_last_pos[bgm_name] = pos
 
 #SFX methods
 
-func play_sfx(name: String, pos = false, override_pitch = false, override_db = false, override_att = false, override_max_range = false):
-	if not SFXS.has(name):
-		push_error("Not a valid sfx name: " + name)
-		assert(false)
+func play_sfx(sfx_name: String, pos = false, override_pitch = false, override_db = false, override_att = false, override_max_range = false):
+	if not SFXS.has(sfx_name):
+		push_error("Not a valid sfx name: " + sfx_name)
 	
-	var sfx = SFXS[name]
+	var sfx = SFXS[sfx_name]
 	var player = get_sfx_player(pos)
 	player.stop()
 	
-	player.stream.audio_stream = sfx.asset
-	player.volume_db = override_db if override_db else sfx.base_db + rand_range(-sfx.random_db_var, sfx.random_db_var)
+	player.stream.add_stream(0, sfx.asset)
+	player.volume_db = override_db if override_db else sfx.base_db + randf_range(-sfx.random_db_var, sfx.random_db_var)
 	player.pitch_scale = max(override_pitch, 0.001) if override_pitch else sfx.base_pitch
 	player.stream.random_pitch = 1.0 + sfx.random_pitch_var
 	
@@ -170,10 +163,9 @@ func play_sfx(name: String, pos = false, override_pitch = false, override_db = f
 	player.play()
 
 
-func get_sfx_duration(name: String):
-	if not SFXS.has(name):
-		push_error("Not a valid sfx name: " + name)
-		assert(false)
+func get_sfx_duration(sfx_name: String):
+	if not SFXS.has(sfx_name):
+		push_error("Not a valid sfx name: " + sfx_name)
 	return SFXS[name].asset.get_length()
 
 

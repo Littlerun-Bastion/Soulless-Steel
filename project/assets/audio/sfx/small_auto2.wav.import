@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/small_auto2.wav-9fc0d5922e2ac24a435a9a24a8654808.sample"
+type="AudioStreamWAV"
+uid="uid://bfins7jg3nkwb"
+path="res://.godot/imported/small_auto2.wav-9fc0d5922e2ac24a435a9a24a8654808.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/small_auto2.wav"
-dest_files=[ "res://.import/small_auto2.wav-9fc0d5922e2ac24a435a9a24a8654808.sample" ]
+dest_files=["res://.godot/imported/small_auto2.wav-9fc0d5922e2ac24a435a9a24a8654808.sample"]
 
 [params]
 

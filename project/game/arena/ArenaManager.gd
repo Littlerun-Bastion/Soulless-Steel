@@ -2,7 +2,7 @@ extends Node
 
 const MAPS_PATH = "res://database/maps/"
 
-onready var MAPS = {}
+@onready var MAPS = {}
 
 var map_to_load = false
 
@@ -12,9 +12,9 @@ func _ready():
 
 
 func setup_maps():
-	var dir = Directory.new()
-	if dir.open(MAPS_PATH) == OK:
-		dir.list_dir_begin()
+	var dir = DirAccess.open(MAPS_PATH)
+	if dir:
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name != "." and file_name != "..":
@@ -23,21 +23,20 @@ func setup_maps():
 				
 			file_name = dir.get_next()
 	else:
-		push_error("An error occurred when trying to access maps path.")
-		assert(false)
+		push_error("An error occurred when trying to access maps path: " + str(DirAccess.get_open_error()))
 
 
-func set_map_to_load(name):
-	map_to_load = name
+func set_map_to_load(map_name):
+	map_to_load = map_name
 
 
 func get_current_map():
-	assert(map_to_load, "There is no map to load")
+	assert(map_to_load,"There is no map to load")
 	var data = get_map(map_to_load)
 	map_to_load = false
 	return data
 
 
-func get_map(name):
-	assert(MAPS.has(name), "Not a valid map name: " + str(name))
-	return MAPS[name].instance()
+func get_map(map_name):
+	assert(MAPS.has(map_name),"Not a valid map name: " + str(map_name))
+	return MAPS[map_name].instantiate()

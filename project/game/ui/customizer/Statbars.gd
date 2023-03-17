@@ -5,7 +5,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 const CAT_PATH = "CategoryContainers/"
 const LERP_WEIGHT = 5
 
-onready var StatNodes = [get_node(CAT_PATH + "ElectronicsContainer"),
+@onready var StatNodes = [get_node(CAT_PATH + "ElectronicsContainer"),
 get_node(CAT_PATH + "DefensesContainer"),
 get_node(CAT_PATH + "MobilityContainer"),
 get_node(CAT_PATH + "EnergyContainer"),
@@ -14,7 +14,7 @@ get_node(CAT_PATH + "LArmContainer"),
 get_node(CAT_PATH + "RShoulderContainer"),
 get_node(CAT_PATH + "LShoulderContainer")]
 
-onready var StatNodeTitles = ["Electronics",
+@onready var StatNodeTitles = ["Electronics",
 "Defenses",
 "Mobility",
 "Energy",
@@ -23,7 +23,7 @@ onready var StatNodeTitles = ["Electronics",
 "Right Shoulder",
 "Left Shoulder"]
 
-onready var CategoryTitle = $CategoryTitle
+@onready var CategoryTitle = $CategoryTitle
 
 var current_category = 0
 var compared_part = false
@@ -52,7 +52,7 @@ func _process(dt):
 					
 
 func mode_switch (mode):
-	assert(mode >= 0 and mode <= StatNodes.size() - 1, "Not a valid mode: " + str(mode))
+	assert(mode >= 0 and mode <= StatNodes.size() - 1,"Not a valid mode: " + str(mode))
 	var target_node = StatNodes[mode]
 	for child in $CategoryContainers.get_children():
 		child.visible = child == target_node 

@@ -3,7 +3,7 @@
 [ext_resource path="res://game/arena/Arena.gd" type="Script" id=1]
 [ext_resource path="res://game/ui/PlayerHUD.tscn" type="PackedScene" id=2]
 [ext_resource path="res://game/ui/IntroAnimation.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture2D" id=4]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/arena/CasingsQueue.gd" type="Script" id=6]
 [ext_resource path="res://game/EjectorParticle.tscn" type="PackedScene" id=7]
@@ -12,14 +12,14 @@
 [ext_resource path="res://game/arena/GameOver.tscn" type="PackedScene" id=58]
 
 [sub_resource type="NavigationPolygon" id=1]
-vertices = PoolVector2Array( -441, -785, 61, -836, 537, -804, 835, -201, 835, 212, 518, 758, -111, 790, -574, 707, -790, 326, -879, -214, -657, -563 )
-polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ) ]
-outlines = [ PoolVector2Array( -657, -563, -879, -214, -790, 326, -574, 707, -111, 790, 518, 758, 835, 212, 835, -201, 537, -804, 61, -836, -441, -785 ) ]
+vertices = PackedVector2Array( -441, -785, 61, -836, 537, -804, 835, -201, 835, 212, 518, 758, -111, 790, -574, 707, -790, 326, -879, -214, -657, -563 )
+polygons = [ PackedInt32Array( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ) ]
+outlines = [ PackedVector2Array( -657, -563, -879, -214, -790, 326, -574, 707, -111, 790, 518, 758, 835, 212, 835, -201, 537, -804, 61, -836, -441, -785 ) ]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource( 1 )
 
-[node name="BG" type="Sprite" parent="."]
+[node name="BG" type="Sprite2D" parent="."]
 z_index = -5
 texture = ExtResource( 4 )
 
@@ -64,7 +64,7 @@ casings_count = 2000
 
 [node name="Texts" type="Node2D" parent="."]
 
-[node name="NavigationPolygon" type="NavigationPolygonInstance" parent="."]
+[node name="NavigationPolygon" type="NavigationRegion2D" parent="."]
 navpoly = SubResource( 1 )
 __meta__ = {
 "_edit_lock_": true
@@ -73,9 +73,9 @@ __meta__ = {
 [node name="ArenaCamera" parent="." instance=ExtResource( 5 )]
 current = false
 zoom = Vector2( 10, 10 )
-drag_margin_h_enabled = false
-drag_margin_v_enabled = false
-smoothing_speed = 10.0
+drag_horizontal_enabled = false
+drag_vertical_enabled = false
+position_smoothing_speed = 10.0
 
 [node name="HeatmapEffects" parent="." instance=ExtResource( 8 )]
 

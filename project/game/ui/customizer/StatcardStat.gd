@@ -1,7 +1,7 @@
 extends Control
 
-export var stat_title = ""
-export var stat_name = ""
+@export var stat_title = ""
+@export var stat_name = ""
 
 func _ready():
 	$Title.text = stat_title

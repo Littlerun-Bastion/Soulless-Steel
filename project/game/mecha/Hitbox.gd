@@ -1,6 +1,6 @@
 extends Area2D
 
-onready var Collision = $CollisionShape2D
+@onready var Collision = $CollisionShape2D
 
 var data
 

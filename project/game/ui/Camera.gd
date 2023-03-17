@@ -16,7 +16,7 @@ func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
 	$Frequency.start()
 
 func new_shake():
-	var target = Vector2(rand_range(-amp, amp), rand_range(-amp, amp))
+	var target = Vector2(randf_range(-amp, amp), randf_range(-amp, amp))
 	$Tween.interpolate_property(self, "offset", offset, target, $Frequency.wait_time, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
 	$Tween.start()
 

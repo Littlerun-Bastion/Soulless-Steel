@@ -1,14 +1,14 @@
 [gd_scene load_steps=18 format=2]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="DynamicFontData" id=1]
-[ext_resource path="res://assets/fonts/general_font.tres" type="DynamicFont" id=2]
-[ext_resource path="res://assets/images/ui/menu/files.png" type="Texture" id=3]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="FontFile" id=1]
+[ext_resource path="res://assets/fonts/general_font.tres" type="FontFile" id=2]
+[ext_resource path="res://assets/images/ui/menu/files.png" type="Texture2D" id=3]
 [ext_resource path="res://game/ui/customizer/DesignButton.gd" type="Script" id=4]
 
-[sub_resource type="DynamicFont" id=31]
+[sub_resource type="FontFile" id=31]
 size = 11
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_char = 2
 extra_spacing_space = 2
 font_data = ExtResource( 1 )
@@ -79,10 +79,10 @@ shadow_color = Color( 1, 1, 1, 1 )
 anti_aliasing = false
 anti_aliasing_size = 0.01
 
-[sub_resource type="DynamicFont" id=6]
+[sub_resource type="FontFile" id=6]
 size = 10
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_char = 2
 extra_spacing_space = 2
 font_data = ExtResource( 1 )
@@ -164,11 +164,11 @@ VScrollBar/styles/scroll = SubResource( 4 )
 VScrollBar/styles/scroll_focus = SubResource( 5 )
 
 [node name="Button" type="Button"]
-margin_right = 500.0
-margin_bottom = 50.0
-rect_min_size = Vector2( 0, 50 )
+offset_right = 500.0
+offset_bottom = 50.0
+custom_minimum_size = Vector2( 0, 50 )
 theme = SubResource( 30 )
-custom_constants/hseparation = 10
+custom_constants/h_separation = 10
 text = "TestDesign1.bp"
 icon = ExtResource( 3 )
 align = 0

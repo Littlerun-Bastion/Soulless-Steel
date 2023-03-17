@@ -18,7 +18,7 @@ var body
 signal bullet_impact
 
 func _physics_process(dt): 
-	var cast_point := cast_to
+	var cast_point := target_position
 	if not hit:
 		body = get_collider()
 		force_raycast_update()
@@ -50,7 +50,7 @@ func _physics_process(dt):
 					hit = true
 			cast_point = to_local(get_collision_point())
 			force_raycast_update()
-			if cast_point != cast_to:
+			if cast_point != target_position:
 				proj_data.points[1] = (cast_point)
 			else:
 				force_raycast_update()
@@ -66,7 +66,7 @@ func _physics_process(dt):
 
 func setup(mecha, args):
 	data = args.weapon_data
-	proj_data  = data.projectile.instance()
+	proj_data  = data.projectile.instantiate()
 	if proj_data:
 		add_child(proj_data)
 	else:
@@ -78,7 +78,7 @@ func setup(mecha, args):
 	proj_data.width = data.projectile_size*10
 	dir = args.dir.normalized()
 	position = args.pos
-	cast_to = dir*data.beam_range
+	target_position = dir*data.beam_range
 	add_exception(original_mecha_info.body)
 
 
@@ -88,5 +88,5 @@ func die():
 	dying = true
 	$DeathTween.interpolate_property(self, "modulate:a", 1.0, 0.0, 1.0, Tween.TRANS_CUBIC, Tween.EASE_IN)
 	$DeathTween.start()
-	yield($DeathTween, "tween_completed")
+	await $DeathTween.finished
 	queue_free()

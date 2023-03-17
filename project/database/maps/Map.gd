@@ -1,6 +1,6 @@
 extends Node2D
 
-export var is_tutorial := false
+@export var is_tutorial := false
 
 
 func get_bg():
@@ -40,4 +40,4 @@ func get_texts():
 
 
 func get_navigation_polygon():
-	return $NavigationPolygonInstance.navpoly
+	return $NavigationRegion2D.navpoly

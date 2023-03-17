@@ -102,7 +102,10 @@ func try_to_shoot(name):
 func can_see_target():
 	if valid_target:
 		var space_state = get_world_2d().direct_space_state
-		var result = space_state.intersect_ray(position, valid_target.position, [self])
+		var ray = PhysicsRayQueryParameters2D.new()
+		ray.create(position, valid_target.position)
+		ray.exclude = [self]
+		var result = space_state.intersect_ray(ray)
 		if result:
 			return (result.collider == valid_target)
 		return false
@@ -114,9 +117,9 @@ func can_see_target():
 #Assumes enemy has a valid target
 func random_targeting_pos(min_dist, max_dist):
 	var rand_pos = Vector2()
-	var angle = rand_range(0, 2.0*PI)
+	var angle = randf_range(0, 2.0*PI)
 	var direction = Vector2(cos(angle), sin(angle)).normalized()
-	var rand_radius = rand_range(min_dist, max_dist)
+	var rand_radius = randf_range(min_dist, max_dist)
 	rand_pos = valid_target.position + direction * rand_radius
 	
 	return rand_pos
@@ -149,7 +152,9 @@ func _on_NavigationAgent2D_navigation_finished():
 
 
 func _on_NavigationAgent2D_velocity_computed(safe_velocity):
-	velocity = move_and_slide(safe_velocity)
+	set_velocity(safe_velocity)
+	move_and_slide()
+	velocity = velocity
 
 
 func _on_NavigationAgent2D_target_reached():

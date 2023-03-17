@@ -4,29 +4,29 @@
 [ext_resource path="res://game/ui/customizer/TopBarStatbox.gd" type="Script" id=2]
 
 [node name="Statbox" type="Control"]
-margin_right = 173.0
-margin_bottom = 43.0
+offset_right = 173.0
+offset_bottom = 43.0
 script = ExtResource( 2 )
 
 [node name="StatLabelMain" type="Label" parent="."]
-margin_left = 65.7029
-margin_right = 183.703
-margin_bottom = 46.0
+offset_left = 65.7029
+offset_right = 183.703
+offset_bottom = 46.0
 theme = ExtResource( 1 )
 text = "40000"
 
 [node name="TitleLabel" type="Label" parent="."]
-margin_right = 118.0
-margin_bottom = 46.0
-rect_scale = Vector2( 0.5, 0.5 )
+offset_right = 118.0
+offset_bottom = 46.0
+scale = Vector2( 0.5, 0.5 )
 theme = ExtResource( 1 )
 align = 2
 
 [node name="IncreaseIndicator" type="Label" parent="."]
 visible = false
-margin_top = 25.0
-margin_right = 118.0
-margin_bottom = 71.0
-rect_scale = Vector2( 0.4, 0.4 )
+offset_top = 25.0
+offset_right = 118.0
+offset_bottom = 71.0
+scale = Vector2( 0.4, 0.4 )
 theme = ExtResource( 1 )
 text = "[+++]"

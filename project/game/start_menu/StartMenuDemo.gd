@@ -1,6 +1,6 @@
 extends Control
 
-onready var Parallax = $ParallaxBackground
+@onready var Parallax = $ParallaxBackground
 
 var parallaxMult = 30.0
 
@@ -18,7 +18,7 @@ func _ready():
 	AudioManager.play_bgm("main-menu")
 	
 	if Debug.get_setting("go_to_mode"):
-		yield(get_tree(), "idle_frame")
+		await get_tree().idle_frame
 		start_game(Debug.get_setting("go_to_mode"))
 
 
@@ -32,12 +32,12 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.x = parallaxMult * relative_x
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
-		OS.window_fullscreen = not OS.window_fullscreen
-		Profile.set_option("fullscreen", OS.window_fullscreen, true)
-		if not OS.window_fullscreen:
-			yield(get_tree(), "idle_frame")
-			OS.window_size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			OS.window_position = Vector2(0,0)
+		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
+		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
+		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
+			await get_tree().idle_frame
+			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
+			get_window().position = Vector2(0,0)
 
 
 func start_game(mode):
@@ -55,7 +55,7 @@ func start_game(mode):
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
 	# warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/arena/Arena.tscn")
+	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
 
 
 func _on_Button_mouse_entered():
@@ -76,7 +76,7 @@ func _on_ExitButton_pressed():
 
 func _on_Hangar_pressed():
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/ui/customizer/Customizer.tscn")
+	get_tree().change_scene_to_file("res://game/ui/customizer/Customizer.tscn")
 
 func _on_Arena_pressed():
 	AudioManager.play_sfx("confirm")

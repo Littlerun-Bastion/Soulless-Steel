@@ -10,11 +10,11 @@ var home_projectile
 var point_age := [0.0]
 var min_spawn_distance := 20
 
-onready var tween := $Decay
+@onready var tween := $Decay
 
 func _ready():
-	set_as_toplevel(true)
-	tween.interpolate_property(self, "modulate:a", 1.0, 0.0, rand_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))), Tween.TRANS_CIRC, Tween.EASE_OUT)
+	set_as_top_level(true)
+	tween.interpolate_property(self, "modulate:a", 1.0, 0.0, randf_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))), Tween.TRANS_CIRC, Tween.EASE_OUT)
 	clear_points()
 	tween.start()
 
@@ -31,20 +31,20 @@ func _process(dt):
 	if tick > tick_speed:
 		tick = 0
 		if is_instance_valid(home_projectile):
-			add_point(home_projectile.global_position)
+			add_new_point(home_projectile.global_position)
 			for point in range(get_point_count()):
 				point_age[point] += 5*dt
-				var rand_vector := Vector2(rand_range(-ecc_speed, ecc_speed), rand_range(-ecc_speed, ecc_speed))
+				var rand_vector := Vector2(randf_range(-ecc_speed, ecc_speed), randf_range(-ecc_speed, ecc_speed))
 				points[point] += rand_vector * eccentricity * point_age[point]
 	else:
 		tick += dt
 
-func add_point(point_pos:Vector2, at_pos := -1):
+func add_new_point(point_pos:Vector2, at_pos := -1):
 	if get_point_count() > 0 and point_pos.distance_to(points[get_point_count()-1]) < min_spawn_distance:
 		return
 	
 	point_age.append(0.0)
-	.add_point(point_pos, at_pos)
+	add_new_point(point_pos, at_pos) #TODO: CHECK IF THIS IS RIGHT
 
 func _on_Tween_tween_all_completed():
 	queue_free()

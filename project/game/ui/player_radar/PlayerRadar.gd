@@ -17,7 +17,7 @@ var radar_cooldown := 0.0
 
 func _process(_dt):
 	if player and visible:
-		rect_position = player.get_global_transform_with_canvas().origin
+		position = player.get_global_transform_with_canvas().origin
 		clear_dead_mechas()
 		if not update_cooldown:
 			update_mecha_position()	
@@ -86,7 +86,7 @@ func get_mecha_pointer(mecha):
 
 
 func add_pointer():
-	var pointer = POINTER.instance()
+	var pointer = POINTER.instantiate()
 	$Pointers.add_child(pointer)
 	
 	return pointer
@@ -98,7 +98,7 @@ func update_pointer(pointer_data):
 	
 	#Rotate
 	var angle = player.global_position.angle_to_point(target_pos) - PI/2
-	pointer.rect_rotation = rad2deg(angle)
+	pointer.rotation = rad_to_deg(angle)
 	
 	var distance = player.global_position.distance_to(target_pos)
 	if distance > range_radius:
@@ -115,12 +115,12 @@ func update_pointer(pointer_data):
 
 func _on_UpdateTimer_timeout():
 	var t_scale = Vector2(.6,.6)
-	$Tween.interpolate_property($Circle, "rect_scale", Vector2(1,1), t_scale, .1, Tween.TRANS_CUBIC, Tween.EASE_IN)
+	$Tween.interpolate_property($Circle, "scale", Vector2(1,1), t_scale, .1, Tween.TRANS_CUBIC, Tween.EASE_IN)
 	$Tween.start()
-	yield($Tween, "tween_completed")
+	await $Tween.finished
 	update_mecha_position()
 	update_pointers()
-	$Tween.interpolate_property($Circle, "rect_scale", t_scale, Vector2(1,1), .5, Tween.TRANS_CUBIC, Tween.EASE_OUT)
+	$Tween.interpolate_property($Circle, "scale", t_scale, Vector2(1,1), .5, Tween.TRANS_CUBIC, Tween.EASE_OUT)
 	$Tween.start()
 	$Tween.interpolate_property($Pointers, "modulate:a", 1, 0, radar_cooldown / 1.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
 	

@@ -3,7 +3,7 @@ extends CanvasLayer
 const ACTIVE = true
 const MARKER = preload("res://game/debug/Marker.tscn")
 
-onready var Markers = $Markers
+@onready var Markers = $Markers
 
 var debug_settings = {
 	"window": false,
@@ -20,21 +20,20 @@ var debug_settings = {
 
 
 func get_setting(mode):
-	assert(debug_settings.has(mode), "Not a valid debug mode:" + str(mode))
+	assert(debug_settings.has(mode),"Not a valid debug mode:" + str(mode))
 	if ACTIVE:
 		return debug_settings[mode]
 	return false
 
 
 func window_debug_mode():
-	OS.window_fullscreen = false
-	OS.window_size = Vector2(1080, 600)
-	OS.window_position = Vector2(400, 100)
+	get_window().mode = Window.MODE_WINDOWED
+	get_window().size = Vector2(1080, 600)
 
 
-func create_marker(pos, color:= Color.white, scale_mod := 1.0):
+func create_marker(pos, color:= Color.WHITE, scale_mod := 1.0):
 	print("Creating marker at ", pos, " with color ", str(color))
-	var marker = MARKER.instance()
+	var marker = MARKER.instantiate()
 	Markers.add_child(marker)
 	marker.global_position = pos
 	marker.modulate = color

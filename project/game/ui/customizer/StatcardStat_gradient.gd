@@ -1,6 +1,6 @@
 extends Control
 
-export var stat_title = "Heatmap"
+@export var stat_title = "Heatmap"
 var stat_name = "heatmap"
 
 func _ready():

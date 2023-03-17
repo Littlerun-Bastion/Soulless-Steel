@@ -1,13 +1,13 @@
 [gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://game/pause/PauseMenu.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/ui/pause_menu/resume_button.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/ui/pause_menu/resume_button_highlight.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button_highlight.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/ui/pause_menu/resume_button.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/ui/pause_menu/resume_button_highlight.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/ui/pause_menu/self_destruct_button_highlight.png" type="Texture2D" id=5]
 [ext_resource path="res://game/pause/PauseMenuParallax.gd" type="Script" id=6]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=7]
-[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=8]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="FontFile" id=7]
+[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture2D" id=8]
 
 [sub_resource type="Theme" id=13]
 
@@ -35,17 +35,17 @@ void fragment()
 shader = SubResource( 20 )
 shader_param/warpAmount = 0.15
 
-[sub_resource type="DynamicFont" id=1]
+[sub_resource type="FontFile" id=1]
 size = 100
 outline_size = 1
 font_data = ExtResource( 7 )
 
-[sub_resource type="DynamicFont" id=14]
+[sub_resource type="FontFile" id=14]
 size = 40
 font_data = ExtResource( 7 )
 
 [node name="PauseMenu" type="CanvasLayer"]
-pause_mode = 2
+process_mode = 2
 layer = 3
 script = ExtResource( 1 )
 
@@ -60,10 +60,10 @@ motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
 show_behind_parent = true
-margin_left = -605.0
-margin_top = -726.0
-margin_right = 7395.0
-margin_bottom = 7274.0
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = SubResource( 13 )
@@ -74,10 +74,10 @@ visible = false
 motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
 texture = ExtResource( 8 )
 
 [node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
@@ -89,93 +89,93 @@ motion_mirroring = Vector2( 4000, 4000 )
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
 visible = false
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
 texture = ExtResource( 8 )
 
-[node name="ViewportContainer" type="ViewportContainer" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 material = SubResource( 21 )
-margin_right = 40.0
-margin_bottom = 40.0
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 size = Vector2( 1920, 1080 )
 transparent_bg = true
 handle_input_locally = false
 render_target_update_mode = 3
 
-[node name="ColorRect" type="ColorRect" parent="ViewportContainer/Viewport"]
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport"]
 modulate = Color( 0, 0, 0, 0.286275 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Control" type="Control" parent="ViewportContainer/Viewport"]
+[node name="Control" type="Control" parent="SubViewportContainer/SubViewport"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Label" type="Label" parent="ViewportContainer/Viewport/Control"]
-margin_left = 40.6972
-margin_top = 16.1432
-margin_right = 1145.7
-margin_bottom = 167.143
+[node name="Label" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+offset_left = 40.6972
+offset_top = 16.1432
+offset_right = 1145.7
+offset_bottom = 167.143
 custom_fonts/font = SubResource( 1 )
 text = "Runtime Functions"
 
-[node name="Label2" type="Label" parent="ViewportContainer/Viewport/Control"]
-margin_left = 40.6972
-margin_top = 117.591
-margin_right = 1457.7
-margin_bottom = 268.591
+[node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+offset_left = 40.6972
+offset_top = 117.591
+offset_right = 1457.7
+offset_bottom = 268.591
 custom_fonts/font = SubResource( 14 )
 text = "User advisory: This Interface does not halt the remote program runtime."
 
-[node name="MarginContainer" type="MarginContainer" parent="ViewportContainer/Viewport/Control"]
-margin_left = 40.3501
-margin_top = 168.686
-margin_right = 790.35
-margin_bottom = 412.686
-rect_scale = Vector2( 0.66, 0.66 )
+[node name="MarginContainer" type="MarginContainer" parent="SubViewportContainer/SubViewport/Control"]
+offset_left = 40.3501
+offset_top = 168.686
+offset_right = 790.35
+offset_bottom = 412.686
+scale = Vector2( 0.66, 0.66 )
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ViewportContainer/Viewport/Control/MarginContainer"]
-margin_right = 750.0
-margin_bottom = 244.0
+[node name="VBoxContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport/Control/MarginContainer"]
+offset_right = 750.0
+offset_bottom = 244.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Resume" type="TextureButton" parent="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer"]
-margin_right = 750.0
-margin_bottom = 120.0
+[node name="Resume" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer"]
+offset_right = 750.0
+offset_bottom = 120.0
 texture_normal = ExtResource( 3 )
 texture_hover = ExtResource( 4 )
 
-[node name="Quit" type="TextureButton" parent="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer"]
-margin_top = 124.0
-margin_right = 750.0
-margin_bottom = 244.0
+[node name="Quit" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer"]
+offset_top = 124.0
+offset_right = 750.0
+offset_bottom = 244.0
 texture_normal = ExtResource( 2 )
 texture_hover = ExtResource( 5 )
 
-[node name="ColorRect2" type="ColorRect" parent="ViewportContainer/Viewport/Control"]
+[node name="ColorRect2" type="ColorRect" parent="SubViewportContainer/SubViewport/Control"]
 anchor_left = 0.007
 anchor_right = 0.012
 anchor_bottom = 1.0
-margin_left = 5.5559
-margin_top = 0.396851
-margin_right = 5.5559
-margin_bottom = 0.396851
+offset_left = 5.5559
+offset_top = 0.396851
+offset_right = 5.5559
+offset_bottom = 0.396851
 
-[node name="ColorRect3" type="ColorRect" parent="ViewportContainer/Viewport/Control"]
+[node name="ColorRect3" type="ColorRect" parent="SubViewportContainer/SubViewport/Control"]
 anchor_left = 0.005
 anchor_right = 0.007
 anchor_bottom = 1.0
-margin_top = 0.396851
-margin_bottom = 0.396851
+offset_top = 0.396851
+offset_bottom = 0.396851
 
-[connection signal="mouse_entered" from="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Resume" to="." method="_on_Button_mouse_entered"]
-[connection signal="pressed" from="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Resume" to="." method="_on_Resume_pressed"]
-[connection signal="mouse_entered" from="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Quit" to="." method="_on_Button_mouse_entered"]
-[connection signal="pressed" from="ViewportContainer/Viewport/Control/MarginContainer/VBoxContainer/Quit" to="." method="_on_Quit_pressed"]
+[connection signal="mouse_entered" from="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Resume" to="." method="_on_Button_mouse_entered"]
+[connection signal="pressed" from="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Resume" to="." method="_on_Resume_pressed"]
+[connection signal="mouse_entered" from="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Quit" to="." method="_on_Button_mouse_entered"]
+[connection signal="pressed" from="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer/Quit" to="." method="_on_Quit_pressed"]

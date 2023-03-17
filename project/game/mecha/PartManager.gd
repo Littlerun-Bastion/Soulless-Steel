@@ -4,16 +4,16 @@ const DATA_PATH = "res://database/parts/"
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 
-onready var ARM_WEAPONS = {}
-onready var SHOULDER_WEAPONS = {}
-onready var SHOULDERS = {}
-onready var CORES = {}
-onready var HEADS = {}
-onready var CHASSIS = {}
-onready var GENERATORS = {}
-onready var CHIPSETS = {}
-onready var THRUSTERS = {}
-onready var PROJECTILES = {}
+@onready var ARM_WEAPONS = {}
+@onready var SHOULDER_WEAPONS = {}
+@onready var SHOULDERS = {}
+@onready var CORES = {}
+@onready var HEADS = {}
+@onready var CHASSIS = {}
+@onready var GENERATORS = {}
+@onready var CHIPSETS = {}
+@onready var THRUSTERS = {}
+@onready var PROJECTILES = {}
 
 var current_player_mech
 
@@ -35,23 +35,22 @@ func setup_parts():
 	load_parts("projectiles", PROJECTILES)
 	
 
-func load_parts(name, dict):
-	var dir = Directory.new()
-	var path = DATA_PATH + name + "/"
-	if dir.open(path) == OK:
-		dir.list_dir_begin()
+func load_parts(part_name, dict):
+	var path = DATA_PATH + part_name + "/"
+	var dir = DirAccess.open(path)
+	if dir:
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
 				var key = file_name.replace(".tres", "").replace(".tscn", "")
 				dict[key] = load(path + file_name)
 				if dict[key] is PackedScene:
-					dict[key] = dict[key].instance()
+					dict[key] = dict[key].instantiate()
 				dict[key].part_id = key
 			file_name = dir.get_next()
 	else:
-		push_error("An error occurred when trying to access part path.")
-		assert(false)
+		push_error("An error occurred when trying to access part path: " + str(DirAccess.get_open_error()))
 
 
 func get_parts(type):
@@ -81,10 +80,10 @@ func get_parts(type):
 			return false
 
 
-func get_part(type, name):
+func get_part(type, part_name):
 	var table = get_parts(type)
-	assert(table.has(name), "Not a existent part: " + str(name) + " for part type: " + str(type))
-	return table[name]
+	assert(table.has(part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
+	return table[part_name]
 
 
 func get_random_part_name(type):

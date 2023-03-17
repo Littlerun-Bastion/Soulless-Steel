@@ -1,10 +1,10 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://game/arena/GameOver.gd" type="Script" id=2]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/ui/pause_menu/return_button.png" type="Texture" id=5]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=6]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button_highlight.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button_pressed.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/ui/pause_menu/return_button.png" type="Texture2D" id=5]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="FontFile" id=6]
 
 [sub_resource type="Shader" id=20]
 code = "shader_type canvas_item;
@@ -30,7 +30,7 @@ void fragment()
 shader = SubResource( 20 )
 shader_param/warpAmount = 0.15
 
-[sub_resource type="DynamicFont" id=1]
+[sub_resource type="FontFile" id=1]
 size = 45
 font_data = ExtResource( 6 )
 
@@ -38,50 +38,50 @@ font_data = ExtResource( 6 )
 layer = 99
 script = ExtResource( 2 )
 
-[node name="ViewportContainer" type="ViewportContainer" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 material = SubResource( 21 )
-margin_right = 40.0
-margin_bottom = 40.0
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 size = Vector2( 1920, 1080 )
 handle_input_locally = false
 render_target_update_mode = 3
 
-[node name="Control" type="Control" parent="ViewportContainer/Viewport"]
-margin_right = 40.0
-margin_bottom = 40.0
+[node name="Control" type="Control" parent="SubViewportContainer/SubViewport"]
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="ColorRect" type="ColorRect" parent="ViewportContainer/Viewport/Control"]
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport/Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 1880.0
-margin_bottom = 1040.0
+offset_right = 1880.0
+offset_bottom = 1040.0
 mouse_filter = 2
 color = Color( 0, 0, 0, 1 )
 
-[node name="Label" type="Label" parent="ViewportContainer/Viewport/Control"]
-margin_left = 12.0208
-margin_top = 974.013
-margin_right = 861.021
-margin_bottom = 1069.01
+[node name="Label" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+offset_left = 12.0208
+offset_top = 974.013
+offset_right = 861.021
+offset_bottom = 1069.01
 custom_fonts/font = SubResource( 1 )
 text = "Lost connection...
 Would you like to return to the menu?"
 
-[node name="ReturnButton" type="TextureButton" parent="ViewportContainer/Viewport/Control"]
+[node name="ReturnButton" type="TextureButton" parent="SubViewportContainer/SubViewport/Control"]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 1373.95
-margin_top = 942.24
-margin_right = 2123.95
-margin_bottom = 1062.24
-rect_scale = Vector2( 0.66, 0.66 )
+offset_left = 1373.95
+offset_top = 942.24
+offset_right = 2123.95
+offset_bottom = 1062.24
+scale = Vector2( 0.66, 0.66 )
 texture_normal = ExtResource( 5 )
 texture_pressed = ExtResource( 4 )
 texture_hover = ExtResource( 3 )
 texture_focused = ExtResource( 3 )
 
-[connection signal="pressed" from="ViewportContainer/Viewport/Control/ReturnButton" to="." method="_on_ReturnButton_pressed"]
+[connection signal="pressed" from="SubViewportContainer/SubViewport/Control/ReturnButton" to="." method="_on_ReturnButton_pressed"]

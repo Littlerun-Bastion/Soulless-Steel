@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/winds4.wav-7d137bf115a5bb89c8a47baf0b5ec248.sample"
+type="AudioStreamWAV"
+uid="uid://bn1sqa2fmdhw6"
+path="res://.godot/imported/winds4.wav-7d137bf115a5bb89c8a47baf0b5ec248.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/wind_gusts/winds4.wav"
-dest_files=[ "res://.import/winds4.wav-7d137bf115a5bb89c8a47baf0b5ec248.sample" ]
+dest_files=["res://.godot/imported/winds4.wav-7d137bf115a5bb89c8a47baf0b5ec248.sample"]
 
 [params]
 
@@ -17,5 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
 compress/mode=0

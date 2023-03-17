@@ -1,10 +1,10 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://co3srpqmbis5b"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type canvas_item;
 render_mode light_only;
 
-uniform vec4 color : hint_color = vec4(1.0);
+uniform vec4 color : source_color = vec4(1.0);
 uniform float width : hint_range(0, 100) = 1.0;
 uniform float margin_distance : hint_range(0, 100.0) = 0.0;
 
@@ -69,7 +69,7 @@ void fragment() {
 }"
 
 [resource]
-shader = SubResource( 1 )
-shader_param/color = Color( 1, 1, 1, 1 )
-shader_param/width = 6.0
-shader_param/margin_distance = 3.0
+shader = SubResource("1")
+shader_parameter/color = Color(1, 1, 1, 1)
+shader_parameter/width = 6.0
+shader_parameter/margin_distance = 3.0

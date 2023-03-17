@@ -1,6 +1,6 @@
-extends Particles2D
+extends GPUParticles2D
 
-export var is_local := true
+@export var is_local := true
 var attach_reference
 var node_reference
 

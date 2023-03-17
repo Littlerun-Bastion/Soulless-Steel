@@ -18,7 +18,10 @@ func get_connections():
 func get_valid_connections(arguments):
 	var valid_connections = {}
 	for connection in connections:
-		if connections[connection].call_func(arguments):
+		var data = connections[connection]
+		var behaviour = data[0]
+		var func_name = data[1]
+		if behaviour.callv(func_name, arguments):
 			valid_connections[connection] = true
 	return valid_connections
 

@@ -1,25 +1,25 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://game/mecha/player/Player.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/faded_white_circle.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/faded_white_circle.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" type="Texture2D" id=4]
 [ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=5]
 [ext_resource path="res://game/ui/Camera.tscn" type="PackedScene" id=6]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture" id=9]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" type="Texture2D" id=7]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" type="Texture2D" id=9]
 
 [node name="Player" instance=ExtResource( 5 )]
 script = ExtResource( 1 )
 
 [node name="Camera2D" parent="." index="0" instance=ExtResource( 6 )]
 zoom = Vector2( 2, 2 )
-drag_margin_left = 0.0
-drag_margin_top = 0.0
-drag_margin_right = 0.0
-drag_margin_bottom = 0.0
+drag_left_margin = 0.0
+drag_top_margin = 0.0
+drag_right_margin = 0.0
+drag_bottom_margin = 0.0
 
-[node name="OutlineLight" type="Light2D" parent="." index="1"]
+[node name="OutlineLight" type="PointLight2D" parent="." index="1"]
 position = Vector2( -2.49219, 2.0788 )
 texture = ExtResource( 3 )
 texture_scale = 6.5

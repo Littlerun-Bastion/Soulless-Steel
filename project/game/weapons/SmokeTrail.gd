@@ -1,4 +1,4 @@
-extends Particles2D
+extends GPUParticles2D
 
 var home_projectile
 var tickdown := 5.0

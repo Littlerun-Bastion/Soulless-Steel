@@ -8,9 +8,8 @@ var current_state
 var behaviour
 
 func setup(behaviour_name):
-	var dir = Directory.new()
 	var path = BEHAVIOUR_PATH + str(behaviour_name) + ".gd"
-	assert(dir.file_exists(path), "Not a valid enemy behaviour: " + str(behaviour_name))
+	assert(FileAccess.file_exists(path),"Not a valid enemy behaviour: " + str(behaviour_name))
 	
 	behaviour = load(path).new()
 	
@@ -23,7 +22,7 @@ func setup(behaviour_name):
 		for node_j in behaviour.get_nodes():
 			var func_name = node_i+"_to_"+node_j
 			if behaviour.has_method(func_name):
-				g.add_connection(node_i, node_j, funcref(behaviour, func_name))
+				g.add_connection(node_i, node_j, [behaviour, func_name])
 
 
 func get_current_state():

@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://database/parts/shoulder.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture2D" id=3]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -11,15 +11,15 @@ manufacturer_name = "Test"
 tagline = "Test"
 stability = 1.5
 
-[node name="ShoulderLeft" type="Sprite" parent="."]
+[node name="ShoulderLeft" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
-polygon = PoolVector2Array( 20.4951, 32.1883, 20.662, -25.2099, 15.4895, -30.3824, -4.5331, -28.7138, -20.8849, -4.18613, -2.86456, 21.009, 6.64618, 18.5061 )
+polygon = PackedVector2Array( 20.4951, 32.1883, 20.662, -25.2099, 15.4895, -30.3824, -4.5331, -28.7138, -20.8849, -4.18613, -2.86456, 21.009, 6.64618, 18.5061 )
 
-[node name="ShoulderRight" type="Sprite" parent="."]
+[node name="ShoulderRight" type="Sprite2D" parent="."]
 position = Vector2( 107.127, 0 )
 texture = ExtResource( 3 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
-polygon = PoolVector2Array( -21.2079, 31.7589, -20.9995, -25.4802, -16.2139, -30.688, 4.33574, -28.5767, 20.6629, -4.086, 2.08372, 21.5307, -6.7836, 18.5749 )
+polygon = PackedVector2Array( -21.2079, 31.7589, -20.9995, -25.4802, -16.2139, -30.688, 4.33574, -28.5767, 20.6629, -4.086, 2.08372, 21.5307, -6.7836, 18.5749 )

@@ -1,21 +1,21 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://database/props/Prop.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/props/buildings/building_ruined_2.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/props/buildings/building_ruined_2.png" type="Texture2D" id=2]
 
 [sub_resource type="OccluderPolygon2D" id=1]
-polygon = PoolVector2Array( -493.769, -393.484, 494.433, -393.625, 494.171, 393.684, -494.155, 393.954 )
+polygon = PackedVector2Array( -493.769, -393.484, 494.433, -393.625, 494.171, 393.684, -494.155, 393.954 )
 
 [node name="building_ruined_2_prop" type="Node2D"]
 script = ExtResource( 1 )
 
-[node name="Sprite" type="Sprite" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
-polygon = PoolVector2Array( -493.623, -393.31, 494.449, -393.637, 494.216, 393.674, -494.106, 393.931 )
+polygon = PackedVector2Array( -493.623, -393.31, 494.449, -393.637, 494.216, 393.674, -494.106, 393.931 )
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource( 1 )

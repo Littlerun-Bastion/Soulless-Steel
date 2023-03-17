@@ -1,10 +1,10 @@
 [gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/map/floor/arena_oldgate.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/map/floor/arena_oldgate.png" type="Texture2D" id=2]
 [ext_resource path="res://database/buildings/building2_long.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/buildings/old_gate_building2.tscn" type="PackedScene" id=4]
-[ext_resource path="res://assets/images/map/border_texture.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/map/border_texture.png" type="Texture2D" id=5]
 [ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
 [ext_resource path="res://database/buildings/building3_long.tscn" type="PackedScene" id=7]
 [ext_resource path="res://database/buildings/building4_long.tscn" type="PackedScene" id=8]
@@ -23,14 +23,14 @@
 light_mode = 2
 
 [sub_resource type="NavigationPolygon" id=1]
-vertices = PoolVector2Array( 6957.82, 1319.28, -3712.78, 11985.3, -8495.09, 7070.75, -8500.68, 3540.09, -2265.59, -2716.53, 7043.76, -10371.4, -2268.24, -10403.4 )
-polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5 ), PoolIntArray( 4, 6, 5 ) ]
-outlines = [ PoolVector2Array( -2265.59, -2716.53, -8500.68, 3540.09, -8495.09, 7070.75, -3712.78, 11985.3, 6957.82, 1319.28, 7043.76, -10371.4, -2268.24, -10403.4 ) ]
+vertices = PackedVector2Array( 6957.82, 1319.28, -3712.78, 11985.3, -8495.09, 7070.75, -8500.68, 3540.09, -2265.59, -2716.53, 7043.76, -10371.4, -2268.24, -10403.4 )
+polygons = [ PackedInt32Array( 0, 1, 2, 3, 4, 5 ), PackedInt32Array( 4, 6, 5 ) ]
+outlines = [ PackedVector2Array( -2265.59, -2716.53, -8500.68, 3540.09, -8495.09, 7070.75, -3712.78, 11985.3, 6957.82, 1319.28, 7043.76, -10371.4, -2268.24, -10403.4 ) ]
 
 [node name="Map" type="Node2D"]
 script = ExtResource( 1 )
 
-[node name="BG" type="Sprite" parent="."]
+[node name="BG" type="Sprite2D" parent="."]
 scale = Vector2( 5, 5 )
 texture = ExtResource( 2 )
 
@@ -48,15 +48,15 @@ visible = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
 position = Vector2( 635, -6832 )
-polygon = PoolVector2Array( -12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12220.3, -1987.14, -3046.23, -2034.83, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -3042.04, -2033.03, -12433.2, -1885.03 )
+polygon = PackedVector2Array( -12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12220.3, -1987.14, -3046.23, -2034.83, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -3042.04, -2033.03, -12433.2, -1885.03 )
 
 [node name="BorderTexture" type="Polygon2D" parent="Walls"]
 light_mask = 32
 material = SubResource( 2 )
 texture = ExtResource( 5 )
-invert_enable = true
+invert_enabled = true
 invert_border = 3150.0
-polygon = PoolVector2Array( -2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11 )
+polygon = PackedVector2Array( -2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11 )
 
 [node name="Buildings" type="Node2D" parent="."]
 
@@ -216,7 +216,7 @@ position = Vector2( 3809.76, -6717.88 )
 [node name="Texts" type="Node2D" parent="."]
 visible = false
 
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="."]
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 visible = false
 navpoly = SubResource( 1 )
 __meta__ = {

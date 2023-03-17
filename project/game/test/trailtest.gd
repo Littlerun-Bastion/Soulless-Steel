@@ -1,6 +1,6 @@
 extends Node2D
 
-onready var trail = $Trail
+@onready var trail = $Trail
 
 func _physics_process(dt):
 	if is_instance_valid(trail):

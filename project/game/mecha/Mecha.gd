@@ -1,4 +1,4 @@
-extends KinematicBody2D
+extends CharacterBody2D
 class_name Mecha
 
 enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
@@ -24,67 +24,67 @@ const HITSTOP_DURATION = 0.25
 
 signal create_projectile
 signal create_casing
-signal shoot
+signal shoot_signal
 signal took_damage
 signal died
 signal player_kill
 signal mecha_extracted
 
-export var speed_modifier = 1.0
-export var display_mode = false
+@export var speed_modifier = 1.0
+@export var display_mode = false
 
-onready var NavAgent = $NavigationAgent2D
+@onready var NavAgent = $NavigationAgent2D
 
-onready var CoreDecals = $CoreDecals
-onready var LeftShoulderDecals = $LeftShoulder/Decals
-onready var RightShoulderDecals = $RightShoulder/Decals
-onready var MovementAnimation = $MovementAnimation
-onready var LockCollision = $LockCollision
+@onready var CoreDecals = $CoreDecals
+@onready var LeftShoulderDecals = $LeftShoulder/Decals
+@onready var RightShoulderDecals = $RightShoulder/Decals
+@onready var MovementAnimation = $MovementAnimation
+@onready var LockCollision = $LockCollision
 
 #Main Parts
-onready var Core = $Core
-onready var CoreSub = $Core/Sub
-onready var CoreGlow = $Core/Glow
-onready var Head = $Head
-onready var HeadSub = $Head/Sub
-onready var HeadGlow = $Head/Glow
-onready var HeadPort = $HeadPort
-onready var LeftShoulder = $LeftShoulder
-onready var RightShoulder = $RightShoulder
+@onready var Core = $Core
+@onready var CoreSub = $Core/Sub
+@onready var CoreGlow = $Core/Glow
+@onready var Head = $Head
+@onready var HeadSub = $Head/Sub
+@onready var HeadGlow = $Head/Glow
+@onready var HeadPort = $HeadPort
+@onready var LeftShoulder = $LeftShoulder
+@onready var RightShoulder = $RightShoulder
 #Weapons
-onready var LeftArmWeapon = $ArmWeaponLeft
-onready var LeftArmWeaponMain = $ArmWeaponLeft/Main
-onready var LeftArmWeaponSub = $ArmWeaponLeft/Sub
-onready var LeftArmWeaponGlow = $ArmWeaponLeft/Glow
-onready var LeftArmWeaponHitboxes = $ArmWeaponLeft/MeleeHitboxes
-onready var RightArmWeapon = $ArmWeaponRight
-onready var RightArmWeaponMain = $ArmWeaponRight/Main
-onready var RightArmWeaponSub = $ArmWeaponRight/Sub
-onready var RightArmWeaponGlow = $ArmWeaponRight/Glow
-onready var RightArmWeaponHitboxes = $ArmWeaponRight/MeleeHitboxes
-onready var LeftShoulderWeapon = $ShoulderWeaponLeft
-onready var LeftShoulderWeaponMain = $ShoulderWeaponLeft/Main
-onready var LeftShoulderWeaponSub = $ShoulderWeaponLeft/Sub
-onready var LeftShoulderWeaponGlow = $ShoulderWeaponLeft/Glow
-onready var RightShoulderWeapon = $ShoulderWeaponRight
-onready var RightShoulderWeaponMain = $ShoulderWeaponRight/Main
-onready var RightShoulderWeaponSub = $ShoulderWeaponRight/Sub
-onready var RightShoulderWeaponGlow = $ShoulderWeaponRight/Glow
+@onready var LeftArmWeapon = $ArmWeaponLeft
+@onready var LeftArmWeaponMain = $ArmWeaponLeft/Main
+@onready var LeftArmWeaponSub = $ArmWeaponLeft/Sub
+@onready var LeftArmWeaponGlow = $ArmWeaponLeft/Glow
+@onready var LeftArmWeaponHitboxes = $ArmWeaponLeft/MeleeHitboxes
+@onready var RightArmWeapon = $ArmWeaponRight
+@onready var RightArmWeaponMain = $ArmWeaponRight/Main
+@onready var RightArmWeaponSub = $ArmWeaponRight/Sub
+@onready var RightArmWeaponGlow = $ArmWeaponRight/Glow
+@onready var RightArmWeaponHitboxes = $ArmWeaponRight/MeleeHitboxes
+@onready var LeftShoulderWeapon = $ShoulderWeaponLeft
+@onready var LeftShoulderWeaponMain = $ShoulderWeaponLeft/Main
+@onready var LeftShoulderWeaponSub = $ShoulderWeaponLeft/Sub
+@onready var LeftShoulderWeaponGlow = $ShoulderWeaponLeft/Glow
+@onready var RightShoulderWeapon = $ShoulderWeaponRight
+@onready var RightShoulderWeaponMain = $ShoulderWeaponRight/Main
+@onready var RightShoulderWeaponSub = $ShoulderWeaponRight/Sub
+@onready var RightShoulderWeaponGlow = $ShoulderWeaponRight/Glow
 #Chassis
-onready var SingleChassisRoot = $Chassis/Single
-onready var SingleChassis = $Chassis/Single/Main
-onready var SingleChassisSub = $Chassis/Single/Sub
-onready var SingleChassisGlow = $Chassis/Single/Glow
-onready var LeftChassisRoot = $Chassis/Left
-onready var LeftChassis = $Chassis/Left/Main
-onready var LeftChassisSub = $Chassis/Left/Sub
-onready var LeftChassisGlow = $Chassis/Left/Glow
-onready var RightChassisRoot = $Chassis/Right
-onready var RightChassis = $Chassis/Right/Main
-onready var RightChassisSub = $Chassis/Right/Sub
-onready var RightChassisGlow = $Chassis/Right/Glow
+@onready var SingleChassisRoot = $Chassis/Single
+@onready var SingleChassis = $Chassis/Single/Main
+@onready var SingleChassisSub = $Chassis/Single/Sub
+@onready var SingleChassisGlow = $Chassis/Single/Glow
+@onready var LeftChassisRoot = $Chassis/Left
+@onready var LeftChassis = $Chassis/Left/Main
+@onready var LeftChassisSub = $Chassis/Left/Sub
+@onready var LeftChassisGlow = $Chassis/Left/Glow
+@onready var RightChassisRoot = $Chassis/Right
+@onready var RightChassis = $Chassis/Right/Main
+@onready var RightChassisSub = $Chassis/Right/Sub
+@onready var RightChassisGlow = $Chassis/Right/Glow
 #Particles
-onready var Particle = {
+@onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
 	"fire": [$ParticlesLayer3/Fire1, $ParticlesLayer3/Fire2],
 	"corrosion": [$ParticlesLayer1/Corrosion1, $ParticlesLayer3/Corrosion2],
@@ -116,7 +116,7 @@ onready var Particle = {
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
 }
-onready var ChassisSprintGlow = $Chassis/SprintGlow
+@onready var ChassisSprintGlow = $Chassis/SprintGlow
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -151,7 +151,6 @@ var weight_capacity = 100.0
 var is_overweight = false
 
 var movement_type = "free"
-var velocity = Vector2()
 var tank_move_target = Vector2(1,0)
 var tank_lookat_target = Vector2()
 var is_sprinting = false
@@ -227,22 +226,22 @@ var bleed_timer = 0.0
 
 func _ready():
 	for node in [Core, Head, HeadPort,\
-				 LeftShoulder, RightShoulder,\
-				 LeftArmWeaponMain, RightArmWeaponMain,\
-				 LeftShoulderWeaponMain, RightShoulderWeaponMain,\
-				 SingleChassis, LeftChassis, RightChassis]:
+				LeftShoulder, RightShoulder,\
+				LeftArmWeaponMain, RightArmWeaponMain,\
+				LeftShoulderWeaponMain, RightShoulderWeaponMain,\
+				SingleChassis, LeftChassis, RightChassis]:
 		node.material = Core.material.duplicate(true)
 	for node in [CoreSub, HeadSub,\
-				 LeftArmWeaponSub, RightArmWeaponSub,\
-				 LeftShoulderWeaponSub, RightShoulderWeaponSub,\
-				 SingleChassisSub, LeftChassisSub, RightChassisSub]:
+				LeftArmWeaponSub, RightArmWeaponSub,\
+				LeftShoulderWeaponSub, RightShoulderWeaponSub,\
+				SingleChassisSub, LeftChassisSub, RightChassisSub]:
 		node.material = CoreSub.material.duplicate(true)
 	for node in [CoreGlow, HeadGlow,\
-				 LeftArmWeaponGlow, RightArmWeaponGlow,\
-				 LeftShoulderWeaponGlow, RightShoulderWeaponGlow,\
-				 SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
+				LeftArmWeaponGlow, RightArmWeaponGlow,\
+				LeftShoulderWeaponGlow, RightShoulderWeaponGlow,\
+				SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
 		node.material = CoreGlow.material.duplicate(true)
-	global_rotation_degrees = rand_range(0, 360)
+	global_rotation_degrees = randf_range(0, 360)
 
 
 func _physics_process(dt):
@@ -278,12 +277,12 @@ func _physics_process(dt):
 		return
 
 	#Blood
-	if hp / max_hp < 0.8:
+	if hp/float(max_hp) < 0.8:
 		bleed_timer = max(bleed_timer - dt, 0.0)
 		if bleed_timer <= 0.0:
-			bleed_timer = rand_range(1, 1.1*max_hp/hp)
+			bleed_timer = randf_range(1, 1.1*max_hp/hp)
 			Particle.blood[0].emitting = !Particle.blood[0].emitting
-			if hp / max_hp < 0.3:
+			if hp/float(max_hp) < 0.3:
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
@@ -312,7 +311,7 @@ func _physics_process(dt):
 	#Handle collisions with other mechas and movement
 	if not is_stunned() and not is_movement_locked():
 		var all_collisions = []
-		for i in get_slide_count():
+		for i in get_slide_collision_count():
 			all_collisions.append(get_slide_collision(i))
 
 		var collided = false
@@ -320,7 +319,7 @@ func _physics_process(dt):
 			if collision and collision.collider.is_in_group("mecha"):
 				collided = true
 				var mod = 2.0
-				var rand = rand_range(-PI/8, PI/8)
+				var rand = randf_range(-PI/8, PI/8)
 				var collision_dir = (global_position - collision.collider.global_position).rotated(rand)
 				apply_movement(mod*dt, collision_dir)
 		if collided:
@@ -354,10 +353,10 @@ func _physics_process(dt):
 	#Walking animation
 	if chassis and chassis.is_legs:
 		if moving and not MovementAnimation.is_playing() and\
-		   not is_sprinting and dash_velocity.length() <= 0.0:
+		not is_sprinting and dash_velocity.length() <= 0.0:
 			MovementAnimation.play("Walking")
 		elif (not moving and velocity.length() <= 2.0) or\
-			 (is_sprinting or dash_velocity.length() > 0):
+		(is_sprinting or dash_velocity.length() > 0):
 			MovementAnimation.stop()
 		if not MovementAnimation.is_playing():
 			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
@@ -385,10 +384,10 @@ func _physics_process(dt):
 
 	#Thrusters cooldowns
 	for dir in ["fwd", "rwd", "left", "right"]:
-		var ready = dash_cooldown[dir] <= 0
+		var is_ready = dash_cooldown[dir] <= 0
 		dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
 		Particle.dash[dir].cooldown.emitting = dash_cooldown[dir] > 0
-		if dash_cooldown[dir] <= 0 and not ready:
+		if dash_cooldown[dir] <= 0 and not is_ready:
 			Particle.dash[dir].ready.emitting = true
 	update_dash_cooldown_visuals()
 
@@ -412,8 +411,8 @@ func set_pause(value):
 func get_design_data():
 	var data = {}
 	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
-					  "thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
-					  "shoulder_weapon_left", "shoulder_weapon_right"]:
+					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					"shoulder_weapon_left", "shoulder_weapon_right"]:
 		var part = get(part_type)
 		data[part_type] = part.part_id if part else false
 
@@ -422,8 +421,8 @@ func get_design_data():
 
 func set_parts_from_design(data):
 	for part_name in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
-					  "thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
-					  "shoulder_weapon_left", "shoulder_weapon_right",]:
+					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					"shoulder_weapon_left", "shoulder_weapon_right",]:
 		var type = part_name.replace("_left", "").replace("_right", "")
 		var side = false
 		if part_name.find("left") != -1:
@@ -439,7 +438,7 @@ func set_parts_from_design(data):
 	return data
 
 
-func set_speed(_max_speed, _move_acc, _friction, _rotation_acc):
+func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
 	friction = _friction
 	rotation_acc = _rotation_acc
@@ -539,12 +538,12 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 func do_hitstop():
 	Engine.time_scale = HITSTOP_TIMESCALE
-	yield(get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE), "timeout")
+	await get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE).timeout
 	Engine.time_scale = 1.0
 
 
 func has_status(status_name):
-	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
 	return status_time[status_name] > 0.0
 
 
@@ -556,12 +555,12 @@ func has_any_status():
 
 
 func set_status(status_name, amount):
-	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
 	status_time[status_name] = amount
 
 
 func decrease_status(status_name, amount):
-	assert(status_time.has(status_name), "Not a valid status name: " + str(status_name))
+	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
 	status_time[status_name] = max(status_time[status_name] - amount, 0.0)
 
 
@@ -611,7 +610,7 @@ func die(source_info, _weapon_name):
 	if is_dead:
 		return
 	is_dead = true
-	yield(get_tree().create_timer(3.0), "timeout")
+	await get_tree().create_timer(3.0).timeout
 	#TickerManager.new_message({
 	#	"type": "mecha_died",
 	#	"source": source_info.name,
@@ -635,8 +634,8 @@ func get_scrapable_parts():
 
 func is_shape_id_chassis(id):
 	return shape_owner_get_owner(shape_find_owner(id)) == $ChassisSingleCollision or\
-		   shape_owner_get_owner(shape_find_owner(id)) == $ChassisLeftCollision or\
-		   shape_owner_get_owner(shape_find_owner(id)) == $ChassisRightCollision
+		shape_owner_get_owner(shape_find_owner(id)) == $ChassisLeftCollision or\
+		shape_owner_get_owner(shape_find_owner(id)) == $ChassisRightCollision
 
 
 func get_shape_from_id(id):
@@ -655,14 +654,14 @@ func add_decal(id, decal_position, type, size):
 			decals_node = RightShoulderDecals
 		else:
 			push_error("Not a valid shape id: " + str(id))
-		var decal = DECAL.instance()
+		var decal = DECAL.instantiate()
 
-		#Transform global position into local position
+		#Transform3D global position into local position
 		var final_pos = decal_position-decals_node.global_position
 		var trans = decals_node.global_transform
 		final_pos = final_pos.rotated(-trans.get_rotation())
 		final_pos /= trans.get_scale()
-		final_pos *= rand_range(.6,.9) #Random depth for decal on mecha
+		final_pos *= randf_range(.6,.9) #Random depth for decal on mecha
 		decals_node.add_child(decal)
 		decal.setup(type, size, final_pos)
 
@@ -687,9 +686,9 @@ func update_heat(dt):
 	else:
 		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
-				 SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
-				 RightChassis, RightChassisSub, RightChassisGlow]:
-		node.material.set_shader_param("heat", mecha_heat_visible)
+				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
+				RightChassis, RightChassisSub, RightChassisGlow]:
+		node.material.set_shader_parameter("heat", mecha_heat_visible)
 
 
 #PARTS SETTERS
@@ -864,7 +863,7 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	collision.polygon = chassis.get_collision(side)
 	movement_type = chassis.movement_type
 	move_heat = chassis.move_heat
-	set_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
+	update_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
 
 
@@ -951,9 +950,9 @@ func get_max_hp():
 func get_stat(stat_name):
 	var total_stat = 0.0
 	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
-				 shoulder_weapon_left, shoulder_weapon_right,\
-				 head, core, generator, chipset, thruster,\
-				 chassis]
+				shoulder_weapon_left, shoulder_weapon_right,\
+				head, core, generator, chipset, thruster,\
+				chassis]
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
@@ -1073,7 +1072,8 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 func move(vec):
 	if is_player():
 		NavAgent.set_velocity(vec)
-		velocity = move_and_slide(vec)
+		set_velocity(vec)
+		move_and_slide()
 	else:
 		NavAgent.set_velocity(vec)
 
@@ -1100,13 +1100,13 @@ func dash(dash_dir):
 		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
 		for node in Particle.chassis_dash:
-			node.rotation_degrees = rad2deg(dash_dir.angle()) + 90
+			node.rotation_degrees = rad_to_deg(dash_dir.angle()) + 90
 			node.restart()
 			node.emitting = true
 		Particle.grind[0].restart()
 		Particle.grind[0].emitting = true
 		if movement_type == "relative":
-			dash_velocity = dash_velocity.rotated(deg2rad(rotation_degrees))
+			dash_velocity = dash_velocity.rotated(deg_to_rad(rotation_degrees))
 		dash_cooldown[dir] = thruster.dash_cooldown
 		Particle.dash[dir].cooldown.emitting = true
 
@@ -1160,7 +1160,7 @@ func apply_movement(dt, direction):
 			moving = true
 			moving_axis.x = direction.x != 0
 			moving_axis.y = direction.y != 0
-			target_speed = target_speed.rotated(deg2rad(rotation_degrees))
+			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat += move_heat*dt
 		else:
@@ -1175,10 +1175,10 @@ func apply_movement(dt, direction):
 			moving = false
 			if direction.y > 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg2rad(90)) * max_speed * mult/1.5
+				target_speed = tank_move_target.rotated(deg_to_rad(90)) * max_speed * mult/1.5
 			if direction.y < 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg2rad(270)) * max_speed * mult/1.5
+				target_speed = tank_move_target.rotated(deg_to_rad(270)) * max_speed * mult/1.5
 			if thruster:
 				var thrust_max_speed = max_speed + thruster.thrust_max_speed
 				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
@@ -1187,10 +1187,10 @@ func apply_movement(dt, direction):
 			if direction.y == 0:
 				target_rotation_acc *= 2
 			if direction.x > 0:
-				tank_move_target = tank_move_target.rotated(deg2rad(target_rotation_acc*dt))
+				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
 				global_rotation_degrees += target_rotation_acc*dt
 			elif direction.x < 0:
-				tank_move_target = tank_move_target.rotated(deg2rad(-target_rotation_acc*dt))
+				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			if not moving:
 				velocity *= 1 - chassis.friction
@@ -1270,7 +1270,7 @@ func get_best_rotation_diff(cur_rot, target_rot):
 
 
 func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
-	var target_rot = rad2deg(origin.angle_to_point(target_pos)) + 270
+	var target_rot = rad_to_deg(origin.angle_to_point(target_pos)) + 270
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 
@@ -1291,7 +1291,7 @@ func knockback(strength, knockback_dir, should_rotate = true):
 func update_chassis_visuals(dt):
 	var angulation = 25
 	if chassis and chassis.is_legs:
-		var rot_vec = Vector2(1, 0).rotated(deg2rad(rotation_degrees))
+		var rot_vec = Vector2(1, 0).rotated(deg_to_rad(rotation_degrees))
 		var vel_vec = velocity
 		var left_target_angle
 		var right_target_angle
@@ -1316,10 +1316,10 @@ func update_chassis_visuals(dt):
 
 		for child in LeftChassisRoot.get_children():
 			child.rotation_degrees = lerp(child.rotation_degrees, left_target_angle,\
-										  dt*CHASSIS_SPEED)
+										dt*CHASSIS_SPEED)
 		for child in RightChassisRoot.get_children():
 			child.rotation_degrees = lerp(child.rotation_degrees, right_target_angle,\
-										  dt*CHASSIS_SPEED)
+										dt*CHASSIS_SPEED)
 
 func stop_sprinting(sprint_dir):
 	if is_sprinting and sprint_dir != Vector2(0,0):
@@ -1328,7 +1328,7 @@ func stop_sprinting(sprint_dir):
 		Particle.grind[0].restart()
 		Particle.grind[0].emitting = true
 		for node in [Particle.chassis_dash[0], Particle.chassis_dash[2]]:
-			node.rotation_degrees = rad2deg(Vector2(0,-1).angle()) + 90
+			node.rotation_degrees = rad_to_deg(Vector2(0,-1).angle()) + 90
 			node.restart()
 			node.emitting = true
 		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
@@ -1373,7 +1373,7 @@ func shoot(type, is_auto_fire = false):
 	if weapon_ref.is_melee:
 		node.light_attack()
 		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
-		emit_signal("shoot")
+		emit_signal("shoot_signal")
 		return
 
 	while node.burst_count < weapon_ref.burst_size:
@@ -1406,7 +1406,7 @@ func shoot(type, is_auto_fire = false):
 			if locked_to:
 				max_angle = max_angle/chipset.accuracy_modifier
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
-			var current_accuracy = rand_range(-total_accuracy, total_accuracy)
+			var current_accuracy = randf_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
@@ -1433,14 +1433,14 @@ func shoot(type, is_auto_fire = false):
 			left_shoulder_bloom_count += 1
 		elif type ==  "shoulder_weapon_right":
 			right_shoulder_bloom_count += 1
-		emit_signal("shoot")
+		emit_signal("shoot_signal")
 	node.burst_cooldown()
 
 func apply_recoil(type, node, recoil):
-	var rotation = recoil*300/get_stat("weight")
+	var target_rotation = recoil*300/get_stat("weight")
 	if "left" in type:
-		rotation *= -1
-	rotation_degrees += rotation
+		target_rotation *= -1
+	rotation_degrees += target_rotation
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
 func get_stability():
@@ -1483,7 +1483,7 @@ func update_locking(dt):
 			var mecha = area.get_parent()
 			var a_radius = area.get_node("CollisionShape2D").shape.radius
 			if  mecha != self and\
-			   mouse_pos.distance_to(area.global_position) <= chipset.lock_on_reticle_size + a_radius:
+			mouse_pos.distance_to(area.global_position) <= chipset.lock_on_reticle_size + a_radius:
 				could_lock.append(area.get_parent())
 
 		for target in locking_targets:
@@ -1560,7 +1560,7 @@ func check_valid_hitbox_and_update(hitbox_data):
 	for data in lingering_hitboxes:
 		if data.id == hitbox_data.id:
 			if data.priority >= hitbox_data.priority:
-				assert(to_erase.empty(), "This shouldn't happen, problem with lingering hitboxes usage")
+				assert(to_erase.is_empty(),"This shouldn't happen, problem with lingering hitboxes usage")
 				return false
 			else:
 				to_erase.append(data)
@@ -1650,9 +1650,9 @@ func play_step_sound(is_left := true):
 		return
 	var pitch
 	if is_left:
-		pitch = rand_range(.7, .72)
+		pitch = randf_range(.7, .72)
 	else:
-		pitch = rand_range(.95, .97)
+		pitch = randf_range(.95, .97)
 
 	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
 	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
@@ -1671,7 +1671,7 @@ func _on_ExtractTimer_timeout():
 
 
 func _on_MeleeHitboxes_create_hitbox(data, side):
-	var hitbox = HITBOX.instance()
+	var hitbox = HITBOX.instantiate()
 	var node
 	if side == "left":
 		node = LeftArmWeaponHitboxes

@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture2D" id=2]
 [ext_resource path="res://database/parts/projectiles/mini_bullet.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture2D" id=5]
 [ext_resource path="res://game/weapons/BallisticImpactMini.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/MinigunMuzzleFlash.tscn" type="PackedScene" id=7]
 
@@ -51,25 +51,25 @@ wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5
 
-[node name="Sub" type="Sprite" parent="."]
+[node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
-[node name="Main" type="Sprite" parent="."]
+[node name="Main" type="Sprite2D" parent="."]
 texture = ExtResource( 5 )
 
-[node name="Glow" type="Sprite" parent="."]
+[node name="Glow" type="Sprite2D" parent="."]
 texture = ExtResource( 4 )
 
-[node name="AttachPos" type="Position2D" parent="."]
+[node name="AttachPos" type="Marker2D" parent="."]
 position = Vector2( -1, 21 )
 
-[node name="EjectorPos" type="Position2D" parent="."]
+[node name="EjectorPos" type="Marker2D" parent="."]
 position = Vector2( -3.01159, 17.0206 )
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
-[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
 position = Vector2( -6, -42 )
 
-[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
 position = Vector2( 3, -42 )

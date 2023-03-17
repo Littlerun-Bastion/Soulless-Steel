@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://game/ui/MechaCursorCrosshair.gd" type="Script" id=1]
-[ext_resource path="res://assets/fonts/CursorFont.tres" type="DynamicFont" id=2]
-[ext_resource path="res://assets/images/ui/player_ui/lockon_crosshair.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/ui/player_ui/change_mode_progress_front.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture" id=5]
+[ext_resource path="res://assets/fonts/CursorFont.tres" type="FontFile" id=2]
+[ext_resource path="res://assets/images/ui/player_ui/lockon_crosshair.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/ui/player_ui/change_mode_progress_front.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/ui/player_ui/circular_progress.png" type="Texture2D" id=5]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 1, 1, 1, 0 )
@@ -12,11 +12,11 @@ bg_color = Color( 1, 1, 1, 0 )
 [node name="MechaCursorCrosshair" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -1024.0
-margin_bottom = -600.0
+offset_right = -1024.0
+offset_bottom = -600.0
 script = ExtResource( 1 )
 
-[node name="Crosshair" type="Sprite" parent="."]
+[node name="Crosshair" type="Sprite2D" parent="."]
 texture = ExtResource( 3 )
 
 [node name="Panel" type="Panel" parent="Crosshair"]
@@ -24,32 +24,32 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -21.0
-margin_top = -21.0
-margin_right = -1.0
-margin_bottom = -1.0
+offset_left = -21.0
+offset_top = -21.0
+offset_right = -1.0
+offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
-rect_pivot_offset = Vector2( -15.5639, 42.7437 )
+pivot_offset = Vector2( -15.5639, 42.7437 )
 custom_styles/panel = SubResource( 1 )
 
 [node name="ReloadLabel" type="Label" parent="."]
-margin_left = -50.0
-margin_top = -15.0
-margin_right = 50.0
-margin_bottom = 5.0
+offset_left = -50.0
+offset_top = -15.0
+offset_right = 50.0
+offset_bottom = 5.0
 custom_fonts/font = ExtResource( 2 )
 text = "Reload"
 align = 1
 valign = 1
 
-[node name="ChangeModeProgress" type="TextureProgress" parent="."]
-margin_left = -113.25
-margin_top = -66.75
-margin_right = 216.75
-margin_bottom = 133.25
-rect_scale = Vector2( 0.2, 0.4 )
-rect_pivot_offset = Vector2( 100, 100 )
+[node name="ChangeModeProgress" type="TextureProgressBar" parent="."]
+offset_left = -113.25
+offset_top = -66.75
+offset_right = 216.75
+offset_bottom = 133.25
+scale = Vector2( 0.2, 0.4 )
+pivot_offset = Vector2( 100, 100 )
 value = 50.0
 texture_under = ExtResource( 4 )
 texture_progress = ExtResource( 4 )
@@ -57,13 +57,13 @@ tint_under = Color( 0, 0, 0, 0.572549 )
 
 [node name="Tween" type="Tween" parent="ChangeModeProgress"]
 
-[node name="LeftReloadProgress" type="TextureProgress" parent="."]
-margin_left = -130.0
-margin_top = -85.0
-margin_right = 70.0
-margin_bottom = 115.0
-rect_scale = Vector2( 0.1, 0.1 )
-rect_pivot_offset = Vector2( 100, 100 )
+[node name="LeftReloadProgress" type="TextureProgressBar" parent="."]
+offset_left = -130.0
+offset_top = -85.0
+offset_right = 70.0
+offset_bottom = 115.0
+scale = Vector2( 0.1, 0.1 )
+pivot_offset = Vector2( 100, 100 )
 value = 50.0
 texture_under = ExtResource( 5 )
 texture_progress = ExtResource( 5 )
@@ -75,13 +75,13 @@ __meta__ = {
 
 [node name="Tween" type="Tween" parent="LeftReloadProgress"]
 
-[node name="RightReloadProgress" type="TextureProgress" parent="."]
-margin_left = -70.0
-margin_top = -85.0
-margin_right = 130.0
-margin_bottom = 115.0
-rect_scale = Vector2( 0.1, 0.1 )
-rect_pivot_offset = Vector2( 100, 100 )
+[node name="RightReloadProgress" type="TextureProgressBar" parent="."]
+offset_left = -70.0
+offset_top = -85.0
+offset_right = 130.0
+offset_bottom = 115.0
+scale = Vector2( 0.1, 0.1 )
+pivot_offset = Vector2( 100, 100 )
 value = 50.0
 texture_under = ExtResource( 5 )
 texture_progress = ExtResource( 5 )
@@ -91,63 +91,63 @@ tint_under = Color( 0, 0, 0, 0.266667 )
 [node name="Tween" type="Tween" parent="RightReloadProgress"]
 
 [node name="LeftWeapon" type="HBoxContainer" parent="."]
-margin_left = -58.0
-margin_top = 6.0
-margin_right = -5.0
-margin_bottom = 25.0
+offset_left = -58.0
+offset_top = 6.0
+offset_right = -5.0
+offset_bottom = 25.0
 custom_constants/separation = 0
 alignment = 1
 
 [node name="CurAmmo" type="Label" parent="LeftWeapon"]
-margin_left = 4.0
-margin_right = 22.0
-margin_bottom = 19.0
-rect_min_size = Vector2( 18, 19 )
+offset_left = 4.0
+offset_right = 22.0
+offset_bottom = 19.0
+custom_minimum_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="Separator" type="Label" parent="LeftWeapon"]
-margin_left = 22.0
-margin_right = 30.0
-margin_bottom = 19.0
+offset_left = 22.0
+offset_right = 30.0
+offset_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="LeftWeapon"]
-margin_left = 30.0
-margin_right = 48.0
-margin_bottom = 19.0
-rect_min_size = Vector2( 18, 19 )
+offset_left = 30.0
+offset_right = 48.0
+offset_bottom = 19.0
+custom_minimum_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="RightWeapon" type="HBoxContainer" parent="."]
-margin_left = 8.0
-margin_top = 6.0
-margin_right = 61.0
-margin_bottom = 25.0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 61.0
+offset_bottom = 25.0
 custom_constants/separation = 0
 alignment = 1
 
 [node name="CurAmmo" type="Label" parent="RightWeapon"]
-margin_left = 4.0
-margin_right = 22.0
-margin_bottom = 19.0
-rect_min_size = Vector2( 18, 19 )
+offset_left = 4.0
+offset_right = 22.0
+offset_bottom = 19.0
+custom_minimum_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"
 
 [node name="Separator" type="Label" parent="RightWeapon"]
-margin_left = 22.0
-margin_right = 30.0
-margin_bottom = 19.0
+offset_left = 22.0
+offset_right = 30.0
+offset_bottom = 19.0
 custom_fonts/font = ExtResource( 2 )
 text = "/"
 
 [node name="MaxAmmo" type="Label" parent="RightWeapon"]
-margin_left = 30.0
-margin_right = 48.0
-margin_bottom = 19.0
-rect_min_size = Vector2( 18, 19 )
+offset_left = 30.0
+offset_right = 48.0
+offset_bottom = 19.0
+custom_minimum_size = Vector2( 18, 19 )
 custom_fonts/font = ExtResource( 2 )
 text = "00"

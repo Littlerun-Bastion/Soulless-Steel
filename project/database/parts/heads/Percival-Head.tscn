@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_sub.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_main.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_sub.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_main.png" type="Texture2D" id=3]
 [ext_resource path="res://database/parts/head.gd" type="Script" id=4]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_glow.png" type="Texture" id=5]
-[ext_resource path="res://game/fx/Heatmaps/NVGreen.tres" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_PV.png" type="Texture" id=7]
+[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_glow.png" type="Texture2D" id=5]
+[ext_resource path="res://game/fx/Heatmaps/NVGreen.tres" type="Texture2D" id=6]
+[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_PV.png" type="Texture2D" id=7]
 
 [node name="Part" type="Node2D"]
 script = ExtResource( 4 )
@@ -20,12 +20,12 @@ accuracy_modifier = 1.1
 health = 975
 weight = 3.0
 
-[node name="Sub" type="Sprite" parent="."]
+[node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
-[node name="Main" type="Sprite" parent="."]
+[node name="Main" type="Sprite2D" parent="."]
 texture = ExtResource( 3 )
 
-[node name="Glow" type="Sprite" parent="."]
+[node name="Glow" type="Sprite2D" parent="."]
 material = ExtResource( 1 )
 texture = ExtResource( 5 )

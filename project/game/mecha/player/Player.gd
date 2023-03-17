@@ -16,7 +16,7 @@ const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
 const SPRINTING_TIMEOUT = .13 #How much the player needs to hold the button to enter sprint mode
 
-onready var Cam = $Camera2D
+@onready var Cam = $Camera2D
 
 var sprinting_timer = 0
 var invert_controls = {
@@ -72,10 +72,10 @@ func _input(event):
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponRight.reloading:
 			shoot("arm_weapon_right")
 	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left and\
-		 cur_mode == MODES.NEUTRAL:
+	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_left")
 	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right and\
-		 cur_mode == MODES.NEUTRAL:
+	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode"):
 		cur_mode = MODES.RELOAD
@@ -101,7 +101,7 @@ func _input(event):
 		die(self, "Myself")
 
 
-func get_camera():
+func get_camera_3d():
 	return Cam
 
 
@@ -144,7 +144,7 @@ func update_camera_offset(dt):
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp
-	.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name, calibre)
+	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name, calibre)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 
@@ -152,7 +152,7 @@ func do_hitstop():
 	Cam.shake((HITSTOP_DURATION + 1) * HITSTOP_TIMESCALE, 15, 50, 10)
 
 func knockback(strength, dir, should_rotate = true):
-	.knockback(strength, dir, should_rotate)
+	super.knockback(strength, dir, should_rotate)
 	if strength > 0:
 		var dur = sqrt(strength)/10
 		var freq = pow(strength, .3)*5
@@ -161,7 +161,7 @@ func knockback(strength, dir, should_rotate = true):
 
 
 func apply_recoil(type, node, recoil):
-	.apply_recoil(type, node, recoil)
+	super.apply_recoil(type, node, recoil)
 	if recoil > 0:
 		var dur = sqrt(recoil)/10
 		var freq = pow(recoil, .3)*5
@@ -182,7 +182,7 @@ func check_input():
 
 func check_weapon_input(name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
-	   not node.reloading and Input.is_action_pressed(name+"_shoot"):
+	not node.reloading and Input.is_action_pressed(name+"_shoot"):
 		shoot(name, true)
 
 
@@ -217,19 +217,19 @@ func set_debug_loadout():
 
 
 func set_arm_weapon(part_name, side):
-	.set_arm_weapon(part_name, side)
+	super.set_arm_weapon(part_name, side)
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
 	
-	if node.is_connected("finished_reloading", self, "_on_finished_reloading"):
-		node.disconnect("finished_reloading", self, "_on_finished_reloading")
-	if node.is_connected("reloading", self, "_on_reloading"):
-		node.disconnect("reloading", self, "_on_reloading")
-	node.connect("finished_reloading", self, "_on_finished_reloading")
-	node.connect("reloading", self, "_on_reloading", [side])
+	if node.is_connected("finished_reloading",Callable(self,"_on_finished_reloading")):
+		node.disconnect("finished_reloading",Callable(self,"_on_finished_reloading"))
+	if node.is_connected("reloading",Callable(self,"_on_reloading")):
+		node.disconnect("reloading",Callable(self,"_on_reloading"))
+	node.connect("finished_reloading",Callable(self,"_on_finished_reloading"))
+	node.connect("reloading",Callable(self,"_on_reloading").bind(side))
 
 
 func get_input():
@@ -251,7 +251,7 @@ func get_input():
 		# warning-ignore:narrowing_conversion
 		var angle = posmod(rotation_degrees, 360)
 		if angle > 180 - Profile.get_option("invert_deadzone_angle")/2 and\
-		   angle < 180 + Profile.get_option("invert_deadzone_angle")/2:
+		angle < 180 + Profile.get_option("invert_deadzone_angle")/2:
 			if not moving_axis.x:
 				invert_controls.x = mov_vec.x != 0
 			if not moving_axis.y:
@@ -272,12 +272,12 @@ func get_cam():
 # BUILDING METHODS
 
 func entered_building():
-	.entered_building()
+	super.entered_building()
 	emit_signal("update_building_status", true)
 
 
 func exited_building():
-	.exited_building()
+	super.exited_building()
 	emit_signal("update_building_status", false)
 
 

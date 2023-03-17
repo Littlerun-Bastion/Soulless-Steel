@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_main.png" type="Texture2D" id=2]
 [ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_sub.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_glow.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_sub.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/MA-L178_glow.png" type="Texture2D" id=5]
 [ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
 [ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=8]
 
@@ -53,22 +53,22 @@ wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5
 
-[node name="Sub" type="Sprite" parent="."]
+[node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource( 4 )
 
-[node name="Main" type="Sprite" parent="."]
+[node name="Main" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
-[node name="Glow" type="Sprite" parent="."]
+[node name="Glow" type="Sprite2D" parent="."]
 texture = ExtResource( 5 )
 
-[node name="AttachPos" type="Position2D" parent="."]
+[node name="AttachPos" type="Marker2D" parent="."]
 position = Vector2( 14.909, 35.9012 )
 
-[node name="EjectorPos" type="Position2D" parent="."]
+[node name="EjectorPos" type="Marker2D" parent="."]
 position = Vector2( -0.646783, 40.2722 )
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
-[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
 position = Vector2( 0, -63.403 )

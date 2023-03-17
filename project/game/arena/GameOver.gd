@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-onready var ReturnButton = $ViewportContainer/Viewport/Control/ReturnButton
+@onready var ReturnButton = $SubViewportContainer/SubViewport/Control/ReturnButton
 
 func _ready():
 	disable()
@@ -8,14 +8,14 @@ func _ready():
 
 func enable():
 	MouseManager.show_cursor()
-	$ViewportContainer.visible = true
+	$SubViewportContainer.visible = true
 	ShaderEffects.reset_shader_effect("gameover")
 	ReturnButton.disabled = false
 	
 
 
 func disable():
-	$ViewportContainer.visible = false
+	$SubViewportContainer.visible = false
 	ReturnButton.disabled = true
 
 
@@ -25,4 +25,4 @@ func killed():
 
 func _on_ReturnButton_pressed():
 # warning-ignore:return_value_discarded
-	get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
+	get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")

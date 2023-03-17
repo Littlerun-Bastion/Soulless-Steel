@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_main.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_sub.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_PV.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_main.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_sub.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_PV.png" type="Texture2D" id=5]
 
 [node name="Part" type="Node"]
 script = ExtResource( 1 )
@@ -29,18 +29,18 @@ hover_particles = true
 
 [node name="SingleSide" type="Node2D" parent="."]
 
-[node name="ChassisSub" type="Sprite" parent="SingleSide"]
+[node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 3 )
 
-[node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 4 )
 
-[node name="Chassis" type="Sprite" parent="SingleSide"]
+[node name="Chassis" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 2 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
 visible = false
-polygon = PoolVector2Array( -81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112 )
+polygon = PackedVector2Array( -81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112 )
 
 [node name="RightSide" type="Node2D" parent="."]
 position = Vector2( 46, 0 )

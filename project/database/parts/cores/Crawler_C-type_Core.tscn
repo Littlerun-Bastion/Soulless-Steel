@@ -1,18 +1,18 @@
 [gd_scene load_steps=14 format=2]
 
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture2D" id=1]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture2D" id=5]
 [ext_resource path="res://database/parts/core.gd" type="Script" id=6]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_main.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_sub.png" type="Texture" id=10]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" type="Texture" id=12]
-[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" type="Texture" id=13]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture2D" id=7]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_main.png" type="Texture2D" id=8]
+[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture2D" id=9]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_sub.png" type="Texture2D" id=10]
+[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture2D" id=11]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" type="Texture2D" id=12]
+[ext_resource path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" type="Texture2D" id=13]
 
 [node name="Part2" type="Node"]
 script = ExtResource( 6 )
@@ -29,99 +29,99 @@ has_left_shoulder = true
 has_right_shoulder = true
 weight = 38.2
 
-[node name="LeftChassisOffset" type="Position2D" parent="."]
+[node name="LeftChassisOffset" type="Marker2D" parent="."]
 position = Vector2( -30, 50 )
 
-[node name="Reference" type="Sprite" parent="LeftChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
 texture = ExtResource( 5 )
 
-[node name="RightChassisOffset" type="Position2D" parent="."]
+[node name="RightChassisOffset" type="Marker2D" parent="."]
 position = Vector2( 30, 50 )
 
-[node name="Reference" type="Sprite" parent="RightChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
 texture = ExtResource( 4 )
 
-[node name="HeadPort" type="Sprite" parent="."]
+[node name="HeadPort" type="Sprite2D" parent="."]
 position = Vector2( 0.5, -32 )
 texture = ExtResource( 3 )
 
-[node name="CoreSub" type="Sprite" parent="."]
+[node name="CoreSub" type="Sprite2D" parent="."]
 texture = ExtResource( 10 )
 
-[node name="Core" type="Sprite" parent="."]
+[node name="Core" type="Sprite2D" parent="."]
 texture = ExtResource( 8 )
 
-[node name="CoreGlow" type="Sprite" parent="."]
+[node name="CoreGlow" type="Sprite2D" parent="."]
 modulate = Color( 1, 1, 1, 0.556863 )
 texture = ExtResource( 12 )
 
-[node name="OverheatOffset1" type="Position2D" parent="."]
+[node name="OverheatOffset1" type="Marker2D" parent="."]
 position = Vector2( -13, 27 )
 
-[node name="OverheatOffset2" type="Position2D" parent="."]
+[node name="OverheatOffset2" type="Marker2D" parent="."]
 position = Vector2( 13, 27 )
 
-[node name="OverheatOffset3" type="Position2D" parent="."]
+[node name="OverheatOffset3" type="Marker2D" parent="."]
 position = Vector2( -13, 47 )
 
-[node name="OverheatOffset4" type="Position2D" parent="."]
+[node name="OverheatOffset4" type="Marker2D" parent="."]
 position = Vector2( 13, 47 )
 
-[node name="LeftArmWeaponOffset" type="Position2D" parent="."]
+[node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( -50, -23 )
 
-[node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
 visible = false
 texture = ExtResource( 9 )
 offset = Vector2( 4, -36 )
 
-[node name="RightArmWeaponOffset" type="Position2D" parent="."]
+[node name="RightArmWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( 50, -23 )
 
-[node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
 visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 9 )
 offset = Vector2( 4, -36 )
 
-[node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
+[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
 visible = false
 position = Vector2( -30, 17 )
 
-[node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
 texture = ExtResource( 1 )
 offset = Vector2( -9, -23 )
 
-[node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
+[node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
 visible = false
 position = Vector2( 30, 17 )
 
-[node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
 scale = Vector2( -1, 1 )
 texture = ExtResource( 1 )
 offset = Vector2( -9, -23 )
 
-[node name="HeadOffset" type="Position2D" parent="."]
+[node name="HeadOffset" type="Marker2D" parent="."]
 position = Vector2( 0, -31 )
 
-[node name="Reference" type="Sprite" parent="HeadOffset"]
+[node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
 visible = false
 texture = ExtResource( 2 )
 
-[node name="LeftShoulderOffset" type="Position2D" parent="."]
+[node name="LeftShoulderOffset" type="Marker2D" parent="."]
 position = Vector2( -52, -20 )
 
-[node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
 visible = false
 texture = ExtResource( 11 )
 
-[node name="RightShoulderOffset" type="Position2D" parent="."]
+[node name="RightShoulderOffset" type="Marker2D" parent="."]
 position = Vector2( 52, -20 )
 
-[node name="Reference" type="Sprite" parent="RightShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
 visible = false
 texture = ExtResource( 7 )
 
 [node name="Collision" type="Polygon2D" parent="."]
 color = Color( 1, 0, 0, 0.176471 )
-polygon = PoolVector2Array( -12.4567, -93.1351, 13.5143, -92.9845, 38.2378, -80.3799, 55.0961, -50.4451, 54.288, 4.0407, 26.7734, 32.7394, 24.6869, 79.4633, 12.5548, 93.8849, -10.75, 94.0625, -22.8839, 81.3138, -25.0608, 32.8339, -54.1881, 3.78829, -53.4519, -49.6244, -36.4007, -81.1214 )
+polygon = PackedVector2Array( -12.4567, -93.1351, 13.5143, -92.9845, 38.2378, -80.3799, 55.0961, -50.4451, 54.288, 4.0407, 26.7734, 32.7394, 24.6869, 79.4633, 12.5548, 93.8849, -10.75, 94.0625, -22.8839, 81.3138, -25.0608, 32.8339, -54.1881, 3.78829, -53.4519, -49.6244, -36.4007, -81.1214 )

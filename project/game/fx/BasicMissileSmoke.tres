@@ -1,40 +1,32 @@
-[gd_resource type="ParticlesMaterial" load_steps=7 format=2]
+[gd_resource type="ParticleProcessMaterial" load_steps=7 format=3 uid="uid://cx2ecgkt0ia6a"]
 
-[sub_resource type="Curve" id=7]
+[sub_resource type="Curve" id="7"]
 min_value = -87.0
 max_value = 0.0
-_data = [ Vector2( 0, -86.8023 ), 0.0, 0.0, 0, 0, Vector2( 1, 1 ), 0.0, 0.0, 0, 0 ]
+_data = [Vector2(0, -86.8023), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
 
-[sub_resource type="CurveTexture" id=8]
-curve = SubResource( 7 )
+[sub_resource type="CurveTexture" id="8"]
+curve = SubResource("7")
 
-[sub_resource type="Gradient" id=5]
-offsets = PoolRealArray( 0, 0.0352941, 0.129412, 0.541176, 0.694118, 1 )
-colors = PoolColorArray( 1, 1, 1, 1, 0.605469, 0.605469, 0.605469, 0.578947, 0.144531, 0.144531, 0.144531, 0.515625, 0.148438, 0.148438, 0.148438, 0.475259, 0.183594, 0.183594, 0.183594, 0.453394, 0, 0, 0, 0 )
+[sub_resource type="Gradient" id="5"]
+offsets = PackedFloat32Array(0, 0.0352941, 0.129412, 0.541176, 0.694118, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.605469, 0.605469, 0.605469, 0.578947, 0.144531, 0.144531, 0.144531, 0.515625, 0.148438, 0.148438, 0.148438, 0.475259, 0.183594, 0.183594, 0.183594, 0.453394, 0, 0, 0, 0)
 
-[sub_resource type="GradientTexture" id=23]
-gradient = SubResource( 5 )
+[sub_resource type="GradientTexture2D" id="23"]
+gradient = SubResource("5")
 
-[sub_resource type="Curve" id=2]
-_data = [ Vector2( 0, 0.515909 ), 0.0, 0.0, 0, 0, Vector2( 0.0442478, 0.997727 ), 0.0, 0.0, 0, 0, Vector2( 1, 0 ), -2.59403, 0.0, 0, 0 ]
+[sub_resource type="Curve" id="2"]
+_data = [Vector2(0, 0.515909), 0.0, 0.0, 0, 0, Vector2(0.0442478, 0.997727), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.59403, 0.0, 0, 0]
+point_count = 3
 
-[sub_resource type="CurveTexture" id=3]
-curve = SubResource( 2 )
+[sub_resource type="CurveTexture" id="3"]
+curve = SubResource("2")
 
 [resource]
 lifetime_randomness = 0.29
-flag_disable_z = true
 spread = 180.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 10.0
-initial_velocity_random = 1.0
-angular_velocity = -87.27
-angular_velocity_random = 1.0
-angular_velocity_curve = SubResource( 8 )
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-linear_accel = -4.0
-scale = 0.3
-scale_random = 0.56
-scale_curve = SubResource( 3 )
-color_ramp = SubResource( 23 )
+gravity = Vector3(0, 0, 0)
+angular_velocity_curve = SubResource("8")
+scale_curve = SubResource("3")
+color_ramp = SubResource("23")

@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Main.png" type="Texture" id=2]
+[ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Main.png" type="Texture2D" id=2]
 [ext_resource path="res://database/parts/projectiles/testlaser_effect.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Blade.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/mechas/arm_weapons/A12400w_Blade.png" type="Texture2D" id=4]
 [ext_resource path="res://game/mecha/MeleeHitboxes.gd" type="Script" id=5]
 [ext_resource path="res://game/mecha/Hitbox.tscn" type="PackedScene" id=6]
 
@@ -19,8 +19,8 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0 ),
+"transitions": PackedFloat32Array( 1 ),
 "update": 0,
 "values": [ 0.0 ]
 }
@@ -31,8 +31,8 @@ tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0 ),
+"transitions": PackedFloat32Array( 1 ),
 "update": 0,
 "values": [ 0.0 ]
 }
@@ -43,8 +43,8 @@ tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0 ),
+"transitions": PackedFloat32Array( 1 ),
 "update": 0,
 "values": [ Vector2( 0, 0 ) ]
 }
@@ -59,8 +59,8 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.2, 0.4, 0.9 ),
-"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"times": PackedFloat32Array( 0, 0.2, 0.4, 0.9 ),
+"transitions": PackedFloat32Array( 1, 1, 1, 1 ),
 "update": 0,
 "values": [ 0.0, -15.0, -15.0, 0.0 ]
 }
@@ -71,8 +71,8 @@ tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 0, 0.2, 0.4, 0.9 ),
-"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"times": PackedFloat32Array( 0, 0.2, 0.4, 0.9 ),
+"transitions": PackedFloat32Array( 1, 1, 1, 1 ),
 "update": 0,
 "values": [ 0.0, -15.0, -15.0, 0.0 ]
 }
@@ -83,8 +83,8 @@ tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0, 0.2, 0.3, 0.7, 0.9 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array( 0, 0.2, 0.3, 0.7, 0.9 ),
+"transitions": PackedFloat32Array( 1, 1, 1, 1, 1 ),
 "update": 0,
 "values": [ Vector2( 0, 0 ), Vector2( 0, 0 ), Vector2( 0, -28 ), Vector2( -1, -12 ), Vector2( 0, 0 ) ]
 }
@@ -95,8 +95,8 @@ tracks/3/loop_wrap = true
 tracks/3/imported = false
 tracks/3/enabled = true
 tracks/3/keys = {
-"times": PoolRealArray( 0.3 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0.3 ),
+"transitions": PackedFloat32Array( 1 ),
 "values": [ {
 "args": [ Vector2( -32, -126 ), 27.0, 1.0, 1.0, "frame_1", 0, 0.1 ],
 "method": "create_hitbox"
@@ -109,8 +109,8 @@ tracks/4/loop_wrap = true
 tracks/4/imported = false
 tracks/4/enabled = true
 tracks/4/keys = {
-"times": PoolRealArray( 0.3 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0.3 ),
+"transitions": PackedFloat32Array( 1 ),
 "values": [ {
 "args": [ Vector2( -50, -94 ), 20.0, 0.8, 0.3, "frame_1", 1, 0.1 ],
 "method": "create_hitbox"
@@ -123,8 +123,8 @@ tracks/5/loop_wrap = true
 tracks/5/imported = false
 tracks/5/enabled = true
 tracks/5/keys = {
-"times": PoolRealArray( 0.3 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array( 0.3 ),
+"transitions": PackedFloat32Array( 1 ),
 "values": [ {
 "args": [ Vector2( -2, -105 ), 20.0, 0.8, 0.3, "frame_1", 1, 0.1 ],
 "method": "create_hitbox"
@@ -159,15 +159,15 @@ wiggle_amount = 0.05
 seek_time = 0.5
 is_melee = true
 
-[node name="Sub" type="Sprite" parent="."]
+[node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource( 4 )
 
-[node name="Main" type="Sprite" parent="."]
+[node name="Main" type="Sprite2D" parent="."]
 texture = ExtResource( 2 )
 
-[node name="Glow" type="Sprite" parent="."]
+[node name="Glow" type="Sprite2D" parent="."]
 
-[node name="AttachPos" type="Position2D" parent="."]
+[node name="AttachPos" type="Marker2D" parent="."]
 position = Vector2( -15.7904, 15.1032 )
 
 [node name="MeleeHitboxes" type="Node2D" parent="."]

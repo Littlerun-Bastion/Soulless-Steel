@@ -4,7 +4,7 @@ const HITBOX = preload("res://game/mecha/Hitbox.tscn")
 
 signal create_hitbox
 
-onready var part = get_parent()
+@onready var part = get_parent()
 
 var attack_id = -1
 

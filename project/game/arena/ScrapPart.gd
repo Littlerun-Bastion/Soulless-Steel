@@ -12,34 +12,34 @@ func _ready():
 
 
 func setup(image):
-	$Sprite.texture = image
-	$Sprite.material = $Sprite.material.duplicate(true)
+	$Sprite2D.texture = image
+	$Sprite2D.material = $Sprite2D.material.duplicate(true)
 
 
-func set_scale(value):
+func update_scale(value):
 	for child in get_children():
 		if not child.get("scale") == null:
 			child.scale = value
 
 
 func set_heat_parameters(heat, min_darkness):
-	$Sprite.material.set_shader_param("heat", heat)
-	$Sprite.material.set_shader_param("min_darkness", min_darkness)
+	$Sprite2D.material.set_shader_parameter("heat", heat)
+	$Sprite2D.material.set_shader_parameter("min_darkness", min_darkness)
 
 
 func start_death():
 	#Wait a while
-	var dur = rand_range(LIFETIME_MIN, LIFETIME_MAX)
+	var dur = randf_range(LIFETIME_MIN, LIFETIME_MAX)
 	var timer = Timer.new()
 	timer.wait_time = dur
 	add_child(timer)
 	timer.start()
-	yield(timer, "timeout")
+	await timer.timeout
 
 	#Start fading out
-	dur = rand_range(FADEOUT_MIN, FADEOUT_MAX)
+	dur = randf_range(FADEOUT_MIN, FADEOUT_MAX)
 	$Tween.interpolate_property(self, "modulate:a", 1.0, 0.0, dur)
 	$Tween.start()
-	yield($Tween, "tween_completed")
+	await $Tween.finished
 	
 	queue_free()

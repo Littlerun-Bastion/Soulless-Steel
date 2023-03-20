@@ -7,7 +7,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
 [ext_resource type="FontFile" uid="uid://bst8vnu57ty6h" path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" id="5_xn564"]
 [ext_resource type="Theme" uid="uid://cqlnn7sur6eiy" path="res://game/title_buttons_theme.tres" id="12"]
-[ext_resource type="Texture2D" uid="uid://cfrlcsxqru17t" path="res://assets/images/ui/menu/grid.png" id="14"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="14"]
 
 [sub_resource type="FontVariation" id="FontVariation_2s61o"]
 base_font = ExtResource("2_up72g")
@@ -152,6 +152,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("4")
 
 [node name="Title" type="VBoxContainer" parent="."]
@@ -165,7 +167,7 @@ alignment = 2
 [node name="Demo" type="Label" parent="Title"]
 layout_mode = 2
 theme_override_fonts/font = SubResource("FontVariation_2s61o")
-text = "DEMO"
+text = "DEMOO"
 
 [node name="CompanyName" type="Label" parent="Title"]
 layout_mode = 2

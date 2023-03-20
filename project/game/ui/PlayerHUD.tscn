@@ -11,8 +11,8 @@
 [ext_resource type="AudioStream" uid="uid://6n35ych5a0r7" path="res://assets/audio/sfx/example_locked_tone.ogg" id="10"]
 [ext_resource type="Material" uid="uid://d0kmtsqqmt5ec" path="res://assets/shaders/ScreenWarp.tres" id="11"]
 [ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
-[ext_resource type="PackedScene" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
-[ext_resource type="PackedScene" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
+[ext_resource type="PackedScene" uid="uid://d0kc3mk5xv2t" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
+[ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
 
 [sub_resource type="Animation" id="17"]
 length = 0.001

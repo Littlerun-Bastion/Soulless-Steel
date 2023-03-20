@@ -115,13 +115,23 @@ func update_pointer(pointer_data):
 
 func _on_UpdateTimer_timeout():
 	var t_scale = Vector2(.6,.6)
-	$Tween.interpolate_property($Circle, "scale", Vector2(1,1), t_scale, .1, Tween.TRANS_CUBIC, Tween.EASE_IN)
-	$Tween.start()
-	await $Tween.finished
+	var tween = get_tree().create_tween()
+	$Circle.scale = Vector2(1,1)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property($Circle, "scale", t_scale, .1)
+
+	await tween.finished
+	
 	update_mecha_position()
 	update_pointers()
-	$Tween.interpolate_property($Circle, "scale", t_scale, Vector2(1,1), .5, Tween.TRANS_CUBIC, Tween.EASE_OUT)
-	$Tween.start()
-	$Tween.interpolate_property($Pointers, "modulate:a", 1, 0, radar_cooldown / 1.5, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+	var tween1 = get_tree().create_tween()
+	tween1.set_ease(Tween.EASE_OUT)
+	tween1.set_trans(Tween.TRANS_CUBIC)
+	tween1.tween_property($Circle, "scale", Vector2(1,1), .5)
+	
+	var tween2 = get_tree().create_tween()
+	$Pointers.modulate.a = 1.0
+	tween2.tween_property($Pointers, "modulate:a", 0, radar_cooldown / 1.5)
 	
 	

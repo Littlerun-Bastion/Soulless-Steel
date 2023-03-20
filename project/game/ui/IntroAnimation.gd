@@ -17,13 +17,13 @@ func play(anim_name):
 func stop_animation():
 	var dur = 1.0
 	$AnimationPlayer.stop(true)
-	$Tween.interpolate_property($BG, "modulate", null, Color(1,1,1,0), dur)
-	$Tween.interpolate_property($CommandLine, "percent_visible", null, 0, dur)
-	$Tween.interpolate_property($ScreenText, "percent_visible", null, 0, dur)
-	$Tween.interpolate_property($EntranceSound, "volume_db", null, -60, dur)
+	var tween = get_tree().create_tween()
+	tween.tween_property($BG, "modulate", Color(1,1,1,0), dur)
+	tween.tween_property($CommandLine, "percent_visible", 0, dur)
+	tween.tween_property($ScreenText, "percent_visible", 0, dur)
+	tween.tween_property($EntranceSound, "volume_db", -60, dur)
 	$VCREffect.hide()
 	$VCREffect2.hide()
-	$Tween.start()
 	entrance_animation_ending()
 
 

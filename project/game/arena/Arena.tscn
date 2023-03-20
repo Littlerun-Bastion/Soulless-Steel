@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/arena/Arena.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://game/ui/IntroAnimation.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="3"]
 [ext_resource type="Texture2D" uid="uid://bmw1qol2llh74" path="res://assets/images/map/floor/TestArenaBox.png" id="4"]
 [ext_resource type="PackedScene" path="res://game/ui/Camera.tscn" id="5"]
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6"]

@@ -20,3 +20,10 @@ res://game/ui/HeatmapEffects.tscn
 res://game/ui/PlayerHUD.tscn
 res://game/ui/PlayerHUD.gd
 res://game/arena/GameOver.tscn
+res://game/ui/ShaderEffects.gd
+res://game/ui/IntroAnimation.tscn
+res://game/ui/MechaCursorCrosshair.tscn
+res://game/ui/MechaCursorCrosshair.gd
+res://game/ui/ShaderEffects.tscn
+res://game/ui/player_radar/PlayerRadar.tscn
+res://game/ui/player_radar/PlayerRadar.gd

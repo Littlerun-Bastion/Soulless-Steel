@@ -104,10 +104,7 @@ func die():
 	dying = true
 	if not proj_data.is_overtime:
 		emit_signal("bullet_impact", self, impact_effect)
-	#var dur = randf_range(.2, .4)
-	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
-	#$Tween.start()
-	#await $Tween.finished
+
 	queue_free()
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):

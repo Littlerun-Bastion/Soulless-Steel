@@ -1,13 +1,10 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://cmb2vh3nb5qws"]
 
-[ext_resource path="res://game/weapons/InstantProjectile.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://game/weapons/InstantProjectile.gd" id="1"]
 
 [node name="InstantProjectile" type="RayCast2D"]
-enabled = true
 collide_with_areas = true
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="Basic" type="Line2D" parent="."]
-points = PackedVector2Array( 0, 0, 0, 0 )
-
-[node name="DeathTween" type="Tween" parent="."]
+points = PackedVector2Array(0, 0, 0, 0)

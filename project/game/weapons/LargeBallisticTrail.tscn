@@ -1,25 +1,21 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://djqh1iow04gau"]
 
-[ext_resource path="res://ProjectileTrail.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/fx/trail_cloudy_hi.png" type="Texture2D" id=2]
+[ext_resource type="Script" path="res://ProjectileTrail.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://ciwhpfoffrk7x" path="res://assets/images/fx/trail_cloudy_hi.png" id="2"]
 
-[sub_resource type="Curve" id=1]
-_data = [ Vector2( 0.0434783, 1 ), 0.0, 0.0, 0, 0, Vector2( 1, 0 ), -1.6854, 0.0, 0, 0 ]
+[sub_resource type="Curve" id="1"]
+_data = [Vector2(0.0434783, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -1.6854, 0.0, 0, 0]
+point_count = 2
 
-[sub_resource type="Gradient" id=2]
-offsets = PackedFloat32Array( 0, 0.330275, 0.862385 )
-colors = PackedColorArray( 0.00784314, 0.00784314, 0.00784314, 0, 1, 1, 1, 0.595745, 1, 1, 1, 1 )
+[sub_resource type="Gradient" id="2"]
+offsets = PackedFloat32Array(0, 0.330275, 0.862385)
+colors = PackedColorArray(0.00784314, 0.00784314, 0.00784314, 0, 1, 1, 1, 0.595745, 1, 1, 1, 1)
 
 [node name="Trail" type="Line2D"]
 width = 20.0
-width_curve = SubResource( 1 )
-default_color = Color( 1, 1, 1, 1 )
-gradient = SubResource( 2 )
-texture = ExtResource( 2 )
+width_curve = SubResource("1")
+gradient = SubResource("2")
+texture = ExtResource("2")
 texture_mode = 1
 joint_mode = 2
-script = ExtResource( 1 )
-
-[node name="Decay" type="Tween" parent="."]
-
-[connection signal="tween_all_completed" from="Decay" to="." method="_on_Tween_tween_all_completed"]
+script = ExtResource("1")

@@ -145,10 +145,11 @@ func reloading(reload_time, side):
 		push_error("Not a valid side: " + str(side))
 	weapon_node.hide()
 	reload_node.show()
-	var tween = get_tree().create_tween()
 	reload_node.value = 0
+	var tween = get_tree().create_tween()
 	tween.tween_property(reload_node, "value", 100, reload_time)
 	
 	await tween.finished
+	
 	weapon_node.show()
 	reload_node.hide()

@@ -1,30 +1,28 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://b2eb7lv14x5fj"]
 
-[ext_resource path="res://assets/images/mechas/projectiles/bullet_large.png" type="Texture2D" id=1]
-[ext_resource path="res://game/weapons/RegularProjectile.gd" type="Script" id=2]
-[ext_resource path="res://assets/images/light_sources/light_point_soft.png" type="Texture2D" id=3]
+[ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="1"]
+[ext_resource type="Script" path="res://game/weapons/RegularProjectile.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="3"]
 
-[sub_resource type="CanvasItemMaterial" id=1]
+[sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1
 
 [node name="RegularProjectile" type="Area2D" groups=["projectile"]]
 collision_layer = 2
-script = ExtResource( 2 )
+script = ExtResource("2")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource( 1 )
+texture = ExtResource("1")
 
 [node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
-material = SubResource( 1 )
-scale = Vector2( 5, 5 )
-texture = ExtResource( 3 )
+material = SubResource("1")
+scale = Vector2(5, 5)
+texture = ExtResource("3")
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
-polygon = PackedVector2Array( -4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835 )
+polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835)
 
 [node name="LifeTimer" type="Timer" parent="."]
-
-[node name="Tween" type="Tween" parent="."]
 
 [connection signal="body_shape_entered" from="." to="." method="_on_RegularProjectile_body_shape_entered"]
 [connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

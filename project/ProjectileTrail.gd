@@ -10,13 +10,13 @@ var home_projectile
 var point_age := [0.0]
 var min_spawn_distance := 20
 
-@onready var tween := $Decay
-
 func _ready():
 	set_as_top_level(true)
-	tween.interpolate_property(self, "modulate:a", 1.0, 0.0, randf_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))), Tween.TRANS_CIRC, Tween.EASE_OUT)
 	clear_points()
-	tween.start()
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "modulate:a", 0.0, randf_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))))
+	tween.tween_callback(self.queue_free)
 
 func setup(data, projectile):
 	lifetime = data.trail_lifetime
@@ -45,6 +45,3 @@ func add_new_point(point_pos:Vector2, at_pos := -1):
 	
 	point_age.append(0.0)
 	add_new_point(point_pos, at_pos) #TODO: CHECK IF THIS IS RIGHT
-
-func _on_Tween_tween_all_completed():
-	queue_free()

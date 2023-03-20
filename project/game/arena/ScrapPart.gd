@@ -38,8 +38,7 @@ func start_death():
 
 	#Start fading out
 	dur = randf_range(FADEOUT_MIN, FADEOUT_MAX)
-	$Tween.interpolate_property(self, "modulate:a", 1.0, 0.0, dur)
-	$Tween.start()
-	await $Tween.finished
-	
-	queue_free()
+	var tween = get_tree().create_tween()
+	modulate.a = 1.0
+	tween.tween_property(self, "modulate:a", 0.0, dur)
+	tween.tween_callback(self.queue_free)

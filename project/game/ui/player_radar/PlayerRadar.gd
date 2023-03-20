@@ -117,8 +117,7 @@ func _on_UpdateTimer_timeout():
 	var t_scale = Vector2(.6,.6)
 	var tween = get_tree().create_tween()
 	$Circle.scale = Vector2(1,1)
-	tween.set_trans(Tween.TRANS_CUBIC)
-	tween.set_ease(Tween.EASE_IN)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.tween_property($Circle, "scale", t_scale, .1)
 
 	await tween.finished
@@ -126,8 +125,7 @@ func _on_UpdateTimer_timeout():
 	update_mecha_position()
 	update_pointers()
 	var tween1 = get_tree().create_tween()
-	tween1.set_ease(Tween.EASE_OUT)
-	tween1.set_trans(Tween.TRANS_CUBIC)
+	tween1.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween1.tween_property($Circle, "scale", Vector2(1,1), .5)
 	
 	var tween2 = get_tree().create_tween()

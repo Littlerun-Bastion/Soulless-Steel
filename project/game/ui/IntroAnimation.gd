@@ -18,6 +18,7 @@ func stop_animation():
 	var dur = 1.0
 	$AnimationPlayer.stop(true)
 	var tween = get_tree().create_tween()
+	tween.set_parallel()
 	tween.tween_property($BG, "modulate", Color(1,1,1,0), dur)
 	tween.tween_property($CommandLine, "percent_visible", 0, dur)
 	tween.tween_property($ScreenText, "percent_visible", 0, dur)

@@ -11,6 +11,7 @@ var fade_out_timer = 2.0
 
 
 func _ready():
+	await get_tree().create_timer(fade_out_timer).timeout
 	start_fade_out()
 	
 
@@ -23,7 +24,8 @@ func setup(type, size, pos):
 
 
 func start_fade_out():
-	$Tween.interpolate_property(self, "modulate:a", 1, 0, 1, Tween.TRANS_LINEAR, Tween.EASE_IN, fade_out_timer)
-	$Tween.start()
-	await $Tween.finished
-	queue_free()
+	fade_out_timer
+	var tween = get_tree().create_tween()
+	modulate.a = 1.0
+	tween.tween_property(self, "modulate:a", 0.0, 1)
+	tween.tween_callback(self.queue_free)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=26 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
@@ -11,8 +11,8 @@
 [ext_resource type="AudioStream" uid="uid://6n35ych5a0r7" path="res://assets/audio/sfx/example_locked_tone.ogg" id="10"]
 [ext_resource type="Material" uid="uid://d0kmtsqqmt5ec" path="res://assets/shaders/ScreenWarp.tres" id="11"]
 [ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
-[ext_resource type="PackedScene" uid="uid://d0kc3mk5xv2t" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
-[ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
 
 [sub_resource type="Animation" id="17"]
 length = 0.001
@@ -82,7 +82,13 @@ _data = {
 "static": SubResource("19")
 }
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wxji5"]
+bg_color = Color(1, 1, 1, 1)
+
 [sub_resource type="FontFile" id="12"]
+subpixel_positioning = 0
+msdf_pixel_range = 14
+msdf_size = 128
 fallbacks = Array[Font]([ExtResource("3")])
 face_index = null
 embolden = null
@@ -96,6 +102,9 @@ cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
 
 [sub_resource type="Theme" id="13"]
 default_font = SubResource("12")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mwoss"]
+bg_color = Color(1, 1, 1, 1)
 
 [sub_resource type="Shader" id="26"]
 code = "shader_type canvas_item;
@@ -215,17 +224,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -83.3118
 offset_top = -63.7816
-offset_right = 171.686
-offset_bottom = -20.7816
+offset_right = 171.688
+offset_bottom = -33.7816
 scale = Vector2(-1, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_wxji5")
 value = 100.0
+show_percentage = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/LifeBar"]
+texture_filter = 1
 layout_mode = 0
-offset_left = -8.96045
-offset_top = -4.23608
-offset_right = 341.04
-offset_bottom = 45.7639
+offset_left = -9.0
+offset_top = -9.0
+offset_right = 341.0
+offset_bottom = 41.0
 scale = Vector2(0.78, 1)
 texture = ExtResource("4")
 flip_h = true
@@ -261,17 +273,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -83.312
 offset_top = -114.038
-offset_right = 171.687
-offset_bottom = -71.0377
+offset_right = 171.688
+offset_bottom = -84.038
 scale = Vector2(-1, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_mwoss")
 value = 100.0
+show_percentage = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/ShieldBar"]
 layout_mode = 0
-offset_left = -8.96045
-offset_top = -4.23608
-offset_right = 341.04
-offset_bottom = 45.7639
+offset_left = -9.0
+offset_top = -9.0
+offset_right = 341.0
+offset_bottom = 41.0
 scale = Vector2(0.78, 1)
 texture = ExtResource("4")
 flip_h = true
@@ -309,7 +323,7 @@ offset_left = -84.6161
 offset_top = 216.608
 offset_right = 929.384
 offset_bottom = 284.608
-rotation = -90.0
+rotation = -1.5708
 scale = Vector2(0.4, 0.4)
 pivot_offset = Vector2(0.0195313, 67.9788)
 value = 100.0
@@ -325,7 +339,6 @@ texture = ExtResource("4")
 flip_h = true
 
 [node name="TemperatureErrorLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar"]
-visible = false
 layout_mode = 0
 offset_left = -40.0
 offset_top = -50.0
@@ -333,41 +346,48 @@ offset_right = 60.0
 offset_bottom = -14.0
 grow_horizontal = 0
 grow_vertical = 0
-rotation = 90.0
+rotation = 1.5708
 scale = Vector2(2.2, 2.2)
 theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
 text = "ERROR"
 
 [node name="TemperatureLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar"]
 layout_mode = 0
 offset_left = -40.0
-offset_top = -200.0
+offset_top = -180.0
 offset_right = 60.0
-offset_bottom = -164.0
+offset_bottom = -144.0
 grow_horizontal = 0
 grow_vertical = 0
-rotation = 90.0
+rotation = 1.5708
 scale = Vector2(2.2, 2.2)
 theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
 text = "28"
+horizontal_alignment = 2
 
 [node name="DegreesSymbol" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel"]
 layout_mode = 0
-offset_left = 100.054
-offset_top = -3.64307
-offset_right = 108.054
-offset_bottom = 12.3569
+offset_left = 103.0
+offset_top = -6.0
+offset_right = 117.0
+offset_bottom = 23.0
+scale = Vector2(0.5, 0.5)
 theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
 text = "o"
+horizontal_alignment = 2
 
 [node name="Celsius" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel"]
 layout_mode = 0
-offset_left = 108.598
-offset_top = -0.195984
-offset_right = 126.598
-offset_bottom = 35.804
+offset_left = 24.0
+offset_right = 124.0
+offset_bottom = 36.0
 theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
 text = "C"
+horizontal_alignment = 2
 
 [node name="StatusContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport"]
 offset_left = 1638.39
@@ -462,6 +482,8 @@ layout_mode = 3
 anchors_preset = 15
 offset_right = 0.0
 offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="PlayerRadar" parent="SubViewportContainer/SubViewport" instance=ExtResource("14")]
 layout_mode = 3
@@ -489,6 +511,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Bh0" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
 layout_mode = 0

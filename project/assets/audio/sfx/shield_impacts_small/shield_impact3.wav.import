@@ -2,7 +2,7 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://cwatthqbijv41"
+uid="uid://s3s6by6x47xq"
 path="res://.godot/imported/shield_impact3.wav-fe23a3eb3bb6a278e3c7f676fbb68e5c.sample"
 
 [deps]
@@ -18,7 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop_mode=1
+edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=0

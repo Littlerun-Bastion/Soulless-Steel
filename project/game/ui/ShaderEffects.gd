@@ -16,7 +16,7 @@ func play_transition(from_value, to_value, duration):
 	if not from_value:
 		from_value = 0.0
 	VCREffect.material.set_shader_parameter("noiseQuality", from_value)
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.tween_property(VCREffect.material, "shader_param/noiseQuality", to_value, duration)
 	tweens.append(tween)
 

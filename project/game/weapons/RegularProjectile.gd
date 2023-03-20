@@ -44,7 +44,7 @@ func _process(dt):
 		if seeker_target and is_instance_valid(seeker_target):
 			if lifetime < data.seek_time:
 				dir = lerp(dir.rotated(deg_to_rad(randf_range(-data.wiggle_amount, data.wiggle_amount))),\
-						   position.direction_to(seeker_target.position), data.seek_agility)
+							position.direction_to(seeker_target.position), data.seek_agility)
 			elif not seek_time_expired:
 				dir = lerp(dir, position.direction_to(seeker_target.position), data.seek_agility)
 				data.wiggle_amount = data.wiggle_amount/2
@@ -118,7 +118,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
 			var shape = body.get_shape_from_id(body_shape_id)
 			var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
-													  shape.polygon, shape.global_transform)
+																	shape.polygon, shape.global_transform)
 			
 			var collision_point
 			if points.size() > 0:
@@ -131,13 +131,13 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			
 			var final_damage = data.damage if not proj_data.is_overtime else data.damage * get_process_delta_time()
 			body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-							 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, proj_data.calibre)
+								data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, proj_data.calibre)
 			if not proj_data.is_overtime and data.impact_force > 0.0:
 				body.knockback(data.impact_force, dir, true)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\
-	  (not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
+	(not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		die()

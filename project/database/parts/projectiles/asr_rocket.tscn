@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bqwmn6aymuj40"]
 
-[ext_resource type="Texture2D" uid="uid://2s2p4wa4qqp0" path="res://assets/images/mechas/projectiles/MA-ASR_projectile.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://dtya7g7qtd5t6" path="res://assets/images/mechas/projectiles/MA-ASR_projectile.png" id="1"]
 [ext_resource type="Script" path="res://database/parts/projectile.gd" id="2"]
 
 [node name="Projectile" type="Node2D"]

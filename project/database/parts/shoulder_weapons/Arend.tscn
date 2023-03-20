@@ -1,10 +1,10 @@
 [gd_scene load_steps=9 format=3 uid="uid://bt5svi7vi1y03"]
 
-[ext_resource type="Texture2D" uid="uid://i8cnesecqlpn" path="res://assets/images/mechas/shoulder_weapons/Arend_main.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://1lf4oq2x37fu" path="res://assets/images/mechas/shoulder_weapons/Arend_main.png" id="1"]
 [ext_resource type="Script" path="res://database/parts/shoulder_weapon.gd" id="2"]
 [ext_resource type="PackedScene" path="res://database/parts/projectiles/small_missile.tscn" id="3"]
-[ext_resource type="Texture2D" uid="uid://5aw5xynuuvd0" path="res://assets/images/mechas/shoulder_weapons/Arend_sub.png" id="4"]
-[ext_resource type="Texture2D" uid="uid://6we74ivnd0r8" path="res://assets/images/mechas/shoulder_weapons/Arend_glow.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://np0kmkrfg73v" path="res://assets/images/mechas/shoulder_weapons/Arend_sub.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://ebu8pn7urd5a" path="res://assets/images/mechas/shoulder_weapons/Arend_glow.png" id="5"]
 [ext_resource type="PackedScene" path="res://game/weapons/SmokeTrail.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="8"]

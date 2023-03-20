@@ -1315,7 +1315,6 @@ func update_chassis_visuals(dt):
 			right_target_angle = 0
 
 		for child in LeftChassisRoot.get_children():
-			printt(child.rotation, left_target_angle, dt*CHASSIS_SPEED)
 			child.rotation = lerp(float(child.rotation), float(left_target_angle),\
 										dt*CHASSIS_SPEED)
 		for child in RightChassisRoot.get_children():

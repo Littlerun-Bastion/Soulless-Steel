@@ -24,7 +24,6 @@ func setup(type, size, pos):
 
 
 func start_fade_out():
-	fade_out_timer
 	var tween = get_tree().create_tween()
 	modulate.a = 1.0
 	tween.tween_property(self, "modulate:a", 0.0, 1)

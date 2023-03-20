@@ -1,10 +1,10 @@
 [gd_scene load_steps=14 format=3 uid="uid://6hk3ar6y8oo8"]
 
-[ext_resource type="AudioStream" uid="uid://codtsaofvnsdh" path="res://assets/audio/sfx/intro/misc_1.wav" id="1"]
-[ext_resource type="AudioStream" uid="uid://c6r2v12qxiqx1" path="res://assets/audio/sfx/entrance.wav" id="2"]
-[ext_resource type="AudioStream" uid="uid://fe7clx45643o" path="res://assets/audio/sfx/intro/misc_2.wav" id="3"]
-[ext_resource type="AudioStream" uid="uid://cgpcx81jsbp2o" path="res://assets/audio/sfx/intro/misc_4.wav" id="4"]
-[ext_resource type="AudioStream" uid="uid://dmwd4ytdq304" path="res://assets/audio/sfx/intro/misc_3.wav" id="5"]
+[ext_resource type="AudioStream" uid="uid://dsc3t6t8md0lg" path="res://assets/audio/sfx/intro/misc_1.wav" id="1"]
+[ext_resource type="AudioStream" uid="uid://bwgrenwv7y84q" path="res://assets/audio/sfx/entrance.wav" id="2"]
+[ext_resource type="AudioStream" uid="uid://u86bfbirs6jm" path="res://assets/audio/sfx/intro/misc_2.wav" id="3"]
+[ext_resource type="AudioStream" uid="uid://c7s0xhnjrl644" path="res://assets/audio/sfx/intro/misc_4.wav" id="4"]
+[ext_resource type="AudioStream" uid="uid://cngy1h86b7uk7" path="res://assets/audio/sfx/intro/misc_3.wav" id="5"]
 [ext_resource type="Script" path="res://game/ui/IntroAnimation.gd" id="7"]
 
 [sub_resource type="Animation" id="17"]
@@ -2009,7 +2009,7 @@ void fragment()
 shader = SubResource("3")
 shader_parameter/barRange = 0.022
 shader_parameter/barOffsetIntensity = 0.005
-shader_parameter/noiseQuality = 600.88
+shader_parameter/noiseQuality = 600.0
 shader_parameter/noiseIntensity = 0.03
 shader_parameter/colorOffsetIntensity = 0.373
 shader_parameter/redMultiplier = 0.002

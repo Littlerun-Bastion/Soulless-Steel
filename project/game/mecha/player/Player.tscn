@@ -1,13 +1,13 @@
 [gd_scene load_steps=9 format=3 uid="uid://cgrq82l583gkv"]
 
 [ext_resource type="Script" path="res://game/mecha/player/Player.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://b5sg614y514dt" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" id="2"]
-[ext_resource type="Texture2D" uid="uid://brspbw6ip70gc" path="res://assets/images/faded_white_circle.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://dd2342guagsoh" path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://dbtbvevksievu" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://pd4krlmkqxjs" path="res://assets/images/faded_white_circle.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://cups4su68lf0u" path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" id="4"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://game/ui/Camera.tscn" id="6"]
-[ext_resource type="Texture2D" uid="uid://d2c2xje56tess" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
-[ext_resource type="Texture2D" uid="uid://djeq0mx1xcvqx" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
+[ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="6"]
+[ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
 
 [node name="Player" instance=ExtResource("5")]
 script = ExtResource("1")

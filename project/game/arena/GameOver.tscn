@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3 uid="uid://bad6i3ad8t17j"]
 
 [ext_resource type="Script" path="res://game/arena/GameOver.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://bdd71wup2yrg7" path="res://assets/images/ui/pause_menu/return_button_highlight.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://do18l7n3pwuwf" path="res://assets/images/ui/pause_menu/return_button_pressed.png" id="4"]
-[ext_resource type="Texture2D" uid="uid://dbt2vaiij8pnd" path="res://assets/images/ui/pause_menu/return_button.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://cce5c46a32yhd" path="res://assets/images/ui/pause_menu/return_button_highlight.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://c26exnrusfy22" path="res://assets/images/ui/pause_menu/return_button_pressed.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cfms3yoylaqw7" path="res://assets/images/ui/pause_menu/return_button.png" id="5"]
 
 [sub_resource type="Shader" id="20"]
 code = "shader_type canvas_item;

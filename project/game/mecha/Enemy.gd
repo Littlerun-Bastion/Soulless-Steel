@@ -89,21 +89,20 @@ func shoot_weapons():
 	try_to_shoot("shoulder_weapon_right")
 
 
-func try_to_shoot(name):
-	var node = get_weapon_part(name)
+func try_to_shoot(weapon_name):
+	var node = get_weapon_part(weapon_name)
 	if node:
 		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
 			node.reload()
 		elif node.can_shoot():
 			if can_see_target():
-				shoot(name)
+				shoot(weapon_name)
 
 
 func can_see_target():
 	if valid_target:
 		var space_state = get_world_2d().direct_space_state
-		var ray = PhysicsRayQueryParameters2D.new()
-		ray.create(position, valid_target.position)
+		var ray = PhysicsRayQueryParameters2D.create(position, valid_target.position)
 		ray.exclude = [self]
 		var result = space_state.intersect_ray(ray)
 		if result:

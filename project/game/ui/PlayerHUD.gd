@@ -28,7 +28,6 @@ const BUILDING_SPEED = 1.5
 @onready var LockingAnim = $SubViewportContainer/SubViewport/LockingSprite/AnimationPlayer
 @onready var ConstantBlinkingSFX = $SubViewportContainer/SubViewport/ConstantBlinkingSFX
 @onready var ExtractingLabel = $SubViewportContainer/SubViewport/ExtractingLabel
-@onready var Tw = $SubViewportContainer/SubViewport/Tween
 @onready var StatusLabels = {
 	"freezing": $SubViewportContainer/SubViewport/StatusContainer/FreezingLabel,
 	"corrosion": $SubViewportContainer/SubViewport/StatusContainer/CorrosionLabel,
@@ -250,8 +249,9 @@ func _on_player_took_damage(_p, is_status):
 				visible_holes.append(hole)
 		if not visible_holes.is_empty():
 			var hole = visible_holes[randi() % visible_holes.size()]
-			Tw.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
-			Tw.start()
+			var tween = get_tree().create_tween()
+			hole.modulate.a = 0.0
+			tween.tween_property(hole, "modulate:a", 1.0, HOLE_FADE_DUR)
 
 
 func _on_player_update_building_status(value):

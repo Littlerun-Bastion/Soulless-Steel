@@ -14,7 +14,7 @@ func get_collision():
 func create_collision_polygon(distance):
 	var pool_vector = PackedVector2Array()
 	var prop_transform = get_collision_transform()
-	var pool = Geometry2D.offset_polygon(get_collision(), distance, 2)
+	var pool = Geometry2D.offset_polygon(get_collision(), distance, Geometry2D.PolyJoinType.JOIN_MITER)
 	for vertex in pool[0]:
 		pool_vector.append(prop_transform * vertex)
 	return pool_vector

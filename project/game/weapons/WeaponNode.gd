@@ -3,7 +3,7 @@ extends Node2D
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 
-signal reloading
+signal reloading_signal
 signal finished_reloading
 
 @onready var Main = $Main
@@ -107,7 +107,7 @@ func reload():
 		return
 	
 	reloading = true
-	emit_signal("reloading", data.reload_speed)
+	emit_signal("reloading_signal", data.reload_speed)
 	var temp_timer = Timer.new()
 	add_child(temp_timer)
 	temp_timer.start(data.reload_speed); await temp_timer.timeout

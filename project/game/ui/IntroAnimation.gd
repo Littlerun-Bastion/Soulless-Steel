@@ -9,9 +9,9 @@ func _input(event):
 			stop_animation()
 
 
-func play(name):
+func play(anim_name):
 	$EntranceSound.volume_db = 0
-	$AnimationPlayer.play(name)
+	$AnimationPlayer.play(anim_name)
 
 
 func stop_animation():

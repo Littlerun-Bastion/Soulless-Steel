@@ -1,116 +1,103 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=24 format=3 uid="uid://coobdqvll7004"]
 
-[ext_resource path="res://game/ui/PlayerHUD.gd" type="Script" id=1]
-[ext_resource path="res://game/ui/HUDFont.tres" type="Theme" id=2]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="FontFile" id=3]
-[ext_resource path="res://assets/images/ui/player_ui/healthbar2_back.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/ui/player_ui/healthbar2_front.png" type="Texture2D" id=5]
-[ext_resource path="res://assets/images/ui/player_ui/ui_vignette.png" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/ui/player_ui/small_bullethole3.png" type="Texture2D" id=7]
-[ext_resource path="res://assets/images/ui/player_ui/small_bullethole1.png" type="Texture2D" id=8]
-[ext_resource path="res://assets/images/ui/player_ui/small_bullethole2.png" type="Texture2D" id=9]
-[ext_resource path="res://assets/audio/sfx/example_locked_tone.ogg" type="AudioStream" id=10]
-[ext_resource path="res://assets/shaders/ScreenWarp.tres" type="Material" id=11]
-[ext_resource path="res://assets/audio/sfx/status_effect_chirp.ogg" type="AudioStream" id=12]
-[ext_resource path="res://game/ui/MechaCursorCrosshair.tscn" type="PackedScene" id=13]
-[ext_resource path="res://game/ui/player_radar/PlayerRadar.tscn" type="PackedScene" id=14]
+[ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
+[ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
+[ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://bjsewyv2hkidw" path="res://assets/images/ui/player_ui/ui_vignette.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://vup205tntx1e" path="res://assets/images/ui/player_ui/small_bullethole3.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://exlflvupk2ki" path="res://assets/images/ui/player_ui/small_bullethole1.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://cg71sm0cm02we" path="res://assets/images/ui/player_ui/small_bullethole2.png" id="9"]
+[ext_resource type="AudioStream" uid="uid://6n35ych5a0r7" path="res://assets/audio/sfx/example_locked_tone.ogg" id="10"]
+[ext_resource type="Material" uid="uid://d0kmtsqqmt5ec" path="res://assets/shaders/ScreenWarp.tres" id="11"]
+[ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
+[ext_resource type="PackedScene" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
 
-[sub_resource type="Animation" id=17]
+[sub_resource type="Animation" id="17"]
 length = 0.001
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath(".:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
 tracks/0/keys = {
-"times": PackedFloat32Array( 0 ),
-"transitions": PackedFloat32Array( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ true ]
+"values": [true]
 }
 
-[sub_resource type="Animation" id=18]
+[sub_resource type="Animation" id="18"]
 resource_name = "blinking"
 length = 2.0
-loop = true
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath(".:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
 tracks/0/keys = {
-"times": PackedFloat32Array( 0, 0.8, 1.3, 2 ),
-"transitions": PackedFloat32Array( 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 0.8, 1.3, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 1,
-"values": [ true, false, true, true ]
+"values": [true, false, true, true]
 }
 tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("../../..")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
 tracks/1/keys = {
-"times": PackedFloat32Array( 1.3 ),
-"transitions": PackedFloat32Array( 1 ),
-"values": [ {
-"args": [  ],
-"method": "play_blink_sound"
-} ]
+"times": PackedFloat32Array(1.3),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"play_blink_sound"
+}]
 }
 
-[sub_resource type="Animation" id=19]
+[sub_resource type="Animation" id="19"]
 resource_name = "static"
 length = 0.1
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath(".:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
 tracks/0/keys = {
-"times": PackedFloat32Array( 0 ),
-"transitions": PackedFloat32Array( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [ true ]
+"values": [true]
 }
 
-[sub_resource type="StyleBoxTexture" id=10]
-texture = ExtResource( 5 )
-region_rect = Rect2( 0, 0, 328.149, 33.9862 )
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2wm0k"]
+_data = {
+"RESET": SubResource("17"),
+"blinking": SubResource("18"),
+"static": SubResource("19")
+}
 
-[sub_resource type="StyleBoxEmpty" id=11]
+[sub_resource type="FontFile" id="12"]
+fallbacks = Array[Font]([ExtResource("3")])
+face_index = null
+embolden = null
+transform = null
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
 
-[sub_resource type="FontFile" id=12]
-size = 35
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
+[sub_resource type="Theme" id="13"]
+default_font = SubResource("12")
 
-[sub_resource type="Theme" id=13]
-default_font = SubResource( 12 )
-
-[sub_resource type="StyleBoxTexture" id=7]
-texture = ExtResource( 5 )
-region_rect = Rect2( 0, 0, 330, 27 )
-
-[sub_resource type="StyleBoxEmpty" id=16]
-
-[sub_resource type="FontFile" id=20]
-size = 35
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
-
-[sub_resource type="FontFile" id=21]
-size = 15
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
-
-[sub_resource type="Shader" id=26]
+[sub_resource type="Shader" id="26"]
 code = "shader_type canvas_item;
 render_mode blend_mix;
 
@@ -167,62 +154,61 @@ void fragment( )
 	COLOR = col;
 }"
 
-[sub_resource type="OpenSimplexNoise" id=23]
-period = 98.1
-persistence = 1.0
-lacunarity = 2.36
+[sub_resource type="FastNoiseLite" id="23"]
 
-[sub_resource type="NoiseTexture" id=27]
+[sub_resource type="NoiseTexture2D" id="27"]
 width = 1024
 height = 1024
 seamless = true
-noise = SubResource( 23 )
+noise = SubResource("23")
 
-[sub_resource type="ShaderMaterial" id=25]
-shader = SubResource( 26 )
-shader_param/_size = 5.0
-shader_param/moving_offset = Vector2( 0.05, 0.03 )
-shader_param/shadow_strength = 0.5
-shader_param/shadow_factor = 0.6
-shader_param/brightness_anchor = 0.3
-shader_param/brightness_variance = 0.01
-shader_param/brightness_frequency = 4.0
-shader_param/rotation_intensity = 26.0
-shader_param/rotation_frequency = 0.03
-shader_param/noise = SubResource( 27 )
+[sub_resource type="ShaderMaterial" id="25"]
+shader = SubResource("26")
+shader_parameter/_size = 5.0
+shader_parameter/moving_offset = Vector2(0.05, 0.03)
+shader_parameter/shadow_strength = 0.5
+shader_parameter/shadow_factor = 0.6
+shader_parameter/brightness_anchor = 0.3
+shader_parameter/brightness_variance = 0.01
+shader_parameter/brightness_frequency = 4.0
+shader_parameter/rotation_intensity = 26.0
+shader_parameter/rotation_frequency = 0.03
+shader_parameter/noise = SubResource("27")
 
 [node name="PlayerHUD" type="CanvasLayer"]
 layer = 2
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
-material = ExtResource( 11 )
+material = ExtResource("11")
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 1
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
-size = Vector2( 1920, 1080 )
 transparent_bg = true
 handle_input_locally = false
-render_target_update_mode = 3
 gui_disable_input = true
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
 
 [node name="BG" type="TextureRect" parent="SubViewportContainer/SubViewport"]
 offset_right = 1920.0
 offset_bottom = 1080.0
-texture = ExtResource( 6 )
-expand = true
+texture = ExtResource("6")
+expand_mode = 1
 
 [node name="LockingSprite" type="Sprite2D" parent="SubViewportContainer/SubViewport"]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="SubViewportContainer/SubViewport/LockingSprite"]
 autoplay = "RESET"
-anims/RESET = SubResource( 17 )
-anims/blinking = SubResource( 18 )
-anims/static = SubResource( 19 )
+libraries = {
+"": SubResource("AnimationLibrary_2wm0k")
+}
 
 [node name="LifeBar" type="ProgressBar" parent="SubViewportContainer/SubViewport"]
+custom_minimum_size = Vector2(200, 0)
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -231,47 +217,44 @@ offset_left = -83.3118
 offset_top = -63.7816
 offset_right = 171.686
 offset_bottom = -20.7816
-custom_minimum_size = Vector2( 200, 0 )
-scale = Vector2( -1, 1 )
-custom_styles/fg = SubResource( 10 )
-custom_styles/bg = SubResource( 11 )
+scale = Vector2(-1, 1)
 value = 100.0
-percent_visible = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/LifeBar"]
+layout_mode = 0
 offset_left = -8.96045
 offset_top = -4.23608
 offset_right = 341.04
 offset_bottom = 45.7639
-scale = Vector2( 0.78, 1 )
-texture = ExtResource( 4 )
+scale = Vector2(0.78, 1)
+texture = ExtResource("4")
 flip_h = true
 
 [node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/LifeBar"]
+layout_mode = 0
 offset_left = -11.0425
 offset_top = 12.1623
 offset_right = 44.9575
 offset_bottom = 48.1623
-scale = Vector2( -0.828571, 1 )
-theme = SubResource( 13 )
+scale = Vector2(-0.828571, 1)
+theme = SubResource("13")
 text = "ARM"
-align = 1
-valign = 1
 
 [node name="Label" type="Label" parent="SubViewportContainer/SubViewport/LifeBar"]
+layout_mode = 0
 offset_left = 193.651
 offset_top = 11.8262
 offset_right = 268.651
 offset_bottom = 47.8262
 grow_horizontal = 0
-scale = Vector2( -0.885714, 1 )
-pivot_offset = Vector2( 75.0973, -0.161133 )
-theme = SubResource( 13 )
+scale = Vector2(-0.885714, 1)
+pivot_offset = Vector2(75.0973, -0.161133)
+theme = SubResource("13")
 text = "00000"
-align = 2
-valign = 1
 
 [node name="ShieldBar" type="ProgressBar" parent="SubViewportContainer/SubViewport"]
+custom_minimum_size = Vector2(200, 0)
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -280,47 +263,44 @@ offset_left = -83.312
 offset_top = -114.038
 offset_right = 171.687
 offset_bottom = -71.0377
-custom_minimum_size = Vector2( 200, 0 )
-scale = Vector2( -1, 1 )
-custom_styles/fg = SubResource( 10 )
-custom_styles/bg = SubResource( 11 )
+scale = Vector2(-1, 1)
 value = 100.0
-percent_visible = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/ShieldBar"]
+layout_mode = 0
 offset_left = -8.96045
 offset_top = -4.23608
 offset_right = 341.04
 offset_bottom = 45.7639
-scale = Vector2( 0.78, 1 )
-texture = ExtResource( 4 )
+scale = Vector2(0.78, 1)
+texture = ExtResource("4")
 flip_h = true
 
 [node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/ShieldBar"]
+layout_mode = 0
 offset_left = -11.0425
 offset_top = 11.7883
 offset_right = 44.9575
 offset_bottom = 47.7883
-scale = Vector2( -0.885714, 1 )
-theme = SubResource( 13 )
+scale = Vector2(-0.885714, 1)
+theme = SubResource("13")
 text = "SHD"
-align = 1
-valign = 1
 
 [node name="Label" type="Label" parent="SubViewportContainer/SubViewport/ShieldBar"]
+layout_mode = 0
 offset_left = 193.063
 offset_top = 12.4233
 offset_right = 268.063
 offset_bottom = 48.4233
 grow_horizontal = 0
-scale = Vector2( -0.885714, 1 )
-pivot_offset = Vector2( 75.0973, -0.161133 )
-theme = SubResource( 13 )
+scale = Vector2(-0.885714, 1)
+pivot_offset = Vector2(75.0973, -0.161133)
+theme = SubResource("13")
 text = "00000"
-align = 2
-valign = 1
 
 [node name="HeatBar" type="ProgressBar" parent="SubViewportContainer/SubViewport"]
+custom_minimum_size = Vector2(1014, 68)
+anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -329,26 +309,24 @@ offset_left = -84.6161
 offset_top = 216.608
 offset_right = 929.384
 offset_bottom = 284.608
-custom_minimum_size = Vector2( 1014, 68 )
 rotation = -90.0
-scale = Vector2( 0.4, 0.4 )
-pivot_offset = Vector2( 0.0195313, 67.9788 )
-custom_styles/fg = SubResource( 7 )
-custom_styles/bg = SubResource( 16 )
+scale = Vector2(0.4, 0.4)
+pivot_offset = Vector2(0.0195313, 67.9788)
 value = 100.0
-percent_visible = false
 
 [node name="TextureRect" type="TextureRect" parent="SubViewportContainer/SubViewport/HeatBar"]
+layout_mode = 0
 offset_left = -32.155
 offset_top = -2.12354
 offset_right = 317.845
 offset_bottom = 47.8765
-scale = Vector2( 3.069, 1.783 )
-texture = ExtResource( 4 )
+scale = Vector2(3.069, 1.783)
+texture = ExtResource("4")
 flip_h = true
 
 [node name="TemperatureErrorLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar"]
 visible = false
+layout_mode = 0
 offset_left = -40.0
 offset_top = -50.0
 offset_right = 60.0
@@ -356,13 +334,12 @@ offset_bottom = -14.0
 grow_horizontal = 0
 grow_vertical = 0
 rotation = 90.0
-scale = Vector2( 2.2, 2.2 )
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+scale = Vector2(2.2, 2.2)
+theme = ExtResource("2")
 text = "ERROR"
-align = 2
 
 [node name="TemperatureLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar"]
+layout_mode = 0
 offset_left = -40.0
 offset_top = -200.0
 offset_right = 60.0
@@ -370,31 +347,27 @@ offset_bottom = -164.0
 grow_horizontal = 0
 grow_vertical = 0
 rotation = 90.0
-scale = Vector2( 2.2, 2.2 )
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+scale = Vector2(2.2, 2.2)
+theme = ExtResource("2")
 text = "28"
-align = 2
 
 [node name="DegreesSymbol" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel"]
+layout_mode = 0
 offset_left = 100.054
 offset_top = -3.64307
 offset_right = 108.054
 offset_bottom = 12.3569
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 21 )
+theme = ExtResource("2")
 text = "o"
-align = 2
 
 [node name="Celsius" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel"]
+layout_mode = 0
 offset_left = 108.598
 offset_top = -0.195984
 offset_right = 126.598
 offset_bottom = 35.804
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+theme = ExtResource("2")
 text = "C"
-align = 2
 
 [node name="StatusContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport"]
 offset_left = 1638.39
@@ -404,65 +377,41 @@ offset_bottom = 827.73
 alignment = 2
 
 [node name="FreezingLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
-offset_top = 344.0
-offset_right = 169.0
-offset_bottom = 380.0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN FRZN"
-align = 2
 
 [node name="OverweightLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
-offset_top = 384.0
-offset_right = 169.0
-offset_bottom = 420.0
-grow_horizontal = 0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN WGHT"
-align = 2
 
 [node name="CorrosionLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
 visible = false
-offset_top = 385.0
-offset_right = 162.0
-offset_bottom = 421.0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN CHEM"
-align = 2
 
 [node name="ElectrifiedLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
 visible = false
-offset_top = 305.0
-offset_right = 162.0
-offset_bottom = 341.0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN ELCT"
-align = 2
 
 [node name="FireLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
 visible = false
-offset_top = 345.0
-offset_right = 162.0
-offset_bottom = 381.0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN FIRE"
-align = 2
 
 [node name="OverheatingLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer"]
 visible = false
-offset_top = 385.0
-offset_right = 162.0
-offset_bottom = 421.0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+layout_mode = 2
+theme = ExtResource("2")
 text = "WRN HEAT"
-align = 2
 
 [node name="WeaponSlots" type="VBoxContainer" parent="SubViewportContainer/SubViewport"]
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -471,9 +420,8 @@ offset_left = -48.6128
 offset_top = -198.232
 offset_right = 195.387
 offset_bottom = 170.768
-scale = Vector2( 0.6, 0.6 )
-pivot_offset = Vector2( 244.234, 379.71 )
-custom_constants/separation = 10
+scale = Vector2(0.6, 0.6)
+pivot_offset = Vector2(244.234, 379.71)
 alignment = 2
 
 [node name="ECMLabel" type="Label" parent="SubViewportContainer/SubViewport"]
@@ -482,12 +430,12 @@ offset_top = 880.0
 offset_right = 1842.0
 offset_bottom = 916.0
 grow_horizontal = 0
-theme = ExtResource( 2 )
-custom_fonts/font = SubResource( 20 )
+theme = ExtResource("2")
 text = "WRN ECM -5.55%"
-align = 2
 
 [node name="ECMFreqLabel" type="ProgressBar" parent="SubViewportContainer/SubViewport/ECMLabel"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -496,34 +444,36 @@ offset_left = -5.73199
 offset_top = -8.807
 offset_right = 249.266
 offset_bottom = 34.1931
-custom_minimum_size = Vector2( 200, 0 )
-scale = Vector2( -0.7, 0.5 )
-custom_styles/fg = SubResource( 10 )
-custom_styles/bg = SubResource( 11 )
+scale = Vector2(-0.7, 0.5)
 value = 100.0
-percent_visible = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/ECMLabel/ECMFreqLabel"]
+layout_mode = 0
 offset_left = -8.96045
 offset_top = -4.23608
 offset_right = 341.04
 offset_bottom = 45.7639
-scale = Vector2( 0.78, 1 )
-texture = ExtResource( 4 )
+scale = Vector2(0.78, 1)
+texture = ExtResource("4")
 flip_h = true
 
-[node name="MechaCursorCrosshair" parent="SubViewportContainer/SubViewport" instance=ExtResource( 13 )]
+[node name="MechaCursorCrosshair" parent="SubViewportContainer/SubViewport" instance=ExtResource("13")]
+layout_mode = 3
+anchors_preset = 15
 offset_right = 0.0
 offset_bottom = 0.0
 
-[node name="PlayerRadar" parent="SubViewportContainer/SubViewport" instance=ExtResource( 14 )]
+[node name="PlayerRadar" parent="SubViewportContainer/SubViewport" instance=ExtResource("14")]
+layout_mode = 3
+anchors_preset = 0
 offset_left = 443.492
 offset_top = 253.244
 offset_right = 443.492
 offset_bottom = 253.244
-scale = Vector2( 0.3, 0.3 )
+scale = Vector2(0.3, 0.3)
 
 [node name="ExtractingLabel" type="Label" parent="SubViewportContainer/SubViewport"]
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -531,186 +481,203 @@ anchor_bottom = 1.0
 offset_left = -135.5
 offset_top = -57.0
 offset_right = 135.5
-theme = ExtResource( 2 )
+theme = ExtResource("2")
 text = "extracting"
 
 [node name="Bulletholes" type="Control" parent="SubViewportContainer/SubViewport"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Bh0" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1918.04
 offset_top = 794.945
 offset_right = 2318.04
 offset_bottom = 1194.94
 rotation = -246.3
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh1" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 38.118
 offset_top = 36.9538
 offset_right = 438.118
 offset_bottom = 436.954
-scale = Vector2( 0.687099, 0.680114 )
-texture = ExtResource( 8 )
+scale = Vector2(0.687099, 0.680114)
+texture = ExtResource("8")
 
 [node name="Bh2" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1614.95
 offset_top = 262.07
 offset_right = 2014.95
 offset_bottom = 662.07
 rotation = -74.6368
-scale = Vector2( 0.687099, 0.680114 )
-texture = ExtResource( 8 )
+scale = Vector2(0.687099, 0.680114)
+texture = ExtResource("8")
 
 [node name="Bh3" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 595.743
 offset_top = 855.913
 offset_right = 995.743
 offset_bottom = 1255.91
 rotation = -161.874
-scale = Vector2( 0.687099, 0.680114 )
-texture = ExtResource( 8 )
+scale = Vector2(0.687099, 0.680114)
+texture = ExtResource("8")
 
 [node name="Bh4" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 259.656
 offset_top = 646.467
 offset_right = 659.656
 offset_bottom = 1046.47
 rotation = -161.874
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 9 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("9")
 
 [node name="Bh5" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 109.17
 offset_top = 1050.22
 offset_right = 509.17
 offset_bottom = 1450.22
 rotation = -120.339
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 9 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("9")
 
 [node name="Bh6" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1854.36
 offset_top = 692.966
 offset_right = 2254.36
 offset_bottom = 1092.97
 rotation = -157.983
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 9 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("9")
 
 [node name="Bh7" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 360.328
 offset_top = 820.331
 offset_right = 760.328
 offset_bottom = 1220.33
 rotation = -157.983
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh8" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 503.728
 offset_top = 983.427
 offset_right = 903.728
 offset_bottom = 1383.43
 rotation = -197.859
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh9" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1730.17
 offset_top = 916.015
 offset_right = 2130.17
 offset_bottom = 1316.02
 rotation = -205.244
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh10" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1724.49
 offset_top = 503.658
 offset_right = 2124.49
 offset_bottom = 903.658
 rotation = -205.244
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh11" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1309.91
 offset_top = 120.204
 offset_right = 1709.91
 offset_bottom = 520.204
-scale = Vector2( 0.687099, 0.680114 )
-texture = ExtResource( 8 )
+scale = Vector2(0.687099, 0.680114)
+texture = ExtResource("8")
 
 [node name="Bh12" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1269.65
 offset_top = 341.154
 offset_right = 1669.65
 offset_bottom = 741.154
 rotation = -161.874
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 9 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("9")
 
 [node name="Bh13" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 611.495
 offset_top = 366.164
 offset_right = 1011.5
 offset_bottom = 766.164
 rotation = -205.244
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh14" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1379.26
 offset_top = 1113.72
 offset_right = 1779.26
 offset_bottom = 1513.72
 rotation = -143.733
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 7 )
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("7")
 
 [node name="Bh15" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1434.49
 offset_top = 628.134
 offset_right = 1834.49
 offset_bottom = 1028.13
 rotation = -23.3515
-scale = Vector2( 0.687099, 0.680114 )
-texture = ExtResource( 8 )
+scale = Vector2(0.687099, 0.680114)
+texture = ExtResource("8")
 
 [node name="Bh16" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
+layout_mode = 0
 offset_left = 1655.99
 offset_top = 516.252
 offset_right = 2055.99
 offset_bottom = 916.252
 rotation = -120.339
-scale = Vector2( 0.593004, 0.622497 )
-texture = ExtResource( 9 )
-
-[node name="Tween" type="Tween" parent="SubViewportContainer/SubViewport"]
+scale = Vector2(0.593004, 0.622497)
+texture = ExtResource("9")
 
 [node name="ConstantBlinkingSFX" type="AudioStreamPlayer" parent="SubViewportContainer/SubViewport"]
-stream = ExtResource( 10 )
+stream = ExtResource("10")
 volume_db = -6.0
-bus = "SFX"
+bus = &"SFX"
 
 [node name="StatusChirpSFX" type="AudioStreamPlayer" parent="SubViewportContainer/SubViewport"]
-stream = ExtResource( 12 )
+stream = ExtResource("12")
 volume_db = -25.0
 pitch_scale = 1.51
-bus = "SFX"
+bus = &"SFX"
 
 [node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
 
 [node name="BuildingEffect" type="ColorRect" parent="BuildingEffectCanvas"]
-modulate = Color( 0, 0, 0, 1 )
+modulate = Color(0, 0, 0, 1)
 light_mask = 16
-material = SubResource( 25 )
+material = SubResource("25")
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color( 0, 0, 0, 1 )
+color = Color(0, 0, 0, 1)
 
 [connection signal="value_changed" from="SubViewportContainer/SubViewport/LifeBar" to="." method="_on_LifeBar_value_changed"]
 [connection signal="value_changed" from="SubViewportContainer/SubViewport/ShieldBar" to="." method="_on_ShieldBar_value_changed"]

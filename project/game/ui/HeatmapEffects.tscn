@@ -1,11 +1,13 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://b2k1xpl1h6tme"]
 
-[ext_resource path="res://game/fx/Heatmaps/Blackhot.tres" type="Texture2D" id=1]
-[ext_resource path="res://game/ui/HeatmapEffects.gd" type="Script" id=2]
+[ext_resource type="Texture2D" uid="uid://bgr3uc2fbmoo6" path="res://game/fx/Heatmaps/Blackhot.tres" id="1"]
+[ext_resource type="Script" path="res://game/ui/HeatmapEffects.gd" id="2"]
 
-[sub_resource type="Shader" id=5]
+[sub_resource type="Shader" id="5"]
 code = "shader_type canvas_item;
+
 uniform sampler2D Colormap : source_color;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
 void fragment() {
 // Get the fragment location
@@ -45,19 +47,20 @@ void fragment() {
 }
 "
 
-[sub_resource type="ShaderMaterial" id=4]
-shader = SubResource( 5 )
-shader_param/Colormap = ExtResource( 1 )
+[sub_resource type="ShaderMaterial" id="4"]
+shader = SubResource("5")
+shader_parameter/Colormap = ExtResource("1")
 
 [node name="HeatmapEffects" type="CanvasLayer"]
 layer = 2
-script = ExtResource( 2 )
+script = ExtResource("2")
 
 [node name="Heatmap" type="ColorRect" parent="."]
-material = SubResource( 4 )
+material = SubResource("4")
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_right = -960.0
 offset_bottom = -540.0
-scale = Vector2( 2, 2 )
+scale = Vector2(2, 2)
 mouse_filter = 2

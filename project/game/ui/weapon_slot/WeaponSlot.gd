@@ -9,10 +9,10 @@ const WEAPON_NAME_MAP = {
 
 var type : String
 
-func setup(arm_data, position):
-	assert(WEAPON_NAME_MAP.has(position),"Not a valid position for weapon slot: " + str(position))
-	$WeaponLabel.text = WEAPON_NAME_MAP[position]
-	type = position
+func setup(arm_data, pos):
+	assert(WEAPON_NAME_MAP.has(pos),"Not a valid position for weapon slot: " + str(pos))
+	$WeaponLabel.text = WEAPON_NAME_MAP[pos]
+	type = pos
 	set_ammo(arm_data.total_ammo)
 
 

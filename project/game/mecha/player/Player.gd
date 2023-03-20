@@ -180,10 +180,10 @@ func check_input():
 		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
 
-func check_weapon_input(name, node, weapon_ref):
+func check_weapon_input(weapon_name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
-	not node.reloading and Input.is_action_pressed(name+"_shoot"):
-		shoot(name, true)
+	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
+		shoot(weapon_name, true)
 
 
 func setup(arena_ref):
@@ -226,10 +226,10 @@ func set_arm_weapon(part_name, side):
 	
 	if node.is_connected("finished_reloading",Callable(self,"_on_finished_reloading")):
 		node.disconnect("finished_reloading",Callable(self,"_on_finished_reloading"))
-	if node.is_connected("reloading",Callable(self,"_on_reloading")):
-		node.disconnect("reloading",Callable(self,"_on_reloading"))
+	if node.is_connected("reloading_signal",Callable(self,"_on_reloading")):
+		node.disconnect("reloading_signal",Callable(self,"_on_reloading"))
 	node.connect("finished_reloading",Callable(self,"_on_finished_reloading"))
-	node.connect("reloading",Callable(self,"_on_reloading").bind(side))
+	node.connect("reloading_signal",Callable(self,"_on_reloading").bind(side))
 
 
 func get_input():

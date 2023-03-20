@@ -107,7 +107,9 @@ func play_bgm(bgm_name, start_from_beginning = false, fade_in_speed_override = f
 		player.play(0)
 	else:
 		player.play(get_bgm_last_pos(bgm_name))
-	var fade_speed = FADEIN_SPEED if not fade_in_speed_override else fade_in_speed_override
+	var fade_speed = fade_in_speed_override
+	if not fade_speed:
+		fade_speed = FADEIN_SPEED
 	var duration = (BGMS[bgm_name].base_db - MUTE_DB)/float(fade_speed)
 	var tween = get_tree().create_tween()
 	tween.tween_property(player, "volume_db", BGMS[bgm_name].base_db, duration)

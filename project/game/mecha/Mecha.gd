@@ -443,7 +443,7 @@ func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	friction = _friction
 	rotation_acc = _rotation_acc
 	move_acc = _move_acc
-	MovementAnimation.playback_speed = move_acc
+	MovementAnimation.speed_scale = move_acc
 	if chassis and chassis.is_legs:
 		move_acc *= 50
 	var animation = MovementAnimation.get_animation("Walking")
@@ -706,7 +706,7 @@ func set_arm_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-	if not part_name:
+	if typeof(part_name) != TYPE_STRING:
 		if side == SIDE.LEFT:
 			arm_weapon_left = null
 		else:
@@ -740,7 +740,7 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-	if not part_name or not core.has_left_shoulder or not core.has_right_shoulder:
+	if typeof(part_name) != TYPE_STRING or not core.has_left_shoulder or not core.has_right_shoulder:
 		if side == SIDE.LEFT or not core.has_left_shoulder:
 			shoulder_weapon_left = null
 		elif side == SIDE.RIGHT or not core.has_right_shoulder:
@@ -825,7 +825,7 @@ func set_thruster(part_name):
 
 
 func set_chassis(part_name):
-	if not part_name:
+	if typeof(part_name) != TYPE_STRING:
 		remove_chassis("single")
 		remove_chassis("pair")
 		movement_type = "free"

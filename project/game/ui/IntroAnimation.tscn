@@ -2053,6 +2053,8 @@ offset_left = 15.3394
 offset_top = 1032.33
 offset_right = 203.339
 offset_bottom = 1089.33
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="ScreenText" type="Label" parent="."]
 anchors_preset = 2

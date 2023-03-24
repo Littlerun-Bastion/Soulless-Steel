@@ -68,7 +68,8 @@ casings_count = 2000
 navigation_polygon = SubResource("1")
 
 [node name="ArenaCamera" parent="." instance=ExtResource("5")]
-zoom = Vector2(10, 10)
+enabled = false
+zoom = Vector2(0.1, 0.1)
 position_smoothing_speed = 10.0
 drag_horizontal_enabled = false
 drag_vertical_enabled = false

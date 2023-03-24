@@ -7,8 +7,8 @@ signal reloading
 signal finished_reloading
 signal lost_health
 
-const INSIDE_BUILDING_ZOOM_MUL = .7
-const DEFAULT_CAM_ZOOM = Vector2(2,2)
+const INSIDE_BUILDING_ZOOM_MUL = 1.4
+const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
 const ZOOM_SPEED = 2
 
 const ROTATION_DEADZONE = 20

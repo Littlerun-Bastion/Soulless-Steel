@@ -13,12 +13,13 @@ func disable():
 
 
 func play_transition(from_value, to_value, duration):
-	if not from_value:
-		from_value = 0.0
-	VCREffect.material.set_shader_parameter("noiseQuality", from_value)
 	var tween = create_tween()
-	tween.tween_property(VCREffect.material, "shader_param/noiseQuality", to_value, duration)
+	tween.tween_method(self.change_noise_quality, from_value, to_value, duration)
 	tweens.append(tween)
+
+
+func change_noise_quality(value):
+	VCREffect.material.set_shader_parameter("noiseQuality", value)
 
 
 func reset_shader_effect(mode):

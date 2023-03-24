@@ -1207,26 +1207,26 @@ func apply_movement(dt, direction):
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
 func apply_rotation_by_direction(dt, direction):
-	var _rotation_acc = rotation_acc
+	var rot_acc = rotation_acc
 	if is_sprinting == true:
-		_rotation_acc = 0
+		rot_acc = 0
 	if direction == "clock":
-		rotation_degrees += 90*_rotation_acc*dt
+		rotation_degrees += 90*rot_acc*dt
 	elif direction == "counter":
-		rotation_degrees -= 90*_rotation_acc*dt
+		rotation_degrees -= 90*rot_acc*dt
 	else:
 		push_error("Not a valid direction: " + str(direction))
 
 
 func apply_rotation_by_point(dt, target_pos, stand_still):
 	#Rotate Body
-	var _rotation_acc = rotation_acc
+	var rot_acc = rotation_acc
 	if movement_type == "tank" and chassis:
-		_rotation_acc = chassis.trim_acc
+		rot_acc = chassis.trim_acc
 	if is_sprinting == true and movement_type != "tank":
-		_rotation_acc = rotation_acc/2
+		rot_acc = rotation_acc/2
 	if not stand_still:
-		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, _rotation_acc)
+		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, rot_acc)
 
 
 	#Rotate Head and Shoulders

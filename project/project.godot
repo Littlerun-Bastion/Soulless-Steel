@@ -13,7 +13,7 @@ config_version=5
 config/name="Soulless Steel"
 run/main_scene="res://game/start_menu/StartMenuDemo.tscn"
 config/features=PackedStringArray("4.0")
-config/icon="res://icon.png"
+config/icon="res://assets/images/icons/ladder_icon.png"
 
 [autoload]
 

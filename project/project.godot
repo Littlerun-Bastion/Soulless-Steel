@@ -17,6 +17,7 @@ config/icon="res://assets/images/icons/ladder_icon.png"
 
 [autoload]
 
+Global="*res://game/Global.gd"
 FileManager="*res://game/file-manager/FileManager.gd"
 Profile="*res://game/file-manager/Profile.gd"
 Debug="*res://game/debug/Debug.tscn"

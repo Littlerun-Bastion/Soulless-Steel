@@ -83,12 +83,7 @@ func _input(event):
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				target_arena_zoom += amount
 	if event.is_action_pressed("toggle_fullscreen"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if get_window().mode != Window.MODE_EXCLUSIVE_FULLSCREEN else Window.MODE_WINDOWED
-		Profile.set_option("fullscreen", get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN, true)
-		if get_window().mode != Window.MODE_EXCLUSIVE_FULLSCREEN:
-			await get_tree().process_frame
-			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			get_window().position = Vector2(0,0)
+		Global.toggle_fullscreen()
 
 
 func _process(dt):

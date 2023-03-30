@@ -83,13 +83,6 @@ func set_save_data(data):
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
 	AudioManager.set_bus_volume(AudioManager.SFX_BUS, options.sfx_volume)
 	
-	if not Debug.get_setting("window"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (options.fullscreen) else Window.MODE_WINDOWED
-		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().process_frame
-			get_window().size = WINDOW_SIZES[options.window_size]
-			get_window().position = Vector2(0,0)
-	
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
 
@@ -141,8 +134,8 @@ func set_ctrl_pressed(ctrl_name: String, value):
 func edit_control_action(action: String, keycode:int):
 	assert(InputMap.has_action(action),"Action not in InputMap: " + str(action))
 	var key = InputEventKey.new()
-	key.pressed = true
 	key.keycode = keycode
+	print()
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, key)
 

@@ -1093,7 +1093,7 @@ func get_dir_name(dir):
 
 func dash(dash_dir):
 	var dir = get_dir_name(dash_dir)
-	if not dir:
+	if typeof(dir) != TYPE_STRING:
 		return #Not a valid dash direction
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
@@ -1270,7 +1270,7 @@ func get_best_rotation_diff(cur_rot, target_rot):
 
 
 func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
-	var target_rot = rad_to_deg(origin.angle_to_point(target_pos)) + 270
+	var target_rot = rad_to_deg(origin.angle_to_point(target_pos)) + 90
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 

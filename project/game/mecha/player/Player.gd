@@ -48,6 +48,7 @@ func _physics_process(delta):
 	
 	if not get_locked_to():
 		var target_pos = get_global_mouse_position()
+		#printt(target_pos, position, global_position)
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
 	
@@ -120,22 +121,24 @@ func update_camera_zoom(dt):
 func update_camera_offset(dt):
 	if head and head.visual_range > 0:
 		var mp = get_viewport().get_mouse_position()
-		var sx = get_viewport_rect().size.x
-		var sy = get_viewport_rect().size.y
+		var width = get_window().size.x
+		var height = get_window().size.y
+		var h_margin = MOVE_CAMERA_SCREEN_MARGIN*width/get_viewport_rect().size.x
+		var v_margin = MOVE_CAMERA_SCREEN_MARGIN*height/get_viewport_rect().size.y
 		var abs_dir = Vector2()
 		var strength = Vector2()
-		if mp.x <= MOVE_CAMERA_SCREEN_MARGIN:
+		if mp.x <= h_margin:
 			abs_dir.x += 1
-			strength.x = -1.0 + (mp.x/float(MOVE_CAMERA_SCREEN_MARGIN))
-		elif mp.x >= sx - MOVE_CAMERA_SCREEN_MARGIN:
+			strength.x = -1.0 + (mp.x/float(h_margin))
+		elif mp.x >= width - h_margin:
 			abs_dir.x += 1
-			strength.x = ((mp.x - sx + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
-		if mp.y <= MOVE_CAMERA_SCREEN_MARGIN:
+			strength.x = ((mp.x - width + h_margin)/float(h_margin))
+		if mp.y <= v_margin:
 			abs_dir.y += 1
-			strength.y = -1.0 + (mp.y/float(MOVE_CAMERA_SCREEN_MARGIN))
-		elif mp.y >= sy - MOVE_CAMERA_SCREEN_MARGIN:
+			strength.y = -1.0 + (mp.y/float(v_margin))
+		elif mp.y >= height - v_margin:
 			abs_dir.y += 1
-			strength.y = ((mp.y - sy + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
+			strength.y = ((mp.y - height + v_margin)/float(v_margin))
 		
 		abs_dir = abs_dir.normalized()
 		strength *= strength*strength #Make it cubically strong on edges

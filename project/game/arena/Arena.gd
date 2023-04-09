@@ -76,19 +76,14 @@ func _input(event):
 			if player:
 				player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 	if event is InputEventMouseButton:
-		if allow_debug_cam and ArenaCam.current:
+		if allow_debug_cam and ArenaCam.enabled:
 			var amount = Vector2(.8, .8)
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				target_arena_zoom -= amount
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				target_arena_zoom += amount
 	if event.is_action_pressed("toggle_fullscreen"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
-		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
-		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().idle_frame
-			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			get_window().position = Vector2(0,0)
+		Global.toggle_fullscreen()
 
 
 func _process(dt):
@@ -96,7 +91,7 @@ func _process(dt):
 		ShaderEffects.update_shader_effect(player)
 	
 	#Debug
-	if allow_debug_cam and ArenaCam.current:
+	if allow_debug_cam and ArenaCam.enabled:
 		update_arena_cam(dt)
 	if Debug.get_setting("navigation"):
 		update_enemies_debug_navigation()
@@ -297,11 +292,11 @@ func create_mecha_scraps(mecha):
 
 
 func activate_arena_cam():
-	ArenaCam.current = true
+	ArenaCam.enabled = true
 	if player:
 		var player_cam = player.get_camera_3d()
 		ArenaCam.zoom = player_cam.zoom
-		ArenaCam.position = player_cam.get_camera_screen_center()
+		ArenaCam.position = player_cam.get_screen_center_position()
 		ArenaCam.reset_smoothing()
 
 
@@ -313,7 +308,7 @@ func get_lock_areas():
 
 
 func activate_debug_cam():
-	ArenaCam.current = true
+	ArenaCam.enabled = true
 	allow_debug_cam = true
 
 
@@ -372,7 +367,7 @@ func _on_bullet_impact(projectile, effect):
 func _on_mecha_died(mecha):
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
-		all_mechas.remove(idx)
+		all_mechas.remove_at(idx)
 	
 	create_mecha_scraps(mecha)
 	if mecha == player:

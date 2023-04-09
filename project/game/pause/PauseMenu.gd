@@ -15,7 +15,7 @@ func is_paused():
 
 
 func enable():
-	ViewContainer.mouse_filter = Control.MOUSE_FILTER_STOP
+	#ViewContainer.mouse_filter = Control.MOUSE_FILTER_STOP
 	MouseManager.show_cursor()
 	ShaderEffects.play_transition(0, 1000, 2.0)
 	ResumeButton.disabled = false
@@ -26,7 +26,7 @@ func enable():
 func disable():
 	ResumeButton.disabled = true
 	QuitButton.disabled = true
-	ViewContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#ViewContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func toggle_pause():

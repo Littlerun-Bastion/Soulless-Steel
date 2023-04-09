@@ -32,12 +32,7 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.x = parallaxMult * relative_x
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
-		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
-		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().idle_frame
-			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			get_window().position = Vector2(0,0)
+		Global.toggle_fullscreen()
 
 
 func start_game(mode):

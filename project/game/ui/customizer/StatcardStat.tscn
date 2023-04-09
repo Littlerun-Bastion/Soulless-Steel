@@ -1,78 +1,50 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://cxbfyt62xshhb"]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="FontFile" id=1]
-[ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=2]
-[ext_resource path="res://game/ui/customizer/StatcardStat.gd" type="Script" id=3]
-
-[sub_resource type="StyleBoxFlat" id=4]
-bg_color = Color( 0, 0, 0, 0 )
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="FontFile" id=1]
-size = 50
-spacing_top = 1
-spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="FontFile" id=2]
-size = 30
-spacing_top = 1
-spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="FontFile" id=3]
-size = 30
-spacing_top = 1
-spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2"]
+[ext_resource type="Script" path="res://game/ui/customizer/StatcardStat.gd" id="3"]
 
 [node name="StatcardStat" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 offset_right = 375.0
 offset_bottom = 46.0
-theme = ExtResource( 2 )
-script = ExtResource( 3 )
+theme = ExtResource("2")
+script = ExtResource("3")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
 offset_right = 500.0
 offset_bottom = 47.0
-theme = ExtResource( 2 )
-custom_styles/panel = SubResource( 4 )
+theme = ExtResource("2")
 
 [node name="Values" type="HBoxContainer" parent="."]
-offset_right = 166.0
-offset_bottom = 46.0
-custom_constants/separation = 10
+layout_mode = 0
+offset_left = 6.0
+offset_right = 234.0
+offset_bottom = 47.0
 
 [node name="Value" type="Label" parent="Values"]
-offset_right = 94.0
-offset_bottom = 46.0
-custom_fonts/font = SubResource( 1 )
+custom_minimum_size = Vector2(172, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
 text = "1000"
+vertical_alignment = 1
 
 [node name="Increments" type="Label" parent="Values"]
-offset_left = 104.0
-offset_top = 10.0
-offset_right = 179.0
-offset_bottom = 36.0
-custom_fonts/font = SubResource( 2 )
+custom_minimum_size = Vector2(0, 47)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "[+++]"
+horizontal_alignment = 1
+vertical_alignment = 2
 
 [node name="Title" type="Label" parent="."]
+layout_mode = 0
 offset_left = 183.0
 offset_top = 7.0
 offset_right = 501.0
 offset_bottom = 42.0
 grow_horizontal = 0
 grow_vertical = 0
-custom_fonts/font = SubResource( 3 )
+theme_override_font_sizes/font_size = 25
 text = "Armor"
-align = 2
-valign = 2
-autowrap = true

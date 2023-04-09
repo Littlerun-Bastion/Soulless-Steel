@@ -1,461 +1,482 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://b3kh381kob8js"]
 
-[ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=1]
-[ext_resource path="res://game/ui/customizer/StatcardStat.tscn" type="PackedScene" id=2]
-[ext_resource path="res://game/ui/customizer/Statcard.gd" type="Script" id=3]
-[ext_resource path="res://game/ui/customizer/StatcardStat_gradient.tscn" type="PackedScene" id=4]
-[ext_resource path="res://game/ui/customizer/StatcardStat_boolean.tscn" type="PackedScene" id=5]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="1"]
+[ext_resource type="PackedScene" uid="uid://cxbfyt62xshhb" path="res://game/ui/customizer/StatcardStat.tscn" id="2"]
+[ext_resource type="Script" path="res://game/ui/customizer/Statcard.gd" id="3"]
+[ext_resource type="PackedScene" path="res://game/ui/customizer/StatcardStat_gradient.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://game/ui/customizer/StatcardStat_boolean.tscn" id="5"]
 
 [node name="Control" type="Control"]
+layout_mode = 3
 anchor_right = 0.276
 anchor_bottom = 0.657
 offset_right = 0.0799561
 offset_bottom = 0.440002
-script = ExtResource( 3 )
+script = ExtResource("3")
 
 [node name="Title" type="Control" parent="."]
+anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="PanelContainer" type="PanelContainer" parent="Title"]
+layout_mode = 0
 offset_right = 530.0
 offset_bottom = 100.0
-theme = ExtResource( 1 )
+theme = ExtResource("1")
 
 [node name="Title" type="Label" parent="Title"]
+layout_mode = 0
 offset_left = 15.0
 offset_top = 16.5406
 offset_right = 364.0
 offset_bottom = 62.5406
-scale = Vector2( 0.7, 0.7 )
-theme = ExtResource( 1 )
+scale = Vector2(0.7, 0.7)
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 50
 text = "Bladibladibla"
 
 [node name="Subtitle" type="Label" parent="Title"]
+layout_mode = 0
 offset_left = 15.0
 offset_top = 51.1435
 offset_right = 364.0
 offset_bottom = 97.1435
-scale = Vector2( 0.5, 0.5 )
-theme = ExtResource( 1 )
+scale = Vector2(0.5, 0.5)
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 50
 text = "Bladibladibla"
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
 offset_top = 110.0
 offset_right = 530.0
 offset_bottom = 830.0
-theme = ExtResource( 1 )
+theme = ExtResource("1")
 
 [node name="parts" type="Control" parent="."]
+anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="head" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Armor" parent="parts/head" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Armor" parent="parts/head" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Armor"
 stat_name = "health"
 
-[node name="Accuracy" parent="parts/head" instance=ExtResource( 2 )]
+[node name="Accuracy" parent="parts/head" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Accuracy Mod."
 stat_name = "accuracy_modifier"
 
-[node name="Visual Range" parent="parts/head" instance=ExtResource( 2 )]
+[node name="Visual Range" parent="parts/head" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Visual Range"
 stat_name = "visual_range"
 
-[node name="Weight" parent="parts/head" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/head" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
-[node name="Heatmap" parent="parts/head" instance=ExtResource( 4 )]
+[node name="Heatmap" parent="parts/head" instance=ExtResource("4")]
+anchors_preset = 0
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 
 [node name="core" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Armor" parent="parts/core" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Armor" parent="parts/core" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Armor"
 stat_name = "health"
 
-[node name="Shield" parent="parts/core" instance=ExtResource( 2 )]
+[node name="Shield" parent="parts/core" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Shield"
 stat_name = "shield"
 
-[node name="Stability" parent="parts/core" instance=ExtResource( 2 )]
+[node name="Stability" parent="parts/core" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Stability"
 stat_name = "stability"
 
-[node name="RightShoulder" parent="parts/core" instance=ExtResource( 5 )]
+[node name="RightShoulder" parent="parts/core" instance=ExtResource("5")]
+anchors_preset = 0
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Right Shoulder"
 stat_name = "has_right_shoulder"
 
-[node name="LeftShoulder" parent="parts/core" instance=ExtResource( 5 )]
+[node name="LeftShoulder" parent="parts/core" instance=ExtResource("5")]
+anchors_preset = 0
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Left Shoulder"
 stat_name = "has_left_shoulder"
 
-[node name="Weight" parent="parts/core" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/core" instance=ExtResource("2")]
 offset_top = 250.0
 offset_bottom = 296.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
 [node name="shoulders" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Shield" parent="parts/shoulders" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Shield" parent="parts/shoulders" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Shield"
 stat_name = "shield"
 
-[node name="Stability" parent="parts/shoulders" instance=ExtResource( 2 )]
+[node name="Stability" parent="parts/shoulders" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Stability"
 stat_name = "stability"
 
-[node name="Arm Accuracy" parent="parts/shoulders" instance=ExtResource( 2 )]
+[node name="Arm Accuracy" parent="parts/shoulders" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Arm Accuracy"
 stat_name = "arms_accuracy_modifier"
 
-[node name="Melee Modifier" parent="parts/shoulders" instance=ExtResource( 2 )]
+[node name="Melee Modifier" parent="parts/shoulders" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Melee Skill"
 stat_name = "melee_modifier"
 
-[node name="Weight" parent="parts/shoulders" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/shoulders" instance=ExtResource("2")]
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
 [node name="chassis" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Armor" parent="parts/chassis" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Armor" parent="parts/chassis" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Armor"
 stat_name = "health"
 
-[node name="Walk Speed" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="Walk Speed" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Walk Speed"
 stat_name = "max_speed"
 
-[node name="Accuracy Mod" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="Accuracy Mod" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Accuracy Mod."
 stat_name = "accuracy_modifier"
 
-[node name="Move Heat" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="Move Heat" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Thermal Load"
 stat_name = "move_heat"
 
-[node name="Stability" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="Stability" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Stability"
 stat_name = "stability"
 
-[node name="Weight" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 250.0
 offset_bottom = 296.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
-[node name="WeightCapacity" parent="parts/chassis" instance=ExtResource( 2 )]
+[node name="WeightCapacity" parent="parts/chassis" instance=ExtResource("2")]
 offset_top = 300.0
 offset_bottom = 346.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight Capacity"
 stat_name = "weight_capacity"
 
 [node name="thruster" type="Control" parent="parts"]
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Sprint Speed" parent="parts/thruster" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Sprint Speed" parent="parts/thruster" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Sprint Speed"
 stat_name = "thrust_max_speed"
 
-[node name="Walk Speed" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Walk Speed" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Sprint Acceleration"
 stat_name = "thrust_speed_multiplier"
 
-[node name="Sprint Thermal Load" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Sprint Thermal Load" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Sprint Thermal Load"
 stat_name = "sprinting_heat"
 
-[node name="Dash Force" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Dash Force" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Dash Force"
 stat_name = "dash_strength"
 
-[node name="Dash Cooldown" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Dash Cooldown" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Dash Cooldown"
 stat_name = "dash_cooldown"
 
-[node name="Dash Thermal Load" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Dash Thermal Load" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 250.0
 offset_bottom = 296.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Dash Thermal Load"
 stat_name = "dash_heat"
 
-[node name="Weight" parent="parts/thruster" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/thruster" instance=ExtResource("2")]
 offset_top = 300.0
 offset_bottom = 346.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
 [node name="generator" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Shield" parent="parts/generator" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Shield" parent="parts/generator" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Shield"
 stat_name = "shield"
 
-[node name="Shield Recovery" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Shield Recovery" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Shield Recovery"
 stat_name = "shield_regen_speed"
 
-[node name="Recovery Delay" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Recovery Delay" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Recovery Delay"
 stat_name = "shield_regen_delay"
 
-[node name="Heat Dissipation" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Heat Dissipation" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Heat Dissipation"
 stat_name = "heat_dispersion"
 
-[node name="Stability" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Stability" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Heat Capacity"
 stat_name = "heat_capacity"
 
-[node name="Idle Threshold" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Idle Threshold" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 250.0
 offset_bottom = 296.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Idle Threshold"
 stat_name = "idle_threshold"
 
-[node name="Battery Capacity" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Battery Capacity" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 300.0
 offset_bottom = 346.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Battery Capacity"
 stat_name = "battery_capacity"
 
-[node name="Battery Recharge" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Battery Recharge" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 350.0
 offset_bottom = 396.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Battery Recharge"
 stat_name = "battery_recharge_rate"
 
-[node name="Power Output" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Power Output" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 400.0
 offset_bottom = 446.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Power Output Scale"
 stat_name = "power_output"
 
-[node name="Weight" parent="parts/generator" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/generator" instance=ExtResource("2")]
 offset_top = 450.0
 offset_bottom = 496.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"
 
 [node name="chipset" type="Control" parent="parts"]
 visible = false
+anchors_preset = 0
 offset_left = 10.0
 offset_top = 122.329
 offset_right = 50.0
 offset_bottom = 162.329
 
-[node name="Accuracy mod" parent="parts/chipset" instance=ExtResource( 2 )]
-scale = Vector2( 0.8, 0.8 )
+[node name="Accuracy mod" parent="parts/chipset" instance=ExtResource("2")]
+scale = Vector2(0.8, 0.8)
 stat_title = "Accuracy Mod."
 stat_name = "accuracy_modifier"
 
-[node name="Lock Capable" parent="parts/chipset" instance=ExtResource( 5 )]
+[node name="Lock Capable" parent="parts/chipset" instance=ExtResource("5")]
+anchors_preset = 0
 offset_top = 50.0
 offset_bottom = 96.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Capable"
 stat_name = "can_lock"
 
-[node name="Lock Speed" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Lock Speed" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 100.0
 offset_bottom = 146.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Speed"
 stat_name = "lock_on_speed"
 
-[node name="Lock Duration" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Lock Duration" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 150.0
 offset_bottom = 196.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Duration"
 stat_name = "lock_on_duration"
 
-[node name="Lock Distance" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Lock Distance" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 200.0
 offset_bottom = 246.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Distance"
 stat_name = "lock_on_distance"
 
-[node name="Lock Reticle Size" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Lock Reticle Size" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 250.0
 offset_bottom = 296.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Reticle Size"
 stat_name = "lock_on_reticle_size"
 
-[node name="Lock Strength" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Lock Strength" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 300.0
 offset_bottom = 346.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Lock Strength"
 stat_name = "lock_on_strength"
 
-[node name="ECM" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="ECM" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 350.0
 offset_bottom = 396.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "ECM Strength"
 stat_name = "ECM"
 
-[node name="ECM Frequency" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="ECM Frequency" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 400.0
 offset_bottom = 446.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "ECM Frequency"
 stat_name = "ECM_frequency"
 
-[node name="StatcardStat2" parent="parts/chipset" instance=ExtResource( 5 )]
+[node name="StatcardStat2" parent="parts/chipset" instance=ExtResource("5")]
+anchors_preset = 0
 offset_top = 450.0
 offset_bottom = 496.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Radar"
 stat_name = "has_radar"
 
-[node name="Radar Range" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Radar Range" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 500.0
 offset_bottom = 546.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Radar Range"
 stat_name = "radar_range"
 
-[node name="Refresh Rate" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Refresh Rate" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 550.0
 offset_bottom = 596.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Refresh Rate"
 stat_name = "radar_refresh_rate"
 
-[node name="Search Time" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Search Time" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 600.0
 offset_bottom = 646.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Search Time"
 stat_name = "loot_search_time"
 
-[node name="Weight" parent="parts/chipset" instance=ExtResource( 2 )]
+[node name="Weight" parent="parts/chipset" instance=ExtResource("2")]
 offset_top = 650.0
 offset_bottom = 696.0
-scale = Vector2( 0.8, 0.8 )
+scale = Vector2(0.8, 0.8)
 stat_title = "Weight"
 stat_name = "weight"

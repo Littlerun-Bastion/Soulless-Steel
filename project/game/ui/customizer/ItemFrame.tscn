@@ -1,101 +1,87 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=7 format=3 uid="uid://bgdtd2d23virp"]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="FontFile" id=1]
-[ext_resource path="res://game/ui/customizer/ItemFrame.gd" type="Script" id=2]
-[ext_resource path="res://assets/images/mechas/legs/Percival/percival_leg.png" type="Texture2D" id=3]
+[ext_resource type="Script" path="res://game/ui/customizer/ItemFrame.gd" id="2"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2_643w7"]
+[ext_resource type="Texture2D" uid="uid://byx48lfnweskh" path="res://assets/images/mechas/legs/Percival/percival_leg.png" id="3"]
 
-[sub_resource type="StyleBoxFlat" id=6]
-bg_color = Color( 0.164706, 0.164706, 0.164706, 1 )
-border_width_left = 3
-border_width_right = 4
-border_color = Color( 1, 1, 1, 1 )
-corner_radius_bottom_left = 1
-shadow_color = Color( 0, 0, 0, 0 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_621qk"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 2
+border_width_right = 2
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxFlat" id=8]
-bg_color = Color( 0.164706, 0.164706, 0.164706, 1 )
-border_width_left = 4
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ab8rc"]
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
+border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-corner_radius_bottom_left = 1
-shadow_color = Color( 0, 0, 0, 0 )
+border_color = Color(0.756863, 0.756863, 0.756863, 1)
 
-[sub_resource type="StyleBoxFlat" id=9]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 3
-border_width_right = 1
-border_color = Color( 1, 1, 1, 1 )
-corner_radius_bottom_left = 1
-shadow_color = Color( 0, 0, 0, 0 )
-
-[sub_resource type="FontFile" id=7]
-size = 23
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 1 )
-
-[sub_resource type="FontFile" id=3]
-size = 20
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 1 )
-
-[sub_resource type="FontFile" id=4]
-size = 15
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 1 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d4dn1"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
 
 [node name="ItemFrame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_right = -1520.0
 offset_bottom = -960.0
-script = ExtResource( 2 )
+script = ExtResource("2")
 
 [node name="Button" type="Button" parent="."]
+layout_mode = 0
 offset_right = 400.0
 offset_bottom = 120.0
-custom_styles/hover = SubResource( 6 )
-custom_styles/pressed = SubResource( 8 )
-custom_styles/disabled = SubResource( 8 )
-custom_styles/normal = SubResource( 9 )
+theme_override_styles/normal = SubResource("StyleBoxFlat_621qk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ab8rc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d4dn1")
 
 [node name="PartLabel" type="Label" parent="."]
+layout_mode = 0
 offset_left = 9.0
-offset_top = 95.0
-offset_right = 163.0
-offset_bottom = 119.0
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-custom_fonts/font = SubResource( 7 )
+offset_top = 91.0
+offset_right = 189.0
+offset_bottom = 122.0
+theme = ExtResource("2_643w7")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 27
 text = "ML-01 Phoenix"
 
 [node name="TaglineLabel" type="Label" parent="."]
+layout_mode = 0
 offset_left = 9.0
-offset_top = 75.0
-offset_right = 141.0
-offset_bottom = 95.0
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-custom_fonts/font = SubResource( 3 )
+offset_top = 71.0
+offset_right = 187.0
+offset_bottom = 100.0
+theme = ExtResource("2_643w7")
+theme_override_font_sizes/font_size = 25
 text = "Heavy Shotgun"
 
 [node name="ManufacturerLabel" type="Label" parent="."]
+layout_mode = 0
 offset_left = 9.0
 offset_top = 9.0
 offset_right = 116.0
 offset_bottom = 25.0
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-custom_fonts/font = SubResource( 4 )
+theme = ExtResource("2_643w7")
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 25
 text = "Euromeccanica"
 
 [node name="PartPreview" type="TextureRect" parent="."]
+layout_mode = 0
 offset_left = 269.0
 offset_top = 120.0
 offset_right = 388.0
 offset_bottom = 234.0
-rotation = 270.0
-texture = ExtResource( 3 )
-expand = true
-stretch_mode = 6
+rotation = -1.5708
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5

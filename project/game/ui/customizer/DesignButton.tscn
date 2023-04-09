@@ -1,178 +1,185 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=18 format=3 uid="uid://bpqt5svml6kw2"]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="FontFile" id=1]
-[ext_resource path="res://assets/fonts/general_font.tres" type="FontFile" id=2]
-[ext_resource path="res://assets/images/ui/menu/files.png" type="Texture2D" id=3]
-[ext_resource path="res://game/ui/customizer/DesignButton.gd" type="Script" id=4]
+[ext_resource type="FontFile" uid="uid://bst8vnu57ty6h" path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://wxlmqng121n" path="res://assets/images/ui/menu/files.png" id="3"]
+[ext_resource type="Script" path="res://game/ui/customizer/DesignButton.gd" id="4"]
 
-[sub_resource type="FontFile" id=31]
-size = 11
-spacing_top = 1
-spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
+[sub_resource type="FontFile" id="31"]
+fallbacks = Array[Font]([ExtResource("1")])
+face_index = null
+embolden = null
+transform = null
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
 
-[sub_resource type="StyleBoxFlat" id=32]
+[sub_resource type="StyleBoxFlat" id="32"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 corner_detail = 1
 expand_margin_left = 2.0
-expand_margin_right = 2.0
 expand_margin_top = 2.0
+expand_margin_right = 2.0
 expand_margin_bottom = 2.0
-shadow_color = Color( 1, 1, 1, 1 )
+shadow_color = Color(1, 1, 1, 1)
 anti_aliasing = false
 anti_aliasing_size = 0.01
 
-[sub_resource type="StyleBoxFlat" id=36]
+[sub_resource type="StyleBoxFlat" id="36"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 0.054902, 0.054902, 0.054902, 1 )
+bg_color = Color(0.054902, 0.054902, 0.054902, 1)
 border_width_bottom = 3
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 corner_detail = 1
 expand_margin_left = 2.0
-expand_margin_right = 2.0
 expand_margin_top = 2.0
+expand_margin_right = 2.0
 expand_margin_bottom = 1.0
-shadow_color = Color( 1, 1, 1, 1 )
+shadow_color = Color(1, 1, 1, 1)
 anti_aliasing = false
 anti_aliasing_size = 0.01
 
-[sub_resource type="StyleBoxFlat" id=37]
+[sub_resource type="StyleBoxFlat" id="37"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
+bg_color = Color(0, 0, 0, 1)
 border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 corner_detail = 1
 expand_margin_left = 2.0
-expand_margin_right = 2.0
 expand_margin_top = 2.0
+expand_margin_right = 2.0
 expand_margin_bottom = 2.0
-shadow_color = Color( 1, 1, 1, 1 )
+shadow_color = Color(1, 1, 1, 1)
 anti_aliasing = false
 anti_aliasing_size = 0.01
 
-[sub_resource type="StyleBoxFlat" id=38]
+[sub_resource type="StyleBoxFlat" id="38"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 1, 1, 1, 1 )
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 3
-border_color = Color( 0, 0, 0, 1 )
+border_color = Color(0, 0, 0, 1)
 corner_detail = 1
 expand_margin_left = 1.0
-expand_margin_right = 1.0
 expand_margin_top = 1.0
+expand_margin_right = 1.0
 expand_margin_bottom = 1.0
-shadow_color = Color( 1, 1, 1, 1 )
+shadow_color = Color(1, 1, 1, 1)
 anti_aliasing = false
 anti_aliasing_size = 0.01
 
-[sub_resource type="FontFile" id=6]
-size = 10
-spacing_top = 1
-spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
+[sub_resource type="FontFile" id="6"]
+fallbacks = Array[Font]([ExtResource("1")])
+face_index = null
+embolden = null
+transform = null
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
 
-[sub_resource type="StyleBoxFlat" id=7]
-bg_color = Color( 0, 0, 0, 1 )
+[sub_resource type="StyleBoxFlat" id="7"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 expand_margin_left = 8.0
-expand_margin_right = 8.0
 expand_margin_top = 8.0
+expand_margin_right = 8.0
 expand_margin_bottom = 6.0
 
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0, 0, 0, 1 )
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 
-[sub_resource type="StyleBoxFlat" id=2]
-bg_color = Color( 0, 0, 0, 1 )
+[sub_resource type="StyleBoxFlat" id="2"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxFlat" id=3]
-bg_color = Color( 1, 1, 1, 1 )
+[sub_resource type="StyleBoxFlat" id="3"]
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxFlat" id=4]
+[sub_resource type="StyleBoxFlat" id="4"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color( 0.290196, 0.290196, 0.290196, 1 )
+border_color = Color(0.290196, 0.290196, 0.290196, 1)
 
-[sub_resource type="StyleBoxFlat" id=5]
+[sub_resource type="StyleBoxFlat" id="5"]
 content_margin_left = 5.0
 content_margin_right = 5.0
-bg_color = Color( 0, 0, 0, 1 )
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color( 0.513726, 0.513726, 0.513726, 1 )
+border_color = Color(0.513726, 0.513726, 0.513726, 1)
 
-[sub_resource type="Theme" id=30]
-default_font = ExtResource( 2 )
-Button/colors/font_color = Color( 1, 1, 1, 1 )
-Button/colors/font_color_disabled = Color( 1, 1, 1, 0.2 )
-Button/colors/font_color_focus = Color( 1, 1, 1, 1 )
-Button/colors/font_color_hover = Color( 0.552941, 0.552941, 0.552941, 1 )
-Button/colors/font_color_pressed = Color( 0, 0, 0, 1 )
-Button/fonts/font = SubResource( 31 )
-Button/styles/disabled = SubResource( 32 )
-Button/styles/hover = SubResource( 36 )
-Button/styles/normal = SubResource( 37 )
-Button/styles/pressed = SubResource( 38 )
-TooltipLabel/colors/font_color = Color( 1, 1, 1, 1 )
-TooltipLabel/fonts/font = SubResource( 6 )
-TooltipPanel/styles/panel = SubResource( 7 )
-VScrollBar/styles/grabber = SubResource( 1 )
-VScrollBar/styles/grabber_highlight = SubResource( 2 )
-VScrollBar/styles/grabber_pressed = SubResource( 3 )
-VScrollBar/styles/scroll = SubResource( 4 )
-VScrollBar/styles/scroll_focus = SubResource( 5 )
+[sub_resource type="Theme" id="30"]
+default_font = ExtResource("2")
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_color_disabled = Color(1, 1, 1, 0.2)
+Button/colors/font_color_focus = Color(1, 1, 1, 1)
+Button/colors/font_color_hover = Color(0.552941, 0.552941, 0.552941, 1)
+Button/colors/font_color_pressed = Color(0, 0, 0, 1)
+Button/fonts/font = SubResource("31")
+Button/styles/disabled = SubResource("32")
+Button/styles/hover = SubResource("36")
+Button/styles/normal = SubResource("37")
+Button/styles/pressed = SubResource("38")
+TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
+TooltipLabel/fonts/font = SubResource("6")
+TooltipPanel/styles/panel = SubResource("7")
+VScrollBar/styles/grabber = SubResource("1")
+VScrollBar/styles/grabber_highlight = SubResource("2")
+VScrollBar/styles/grabber_pressed = SubResource("3")
+VScrollBar/styles/scroll = SubResource("4")
+VScrollBar/styles/scroll_focus = SubResource("5")
 
 [node name="Button" type="Button"]
+custom_minimum_size = Vector2(0, 50)
 offset_right = 500.0
 offset_bottom = 50.0
-custom_minimum_size = Vector2( 0, 50 )
-theme = SubResource( 30 )
-custom_constants/h_separation = 10
+theme = SubResource("30")
 text = "TestDesign1.bp"
-icon = ExtResource( 3 )
-align = 0
+icon = ExtResource("3")
+alignment = 0
 expand_icon = true
-script = ExtResource( 4 )
+script = ExtResource("4")
 
 [connection signal="pressed" from="." to="." method="_on_Button_pressed"]

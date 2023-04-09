@@ -68,12 +68,13 @@ text = "Heavy Shotgun"
 layout_mode = 0
 offset_left = 9.0
 offset_top = 9.0
-offset_right = 116.0
-offset_bottom = 25.0
+offset_right = 263.0
+offset_bottom = 38.0
 theme = ExtResource("2_643w7")
 theme_override_constants/outline_size = 0
-theme_override_font_sizes/font_size = 25
-text = "Euromeccanica"
+theme_override_font_sizes/font_size = 20
+text = "Euromeccanica "
+autowrap_mode = 2
 
 [node name="PartPreview" type="TextureRect" parent="."]
 layout_mode = 0

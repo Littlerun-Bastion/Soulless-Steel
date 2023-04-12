@@ -130,7 +130,7 @@ func get_navigation_path():
 
 func navigate_to_target(dt):
 	if going_to_position:
-		var target = NavAgent.get_next_location()
+		var target = NavAgent.get_next_path_position()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
 		apply_movement(dt, dir)

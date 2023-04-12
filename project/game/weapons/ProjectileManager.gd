@@ -79,10 +79,10 @@ func get_intersection_points(poly1, trans1, poly2, trans2):
 	# between all segments of both polygons
 	for i in range(0, poly1.size()):
 		p11 = trans1 * poly1[i]
-		p12 = trans1 * poly1[i + 1] if i + 1 < poly1.size() else trans1.xform(poly1[0])
+		p12 = trans1 * poly1[i + 1] if i + 1 < poly1.size() else trans1.basis_xform(poly1[0])
 		for j in range(0, poly2.size()):
 			p21 = trans2 * poly2[j]
-			p22 = trans2 * poly2[j + 1] if j + 1 < poly2.size() else trans2.xform(poly2[0])
+			p22 = trans2 * poly2[j + 1] if j + 1 < poly2.size() else trans2.basis_xform(poly2[0])
 			# use Geometry function to evaluate intersections
 			var intersect = Geometry2D.segment_intersects_segment(p11, p12, p21, p22)
 			if intersect != null:

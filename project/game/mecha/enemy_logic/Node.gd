@@ -21,7 +21,7 @@ func get_valid_connections(arguments):
 		var data = connections[connection]
 		var behaviour = data[0]
 		var func_name = data[1]
-		if behaviour.callv(func_name, arguments):
+		if behaviour.callv(func_name, [arguments]):
 			valid_connections[connection] = true
 	return valid_connections
 

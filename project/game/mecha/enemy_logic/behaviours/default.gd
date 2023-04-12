@@ -31,7 +31,7 @@ func targeting_to_roaming(args):
 func do_roaming(dt, enemy):
 	if not enemy.going_to_position:
 		enemy.going_to_position = true
-		enemy.NavAgent.set_target_location(enemy.arena.get_random_position())
+		enemy.NavAgent.target_position = enemy.arena.get_random_position()
 	enemy.navigate_to_target(dt)
 	
 	
@@ -45,7 +45,7 @@ func do_targeting(dt, enemy):
 	
 	if not enemy.going_to_position:
 		enemy.going_to_position = true
-		enemy.NavAgent.set_target_location(enemy.random_targeting_pos(400,800))
+		enemy.NavAgent.target_position = enemy.random_targeting_pos(400,800)
 	
 	enemy.navigate_to_target(dt)
 	

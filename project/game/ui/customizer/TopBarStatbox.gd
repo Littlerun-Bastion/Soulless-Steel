@@ -35,7 +35,7 @@ func set_comparing_part(mecha, diff_mecha):
 				brackets(stat_value, stat_difference, false)
 				$StatLabelMain.text = str(str(diff_stat_value) + "*")
 			if stat_name == "max_speed":
-				if diff_mecha.is_overweight:
+				if diff_mecha.is_overweight():
 					$StatLabelMain.text = $StatLabelMain.text + "!"
 		else:
 			$IncreaseIndicator.visible = false

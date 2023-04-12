@@ -80,16 +80,11 @@ func _process(dt):
 		else:
 			StatusChirpSFX.playing = false
 		
-		if player.is_overweight:
-			OverweightLabel.visible = true
-		else:
-			OverweightLabel.visible = false
+		OverweightLabel.visible = player.is_overweight()
 		
+		#TODO: Improve this
 		if blink_timer <= 0.0:
-			if StatusContainer.visible == true:
-				StatusContainer.visible = false
-			else:
-				StatusContainer.visible = true
+			StatusContainer.visible = not StatusContainer.visible
 			blink_timer = STATUS_BLINK_SPEED
 		else:
 			blink_timer -= dt

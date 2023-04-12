@@ -148,7 +148,6 @@ var lock_strength = 1.0
 var weight = 0.0
 
 var weight_capacity = 100.0
-var is_overweight = false
 
 var movement_type = "free"
 var tank_move_target = Vector2(1,0)
@@ -245,10 +244,10 @@ func _ready():
 
 
 func _physics_process(dt):
-	overweight_check()
 	if paused:
 		return
-
+	
+	
 	tank_lookat_target = global_position + tank_move_target
 	if movement_type == "tank":
 		$Chassis.look_at(tank_lookat_target)
@@ -316,11 +315,11 @@ func _physics_process(dt):
 
 		var collided = false
 		for collision in all_collisions:
-			if collision and collision.collider.is_in_group("mecha"):
+			if collision and collision.get_collider().is_in_group("mecha"):
 				collided = true
 				var mod = 2.0
 				var rand = randf_range(-PI/8, PI/8)
-				var collision_dir = (global_position - collision.collider.global_position).rotated(rand)
+				var collision_dir = (global_position - collision.get_collider().global_position).rotated(rand)
 				apply_movement(mod*dt, collision_dir)
 		if collided:
 			lock_movement(0.1)
@@ -475,16 +474,16 @@ func update_max_shield_from_parts():
 
 	set_max_shield(value)
 
+
 func set_max_heat():
 	max_heat = get_stat("heat_capacity")
-	
-func overweight_check():
+
+
+func is_overweight():
 	weight = get_stat("weight")
 	weight_capacity = get_stat("weight_capacity")
-	if weight > weight_capacity: 
-		is_overweight = true
-	else: 
-		is_overweight = false
+	return weight > weight_capacity
+
 
 func set_max_life(value):
 	max_hp = value
@@ -591,7 +590,7 @@ func take_status_damage(dt):
 
 
 func apply_movement_modifiers(speed):
-	if is_overweight:
+	if is_overweight():
 		speed /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
 	if has_status("freezing"):
 		speed *= FREEZING_SPEED_MOD
@@ -668,8 +667,8 @@ func add_decal(id, decal_position, type, size):
 
 func update_heat(dt):
 	#Main Mecha Heat
-	if display_mode == true:
-		mecha_heat = max_heat - 1
+	if display_mode:
+		mecha_heat = 0
 		return
 	if generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
@@ -832,7 +831,6 @@ func set_chassis(part_name):
 		return
 	chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = chassis.weight_capacity
-	overweight_check()
 	set_chassis_parts()
 	set_max_heat()
 
@@ -956,7 +954,7 @@ func get_stat(stat_name):
 	for part in parts:
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
-	if stat_name == "max_speed" and is_overweight:
+	if stat_name == "max_speed" and is_overweight():
 		total_stat /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
 		total_stat = round(total_stat)
 	return float(total_stat)

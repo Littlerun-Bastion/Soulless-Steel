@@ -183,7 +183,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 		child.set_comparing_part(DisplayMecha,ComparisonMecha)
 	var current_part = DisplayMecha.get(type_name)
 	var new_part = ComparisonMecha.get(type_name)
-	if ComparisonMecha.is_overweight:
+	if ComparisonMecha.is_overweight():
 		$overweight.visible = true
 	else:
 		$overweight.visible = false
@@ -230,7 +230,7 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
 	comparing_part = false
-	if DisplayMecha.is_overweight:
+	if DisplayMecha.is_overweight():
 		$overweight.visible = true
 	else:
 		$overweight.visible = false

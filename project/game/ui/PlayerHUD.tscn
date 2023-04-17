@@ -892,6 +892,7 @@ anchor_bottom = 1.0
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 transparent_bg = true
+handle_input_locally = false
 gui_disable_input = true
 size = Vector2i(1920, 1080)
 render_target_update_mode = 4

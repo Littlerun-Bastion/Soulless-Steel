@@ -13,16 +13,16 @@ func get_nodes():
 
 ## CONNECTION METHODS ##
 
-func roaming_to_targeting(args):
-	if args.valid_target:
-		args.going_to_position = false
-	return args.valid_target
+func roaming_to_targeting(enemy):
+	if enemy.valid_target:
+		enemy.going_to_position = false
+	return enemy.valid_target
 
 
-func targeting_to_roaming(args):
-	if not args.valid_target:
-		args.going_to_position = false
-	return not args.valid_target
+func targeting_to_roaming(enemy):
+	if not enemy.valid_target:
+		enemy.going_to_position = false
+	return not enemy.valid_target
 
 
 ## STATE METHODS ##

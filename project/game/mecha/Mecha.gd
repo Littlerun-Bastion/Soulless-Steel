@@ -1313,10 +1313,10 @@ func update_chassis_visuals(dt):
 			right_target_angle = 0
 
 		for child in LeftChassisRoot.get_children():
-			child.rotation = lerp(float(child.rotation), float(left_target_angle),\
+			child.rotation_degrees = lerp(float(child.rotation), float(left_target_angle),\
 										dt*CHASSIS_SPEED)
 		for child in RightChassisRoot.get_children():
-			child.rotation = lerp(float(child.rotation), float(right_target_angle),\
+			child.rotation_degrees = lerp(float(child.rotation), float(right_target_angle),\
 										dt*CHASSIS_SPEED)
 
 func stop_sprinting(sprint_dir):

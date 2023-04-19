@@ -41,6 +41,7 @@ func _ready():
 	
 	add_player()
 	add_enemy()
+	
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting",Callable(self,"_on_ExitPos_mecha_extracting"))
 		exitposition.connect("extracting_cancelled",Callable(self,"_on_ExitPos_extracting_cancelled"))

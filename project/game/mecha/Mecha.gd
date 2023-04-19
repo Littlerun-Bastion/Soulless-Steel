@@ -244,9 +244,8 @@ func _ready():
 
 
 func _physics_process(dt):
-	if paused:
+	if paused or is_stunned():
 		return
-	
 	
 	tank_lookat_target = global_position + tank_move_target
 	if movement_type == "tank":

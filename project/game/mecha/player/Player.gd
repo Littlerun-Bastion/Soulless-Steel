@@ -25,6 +25,8 @@ var invert_controls = {
 }
 
 func _ready():
+	super()
+	
 	if Debug.get_setting("player_zoom"):
 		var zoom = Debug.get_setting("player_zoom")
 		Cam.zoom = Vector2(zoom, zoom)
@@ -35,6 +37,8 @@ func _ready():
 func _physics_process(delta):
 	if paused or is_stunned():
 		return
+	
+	super(delta)
 	
 	check_input()
 	

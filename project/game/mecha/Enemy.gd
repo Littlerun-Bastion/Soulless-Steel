@@ -13,6 +13,8 @@ var valid_target = false
 
 
 func _ready():
+	super()
+	
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
 		logic.setup(Debug.get_setting("ai_behaviour"))
@@ -20,10 +22,12 @@ func _ready():
 		logic.setup("default")
 
 
-func _process(delta):
+func _physics_process(delta):
 	if paused or is_stunned():
 		return
-
+	
+	super(delta)
+	
 	logic.update(self)
 	logic.run(self, delta)
 	

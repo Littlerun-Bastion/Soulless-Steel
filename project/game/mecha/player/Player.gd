@@ -48,7 +48,6 @@ func _physics_process(delta):
 	
 	if not get_locked_to() and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
-		#printt(target_pos, position, global_position)
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
 	
@@ -121,24 +120,22 @@ func update_camera_zoom(dt):
 func update_camera_offset(dt):
 	if head and head.visual_range > 0:
 		var mp = get_viewport().get_mouse_position()
-		var width = get_window().size.x
-		var height = get_window().size.y
-		var h_margin = MOVE_CAMERA_SCREEN_MARGIN*width/get_viewport_rect().size.x
-		var v_margin = MOVE_CAMERA_SCREEN_MARGIN*height/get_viewport_rect().size.y
+		var vp_size = get_viewport().get_visible_rect().size
+		var margin = MOVE_CAMERA_SCREEN_MARGIN
 		var abs_dir = Vector2()
 		var strength = Vector2()
-		if mp.x <= h_margin:
+		if mp.x <= margin:
 			abs_dir.x += 1
-			strength.x = -1.0 + (mp.x/float(h_margin))
-		elif mp.x >= width - h_margin:
+			strength.x = -1.0 + (mp.x/float(margin))
+		elif mp.x >= vp_size.x - margin:
 			abs_dir.x += 1
-			strength.x = ((mp.x - width + h_margin)/float(h_margin))
-		if mp.y <= v_margin:
+			strength.x = ((mp.x - vp_size.x + margin)/float(margin))
+		if mp.y <= margin:
 			abs_dir.y += 1
-			strength.y = -1.0 + (mp.y/float(v_margin))
-		elif mp.y >= height - v_margin:
+			strength.y = -1.0 + (mp.y/float(margin))
+		elif mp.y >= vp_size.y - margin:
 			abs_dir.y += 1
-			strength.y = ((mp.y - height + v_margin)/float(v_margin))
+			strength.y = ((mp.y - vp_size.y + margin)/float(margin))
 		
 		abs_dir = abs_dir.normalized()
 		strength *= strength*strength #Make it cubically strong on edges

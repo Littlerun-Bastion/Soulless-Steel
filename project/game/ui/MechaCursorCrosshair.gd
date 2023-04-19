@@ -36,11 +36,8 @@ func _ready():
 	RightReload.hide()
 
 func _process(dt):
-	var screen_scale = Vector2()
-	screen_scale.x = get_viewport_rect().size.x/get_window().size.x
-	screen_scale.y = get_viewport_rect().size.y/get_window().size.y
-	var target_pos = get_global_mouse_position() * screen_scale
-	position = lerp(position, target_pos, .80)
+	var target_pos = get_global_mouse_position()
+	position = lerp(position, target_pos, .9)
 	
 	match cur_mode:
 		MODES.NEUTRAL:

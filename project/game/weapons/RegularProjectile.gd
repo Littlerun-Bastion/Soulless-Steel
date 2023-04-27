@@ -74,6 +74,7 @@ func setup(mecha, args):
 	}
 	lifetime = data.lifetime
 	speed = data.bullet_velocity
+	impact_effect = data.impact_effect
 	$Sprite2D/LightEffect.modulate.a = proj_data.light_energy
 	if args.seeker_target:
 		seeker_target = args.seeker_target

@@ -1,48 +1,43 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=7 format=3 uid="uid://vvkhuyy3i00d"]
 
-[ext_resource path="res://assets/images/fx/large_casing.png" type="Texture2D" id=1]
+[ext_resource type="Texture2D" uid="uid://csinlrodj6yvp" path="res://assets/images/fx/large_casing.png" id="1"]
 
-[sub_resource type="Curve" id=106]
+[sub_resource type="Gradient" id="Gradient_74w8t"]
+offsets = PackedFloat32Array(0.0123457, 0.0617284, 0.925926, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 0.427451, 0.427451, 0.427451, 1, 0.34, 0.34, 0.34, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_afl4r"]
+gradient = SubResource("Gradient_74w8t")
+
+[sub_resource type="Curve" id="110"]
 max_value = 1024.0
-_data = [ Vector2( 0, 1024 ), 0.0, 0.0, 0, 0, Vector2( 0.101852, 0 ), 0.0, 0.0, 0, 0 ]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.12037, 0), -8.30769, 0.0, 1, 0, Vector2(0.157407, 1024), 27648.0, 0.0, 1, 0]
+point_count = 3
 
-[sub_resource type="CurveTexture" id=107]
-curve = SubResource( 106 )
+[sub_resource type="CurveTexture" id="111"]
+curve = SubResource("110")
 
-[sub_resource type="Gradient" id=108]
-offsets = PackedFloat32Array( 0.0470588, 0.0823529, 0.952941, 1 )
-colors = PackedColorArray( 1, 1, 1, 0, 1, 1, 1, 1, 0.441895, 0.441895, 0.441895, 1, 0.380392, 0.380392, 0.380392, 0 )
-
-[sub_resource type="GradientTexture2D" id=109]
-gradient = SubResource( 108 )
-
-[sub_resource type="Curve" id=110]
-max_value = 1024.0
-_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.12037, 0 ), -8.30769, 0.0, 1, 0, Vector2( 0.157407, 1024 ), 27648.0, 0.0, 1, 0 ]
-
-[sub_resource type="CurveTexture" id=111]
-curve = SubResource( 110 )
-
-[sub_resource type="ParticleProcessMaterial" id=112]
-flag_disable_z = true
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 387.88
-initial_velocity_random = 0.45
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-damping = 100.0
-damping_curve = SubResource( 111 )
-angle = 720.0
-angle_random = 1.0
-angle_curve = SubResource( 107 )
-color_ramp = SubResource( 109 )
+[sub_resource type="ParticleProcessMaterial" id="112"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 250.0
+initial_velocity_max = 400.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+damping_min = 100.0
+damping_max = 100.0
+damping_curve = SubResource("111")
+angle_min = -720.0
+angle_max = 720.0
+color_ramp = SubResource("GradientTexture1D_afl4r")
 
 [node name="EjectorParticle" type="GPUParticles2D"]
-position = Vector2( -1, 0 )
+position = Vector2(-1, 0)
 emitting = false
 amount = 1
+process_material = SubResource("112")
+texture = ExtResource("1")
 lifetime = 5.0
 one_shot = true
 speed_scale = 3.0
-process_material = SubResource( 112 )
-texture = ExtResource( 1 )
+fixed_fps = 120

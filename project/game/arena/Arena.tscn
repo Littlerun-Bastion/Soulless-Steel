@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://npmjhn3pox42" path="res://assets/images/map/floor/TestArenaBox.png" id="4"]
 [ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="5"]
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6"]
-[ext_resource type="PackedScene" path="res://game/EjectorParticle.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7"]
 [ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8"]
 [ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="49"]
 [ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="58"]

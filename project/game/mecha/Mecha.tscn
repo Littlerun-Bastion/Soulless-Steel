@@ -1,4 +1,4 @@
-[gd_scene load_steps=151 format=2]
+[gd_scene load_steps=152 format=2]
 
 [ext_resource path="res://game/mecha/Mecha.gd" type="Script" id=1]
 [ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture" id=6]
 [ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_sub.png" type="Texture" id=7]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Glow.png" type="Texture" id=8]
+[ext_resource path="res://assets/images/light.png" type="Texture" id=9]
 [ext_resource path="res://game/weapons/WeaponNode.gd" type="Script" id=10]
 [ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=11]
 [ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
@@ -91,7 +92,7 @@ anim_offset = 0.42
 anim_offset_random = 1.0
 
 [sub_resource type="Gradient" id=77]
-offsets = PoolRealArray( 0, 0.282353, 0.917647 )
+offsets = PoolRealArray( 0, 0.517647, 0.917647 )
 colors = PoolColorArray( 1, 1, 1, 0.509804, 0.381836, 0.381836, 0.381836, 0.317647, 0.163086, 0.163086, 0.163086, 0 )
 
 [sub_resource type="GradientTexture" id=78]
@@ -126,7 +127,7 @@ scale_curve = SubResource( 81 )
 color_ramp = SubResource( 78 )
 
 [sub_resource type="Gradient" id=61]
-offsets = PoolRealArray( 0.0581395, 0.823529, 1 )
+offsets = PoolRealArray( 0.0581395, 0.825581, 1 )
 colors = PoolColorArray( 1, 1, 1, 1, 0.316406, 0.316406, 0.316406, 1, 0.429688, 0.429688, 0.429688, 0 )
 
 [sub_resource type="GradientTexture" id=62]
@@ -152,8 +153,8 @@ scale_random = 1.0
 color_ramp = SubResource( 62 )
 
 [sub_resource type="Gradient" id=106]
-offsets = PoolRealArray( 0, 0.0941176, 0.352941, 0.705882 )
-colors = PoolColorArray( 1, 1, 1, 0.0705882, 1, 1, 1, 0.101961, 1, 1, 1, 0.635294, 1, 1, 1, 0 )
+offsets = PoolRealArray( 0.0941176, 0.388235, 0.705882, 1 )
+colors = PoolColorArray( 1, 1, 1, 0.101961, 1, 1, 1, 0.635294, 1, 1, 1, 0, 1, 1, 1, 0.0705882 )
 
 [sub_resource type="GradientTexture" id=107]
 gradient = SubResource( 106 )
@@ -293,8 +294,8 @@ shader_param/min_darkness = 0.3
 [sub_resource type="CanvasItemMaterial" id=74]
 
 [sub_resource type="Gradient" id=70]
-offsets = PoolRealArray( 0, 0.164706, 0.258824, 1 )
-colors = PoolColorArray( 1, 1, 1, 0.607843, 1, 1, 1, 0.745098, 0.694118, 0.694118, 0.694118, 0.25098, 0.588235, 0.588235, 0.588235, 0 )
+offsets = PoolRealArray( 0, 0.188235, 0.247059, 0.764706, 1 )
+colors = PoolColorArray( 1, 1, 1, 0.607843, 1, 1, 1, 0.745098, 1, 1, 1, 0.607843, 0.694118, 0.694118, 0.694118, 0.25098, 0.588235, 0.588235, 0.588235, 0 )
 
 [sub_resource type="GradientTexture" id=71]
 gradient = SubResource( 70 )
@@ -986,7 +987,6 @@ process_material = SubResource( 116 )
 texture = ExtResource( 40 )
 
 [node name="Single" type="Node2D" parent="Chassis"]
-visible = false
 
 [node name="Sub" type="Sprite" parent="Chassis/Single"]
 material = SubResource( 17 )
@@ -1475,6 +1475,7 @@ texture_scale = 4.0
 energy = 1.2
 
 [node name="MechaLight" type="Light2D" parent="."]
+texture = ExtResource( 9 )
 mode = 2
 range_item_cull_mask = 2
 shadow_enabled = true

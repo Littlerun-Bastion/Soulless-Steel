@@ -249,6 +249,7 @@ func _physics_process(dt):
 	
 	tank_lookat_target = global_position + tank_move_target
 	if movement_type == "tank":
+		print(tank_move_target)
 		$Chassis.look_at(tank_lookat_target)
 
 	if impact_velocity.length() > 0:

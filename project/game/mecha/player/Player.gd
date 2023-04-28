@@ -50,7 +50,7 @@ func _physics_process(delta):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
-	if not get_locked_to() and movement_type != "tank":
+	if not get_locked_to():# and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))

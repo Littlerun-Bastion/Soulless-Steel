@@ -682,7 +682,7 @@ func update_heat(dt):
 	if not has_status("overheating"):
 		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
-		mecha_heat_visible = min(mecha_heat_visible + 0.5, 150)
+		mecha_heat_visible = 300
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				RightChassis, RightChassisSub, RightChassisGlow]:

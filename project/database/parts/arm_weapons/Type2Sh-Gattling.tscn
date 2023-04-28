@@ -35,6 +35,7 @@ max_ammo = 400
 clip_size = 200
 reload_speed = 1.3
 ammo_cost = 1
+sound_effect = "small_auto1"
 sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0

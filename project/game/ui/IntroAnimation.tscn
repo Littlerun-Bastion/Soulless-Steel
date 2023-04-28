@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://6hk3ar6y8oo8"]
+[gd_scene load_steps=15 format=3 uid="uid://6hk3ar6y8oo8"]
 
 [ext_resource type="AudioStream" uid="uid://dsc3t6t8md0lg" path="res://assets/audio/sfx/intro/misc_1.wav" id="1"]
 [ext_resource type="AudioStream" uid="uid://bwgrenwv7y84q" path="res://assets/audio/sfx/entrance.wav" id="2"]
+[ext_resource type="FontFile" path="res://assets/fonts/non_caps_general.tres" id="2_g3hpw"]
 [ext_resource type="AudioStream" uid="uid://u86bfbirs6jm" path="res://assets/audio/sfx/intro/misc_2.wav" id="3"]
 [ext_resource type="AudioStream" uid="uid://c7s0xhnjrl644" path="res://assets/audio/sfx/intro/misc_4.wav" id="4"]
 [ext_resource type="AudioStream" uid="uid://cngy1h86b7uk7" path="res://assets/audio/sfx/intro/misc_3.wav" id="5"]
@@ -2053,6 +2054,7 @@ offset_left = 15.3394
 offset_top = 1032.33
 offset_right = 203.339
 offset_bottom = 1089.33
+theme_override_fonts/font = ExtResource("2_g3hpw")
 visible_characters = 0
 visible_ratio = 0.0
 
@@ -2065,6 +2067,7 @@ offset_top = 982.0
 offset_right = 871.0
 offset_bottom = 1018.0
 grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_g3hpw")
 
 [node name="EntranceSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2")

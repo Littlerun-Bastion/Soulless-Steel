@@ -1221,8 +1221,8 @@ func apply_movement(dt, direction):
 			if chassis:
 				velocity *= 1 - chassis.friction/2
 		move(apply_movement_modifiers(velocity))
-	else:
-		push_error("Not a valid movement type: " + str(movement_type))
+	#else:
+		#push_error("Not a valid movement type: " + str(movement_type))
 	update_chassis_visuals(dt)
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)

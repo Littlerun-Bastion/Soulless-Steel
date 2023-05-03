@@ -1,9 +1,9 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://b6p78ysag8iey"]
 
-[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/generator.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Average Civ Grade"
 manufacturer_name = "Martel"
 tagline = ""
@@ -11,7 +11,7 @@ description = ""
 shield = 6000.0
 shield_regen_speed = 666
 shield_regen_delay = 7
-heat_dispersion = 125
+heat_dispersion = 200
 heat_capacity = 250
 idle_threshold = 20.0
 battery_capacity = 100

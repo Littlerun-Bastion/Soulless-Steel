@@ -30,6 +30,7 @@ func _physics_process(delta):
 	
 	logic.update(self)
 	logic.run(self, delta)
+	print(generator.heat_dispersion)
 	
 	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
@@ -41,7 +42,7 @@ func setup(arena_ref, is_tutorial):
 	arena = arena_ref
 	mecha_name = "Mecha " + str(randi()%2000)
 	if is_tutorial:
-		set_generator("type_2")
+		set_generator(PartManager.get_random_part_name("generator"))
 		set_chipset("type_2")
 		set_core("MSV-L3J-C")
 		set_head(PartManager.get_random_part_name("head"))

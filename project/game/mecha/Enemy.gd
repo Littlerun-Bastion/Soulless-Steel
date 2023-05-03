@@ -64,7 +64,11 @@ func setup(arena_ref, is_tutorial):
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
 	
 	#For the moment hard set ies' movement type to free
-	movement_type = "free"
+	if movement_type == "tank":
+		movement_type = "enemy_tank"
+	else:
+		movement_type = "free"
+	print(movement_type)
 
 #Combat functions
 

@@ -248,7 +248,7 @@ func _physics_process(dt):
 		return
 	
 	tank_lookat_target = global_position + tank_move_target
-	if movement_type == "tank":
+	if movement_type == "tank" or movement_type == "enemy_tank":
 		$Chassis.look_at(tank_lookat_target)
 
 	if impact_velocity.length() > 0:
@@ -1167,6 +1167,29 @@ func apply_movement(dt, direction):
 			velocity *= 1 - chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
 		move(apply_movement_modifiers(velocity*mod))
+	if movement_type == "enemy_tank":
+		if direction.length() > 0:
+			moving = true
+			var target_rotation_acc = apply_movement_modifiers(chassis.rotation_acc * 50)
+			var rotated_tank_move_target = tank_move_target.rotated(deg_to_rad(270))
+			#Compare direction we want to go to the way the Chassis is facing.
+			var turn_angle = rotated_tank_move_target.angle_to(direction)
+			#Turn chassis to face the direction
+			if turn_angle > 0:
+				#print("right")
+				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
+				global_rotation_degrees += target_rotation_acc*dt
+			else:
+				#print("left")
+				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
+				global_rotation_degrees -= target_rotation_acc*dt
+			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * rotated_tank_move_target.dot(direction)
+			#print(target_speed)
+			velocity = lerp(velocity, target_speed, target_move_acc)
+			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
+			
+			move(apply_movement_modifiers(velocity))
+			#Move forward or backward depending on how closely the chassis is facing the angle
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false

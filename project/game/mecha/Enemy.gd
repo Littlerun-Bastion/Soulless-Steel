@@ -47,11 +47,11 @@ func _physics_process(delta):
 	else:
 		$Debug/StateLabel.text = ""
 
-func _draw():
-	draw_line(position, position + chosen_dir*100, Color.DARK_GREEN, 5)
-	for i in ray_directions:
-		if i:
-			draw_line(position, position + (i * 50), Color.GREEN, 2.0)
+#func _draw():
+	#draw_line(Vector2.ZERO, chosen_dir*1000, Color.DARK_GREEN, 5)
+	#for i in ray_directions:
+		#if i:
+			#draw_line(Vector2.ZERO, i * 500, Color.GREEN, 2.0)
 
 func setup(arena_ref, is_tutorial):
 	arena = arena_ref
@@ -160,7 +160,7 @@ func navigate_to_target(dt):
 		set_interest(dir)
 		set_danger()
 		choose_direction()
-		#apply_movement(dt, chosen_dir)
+		apply_movement(dt, chosen_dir)
 		if valid_target:
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
@@ -223,11 +223,9 @@ func choose_direction():
 	for i in num_rays:
 		if danger[i] > 0.0:
 			interest[i] = 0.0
-	#for i in debug_lines:
-		#i.queue_free()
 	# Choose direction based on remaining interest
 	chosen_dir = Vector2.ZERO
 	for i in num_rays:
 		chosen_dir += ray_directions[i] * interest[i]
 	chosen_dir = chosen_dir.normalized()
-	queue_redraw()
+	#queue_redraw()

@@ -6,7 +6,10 @@
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
 
 [node name="Enemy" instance=ExtResource("1")]
+position = Vector2(0, 0)
 script = ExtResource("2")
+look_ahead_range = 200
+num_rays = 16
 
 [node name="ArmWeaponLeft" parent="." index="6"]
 position = Vector2(-53.8753, 34.9034)

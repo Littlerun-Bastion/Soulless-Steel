@@ -2,6 +2,15 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
+@export var look_ahead_range = 500
+@export var num_rays = 16
+
+var ray_directions = []
+var interest = []
+var danger = []
+var debug_lines = []
+
+var chosen_dir = Vector2()
 
 var health = 100
 var speed = 100
@@ -14,6 +23,8 @@ var valid_target = false
 
 func _ready():
 	super()
+	
+	steering_setup()
 	
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
@@ -30,13 +41,17 @@ func _physics_process(delta):
 	
 	logic.update(self)
 	logic.run(self, delta)
-	print(generator.heat_dispersion)
 	
 	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
 	else:
 		$Debug/StateLabel.text = ""
 
+func _draw():
+	draw_line(position, position + chosen_dir*100, Color.DARK_GREEN, 5)
+	for i in ray_directions:
+		if i:
+			draw_line(position, position + (i * 50), Color.GREEN, 2.0)
 
 func setup(arena_ref, is_tutorial):
 	arena = arena_ref
@@ -142,7 +157,10 @@ func navigate_to_target(dt):
 		var target = NavAgent.get_next_path_position()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
-		apply_movement(dt, dir)
+		set_interest(dir)
+		set_danger()
+		choose_direction()
+		#apply_movement(dt, chosen_dir)
 		if valid_target:
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
@@ -167,3 +185,49 @@ func _on_NavigationAgent2D_velocity_computed(safe_velocity):
 
 func _on_NavigationAgent2D_target_reached():
 	going_to_position = false
+
+#-------- Context Steering
+
+func steering_setup():
+	interest.resize(num_rays)
+	danger.resize(num_rays)
+	ray_directions.resize(num_rays)
+	for i in num_rays:
+		var angle = i * 2 * PI / num_rays
+		ray_directions[i] = Vector2.UP.rotated(angle)
+
+func set_interest(target):
+	if target:
+		for i in num_rays:
+			var d = ray_directions[i].dot(target)
+			interest[i] = max(0, d)
+	else:
+		for i in num_rays:
+			var d = ray_directions[i].dot(transform.y)
+			interest[i] = max(0, d)
+	
+func set_danger():
+	var space_state = get_world_2d().direct_space_state
+	for i in num_rays:
+		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
+		query.exclude = [self]
+		var result = space_state.intersect_ray(query)
+		#if result:
+		#	print("warn!")
+		#else:
+		#	print("clear!")
+		danger[i] = 1.0 if result else 0.0
+
+func choose_direction():
+	# Eliminate interest in slots with danger
+	for i in num_rays:
+		if danger[i] > 0.0:
+			interest[i] = 0.0
+	#for i in debug_lines:
+		#i.queue_free()
+	# Choose direction based on remaining interest
+	chosen_dir = Vector2.ZERO
+	for i in num_rays:
+		chosen_dir += ray_directions[i] * interest[i]
+	chosen_dir = chosen_dir.normalized()
+	queue_redraw()

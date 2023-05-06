@@ -1536,8 +1536,8 @@ libraries = {
 }
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-path_desired_distance = 50.0
-target_desired_distance = 50.0
+path_desired_distance = 200.0
+target_desired_distance = 200.0
 path_max_distance = 20.0
 avoidance_enabled = true
 radius = 200.0
@@ -1545,6 +1545,7 @@ neighbor_distance = 1200.0
 max_neighbors = 1000
 time_horizon = 10000.0
 max_speed = 700.0
+debug_enabled = true
 
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="."]
 estimate_radius = false

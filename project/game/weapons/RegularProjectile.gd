@@ -1,7 +1,7 @@
 extends Area2D
 
-onready var LightEffect = $Sprite/LightEffect
-onready var Collision = $CollisionShape2D
+@onready var LightEffect = $Sprite2D/LightEffect
+@onready var Collision = $CollisionShape2D
 
 signal bullet_impact
 
@@ -40,19 +40,19 @@ func _process(dt):
 	position += dir*speed*dt
 	# --- keeping this as an option because it's cool, but honestly i want a better missile tracking script that more accurately reflects missile trajectory
 	if data.is_seeker:
-		rotation_degrees = rad2deg(dir.angle()) + 90
+		rotation_degrees = rad_to_deg(dir.angle()) + 90
 		if seeker_target and is_instance_valid(seeker_target):
 			if lifetime < data.seek_time:
-				dir = lerp(dir.rotated(deg2rad(rand_range(-data.wiggle_amount, data.wiggle_amount))),\
-						   position.direction_to(seeker_target.position), data.seek_agility)
+				dir = lerp(dir.rotated(deg_to_rad(randf_range(-data.wiggle_amount, data.wiggle_amount))),\
+							position.direction_to(seeker_target.position), data.seek_agility)
 			elif not seek_time_expired:
 				dir = lerp(dir, position.direction_to(seeker_target.position), data.seek_agility)
 				data.wiggle_amount = data.wiggle_amount/2
 				seek_time_expired = true
 	if data.has_wiggle:
-		rotation_degrees = rad2deg(dir.angle()) + 90
+		rotation_degrees = rad_to_deg(dir.angle()) + 90
 		if not seeker_target or not data.is_seeker or not is_instance_valid(seeker_target) or lifetime > data.seek_time:
-			dir = dir.rotated(deg2rad(rand_range(-data.wiggle_amount, data.wiggle_amount)))
+			dir = dir.rotated(deg_to_rad(randf_range(-data.wiggle_amount, data.wiggle_amount)))
 	
 	
 	
@@ -62,11 +62,11 @@ func _process(dt):
 
 func setup(mecha, args):
 	data = args.weapon_data
-	proj_data = data.projectile.instance()
-	$Sprite.texture = proj_data.get_image()
+	proj_data = data.projectile.instantiate()
+	$Sprite2D.texture = proj_data.get_image()
 	$CollisionShape2D.polygon = proj_data.get_collision()
 	if proj_data.random_rotation:
-		$Sprite.rotation_degrees = rand_range(0, 360)
+		$Sprite2D.rotation_degrees = randf_range(0, 360)
 	
 	original_mecha_info = {
 		"body": mecha,
@@ -74,27 +74,28 @@ func setup(mecha, args):
 	}
 	lifetime = data.lifetime
 	speed = data.bullet_velocity
-	$Sprite/LightEffect.modulate.a = proj_data.light_energy
+	impact_effect = data.impact_effect
+	$Sprite2D/LightEffect.modulate.a = proj_data.light_energy
 	if args.seeker_target:
 		seeker_target = args.seeker_target
 	dir = args.dir.normalized()
 	position = args.pos
-	rotation_degrees = rad2deg(dir.angle()) + 90
+	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	change_scaling(data.projectile_size)
 	
 	if proj_data.life_time > 0 :
-		$LifeTimer.wait_time = proj_data.life_time + rand_range(-proj_data.life_time_var, proj_data.life_time_var)
+		$LifeTimer.wait_time = proj_data.life_time + randf_range(-proj_data.life_time_var, proj_data.life_time_var)
 		$LifeTimer.autostart = true
 	
-	decaying_speed_ratio = data.bullet_drag + rand_range(-data.bullet_drag_var, data.bullet_drag_var)
-	scaling_variance = data.projectile_size_scaling + rand_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
+	decaying_speed_ratio = data.bullet_drag + randf_range(-data.bullet_drag_var, data.bullet_drag_var)
+	scaling_variance = data.projectile_size_scaling + randf_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
 	
 
 
-#Workaround since RigidBody can't have its scale changed
+#Workaround since RigidBody3D can't have its scale changed
 func change_scaling(sc):
 	var vec = Vector2(sc,sc)
-	$Sprite.scale += vec
+	$Sprite2D.scale += vec
 	$CollisionShape2D.scale += vec
 
 
@@ -104,10 +105,7 @@ func die():
 	dying = true
 	if not proj_data.is_overtime:
 		emit_signal("bullet_impact", self, impact_effect)
-	#var dur = rand_range(.2, .4)
-	#$Tween.interpolate_property(self, "modulate:a", null, 0.0, dur)
-	#$Tween.start()
-	#yield($Tween, "tween_completed")
+
 	queue_free()
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
@@ -118,7 +116,7 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
 			var shape = body.get_shape_from_id(body_shape_id)
 			var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
-													  shape.polygon, shape.global_transform)
+																	shape.polygon, shape.global_transform)
 			
 			var collision_point
 			if points.size() > 0:
@@ -131,13 +129,13 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 			
 			var final_damage = data.damage if not proj_data.is_overtime else data.damage * get_process_delta_time()
 			body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-							 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, proj_data.calibre)
+								data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, proj_data.calibre)
 			if not proj_data.is_overtime and data.impact_force > 0.0:
 				body.knockback(data.impact_force, dir, true)
 			mech_hit = true
 			
 	if not body.is_in_group("mecha") or\
-	  (not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
+	(not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		die()

@@ -1,15 +1,13 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://dix1oxctlf7et"]
 
-[ext_resource path="res://game/weapons/SmokeTrail.gd" type="Script" id=1]
-[ext_resource path="res://game/fx/BasicMissileSmoke.tres" type="Material" id=2]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=3]
+[ext_resource type="Script" path="res://game/weapons/SmokeTrail.gd" id="1"]
+[ext_resource type="Material" uid="uid://cx2ecgkt0ia6a" path="res://game/fx/BasicMissileSmoke.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://bag1127efbmv8" path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" id="3"]
 
-[node name="Particles2D" type="Particles2D"]
-pause_mode = 2
-physics_interpolation_mode = 2
+[node name="GPUParticles2D" type="GPUParticles2D"]
+process_mode = 2
 amount = 400
-visibility_rect = Rect2( -100000, -100000, 200000, 200000 )
-local_coords = false
-process_material = ExtResource( 2 )
-texture = ExtResource( 3 )
-script = ExtResource( 1 )
+process_material = ExtResource("2")
+texture = ExtResource("3")
+visibility_rect = Rect2(-100000, -100000, 200000, 200000)
+script = ExtResource("1")

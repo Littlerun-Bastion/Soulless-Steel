@@ -1,9 +1,9 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://bb2nu3yewd3qx"]
 
-[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/generator.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Test Generator 2"
 manufacturer_name = "Test"
 tagline = "High Capacity"
@@ -11,7 +11,7 @@ description = ""
 shield = 6600.0
 shield_regen_speed = 50
 shield_regen_delay = 8
-heat_dispersion = 20
+heat_dispersion = 125
 heat_capacity = 100
 idle_threshold = 12.0
 battery_capacity = 100

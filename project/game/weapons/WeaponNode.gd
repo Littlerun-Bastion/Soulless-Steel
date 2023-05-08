@@ -3,12 +3,12 @@ extends Node2D
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 
-signal reloading
+signal reloading_signal
 signal finished_reloading
 
-onready var Main = $Main
-onready var Sub = $Sub
-onready var Glow = $Glow
+@onready var Main = $Main
+@onready var Sub = $Sub
+@onready var Glow = $Glow
 
 var timer:= 0.0
 var data
@@ -57,7 +57,7 @@ func setup(weapon_ref, core, _side):
 		if weapon_ref.get_num_shooting_pos() > 0:
 			for idx in weapon_ref.get_num_shooting_pos():
 				var defined_pos = weapon_ref.get_shooting_pos(idx)
-				var shooting_position = Position2D.new()
+				var shooting_position = Marker2D.new()
 				shooting_position.position = defined_pos.position + offset
 				add_child(shooting_position)
 				set_shooting_pos(shooting_position)
@@ -80,9 +80,9 @@ func set_offsets(off):
 
 func update_heat(heat_dispersion, dt):
 	heat = max(heat - heat_dispersion*dt/4, 0)
-	Main.material.set_shader_param("heat", heat) 
-	Sub.material.set_shader_param("heat", heat)
-	Glow.material.set_shader_param("heat", heat)
+	Main.material.set_shader_parameter("heat", heat) 
+	Sub.material.set_shader_parameter("heat", heat)
+	Glow.material.set_shader_parameter("heat", heat)
 
 
 func add_time(time):
@@ -107,10 +107,10 @@ func reload():
 		return
 	
 	reloading = true
-	emit_signal("reloading", data.reload_speed)
+	emit_signal("reloading_signal", data.reload_speed)
 	var temp_timer = Timer.new()
 	add_child(temp_timer)
-	temp_timer.start(data.reload_speed); yield(temp_timer, "timeout")
+	temp_timer.start(data.reload_speed); await temp_timer.timeout
 	var ammo = min(data.clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo
@@ -166,8 +166,8 @@ func clear_shooting_pos():
 	shooting_pos_array = []
 
 func get_direction(multishot_offset := 0.0, angle := 0.0):
-	var angle_offset = rand_range(-multishot_offset, multishot_offset)
-	var dirA = global_rotation + deg2rad(angle) + deg2rad(angle_offset)
+	var angle_offset = randf_range(-multishot_offset, multishot_offset)
+	var dirA = global_rotation + deg_to_rad(angle) + deg_to_rad(angle_offset)
 	if side == SIDE.LEFT:
 		dirA -= (PI/2)
 	else:

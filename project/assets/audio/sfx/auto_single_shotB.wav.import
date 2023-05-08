@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/auto_single_shotB.wav-4c225f2b6e55c2da5e344cb0160fdb01.sample"
+type="AudioStreamWAV"
+uid="uid://6e50w16slwfw"
+path="res://.godot/imported/auto_single_shotB.wav-4c225f2b6e55c2da5e344cb0160fdb01.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/auto_single_shotB.wav"
-dest_files=[ "res://.import/auto_single_shotB.wav-4c225f2b6e55c2da5e344cb0160fdb01.sample" ]
+dest_files=["res://.godot/imported/auto_single_shotB.wav-4c225f2b6e55c2da5e344cb0160fdb01.sample"]
 
 [params]
 
@@ -17,5 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
 compress/mode=0

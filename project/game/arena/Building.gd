@@ -4,9 +4,9 @@ const ALPHA_SPEED = 2.3
 const OUTLINE_SHADER = preload("res://assets/shaders/OutlineShader.tres")
 const LIGHT_MASK = 32
 
-onready var FG = $Foreground
-onready var LightEffect = $Light2D
-onready var Background = $Background
+@onready var FG = $Foreground
+@onready var LightEffect = $PointLight2D
+@onready var Background = $Background
 
 var player_inside = false
 var outline_node = null

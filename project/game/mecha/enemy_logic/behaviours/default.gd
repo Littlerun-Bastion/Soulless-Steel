@@ -13,16 +13,16 @@ func get_nodes():
 
 ## CONNECTION METHODS ##
 
-func roaming_to_targeting(args):
-	if args.valid_target:
-		args.going_to_position = false
-	return args.valid_target
+func roaming_to_targeting(enemy):
+	if enemy.valid_target:
+		enemy.going_to_position = false
+	return enemy.valid_target
 
 
-func targeting_to_roaming(args):
-	if not args.valid_target:
-		args.going_to_position = false
-	return not args.valid_target
+func targeting_to_roaming(enemy):
+	if not enemy.valid_target:
+		enemy.going_to_position = false
+	return not enemy.valid_target
 
 
 ## STATE METHODS ##
@@ -31,7 +31,7 @@ func targeting_to_roaming(args):
 func do_roaming(dt, enemy):
 	if not enemy.going_to_position:
 		enemy.going_to_position = true
-		enemy.NavAgent.set_target_location(enemy.arena.get_random_position())
+		enemy.NavAgent.target_position = enemy.arena.get_random_position()
 	enemy.navigate_to_target(dt)
 	
 	
@@ -45,7 +45,7 @@ func do_targeting(dt, enemy):
 	
 	if not enemy.going_to_position:
 		enemy.going_to_position = true
-		enemy.NavAgent.set_target_location(enemy.random_targeting_pos(400,800))
+		enemy.NavAgent.target_position = enemy.random_targeting_pos(400,800)
 	
 	enemy.navigate_to_target(dt)
 	

@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://game/weapons/SmokeTrail.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/fx/cold_cloud.png" type="Texture" id=3]
+[ext_resource path="res://assets/images/fx/cold_cloud.png" type="Texture2D" id=3]
 
 [sub_resource type="Curve" id=7]
 min_value = -87.0
@@ -12,10 +12,10 @@ _data = [ Vector2( 0, -86.8023 ), 0.0, 0.0, 0, 0, Vector2( 1, 1 ), 0.0, 0.0, 0, 
 curve = SubResource( 7 )
 
 [sub_resource type="Gradient" id=5]
-offsets = PoolRealArray( 0, 0.0352941, 0.129412, 0.541176, 0.989305, 1 )
-colors = PoolColorArray( 1, 1, 1, 1, 0.605469, 0.605469, 0.605469, 0.578947, 0.144531, 0.144531, 0.144531, 0.515625, 0.148438, 0.148438, 0.148438, 0.475259, 0.184314, 0.184314, 0.184314, 0.180392, 0, 0, 0, 0 )
+offsets = PackedFloat32Array( 0, 0.0352941, 0.129412, 0.541176, 0.989305, 1 )
+colors = PackedColorArray( 1, 1, 1, 1, 0.605469, 0.605469, 0.605469, 0.578947, 0.144531, 0.144531, 0.144531, 0.515625, 0.148438, 0.148438, 0.148438, 0.475259, 0.184314, 0.184314, 0.184314, 0.180392, 0, 0, 0, 0 )
 
-[sub_resource type="GradientTexture" id=23]
+[sub_resource type="GradientTexture2D" id=23]
 gradient = SubResource( 5 )
 
 [sub_resource type="Curve" id=2]
@@ -24,7 +24,7 @@ _data = [ Vector2( 0, 0.0954546 ), 0.0, 0.0, 0, 0, Vector2( 0.0442478, 0.997727 
 [sub_resource type="CurveTexture" id=3]
 curve = SubResource( 2 )
 
-[sub_resource type="ParticlesMaterial" id=24]
+[sub_resource type="ParticleProcessMaterial" id=24]
 lifetime_randomness = 0.29
 flag_disable_z = true
 spread = 180.0
@@ -43,8 +43,8 @@ scale_random = 0.56
 scale_curve = SubResource( 3 )
 color_ramp = SubResource( 23 )
 
-[node name="Particles2D" type="Particles2D"]
-pause_mode = 2
+[node name="GPUParticles2D" type="GPUParticles2D"]
+process_mode = 2
 physics_interpolation_mode = 2
 amount = 400
 visibility_rect = Rect2( -100000, -100000, 200000, 200000 )

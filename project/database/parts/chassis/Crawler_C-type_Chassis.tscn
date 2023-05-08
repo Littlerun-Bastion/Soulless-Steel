@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_glow.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_main.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_sub.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_pv.png" type="Texture" id=5]
+[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_glow.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_main.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_sub.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_pv.png" type="Texture2D" id=5]
 
 [node name="Part2" type="Node"]
 script = ExtResource( 1 )
@@ -28,17 +28,17 @@ stability = 100.0
 
 [node name="SingleSide" type="Node2D" parent="."]
 
-[node name="ChassisSub" type="Sprite" parent="SingleSide"]
+[node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 4 )
 
-[node name="ChassisGlow" type="Sprite" parent="SingleSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 2 )
 
-[node name="Chassis" type="Sprite" parent="SingleSide"]
+[node name="Chassis" type="Sprite2D" parent="SingleSide"]
 texture = ExtResource( 3 )
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
-polygon = PoolVector2Array( -69.2272, -97.7903, 69.3075, -98.6812, 69.4336, 86.5356, 32.1506, 87.9514, 22.2399, 99.2779, -22.1222, 99.2779, -32.5048, 87.4795, -70.2598, 87.4795 )
+polygon = PackedVector2Array( -69.2272, -97.7903, 69.3075, -98.6812, 69.4336, 86.5356, 32.1506, 87.9514, 22.2399, 99.2779, -22.1222, 99.2779, -32.5048, 87.4795, -70.2598, 87.4795 )
 
 [node name="RightSide" type="Node2D" parent="."]
 position = Vector2( 46, 0 )

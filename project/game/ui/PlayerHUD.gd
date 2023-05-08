@@ -17,33 +17,32 @@ const BLINK_PITCH_TARGET_MOD = .40
 const STATUS_BLINK_SPEED = 0.66
 const BUILDING_SPEED = 1.5
 
-onready var LifeBar = $ViewportContainer/Viewport/LifeBar
-onready var ShieldBar = $ViewportContainer/Viewport/ShieldBar
-onready var HeatBar = $ViewportContainer/Viewport/HeatBar
-onready var WeaponSlots = $ViewportContainer/Viewport/WeaponSlots
-onready var Cursor = $ViewportContainer/Viewport/MechaCursorCrosshair
-onready var PlayerRadar = $ViewportContainer/Viewport/PlayerRadar
-onready var Bulletholes = $ViewportContainer/Viewport/Bulletholes
-onready var LockingSprite = $ViewportContainer/Viewport/LockingSprite
-onready var LockingAnim = $ViewportContainer/Viewport/LockingSprite/AnimationPlayer
-onready var ConstantBlinkingSFX = $ViewportContainer/Viewport/ConstantBlinkingSFX
-onready var ExtractingLabel = $ViewportContainer/Viewport/ExtractingLabel
-onready var Tw = $ViewportContainer/Viewport/Tween
-onready var StatusLabels = {
-	"freezing": $ViewportContainer/Viewport/StatusContainer/FreezingLabel,
-	"corrosion": $ViewportContainer/Viewport/StatusContainer/CorrosionLabel,
-	"electrified": $ViewportContainer/Viewport/StatusContainer/ElectrifiedLabel,
-	"fire": $ViewportContainer/Viewport/StatusContainer/FireLabel,
-	"overheating":$ViewportContainer/Viewport/StatusContainer/OverheatingLabel,
+@onready var LifeBar = $SubViewportContainer/SubViewport/LifeBar
+@onready var ShieldBar = $SubViewportContainer/SubViewport/ShieldBar
+@onready var HeatBar = $SubViewportContainer/SubViewport/HeatBar
+@onready var WeaponSlots = $SubViewportContainer/SubViewport/WeaponSlots
+@onready var Cursor = $SubViewportContainer/SubViewport/MechaCursorCrosshair
+@onready var PlayerRadar = $SubViewportContainer/SubViewport/PlayerRadar
+@onready var Bulletholes = $SubViewportContainer/SubViewport/Bulletholes
+@onready var LockingSprite = $SubViewportContainer/SubViewport/LockingSprite
+@onready var LockingAnim = $SubViewportContainer/SubViewport/LockingSprite/AnimationPlayer
+@onready var ConstantBlinkingSFX = $SubViewportContainer/SubViewport/ConstantBlinkingSFX
+@onready var ExtractingLabel = $SubViewportContainer/SubViewport/ExtractingLabel
+@onready var StatusLabels = {
+	"freezing": $SubViewportContainer/SubViewport/StatusContainer/FreezingLabel,
+	"corrosion": $SubViewportContainer/SubViewport/StatusContainer/CorrosionLabel,
+	"electrified": $SubViewportContainer/SubViewport/StatusContainer/ElectrifiedLabel,
+	"fire": $SubViewportContainer/SubViewport/StatusContainer/FireLabel,
+	"overheating":$SubViewportContainer/SubViewport/StatusContainer/OverheatingLabel,
 }
-onready var StatusContainer = $ViewportContainer/Viewport/StatusContainer
-onready var StatusChirpSFX = $ViewportContainer/Viewport/StatusChirpSFX
-onready var TemperatureLabel = $ViewportContainer/Viewport/HeatBar/TemperatureLabel
-onready var TemperatureErrorLabel = $ViewportContainer/Viewport/HeatBar/TemperatureErrorLabel
-onready var ECMLabel = $ViewportContainer/Viewport/ECMLabel
-onready var ECMFreqLabel = $ViewportContainer/Viewport/ECMLabel/ECMFreqLabel
-onready var OverweightLabel = $ViewportContainer/Viewport/StatusContainer/OverweightLabel
-onready var BuildingEffect = $BuildingEffectCanvas/BuildingEffect
+@onready var StatusContainer = $SubViewportContainer/SubViewport/StatusContainer
+@onready var StatusChirpSFX = $SubViewportContainer/SubViewport/StatusChirpSFX
+@onready var TemperatureLabel = $SubViewportContainer/SubViewport/HeatBar/TemperatureLabel
+@onready var TemperatureErrorLabel = $SubViewportContainer/SubViewport/HeatBar/TemperatureErrorLabel
+@onready var ECMLabel = $SubViewportContainer/SubViewport/ECMLabel
+@onready var ECMFreqLabel = $SubViewportContainer/SubViewport/ECMLabel/ECMFreqLabel
+@onready var OverweightLabel = $SubViewportContainer/SubViewport/StatusContainer/OverweightLabel
+@onready var BuildingEffect = $BuildingEffectCanvas/BuildingEffect
 
 
 var player = false
@@ -81,16 +80,11 @@ func _process(dt):
 		else:
 			StatusChirpSFX.playing = false
 		
-		if player.is_overweight:
-			OverweightLabel.visible = true
-		else:
-			OverweightLabel.visible = false
+		OverweightLabel.visible = player.is_overweight()
 		
+		#TODO: Improve this
 		if blink_timer <= 0.0:
-			if StatusContainer.visible == true:
-				StatusContainer.visible = false
-			else:
-				StatusContainer.visible = true
+			StatusContainer.visible = not StatusContainer.visible
 			blink_timer = STATUS_BLINK_SPEED
 		else:
 			blink_timer -= dt
@@ -138,14 +132,14 @@ func _process(dt):
 func setup(player_ref, mechas_ref):
 	player = player_ref
 	mechas = mechas_ref
-	player.connect("took_damage", self, "_on_player_took_damage")
-	player.connect("shoot", self, "_on_player_shoot")
-	player.connect("update_reload_mode", self, "_on_reload_mode_update")
-	player.connect("update_lock_mode", self, "_on_lock_mode_update")
-	player.connect("reloading", self, "_on_reloading")
-	player.connect("finished_reloading", self, "update_cursor")
-	player.connect("update_building_status", self, "_on_player_update_building_status")
-	Cursor.connect("enter_lock_mode", player, "_on_enter_lock_mode")
+	player.connect("took_damage",Callable(self,"_on_player_took_damage"))
+	player.connect("shoot_signal",Callable(self,"_on_player_shoot"))
+	player.connect("update_reload_mode",Callable(self,"_on_reload_mode_update"))
+	player.connect("update_lock_mode",Callable(self,"_on_lock_mode_update"))
+	player.connect("reloading",Callable(self,"_on_reloading"))
+	player.connect("finished_reloading",Callable(self,"update_cursor"))
+	player.connect("update_building_status",Callable(self,"_on_player_update_building_status"))
+	Cursor.connect("enter_lock_mode",Callable(player,"_on_enter_lock_mode"))
 	setup_lifebar()
 	setup_shieldbar()
 	setup_heatbar()
@@ -189,7 +183,7 @@ func setup_weapon_slots():
 		slot.queue_free()
 	for weapon in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
 		if player.get(weapon):
-			var slot = WEAPON_SLOT.instance()
+			var slot = WEAPON_SLOT.instantiate()
 			WeaponSlots.add_child(slot)
 			slot.setup(player.get(weapon), weapon)
 
@@ -243,15 +237,16 @@ func _on_player_took_damage(_p, is_status):
 	ShieldBar.get_node("Label").text = str(player.shield)
 	#Bullet holes logic
 	if player.shield <= 0 and player.hp < player.max_hp*BULLET_THRESHOLD and\
-	   randf() <= BULLET_CHANCE and not is_status:
+	randf() <= BULLET_CHANCE and not is_status:
 		var visible_holes = []
 		for hole in Bulletholes.get_children():
 			if hole.modulate.a == 0.0:
 				visible_holes.append(hole)
-		if not visible_holes.empty():
+		if not visible_holes.is_empty():
 			var hole = visible_holes[randi() % visible_holes.size()]
-			Tw.interpolate_property(hole, "modulate:a", 0.0, 1.0, HOLE_FADE_DUR)
-			Tw.start()
+			var tween = get_tree().create_tween()
+			hole.modulate.a = 0.0
+			tween.tween_property(hole, "modulate:a", 1.0, HOLE_FADE_DUR)
 
 
 func _on_player_update_building_status(value):

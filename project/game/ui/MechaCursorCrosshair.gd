@@ -13,13 +13,13 @@ const CROSSHAIRS = {
 	"lock_large": preload("res://assets/images/ui/player_ui/lockon_crosshair_large.png")
 }
 
-onready var LeftWeapon = $LeftWeapon
-onready var LeftReload = $LeftReloadProgress
-onready var RightWeapon = $RightWeapon
-onready var RightReload = $RightReloadProgress
-onready var Crosshair = $Crosshair
-onready var ReloadLabel = $ReloadLabel
-onready var ChangeModeProgress = $ChangeModeProgress
+@onready var LeftWeapon = $LeftWeapon
+@onready var LeftReload = $LeftReloadProgress
+@onready var RightWeapon = $RightWeapon
+@onready var RightReload = $RightReloadProgress
+@onready var Crosshair = $Crosshair
+@onready var ReloadLabel = $ReloadLabel
+@onready var ChangeModeProgress = $ChangeModeProgress
 
 var cur_mode = MODES.NEUTRAL
 var change_mode_timer := 0.0
@@ -36,9 +36,8 @@ func _ready():
 	RightReload.hide()
 
 func _process(dt):
-	var screen_scale = get_viewport_rect().size/OS.window_size
-	var target_pos = get_global_mouse_position() * screen_scale
-	rect_position = lerp(rect_position, target_pos, .80)
+	var target_pos = get_global_mouse_position()
+	position = lerp(position, target_pos, .9)
 	
 	match cur_mode:
 		MODES.NEUTRAL:
@@ -73,7 +72,7 @@ func _process(dt):
 
 func show_specific_nodes(dt, show_nodes):
 	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload,\
-				 ReloadLabel, ChangeModeProgress]:
+				ReloadLabel, ChangeModeProgress]:
 		if show_nodes.has(node):
 			change_alpha(dt, node, 1.0)
 		else:
@@ -143,11 +142,11 @@ func reloading(reload_time, side):
 		push_error("Not a valid side: " + str(side))
 	weapon_node.hide()
 	reload_node.show()
-	var tween = reload_node.get_node("Tween") as Tween
-	tween.stop_all()
-	tween.interpolate_property(reload_node, "value", 0, 100, reload_time, Tween.TRANS_LINEAR)
-	tween.start()
+	reload_node.value = 0
+	var tween = get_tree().create_tween()
+	tween.tween_property(reload_node, "value", 100, reload_time)
 	
-	yield(tween, "tween_completed")
+	await tween.finished
+	
 	weapon_node.show()
 	reload_node.hide()

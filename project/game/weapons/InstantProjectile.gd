@@ -18,7 +18,7 @@ var body
 signal bullet_impact
 
 func _physics_process(dt): 
-	var cast_point := cast_to
+	var cast_point := target_position
 	if not hit:
 		body = get_collider()
 		force_raycast_update()
@@ -39,18 +39,18 @@ func _physics_process(dt):
 					var damage = data.projectile.damage * data.damage
 					var final_damage = damage if not proj_data.is_overtime else damage * get_process_delta_time()
 					body.take_damage(final_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-									 data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, data.projectile.calibre)
+									data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, data.projectile.calibre)
 					mech_hit = true
 					hit = true
 			if not body.is_in_group("mecha") or\
-			  (not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
+			(not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 				if not body.is_in_group("mecha"):
 					force_raycast_update()
 					mech_hit = false
 					hit = true
 			cast_point = to_local(get_collision_point())
 			force_raycast_update()
-			if cast_point != cast_to:
+			if cast_point != target_position:
 				proj_data.points[1] = (cast_point)
 			else:
 				force_raycast_update()
@@ -66,7 +66,7 @@ func _physics_process(dt):
 
 func setup(mecha, args):
 	data = args.weapon_data
-	proj_data  = data.projectile.instance()
+	proj_data  = data.projectile.instantiate()
 	if proj_data:
 		add_child(proj_data)
 	else:
@@ -78,7 +78,7 @@ func setup(mecha, args):
 	proj_data.width = data.projectile_size*10
 	dir = args.dir.normalized()
 	position = args.pos
-	cast_to = dir*data.beam_range
+	target_position = dir*data.beam_range
 	add_exception(original_mecha_info.body)
 
 
@@ -86,7 +86,8 @@ func die():
 	if dying:
 		return
 	dying = true
-	$DeathTween.interpolate_property(self, "modulate:a", 1.0, 0.0, 1.0, Tween.TRANS_CUBIC, Tween.EASE_IN)
-	$DeathTween.start()
-	yield($DeathTween, "tween_completed")
-	queue_free()
+	modulate.a = 1.0
+	var tween = get_tree().create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(self, "modulate:a", 0.0, 1.0)
+	tween.tween_callback(self.queue_free)

@@ -1,482 +1,438 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=13 format=3 uid="uid://b2qq2eltnoung"]
 
-[ext_resource path="res://assets/fonts/StartMenuUserGuideFont.tres" type="DynamicFont" id=1]
-[ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
-[ext_resource path="res://game/start_menu/StartMenuDemo.gd" type="Script" id=4]
-[ext_resource path="res://assets/fonts/UI_smalltextfont.tres" type="DynamicFont" id=5]
-[ext_resource path="res://game/title_buttons_theme.tres" type="Theme" id=12]
-[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=14]
+[ext_resource type="FontFile" uid="uid://c42at6wi1s21b" path="res://assets/fonts/StartMenuUserGuideFont.tres" id="1"]
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2_q5sq0"]
+[ext_resource type="Script" path="res://game/start_menu/StartMenuDemo.gd" id="4"]
+[ext_resource type="FontFile" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_4l8ve"]
+[ext_resource type="Theme" uid="uid://cqlnn7sur6eiy" path="res://game/title_buttons_theme.tres" id="12"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="14"]
 
-[sub_resource type="DynamicFont" id=16]
-size = 30
-font_data = ExtResource( 3 )
+[sub_resource type="Theme" id="1"]
 
-[sub_resource type="DynamicFont" id=17]
-size = 80
-outline_size = 2
-extra_spacing_char = 2
-font_data = ExtResource( 3 )
-
-[sub_resource type="DynamicFontData" id=19]
-font_path = "res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf"
-
-[sub_resource type="DynamicFont" id=7]
-size = 24
-outline_size = 1
-use_mipmaps = true
-use_filter = true
-extra_spacing_char = 1
-font_data = SubResource( 19 )
-
-[sub_resource type="DynamicFont" id=10]
-size = 18
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
-
-[sub_resource type="DynamicFont" id=18]
-size = 45
-outline_size = 1
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 3 )
-
-[sub_resource type="Theme" id=1]
-
-[sub_resource type="Animation" id=14]
+[sub_resource type="Animation" id="14"]
 length = 0.001
 tracks/0/type = "value"
-tracks/0/path = NodePath("UserGuide/Label:percent_visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
+tracks/0/path = NodePath("UserGuide/Label1:visible_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
+tracks/1/path = NodePath("UserGuide/Label2:visible_ratio")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
+tracks/2/path = NodePath("UserGuide/Label3:visible_ratio")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 tracks/3/type = "value"
-tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
 tracks/3/imported = false
 tracks/3/enabled = true
+tracks/3/path = NodePath("UserGuide/Label4:visible_ratio")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 tracks/4/type = "value"
-tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
 tracks/4/imported = false
 tracks/4/enabled = true
+tracks/4/path = NodePath("UserGuide/Label5:visible_ratio")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
 tracks/4/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 
-[sub_resource type="Animation" id=15]
+[sub_resource type="Animation" id="15"]
 resource_name = "Typewrite"
 length = 15.0
 tracks/0/type = "value"
-tracks/0/path = NodePath("UserGuide/Label:percent_visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
+tracks/0/path = NodePath("UserGuide/Label1:visible_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 1.4 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(0, 1.4),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [ 0.0, 1.0 ]
+"values": [0.0, 1.0]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
+tracks/1/path = NodePath("UserGuide/Label2:visible_ratio")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PoolRealArray( 0, 2, 3.4 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(0, 2, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 1.0 ]
+"values": [0.0, 0.0, 1.0]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
 tracks/2/imported = false
 tracks/2/enabled = true
+tracks/2/path = NodePath("UserGuide/Label3:visible_ratio")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PoolRealArray( 0, 4, 5.2, 5.5, 6.8 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 4, 5.2, 5.5, 6.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 0.428571, 0.428571, 1.0 ]
+"values": [0.0, 0.0, 0.429, 0.429, 1.0]
 }
 tracks/3/type = "value"
-tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
 tracks/3/imported = false
 tracks/3/enabled = true
+tracks/3/path = NodePath("UserGuide/Label4:visible_ratio")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PoolRealArray( 0, 7.4, 8.3 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(0, 7.4, 8.3),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 1.0 ]
+"values": [0.0, 0.0, 1.0]
 }
 tracks/4/type = "value"
-tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
 tracks/4/imported = false
 tracks/4/enabled = true
+tracks/4/path = NodePath("UserGuide/Label5:visible_ratio")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
 tracks/4/keys = {
-"times": PoolRealArray( 0, 9.1, 11.2, 11.5, 12.6, 12.9, 13.7 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 9.1, 11.2, 11.5, 12.6, 12.9, 13.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0 ]
+"values": [0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hc8e2"]
+_data = {
+"RESET": SubResource("14"),
+"Typewrite": SubResource("15")
 }
 
 [node name="StartMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 4 )
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4")
 
 [node name="Title" type="VBoxContainer" parent="."]
-margin_left = 31.0
-margin_top = 932.508
-margin_right = 637.0
-margin_bottom = 1082.51
+layout_mode = 0
+offset_left = 31.0
+offset_top = 895.0
+offset_right = 637.0
+offset_bottom = 1066.0
 alignment = 2
 
-[node name="CompanyName" type="Label" parent="Title"]
-margin_right = 606.0
-margin_bottom = 31.0
-custom_fonts/font = SubResource( 16 )
+[node name="Demo" type="Label" parent="Title"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 25
 text = "DEMO"
 
-[node name="CompanyName2" type="Label" parent="Title"]
-margin_top = 35.0
-margin_right = 606.0
-margin_bottom = 66.0
-custom_fonts/font = SubResource( 16 )
+[node name="CompanyName" type="Label" parent="Title"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 33
 text = "Littlerun Bastion"
 
 [node name="MainTitle" type="Label" parent="Title"]
-margin_top = 70.0
-margin_right = 606.0
-margin_bottom = 150.0
-custom_fonts/font = SubResource( 17 )
+layout_mode = 2
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 80
 text = "Soulless Steel"
 
 [node name="MainButtons" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(750, 0)
+layout_mode = 0
 anchor_top = 0.5
 anchor_bottom = 0.5
-margin_left = 29.0187
-margin_top = -128.979
-margin_right = 779.019
-margin_bottom = 518.021
-rect_min_size = Vector2( 750, 0 )
-rect_scale = Vector2( 0.36, 0.36 )
-custom_constants/separation = 100
+offset_left = 29.0187
+offset_top = -128.979
+offset_right = 1029.02
+offset_bottom = 1111.02
+scale = Vector2(0.36, 0.36)
+theme_override_constants/separation = 100
 
 [node name="NewGameContainer" type="VBoxContainer" parent="MainButtons"]
-margin_right = 1055.0
-margin_bottom = 184.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/NewGameContainer"]
-margin_right = 1055.0
-margin_bottom = 105.0
-theme = ExtResource( 12 )
+layout_mode = 2
+theme = ExtResource("12")
 text = "Arena Mode"
-align = 0
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/NewGameContainer"]
-margin_top = 109.0
-margin_right = 1055.0
-margin_bottom = 184.0
-custom_fonts/font = ExtResource( 5 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "SAV BOOT SEQUENCE"
 
 [node name="TestModeContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 284.0
-margin_right = 1055.0
-margin_bottom = 468.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/TestModeContainer"]
-margin_right = 1055.0
-margin_bottom = 105.0
-theme = ExtResource( 12 )
+layout_mode = 2
+theme = ExtResource("12")
 text = "TEST MODE"
-align = 0
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/TestModeContainer"]
-margin_top = 109.0
-margin_right = 1055.0
-margin_bottom = 184.0
-custom_fonts/font = ExtResource( 5 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "New user system simulation"
 
 [node name="HangarContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 568.0
-margin_right = 1055.0
-margin_bottom = 752.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/HangarContainer"]
-margin_right = 1055.0
-margin_bottom = 105.0
-theme = ExtResource( 12 )
+layout_mode = 2
+theme = ExtResource("12")
 text = "Hangar"
-align = 0
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/HangarContainer"]
-margin_top = 109.0
-margin_right = 1055.0
-margin_bottom = 184.0
-custom_fonts/font = ExtResource( 5 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "sav configuration "
 
 [node name="SettingsContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 852.0
-margin_right = 1055.0
-margin_bottom = 1036.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/SettingsContainer"]
-margin_right = 1055.0
-margin_bottom = 105.0
-theme = ExtResource( 12 )
+layout_mode = 2
+theme = ExtResource("12")
 text = "Settings"
-align = 0
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/SettingsContainer"]
-margin_top = 109.0
-margin_right = 1055.0
-margin_bottom = 184.0
-custom_fonts/font = ExtResource( 5 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "system runtime parameters"
 
 [node name="ExitContainer" type="VBoxContainer" parent="MainButtons"]
-margin_top = 1136.0
-margin_right = 1055.0
-margin_bottom = 1320.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/ExitContainer"]
-margin_right = 1055.0
-margin_bottom = 105.0
-theme = ExtResource( 12 )
+layout_mode = 2
+theme = ExtResource("12")
 text = "Exit Program"
-align = 0
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/ExitContainer"]
-margin_top = 109.0
-margin_right = 1055.0
-margin_bottom = 184.0
-custom_fonts/font = ExtResource( 5 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "terminate program runtime"
 
 [node name="MainSystemContainer" type="VBoxContainer" parent="."]
-margin_left = 32.56
-margin_top = 47.28
-margin_right = 459.56
-margin_bottom = 152.28
-custom_constants/separation = -3
+layout_mode = 0
+offset_left = 32.0
+offset_top = 47.0
+offset_right = 459.0
+offset_bottom = 152.0
+theme_override_constants/separation = -5
 
 [node name="Label" type="Label" parent="MainSystemContainer"]
-margin_right = 427.0
-margin_bottom = 24.0
-custom_fonts/font = SubResource( 7 )
+layout_mode = 2
+theme = ExtResource("5_4l8ve")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 25
 text = "MAIN SYSTEM"
 
 [node name="Label2" type="Label" parent="MainSystemContainer"]
-margin_top = 21.0
-margin_right = 427.0
-margin_bottom = 40.0
-custom_fonts/font = SubResource( 10 )
+layout_mode = 2
+theme = ExtResource("5_4l8ve")
+theme_override_font_sizes/font_size = 25
 text = "SAV_hUNTERos.EXE -Duelist"
 
 [node name="UserGuide" type="VBoxContainer" parent="."]
+layout_mode = 0
 anchor_left = 0.975
 anchor_top = 0.5
 anchor_right = 0.988
 anchor_bottom = 0.5
-margin_left = -852.476
-margin_top = -195.209
-margin_right = -8.47571
-margin_bottom = 108.791
-custom_constants/separation = 25
+offset_left = -852.476
+offset_top = -195.209
+offset_right = -8.47571
+offset_bottom = 108.791
 
-[node name="Label5" type="Label" parent="UserGuide"]
-margin_right = 874.0
-margin_bottom = 46.0
-custom_fonts/font = SubResource( 18 )
+[node name="User Guide" type="Label" parent="UserGuide"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 30
 text = "User guide"
-align = 2
 
-[node name="Label" type="Label" parent="UserGuide"]
-margin_top = 71.0
-margin_right = 874.0
-margin_bottom = 103.0
-custom_fonts/font = ExtResource( 1 )
+[node name="Label1" type="Label" parent="UserGuide"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 25
 text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
-align = 2
-percent_visible = 0.0
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="Label2" type="Label" parent="UserGuide"]
-margin_top = 128.0
-margin_right = 874.0
-margin_bottom = 160.0
-custom_fonts/font = ExtResource( 1 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 25
 text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
-align = 2
-percent_visible = 0.0
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="Label3" type="Label" parent="UserGuide"]
-margin_top = 185.0
-margin_right = 874.0
-margin_bottom = 252.0
-custom_fonts/font = ExtResource( 1 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 25
 text = "[Q. e] = Fire right and left shoulder weapons.
 Current loadout does not feature a left shoulder weapon."
-align = 2
-percent_visible = 0.0
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="Label4" type="Label" parent="UserGuide"]
-margin_top = 277.0
-margin_right = 874.0
-margin_bottom = 309.0
-custom_fonts/font = ExtResource( 1 )
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 25
 text = "[R] = Toggle Reload "
-align = 2
-percent_visible = 0.0
+visible_characters = 0
+visible_ratio = 0.0
 
-[node name="Label6" type="Label" parent="UserGuide"]
-margin_top = 334.0
-margin_right = 874.0
-margin_bottom = 436.0
-custom_fonts/font = ExtResource( 1 )
+[node name="Label5" type="Label" parent="UserGuide"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1")
+theme_override_font_sizes/font_size = 25
 text = "Hunt and destroy enemy Sav units.
 Find extraction points.
 Survive."
-align = 2
-percent_visible = 0.0
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="SideBar1" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
 anchor_bottom = 1.0
-margin_left = 12.0
-margin_right = 14.0
-rect_min_size = Vector2( 2, 0 )
+offset_left = 12.0
+offset_right = 14.0
 
 [node name="SideBar2" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(7, 0)
+layout_mode = 0
 anchor_bottom = 1.0
-margin_left = 17.2305
-margin_right = 24.2305
-rect_min_size = Vector2( 7, 0 )
+offset_left = 17.2305
+offset_right = 24.2305
 
 [node name="UpperBar" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
 anchor_right = 1.0
-margin_left = 17.2305
-margin_right = 17.2305
-margin_bottom = 40.0
-rect_min_size = Vector2( 0, 40 )
-color = Color( 0, 0, 0, 1 )
+offset_left = 17.2305
+offset_right = 17.2305
+offset_bottom = 40.0
+color = Color(0, 0, 0, 1)
 
 [node name="LowerBar" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 0
 anchor_top = 0.986111
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 0, 15 )
-rect_pivot_offset = Vector2( 0.0615444, 39.8171 )
-color = Color( 0, 0, 0, 1 )
-__meta__ = {
-"_edit_use_anchors_": true
-}
+pivot_offset = Vector2(0.0615444, 39.8171)
+color = Color(0, 0, 0, 1)
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
-scale = Vector2( 0.75, 0.75 )
-transform = Transform2D( 0.75, 0, 0, 0.75, 0, 0 )
-scroll_base_scale = Vector2( 3, 1 )
-script = ExtResource( 2 )
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("2")
 
 [node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_mirroring = Vector2( 4000, 4000 )
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
 show_behind_parent = true
-margin_left = -605.0
-margin_top = -726.0
-margin_right = 7395.0
-margin_bottom = 7274.0
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme = SubResource( 1 )
-color = Color( 0, 0, 0, 1 )
+theme = SubResource("1")
+color = Color(0, 0, 0, 1)
 
 [node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_mirroring = Vector2( 4000, 4000 )
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
-texture = ExtResource( 14 )
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("14")
 
 [node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
-modulate = Color( 1, 1, 1, 0.14902 )
-motion_scale = Vector2( -0.5, 1 )
-motion_mirroring = Vector2( 4000, 4000 )
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
-texture = ExtResource( 14 )
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("14")
 
 [node name="Grid2" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
-texture = ExtResource( 14 )
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("14")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-anims/RESET = SubResource( 14 )
-anims/Typewrite = SubResource( 15 )
+libraries = {
+"": SubResource("AnimationLibrary_hc8e2")
+}
 
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]

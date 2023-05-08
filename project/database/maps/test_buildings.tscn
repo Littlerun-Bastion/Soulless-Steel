@@ -4,18 +4,18 @@
 [ext_resource path="res://database/buildings/building1.tscn" type="PackedScene" id=3]
 [ext_resource path="res://database/props/Prop.gd" type="Script" id=5]
 [ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
-[ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture" id=12]
+[ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture2D" id=12]
 
 [sub_resource type="NavigationPolygon" id=8]
-vertices = PoolVector2Array( -2780, -1418, -1436, -2780, 1425, -2799, 2796, -1396, 2790, 1384, 1431, 2797, -1439, 2762, -2810, 1445 )
-polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5, 6, 7 ) ]
-outlines = [ PoolVector2Array( -2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418 ) ]
+vertices = PackedVector2Array( -2780, -1418, -1436, -2780, 1425, -2799, 2796, -1396, 2790, 1384, 1431, 2797, -1439, 2762, -2810, 1445 )
+polygons = [ PackedInt32Array( 0, 1, 2, 3, 4, 5, 6, 7 ) ]
+outlines = [ PackedVector2Array( -2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418 ) ]
 
 [node name="Map" type="Node2D"]
 script = ExtResource( 1 )
 is_tutorial = true
 
-[node name="BG" type="Sprite" parent="."]
+[node name="BG" type="Sprite2D" parent="."]
 scale = Vector2( 3, 3 )
 texture = ExtResource( 12 )
 
@@ -34,7 +34,7 @@ script = ExtResource( 5 )
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
 position = Vector2( 635, -6832 )
-polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
+polygon = PackedVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
 
 [node name="Buildings" type="Node2D" parent="."]
 
@@ -57,7 +57,7 @@ scale = Vector2( 2, 2 )
 
 [node name="Texts" type="Node2D" parent="."]
 
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="."]
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navpoly = SubResource( 8 )
 __meta__ = {
 "_edit_lock_": true

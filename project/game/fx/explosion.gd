@@ -1,7 +1,7 @@
 extends Node2D
 
-onready var Player = $AnimationPlayer
-export var light_decay_rate := 1.0
+@onready var Player = $AnimationPlayer
+@export var light_decay_rate := 1.0
 var lifetime := 5.0
 
 func _ready():

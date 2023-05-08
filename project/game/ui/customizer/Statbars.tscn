@@ -1,8 +1,8 @@
 [gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=1]
-[ext_resource path="res://assets/fonts/stats_font.tres" type="DynamicFont" id=2]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=3]
+[ext_resource path="res://assets/fonts/stats_font.tres" type="FontFile" id=2]
+[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="FontFile" id=3]
 [ext_resource path="res://game/ui/customizer/Statbars.gd" type="Script" id=4]
 [ext_resource path="res://game/ui/customizer/Stat.gd" type="Script" id=5]
 
@@ -17,17 +17,17 @@ border_color = Color( 1, 1, 1, 1 )
 [sub_resource type="StyleBoxFlat" id=20]
 bg_color = Color( 0, 0, 0, 1 )
 
-[sub_resource type="DynamicFont" id=21]
+[sub_resource type="FontFile" id=21]
 size = 21
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_space = 1
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=22]
+[sub_resource type="FontFile" id=22]
 size = 25
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_space = 1
 font_data = ExtResource( 3 )
 
@@ -52,19 +52,19 @@ border_color = Color( 0, 0, 0, 1 )
 bg_color = Color( 0.00784314, 0.00392157, 0.00392157, 1 )
 border_color = Color( 1, 1, 1, 1 )
 
-[sub_resource type="DynamicFont" id=27]
+[sub_resource type="FontFile" id=27]
 size = 25
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_char = 2
 extra_spacing_space = 2
 font_data = ExtResource( 3 )
 
-[sub_resource type="DynamicFont" id=29]
+[sub_resource type="FontFile" id=29]
 size = 40
 outline_color = Color( 0, 0, 0, 1 )
-extra_spacing_top = 1
-extra_spacing_bottom = -6
+spacing_top = 1
+spacing_bottom = -6
 extra_spacing_char = 2
 extra_spacing_space = 2
 font_data = ExtResource( 3 )
@@ -78,33 +78,33 @@ border_width_bottom = 5
 border_color = Color( 1, 1, 1, 1 )
 
 [node name="Statbars" type="Control"]
-margin_right = 40.0
-margin_bottom = 40.0
+offset_right = 40.0
+offset_bottom = 40.0
 script = ExtResource( 4 )
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
-margin_left = 1281.0
-margin_top = 215.0
-margin_right = 1873.0
-margin_bottom = 1047.0
+offset_left = 1281.0
+offset_top = 215.0
+offset_right = 1873.0
+offset_bottom = 1047.0
 custom_styles/panel = SubResource( 28 )
 
 [node name="CategoryContainers" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="ElectronicsContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/ElectronicsContainer"]
-margin_bottom = 640.0
+offset_bottom = 640.0
 mouse_filter = 2
 custom_constants/separation = 80
 
@@ -115,11 +115,11 @@ script = ExtResource( 5 )
 stat_name = "lock_on_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The amount of time it takes this 
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The amount of time it takes this 
 SAV to achieve a target lock in a 
 single, uninterrupted attempt.
 
@@ -131,10 +131,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Lock Speed"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -142,10 +142,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -153,41 +153,41 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockSpeed"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 61.51
 percent_visible = false
 
 [node name="LockRange" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
+offset_top = 80.0
+offset_bottom = 80.0
 mouse_filter = 1
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "lock_on_distance"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How far out the target can be locked
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How far out the target can be locked
 on to and stay locked on. 
 
 Modified by the SAV's chipset and
@@ -198,10 +198,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Lock Range"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -209,10 +209,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -220,30 +220,30 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockRange"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="LockStrength" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
+offset_top = 160.0
+offset_bottom = 160.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -251,11 +251,11 @@ script = ExtResource( 5 )
 stat_name = "lock_on_strength"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The amount of ECM required
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The amount of ECM required
 to prevent this SAV from 
 achieving a target lock. ECM
 values equal or higher to this
@@ -272,10 +272,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Lock Strength"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -283,10 +283,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -294,30 +294,30 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/LockStrength"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ECMStrength" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
+offset_top = 240.0
+offset_bottom = 240.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -325,11 +325,11 @@ script = ExtResource( 5 )
 stat_name = "ECM"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The strength of this SAV's ECM.
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The strength of this SAV's ECM.
 Enemies attempting to lock onto 
 this SAV must have a Lock Strength
 higher than this ECM value or risk
@@ -344,10 +344,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "ECM Strength"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -355,10 +355,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -366,30 +366,30 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMStrength"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ECMFrequency" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
+offset_top = 320.0
+offset_bottom = 320.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -397,11 +397,11 @@ script = ExtResource( 5 )
 stat_name = "ECM_frequency"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How often this SAV sends an ECM
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How often this SAV sends an ECM
 pulse to enemies attempting to
 lock onto it. If the value of an ECM
 pulse is higher than the Lock Strength
@@ -416,10 +416,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "ECM Frequency"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -427,10 +427,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -438,40 +438,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/ECMFrequency"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="RadarRange" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
+offset_top = 400.0
+offset_bottom = 400.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The range at which targets will
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The range at which targets will
 appear on this SAV's radar. Certain
 weather conditions can modify
 this range.
@@ -484,10 +484,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Radar Range"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -495,10 +495,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -506,30 +506,30 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRange"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="RadarRefreshRate" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 480.0
-margin_bottom = 480.0
+offset_top = 480.0
+offset_bottom = 480.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -537,11 +537,11 @@ script = ExtResource( 5 )
 stat_name = "radar_refresh_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How often the radar is updated,
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How often the radar is updated,
 displaying the current location of
 any radar tracks.
 
@@ -553,10 +553,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Radar Refresh Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -564,10 +564,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -575,30 +575,30 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/RadarRefreshRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="SearchTime" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 560.0
-margin_bottom = 560.0
+offset_top = 560.0
+offset_bottom = 560.0
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -606,11 +606,11 @@ script = ExtResource( 5 )
 stat_name = "loot_search_time"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The basic time it takes for this
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The basic time it takes for this
 SAV to search containers and
 identify items of interest. This
 can take longer depending on 
@@ -624,10 +624,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Search Time"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -635,10 +635,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -646,44 +646,44 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/ElectronicsContainer/VBoxContainer/SearchTime"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/ElectronicsContainer/VBoxContainer"]
-margin_top = 640.0
-margin_bottom = 640.0
+offset_top = 640.0
+offset_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="DefensesContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/DefensesContainer"]
-margin_bottom = 400.0
+offset_bottom = 400.0
 mouse_filter = 2
 custom_constants/separation = 80
 
@@ -695,11 +695,11 @@ script = ExtResource( 5 )
 stat_name = "health"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The SAV's armor integrity. When
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The SAV's armor integrity. When
 reduced to zero, the SAV is destroyed.
 Hard to repair during a sortie.
 
@@ -711,10 +711,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Armor"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -722,10 +722,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -733,31 +733,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Armor"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="Shields" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
-hint_tooltip = "Shield integrity of the SAV. When
+offset_top = 80.0
+offset_bottom = 80.0
+tooltip_text = "Shield integrity of the SAV. When
 this drops to zero, the SAV begins
 taking armor damage. Regenerates
 after a period of not taking any damage
@@ -772,11 +772,11 @@ script = ExtResource( 5 )
 stat_name = "shield"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "Shield integrity of the SAV. When
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "Shield integrity of the SAV. When
 this drops to zero, the SAV begins
 taking armor damage. Regenerates
 after a period of not taking any damage
@@ -789,10 +789,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Shields"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -800,10 +800,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -811,31 +811,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ShieldRecoveryRate" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
-hint_tooltip = "How fast the Shield recovers lost integrity.
+offset_top = 160.0
+offset_bottom = 160.0
+tooltip_text = "How fast the Shield recovers lost integrity.
 Activates after not taking damage for
 a while.
 
@@ -847,11 +847,11 @@ script = ExtResource( 5 )
 stat_name = "shield_regen_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How fast the Shield recovers lost integrity.
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How fast the Shield recovers lost integrity.
 Activates after not taking damage for
 a while.
 
@@ -861,10 +861,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Shield Recovery Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -872,10 +872,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -883,31 +883,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ShieldReactionDelay" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
-hint_tooltip = "How fast the Shield recovery kicks
+offset_top = 240.0
+offset_bottom = 240.0
+tooltip_text = "How fast the Shield recovery kicks
 in if the SAV has taken no damage in
 the duration.
 
@@ -919,11 +919,11 @@ script = ExtResource( 5 )
 stat_name = "shield_regen_delay"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How fast the Shield recovery kicks
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How fast the Shield recovery kicks
 in if the SAV has taken no damage in
 the duration.
 
@@ -934,10 +934,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Shield Reaction Delay"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -945,10 +945,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -956,31 +956,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="Stability" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
-hint_tooltip = "The stability of the SAV.
+offset_top = 320.0
+offset_bottom = 320.0
+tooltip_text = "The stability of the SAV.
 Higher stability values make the
 SAV harder to stagger or apply
 knockback.
@@ -994,11 +994,11 @@ script = ExtResource( 5 )
 stat_name = "stability"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The stability of the SAV.
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The stability of the SAV.
 Higher stability values make the
 SAV harder to stagger or apply
 knockback.
@@ -1011,10 +1011,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Stability"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1022,10 +1022,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1033,44 +1033,44 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/DefensesContainer/VBoxContainer/Stability"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
+offset_top = 400.0
+offset_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="MobilityContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/MobilityContainer"]
-margin_bottom = 480.0
+offset_bottom = 480.0
 custom_constants/separation = 80
 
 [node name="WeightCapacity" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
@@ -1079,11 +1079,11 @@ script = ExtResource( 5 )
 stat_name = "weight_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The maximum weight limit of the
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The maximum weight limit of the
 SAV. 
 
 Modified by the SAV's Chassis."
@@ -1093,10 +1093,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Weight Capacity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1104,10 +1104,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1115,40 +1115,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="WalkSpeed" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
+offset_top = 80.0
+offset_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "max_speed"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The base movement speed of the
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The base movement speed of the
 SAV while walking.
 
 Modified by the SAV's Chassis."
@@ -1158,10 +1158,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Walk Speed"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1169,10 +1169,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1180,40 +1180,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkSpeed"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="WalkHeatEmission" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
+offset_top = 160.0
+offset_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "move_heat"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How much heat is generated by the
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How much heat is generated by the
 SAV while walking.
 
 Modified by the SAV's Chassis."
@@ -1222,10 +1222,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Walk Heat Emission"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1233,10 +1233,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1244,40 +1244,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/WalkHeatEmission"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="DashDistance" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
+offset_top = 240.0
+offset_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "dash_distance"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "How much force the SAV's dash
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "How much force the SAV's dash
 imparts on the frame. Higher values
 will cause the SAV to dash faster
 and further.
@@ -1289,10 +1289,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Dash Force"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1300,10 +1300,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1311,40 +1311,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashDistance"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="DashRechargeRate" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
+offset_top = 320.0
+offset_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "dash_recharge_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The time it takes for the SAV's dash
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The time it takes for the SAV's dash
 function to recharge. 
 
 Modified by the SAV's Thrusters."
@@ -1354,10 +1354,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Dash Recharge Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1365,10 +1365,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1376,40 +1376,40 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashRechargeRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="DashHeat" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
+offset_top = 400.0
+offset_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "dash_heat"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "Heat generated by performing a
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "Heat generated by performing a
 dash.
 
 Modified by the SAV's Thrusters."
@@ -1419,10 +1419,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Dash Heat"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1430,10 +1430,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1441,43 +1441,43 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/MobilityContainer/VBoxContainer/DashHeat"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/MobilityContainer/VBoxContainer"]
-margin_top = 480.0
-margin_bottom = 480.0
+offset_top = 480.0
+offset_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="EnergyContainer" type="ScrollContainer" parent="CategoryContainers"]
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/EnergyContainer"]
-margin_bottom = 400.0
+offset_bottom = 400.0
 custom_constants/separation = 80
 
 [node name="HeatCapacity" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
@@ -1486,11 +1486,11 @@ script = ExtResource( 5 )
 stat_name = "heat_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
-hint_tooltip = "The amount of heat the SAV can
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
+tooltip_text = "The amount of heat the SAV can
 take before it begins taking heat
 damage.
 
@@ -1501,10 +1501,10 @@ custom_fonts/font = ExtResource( 2 )
 text = "Heat Capacity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1512,10 +1512,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1523,31 +1523,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="HeatDissipation" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
-hint_tooltip = "The rate at which the mecha's heat 
+offset_top = 80.0
+offset_bottom = 80.0
+tooltip_text = "The rate at which the mecha's heat 
 is dissipated per second.
 
 Modified by the SAV's Generator."
@@ -1558,18 +1558,18 @@ script = ExtResource( 5 )
 stat_name = "heat_dispersion"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Heat Dissipation"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1577,10 +1577,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1588,31 +1588,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/HeatDissipation"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BatteryCapacity" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
-hint_tooltip = "The available power capacity for
+offset_top = 160.0
+offset_bottom = 160.0
+tooltip_text = "The available power capacity for
 the SAV's energy weapons. All 
 energy weapons across the SAV
 draw power from the battery, instead
@@ -1626,18 +1626,18 @@ script = ExtResource( 5 )
 stat_name = "battery_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Battery Capcity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1645,10 +1645,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1656,31 +1656,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BatteryRechargeRate" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
-hint_tooltip = "The rate at which the SAV's battery
+offset_top = 240.0
+offset_bottom = 240.0
+tooltip_text = "The rate at which the SAV's battery
 recharges, per second.
 
 Modified by the SAV's Generator."
@@ -1691,18 +1691,18 @@ script = ExtResource( 5 )
 stat_name = "battery_recharge_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Battery Recharge Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1710,10 +1710,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1721,31 +1721,31 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="PowerOutput" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
-hint_tooltip = "Output of the SAV's energy weapons, 
+offset_top = 320.0
+offset_bottom = 320.0
+tooltip_text = "Output of the SAV's energy weapons, 
 higher values allow for more powerful
 weapons. Also forms as the basis for
 how much damage an energy weapon
@@ -1758,18 +1758,18 @@ script = ExtResource( 5 )
 stat_name = "power_output"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Power Output"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1777,10 +1777,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1788,44 +1788,44 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
-margin_top = 400.0
-margin_bottom = 400.0
+offset_top = 400.0
+offset_bottom = 400.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="RArmContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/RArmContainer"]
-margin_bottom = 720.0
+offset_bottom = 720.0
 custom_constants/separation = 80
 
 [node name="ArmorDamage" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
@@ -1835,18 +1835,18 @@ stat_name = "armor_damage"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Armor Damage"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1854,10 +1854,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1865,48 +1865,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ShieldDamage" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
+offset_top = 80.0
+offset_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "shield_damage"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Shield Damage"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -1914,10 +1914,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -1925,48 +1925,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ProjectileType" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
+offset_top = 160.0
+offset_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "projectile_type"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Projectile Type"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "Shell > Laser"
 align = 2
@@ -1974,36 +1974,36 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 11.0
-margin_top = 43.0
-margin_right = 571.0
-margin_bottom = 70.0
+offset_left = 11.0
+offset_top = 43.0
+offset_right = 571.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "Hi-Calibre Shell"
 valign = 2
 clip_text = true
 
 [node name="FireRate" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
+offset_top = 240.0
+offset_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "fire_rate"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Fire Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2011,10 +2011,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2022,48 +2022,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="Accuracy" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
+offset_top = 320.0
+offset_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "bullet_accuracy_margin"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Accuracy"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2071,10 +2071,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2082,48 +2082,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="RequiresLock" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 480.0
-margin_bottom = 480.0
+offset_top = 480.0
+offset_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "requires_lock"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Requires Lock?"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "Yes > No"
 align = 2
@@ -2131,10 +2131,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 8.0
-margin_top = 43.0
-margin_right = 64.0
-margin_bottom = 70.0
+offset_left = 8.0
+offset_top = 43.0
+offset_right = 64.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "Yes"
 align = 2
@@ -2142,26 +2142,26 @@ valign = 2
 clip_text = true
 
 [node name="Magazine Capacity" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 560.0
-margin_bottom = 560.0
+offset_top = 560.0
+offset_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "clip_size"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Magazine Capacity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2169,10 +2169,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2180,48 +2180,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ReserveAmmunition" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 640.0
-margin_bottom = 640.0
+offset_top = 640.0
+offset_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "max_ammo"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Reserve Ammunition"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2229,10 +2229,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2240,48 +2240,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BatteryPowerDrain" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
+offset_top = 720.0
+offset_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "battery_drain"
 weapon_position = "arm_weapon_right"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Battery Power Drain"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2289,10 +2289,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2300,44 +2300,44 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/RArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/RArmContainer/VBoxContainer"]
-margin_top = 800.0
-margin_bottom = 800.0
+offset_top = 800.0
+offset_bottom = 800.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="LArmContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CategoryContainers/LArmContainer"]
-margin_bottom = 720.0
+offset_bottom = 720.0
 custom_constants/separation = 80
 
 [node name="ArmorDamage" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
@@ -2347,18 +2347,18 @@ stat_name = "armor_damage"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Armor Damage"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2366,10 +2366,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2377,48 +2377,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ArmorDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ShieldDamage" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 80.0
-margin_bottom = 80.0
+offset_top = 80.0
+offset_bottom = 80.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "shield_damage"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Shield Damage"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2426,10 +2426,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2437,48 +2437,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ShieldDamage"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ProjectileType" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 160.0
-margin_bottom = 160.0
+offset_top = 160.0
+offset_bottom = 160.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "projectile_type"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Projectile Type"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "Shell > Laser"
 align = 2
@@ -2486,36 +2486,36 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ProjectileType"]
-margin_left = 11.0
-margin_top = 43.0
-margin_right = 571.0
-margin_bottom = 70.0
+offset_left = 11.0
+offset_top = 43.0
+offset_right = 571.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "Hi-Calibre Shell"
 valign = 2
 clip_text = true
 
 [node name="FireRate" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 240.0
-margin_bottom = 240.0
+offset_top = 240.0
+offset_bottom = 240.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "fire_rate"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Fire Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2523,10 +2523,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2534,48 +2534,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/FireRate"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="Accuracy" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 320.0
-margin_bottom = 320.0
+offset_top = 320.0
+offset_bottom = 320.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "bullet_accuracy_margin"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Accuracy"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2583,10 +2583,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2594,48 +2594,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/Accuracy"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="RequiresLock" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 480.0
-margin_bottom = 480.0
+offset_top = 480.0
+offset_bottom = 480.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "requires_lock"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Requires Lock?"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "Yes > No"
 align = 2
@@ -2643,10 +2643,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/RequiresLock"]
-margin_left = 8.0
-margin_top = 43.0
-margin_right = 64.0
-margin_bottom = 70.0
+offset_left = 8.0
+offset_top = 43.0
+offset_right = 64.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "Yes"
 align = 2
@@ -2654,26 +2654,26 @@ valign = 2
 clip_text = true
 
 [node name="Magazine Capacity" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 560.0
-margin_bottom = 560.0
+offset_top = 560.0
+offset_bottom = 560.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "clip_size"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Magazine Capacity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2681,10 +2681,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2692,48 +2692,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/Magazine Capacity"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="ReserveAmmunition" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 640.0
-margin_bottom = 640.0
+offset_top = 640.0
+offset_bottom = 640.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "max_ammo"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Reserve Ammunition"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2741,10 +2741,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2752,48 +2752,48 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/ReserveAmmunition"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BatteryPowerDrain" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 720.0
-margin_bottom = 720.0
+offset_top = 720.0
+offset_bottom = 720.0
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
 stat_name = "battery_drain"
 weapon_position = "arm_weapon_left"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 13.0
-margin_right = 399.0
-margin_bottom = 42.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = 399.0
+offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
 text = "Battery Power Drain"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 342.0
-margin_top = 11.0
-margin_right = 554.0
-margin_bottom = 40.0
+offset_left = 342.0
+offset_top = 11.0
+offset_right = 554.0
+offset_bottom = 40.0
 custom_fonts/font = SubResource( 21 )
 text = "1000 > 1000"
 align = 2
@@ -2801,10 +2801,10 @@ valign = 2
 clip_text = true
 
 [node name="RealValue" type="Label" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 497.0
-margin_top = 43.0
-margin_right = 553.0
-margin_bottom = 70.0
+offset_left = 497.0
+offset_top = 43.0
+offset_right = 553.0
+offset_bottom = 70.0
 custom_fonts/font = SubResource( 22 )
 text = "1000"
 align = 2
@@ -2812,39 +2812,39 @@ valign = 2
 clip_text = true
 
 [node name="RealBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 66.0
-rect_min_size = Vector2( 0, 20 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 66.0
+custom_minimum_size = Vector2( 0, 20 )
 custom_styles/fg = SubResource( 23 )
 custom_styles/bg = SubResource( 24 )
 value = 50.0
 percent_visible = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="CategoryContainers/LArmContainer/VBoxContainer/BatteryPowerDrain"]
-margin_left = 11.0
-margin_top = 46.0
-margin_right = 492.612
-margin_bottom = 56.0
-rect_min_size = Vector2( 0, 10 )
+offset_left = 11.0
+offset_top = 46.0
+offset_right = 492.612
+offset_bottom = 56.0
+custom_minimum_size = Vector2( 0, 10 )
 custom_styles/fg = SubResource( 25 )
 custom_styles/bg = SubResource( 26 )
 value = 45.0
 percent_visible = false
 
 [node name="BlankSpace" type="Panel" parent="CategoryContainers/LArmContainer/VBoxContainer"]
-margin_top = 800.0
-margin_bottom = 800.0
+offset_top = 800.0
+offset_bottom = 800.0
 custom_styles/panel = SubResource( 20 )
 
 [node name="RShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
@@ -2856,11 +2856,11 @@ custom_styles/panel = SubResource( 20 )
 
 [node name="LShoulderContainer" type="ScrollContainer" parent="CategoryContainers"]
 visible = false
-margin_left = 1294.0
-margin_top = 290.0
-margin_right = 1869.0
-margin_bottom = 1002.0
-rect_pivot_offset = Vector2( -163, 79 )
+offset_left = 1294.0
+offset_top = 290.0
+offset_right = 1869.0
+offset_bottom = 1002.0
+pivot_offset = Vector2( -163, 79 )
 mouse_filter = 1
 theme = ExtResource( 1 )
 
@@ -2871,32 +2871,32 @@ custom_constants/separation = 80
 custom_styles/panel = SubResource( 20 )
 
 [node name="SwitchRight" type="Button" parent="."]
-margin_left = 1645.0
-margin_top = 1009.0
-margin_right = 1865.0
-margin_bottom = 1036.0
+offset_left = 1645.0
+offset_top = 1009.0
+offset_right = 1865.0
+offset_bottom = 1036.0
 theme = ExtResource( 1 )
 custom_fonts/font = SubResource( 27 )
 text = "Switch >>>"
 align = 0
-icon_align = 2
+icon_alignment = 2
 
 [node name="SwitchLeft" type="Button" parent="."]
-margin_left = 1408.0
-margin_top = 1009.0
-margin_right = 1628.0
-margin_bottom = 1036.0
+offset_left = 1408.0
+offset_top = 1009.0
+offset_right = 1628.0
+offset_bottom = 1036.0
 theme = ExtResource( 1 )
 custom_fonts/font = SubResource( 27 )
 text = "<<< Switch"
 align = 2
-icon_align = 2
+icon_alignment = 2
 
 [node name="CategoryTitle" type="Label" parent="."]
-margin_left = 1294.0
-margin_top = 230.0
-margin_right = 1860.0
-margin_bottom = 275.0
+offset_left = 1294.0
+offset_top = 230.0
+offset_right = 1860.0
+offset_bottom = 275.0
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_fonts/font = SubResource( 29 )
 custom_styles/normal = SubResource( 30 )

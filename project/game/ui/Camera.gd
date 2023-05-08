@@ -2,6 +2,7 @@ extends Camera2D
 
 var amp = 0
 var priority = 0
+var tweens = []
 
 func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
 	if priority > prio or frequency <= 0:
@@ -16,15 +17,21 @@ func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
 	$Frequency.start()
 
 func new_shake():
-	var target = Vector2(rand_range(-amp, amp), rand_range(-amp, amp))
-	$Tween.interpolate_property(self, "offset", offset, target, $Frequency.wait_time, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-	$Tween.start()
+	var target = Vector2(randf_range(-amp, amp), randf_range(-amp, amp))
+	var tween = get_tree().create_tween()
+	tween.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(self, "offset", target, $Frequency.wait_time)
+	tweens.append(tween)
 
 
 func stop_shake():
-	$Tween.stop_all()
-	$Tween.interpolate_property(self, "offset", offset, Vector2(), $Frequency.wait_time/2, Tween.TRANS_QUAD, Tween.EASE_OUT)
-	$Tween.start()
+	for tween in tweens:
+		tween.kill()
+	tweens = []
+	var tween = get_tree().create_tween()
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(self, "offset", Vector2(), $Frequency.wait_time/2)
+	tweens.append(tween)
 	priority = 0
 
 func _on_Duration_timeout():

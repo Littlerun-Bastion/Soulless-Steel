@@ -2,6 +2,15 @@ extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
+@export var look_ahead_range = 500
+@export var num_rays = 16
+
+var ray_directions = []
+var interest = []
+var danger = []
+var debug_lines = []
+
+var chosen_dir = Vector2()
 
 var health = 100
 var speed = 100
@@ -13,6 +22,10 @@ var valid_target = false
 
 
 func _ready():
+	super()
+	
+	steering_setup()
+	
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
 		logic.setup(Debug.get_setting("ai_behaviour"))
@@ -20,10 +33,12 @@ func _ready():
 		logic.setup("default")
 
 
-func _process(delta):
+func _physics_process(delta):
 	if paused or is_stunned():
 		return
-
+	
+	super(delta)
+	
 	logic.update(self)
 	logic.run(self, delta)
 	
@@ -32,12 +47,17 @@ func _process(delta):
 	else:
 		$Debug/StateLabel.text = ""
 
+#func _draw():
+	#draw_line(Vector2.ZERO, chosen_dir*1000, Color.DARK_GREEN, 5)
+	#for i in ray_directions:
+		#if i:
+			#draw_line(Vector2.ZERO, i * 500, Color.GREEN, 2.0)
 
 func setup(arena_ref, is_tutorial):
 	arena = arena_ref
 	mecha_name = "Mecha " + str(randi()%2000)
 	if is_tutorial:
-		set_generator("type_2")
+		set_generator(PartManager.get_random_part_name("generator"))
 		set_chipset("type_2")
 		set_core("MSV-L3J-C")
 		set_head(PartManager.get_random_part_name("head"))
@@ -60,7 +80,11 @@ func setup(arena_ref, is_tutorial):
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
 	
 	#For the moment hard set ies' movement type to free
-	movement_type = "free"
+	if movement_type == "tank":
+		movement_type = "enemy_tank"
+	else:
+		movement_type = "free"
+	print(movement_type)
 
 #Combat functions
 
@@ -89,20 +113,22 @@ func shoot_weapons():
 	try_to_shoot("shoulder_weapon_right")
 
 
-func try_to_shoot(name):
-	var node = get_weapon_part(name)
+func try_to_shoot(weapon_name):
+	var node = get_weapon_part(weapon_name)
 	if node:
 		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
 			node.reload()
 		elif node.can_shoot():
 			if can_see_target():
-				shoot(name)
+				shoot(weapon_name)
 
 
 func can_see_target():
 	if valid_target:
 		var space_state = get_world_2d().direct_space_state
-		var result = space_state.intersect_ray(position, valid_target.position, [self])
+		var ray = PhysicsRayQueryParameters2D.create(position, valid_target.position)
+		ray.exclude = [self]
+		var result = space_state.intersect_ray(ray)
 		if result:
 			return (result.collider == valid_target)
 		return false
@@ -114,9 +140,9 @@ func can_see_target():
 #Assumes enemy has a valid target
 func random_targeting_pos(min_dist, max_dist):
 	var rand_pos = Vector2()
-	var angle = rand_range(0, 2.0*PI)
+	var angle = randf_range(0, 2.0*PI)
 	var direction = Vector2(cos(angle), sin(angle)).normalized()
-	var rand_radius = rand_range(min_dist, max_dist)
+	var rand_radius = randf_range(min_dist, max_dist)
 	rand_pos = valid_target.position + direction * rand_radius
 	
 	return rand_pos
@@ -128,10 +154,13 @@ func get_navigation_path():
 
 func navigate_to_target(dt):
 	if going_to_position:
-		var target = NavAgent.get_next_location()
+		var target = NavAgent.get_next_path_position()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
-		apply_movement(dt, dir)
+		set_interest(dir)
+		set_danger()
+		choose_direction()
+		apply_movement(dt, chosen_dir)
 		if valid_target:
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
@@ -149,8 +178,54 @@ func _on_NavigationAgent2D_navigation_finished():
 
 
 func _on_NavigationAgent2D_velocity_computed(safe_velocity):
-	velocity = move_and_slide(safe_velocity)
+	set_velocity(safe_velocity)
+	move_and_slide()
+	velocity = velocity
 
 
 func _on_NavigationAgent2D_target_reached():
 	going_to_position = false
+
+#-------- Context Steering
+
+func steering_setup():
+	interest.resize(num_rays)
+	danger.resize(num_rays)
+	ray_directions.resize(num_rays)
+	for i in num_rays:
+		var angle = i * 2 * PI / num_rays
+		ray_directions[i] = Vector2.UP.rotated(angle)
+
+func set_interest(target):
+	if target:
+		for i in num_rays:
+			var d = ray_directions[i].dot(target)
+			interest[i] = max(0, d)
+	else:
+		for i in num_rays:
+			var d = ray_directions[i].dot(transform.y)
+			interest[i] = max(0, d)
+	
+func set_danger():
+	var space_state = get_world_2d().direct_space_state
+	for i in num_rays:
+		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
+		query.exclude = [self]
+		var result = space_state.intersect_ray(query)
+		#if result:
+		#	print("warn!")
+		#else:
+		#	print("clear!")
+		danger[i] = 1.0 if result else 0.0
+
+func choose_direction():
+	# Eliminate interest in slots with danger
+	for i in num_rays:
+		if danger[i] > 0.0:
+			interest[i] = 0.0
+	# Choose direction based on remaining interest
+	chosen_dir = Vector2.ZERO
+	for i in num_rays:
+		chosen_dir += ray_directions[i] * interest[i]
+	chosen_dir = chosen_dir.normalized()
+	#queue_redraw()

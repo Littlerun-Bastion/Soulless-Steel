@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/robot_step.wav-2d369cac9981f061499dd452b559004c.sample"
+type="AudioStreamWAV"
+uid="uid://lekn1oa3pf54"
+path="res://.godot/imported/robot_step.wav-2d369cac9981f061499dd452b559004c.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/robot_step.wav"
-dest_files=[ "res://.import/robot_step.wav-2d369cac9981f061499dd452b559004c.sample" ]
+dest_files=["res://.godot/imported/robot_step.wav-2d369cac9981f061499dd452b559004c.sample"]
 
 [params]
 
@@ -17,5 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
 compress/mode=0

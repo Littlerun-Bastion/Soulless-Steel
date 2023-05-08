@@ -1,34 +1,30 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=9 format=3 uid="uid://bcpaibbipr57b"]
 
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" type="Texture" id=1]
-[ext_resource path="res://database/parts/projectile.gd" type="Script" id=2]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire5.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire6.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire3.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire4.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire7.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/projectiles/flamethrower_fire2.png" type="Texture" id=8]
+[ext_resource type="Texture2D" uid="uid://bag1127efbmv8" path="res://assets/images/mechas/projectiles/flamethrower_fire1.png" id="1"]
+[ext_resource type="Script" path="res://database/parts/projectile.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://bjgqxtfggmxha" path="res://assets/images/mechas/projectiles/flamethrower_fire5.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://csyjbrudqbb1n" path="res://assets/images/mechas/projectiles/flamethrower_fire6.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://b22x1oskggvl5" path="res://assets/images/mechas/projectiles/flamethrower_fire3.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://6pwuu21ltopa" path="res://assets/images/mechas/projectiles/flamethrower_fire4.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://dq2u33padkrmv" path="res://assets/images/mechas/projectiles/flamethrower_fire7.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://cytlbcfivb5lh" path="res://assets/images/mechas/projectiles/flamethrower_fire2.png" id="8"]
 
 [node name="Projectile" type="Node2D"]
-script = ExtResource( 2 )
+script = ExtResource("2")
 type = 1
 damage = 3
 is_overtime = true
 decal_type = "bullet_hole_small"
-texture_variations = [ ExtResource( 8 ), ExtResource( 5 ), ExtResource( 6 ), ExtResource( 3 ), ExtResource( 4 ), ExtResource( 7 ) ]
+texture_variations = [ExtResource("8"), ExtResource("5"), ExtResource("6"), ExtResource("3"), ExtResource("4"), ExtResource("7")]
 calibre = 3
 light_energy = 0.05
-decaying_speed_ratio = 20.0
-decaying_speed_ratio_var = 0.5
-change_scaling = 1.0
-change_scaling_var = 0.2
 life_time = 1.5
 life_time_var = 0.2
 random_rotation = true
 
-[node name="Image" type="Sprite" parent="."]
-texture = ExtResource( 1 )
+[node name="Image" type="Sprite2D" parent="."]
+texture = ExtResource("1")
 
-[node name="CollisionShape" type="Polygon2D" parent="."]
-color = Color( 1, 0.176471, 0.176471, 0.298039 )
-polygon = PoolVector2Array( 14.1323, -4.39031, 15.1334, 5.9547, 9.12665, 11.2941, -0.550941, 15.6323, -7.89256, 11.9615, -19.2387, 3.95244, -13.8993, -13.0668, 0.116478, -18.0724, 11.1289, -14.0679 )
+[node name="CollisionShape3D" type="Polygon2D" parent="."]
+color = Color(1, 0.176471, 0.176471, 0.298039)
+polygon = PackedVector2Array(14.1323, -4.39031, 15.1334, 5.9547, 9.12665, 11.2941, -0.550941, 15.6323, -7.89256, 11.9615, -19.2387, 3.95244, -13.8993, -13.0668, 0.116478, -18.0724, 11.1289, -14.0679)

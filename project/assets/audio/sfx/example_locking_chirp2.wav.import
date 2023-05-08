@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/example_locking_chirp2.wav-45ecd869593ffc1ce45aa779a394414d.sample"
+type="AudioStreamWAV"
+uid="uid://b6d4djdsulsfp"
+path="res://.godot/imported/example_locking_chirp2.wav-45ecd869593ffc1ce45aa779a394414d.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/example_locking_chirp2.wav"
-dest_files=[ "res://.import/example_locking_chirp2.wav-45ecd869593ffc1ce45aa779a394414d.sample" ]
+dest_files=["res://.godot/imported/example_locking_chirp2.wav-45ecd869593ffc1ce45aa779a394414d.sample"]
 
 [params]
 

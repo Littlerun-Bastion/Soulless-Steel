@@ -2,13 +2,10 @@ extends Button
 
 signal design_pressed
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 var stored_design
 
-func setup(name, design):
-	self.text = str(name + ".design")
+func setup(design_name, design):
+	self.text = str(design_name + ".design")
 	stored_design = design
 
 

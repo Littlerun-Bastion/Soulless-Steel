@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/shield_impact_large1.wav-24b78ed4d8794da354019c8b217e3648.sample"
+type="AudioStreamWAV"
+uid="uid://bqlosshgmn7ku"
+path="res://.godot/imported/shield_impact_large1.wav-24b78ed4d8794da354019c8b217e3648.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/shield_impacts_large/shield_impact_large1.wav"
-dest_files=[ "res://.import/shield_impact_large1.wav-24b78ed4d8794da354019c8b217e3648.sample" ]
+dest_files=["res://.godot/imported/shield_impact_large1.wav-24b78ed4d8794da354019c8b217e3648.sample"]
 
 [params]
 
@@ -17,7 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop_mode=1
+edit/loop_mode=0
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=0

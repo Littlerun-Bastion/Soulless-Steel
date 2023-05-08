@@ -2,24 +2,24 @@
 
 [ext_resource path="res://database/parts/core.gd" type="Script" id=1]
 [ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
-[ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_main.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-rshoulder_main.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-lshoulder_main.png" type="Texture" id=7]
-[ext_resource path="res://assets/images/mechas/legs/O10/O10-lleg_main.png" type="Texture" id=8]
-[ext_resource path="res://assets/images/mechas/legs/O10/O10-rleg_main.png" type="Texture" id=9]
-[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_sub.png" type="Texture" id=10]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture" id=11]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture" id=12]
-[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_glow.png" type="Texture" id=13]
-[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_pv.png" type="Texture" id=14]
+[ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture2D" id=4]
+[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_main.png" type="Texture2D" id=5]
+[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-rshoulder_main.png" type="Texture2D" id=6]
+[ext_resource path="res://assets/images/mechas/shoulders/O10/O10-lshoulder_main.png" type="Texture2D" id=7]
+[ext_resource path="res://assets/images/mechas/legs/O10/O10-lleg_main.png" type="Texture2D" id=8]
+[ext_resource path="res://assets/images/mechas/legs/O10/O10-rleg_main.png" type="Texture2D" id=9]
+[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_sub.png" type="Texture2D" id=10]
+[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture2D" id=11]
+[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture2D" id=12]
+[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_glow.png" type="Texture2D" id=13]
+[ext_resource path="res://assets/images/mechas/cores/O30/O30-Core_pv.png" type="Texture2D" id=14]
 
 [node name="Part3" type="Node"]
 script = ExtResource( 1 )
 part_name = "O30-Core"
 manufacturer_name = "Orontes"
-tagline = "Light Core"
+tagline = "Light3D Core"
 description = "A middleweight core with great defensive stats for its weight bracket. Very weight efficient, but poor stability and reduced space for shoulder-mounted weaponry."
 image = ExtResource( 14 )
 health = 4050.0
@@ -29,104 +29,104 @@ rotation_range = 17.0
 has_left_shoulder = true
 weight = 19.5
 
-[node name="LeftChassisOffset" type="Position2D" parent="."]
+[node name="LeftChassisOffset" type="Marker2D" parent="."]
 visible = false
 position = Vector2( -30, 45 )
 
-[node name="Reference" type="Sprite" parent="LeftChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
 texture = ExtResource( 8 )
 
-[node name="RightChassisOffset" type="Position2D" parent="."]
+[node name="RightChassisOffset" type="Marker2D" parent="."]
 visible = false
 position = Vector2( 30, 44 )
 
-[node name="Reference" type="Sprite" parent="RightChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
 texture = ExtResource( 9 )
 
-[node name="HeadPort" type="Sprite" parent="."]
+[node name="HeadPort" type="Sprite2D" parent="."]
 position = Vector2( 0, -31 )
 texture = ExtResource( 3 )
 
-[node name="CoreSub" type="Sprite" parent="."]
+[node name="CoreSub" type="Sprite2D" parent="."]
 texture = ExtResource( 10 )
 
-[node name="Core" type="Sprite" parent="."]
+[node name="Core" type="Sprite2D" parent="."]
 texture = ExtResource( 5 )
 
-[node name="CoreGlow" type="Sprite" parent="."]
+[node name="CoreGlow" type="Sprite2D" parent="."]
 material = ExtResource( 2 )
 texture = ExtResource( 13 )
 
-[node name="OverheatOffset1" type="Position2D" parent="."]
+[node name="OverheatOffset1" type="Marker2D" parent="."]
 position = Vector2( -21.673, 38.0576 )
 
-[node name="OverheatOffset2" type="Position2D" parent="."]
+[node name="OverheatOffset2" type="Marker2D" parent="."]
 position = Vector2( 23.3999, 38.5246 )
 
-[node name="OverheatOffset3" type="Position2D" parent="."]
+[node name="OverheatOffset3" type="Marker2D" parent="."]
 position = Vector2( -32.646, -20.9326 )
 
-[node name="OverheatOffset4" type="Position2D" parent="."]
+[node name="OverheatOffset4" type="Marker2D" parent="."]
 position = Vector2( 32.5136, -20.9326 )
 
-[node name="OverheatOffset5" type="Position2D" parent="."]
+[node name="OverheatOffset5" type="Marker2D" parent="."]
 position = Vector2( -0.105736, 64.5711 )
 
-[node name="LeftArmWeaponOffset" type="Position2D" parent="."]
+[node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( -45, -16 )
 
-[node name="Reference" type="Sprite" parent="LeftArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
 visible = false
 texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
-[node name="RightArmWeaponOffset" type="Position2D" parent="."]
+[node name="RightArmWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( 45, -16 )
 
-[node name="Reference" type="Sprite" parent="RightArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
 visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 11 )
 offset = Vector2( 4, -36 )
 
-[node name="LeftShoulderWeaponOffset" type="Position2D" parent="."]
+[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( -33, 12 )
 
-[node name="Reference" type="Sprite" parent="LeftShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
 visible = false
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
-[node name="RightShoulderWeaponOffset" type="Position2D" parent="."]
+[node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
 position = Vector2( 33, 12 )
 
-[node name="Reference" type="Sprite" parent="RightShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
 visible = false
 scale = Vector2( -1, 1 )
 texture = ExtResource( 12 )
 offset = Vector2( -9, -23 )
 
-[node name="HeadOffset" type="Position2D" parent="."]
+[node name="HeadOffset" type="Marker2D" parent="."]
 position = Vector2( 0, -31 )
 
-[node name="Reference" type="Sprite" parent="HeadOffset"]
+[node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
 visible = false
 texture = ExtResource( 4 )
 
-[node name="LeftShoulderOffset" type="Position2D" parent="."]
+[node name="LeftShoulderOffset" type="Marker2D" parent="."]
 position = Vector2( -33, -10 )
 
-[node name="Reference" type="Sprite" parent="LeftShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
 visible = false
 texture = ExtResource( 7 )
 
-[node name="RightShoulderOffset" type="Position2D" parent="."]
+[node name="RightShoulderOffset" type="Marker2D" parent="."]
 position = Vector2( 33, -10 )
 
-[node name="Reference" type="Sprite" parent="RightShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
 visible = false
 texture = ExtResource( 6 )
 
 [node name="Collision" type="Polygon2D" parent="."]
 color = Color( 1, 0, 0, 0.176471 )
-polygon = PoolVector2Array( -17.6728, -77.8016, 18.4406, -78, 33.5209, -62.5229, 34.6123, -36.7983, 42.4695, -28.9411, 42.7501, -13.7878, 34.6123, -5.65, 34.5, 60.25, 25.5, 76.25, 15.5, 78.75, -16, 78.75, -26, 75.75, -34.25, 60, -35.0137, -5.55481, -43.0022, -13.1229, -43.0022, -29.0999, -33.5422, -38.56, -33.6893, -62.6271 )
+polygon = PackedVector2Array( -17.6728, -77.8016, 18.4406, -78, 33.5209, -62.5229, 34.6123, -36.7983, 42.4695, -28.9411, 42.7501, -13.7878, 34.6123, -5.65, 34.5, 60.25, 25.5, 76.25, 15.5, 78.75, -16, 78.75, -26, 75.75, -34.25, 60, -35.0137, -5.55481, -43.0022, -13.1229, -43.0022, -29.0999, -33.5422, -38.56, -33.6893, -62.6271 )

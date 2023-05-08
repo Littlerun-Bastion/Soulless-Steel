@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/medium_shotC.wav-ffaf8976517975338a449c659aa00f62.sample"
+type="AudioStreamWAV"
+uid="uid://ceprvpdm6yenv"
+path="res://.godot/imported/medium_shotC.wav-ffaf8976517975338a449c659aa00f62.sample"
 
 [deps]
 
 source_file="res://assets/audio/sfx/medium_shotC.wav"
-dest_files=[ "res://.import/medium_shotC.wav-ffaf8976517975338a449c659aa00f62.sample" ]
+dest_files=["res://.godot/imported/medium_shotC.wav-ffaf8976517975338a449c659aa00f62.sample"]
 
 [params]
 
@@ -17,5 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
 compress/mode=0

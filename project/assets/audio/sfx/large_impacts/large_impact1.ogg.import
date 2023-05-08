@@ -1,15 +1,19 @@
 [remap]
 
-importer="ogg_vorbis"
-type="AudioStreamOGGVorbis"
-path="res://.import/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggstr"
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bwdj6ppblsoup"
+path="res://.godot/imported/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggvorbisstr"
 
 [deps]
 
 source_file="res://assets/audio/sfx/large_impacts/large_impact1.ogg"
-dest_files=[ "res://.import/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggstr" ]
+dest_files=["res://.godot/imported/large_impact1.ogg-429a69481dc98071fb7f1fa1514d9eef.oggvorbisstr"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

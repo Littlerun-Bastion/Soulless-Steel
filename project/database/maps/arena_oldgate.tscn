@@ -1,43 +1,43 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=21 format=3 uid="uid://brny0mhtvyx57"]
 
-[ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/map/floor/arena_oldgate.png" type="Texture" id=2]
-[ext_resource path="res://database/buildings/building2_long.tscn" type="PackedScene" id=3]
-[ext_resource path="res://database/buildings/old_gate_building2.tscn" type="PackedScene" id=4]
-[ext_resource path="res://assets/images/map/border_texture.png" type="Texture" id=5]
-[ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
-[ext_resource path="res://database/buildings/building3_long.tscn" type="PackedScene" id=7]
-[ext_resource path="res://database/buildings/building4_long.tscn" type="PackedScene" id=8]
-[ext_resource path="res://database/buildings/old_gate_building.tscn" type="PackedScene" id=9]
-[ext_resource path="res://database/buildings/old_gate_building3.tscn" type="PackedScene" id=10]
-[ext_resource path="res://database/buildings/old_gate_building5.tscn" type="PackedScene" id=11]
-[ext_resource path="res://database/props/tree2_prop.tscn" type="PackedScene" id=12]
-[ext_resource path="res://database/props/tree1_prop.tscn" type="PackedScene" id=13]
-[ext_resource path="res://database/props/tree_leafless_2_prop.tscn" type="PackedScene" id=14]
-[ext_resource path="res://database/props/tree_leafless_3_prop.tscn" type="PackedScene" id=15]
-[ext_resource path="res://database/props/tree3_prop.tscn" type="PackedScene" id=16]
-[ext_resource path="res://database/props/tree_leafless_1_prop.tscn" type="PackedScene" id=17]
-[ext_resource path="res://database/buildings/old_gate_building4.tscn" type="PackedScene" id=18]
+[ext_resource type="Script" path="res://database/maps/Map.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://c7cm57g0x8t3r" path="res://assets/images/map/floor/arena_oldgate.png" id="2"]
+[ext_resource type="PackedScene" path="res://database/buildings/building2_long.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building2.tscn" id="4"]
+[ext_resource type="Texture2D" uid="uid://biido47jin7bt" path="res://assets/images/map/border_texture.png" id="5"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://database/buildings/building3_long.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://database/buildings/building4_long.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building3.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building5.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://database/props/tree2_prop.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://database/props/tree1_prop.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://database/props/tree_leafless_2_prop.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://database/props/tree_leafless_3_prop.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://database/props/tree3_prop.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://database/props/tree_leafless_1_prop.tscn" id="17"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building4.tscn" id="18"]
 
-[sub_resource type="CanvasItemMaterial" id=2]
+[sub_resource type="CanvasItemMaterial" id="2"]
 light_mode = 2
 
-[sub_resource type="NavigationPolygon" id=1]
-vertices = PoolVector2Array( 6957.82, 1319.28, -3712.78, 11985.3, -8495.09, 7070.75, -8500.68, 3540.09, -2265.59, -2716.53, 7043.76, -10371.4, -2268.24, -10403.4 )
-polygons = [ PoolIntArray( 0, 1, 2, 3, 4, 5 ), PoolIntArray( 4, 6, 5 ) ]
-outlines = [ PoolVector2Array( -2265.59, -2716.53, -8500.68, 3540.09, -8495.09, 7070.75, -3712.78, 11985.3, 6957.82, 1319.28, 7043.76, -10371.4, -2268.24, -10403.4 ) ]
+[sub_resource type="NavigationPolygon" id="1"]
+vertices = PackedVector2Array(6957.82, 1319.28, -3712.78, 11985.3, -8495.09, 7070.75, -8500.68, 3540.09, -2265.59, -2716.53, 7043.76, -10371.4, -2268.24, -10403.4)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5), PackedInt32Array(4, 6, 5)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2265.59, -2716.53, -8500.68, 3540.09, -8495.09, 7070.75, -3712.78, 11985.3, 6957.82, 1319.28, 7043.76, -10371.4, -2268.24, -10403.4)])
 
 [node name="Map" type="Node2D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="BG" type="Sprite" parent="."]
-scale = Vector2( 5, 5 )
-texture = ExtResource( 2 )
+[node name="BG" type="Sprite2D" parent="."]
+scale = Vector2(5, 5)
+texture = ExtResource("2")
 
 [node name="Bushes" type="Node2D" parent="."]
 
 [node name="Props" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
+scale = Vector2(2, 2)
 
 [node name="Walls" type="Node2D" parent="."]
 
@@ -47,178 +47,175 @@ scale = Vector2( 2, 2 )
 visible = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
-position = Vector2( 635, -6832 )
-polygon = PoolVector2Array( -12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12220.3, -1987.14, -3046.23, -2034.83, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -3042.04, -2033.03, -12433.2, -1885.03 )
+position = Vector2(635, -6832)
+polygon = PackedVector2Array(-12828.8, 19318.1, 11819.6, 19264.3, 11819.6, -4899.68, -12021.5, -5061.13, -12220.3, -1987.14, -3046.23, -2034.83, 6439.8, -2040.01, 6464.44, 8206.76, -4254, 18859, -9144.86, 13904.1, -9144.86, 10422.8, -2797.77, 4086.19, -3042.04, -2033.03, -12433.2, -1885.03)
 
 [node name="BorderTexture" type="Polygon2D" parent="Walls"]
 light_mask = 32
-material = SubResource( 2 )
-texture = ExtResource( 5 )
-invert_enable = true
+material = SubResource("2")
+texture = ExtResource("5")
+invert_enabled = true
 invert_border = 3150.0
-polygon = PoolVector2Array( -2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11 )
+polygon = PackedVector2Array(-2414.77, -8898, -2179.84, -2747.06, -8480.28, 3574.74, -8523, 7077.36, -3640.75, 12023.9, 7119.25, 1367.89, 7079.25, -8856.11)
 
 [node name="Buildings" type="Node2D" parent="."]
 
-[node name="Building" parent="Buildings" instance=ExtResource( 3 )]
-position = Vector2( -5307.76, 4474.98 )
+[node name="Building" parent="Buildings" instance=ExtResource("3")]
+position = Vector2(-5307.76, 4474.98)
 rotation = 2.35619
-scale = Vector2( 4.5, 4.5 )
+scale = Vector2(4.5, 4.5)
 
-[node name="Building9" parent="Buildings" instance=ExtResource( 18 )]
-position = Vector2( -229.118, -6106.47 )
+[node name="Building9" parent="Buildings" instance=ExtResource("18")]
+position = Vector2(-229.118, -6106.47)
 rotation = 3.14159
-scale = Vector2( 5, 5 )
+scale = Vector2(5, 5)
 
-[node name="Building2" parent="Buildings" instance=ExtResource( 3 )]
-position = Vector2( -6130.84, 2323.69 )
+[node name="Building2" parent="Buildings" instance=ExtResource("3")]
+position = Vector2(-6130.84, 2323.69)
 rotation = 2.35619
-scale = Vector2( 4.5, 4.5 )
+scale = Vector2(4.5, 4.5)
 
-[node name="Building3" parent="Buildings" instance=ExtResource( 7 )]
-position = Vector2( -5564.17, 9649.48 )
+[node name="Building3" parent="Buildings" instance=ExtResource("7")]
+position = Vector2(-5564.17, 9649.48)
 rotation = 0.785398
-scale = Vector2( 5, 5 )
+scale = Vector2(5, 5)
 
-[node name="Building4" parent="Buildings" instance=ExtResource( 4 )]
-position = Vector2( -4438.3, 6771.48 )
+[node name="Building4" parent="Buildings" instance=ExtResource("4")]
+position = Vector2(-4438.3, 6771.48)
 rotation = 2.35619
-scale = Vector2( 2.3, 2.3 )
+scale = Vector2(2.3, 2.3)
 
-[node name="Building5" parent="Buildings" instance=ExtResource( 8 )]
-position = Vector2( 374.607, 6194.12 )
+[node name="Building5" parent="Buildings" instance=ExtResource("8")]
+position = Vector2(374.607, 6194.12)
 rotation = 2.35619
-scale = Vector2( 5.2, 5.2 )
+scale = Vector2(5.2, 5.2)
 
-[node name="Building6" parent="Buildings" instance=ExtResource( 9 )]
-position = Vector2( -1364.93, 1367.52 )
+[node name="Building6" parent="Buildings" instance=ExtResource("9")]
+position = Vector2(-1364.93, 1367.52)
 rotation = -1.79769
-scale = Vector2( 4.75, 4.75 )
+scale = Vector2(4.75, 4.75)
 
-[node name="Building7" parent="Buildings" instance=ExtResource( 10 )]
-position = Vector2( 3147.27, 781.611 )
+[node name="Building7" parent="Buildings" instance=ExtResource("10")]
+position = Vector2(3147.27, 781.611)
 rotation = 5.49779
-scale = Vector2( 5, 5 )
+scale = Vector2(5, 5)
 
-[node name="Building8" parent="Buildings" instance=ExtResource( 11 )]
-position = Vector2( 8668.71, -6425.74 )
+[node name="Building8" parent="Buildings" instance=ExtResource("11")]
+position = Vector2(8668.71, -6425.74)
 rotation = 3.14159
-scale = Vector2( 5, 5 )
+scale = Vector2(5, 5)
 
 [node name="StartPositions" type="Node2D" parent="."]
 
-[node name="Pos1" parent="StartPositions" instance=ExtResource( 6 )]
-position = Vector2( -3997.62, 8827.38 )
+[node name="Pos1" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(-3997.62, 8827.38)
 
-[node name="Pos2" parent="StartPositions" instance=ExtResource( 6 )]
-position = Vector2( -678.811, 4405.45 )
+[node name="Pos2" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(-678.811, 4405.45)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
 
 [node name="Trees" type="Node2D" parent="."]
 
-[node name="tree_leafless_1_prop" parent="Trees" instance=ExtResource( 17 )]
-position = Vector2( -3080.53, 8515.2 )
+[node name="tree_leafless_1_prop" parent="Trees" instance=ExtResource("17")]
+position = Vector2(-3080.53, 8515.2)
 
-[node name="tree_leafless_2_prop" parent="Trees" instance=ExtResource( 14 )]
-position = Vector2( -6824.35, 7591.73 )
+[node name="tree_leafless_2_prop" parent="Trees" instance=ExtResource("14")]
+position = Vector2(-6824.35, 7591.73)
 
-[node name="tree_leafless_3_prop" parent="Trees" instance=ExtResource( 15 )]
-position = Vector2( -7407.09, 7299.26 )
+[node name="tree_leafless_3_prop" parent="Trees" instance=ExtResource("15")]
+position = Vector2(-7407.09, 7299.26)
 
-[node name="tree1_prop2" parent="Trees" instance=ExtResource( 13 )]
-position = Vector2( -7863.12, 6820.29 )
+[node name="tree1_prop2" parent="Trees" instance=ExtResource("13")]
+position = Vector2(-7863.12, 6820.29)
 
-[node name="tree2_prop2" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( -7823.21, 5013.33 )
+[node name="tree2_prop2" parent="Trees" instance=ExtResource("12")]
+position = Vector2(-7823.21, 5013.33)
 
-[node name="tree_leafless_2_prop2" parent="Trees" instance=ExtResource( 14 )]
-position = Vector2( -7950.18, 4389.32 )
+[node name="tree_leafless_2_prop2" parent="Trees" instance=ExtResource("14")]
+position = Vector2(-7950.18, 4389.32)
 
-[node name="tree_leafless_3_prop2" parent="Trees" instance=ExtResource( 15 )]
-position = Vector2( -3415.08, 1548.55 )
+[node name="tree_leafless_3_prop2" parent="Trees" instance=ExtResource("15")]
+position = Vector2(-3415.08, 1548.55)
 
-[node name="tree_leafless_2_prop3" parent="Trees" instance=ExtResource( 14 )]
-position = Vector2( -3616.98, 482.404 )
+[node name="tree_leafless_2_prop3" parent="Trees" instance=ExtResource("14")]
+position = Vector2(-3616.98, 482.404)
 
-[node name="tree1_prop" parent="Trees" instance=ExtResource( 13 )]
-position = Vector2( -3719.94, 8851.83 )
+[node name="tree1_prop" parent="Trees" instance=ExtResource("13")]
+position = Vector2(-3719.94, 8851.83)
 
-[node name="tree3_prop" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( -2576, 9136 )
+[node name="tree3_prop" parent="Trees" instance=ExtResource("16")]
+position = Vector2(-2576, 9136)
 
-[node name="tree_leafless_3_prop3" parent="Trees" instance=ExtResource( 15 )]
-position = Vector2( -2957.98, 4086.78 )
+[node name="tree_leafless_3_prop3" parent="Trees" instance=ExtResource("15")]
+position = Vector2(-2957.98, 4086.78)
 
-[node name="tree_leafless_2_prop4" parent="Trees" instance=ExtResource( 14 )]
-position = Vector2( -2005.74, 4285.4 )
+[node name="tree_leafless_2_prop4" parent="Trees" instance=ExtResource("14")]
+position = Vector2(-2005.74, 4285.4)
 
-[node name="tree1_prop3" parent="Trees" instance=ExtResource( 13 )]
-position = Vector2( -1423.73, 3960.8 )
+[node name="tree1_prop3" parent="Trees" instance=ExtResource("13")]
+position = Vector2(-1423.73, 3960.8)
 
-[node name="tree2_prop3" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( -3175.23, 2219.97 )
+[node name="tree2_prop3" parent="Trees" instance=ExtResource("12")]
+position = Vector2(-3175.23, 2219.97)
 
-[node name="tree2_prop" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( -2433.25, 7899.08 )
+[node name="tree2_prop" parent="Trees" instance=ExtResource("12")]
+position = Vector2(-2433.25, 7899.08)
 
-[node name="tree2_prop4" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( -2367.96, 5623.91 )
+[node name="tree2_prop4" parent="Trees" instance=ExtResource("12")]
+position = Vector2(-2367.96, 5623.91)
 
-[node name="tree2_prop5" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( 796.716, 2508.81 )
+[node name="tree2_prop5" parent="Trees" instance=ExtResource("12")]
+position = Vector2(796.716, 2508.81)
 
-[node name="tree_leafless_1_prop2" parent="Trees" instance=ExtResource( 17 )]
-position = Vector2( -1415.31, 5132.96 )
+[node name="tree_leafless_1_prop2" parent="Trees" instance=ExtResource("17")]
+position = Vector2(-1415.31, 5132.96)
 
-[node name="tree_leafless_2_prop5" parent="Trees" instance=ExtResource( 14 )]
-position = Vector2( -341.719, -1025.16 )
+[node name="tree_leafless_2_prop5" parent="Trees" instance=ExtResource("14")]
+position = Vector2(-341.719, -1025.16)
 
-[node name="tree_leafless_1_prop3" parent="Trees" instance=ExtResource( 17 )]
-position = Vector2( 2013.84, -3179.15 )
+[node name="tree_leafless_1_prop3" parent="Trees" instance=ExtResource("17")]
+position = Vector2(2013.84, -3179.15)
 
-[node name="tree2_prop6" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( -1142.62, -1035.84 )
+[node name="tree2_prop6" parent="Trees" instance=ExtResource("12")]
+position = Vector2(-1142.62, -1035.84)
 
-[node name="tree3_prop3" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( 96.1086, -1783.35 )
+[node name="tree3_prop3" parent="Trees" instance=ExtResource("16")]
+position = Vector2(96.1086, -1783.35)
 
-[node name="tree3_prop2" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( 309.45, 3861.4 )
+[node name="tree3_prop2" parent="Trees" instance=ExtResource("16")]
+position = Vector2(309.45, 3861.4)
 
-[node name="tree1_prop4" parent="Trees" instance=ExtResource( 13 )]
-position = Vector2( -3734.65, -99.7808 )
+[node name="tree1_prop4" parent="Trees" instance=ExtResource("13")]
+position = Vector2(-3734.65, -99.7808)
 
-[node name="tree3_prop4" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( 2208.13, -3968.28 )
+[node name="tree3_prop4" parent="Trees" instance=ExtResource("16")]
+position = Vector2(2208.13, -3968.28)
 
-[node name="tree3_prop5" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( 3448.84, -7793.76 )
+[node name="tree3_prop5" parent="Trees" instance=ExtResource("16")]
+position = Vector2(3448.84, -7793.76)
 
-[node name="tree1_prop5" parent="Trees" instance=ExtResource( 13 )]
-position = Vector2( 3342.66, -5468.28 )
+[node name="tree1_prop5" parent="Trees" instance=ExtResource("13")]
+position = Vector2(3342.66, -5468.28)
 
-[node name="tree_leafless_1_prop4" parent="Trees" instance=ExtResource( 17 )]
-position = Vector2( 4165.34, -3365.29 )
+[node name="tree_leafless_1_prop4" parent="Trees" instance=ExtResource("17")]
+position = Vector2(4165.34, -3365.29)
 
-[node name="tree2_prop8" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( 3925.86, -4548.11 )
+[node name="tree2_prop8" parent="Trees" instance=ExtResource("12")]
+position = Vector2(3925.86, -4548.11)
 rotation = -1.00504
 
-[node name="tree3_prop6" parent="Trees" instance=ExtResource( 16 )]
-position = Vector2( 3790.09, -2670.04 )
+[node name="tree3_prop6" parent="Trees" instance=ExtResource("16")]
+position = Vector2(3790.09, -2670.04)
 rotation = -0.0332854
 
-[node name="tree2_prop7" parent="Trees" instance=ExtResource( 12 )]
-position = Vector2( 3809.76, -6717.88 )
+[node name="tree2_prop7" parent="Trees" instance=ExtResource("12")]
+position = Vector2(3809.76, -6717.88)
 
 [node name="Texts" type="Node2D" parent="."]
 visible = false
 
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="."]
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 visible = false
-navpoly = SubResource( 1 )
-__meta__ = {
-"_edit_lock_": true
-}
+navigation_polygon = SubResource("1")

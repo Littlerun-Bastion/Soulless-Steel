@@ -6,15 +6,15 @@ const LERP_WEIGHT = 5
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
-onready var PartList = $PartListContainer/VBoxContainer
-onready var CategorySelectedUI = $CategorySelectedUI
-onready var CategoryButtons = $CategoryButtons
-onready var PartCategories = $PartCategories
-onready var DisplayMecha = $Mecha
-onready var ComparisonMecha = $ComparisonMecha
+@onready var PartList = $PartListContainer/VBoxContainer
+@onready var CategorySelectedUI = $CategorySelectedUI
+@onready var CategoryButtons = $CategoryButtons
+@onready var PartCategories = $PartCategories
+@onready var DisplayMecha = $Mecha
+@onready var ComparisonMecha = $ComparisonMecha
 #onready var StatBars = $Statbars
-onready var Statcard = $Statcard
-onready var LoadScreen = $LoadScreen
+@onready var Statcard = $Statcard
+@onready var LoadScreen = $LoadScreen
 
 var category_visible = false
 var comparing_part = false
@@ -29,7 +29,7 @@ func _ready():
 	#$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	DisplayMecha.global_rotation = 0
-	LoadScreen.connect("load_pressed", self, "_LoadScreen_on_load_pressed")
+	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
 
@@ -43,12 +43,12 @@ func _process(dt):
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
-		OS.window_fullscreen = not OS.window_fullscreen
-		Profile.set_option("fullscreen", OS.window_fullscreen, true)
-		if not OS.window_fullscreen:
-			yield(get_tree(), "idle_frame")
-			OS.window_size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			OS.window_position = Vector2(0,0)
+		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
+		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
+		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
+			await get_tree().idle_frame
+			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
+			get_window().position = Vector2(0,0)
 
 
 func default_loadout():
@@ -88,7 +88,7 @@ func show_category_button(parts, selected):
 		category.visible = (category == parts)
 		for part in category.get_children():
 			part.visible = true
-			part.pressed = false
+			part.button_pressed = false
 	for child in CategorySelectedUI.get_children():
 		child.visible = (child == selected)
 
@@ -104,22 +104,22 @@ func _on_Category_pressed(type,group,side = false):
 		for child in group_node.get_children():
 			if child.name != type_name:
 				child.visible = false
-				child.pressed = false
+				child.button_pressed = false
 		var parts = PartManager.get_parts(type)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
-		for part_key in parts.keys(): #Parsing through a dictionary using .values()
+		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
 			var part = parts[part_key]
-			var item = ITEMFRAME.instance()
+			var item = ITEMFRAME.instantiate()
 			item.setup(part)
 			if DisplayMecha.get(type_name):
 				if DisplayMecha.get(type_name) == part:
 					item.get_button().disabled = true
 					item.is_disabled = true
 			PartList.add_child(item)
-			item.get_button().connect("pressed",self,"_on_ItemFrame_pressed",[part_key,type,side,item])
-			item.get_button().connect("mouse_entered",self,"_on_ItemFrame_mouse_entered",[part_key,type,side,item])
-			item.get_button().connect("mouse_exited",self,"_on_ItemFrame_mouse_exited",[part_key,type,side,item])
+			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
+			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
+			item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
 	else:
 		category_visible = false
 		for child in group_node.get_children():
@@ -156,7 +156,7 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 			child.is_disabled = false
 		item.is_disabled = true
 		item.get_button().disabled = true
-		item.get_button().pressed = false
+		item.get_button().button_pressed = false
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(type), [part_name,side])
@@ -183,7 +183,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 		child.set_comparing_part(DisplayMecha,ComparisonMecha)
 	var current_part = DisplayMecha.get(type_name)
 	var new_part = ComparisonMecha.get(type_name)
-	if ComparisonMecha.is_overweight:
+	if ComparisonMecha.is_overweight():
 		$overweight.visible = true
 	else:
 		$overweight.visible = false
@@ -230,7 +230,7 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
 	comparing_part = false
-	if DisplayMecha.is_overweight:
+	if DisplayMecha.is_overweight():
 		$overweight.visible = true
 	else:
 		$overweight.visible = false
@@ -250,7 +250,7 @@ func _on_Save_pressed():
 func _on_Exit_pressed():
 	if is_build_valid():
 		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		get_tree().change_scene("res://game/start_menu/StartMenuDemo.tscn")
+		get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
 	else:
 		print("Build invalid")
 

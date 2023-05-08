@@ -3,26 +3,26 @@ extends Node
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 
-export var part_name : String
-export var manufacturer_name : String
-export var tagline : String
-export var description : String
-export var image : Texture
-export var is_legs := false
-export(String, "free", "tank", "relative") var movement_type = "free"
-export var max_speed = 500
-export var move_acc = 1.0
-export var accuracy_modifier = 1.0
-export var friction = 0.1 
-export var rotation_acc = 5.0
-export var trim_acc = 1.0
-export var rotation_range = 10.0
-export var health := 1000.0
-export var move_heat = 35
-export var weight := 300.0
-export var weight_capacity := 1000.0
-export var stability := 1.0
-export var hover_particles := false
+@export var part_name : String
+@export var manufacturer_name : String
+@export var tagline : String
+@export var description : String
+@export var image : Texture2D
+@export var is_legs := false
+@export var movement_type = "free" # (String, "free", "tank", "relative")
+@export var max_speed = 500
+@export var move_acc = 1.0
+@export var accuracy_modifier = 1.0
+@export var friction = 0.1 
+@export var rotation_acc = 5.0
+@export var trim_acc = 1.0
+@export var rotation_range = 10.0
+@export var health := 1000.0
+@export var move_heat = 35
+@export var weight := 300.0
+@export var weight_capacity := 1000.0
+@export var stability := 1.0
+@export var hover_particles := false
 
 var part_id
 

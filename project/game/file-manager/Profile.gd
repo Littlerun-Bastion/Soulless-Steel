@@ -56,7 +56,7 @@ func update_translation():
 
 func get_save_data():
 	var data = {
-		"time": OS.get_datetime(),
+		"time": Time.get_datetime_dict_from_system(),
 		"version": VERSION,
 		"options": options,
 		"controls": controls,
@@ -83,76 +83,69 @@ func set_save_data(data):
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
 	AudioManager.set_bus_volume(AudioManager.SFX_BUS, options.sfx_volume)
 	
-	if not Debug.get_setting("window"):
-		OS.window_fullscreen = options.fullscreen
-		if not OS.window_fullscreen:
-			yield(get_tree(), "idle_frame")
-			OS.window_size = WINDOW_SIZES[options.window_size]
-			OS.window_position = Vector2(0,0)
-	
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
 
 
-func set_data(data, name, default_values):
-	if not data.has(name):
+func set_data(data, idx, default_values):
+	if not data.has(idx):
 		return
 	
 	#Update received data with missing default values
 	for key in default_values.keys():
-		if not data[name].has(key):
-			data[name][key] = default_values[key]
-			push_warning("Adding new profile entry '" + str(key) + str("' for " + str(name)))
+		if not data[idx].has(key):
+			data[idx][key] = default_values[key]
+			push_warning("Adding new profile entry '" + str(key) + str("' for " + str(idx)))
 		elif typeof(default_values[key]) == TYPE_DICTIONARY:
-			set_data(data[name], key, default_values[key])
+			set_data(data[idx], key, default_values[key])
 			
-	for key in data[name].keys():
+	for key in data[idx].keys():
 		#Ignore deprecated values
 		if default_values.has(key):
-			default_values[key] = data[name][key]
+			default_values[key] = data[idx][key]
 		else:
-			data[name].erase(key)
-			push_warning("Removing deprecated value '" + str(key) + str("' for " + str(name)))
+			data[idx].erase(key)
+			push_warning("Removing deprecated value '" + str(key) + str("' for " + str(idx)))
 
 
-func get_option(name):
-	assert(options.has(name), "Not a valid option: " + str(name))
-	return options[name]
+func get_option(opt_name):
+	assert(options.has(opt_name), "Not a valid option: " + str(opt_name))
+	return options[opt_name]
 
 
-func set_option(name: String, value, should_save := false):
-	assert(options.has(name), "Not a valid option: " + str(name))
-	options[name] = value
+func set_option(opt_name: String, value, should_save := false):
+	assert(options.has(opt_name),"Not a valid option: " + str(opt_name))
+	options[opt_name] = value
 	if should_save:
 		FileManager.save_profile()
 
-func get_control(name):
-	assert(controls.has(name), "Not a valid control action: " + str(name))
-	return controls[name]
+func is_ctrl_pressed(ctrl_name):
+	assert(controls.has(ctrl_name),"Not a valid control action: " + str(ctrl_name))
+	return controls[ctrl_name]
 
 
-func set_control(name: String, value):
-	assert(controls.has(name), "Not a valid control action: " + str(name))
-	controls[name] = value
-	edit_control_action(name, value)
+func set_ctrl_pressed(ctrl_name: String, value):
+	assert(controls.has(ctrl_name),"Not a valid control action: " + str(ctrl_name))
+	controls[ctrl_name] = value
+	edit_control_action(ctrl_name, value)
 	FileManager.save_profile()
 
 
-func edit_control_action(action: String, scancode:int):
-	assert(InputMap.has_action(action), "Action not in InputMap: " + str(action))
+func edit_control_action(action: String, keycode:int):
+	assert(InputMap.has_action(action),"Action not in InputMap: " + str(action))
 	var key = InputEventKey.new()
-	key.pressed = true
-	key.scancode = scancode
+	key.keycode = keycode
+	print()
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, key)
 
 
 func get_stat(type):
-	assert(stats.has(type), "Not a valid stat: "+str(type))
+	assert(stats.has(type),"Not a valid stat: "+str(type))
 	return stats[type]
 
 
 func set_stat(type, value):
-	assert(stats.has(type), "Not a valid stat: "+str(type))
+	assert(stats.has(type),"Not a valid stat: "+str(type))
 	stats[type] = value
 	FileManager.save_profile()

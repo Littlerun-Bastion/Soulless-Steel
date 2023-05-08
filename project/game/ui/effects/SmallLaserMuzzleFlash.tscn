@@ -1,11 +1,11 @@
 [gd_scene load_steps=26 format=2]
 
-[ext_resource path="res://assets/images/anims/long_gun_flash1.png" type="Texture" id=1]
-[ext_resource path="res://assets/images/anims/long_gun_flash2.png" type="Texture" id=2]
-[ext_resource path="res://assets/images/spark_fx.png" type="Texture" id=3]
-[ext_resource path="res://assets/images/fx/long_spark.png" type="Texture" id=4]
+[ext_resource path="res://assets/images/anims/long_gun_flash1.png" type="Texture2D" id=1]
+[ext_resource path="res://assets/images/anims/long_gun_flash2.png" type="Texture2D" id=2]
+[ext_resource path="res://assets/images/spark_fx.png" type="Texture2D" id=3]
+[ext_resource path="res://assets/images/fx/long_spark.png" type="Texture2D" id=4]
 [ext_resource path="res://game/ui/effects/MuzzleFlash.gd" type="Script" id=5]
-[ext_resource path="res://assets/images/light_sources/light_point_soft.png" type="Texture" id=6]
+[ext_resource path="res://assets/images/light_sources/light_point_soft.png" type="Texture2D" id=6]
 
 [sub_resource type="CanvasItemMaterial" id=1]
 blend_mode = 1
@@ -16,7 +16,7 @@ _data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.0383481, 0.979545 ), 1.640
 [sub_resource type="CurveTexture" id=3]
 curve = SubResource( 2 )
 
-[sub_resource type="ParticlesMaterial" id=20]
+[sub_resource type="ParticleProcessMaterial" id=20]
 flag_disable_z = true
 direction = Vector3( 0, -1, 0 )
 spread = 0.0
@@ -28,7 +28,7 @@ scale_curve = SubResource( 3 )
 
 [sub_resource type="AnimatedTexture" id=5]
 frames = 2
-oneshot = true
+one_shot = true
 fps = 60.0
 frame_0/texture = ExtResource( 1 )
 frame_1/texture = ExtResource( 2 )
@@ -38,13 +38,13 @@ frame_1/delay_sec = 0.0
 blend_mode = 1
 
 [sub_resource type="Gradient" id=22]
-offsets = PoolRealArray( 0.21519, 0.598101 )
-colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+offsets = PackedFloat32Array( 0.21519, 0.598101 )
+colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
 
-[sub_resource type="GradientTexture" id=23]
+[sub_resource type="GradientTexture2D" id=23]
 gradient = SubResource( 22 )
 
-[sub_resource type="ParticlesMaterial" id=24]
+[sub_resource type="ParticleProcessMaterial" id=24]
 flag_disable_z = true
 gravity = Vector3( 0, 0, 0 )
 orbit_velocity = 0.0
@@ -54,10 +54,10 @@ scale_random = 0.1
 color_ramp = SubResource( 23 )
 
 [sub_resource type="Gradient" id=13]
-offsets = PoolRealArray( 0.174051, 0.955696 )
-colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+offsets = PackedFloat32Array( 0.174051, 0.955696 )
+colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
 
-[sub_resource type="GradientTexture" id=14]
+[sub_resource type="GradientTexture2D" id=14]
 gradient = SubResource( 13 )
 
 [sub_resource type="Curve" id=15]
@@ -73,7 +73,7 @@ _data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.988201, 0 ), 0.0, 0.0, 0, 
 [sub_resource type="CurveTexture" id=18]
 curve = SubResource( 17 )
 
-[sub_resource type="ParticlesMaterial" id=19]
+[sub_resource type="ParticleProcessMaterial" id=19]
 lifetime_randomness = 0.52
 flag_align_y = true
 flag_disable_z = true
@@ -91,13 +91,13 @@ scale_curve = SubResource( 18 )
 color_ramp = SubResource( 14 )
 
 [sub_resource type="Gradient" id=25]
-offsets = PoolRealArray( 0.25, 0.939873 )
-colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+offsets = PackedFloat32Array( 0.25, 0.939873 )
+colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
 
-[sub_resource type="GradientTexture" id=26]
+[sub_resource type="GradientTexture2D" id=26]
 gradient = SubResource( 25 )
 
-[sub_resource type="ParticlesMaterial" id=27]
+[sub_resource type="ParticleProcessMaterial" id=27]
 lifetime_randomness = 0.47
 flag_disable_z = true
 direction = Vector3( 0, -1, 0 )
@@ -112,7 +112,7 @@ scale = 0.5
 scale_random = 0.18
 color_ramp = SubResource( 26 )
 
-[node name="Flash" type="Particles2D"]
+[node name="Flash" type="GPUParticles2D"]
 material = SubResource( 1 )
 emitting = false
 amount = 3
@@ -124,7 +124,7 @@ process_material = SubResource( 20 )
 texture = SubResource( 5 )
 script = ExtResource( 5 )
 
-[node name="Effect2" type="Particles2D" parent="."]
+[node name="Effect2" type="GPUParticles2D" parent="."]
 material = SubResource( 21 )
 emitting = false
 amount = 1
@@ -135,7 +135,7 @@ local_coords = false
 process_material = SubResource( 24 )
 texture = ExtResource( 6 )
 
-[node name="Effect1" type="Particles2D" parent="."]
+[node name="Effect1" type="GPUParticles2D" parent="."]
 emitting = false
 amount = 3
 one_shot = true
@@ -144,7 +144,7 @@ explosiveness = 1.0
 process_material = SubResource( 19 )
 texture = ExtResource( 4 )
 
-[node name="Linger" type="Particles2D" parent="."]
+[node name="Linger" type="GPUParticles2D" parent="."]
 emitting = false
 amount = 4
 lifetime = 1.25

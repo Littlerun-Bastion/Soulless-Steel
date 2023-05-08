@@ -1,6 +1,6 @@
 extends Area2D
 
-onready var Collision = $CollisionShape2D
+@onready var Collision = $CollisionShape2D
 
 var data
 
@@ -24,7 +24,7 @@ func _on_Hitbox_body_shape_entered(_body_rid, body, body_shape_id, _local_shape_
 		if body != data.owner and body.check_valid_hitbox_and_update(data):
 			var shape = body.get_shape_from_id(body_shape_id)
 			var points = ProjectileManager.get_intersection_circle_polygon(Collision.position, Collision.shape.radius, Collision.global_transform,\
-													  shape.polygon, shape.global_transform)
+																			shape.polygon, shape.global_transform)
 			
 			var collision_point
 			if points.size() > 0:

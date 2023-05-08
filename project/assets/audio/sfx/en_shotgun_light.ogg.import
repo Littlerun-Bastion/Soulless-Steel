@@ -1,15 +1,19 @@
 [remap]
 
-importer="ogg_vorbis"
-type="AudioStreamOGGVorbis"
-path="res://.import/en_shotgun_light.ogg-f4b95eb80a2d260681e6b5c7d1d8cd0e.oggstr"
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://jvwmxdrgu350"
+path="res://.godot/imported/en_shotgun_light.ogg-f4b95eb80a2d260681e6b5c7d1d8cd0e.oggvorbisstr"
 
 [deps]
 
 source_file="res://assets/audio/sfx/en_shotgun_light.ogg"
-dest_files=[ "res://.import/en_shotgun_light.ogg-f4b95eb80a2d260681e6b5c7d1d8cd0e.oggstr" ]
+dest_files=["res://.godot/imported/en_shotgun_light.ogg-f4b95eb80a2d260681e6b5c7d1d8cd0e.oggvorbisstr"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

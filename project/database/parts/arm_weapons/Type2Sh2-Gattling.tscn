@@ -1,23 +1,23 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://dojlgmmxkxy8g"]
 
-[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" type="Texture" id=2]
-[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" type="Texture" id=5]
-[ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/ui/effects/MinigunMuzzleFlash.tscn" type="PackedScene" id=7]
+[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://ctouokk3ybmhs" path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" id="2"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_bullet.tscn" id="3"]
+[ext_resource type="Texture2D" uid="uid://bj4iw26gwcqgk" path="res://assets/images/mechas/arm_weapons/Type2Sh_Glow.png" id="4"]
+[ext_resource type="PackedScene" uid="uid://cpgbpt3ahxc7v" path="res://game/weapons/BallisticImpactMini.tscn" id="4_h1ng8"]
+[ext_resource type="Texture2D" uid="uid://cyhu0m7perxwb" path="res://assets/images/mechas/arm_weapons/Type2Sh_Main.png" id="5"]
+[ext_resource type="PackedScene" path="res://game/ui/effects/MinigunMuzzleFlash.tscn" id="7"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Minigun"
 manufacturer_name = "Test"
 tagline = "Minigun"
 type = "PewPew"
-muzzle_flash = ExtResource( 7 )
+muzzle_flash = ExtResource("7")
 muzzle_flash_size = 0.25
 muzzle_flash_speed = 2.0
-projectile = ExtResource( 3 )
+projectile = ExtResource("3")
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0
@@ -44,30 +44,30 @@ eject_casings = true
 casing_size = 0.75
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
-impact_effect = ExtResource( 6 )
+impact_effect = ExtResource("4_h1ng8")
 wiggle_amount = 0.01
 seeker_agility = 0.003
 seek_time = 0.5
 
-[node name="Sub" type="Sprite" parent="."]
-texture = ExtResource( 2 )
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("2")
 
-[node name="Main" type="Sprite" parent="."]
-texture = ExtResource( 5 )
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5")
 
-[node name="Glow" type="Sprite" parent="."]
-texture = ExtResource( 4 )
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("4")
 
-[node name="AttachPos" type="Position2D" parent="."]
-position = Vector2( -1, 21 )
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(-1, 21)
 
-[node name="EjectorPos" type="Position2D" parent="."]
-position = Vector2( -3.01159, 17.0206 )
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-3.01159, 17.0206)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
-[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( -6, -42 )
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-6, -42)
 
-[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( 3, -42 )
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(3, -42)

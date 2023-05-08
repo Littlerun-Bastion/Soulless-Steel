@@ -1,52 +1,52 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=15 format=3 uid="uid://6hk3ar6y8oo8"]
 
-[ext_resource path="res://assets/audio/sfx/intro/misc_1.wav" type="AudioStream" id=1]
-[ext_resource path="res://assets/audio/sfx/entrance.wav" type="AudioStream" id=2]
-[ext_resource path="res://assets/audio/sfx/intro/misc_2.wav" type="AudioStream" id=3]
-[ext_resource path="res://assets/audio/sfx/intro/misc_4.wav" type="AudioStream" id=4]
-[ext_resource path="res://assets/audio/sfx/intro/misc_3.wav" type="AudioStream" id=5]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="DynamicFontData" id=6]
-[ext_resource path="res://game/ui/IntroAnimation.gd" type="Script" id=7]
+[ext_resource type="AudioStream" uid="uid://dsc3t6t8md0lg" path="res://assets/audio/sfx/intro/misc_1.wav" id="1"]
+[ext_resource type="AudioStream" uid="uid://bwgrenwv7y84q" path="res://assets/audio/sfx/entrance.wav" id="2"]
+[ext_resource type="FontFile" path="res://assets/fonts/non_caps_general.tres" id="2_g3hpw"]
+[ext_resource type="AudioStream" uid="uid://u86bfbirs6jm" path="res://assets/audio/sfx/intro/misc_2.wav" id="3"]
+[ext_resource type="AudioStream" uid="uid://c7s0xhnjrl644" path="res://assets/audio/sfx/intro/misc_4.wav" id="4"]
+[ext_resource type="AudioStream" uid="uid://cngy1h86b7uk7" path="res://assets/audio/sfx/intro/misc_3.wav" id="5"]
+[ext_resource type="Script" path="res://game/ui/IntroAnimation.gd" id="7"]
 
-[sub_resource type="Animation" id=17]
+[sub_resource type="Animation" id="17"]
 resource_name = "Entrance"
 length = 22.0
 step = 0.05
 tracks/0/type = "value"
-tracks/0/path = NodePath("IntroAnimation/CommandLine:percent_visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
+tracks/0/path = NodePath("IntroAnimation/CommandLine:visible_ratio")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 3, 4, 4.55, 11, 12.2, 12.5, 13.5, 14.35 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 3, 4, 4.55, 11, 12.2, 12.5, 13.5, 14.35),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0 ]
+"values": [0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]
 }
 tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("IntroAnimation/CommandLine:text")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
-tracks/1/imported = false
-tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 2, 4.5, 11, 12.5, 13.5, 14.5 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(2, 4.5, 11, 12.5, 13.5, 14.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ "/startup", "", "/mode(combat, 3H)", "", "M377on", "" ]
+"values": ["/startup", "", "/mode(combat, 3H)", "", "M377on", ""]
 }
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("IntroAnimation/ScreenText:text")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0, 4.5, 5, 5.2, 5.4, 5.5, 5.7, 6, 6.3, 6.6, 7, 7.3, 7.6, 7.9, 8.2, 8.5, 9, 9.5, 9.7, 9.9, 9.95, 12.5, 13, 13.55, 14.5, 14.6, 14.8, 14.9, 15, 15.1, 15.2, 15.3, 15.5, 15.6, 15.7, 15.8, 15.9, 16.1, 16.3, 16.5, 16.7, 16.8, 16.9, 17, 17.1, 17.2, 17.3, 17.4, 17.5, 17.8, 17.85, 17.9, 17.95, 18, 18.05, 18.1, 18.15, 18.2, 18.25, 18.3, 18.35, 18.4, 18.45, 18.5, 18.55, 18.6, 18.65, 18.7, 18.75, 18.8, 18.85, 18.9, 18.95, 19, 21.8 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 4.5, 5, 5.2, 5.4, 5.5, 5.7, 6, 6.3, 6.6, 7, 7.3, 7.6, 7.9, 8.2, 8.5, 9, 9.5, 9.7, 9.9, 9.95, 12.5, 13, 13.55, 14.5, 14.6, 14.8, 14.9, 15, 15.1, 15.2, 15.3, 15.5, 15.6, 15.7, 15.8, 15.9, 16.1, 16.3, 16.5, 16.7, 16.8, 16.9, 17, 17.1, 17.2, 17.3, 17.4, 17.5, 17.8, 17.85, 17.9, 17.95, 18, 18.05, 18.1, 18.15, 18.2, 18.25, 18.3, 18.35, 18.4, 18.45, 18.5, 18.55, 18.6, 18.65, 18.7, 18.75, 18.8, 18.85, 18.9, 18.95, 19, 21.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ "", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+"values": ["", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -1297,340 +1297,340 @@ Good hunting, Pilot.", "
 
 
 
-Good hunting, Pilot.", "" ]
+Good hunting, Pilot.", ""]
 }
 tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
 tracks/3/path = NodePath("IntroAnimation/EntranceSound:playing")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
-tracks/3/imported = false
-tracks/3/enabled = true
 tracks/3/keys = {
-"times": PoolRealArray( 2, 22 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(2, 22),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ true, false ]
+"values": [true, false]
 }
 tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
 tracks/4/path = NodePath("IntroAnimation/VCREffect:visible")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
 tracks/4/keys = {
-"times": PoolRealArray( 1.4, 15.7, 22 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(1.4, 15.7, 22),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 1,
-"values": [ true, false, false ]
+"values": [true, false, false]
 }
 tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
 tracks/5/path = NodePath("IntroAnimation/VCREffect2:visible")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
 tracks/5/keys = {
-"times": PoolRealArray( 1.4, 14, 15.7, 21.45, 22 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(1.4, 14, 15.7, 21.45, 22),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 1,
-"values": [ false, false, true, true, false ]
+"values": [false, false, true, true, false]
 }
 tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
 tracks/6/path = NodePath("IntroAnimation/VCREffect2:modulate")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
-tracks/6/imported = false
-tracks/6/enabled = true
 tracks/6/keys = {
-"times": PoolRealArray( 19, 22 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(19, 22),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
 tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
 tracks/7/path = NodePath("IntroAnimation/Ent_misc1:playing")
 tracks/7/interp = 1
 tracks/7/loop_wrap = true
-tracks/7/imported = false
-tracks/7/enabled = true
 tracks/7/keys = {
-"times": PoolRealArray( 3.2, 6.5 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(3.2, 6.5),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ false, true ]
+"values": [false, true]
 }
 tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
 tracks/8/path = NodePath("IntroAnimation/Ent_misc2:playing")
 tracks/8/interp = 1
 tracks/8/loop_wrap = true
-tracks/8/imported = false
-tracks/8/enabled = true
 tracks/8/keys = {
-"times": PoolRealArray( 10.7, 12 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(10.7, 12),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ true, false ]
+"values": [true, false]
 }
 tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
 tracks/9/path = NodePath("IntroAnimation/Ent_misc3:playing")
 tracks/9/interp = 1
 tracks/9/loop_wrap = true
-tracks/9/imported = false
-tracks/9/enabled = true
 tracks/9/keys = {
-"times": PoolRealArray( 12.5 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(12.5),
+"transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [ true ]
+"values": [true]
 }
 tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
 tracks/10/path = NodePath("IntroAnimation/Ent_misc4:playing")
 tracks/10/interp = 1
 tracks/10/loop_wrap = true
-tracks/10/imported = false
-tracks/10/enabled = true
 tracks/10/keys = {
-"times": PoolRealArray( 15.5, 17.9 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(15.5, 17.9),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ true, false ]
+"values": [true, false]
 }
 tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
 tracks/11/path = NodePath("IntroAnimation/BG:color")
 tracks/11/interp = 1
 tracks/11/loop_wrap = true
-tracks/11/imported = false
-tracks/11/enabled = true
 tracks/11/keys = {
-"times": PoolRealArray( -0.1, 19, 22 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(-0.1, 19, 22),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [ Color( 0, 0, 0, 1 ), Color( 0, 0, 0, 1 ), Color( 0, 0, 0, 0 ) ]
+"values": [Color(0, 0, 0, 1), Color(0, 0, 0, 1), Color(0, 0, 0, 0)]
 }
 tracks/12/type = "method"
+tracks/12/imported = false
+tracks/12/enabled = true
 tracks/12/path = NodePath("IntroAnimation")
 tracks/12/interp = 1
 tracks/12/loop_wrap = true
-tracks/12/imported = false
-tracks/12/enabled = true
 tracks/12/keys = {
-"times": PoolRealArray( 19.6 ),
-"transitions": PoolRealArray( 1 ),
-"values": [ {
-"args": [  ],
-"method": "entrance_animation_ending"
-} ]
+"times": PackedFloat32Array(19.6),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"entrance_animation_ending"
+}]
 }
 
-[sub_resource type="Animation" id=18]
+[sub_resource type="Animation" id="18"]
 length = 0.001
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("IntroAnimation/EntranceSound:playing")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ false ]
+"values": [false]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("IntroAnimation/CommandLine:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
+tracks/1/path = NodePath("IntroAnimation/CommandLine:visible_ratio")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ 0.0 ]
+"values": [0.0]
 }
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("IntroAnimation/CommandLine:text")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ "" ]
+"values": [""]
 }
 tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
 tracks/3/path = NodePath("IntroAnimation/ScreenText:text")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
-tracks/3/imported = false
-tracks/3/enabled = true
 tracks/3/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ "" ]
+"values": [""]
 }
 tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
 tracks/4/path = NodePath("IntroAnimation/VCREffect:visible")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
 tracks/4/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ true ]
+"values": [true]
 }
 tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
 tracks/5/path = NodePath("IntroAnimation/VCREffect2:visible")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
 tracks/5/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ true ]
+"values": [true]
 }
 tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
 tracks/6/path = NodePath("IntroAnimation/VCREffect2:modulate")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
-tracks/6/imported = false
-tracks/6/enabled = true
 tracks/6/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ) ]
+"values": [Color(1, 1, 1, 1)]
 }
 tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
 tracks/7/path = NodePath("IntroAnimation/Ent_misc1:playing")
 tracks/7/interp = 1
 tracks/7/loop_wrap = true
-tracks/7/imported = false
-tracks/7/enabled = true
 tracks/7/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ false ]
+"values": [false]
 }
 tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
 tracks/8/path = NodePath("IntroAnimation/Ent_misc2:playing")
 tracks/8/interp = 1
 tracks/8/loop_wrap = true
-tracks/8/imported = false
-tracks/8/enabled = true
 tracks/8/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ false ]
+"values": [false]
 }
 tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
 tracks/9/path = NodePath("IntroAnimation/Ent_misc3:playing")
 tracks/9/interp = 1
 tracks/9/loop_wrap = true
-tracks/9/imported = false
-tracks/9/enabled = true
 tracks/9/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ false ]
+"values": [false]
 }
 tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
 tracks/10/path = NodePath("IntroAnimation/Ent_misc4:playing")
 tracks/10/interp = 1
 tracks/10/loop_wrap = true
-tracks/10/imported = false
-tracks/10/enabled = true
 tracks/10/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ false ]
+"values": [false]
 }
 tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
 tracks/11/path = NodePath("IntroAnimation/VCREffect:color")
 tracks/11/interp = 1
 tracks/11/loop_wrap = true
-tracks/11/imported = false
-tracks/11/enabled = true
 tracks/11/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ) ]
+"values": [Color(1, 1, 1, 1)]
 }
 tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
 tracks/12/path = NodePath("IntroAnimation/VCREffect:modulate")
 tracks/12/interp = 1
 tracks/12/loop_wrap = true
-tracks/12/imported = false
-tracks/12/enabled = true
 tracks/12/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ) ]
+"values": [Color(1, 1, 1, 1)]
 }
 tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
 tracks/13/path = NodePath("IntroAnimation/BG:color")
 tracks/13/interp = 1
 tracks/13/loop_wrap = true
-tracks/13/imported = false
-tracks/13/enabled = true
 tracks/13/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [ Color( 0, 0, 0, 0 ) ]
+"values": [Color(0, 0, 0, 0)]
 }
 
-[sub_resource type="Animation" id=22]
+[sub_resource type="Animation" id="22"]
 resource_name = "simEntrance"
 length = 10.0
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("IntroAnimation/CommandLine:text")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 1, 2.2 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(0, 1, 2.2),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 1,
-"values": [ "", "/startup --sim", "" ]
+"values": ["", "/startup --sim", ""]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("IntroAnimation/CommandLine:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
+tracks/1/path = NodePath("IntroAnimation/CommandLine:visible_ratio")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PoolRealArray( 0, 1, 1.9 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(0, 1, 1.9),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [ 0.0, 0.0, 1.0 ]
+"values": [0.0, 0.0, 1.0]
 }
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("IntroAnimation/ScreenText:text")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
-tracks/2/imported = false
-tracks/2/enabled = true
 tracks/2/keys = {
-"times": PoolRealArray( 0, 2.2, 2.5, 2.7, 2.8, 2.9, 3.5, 3.7, 3.9, 4.1, 4.4, 4.7, 4.9, 5.1, 5.2, 5.3, 5.5, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.6, 7.7, 7.8, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 9.5 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array(0, 2.2, 2.5, 2.7, 2.8, 2.9, 3.5, 3.7, 3.9, 4.1, 4.4, 4.7, 4.9, 5.1, 5.2, 5.3, 5.5, 5.7, 6, 6.3, 6.6, 6.9, 7.2, 7.5, 7.6, 7.7, 7.8, 7.9, 8, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 9.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [ "", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+"values": ["", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -1875,77 +1875,82 @@ Simulation mode.  .  .  .  Connected!
 Simulation mode.  .  .  .  Connected!
 ", "
 Simulation mode.  .  .  .  Connected!
-", "" ]
+", ""]
 }
 tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
 tracks/3/path = NodePath("IntroAnimation/VCREffect:visible")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
-tracks/3/imported = false
-tracks/3/enabled = true
 tracks/3/keys = {
-"times": PoolRealArray( 0, 6.9 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(0, 6.9),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ true, false ]
+"values": [true, false]
 }
 tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
 tracks/4/path = NodePath("IntroAnimation/VCREffect:modulate")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
-tracks/4/imported = false
-tracks/4/enabled = true
 tracks/4/keys = {
-"times": PoolRealArray( 0, 6.9 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(0, 6.9),
+"transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
 tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
 tracks/5/path = NodePath("IntroAnimation/VCREffect2:visible")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
-tracks/5/imported = false
-tracks/5/enabled = true
 tracks/5/keys = {
-"times": PoolRealArray( 6.8, 10 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PackedFloat32Array(6.8, 10),
+"transitions": PackedFloat32Array(1, 1),
 "update": 1,
-"values": [ true, false ]
+"values": [true, false]
 }
 tracks/6/type = "method"
+tracks/6/imported = false
+tracks/6/enabled = true
 tracks/6/path = NodePath("IntroAnimation")
 tracks/6/interp = 1
 tracks/6/loop_wrap = true
-tracks/6/imported = false
-tracks/6/enabled = true
 tracks/6/keys = {
-"times": PoolRealArray( 7.8 ),
-"transitions": PoolRealArray( 1 ),
-"values": [ {
-"args": [  ],
-"method": "entrance_animation_ending"
-} ]
+"times": PackedFloat32Array(7.8),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"entrance_animation_ending"
+}]
 }
 tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
 tracks/7/path = NodePath("IntroAnimation/BG:color")
 tracks/7/interp = 1
 tracks/7/loop_wrap = true
-tracks/7/imported = false
-tracks/7/enabled = true
 tracks/7/keys = {
-"times": PoolRealArray( 0, 6.9, 10 ),
-"transitions": PoolRealArray( 1, 1, 1 ),
+"times": PackedFloat32Array(0, 6.9, 10),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [ Color( 0, 0, 0, 1 ), Color( 0, 0, 0, 1 ), Color( 0, 0, 0, 0 ) ]
+"values": [Color(0, 0, 0, 1), Color(0, 0, 0, 1), Color(0, 0, 0, 0)]
 }
 
-[sub_resource type="DynamicFont" id=19]
-font_data = ExtResource( 6 )
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_m1tni"]
+_data = {
+"Entrance": SubResource("17"),
+"RESET": SubResource("18"),
+"simEntrance": SubResource("22")
+}
 
-[sub_resource type="Shader" id=3]
+[sub_resource type="Shader" id="3"]
 code = "shader_type canvas_item;
 
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 uniform float barRange : hint_range(0.0, 0.1) = 0.01;
 uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.000;
 uniform float noiseQuality : hint_range(1.0, 5000) = 500;
@@ -1993,7 +1998,7 @@ void fragment()
     vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
     vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
 
-	vec2 uv = vec2(uvX, 1.0-uvY);
+	vec2 uv = vec2(uvX, uvY);
     float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
     float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
     float b = texture(SCREEN_TEXTURE, uv).b;
@@ -2001,98 +2006,102 @@ void fragment()
     COLOR = vec4(r, g, b, 1.0);
 }"
 
-[sub_resource type="ShaderMaterial" id=23]
-shader = SubResource( 3 )
-shader_param/barRange = 0.022
-shader_param/barOffsetIntensity = 0.005
-shader_param/noiseQuality = 600.88
-shader_param/noiseIntensity = 0.03
-shader_param/colorOffsetIntensity = 0.373
-shader_param/redMultiplier = 0.002
-shader_param/redIntensity = 0.353
-shader_param/greenMultiplier = 0.002
-shader_param/greenIntensity = 0.5
+[sub_resource type="ShaderMaterial" id="23"]
+shader = SubResource("3")
+shader_parameter/barRange = 0.022
+shader_parameter/barOffsetIntensity = 0.005
+shader_parameter/noiseQuality = 600.0
+shader_parameter/noiseIntensity = 0.03
+shader_parameter/colorOffsetIntensity = 0.373
+shader_parameter/redMultiplier = 0.002
+shader_parameter/redIntensity = 0.353
+shader_parameter/greenMultiplier = 0.002
+shader_parameter/greenIntensity = 0.5
 
-[sub_resource type="ShaderMaterial" id=24]
-shader = SubResource( 3 )
-shader_param/barRange = 0.022
-shader_param/barOffsetIntensity = 0.002
-shader_param/noiseQuality = 5000.0
-shader_param/noiseIntensity = 0.007
-shader_param/colorOffsetIntensity = 0.373
-shader_param/redMultiplier = 0.002
-shader_param/redIntensity = 0.133
-shader_param/greenMultiplier = 0.002
-shader_param/greenIntensity = 0.13
+[sub_resource type="ShaderMaterial" id="24"]
+shader = SubResource("3")
+shader_parameter/barRange = 0.022
+shader_parameter/barOffsetIntensity = 0.002
+shader_parameter/noiseQuality = 5000.0
+shader_parameter/noiseIntensity = 0.007
+shader_parameter/colorOffsetIntensity = 0.373
+shader_parameter/redMultiplier = 0.002
+shader_parameter/redIntensity = 0.133
+shader_parameter/greenMultiplier = 0.002
+shader_parameter/greenIntensity = 0.13
 
 [node name="IntroAnimation" type="Node2D"]
-script = ExtResource( 7 )
+script = ExtResource("7")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 root_node = NodePath("../..")
-anims/Entrance = SubResource( 17 )
-anims/RESET = SubResource( 18 )
-anims/simEntrance = SubResource( 22 )
+libraries = {
+"": SubResource("AnimationLibrary_m1tni")
+}
 
 [node name="BG" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(1920, 1080)
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 1920, 1080 )
-color = Color( 0, 0, 0, 1 )
+color = Color(0, 0, 0, 0)
 
 [node name="CommandLine" type="Label" parent="."]
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_left = 15.3394
-margin_top = 1032.33
-margin_right = 203.339
-margin_bottom = 1089.33
-custom_fonts/font = SubResource( 19 )
-percent_visible = 0.0
+offset_left = 15.3394
+offset_top = 1032.33
+offset_right = 203.339
+offset_bottom = 1089.33
+theme_override_fonts/font = ExtResource("2_g3hpw")
+visible_characters = 0
+visible_ratio = 0.0
 
 [node name="ScreenText" type="Label" parent="."]
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_left = 13.0
-margin_top = 982.0
-margin_right = 871.0
-margin_bottom = 1018.0
+offset_left = 13.0
+offset_top = 982.0
+offset_right = 871.0
+offset_bottom = 1018.0
 grow_vertical = 0
-custom_fonts/font = SubResource( 19 )
+theme_override_fonts/font = ExtResource("2_g3hpw")
 
 [node name="EntranceSound" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 2 )
-bus = "SFX"
+stream = ExtResource("2")
+bus = &"SFX"
 
 [node name="Ent_misc1" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 1 )
-bus = "SFX"
+stream = ExtResource("1")
+bus = &"SFX"
 
 [node name="Ent_misc2" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 3 )
-bus = "SFX"
+stream = ExtResource("3")
+bus = &"SFX"
 
 [node name="Ent_misc3" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 5 )
-bus = "SFX"
+stream = ExtResource("5")
+bus = &"SFX"
 
 [node name="Ent_misc4" type="AudioStreamPlayer" parent="."]
-stream = ExtResource( 4 )
+stream = ExtResource("4")
 volume_db = -6.179
-bus = "SFX"
+bus = &"SFX"
 
 [node name="VCREffect" type="ColorRect" parent="."]
-material = SubResource( 23 )
+material = SubResource("23")
+custom_minimum_size = Vector2(1920, 1080)
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 1920, 1080 )
 mouse_filter = 2
 
 [node name="VCREffect2" type="ColorRect" parent="."]
-material = SubResource( 24 )
+material = SubResource("24")
+custom_minimum_size = Vector2(1920, 1080)
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 1920, 1080 )
 mouse_filter = 2
-
-[node name="Tween" type="Tween" parent="."]

@@ -1,17 +1,17 @@
 extends Control
 
-onready var DesignContainer = $PanelContainer2/ScrollContainer/DesignContainer
-onready var HeadName = $PanelContainer3/ScrollContainer/VBoxContainer/HeadName
-onready var CoreName = $PanelContainer3/ScrollContainer/VBoxContainer/CoreName
-onready var ShouldersName = $PanelContainer3/ScrollContainer/VBoxContainer/ShouldersName
-onready var ChassisName = $PanelContainer3/ScrollContainer/VBoxContainer/ChassisName
-onready var GeneratorName = $PanelContainer3/ScrollContainer/VBoxContainer/GeneratorName
-onready var ChipsetName = $PanelContainer3/ScrollContainer/VBoxContainer/ChipsetName
-onready var ThrusterName = $PanelContainer3/ScrollContainer/VBoxContainer/ThrusterName
-onready var RightArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
-onready var LeftArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
-onready var RightShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/RightShoulderName
-onready var LeftShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/LeftShoulderName
+@onready var DesignContainer = $PanelContainer2/ScrollContainer/DesignContainer
+@onready var HeadName = $PanelContainer3/ScrollContainer/VBoxContainer/HeadName
+@onready var CoreName = $PanelContainer3/ScrollContainer/VBoxContainer/CoreName
+@onready var ShouldersName = $PanelContainer3/ScrollContainer/VBoxContainer/ShouldersName
+@onready var ChassisName = $PanelContainer3/ScrollContainer/VBoxContainer/ChassisName
+@onready var GeneratorName = $PanelContainer3/ScrollContainer/VBoxContainer/GeneratorName
+@onready var ChipsetName = $PanelContainer3/ScrollContainer/VBoxContainer/ChipsetName
+@onready var ThrusterName = $PanelContainer3/ScrollContainer/VBoxContainer/ThrusterName
+@onready var RightArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
+@onready var LeftArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
+@onready var RightShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/RightShoulderName
+@onready var LeftShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/LeftShoulderName
 
 const DESIGN_BUTTON = preload("res://game/ui/customizer/DesignButton.tscn")
 
@@ -42,10 +42,10 @@ func reload_designs():
 	for x in DesignContainer.get_children():
 		x.queue_free()
 	for design in designs:
-		var new_panel = DESIGN_BUTTON.instance()
+		var new_panel = DESIGN_BUTTON.instantiate()
 		var design_data = FileManager.load_mecha_design(design)
 		if design_data:
-			new_panel.connect("design_pressed", self, "_on_design_pressed")
+			new_panel.connect("design_pressed",Callable(self,"_on_design_pressed"))
 			new_panel.setup(design, design_data)
 			DesignContainer.add_child(new_panel)
 		else:
@@ -62,7 +62,7 @@ func save_design():
 	if FileManager.load_mecha_design(design_name):
 		$SaveSuccessful.visible = true
 		reload_designs()
-		yield(get_tree().create_timer(3), "timeout")
+		await get_tree().create_timer(3).timeout
 		$SaveSuccessful.visible = false
 	check_pressed_design()
 

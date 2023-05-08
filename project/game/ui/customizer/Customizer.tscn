@@ -1,663 +1,641 @@
-[gd_scene load_steps=29 format=2]
+[gd_scene load_steps=25 format=3 uid="uid://bsyltjhiirffe"]
 
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=1]
-[ext_resource path="res://game/ui/ParallaxBackgroundScrolling.gd" type="Script" id=2]
-[ext_resource path="res://game/ui/customizer/Customizer.gd" type="Script" id=3]
-[ext_resource path="res://assets/images/ui/menu/hardware_tab_selected.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/ui/menu/equipment_tab_selected.png" type="Texture" id=5]
-[ext_resource path="res://assets/images/ui/menu/grid.png" type="Texture" id=6]
-[ext_resource path="res://assets/images/ui/menu/wetware_tab_selected.png" type="Texture" id=7]
-[ext_resource path="res://game/customizer_buttons_theme.tres" type="Theme" id=8]
-[ext_resource path="res://game/mecha/Mecha.tscn" type="PackedScene" id=9]
-[ext_resource path="res://game/ui/customizer/Statcard.tscn" type="PackedScene" id=10]
-[ext_resource path="res://game/ui/customizer/LoadScreen.tscn" type="PackedScene" id=11]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" type="DynamicFontData" id=12]
-[ext_resource path="res://game/ui/customizer/TopBarStatbox.tscn" type="PackedScene" id=13]
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
+[ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://cra1205ajebpl" path="res://assets/images/ui/menu/hardware_tab_selected.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://d0yi8iberc76q" path="res://assets/images/ui/menu/equipment_tab_selected.png" id="5"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_rm4ic"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://dmb72nwar1al1" path="res://assets/images/ui/menu/wetware_tab_selected.png" id="7"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="8"]
+[ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="9"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="9_i8o8v"]
+[ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
+[ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
 
-[sub_resource type="Theme" id=14]
+[sub_resource type="Theme" id="14"]
 
-[sub_resource type="DynamicFontData" id=9]
-font_path = "res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf"
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b5s5m"]
 
-[sub_resource type="DynamicFont" id=10]
-size = 24
-outline_size = 1
-use_mipmaps = true
-use_filter = true
-extra_spacing_char = 1
-font_data = SubResource( 9 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vd7ux"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="DynamicFont" id=11]
-size = 18
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 1 )
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_414lh"]
 
-[sub_resource type="DynamicFont" id=24]
-size = 30
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 12 )
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rot1g"]
 
-[sub_resource type="DynamicFont" id=17]
-size = 68
-use_mipmaps = true
-use_filter = true
-font_data = ExtResource( 1 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bgaso"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxFlat" id=19]
-bg_color = Color( 0, 0, 0, 0 )
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_axi2k"]
 
-[sub_resource type="StyleBoxFlat" id=18]
-bg_color = Color( 0, 0, 0, 0 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3nyvn"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxFlat" id=12]
-bg_color = Color( 1, 1, 1, 1 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uy8tw"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
+border_color = Color(1, 1, 1, 1)
+corner_detail = 1
 
-[sub_resource type="StyleBoxFlat" id=13]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chsvg"]
+bg_color = Color(1, 1, 1, 1)
+corner_detail = 1
 
-[sub_resource type="StyleBoxFlat" id=22]
-bg_color = Color( 1, 1, 1, 1 )
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lx7ir"]
+bg_color = Color(0, 0, 0, 1)
 border_width_left = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="StyleBoxFlat" id=23]
-bg_color = Color( 0, 0, 0, 1 )
-border_width_left = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="DynamicFont" id=20]
-size = 30
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="DynamicFont" id=21]
-size = 17
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
-
-[sub_resource type="DynamicFont" id=25]
-size = 25
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 1
-extra_spacing_space = 2
-font_data = ExtResource( 12 )
+border_color = Color(1, 1, 1, 1)
 
 [node name="Customizer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_pivot_offset = Vector2( -611, -230 )
-script = ExtResource( 3 )
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(-611, -230)
+script = ExtResource("3")
 
-[node name="Mecha" parent="." instance=ExtResource( 9 )]
-position = Vector2( 1558.73, 671 )
+[node name="Mecha" parent="." instance=ExtResource("9")]
+position = Vector2(1558.73, 671)
 display_mode = true
 
-[node name="ComparisonMecha" parent="." instance=ExtResource( 9 )]
+[node name="ComparisonMecha" parent="." instance=ExtResource("9")]
 visible = false
-position = Vector2( 619, 671 )
+position = Vector2(619, 671)
 display_mode = true
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
-scale = Vector2( 0.75, 0.75 )
-transform = Transform2D( 0.75, 0, 0, 0.75, 0, 0 )
-scroll_base_scale = Vector2( 3, 1 )
-script = ExtResource( 2 )
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("2")
 
 [node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_mirroring = Vector2( 4000, 4000 )
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
 show_behind_parent = true
-margin_left = -605.0
-margin_top = -726.0
-margin_right = 7395.0
-margin_bottom = 7274.0
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme = SubResource( 14 )
-color = Color( 0, 0, 0, 1 )
+theme = SubResource("14")
+color = Color(0, 0, 0, 1)
 
 [node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_mirroring = Vector2( 4000, 4000 )
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
-margin_left = -602.776
-margin_top = -721.705
-margin_right = 3397.22
-margin_bottom = 3278.3
-texture = ExtResource( 6 )
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("6")
 
 [node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
-modulate = Color( 1, 1, 1, 0.14902 )
-motion_scale = Vector2( -0.5, 1 )
-motion_mirroring = Vector2( 4000, 4000 )
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
 
 [node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
-margin_left = -664.0
-margin_top = -794.667
-margin_right = 3336.0
-margin_bottom = 3205.34
-texture = ExtResource( 6 )
+offset_left = -664.0
+offset_top = -794.667
+offset_right = 3336.0
+offset_bottom = 3205.34
+texture = ExtResource("6")
 
 [node name="BackgroundElements" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="LowerBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 0
 anchor_top = 0.978755
 anchor_right = 1.0
 anchor_bottom = 1.00005
-margin_top = 1021.85
-margin_bottom = 1036.0
-rect_min_size = Vector2( 0, 15 )
-rect_pivot_offset = Vector2( 0.0615444, 39.8171 )
-color = Color( 0, 0, 0, 1 )
+offset_top = 1021.85
+offset_bottom = 1036.0
+pivot_offset = Vector2(0.0615444, 39.8171)
+color = Color(0, 0, 0, 1)
 
 [node name="LeftBar" type="ColorRect" parent="BackgroundElements"]
-margin_right = 43.0
-margin_bottom = 1084.0
-color = Color( 0, 0, 0, 1 )
+layout_mode = 0
+offset_right = 43.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
 
 [node name="RightBar" type="ColorRect" parent="BackgroundElements"]
 visible = false
-margin_left = 1383.0
-margin_right = 1923.0
-margin_bottom = 1084.0
-color = Color( 0, 0, 0, 1 )
+layout_mode = 0
+offset_left = 1383.0
+offset_right = 1923.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
 
 [node name="UpperBar2" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
 anchor_right = 1.0
-margin_top = 112.0
-margin_right = 1162.0
-margin_bottom = 316.0
-rect_min_size = Vector2( 0, 40 )
-color = Color( 0, 0, 0, 1 )
+offset_top = 112.0
+offset_right = 1163.0
+offset_bottom = 316.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
 
 [node name="UpperBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
 anchor_right = 1.0
-margin_top = 3.0
-margin_right = 1878.0
-margin_bottom = 207.0
-rect_min_size = Vector2( 0, 40 )
-color = Color( 0, 0, 0, 1 )
+offset_top = 3.0
+offset_right = 1878.0
+offset_bottom = 207.0
+color = Color(0, 0, 0, 1)
 
-[node name="MainSystemContainer" type="VBoxContainer" parent="BackgroundElements"]
-margin_left = 43.0
-margin_top = 47.0
-margin_right = 470.0
-margin_bottom = 152.0
-custom_constants/separation = -3
+[node name="MainSystemContainer2" type="VBoxContainer" parent="BackgroundElements"]
+layout_mode = 2
+offset_left = 32.0
+offset_top = 47.0
+offset_right = 459.0
+offset_bottom = 100.0
+theme_override_constants/separation = -5
 
-[node name="Label" type="Label" parent="BackgroundElements/MainSystemContainer"]
-margin_right = 427.0
-margin_bottom = 24.0
-custom_fonts/font = SubResource( 10 )
-text = "Hangar"
+[node name="Label" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("5_rm4ic")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 25
+text = "HANGAR"
 
-[node name="Label2" type="Label" parent="BackgroundElements/MainSystemContainer"]
-margin_top = 21.0
-margin_right = 427.0
-margin_bottom = 40.0
-custom_fonts/font = SubResource( 11 )
-text = "SAV_hUNTERos.EXE -Hgr"
+[node name="Label2" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("5_rm4ic")
+theme_override_font_sizes/font_size = 25
+text = "SAV_hUNTERos.EXE -hgr"
 
 [node name="SideBar1" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
 anchor_bottom = 1.0
-margin_left = 12.0
-margin_right = 14.0
-margin_bottom = 1040.0
-rect_min_size = Vector2( 2, 0 )
+offset_left = 12.0
+offset_right = 14.0
+offset_bottom = 1040.0
 
 [node name="SideBar2" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(7, 0)
+layout_mode = 0
 anchor_bottom = 1.0
-margin_left = 17.2305
-margin_right = 24.2305
-margin_bottom = 1040.0
-rect_min_size = Vector2( 7, 0 )
+offset_left = 17.2305
+offset_right = 24.2305
+offset_bottom = 1040.0
 
 [node name="MissingPartsScroll" type="ScrollContainer" parent="."]
-margin_left = 40.0
-margin_top = 213.527
-margin_right = 1206.0
-margin_bottom = 240.527
-theme = ExtResource( 8 )
-scroll_vertical_enabled = false
+layout_mode = 0
+offset_left = 40.0
+offset_top = 213.527
+offset_right = 1206.0
+offset_bottom = 240.527
+theme = ExtResource("8")
 
 [node name="MissingParts" type="Label" parent="MissingPartsScroll"]
-margin_bottom = 26.0
-custom_fonts/font = SubResource( 24 )
+layout_mode = 2
 
 [node name="PartCategories" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="Hardware" type="GridContainer" parent="PartCategories"]
-margin_left = 40.0
-margin_top = 326.172
-margin_right = 1315.0
-margin_bottom = 386.172
-rect_scale = Vector2( 0.66, 0.66 )
-custom_constants/vseparation = 50
-custom_constants/hseparation = 25
+layout_mode = 0
+offset_left = 40.0
+offset_top = 326.172
+offset_right = 1315.0
+offset_bottom = 386.172
+scale = Vector2(0.66, 0.66)
+theme_override_constants/h_separation = 100
 columns = 4
 
 [node name="head" type="Button" parent="PartCategories/Hardware"]
-margin_right = 300.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Head"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="core" type="Button" parent="PartCategories/Hardware"]
-margin_left = 325.0
-margin_right = 625.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Core"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="shoulders" type="Button" parent="PartCategories/Hardware"]
-margin_left = 650.0
-margin_right = 950.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Shoulders"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="chassis" type="Button" parent="PartCategories/Hardware"]
-margin_left = 975.0
-margin_right = 1275.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Chassis"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="Wetware" type="GridContainer" parent="PartCategories"]
 visible = false
-margin_left = 40.0
-margin_top = 326.172
-margin_right = 1240.0
-margin_bottom = 386.172
-rect_scale = Vector2( 0.66, 0.66 )
-custom_constants/vseparation = 50
-custom_constants/hseparation = 25
+layout_mode = 0
+offset_left = 40.0
+offset_top = 326.172
+offset_right = 1240.0
+offset_bottom = 386.172
+scale = Vector2(0.66, 0.66)
+theme_override_constants/h_separation = 100
 columns = 4
 
 [node name="chipset" type="Button" parent="PartCategories/Wetware"]
-margin_right = 300.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Chipset"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="generator" type="Button" parent="PartCategories/Wetware"]
-margin_left = 325.0
-margin_right = 625.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Generator"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="thruster" type="Button" parent="PartCategories/Wetware"]
-margin_left = 650.0
-margin_right = 950.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Thruster"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="Equipment" type="GridContainer" parent="PartCategories"]
 visible = false
-margin_left = 40.0
-margin_top = 326.172
-margin_right = 1315.0
-margin_bottom = 386.172
-rect_scale = Vector2( 0.66, 0.66 )
-custom_constants/vseparation = 50
-custom_constants/hseparation = 25
+layout_mode = 0
+offset_left = 40.0
+offset_top = 326.172
+offset_right = 1315.0
+offset_bottom = 386.172
+scale = Vector2(0.66, 0.66)
+theme_override_constants/h_separation = 100
 columns = 4
 
 [node name="arm_weapon_right" type="Button" parent="PartCategories/Equipment"]
-margin_right = 300.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Right Arm"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="arm_weapon_left" type="Button" parent="PartCategories/Equipment"]
-margin_left = 325.0
-margin_right = 625.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Left Arm"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="shoulder_weapon_right" type="Button" parent="PartCategories/Equipment"]
-margin_left = 650.0
-margin_right = 950.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "R Shoulder"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="shoulder_weapon_left" type="Button" parent="PartCategories/Equipment"]
-margin_left = 975.0
-margin_right = 1275.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 300, 60 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "L Shoulder"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="CategorySelectedUI" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="Hardware" type="TextureRect" parent="CategorySelectedUI"]
-margin_left = 43.44
-margin_top = 131.72
-margin_right = 1872.44
-margin_bottom = 205.72
-texture = ExtResource( 4 )
+layout_mode = 0
+offset_left = 43.44
+offset_top = 131.72
+offset_right = 1872.44
+offset_bottom = 205.72
+texture = ExtResource("4")
 
 [node name="Wetware" type="TextureRect" parent="CategorySelectedUI"]
 visible = false
-margin_left = 44.0
-margin_top = 132.0
-margin_right = 1873.0
-margin_bottom = 206.0
-texture = ExtResource( 7 )
+layout_mode = 0
+offset_left = 44.0
+offset_top = 132.0
+offset_right = 1873.0
+offset_bottom = 206.0
+texture = ExtResource("7")
 
 [node name="Equipment" type="TextureRect" parent="CategorySelectedUI"]
 visible = false
-margin_left = 44.0
-margin_top = 132.0
-margin_right = 1873.0
-margin_bottom = 206.0
-texture = ExtResource( 5 )
+layout_mode = 0
+offset_left = 44.0
+offset_top = 132.0
+offset_right = 1873.0
+offset_bottom = 206.0
+texture = ExtResource("5")
 
 [node name="CategoryButtons" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="Hardware" type="Button" parent="CategoryButtons"]
-margin_left = 46.0
-margin_top = 140.0
-margin_right = 357.0
-margin_bottom = 208.0
-custom_fonts/font = SubResource( 17 )
-custom_styles/hover = SubResource( 19 )
-custom_styles/pressed = SubResource( 18 )
-custom_styles/normal = SubResource( 18 )
+layout_mode = 0
+offset_left = 46.0
+offset_top = 139.0
+offset_right = 357.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("9_i8o8v")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b5s5m")
+theme_override_styles/hover = SubResource("StyleBoxFlat_vd7ux")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
 text = "Hardware"
-icon_align = 1
+icon_alignment = 1
 
 [node name="Wetware" type="Button" parent="CategoryButtons"]
-margin_left = 370.0
-margin_top = 140.0
-margin_right = 681.0
-margin_bottom = 208.0
-custom_fonts/font = SubResource( 17 )
-custom_styles/hover = SubResource( 19 )
-custom_styles/pressed = SubResource( 18 )
-custom_styles/normal = SubResource( 18 )
+layout_mode = 0
+offset_left = 370.0
+offset_top = 139.0
+offset_right = 681.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("9_i8o8v")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxEmpty_rot1g")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bgaso")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
 text = "Wetware"
-icon_align = 1
+icon_alignment = 1
 
 [node name="Equipment" type="Button" parent="CategoryButtons"]
-margin_left = 692.0
-margin_top = 140.0
-margin_right = 1003.0
-margin_bottom = 208.0
-custom_fonts/font = SubResource( 17 )
-custom_styles/hover = SubResource( 19 )
-custom_styles/pressed = SubResource( 18 )
-custom_styles/normal = SubResource( 18 )
+layout_mode = 0
+offset_left = 692.0
+offset_top = 139.0
+offset_right = 1003.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("9_i8o8v")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxTexture_axi2k")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3nyvn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
 text = "weapons"
-icon_align = 1
+icon_alignment = 1
 
 [node name="PartListContainer" type="ScrollContainer" parent="."]
-margin_left = 40.0
-margin_top = 377.217
-margin_right = 440.0
-margin_bottom = 995.217
-theme = ExtResource( 8 )
+layout_mode = 0
+offset_left = 40.0
+offset_top = 377.217
+offset_right = 440.0
+offset_bottom = 995.217
+theme = ExtResource("8")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
-custom_constants/separation = 120
+layout_mode = 2
+theme_override_constants/separation = 120
 
 [node name="WeightBar" type="ProgressBar" parent="."]
-margin_left = 1216.0
-margin_top = 974.0
-margin_right = 1975.0
-margin_bottom = 1014.0
-rect_rotation = 270.0
-custom_colors/font_color = Color( 0, 0, 0, 0 )
-custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
-custom_styles/fg = SubResource( 12 )
-custom_styles/bg = SubResource( 13 )
+layout_mode = 0
+offset_left = 1216.0
+offset_top = 974.0
+offset_right = 1975.0
+offset_bottom = 1018.0
+rotation = -1.5708
+theme_override_styles/background = SubResource("StyleBoxFlat_uy8tw")
+theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
 
 [node name="WeightComparisonBar" type="ProgressBar" parent="."]
-margin_left = 1235.0
-margin_top = 974.0
-margin_right = 1994.0
-margin_bottom = 995.0
-rect_rotation = 270.0
-custom_colors/font_color = Color( 0, 0, 0, 0 )
-custom_colors/font_color_shadow = Color( 0, 0, 0, 0 )
-custom_styles/fg = SubResource( 22 )
-custom_styles/bg = SubResource( 23 )
+layout_mode = 0
+offset_left = 1237.0
+offset_top = 974.0
+offset_right = 1996.0
+offset_bottom = 997.0
+rotation = -1.5708
+theme_override_styles/background = SubResource("StyleBoxFlat_lx7ir")
+theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
 
 [node name="CurrentWeightLabel" type="Label" parent="."]
-margin_left = 1180.0
-margin_top = 976.0
-margin_right = 1246.0
-margin_bottom = 1007.0
-grow_horizontal = 0
-grow_vertical = 0
-custom_fonts/font = SubResource( 20 )
+layout_mode = 0
+offset_left = 1199.0
+offset_top = 976.0
+offset_right = 1265.0
+offset_bottom = 1007.0
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 30
 text = "4000"
-align = 2
-valign = 2
 
 [node name="MaxWeightLabel" type="Label" parent="."]
-margin_left = 1180.0
-margin_top = 1019.0
-margin_right = 1246.0
-margin_bottom = 1050.0
-grow_horizontal = 0
-grow_vertical = 0
-custom_fonts/font = SubResource( 20 )
+layout_mode = 0
+offset_left = 1199.0
+offset_top = 1019.0
+offset_right = 1265.0
+offset_bottom = 1050.0
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 30
 text = "4000"
-align = 2
-valign = 2
 
 [node name="kg" type="Label" parent="."]
-margin_left = 1204.0
-margin_top = 976.0
-margin_right = 1270.0
-margin_bottom = 1007.0
-grow_horizontal = 0
-grow_vertical = 0
-custom_fonts/font = SubResource( 21 )
+layout_mode = 0
+offset_left = 1210.0
+offset_top = 976.0
+offset_right = 1276.0
+offset_bottom = 1007.0
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 20
 text = "tn"
-align = 2
-valign = 2
+horizontal_alignment = 2
+vertical_alignment = 2
 
 [node name="kg2" type="Label" parent="."]
-margin_left = 1204.0
-margin_top = 1019.0
-margin_right = 1270.0
-margin_bottom = 1050.0
-grow_horizontal = 0
-grow_vertical = 0
-custom_fonts/font = SubResource( 21 )
+layout_mode = 0
+offset_left = 1210.0
+offset_top = 1019.0
+offset_right = 1276.0
+offset_bottom = 1050.0
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 20
 text = "tn"
-align = 2
-valign = 2
+horizontal_alignment = 2
+vertical_alignment = 2
 
 [node name="Load" type="Button" parent="."]
-margin_left = 1428.63
-margin_top = 152.333
-margin_right = 1748.63
-margin_bottom = 212.333
-rect_min_size = Vector2( 300, 60 )
-rect_scale = Vector2( 0.66, 0.66 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 0
+offset_left = 1428.63
+offset_top = 152.333
+offset_right = 1748.63
+offset_bottom = 212.333
+scale = Vector2(0.66, 0.66)
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "SAVE/LOAD"
-align = 0
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="Exit" type="Button" parent="."]
-margin_left = 1660.0
-margin_top = 152.0
-margin_right = 1980.0
-margin_bottom = 212.0
-rect_min_size = Vector2( 300, 60 )
-rect_scale = Vector2( 0.66, 0.66 )
-theme = ExtResource( 8 )
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 0
+offset_left = 1660.0
+offset_top = 152.0
+offset_right = 1980.0
+offset_bottom = 212.0
+scale = Vector2(0.66, 0.66)
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 40
 text = "Exit"
-align = 2
-icon_align = 2
+alignment = 0
+icon_alignment = 2
 
 [node name="ColorRect" type="ColorRect" parent="."]
-margin_left = 1202.0
-margin_top = 1015.0
-margin_right = 1256.0
-margin_bottom = 1017.0
+layout_mode = 0
+offset_left = 1202.0
+offset_top = 1015.0
+offset_right = 1256.0
+offset_bottom = 1017.0
 
-[node name="Statcard" parent="." instance=ExtResource( 10 )]
+[node name="Statcard" parent="." instance=ExtResource("10")]
 visible = false
+anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_left = 468.0
-margin_top = 378.0
-margin_right = 999.0
-margin_bottom = 1074.0
-rect_scale = Vector2( 0.75, 0.75 )
+offset_left = 468.0
+offset_top = 378.0
+offset_right = 999.0
+offset_bottom = 1074.0
+scale = Vector2(0.75, 0.75)
 
-[node name="LoadScreen" parent="." instance=ExtResource( 11 )]
+[node name="LoadScreen" parent="." instance=ExtResource("11")]
 visible = false
-margin_left = 164.0
-margin_top = 337.0
-margin_right = -1756.0
-margin_bottom = -743.0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 164.0
+offset_top = 337.0
+offset_right = -1756.0
+offset_bottom = -743.0
 
 [node name="overweight" type="Label" parent="."]
 visible = false
-margin_left = 391.217
-margin_top = 278.732
-margin_right = 548.217
-margin_bottom = 299.732
-custom_fonts/font = SubResource( 25 )
+layout_mode = 0
+offset_left = 391.217
+offset_top = 278.732
+offset_right = 548.217
+offset_bottom = 299.732
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 30
 text = "overweight"
 
 [node name="TopBar" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
-rect_scale = Vector2( 0.9, 0.9 )
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(0.9, 0.9)
 
-[node name="Armor" parent="TopBar" instance=ExtResource( 13 )]
-margin_left = 46.9076
-margin_top = 247.091
-margin_right = 219.908
-margin_bottom = 290.091
+[node name="Armor" parent="TopBar" instance=ExtResource("13")]
+offset_left = 46.9076
+offset_top = 247.091
+offset_right = 219.908
+offset_bottom = 290.091
 stat_name = "health"
 stat_label = "ARM"
 
-[node name="Shield" parent="TopBar" instance=ExtResource( 13 )]
-margin_left = 46.9076
-margin_top = 291.824
-margin_right = 219.908
-margin_bottom = 334.824
+[node name="Shield" parent="TopBar" instance=ExtResource("13")]
+offset_left = 46.9076
+offset_top = 291.824
+offset_right = 219.908
+offset_bottom = 334.824
 stat_name = "shield"
 stat_label = "SHD"
 
-[node name="HeatCap" parent="TopBar" instance=ExtResource( 13 )]
-margin_left = 240.36
-margin_top = 244.094
-margin_right = 413.36
-margin_bottom = 287.094
+[node name="HeatCap" parent="TopBar" instance=ExtResource("13")]
+offset_left = 240.36
+offset_top = 244.094
+offset_right = 413.36
+offset_bottom = 287.094
 stat_name = "heat_capacity"
 stat_label = "H"
 
-[node name="HeatCap2" parent="TopBar" instance=ExtResource( 13 )]
-margin_left = 266.165
-margin_top = 299.719
-margin_right = 439.165
-margin_bottom = 342.719
-rect_scale = Vector2( 0.8, 0.8 )
+[node name="HeatCap2" parent="TopBar" instance=ExtResource("13")]
+offset_left = 266.165
+offset_top = 299.719
+offset_right = 439.165
+offset_bottom = 342.719
+scale = Vector2(0.8, 0.8)
 stat_name = "heat_dispersion"
 stat_label = "H/S"
 
-[node name="Walkspeed" parent="TopBar" instance=ExtResource( 13 )]
-margin_left = 443.588
-margin_top = 255.139
-margin_right = 616.588
-margin_bottom = 298.139
-rect_scale = Vector2( 1.2, 1.2 )
+[node name="Walkspeed" parent="TopBar" instance=ExtResource("13")]
+offset_left = 443.588
+offset_top = 255.139
+offset_right = 616.588
+offset_bottom = 298.139
+scale = Vector2(1.2, 1.2)
 stat_name = "max_speed"
 stat_label = "SPD"
 
-[connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= [ "head", "Hardware" ]]
-[connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= [ "core", "Hardware" ]]
-[connection signal="pressed" from="PartCategories/Hardware/shoulders" to="." method="_on_Category_pressed" binds= [ "shoulders", "Hardware" ]]
-[connection signal="pressed" from="PartCategories/Hardware/chassis" to="." method="_on_Category_pressed" binds= [ "chassis", "Hardware" ]]
-[connection signal="pressed" from="PartCategories/Wetware/chipset" to="." method="_on_Category_pressed" binds= [ "chipset", "Wetware" ]]
-[connection signal="pressed" from="PartCategories/Wetware/generator" to="." method="_on_Category_pressed" binds= [ "generator", "Wetware" ]]
-[connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= [ "thruster", "Wetware" ]]
-[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "right" ]]
-[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= [ "arm_weapon", "Equipment", "left" ]]
-[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "right" ]]
-[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= [ "shoulder_weapon", "Equipment", "left" ]]
+[connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/shoulders" to="." method="_on_Category_pressed" binds= ["shoulders", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/chassis" to="." method="_on_Category_pressed" binds= ["chassis", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Wetware/chipset" to="." method="_on_Category_pressed" binds= ["chipset", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Wetware/generator" to="." method="_on_Category_pressed" binds= ["generator", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= ["thruster", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "left"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "left"]]
 [connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]

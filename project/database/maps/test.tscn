@@ -1,101 +1,94 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://cqsh45jwsfqgc"]
 
-[ext_resource path="res://database/maps/Map.gd" type="Script" id=1]
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" type="DynamicFontData" id=2]
-[ext_resource path="res://database/props/box1_prop.tscn" type="PackedScene" id=4]
-[ext_resource path="res://database/props/Prop.gd" type="Script" id=5]
-[ext_resource path="res://game/arena/StartPoint.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/arena/ExitPoint.tscn" type="PackedScene" id=7]
-[ext_resource path="res://assets/images/map/floor/TestArenaBox.png" type="Texture" id=12]
+[ext_resource type="Script" path="res://database/maps/Map.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://c0ylnebtr6uly" path="res://database/props/box1_prop.tscn" id="4"]
+[ext_resource type="Script" path="res://database/props/Prop.gd" id="5"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://game/arena/ExitPoint.tscn" id="7"]
+[ext_resource type="Texture2D" uid="uid://npmjhn3pox42" path="res://assets/images/map/floor/TestArenaBox.png" id="12"]
 
-[sub_resource type="DynamicFont" id=9]
-size = 54
-font_data = ExtResource( 2 )
-
-[sub_resource type="NavigationPolygon" id=8]
-vertices = PoolVector2Array( 1425, -2799, 2796, -1396, 1865, -1609, 1925, 105, 2790, 1384, 1888, 1472, 1431, 2797, 453, -1662, -1436, -2780, 453, 1472, -1439, 2762, -295, 1457, -1699, 1480, -2810, 1445, 1850, -310, -219, -317, 445, -317, 430, 128, -302, 136, -1790, -333, -1699, 181, -2780, -1418, -1752, -1699, -234, -1677 )
-polygons = [ PoolIntArray( 0, 1, 2 ), PoolIntArray( 3, 1, 4, 5 ), PoolIntArray( 5, 4, 6 ), PoolIntArray( 0, 2, 7, 8 ), PoolIntArray( 9, 5, 6, 10 ), PoolIntArray( 11, 9, 10, 12 ), PoolIntArray( 12, 10, 13 ), PoolIntArray( 2, 1, 3, 14 ), PoolIntArray( 15, 16, 14, 3, 17, 18 ), PoolIntArray( 17, 9, 11, 18 ), PoolIntArray( 19, 15, 18, 20 ), PoolIntArray( 20, 12, 13, 21, 19 ), PoolIntArray( 22, 19, 21 ), PoolIntArray( 22, 21, 8 ), PoolIntArray( 23, 22, 8 ), PoolIntArray( 23, 8, 7 ), PoolIntArray( 15, 23, 7, 16 ) ]
-outlines = [ PoolVector2Array( -2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418 ), PoolVector2Array( -1752, -1699, -1790, -333, -219, -317, -234, -1677 ), PoolVector2Array( 453, -1662, 445, -317, 1850, -310, 1865, -1609 ), PoolVector2Array( -1699, 181, -1699, 1480, -295, 1457, -302, 136 ), PoolVector2Array( 430, 128, 453, 1472, 1888, 1472, 1925, 105 ) ]
+[sub_resource type="NavigationPolygon" id="8"]
+vertices = PackedVector2Array(1425, -2799, 2796, -1396, 1865, -1609, 1925, 105, 2790, 1384, 1888, 1472, 1431, 2797, 453, -1662, -1436, -2780, 453, 1472, -1439, 2762, -295, 1457, -1699, 1480, -2810, 1445, 1850, -310, -219, -317, 445, -317, 430, 128, -302, 136, -1790, -333, -1699, 181, -2780, -1418, -1752, -1699, -234, -1677)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2), PackedInt32Array(3, 1, 4, 5), PackedInt32Array(5, 4, 6), PackedInt32Array(0, 2, 7, 8), PackedInt32Array(9, 5, 6, 10), PackedInt32Array(11, 9, 10, 12), PackedInt32Array(12, 10, 13), PackedInt32Array(2, 1, 3, 14), PackedInt32Array(15, 16, 14, 3, 17, 18), PackedInt32Array(17, 9, 11, 18), PackedInt32Array(19, 15, 18, 20), PackedInt32Array(20, 12, 13, 21, 19), PackedInt32Array(22, 19, 21), PackedInt32Array(22, 21, 8), PackedInt32Array(23, 22, 8), PackedInt32Array(23, 8, 7), PackedInt32Array(15, 23, 7, 16)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418), PackedVector2Array(-1752, -1699, -1790, -333, -219, -317, -234, -1677), PackedVector2Array(453, -1662, 445, -317, 1850, -310, 1865, -1609), PackedVector2Array(-1699, 181, -1699, 1480, -295, 1457, -302, 136), PackedVector2Array(430, 128, 453, 1472, 1888, 1472, 1925, 105)])
 
 [node name="Map" type="Node2D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 is_tutorial = true
 
-[node name="BG" type="Sprite" parent="."]
-scale = Vector2( 3, 3 )
-texture = ExtResource( 12 )
+[node name="BG" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = ExtResource("12")
 
 [node name="Bushes" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
+scale = Vector2(2, 2)
 
 [node name="Props" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
+scale = Vector2(2, 2)
 
-[node name="box1" parent="Props" instance=ExtResource( 4 )]
-position = Vector2( -500, -500 )
+[node name="box1" parent="Props" instance=ExtResource("4")]
+position = Vector2(-500, -500)
 
-[node name="box2" parent="Props" instance=ExtResource( 4 )]
-position = Vector2( 576.5, -513.5 )
+[node name="box2" parent="Props" instance=ExtResource("4")]
+position = Vector2(576.5, -513.5)
 
-[node name="box3" parent="Props" instance=ExtResource( 4 )]
-position = Vector2( -486.5, 391.5 )
+[node name="box3" parent="Props" instance=ExtResource("4")]
+position = Vector2(-486.5, 391.5)
 
-[node name="box4" parent="Props" instance=ExtResource( 4 )]
-position = Vector2( 580, 378 )
+[node name="box4" parent="Props" instance=ExtResource("4")]
+position = Vector2(580, 378)
 
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="tutorial_wall" type="Node2D" parent="Walls"]
-script = ExtResource( 5 )
+script = ExtResource("5")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="Walls/tutorial_wall"]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
-position = Vector2( 635, -6832 )
-polygon = PoolVector2Array( -2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837 )
+position = Vector2(635, -6832)
+polygon = PackedVector2Array(-2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837)
 
 [node name="Buildings" type="Node2D" parent="."]
 
 [node name="StartPositions" type="Node2D" parent="."]
 
-[node name="Pos1" parent="StartPositions" instance=ExtResource( 6 )]
-position = Vector2( -510, 284 )
+[node name="Pos1" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(-510, 284)
 
-[node name="Pos2" parent="StartPositions" instance=ExtResource( 6 )]
-position = Vector2( 188, 293 )
+[node name="Pos2" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(188, 293)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
 
-[node name="ExitPos" parent="Exits" instance=ExtResource( 7 )]
-position = Vector2( -2607.5, 0.596485 )
-scale = Vector2( 0.33, 0.33 )
+[node name="ExitPos" parent="Exits" instance=ExtResource("7")]
+position = Vector2(-2607.5, 0.596485)
+scale = Vector2(0.33, 0.33)
 
-[node name="ExitPos2" parent="Exits" instance=ExtResource( 7 )]
-position = Vector2( 2606.5, 3.27049 )
-scale = Vector2( 0.33, 0.33 )
+[node name="ExitPos2" parent="Exits" instance=ExtResource("7")]
+position = Vector2(2606.5, 3.27049)
+scale = Vector2(0.33, 0.33)
 
 [node name="Trees" type="Node2D" parent="."]
-scale = Vector2( 2, 2 )
+scale = Vector2(2, 2)
 
 [node name="Texts" type="Node2D" parent="."]
 
 [node name="Label" type="Label" parent="Texts"]
-margin_left = 117.646
-margin_top = 97.3877
-margin_right = 828.646
-margin_bottom = 268.388
-custom_fonts/font = SubResource( 9 )
+offset_left = 117.646
+offset_top = 97.3877
+offset_right = 828.646
+offset_bottom = 268.388
 text = "Destroy other Surface 
 Activity vehicles 
 (sav Units)."
 
 [node name="Label2" type="Label" parent="Texts"]
-margin_left = -2242.53
-margin_top = -168.467
-margin_right = -1408.53
-margin_bottom = 176.533
-custom_fonts/font = SubResource( 9 )
+offset_left = -2242.53
+offset_top = -168.467
+offset_right = -1408.53
+offset_bottom = 176.533
 text = "you do not recover armor or
 ammunition after extracting.
 you must purchase armor
@@ -104,18 +97,13 @@ credits gained from destroying
 other sav units."
 
 [node name="Label3" type="Label" parent="Texts"]
-margin_left = 1578.04
-margin_top = -44.345
-margin_right = 2289.04
-margin_bottom = 126.655
-custom_fonts/font = SubResource( 9 )
+offset_left = 1578.04
+offset_top = -44.345
+offset_right = 2289.04
+offset_bottom = 126.655
 text = "Find extraction Points 
 to recover armor, shields
 and munitions."
-align = 2
 
-[node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="."]
-navpoly = SubResource( 8 )
-__meta__ = {
-"_edit_lock_": true
-}
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("8")

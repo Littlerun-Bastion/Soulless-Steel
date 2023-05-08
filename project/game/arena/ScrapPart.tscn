@@ -1,9 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://c34hnmsct0edl"]
 
-[ext_resource path="res://game/arena/ScrapPart.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/T01-SH-L.png" type="Texture" id=2]
+[ext_resource type="Script" path="res://game/arena/ScrapPart.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cisv3dtlvnyui" path="res://assets/images/mechas/shoulders/T01-SH-L.png" id="2"]
 
-[sub_resource type="Shader" id=28]
+[sub_resource type="Shader" id="28"]
 code = "shader_type canvas_item;
 
 uniform float heat : hint_range(0.0, 100.0) = 100.0;
@@ -17,12 +17,12 @@ void fragment(){
 	COLOR.b *= dark;
 }"
 
-[sub_resource type="ShaderMaterial" id=29]
-shader = SubResource( 28 )
-shader_param/heat = 100.0
-shader_param/min_darkness = 0.3
+[sub_resource type="ShaderMaterial" id="29"]
+shader = SubResource("28")
+shader_parameter/heat = 100.0
+shader_parameter/min_darkness = 0.3
 
-[sub_resource type="CircleShape2D" id=1]
+[sub_resource type="CircleShape2D" id="1"]
 radius = 20.0
 
 [node name="ScrapPart" type="RigidBody2D"]
@@ -30,13 +30,11 @@ collision_layer = 0
 gravity_scale = 0.0
 linear_damp = 3.0
 angular_damp = 3.0
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="Sprite" type="Sprite" parent="."]
-material = SubResource( 29 )
-texture = ExtResource( 2 )
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("29")
+texture = ExtResource("2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource( 1 )
-
-[node name="Tween" type="Tween" parent="."]
+shape = SubResource("1")

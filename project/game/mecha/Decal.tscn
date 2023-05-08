@@ -1,13 +1,10 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://bgumdc040nj1k"]
 
-[ext_resource path="res://game/mecha/Decal.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/decals/bullet_hole_large.png" type="Texture" id=2]
+[ext_resource type="Script" path="res://game/mecha/Decal.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://d2pl4n8x6ug1b" path="res://assets/images/decals/bullet_hole_large.png" id="2"]
 
-
-[node name="Decal" type="Sprite"]
-modulate = Color( 1, 1, 1, 0.623529 )
+[node name="Decal" type="Sprite2D"]
+modulate = Color(1, 1, 1, 0.623529)
 light_mask = 0
-texture = ExtResource( 2 )
-script = ExtResource( 1 )
-
-[node name="Tween" type="Tween" parent="."]
+texture = ExtResource("2")
+script = ExtResource("1")

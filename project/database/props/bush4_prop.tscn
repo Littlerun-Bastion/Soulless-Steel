@@ -1,13 +1,13 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://assets/images/props/trees/bush4.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/props/trees/bush4.png" type="Texture2D" id=1]
 
 [sub_resource type="OccluderPolygon2D" id=1]
-polygon = PoolVector2Array( -58.7196, -75.1552, -102.446, -20.4969, -104.969, 50.5588, -39.7994, 117.41, 45.1311, 114.887, 96.0053, 45.093, 72.8807, -28.4855, 20.3247, -72.2121 )
+polygon = PackedVector2Array( -58.7196, -75.1552, -102.446, -20.4969, -104.969, 50.5588, -39.7994, 117.41, 45.1311, 114.887, 96.0053, 45.093, 72.8807, -28.4855, 20.3247, -72.2121 )
 
 [node name="bush4_prop" type="Node2D"]
 
-[node name="Sprite" type="Sprite" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2( 0.420441, 6.72717 )
 
 texture = ExtResource( 1 )

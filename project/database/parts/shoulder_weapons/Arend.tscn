@@ -1,23 +1,23 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=9 format=3 uid="uid://bt5svi7vi1y03"]
 
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/Arend_main.png" type="Texture" id=1]
-[ext_resource path="res://database/parts/shoulder_weapon.gd" type="Script" id=2]
-[ext_resource path="res://database/parts/projectiles/small_missile.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/Arend_sub.png" type="Texture" id=4]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/Arend_glow.png" type="Texture" id=5]
-[ext_resource path="res://game/weapons/SmokeTrail.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/weapons/MissileDirectedImpact.tscn" type="PackedScene" id=7]
-[ext_resource path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" type="PackedScene" id=8]
+[ext_resource type="Texture2D" uid="uid://1lf4oq2x37fu" path="res://assets/images/mechas/shoulder_weapons/Arend_main.png" id="1"]
+[ext_resource type="Script" path="res://database/parts/shoulder_weapon.gd" id="2"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_missile.tscn" id="3"]
+[ext_resource type="Texture2D" uid="uid://np0kmkrfg73v" path="res://assets/images/mechas/shoulder_weapons/Arend_sub.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://ebu8pn7urd5a" path="res://assets/images/mechas/shoulder_weapons/Arend_glow.png" id="5"]
+[ext_resource type="PackedScene" path="res://game/weapons/SmokeTrail.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="8"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 2 )
+script = ExtResource("2")
 part_name = "Arend ASV-12"
 manufacturer_name = "Nomhoyi Superheavy"
 tagline = "Guided Missile"
 type = "Long_range Missile"
-muzzle_flash = ExtResource( 8 )
+muzzle_flash = ExtResource("8")
 muzzle_flash_speed = 1.2
-projectile = ExtResource( 3 )
+projectile = ExtResource("3")
 projectile_type = "Chipset-Guided Missile"
 number_projectiles = 4
 burst_ammo_cost = 4
@@ -31,7 +31,6 @@ bullet_spread_delay = 0.2
 total_ammo = 16
 max_ammo = 16
 clip_size = 16
-muzzle_heat = 34
 ammo_cost = 4500
 sound_max_range = 8000
 sound_att = 1.33
@@ -41,9 +40,9 @@ projectile_size = 0.8
 lifetime = 3.0
 impact_force = 2500.0
 trail_width = 100
-has_smoke = ExtResource( 6 )
+has_smoke = ExtResource("6")
 smoke_density = 500
-impact_effect = ExtResource( 7 )
+impact_effect = ExtResource("7")
 impact_size = 2.0
 hitstop = true
 has_wiggle = true
@@ -51,31 +50,31 @@ is_seeker = true
 seeker_agility = 0.02
 seek_time = 2.0
 
-[node name="Sub" type="Sprite" parent="."]
-position = Vector2( -2.76584, 59.556 )
-texture = ExtResource( 4 )
-offset = Vector2( 2.76584, -59.556 )
+[node name="Sub" type="Sprite2D" parent="."]
+position = Vector2(-2.76584, 59.556)
+texture = ExtResource("4")
+offset = Vector2(2.76584, -59.556)
 
-[node name="Main" type="Sprite" parent="."]
-position = Vector2( -2.76584, 59.556 )
-texture = ExtResource( 1 )
-offset = Vector2( 2.76584, -59.556 )
+[node name="Main" type="Sprite2D" parent="."]
+position = Vector2(-2.76584, 59.556)
+texture = ExtResource("1")
+offset = Vector2(2.76584, -59.556)
 
-[node name="Glow" type="Sprite" parent="."]
-position = Vector2( -2.76584, 59.556 )
-texture = ExtResource( 5 )
-offset = Vector2( 2.76584, -59.556 )
+[node name="Glow" type="Sprite2D" parent="."]
+position = Vector2(-2.76584, 59.556)
+texture = ExtResource("5")
+offset = Vector2(2.76584, -59.556)
 
-[node name="AttachPos" type="Position2D" parent="."]
-position = Vector2( 4.07908, 0.158154 )
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(4.07908, 0.158154)
 
-[node name="EjectorPos" type="Position2D" parent="."]
-position = Vector2( -9.55591, 30.7591 )
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-9.55591, 30.7591)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
-[node name="ShootingPos" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( -7.03245, -34.7025 )
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-7.03245, -34.7025)
 
-[node name="ShootingPos2" type="Position2D" parent="ShootingPosArray"]
-position = Vector2( 0.383797, -34.7025 )
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0.383797, -34.7025)

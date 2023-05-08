@@ -1,21 +1,21 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://assets/images/props/buildings/house4.png" type="Texture" id=1]
+[ext_resource path="res://assets/images/props/buildings/house4.png" type="Texture2D" id=1]
 [ext_resource path="res://database/props/Prop.gd" type="Script" id=2]
 
 [sub_resource type="OccluderPolygon2D" id=1]
-polygon = PoolVector2Array( -801.125, -651.25, 801.424, -651.948, 801.688, 626.15, -801.251, 627.17 )
+polygon = PackedVector2Array( -801.125, -651.25, 801.424, -651.948, 801.688, 626.15, -801.251, 627.17 )
 
 [node name="house4_prop" type="Node2D"]
 script = ExtResource( 2 )
 
-[node name="Sprite" type="Sprite" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource( 1 )
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D"]
-polygon = PoolVector2Array( -801.138, -651.466, 801.457, -651.798, 801.698, 626.187, -801.506, 627.069 )
+polygon = PackedVector2Array( -801.138, -651.466, 801.457, -651.798, 801.698, 626.187, -801.506, 627.069 )
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource( 1 )

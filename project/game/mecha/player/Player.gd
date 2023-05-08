@@ -7,8 +7,8 @@ signal reloading
 signal finished_reloading
 signal lost_health
 
-const INSIDE_BUILDING_ZOOM_MUL = .7
-const DEFAULT_CAM_ZOOM = Vector2(2,2)
+const INSIDE_BUILDING_ZOOM_MUL = 1.4
+const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
 const ZOOM_SPEED = 2
 
 const ROTATION_DEADZONE = 20
@@ -16,7 +16,7 @@ const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
 const SPRINTING_TIMEOUT = .13 #How much the player needs to hold the button to enter sprint mode
 
-onready var Cam = $Camera2D
+@onready var Cam = $Camera2D
 
 var sprinting_timer = 0
 var invert_controls = {
@@ -25,6 +25,8 @@ var invert_controls = {
 }
 
 func _ready():
+	super()
+	
 	if Debug.get_setting("player_zoom"):
 		var zoom = Debug.get_setting("player_zoom")
 		Cam.zoom = Vector2(zoom, zoom)
@@ -36,6 +38,8 @@ func _physics_process(delta):
 	if paused or is_stunned():
 		return
 	
+	super(delta)
+	
 	check_input()
 	
 	apply_movement(delta, get_input())
@@ -46,7 +50,7 @@ func _physics_process(delta):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
-	if not get_locked_to():
+	if not get_locked_to():# and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
@@ -72,10 +76,10 @@ func _input(event):
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponRight.reloading:
 			shoot("arm_weapon_right")
 	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left and\
-		 cur_mode == MODES.NEUTRAL:
+	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_left")
 	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right and\
-		 cur_mode == MODES.NEUTRAL:
+	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode"):
 		cur_mode = MODES.RELOAD
@@ -101,7 +105,7 @@ func _input(event):
 		die(self, "Myself")
 
 
-func get_camera():
+func get_camera_3d():
 	return Cam
 
 
@@ -120,22 +124,22 @@ func update_camera_zoom(dt):
 func update_camera_offset(dt):
 	if head and head.visual_range > 0:
 		var mp = get_viewport().get_mouse_position()
-		var sx = get_viewport_rect().size.x
-		var sy = get_viewport_rect().size.y
+		var vp_size = get_viewport().get_visible_rect().size
+		var margin = MOVE_CAMERA_SCREEN_MARGIN
 		var abs_dir = Vector2()
 		var strength = Vector2()
-		if mp.x <= MOVE_CAMERA_SCREEN_MARGIN:
+		if mp.x <= margin:
 			abs_dir.x += 1
-			strength.x = -1.0 + (mp.x/float(MOVE_CAMERA_SCREEN_MARGIN))
-		elif mp.x >= sx - MOVE_CAMERA_SCREEN_MARGIN:
+			strength.x = -1.0 + (mp.x/float(margin))
+		elif mp.x >= vp_size.x - margin:
 			abs_dir.x += 1
-			strength.x = ((mp.x - sx + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
-		if mp.y <= MOVE_CAMERA_SCREEN_MARGIN:
+			strength.x = ((mp.x - vp_size.x + margin)/float(margin))
+		if mp.y <= margin:
 			abs_dir.y += 1
-			strength.y = -1.0 + (mp.y/float(MOVE_CAMERA_SCREEN_MARGIN))
-		elif mp.y >= sy - MOVE_CAMERA_SCREEN_MARGIN:
+			strength.y = -1.0 + (mp.y/float(margin))
+		elif mp.y >= vp_size.y - margin:
 			abs_dir.y += 1
-			strength.y = ((mp.y - sy + MOVE_CAMERA_SCREEN_MARGIN)/float(MOVE_CAMERA_SCREEN_MARGIN))
+			strength.y = ((mp.y - vp_size.y + margin)/float(margin))
 		
 		abs_dir = abs_dir.normalized()
 		strength *= strength*strength #Make it cubically strong on edges
@@ -144,7 +148,7 @@ func update_camera_offset(dt):
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
 	var prev_hp = hp
-	.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name, calibre)
+	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name, calibre)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 
@@ -152,7 +156,7 @@ func do_hitstop():
 	Cam.shake((HITSTOP_DURATION + 1) * HITSTOP_TIMESCALE, 15, 50, 10)
 
 func knockback(strength, dir, should_rotate = true):
-	.knockback(strength, dir, should_rotate)
+	super.knockback(strength, dir, should_rotate)
 	if strength > 0:
 		var dur = sqrt(strength)/10
 		var freq = pow(strength, .3)*5
@@ -161,7 +165,7 @@ func knockback(strength, dir, should_rotate = true):
 
 
 func apply_recoil(type, node, recoil):
-	.apply_recoil(type, node, recoil)
+	super.apply_recoil(type, node, recoil)
 	if recoil > 0:
 		var dur = sqrt(recoil)/10
 		var freq = pow(recoil, .3)*5
@@ -180,10 +184,10 @@ func check_input():
 		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
 
-func check_weapon_input(name, node, weapon_ref):
+func check_weapon_input(weapon_name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
-	   not node.reloading and Input.is_action_pressed(name+"_shoot"):
-		shoot(name, true)
+	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
+		shoot(weapon_name, true)
 
 
 func setup(arena_ref):
@@ -217,19 +221,19 @@ func set_debug_loadout():
 
 
 func set_arm_weapon(part_name, side):
-	.set_arm_weapon(part_name, side)
+	super.set_arm_weapon(part_name, side)
 	var node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
 	
-	if node.is_connected("finished_reloading", self, "_on_finished_reloading"):
-		node.disconnect("finished_reloading", self, "_on_finished_reloading")
-	if node.is_connected("reloading", self, "_on_reloading"):
-		node.disconnect("reloading", self, "_on_reloading")
-	node.connect("finished_reloading", self, "_on_finished_reloading")
-	node.connect("reloading", self, "_on_reloading", [side])
+	if node.is_connected("finished_reloading",Callable(self,"_on_finished_reloading")):
+		node.disconnect("finished_reloading",Callable(self,"_on_finished_reloading"))
+	if node.is_connected("reloading_signal",Callable(self,"_on_reloading")):
+		node.disconnect("reloading_signal",Callable(self,"_on_reloading"))
+	node.connect("finished_reloading",Callable(self,"_on_finished_reloading"))
+	node.connect("reloading_signal",Callable(self,"_on_reloading").bind(side))
 
 
 func get_input():
@@ -249,9 +253,10 @@ func get_input():
 		if mov_vec.y == 0:
 			invert_controls.y = false
 		# warning-ignore:narrowing_conversion
+		@warning_ignore("narrowing_conversion")
 		var angle = posmod(rotation_degrees, 360)
 		if angle > 180 - Profile.get_option("invert_deadzone_angle")/2 and\
-		   angle < 180 + Profile.get_option("invert_deadzone_angle")/2:
+		angle < 180 + Profile.get_option("invert_deadzone_angle")/2:
 			if not moving_axis.x:
 				invert_controls.x = mov_vec.x != 0
 			if not moving_axis.y:
@@ -262,6 +267,7 @@ func get_input():
 	if Profile.get_option("invert_y") and invert_controls.y:
 		mov_vec.y *= -1
 	
+	#print(mov_vec)
 	return mov_vec
 
 
@@ -272,12 +278,12 @@ func get_cam():
 # BUILDING METHODS
 
 func entered_building():
-	.entered_building()
+	super.entered_building()
 	emit_signal("update_building_status", true)
 
 
 func exited_building():
-	.exited_building()
+	super.exited_building()
 	emit_signal("update_building_status", false)
 
 

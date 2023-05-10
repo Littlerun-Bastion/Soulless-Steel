@@ -8,8 +8,10 @@
 [node name="Enemy" instance=ExtResource("1")]
 position = Vector2(0, 0)
 script = ExtResource("2")
-look_ahead_range = 5000
-num_rays = 16
+look_ahead_range = 800
+num_rays = 20
+draw_sight_rays = false
+draw_movement_ray = false
 
 [node name="ArmWeaponLeft" parent="." index="6"]
 position = Vector2(-53.8753, 34.9034)
@@ -37,6 +39,10 @@ offset_top = -40.6918
 offset_right = 127.037
 offset_bottom = 69.3082
 text = "STATE"
+
+[node name="NavigationAgent2D" parent="." index="28"]
+target_desired_distance = 400.0
+path_max_distance = 200.0
 
 [connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_navigation_finished"]
 [connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_target_reached"]

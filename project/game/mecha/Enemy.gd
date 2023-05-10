@@ -4,6 +4,8 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 @export var look_ahead_range = 500
 @export var num_rays = 16
+@export var draw_sight_rays = false
+@export var draw_movement_ray = false
 
 var ray_directions = []
 var interest = []
@@ -47,11 +49,13 @@ func _physics_process(delta):
 	else:
 		$Debug/StateLabel.text = ""
 
-#func _draw():
-	#draw_line(Vector2.ZERO, chosen_dir*1000, Color.DARK_GREEN, 5)
-	#for i in ray_directions:
-		#if i:
-			#draw_line(Vector2.ZERO, i * 500, Color.GREEN, 2.0)
+func _draw():
+	if draw_movement_ray:
+		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.DARK_GREEN, 5)
+	if draw_sight_rays:
+		for i in debug_lines:
+			if i:
+				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.GREEN, 2.0)
 
 func setup(arena_ref, is_tutorial):
 	arena = arena_ref
@@ -208,12 +212,14 @@ func set_interest(target):
 	
 func set_danger():
 	var space_state = get_world_2d().direct_space_state
+	debug_lines = []
 	for i in num_rays:
 		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
-		#if result:
-		#	print("warn!")
+		if result:
+			debug_lines.append(ray_directions[i])
+		queue_redraw()
 		#else:
 		#	print("clear!")
 		danger[i] = 1.0 if result else 0.0

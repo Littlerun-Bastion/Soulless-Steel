@@ -21,6 +21,7 @@ const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
+const AI_TURN_DEADZONE = 5
 
 signal create_projectile
 signal create_casing
@@ -169,6 +170,7 @@ var move_acc = 50
 var rotation_acc = 5
 var arm_accuracy_mod := 0.0
 var stability := 1.0
+var cur_rotation_speed = 0
 
 var last_damage_source
 var last_damage_weapon
@@ -1173,17 +1175,17 @@ func apply_movement(dt, direction):
 			var target_rotation_acc = apply_movement_modifiers(chassis.rotation_acc * 50)
 			var rotated_tank_move_target = tank_move_target.rotated(deg_to_rad(270))
 			#Compare direction we want to go to the way the Chassis is facing.
-			var turn_angle = rotated_tank_move_target.angle_to(direction)
+			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
 			#Turn chassis to face the direction
-			if turn_angle > 0:
+			if turn_angle > AI_TURN_DEADZONE:
 				#print("right")
 				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
 				global_rotation_degrees += target_rotation_acc*dt
-			else:
+			elif turn_angle < -AI_TURN_DEADZONE:
 				#print("left")
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
-			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * rotated_tank_move_target.dot(direction)
+			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)
 			#print(target_speed)
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)

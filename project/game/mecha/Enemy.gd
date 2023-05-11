@@ -51,11 +51,11 @@ func _physics_process(delta):
 
 func _draw():
 	if draw_movement_ray:
-		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.DARK_GREEN, 5)
+		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.WHITE, 5)
 	if draw_sight_rays:
 		for i in debug_lines:
 			if i:
-				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.GREEN, 2.0)
+				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
 
 func setup(arena_ref, is_tutorial):
 	arena = arena_ref
@@ -212,13 +212,10 @@ func set_interest(target):
 	
 func set_danger():
 	var space_state = get_world_2d().direct_space_state
-	debug_lines = []
 	for i in num_rays:
 		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
-		if result:
-			debug_lines.append(ray_directions[i])
 		queue_redraw()
 		#else:
 		#	print("clear!")
@@ -231,7 +228,9 @@ func choose_direction():
 			interest[i] = 0.0
 	# Choose direction based on remaining interest
 	chosen_dir = Vector2.ZERO
+	debug_lines = []
 	for i in num_rays:
+		debug_lines.append(ray_directions[i] * interest[i])
 		chosen_dir += ray_directions[i] * interest[i]
 	chosen_dir = chosen_dir.normalized()
-	#queue_redraw()
+	queue_redraw()

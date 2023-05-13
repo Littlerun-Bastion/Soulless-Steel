@@ -219,13 +219,17 @@ func set_danger():
 		queue_redraw()
 		#else:
 		#	print("clear!")
-		danger[i] = 1.0 if result else 0.0
+		if result:
+			var distance = self.global_position.distance_to(result.position)
+			danger[i] = pow((look_ahead_range - distance)/look_ahead_range,2)
+		else:
+			danger[i] = 0.0
 
 func choose_direction():
 	# Eliminate interest in slots with danger
 	for i in num_rays:
 		if danger[i] > 0.0:
-			interest[i] = 0.0
+			interest[i] = -danger[i]
 	# Choose direction based on remaining interest
 	chosen_dir = Vector2.ZERO
 	debug_lines = []

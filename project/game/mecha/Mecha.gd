@@ -203,6 +203,7 @@ var chipset = null
 var thruster = null
 var chassis = null
 
+
 var status_time = {
 	"fire": 0.0,
 	"electrified": 0.0,
@@ -1432,6 +1433,7 @@ func shoot(type, is_auto_fire = false):
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
+								"is_subprojectile": false,
 								"weapon_data": weapon_ref,
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),

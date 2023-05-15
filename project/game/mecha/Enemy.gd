@@ -4,8 +4,6 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 
 @export var look_ahead_range = 500
 @export var num_rays = 16
-@export var draw_sight_rays = false
-@export var draw_movement_ray = false
 
 var ray_directions = []
 var interest = []
@@ -33,6 +31,12 @@ func _ready():
 		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
 		logic.setup("default")
+		
+	if Debug.get_setting("draw_debug_lines"):
+		$NavigationAgent2D.debug_enabled = true
+	else:
+		$NavigationAgent2D.debug_enabled = false
+	
 
 
 func _physics_process(delta):
@@ -50,9 +54,8 @@ func _physics_process(delta):
 		$Debug/StateLabel.text = ""
 
 func _draw():
-	if draw_movement_ray:
+	if Debug.get_setting("draw_debug_lines"):
 		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.WHITE, 5)
-	if draw_sight_rays:
 		for i in debug_lines:
 			if i:
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)

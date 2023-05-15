@@ -1,14 +1,14 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c8p0pnsrudb8x"]
 
-[ext_resource path="res://database/parts/chipset.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/chipset.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Test Chipset 2"
 manufacturer_name = "Test"
 tagline = "Narrow Field"
 description = ""
-can_lock = false
+can_lock = true
 accuracy_modifier = 1.0
 lock_on_speed = 0.2
 lock_on_duration = 5

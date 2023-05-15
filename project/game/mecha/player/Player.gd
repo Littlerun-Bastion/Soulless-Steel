@@ -158,7 +158,7 @@ func do_hitstop():
 func knockback(strength, dir, should_rotate = true):
 	super.knockback(strength, dir, should_rotate)
 	if strength > 0:
-		var dur = sqrt(strength)/10
+		var dur = min(sqrt(strength)/10, 1.5)
 		var freq = pow(strength, .3)*5
 		var amp = pow(strength, .3)*5
 		Cam.shake(dur, freq, amp, strength)

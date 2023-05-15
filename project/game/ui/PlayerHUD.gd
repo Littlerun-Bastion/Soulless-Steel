@@ -117,7 +117,7 @@ func _process(dt):
 			LockingSprite.scale = Vector2(sc, sc)
 			LockingSprite.global_position = v_trans * pos
 			LockingAnim.play("blinking")
-			LockingAnim.playback_speed = blink_speed
+			LockingAnim.speed_scale = blink_speed
 		else:
 			ECMLabel.visible = false
 			ConstantBlinkingSFX.stop()
@@ -225,7 +225,7 @@ func player_died():
 
 
 func play_blink_sound():
-	var prog = LockingAnim.playback_speed/float(LOCKING_FINAL_BLINK - LOCKING_INIT_BLINK)
+	var prog = LockingAnim.speed_scale/float(LOCKING_FINAL_BLINK - LOCKING_INIT_BLINK)
 	var pitch = 1.0 + BLINK_PITCH_TARGET_MOD*prog
 	AudioManager.play_sfx("blinking", false, pitch)
 

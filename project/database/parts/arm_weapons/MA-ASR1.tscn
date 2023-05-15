@@ -1,23 +1,24 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=3 uid="uid://c81n8dnjfrqo5"]
 
-[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-ASR1_main.png" type="Texture2D" id=2]
-[ext_resource path="res://database/parts/projectiles/asr_rocket.tscn" type="PackedScene" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-ASR1_glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-ASR1_sub.png" type="Texture2D" id=5]
-[ext_resource path="res://game/weapons/MissileDirectedImpact.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" type="PackedScene" id=7]
+[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://b31upo5ajpuix" path="res://assets/images/mechas/arm_weapons/MA-ASR1_main.png" id="2"]
+[ext_resource type="PackedScene" uid="uid://bqwmn6aymuj40" path="res://database/parts/projectiles/asr_rocket.tscn" id="3"]
+[ext_resource type="Texture2D" uid="uid://chlgvag0hyh86" path="res://assets/images/mechas/arm_weapons/MA-ASR1_glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://7pr18mstyig2" path="res://assets/images/mechas/arm_weapons/MA-ASR1_sub.png" id="5"]
+[ext_resource type="PackedScene" uid="uid://dbqgcpmjhgqri" path="res://database/subprojectile/test_subprojectile.tscn" id="5_iqta5"]
+[ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="7"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "MA-ASR1"
 manufacturer_name = "Martel"
 tagline = "Rocket Launcher"
 type = "PewPew"
-muzzle_flash = ExtResource( 7 )
+muzzle_flash = ExtResource("7")
 muzzle_flash_size = 0.33
 muzzle_flash_speed = 2.0
-projectile = ExtResource( 3 )
+projectile = ExtResource("3")
 projectile_type = ".50cal AP-I"
 damage = 1200.0
 shield_mult = 0.5
@@ -27,9 +28,7 @@ bloom_reset_time = 2.4
 fire_rate = 1.2
 burst_size = 3
 burst_fire_rate = 0.1
-base_accuracy = 3.5
-accuracy_bloom = 3.5
-max_bloom_angle = 10.5
+max_bloom_angle = 0.0
 bullet_spread = 0.0
 total_ammo = 36
 max_ammo = 36
@@ -37,44 +36,65 @@ clip_size = 9
 reload_speed = 3.2
 muzzle_heat = 31.0
 ammo_cost = 1
-soundEffect = "missile1"
 sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0
 weight = 5.9
-bullet_velocity = 1200
+bullet_velocity = 200
 bullet_drag = 1.007
 impact_force = 12.0
 casing_size = 0.5
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
-impact_effect = ExtResource( 6 )
+impact_effect = ExtResource("6")
 impact_size = 1.5
 hitstop = true
 has_wiggle = true
-wiggle_amount = 0.05
 seeker_agility = 0.003
 seek_time = 0.5
+is_two_stage = true
+stage_1_max_speed = 500
+stage_1_acceleration = 500.0
+stage_1_thrust_delay = 4.0
+stage_1_turn_rate = 360.0
+stage_1_seeker_type = "IR"
+stage_1_seeker_delay = 2.0
+stage_1_seeker_angle = 20.0
+stage_2_acceleration = 4000.0
+stage_2_thrust_delay = 4.0
+stage_2_wiggle_amount = 4.0
+stage_2_wiggle_freq = 2.0
+stage_2_seeker_delay = 2.0
+fuse_arm_time = 1.0
+fuse_timer = 0.0
+fuse_proximity_distance = 200
+fuse_detection_type = "IR"
+fuse_angle = 40.0
+payload_explosion_damage = 1500.0
+payload_explosion_force = 2000.0
+payload_explosion_radius = 400.0
+payload_subprojectile = ExtResource("5_iqta5")
+payload_subprojectile_count = 3.0
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Glow" type="Sprite2D" parent="."]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="AttachPos" type="Marker2D" parent="."]
-position = Vector2( 10.1736, 3.19414 )
+position = Vector2(10.1736, 3.19414)
 
 [node name="EjectorPos" type="Marker2D" parent="."]
-position = Vector2( 0, 11.772 )
+position = Vector2(0, 11.772)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2( 0.0135689, -78.1208 )
+position = Vector2(0.0135689, -78.1208)
 
 [node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2( -5.45843, -78.1208 )
+position = Vector2(-5.45843, -78.1208)

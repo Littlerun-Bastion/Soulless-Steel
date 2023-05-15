@@ -77,7 +77,6 @@ extends Node
 @export var hitstop := false
 #---MISSILE/ROCKET BEHAVIOURS---
 @export var has_wiggle := false
-@export var wiggle_amount := 2.0
 @export var is_seeker := false
 @export var seeker_agility := 0.01
 @export var seek_time := 1.0

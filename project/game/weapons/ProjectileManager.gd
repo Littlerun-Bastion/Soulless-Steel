@@ -1,16 +1,22 @@
 extends Node
 
-enum TYPE {INSTANT, REGULAR}
+enum TYPE {INSTANT, REGULAR, COMPLEX}
 
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
+const COMPLEX = preload("res://game/weapons/ComplexProjectile.tscn")
 const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
 
-func create(mecha, args):
+func create(mecha, args, weapon):
 	var wr = weakref(mecha)
 	if not wr.get_ref():
 		return false
 
-	var projectile_data = args.weapon_data.projectile.instantiate()
+	var projectile_data
+	if args.is_subprojectile:
+		weapon.test_name()
+		projectile_data = weapon.subprojectile_data.instantiate()
+	else:
+		projectile_data = args.weapon_data.projectile.instantiate()
 	var data = {
 		"weapon_data": args.weapon_data,
 		"create_node": false,
@@ -26,6 +32,12 @@ func create(mecha, args):
 	elif projectile_data.type == TYPE.REGULAR:
 		var projectile = REGULAR.instantiate()
 		projectile.setup(mecha, args)#
+		data.create_node = true
+		data.node = projectile
+		
+	elif projectile_data.type == TYPE.COMPLEX:
+		var projectile = COMPLEX.instantiate()
+		projectile.setup(mecha, args, weapon)#
 		data.create_node = true
 		data.node = projectile
 	

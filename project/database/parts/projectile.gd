@@ -1,6 +1,6 @@
 extends Node2D
 
-enum TYPE {INSTANT, REGULAR}
+enum TYPE {INSTANT, REGULAR, COMPLEX}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 @export var type : TYPE

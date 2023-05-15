@@ -55,6 +55,7 @@ seek_time = 0.5
 stage_max_speed = Array[int]([500, 4000])
 stage_acceleration = Array[float]([500.0, 4000.0])
 stage_thrust_delay = Array[float]([4.0, 4.0])
+stage_turn_rate = Array[float]([0.0, 0.0])
 stage_wiggle_amount = Array[float]([0.0, 6.0])
 stage_wiggle_freq = Array[float]([0.0, 2.0])
 stage_seeker_type = Array[String](["IR", ""])

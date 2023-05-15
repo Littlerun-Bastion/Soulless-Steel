@@ -100,69 +100,65 @@ func _process(dt):
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	queue_redraw()
 	
-	
+
+func get_propulsion_stage():
+	var cur_stage = 0
+	var total_delay = 0
+	for idx in data.stages:
+		if lifetime < total_delay:
+			return cur_stage
+		total_delay += data.stage_thrust_delay[cur_stage]
+		cur_stage += 1
+
 func propulsion(dt):
-	if lifetime > data.stage_1_thrust_delay:
-		if data.is_two_stage and lifetime > data.stage_1_thrust_delay + data.stage_2_thrust_delay:
-			#Stage-2
-			acceleration = data.stage_2_acceleration
-			max_speed = data.stage_2_max_speed
-			wiggle_amount = data.stage_2_wiggle_amount
-			wiggle_freq = data.stage_2_wiggle_amount
-			
-		else:
-		#Stage-1
-			acceleration = data.stage_1_acceleration
-			max_speed = data.stage_1_max_speed
-			wiggle_amount = data.stage_1_wiggle_amount
-			wiggle_freq = data.stage_1_wiggle_freq
-	
+	var cur_stage = get_propulsion_stage()
+	if cur_stage > 0:
+		acceleration = data.stage_acceleration[cur_stage-1]
+		max_speed = data.stage_max_speed[cur_stage-1]
+		wiggle_amount = data.stage_wiggle_amount[cur_stage-1]
+		wiggle_freq = data.stage_wiggle_amount[cur_stage-1]
+
 	if speed < max_speed:
 		speed = min(speed + acceleration*dt, max_speed) 
 	
 func guidance(dt):
-	if lifetime > data.stage_1_seeker_delay:
-		if data.is_two_stage and lifetime > data.stage_1_seeker_delay + data.stage_2_seeker_delay:
-			seeker_type = data.stage_2_seeker_type
-			seeker_angle = data.stage_2_seeker_angle
-			turn_rate = data.stage_2_turn_rate
-			
-		else:
-		
-			seeker_type = data.stage_1_seeker_type
-			seeker_angle = data.stage_1_seeker_angle
-			turn_rate = data.stage_1_turn_rate
+	var cur_stage = get_propulsion_stage()
+	if cur_stage > 0:
+		seeker_type = data.stage_seeker_type[cur_stage-1]
+		seeker_angle = data.stage_seeker_angle[cur_stage-1]
+		turn_rate = data.stage_turn_rate[cur_stage-1]
 	
-	if seeker_type == "IR":
-		#rotation_degrees = rad_to_deg(dir.angle()) + 90
-		if seeker_target and is_instance_valid(seeker_target):
-			is_seeking = true
-			if seeker_target.mecha_heat / seeker_target.max_heat > 0.2:
+	match seeker_type:
+		"IR":
+			#rotation_degrees = rad_to_deg(dir.angle()) + 90
+			if seeker_target and is_instance_valid(seeker_target):
 				is_seeking = true
-			else:
-				is_seeking = false
+				if seeker_target.mecha_heat / seeker_target.max_heat > 0.2:
+					is_seeking = true
+				else:
+					is_seeking = false
 	
-	elif seeker_type == "RCS":
-		rotation_degrees = rad_to_deg(dir.angle()) + 90
-		if seeker_target and is_instance_valid(seeker_target):
-			pass
+		"RCS":
+			rotation_degrees = rad_to_deg(dir.angle()) + 90
+			if seeker_target and is_instance_valid(seeker_target):
+				pass
 	
-	elif seeker_type == "Laser":
-		rotation_degrees = rad_to_deg(dir.angle()) + 90
-		if seeker_target and is_instance_valid(seeker_target):
-			pass
+		"Laser":
+			rotation_degrees = rad_to_deg(dir.angle()) + 90
+			if seeker_target and is_instance_valid(seeker_target):
+				pass
 	
-	else:
-		is_seeking = false
+		_:
+			is_seeking = false
 	
-	if is_seeking == true and seeker_target and is_instance_valid(seeker_target):
+	if is_seeking and seeker_target and is_instance_valid(seeker_target):
 		target_dir = seeker_target.position - position
 		var turn_angle = true_dir.angle_to(target_dir)
 		if abs(turn_angle) < deg_to_rad(seeker_angle):
 			var current_turn = min(abs(turn_angle), deg_to_rad(turn_rate)) * sign(turn_angle) * dt
 			true_dir = true_dir.rotated(current_turn)
 	
-func fuse(dt):
+func fuse(_dt):
 	var space_state = get_world_2d().direct_space_state
 	fuse_ray_directions = []
 	if data.fuse_arm_time < lifetime:
@@ -240,7 +236,7 @@ func payload():
 	queue_redraw()
 	die()
 
-func _on_body_shape_entered(body_id, body, body_shape_id, _local_shape):
+func _on_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_chassis(body_shape_id):
 			return

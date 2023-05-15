@@ -58,26 +58,16 @@ extends Node
 #----COMPLEX PROJECTILE BEHAVIOURS----#
 
 #---PROPULSION---#
-@export var is_two_stage := false
-@export var stage_1_max_speed := 4000
-@export var stage_1_acceleration := 10.0
-@export var stage_1_thrust_delay := 0.0
-@export var stage_1_turn_rate := 0.0
-@export var stage_1_wiggle_amount := 0.0
-@export var stage_1_wiggle_freq := 0.0
-@export var stage_1_seeker_type : String
-@export var stage_1_seeker_delay := 0.0
-@export var stage_1_seeker_angle := 0.0
-
-@export var stage_2_max_speed := 4000
-@export var stage_2_acceleration := 10.0
-@export var stage_2_thrust_delay := 0.0
-@export var stage_2_turn_rate := 0.0
-@export var stage_2_wiggle_amount := 0.0
-@export var stage_2_wiggle_freq := 0.0
-@export var stage_2_seeker_type : String
-@export var stage_2_seeker_delay := 0.0
-@export var stage_2_seeker_angle := 0.0
+@export var stages := 1
+@export var stage_max_speed :Array[int] = [4000]
+@export var stage_acceleration :Array[float] = [10.0]
+@export var stage_thrust_delay :Array[float] = [0.0]
+@export var stage_turn_rate :Array[float] = [0.0]
+@export var stage_wiggle_amount :Array[float] = [0.0]
+@export var stage_wiggle_freq :Array[float] = [0.0]
+@export var stage_seeker_type :Array[String] = ["IR"]
+@export var stage_seeker_delay :Array[float] = [0.0]
+@export var stage_seeker_angle :Array[float] = [0.0]
 
 #---FUSE---#
 @export var fuse_arm_time := 0.0

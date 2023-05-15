@@ -239,8 +239,8 @@ func payload():
 					explosion_ray_directions.append(ray * data.payload_explosion_radius)
 				if result and result.collider and result.collider.is_in_group("mecha"):
 					if not affected_mechs.has(result.collider):
-						result.collider.take_damage(data.payload_explosion_damage, data.shield_mult, data.health_mult, data.heat_damage,\
-											data.status_damage, data.status_type, data.hitstop, original_mecha_info, data.part_id, proj_data.calibre)
+						result.collider.take_damage(data.payload_explosion_damage, data.payload_explosion_shield_mult, data.payload_explosion_health_mult, data.payload_explosion_heat_damage,\
+											data.payload_explosion_status_damage, data.payload_explosion_status_type, data.payload_explosion_hitstop, original_mecha_info, data.part_id, proj_data.calibre)
 						result.collider.knockback(data.payload_explosion_force, ray, true)
 						affected_mechs.append(result.collider)
 	

@@ -123,10 +123,10 @@ func get_propulsion_var(var_name, stage):
 func propulsion(dt):
 	var cur_stage = get_propulsion_stage()
 	if cur_stage > 0:
-		acceleration = data.get_propulsion_var("acceleration", cur_stage)
-		max_speed = data.get_propulsion_var("max_speed", cur_stage)
-		wiggle_amount = data.get_propulsion_var("wiggle_amount", cur_stage)
-		wiggle_freq = data.get_propulsion_var("wiggle_freq", cur_stage)
+		acceleration = get_propulsion_var("acceleration", cur_stage)
+		max_speed = get_propulsion_var("max_speed", cur_stage)
+		wiggle_amount = get_propulsion_var("wiggle_amount", cur_stage)
+		wiggle_freq = get_propulsion_var("wiggle_freq", cur_stage)
 
 	if speed < max_speed:
 		speed = min(speed + acceleration*dt, max_speed) 
@@ -135,9 +135,9 @@ func propulsion(dt):
 func guidance(dt):
 	var cur_stage = get_propulsion_stage()
 	if cur_stage > 0:
-		seeker_type = data.get_propulsion_var("seeker_type", cur_stage)
-		seeker_angle = data.get_propulsion_var("seeker_angle", cur_stage)
-		turn_rate = data.get_propulsion_var("turn_rate", cur_stage)
+		seeker_type = get_propulsion_var("seeker_type", cur_stage)
+		seeker_angle = get_propulsion_var("seeker_angle", cur_stage)
+		turn_rate = get_propulsion_var("turn_rate", cur_stage)
 	
 	match seeker_type:
 		"IR":

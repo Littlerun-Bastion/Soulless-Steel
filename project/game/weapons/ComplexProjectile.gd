@@ -67,14 +67,14 @@ func setup(mecha, args, weapon):
 	change_scaling(data.projectile_size)
 	home_node = weapon
 	scaling_variance = data.projectile_size_scaling + randf_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
-	
-	
+
 
 func _ready():
 	if Debug.get_setting("disable_projectiles_light"):
 		LightEffect.hide()
 	else:
 		LightEffect.show()
+
 
 func _draw():
 	if Debug.get_setting("draw_debug_lines"):
@@ -84,7 +84,7 @@ func _draw():
 		for i in fuse_ray_directions:
 			draw_line(Vector2.ZERO, i.rotated(-global_rotation), Color.DARK_GRAY, 1)
 
-# Called every frame. 'delta' i
+
 func _process(dt):
 	if dying:
 		return
@@ -99,7 +99,7 @@ func _process(dt):
 	position += dir*speed*dt
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	queue_redraw()
-	
+
 
 func get_propulsion_stage():
 	var cur_stage = 0
@@ -111,23 +111,33 @@ func get_propulsion_stage():
 		cur_stage += 1
 	return cur_stage
 
+
+func get_propulsion_var(var_name, stage):
+	var var_data = data.get("stage_"+var_name)
+	if var_data.size() >= stage:
+		return var_data[stage - 1]
+	#Return last position if cur stage doesn't exist
+	return var_data.back()
+
+
 func propulsion(dt):
 	var cur_stage = get_propulsion_stage()
 	if cur_stage > 0:
-		acceleration = data.stage_acceleration[cur_stage-1]
-		max_speed = data.stage_max_speed[cur_stage-1]
-		wiggle_amount = data.stage_wiggle_amount[cur_stage-1]
-		wiggle_freq = data.stage_wiggle_amount[cur_stage-1]
+		acceleration = data.get_propulsion_var("acceleration", cur_stage)
+		max_speed = data.get_propulsion_var("max_speed", cur_stage)
+		wiggle_amount = data.get_propulsion_var("wiggle_amount", cur_stage)
+		wiggle_freq = data.get_propulsion_var("wiggle_freq", cur_stage)
 
 	if speed < max_speed:
 		speed = min(speed + acceleration*dt, max_speed) 
-	
+
+
 func guidance(dt):
 	var cur_stage = get_propulsion_stage()
 	if cur_stage > 0:
-		seeker_type = data.stage_seeker_type[cur_stage-1]
-		seeker_angle = data.stage_seeker_angle[cur_stage-1]
-		turn_rate = data.stage_turn_rate[cur_stage-1]
+		seeker_type = data.get_propulsion_var("seeker_type", cur_stage)
+		seeker_angle = data.get_propulsion_var("seeker_angle", cur_stage)
+		turn_rate = data.get_propulsion_var("turn_rate", cur_stage)
 	
 	match seeker_type:
 		"IR":

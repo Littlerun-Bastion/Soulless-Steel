@@ -6,8 +6,3 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_trko6")
 projectile = ExtResource("2_qclvh")
-stage_1_acceleration = 4000.0
-stage_1_turn_rate = 180.0
-stage_1_wiggle_amount = 8.0
-stage_1_wiggle_freq = 2.0
-stage_1_seeker_type = "IR"

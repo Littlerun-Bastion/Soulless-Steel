@@ -22,6 +22,7 @@ const OVERHEAT_BUFFER = 1.1
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
+const EXPOSED_INVULN_WINDOW = 1
 
 signal create_projectile
 signal create_casing
@@ -126,6 +127,7 @@ var cur_mode = MODES.NEUTRAL
 var arena = false
 var is_inside_building = false
 var is_entering_building = false
+var is_exposed = false
 
 var max_hp = 10
 var hp = 10
@@ -147,6 +149,8 @@ var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
 var weight = 0.0
+var exposed_hits = 3.0
+var exposed_invuln_timer = 0.0
 
 var weight_capacity = 100.0
 
@@ -287,6 +291,9 @@ func _physics_process(dt):
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
+	
+	if is_exposed:
+		exposed_invuln_timer = min(exposed_invuln_timer + dt, EXPOSED_INVULN_WINDOW)
 
 	#ECM
 	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
@@ -532,9 +539,15 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
 
-	if hp <= 0:
-		AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
-		die(source_info, weapon_name)
+	if hp <= 0 and not is_exposed:
+		is_exposed = true
+	elif hp <= 0 and is_exposed:
+		if exposed_invuln_timer == EXPOSED_INVULN_WINDOW:
+			exposed_hits -= 1
+			exposed_invuln_timer = 0.0
+			if exposed_hits <= 0:
+				AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
+				die(source_info, weapon_name)
 
 
 func do_hitstop():
@@ -570,12 +583,11 @@ func take_status_damage(dt):
 		return
 
 	if has_status("overheating"):
-		hp -= (max_hp * 0.02 * dt)
-		hp = round(hp)
 		if hp <= 0:
-			AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
-			die(last_damage_source, last_damage_weapon)
-			die(last_damage_source, last_damage_weapon)
+			is_exposed = true
+		else:
+			hp -= (max_hp * 0.02 * dt)
+			hp = round(hp)
 
 	if has_status("fire"):
 		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
@@ -587,7 +599,10 @@ func take_status_damage(dt):
 			shield_regen_cooldown = generator.shield_regen_delay
 
 	if has_status("corrosion"):
-		hp = round(max(hp - (dt * 100), 1))
+		if hp <= 0:
+			is_exposed = true
+		else:
+			hp = round(max(hp - (dt * (hp/100)), 1))
 		emit_signal("took_damage", self, true)
 
 
@@ -605,6 +620,7 @@ func freezing_status_heat(heat_disp):
 	if has_status("freezing"):
 		heat_disp *= 2
 	return heat_disp
+
 
 
 func die(source_info, _weapon_name):

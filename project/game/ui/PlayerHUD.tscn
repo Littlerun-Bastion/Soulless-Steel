@@ -1,9 +1,10 @@
-[gd_scene load_steps=28 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=29 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="4_v3ahc"]
 [ext_resource type="Texture2D" uid="uid://bjsewyv2hkidw" path="res://assets/images/ui/player_ui/ui_vignette.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://vup205tntx1e" path="res://assets/images/ui/player_ui/small_bullethole3.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://exlflvupk2ki" path="res://assets/images/ui/player_ui/small_bullethole1.png" id="8"]
@@ -911,6 +912,35 @@ libraries = {
 "": SubResource("AnimationLibrary_2wm0k")
 }
 
+[node name="ExposedLabels" type="Control" parent="SubViewportContainer/SubViewport"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1372.0
+offset_top = 965.0
+offset_right = 1412.0
+offset_bottom = 1005.0
+
+[node name="ExposedLabel2" type="Label" parent="SubViewportContainer/SubViewport/ExposedLabels"]
+visible = false
+offset_right = 474.0
+offset_bottom = 126.0
+theme_override_fonts/font = ExtResource("4_v3ahc")
+theme_override_font_sizes/font_size = 50
+text = "WARNING"
+horizontal_alignment = 2
+
+[node name="ExposedLabel" type="Label" parent="SubViewportContainer/SubViewport/ExposedLabels"]
+offset_left = -1.0
+offset_top = -23.0
+offset_right = 473.0
+offset_bottom = 103.0
+theme_override_fonts/font = ExtResource("4_v3ahc")
+theme_override_font_sizes/font_size = 50
+text = "Capsule 
+Exposed"
+horizontal_alignment = 2
+
 [node name="LifeBar" type="ProgressBar" parent="SubViewportContainer/SubViewport"]
 custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
@@ -1395,6 +1425,7 @@ pitch_scale = 1.51
 bus = &"SFX"
 
 [node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="BuildingEffect" type="ColorRect" parent="BuildingEffectCanvas"]
 modulate = Color(0, 0, 0, 1)

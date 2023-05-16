@@ -15,6 +15,7 @@ const LOCKING_INIT_BLINK = .7
 const LOCKING_FINAL_BLINK = 15.0
 const BLINK_PITCH_TARGET_MOD = .40
 const STATUS_BLINK_SPEED = 0.66
+const EXPOSED_BLINK_SPEED = 0.66
 const BUILDING_SPEED = 1.5
 
 @onready var LifeBar = $SubViewportContainer/SubViewport/LifeBar
@@ -43,12 +44,15 @@ const BUILDING_SPEED = 1.5
 @onready var ECMFreqLabel = $SubViewportContainer/SubViewport/ECMLabel/ECMFreqLabel
 @onready var OverweightLabel = $SubViewportContainer/SubViewport/StatusContainer/OverweightLabel
 @onready var BuildingEffect = $BuildingEffectCanvas/BuildingEffect
-
+@onready var ExposedLabel = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel
+@onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
+@onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 
 var player = false
 var mechas
 var blink_timer = 0.66
 var building_effect_active = false
+var exposed_blink_timer = 0.0
 
 
 func _ready():
@@ -82,6 +86,16 @@ func _process(dt):
 		
 		OverweightLabel.visible = player.is_overweight()
 		
+		if player.is_exposed:
+			LifeBar.visible = false
+			ShieldBar.visible = false
+			ExposedLabels.visible = true
+			exposed_blink_timer = min(exposed_blink_timer + dt, EXPOSED_BLINK_SPEED)
+			if exposed_blink_timer == EXPOSED_BLINK_SPEED:
+				ExposedLabel.visible = !ExposedLabel.visible
+				ExposedLabel2.visible = !ExposedLabel2.visible
+				exposed_blink_timer = 0.0
+				
 		#TODO: Improve this
 		if blink_timer <= 0.0:
 			StatusContainer.visible = not StatusContainer.visible

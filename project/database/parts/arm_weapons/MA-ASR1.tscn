@@ -65,8 +65,8 @@ fuse_timer = 0.0
 fuse_proximity_distance = 200
 fuse_detection_type = "IR"
 fuse_angle = 40.0
-payload_explosion_damage = 1500.0
-payload_explosion_force = 2000.0
+payload_explosion_damage = 999999.0
+payload_explosion_force = 500.0
 payload_explosion_radius = 400.0
 payload_subprojectile_count = 3.0
 

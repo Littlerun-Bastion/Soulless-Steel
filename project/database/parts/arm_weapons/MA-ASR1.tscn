@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://chlgvag0hyh86" path="res://assets/images/mechas/arm_weapons/MA-ASR1_glow.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://7pr18mstyig2" path="res://assets/images/mechas/arm_weapons/MA-ASR1_sub.png" id="5"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="7"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1")

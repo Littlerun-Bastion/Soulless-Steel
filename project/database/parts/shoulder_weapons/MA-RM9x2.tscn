@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://nkd3qi7l3eju"]
 
 [ext_resource type="Script" path="res://database/parts/shoulder_weapon.gd" id="1_6lucl"]
-[ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="2_eoypc"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="2_eoypc"]
 [ext_resource type="PackedScene" uid="uid://mouwri1ckrph" path="res://database/parts/projectiles/ma-rm9.tscn" id="3_wsw55"]
 [ext_resource type="PackedScene" uid="uid://dix1oxctlf7et" path="res://game/weapons/SmokeTrail.tscn" id="4_68lhj"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="5_1fn7q"]
@@ -21,19 +21,20 @@ projectile = ExtResource("3_wsw55")
 projectile_type = "Chipset-Guided Missile"
 number_projectiles = 2
 burst_ammo_cost = 2
-damage = 400.0
+damage = 100.0
 shield_mult = 1.5
 health_mult = 0.5
 recoil_force = 0.0
-fire_rate = 3.0
+fire_rate = 0.8
 auto_fire = false
 base_accuracy = 2.0
 accuracy_bloom = 2
 max_bloom_angle = 6.0
-bullet_spread = 3.0
-total_ammo = 18
-max_ammo = 18
-clip_size = 18
+bullet_spread = 2.0
+total_ammo = 60
+max_ammo = 60
+clip_size = 60
+muzzle_heat = 50.0
 ammo_cost = 4500
 sound_max_range = 8000
 sound_att = 1.33
@@ -50,19 +51,19 @@ hitstop = true
 seeker_agility = 0.02
 seek_time = 2.0
 stages = 2
-stage_max_speed = Array[int]([100, 3000])
-stage_acceleration = Array[float]([500.0, 6000.0])
+stage_max_speed = Array[int]([1000, 6000])
+stage_acceleration = Array[float]([500.0, 3000.0])
 stage_thrust_delay = Array[float]([1.5, 1.0])
-stage_wiggle_amount = Array[float]([0.0, 5.0])
-stage_wiggle_freq = Array[float]([2.0, 2.0])
+stage_wiggle_amount = Array[float]([0.0, 3.0])
+stage_wiggle_freq = Array[float]([1.0, 1.0])
 stage_seeker_type = Array[String]([""])
 fuse_arm_time = 2.0
 fuse_timer = 5.0
-payload_explosion_damage = 4000.0
+payload_explosion_damage = 450.0
 payload_explosion_shield_mult = 0.5
 payload_explosion_health_mult = 1.5
 payload_explosion_heat_damage = 140.0
-payload_explosion_force = 1500.0
+payload_explosion_force = 150.0
 payload_explosion_radius = 300.0
 payload_explosion_angle = 15.0
 payload_explosion_hitstop = true
@@ -91,10 +92,10 @@ position = Vector2(0, 62)
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2(2, -71)
+position = Vector2(2, -72)
 
 [node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2(-2, -71)
+position = Vector2(-2, -72)
 
 [node name="ShootingPos3" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2(-6, -71)
+position = Vector2(-6, -72)

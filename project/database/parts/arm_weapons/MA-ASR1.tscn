@@ -51,6 +51,7 @@ hitstop = true
 has_wiggle = true
 seeker_agility = 0.003
 seek_time = 0.5
+stages = 2
 stage_max_speed = Array[int]([500, 4000])
 stage_acceleration = Array[float]([500.0, 4000.0])
 stage_thrust_delay = Array[float]([4.0, 4.0])

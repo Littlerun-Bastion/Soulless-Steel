@@ -104,11 +104,12 @@ func _process(dt):
 func get_propulsion_stage():
 	var cur_stage = 0
 	var total_delay = 0
-	for idx in data.stages + 1:
-		if lifetime < total_delay:
-			return cur_stage
+	for idx in data.stages:
 		total_delay += data.stage_thrust_delay[cur_stage]
+		if lifetime < total_delay:
+			break
 		cur_stage += 1
+	print(cur_stage)
 	return cur_stage
 
 

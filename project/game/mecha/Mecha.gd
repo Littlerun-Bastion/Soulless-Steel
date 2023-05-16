@@ -752,10 +752,13 @@ func set_shoulder_weapon(part_name, side):
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
 		shoulder_weapon_left = part_data
+		print(shoulder_weapon_left.name)
 	else:
 		shoulder_weapon_right = part_data
+		print(shoulder_weapon_right.name)
 
 	node.setup(part_data, core, side)
+	
 	set_max_heat()
 
 

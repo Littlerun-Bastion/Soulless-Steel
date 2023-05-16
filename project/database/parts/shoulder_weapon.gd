@@ -82,6 +82,45 @@ extends Node
 @export var seek_time := 1.0
 @export var seeker_angle := 90
 
+#----COMPLEX PROJECTILE BEHAVIOURS----#
+
+#---PROPULSION---#
+@export var stages := 1
+@export var stage_max_speed :Array[int] = [4000] ##Max Speed: Maximum possible speed the projectile can accelerate to.
+@export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second.
+@export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
+@export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
+@export var stage_wiggle_amount :Array[float] = [0.0] ##Wiggle Amount: Maximum number of degrees a projectile can turn off its course.
+@export var stage_wiggle_freq :Array[float] = [0.0] ##Wiggle Freq: Number of wiggles per second (based on cosine).
+@export var stage_seeker_type :Array[String] = ["IR"] ##Seeker Type: Detection method the projectile will use to see if it is allowed to track a target./
+	## (IR: based on mecha_heat, RCS: based on mecha rcs (not implemented), Laser: based on the endpoint of a raycast from player's mech to the direction of the target (not implemented))
+@export var stage_seeker_delay :Array[float] = [0.0] ##Seeker Delay: Time in seconds before the stage of that seeker kicks in.
+@export var stage_seeker_angle :Array[float] = [0.0] ##Seeker Angle: Angle beyond which the seeker will not chase the target.
+
+#---FUSE---#
+@export var fuse_arm_time := 0.0 ##Time in seconds before the projectile can impact an object or deploy its 'payload'
+@export var fuse_timer := 3.0 ##Time in seconds (after fuse arm time) until the projectile deploys its 'payload'
+@export var fuse_proximity_distance := 0 ##Distance at which the projectile detects an enemy.
+@export var fuse_detection_type : String ##Detection method the projectile uses to see if it is allowed to deploy its 'payload'.
+@export var fuse_angle := 360.0 ##Angle beyond which the projectile no longer detects enemies to trigger the fuse.
+@export var fuse_is_contact_enabled := true ##Whether or not the projectile can directly hit a mecha. If false, projectile will fly past a mecha.
+
+#---PAYLOAD---#
+@export var payload_explosion : Resource ##Visual effect for the explosion.
+@export var payload_explosion_damage := 0.0 ##Total damage of the explosion.
+@export var payload_explosion_shield_mult := 1.0 ##Shield damage multiplier of explosion.
+@export var payload_explosion_health_mult := 1.0 ##Health damage multiplier of explosion.
+@export var payload_explosion_heat_damage := 0.0 ##Heat damage of explosion.
+@export var payload_explosion_status_damage := 0.0 ##Amount of status explosion inflicts.
+@export var payload_explosion_status_type : String ##Explosion status type.
+@export var payload_explosion_force := 0.0 ##Amount of knockback explosion performs against a target.
+@export var payload_explosion_radius := 0.0 ##Distance from impact center an explosion hits a target.
+@export var payload_explosion_angle := 360.0 ##Angle from center an explosion hits.
+@export var payload_explosion_hitstop := false ##Hitstop of explosion in seconds.
+@export var payload_subprojectile : PackedScene ##What subprojectile the payload spawns.
+@export var payload_subprojectile_count := 0.0 ##How many subprojectiles the payload spawns.
+@export var payload_subprojectile_spread := 0.0 #In degrees
+
 var is_melee = false
 
 var firing_timer = 0.0

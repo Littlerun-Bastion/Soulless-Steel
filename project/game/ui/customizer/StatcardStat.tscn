@@ -20,11 +20,11 @@ theme = ExtResource("2")
 [node name="Values" type="HBoxContainer" parent="."]
 layout_mode = 0
 offset_left = 6.0
+offset_top = 3.0
 offset_right = 234.0
-offset_bottom = 47.0
+offset_bottom = 50.0
 
 [node name="Value" type="Label" parent="Values"]
-custom_minimum_size = Vector2(172, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 35
 text = "1000"
@@ -33,18 +33,16 @@ vertical_alignment = 1
 [node name="Increments" type="Label" parent="Values"]
 custom_minimum_size = Vector2(0, 47)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "[+++]"
-horizontal_alignment = 1
-vertical_alignment = 2
+vertical_alignment = 1
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 0
 offset_left = 183.0
-offset_top = 7.0
+offset_top = 11.0
 offset_right = 501.0
-offset_bottom = 42.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 25
+offset_bottom = 46.0
+theme_override_font_sizes/font_size = 30
 text = "Armor"
+vertical_alignment = 1

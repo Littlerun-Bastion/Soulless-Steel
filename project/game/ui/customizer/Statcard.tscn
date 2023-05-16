@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cxbfyt62xshhb" path="res://game/ui/customizer/StatcardStat.tscn" id="2"]
 [ext_resource type="Script" path="res://game/ui/customizer/Statcard.gd" id="3"]
 [ext_resource type="PackedScene" path="res://game/ui/customizer/StatcardStat_gradient.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://game/ui/customizer/StatcardStat_boolean.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://bukexoji8hmrv" path="res://game/ui/customizer/StatcardStat_boolean.tscn" id="5"]
 
 [node name="Control" type="Control"]
 layout_mode = 3

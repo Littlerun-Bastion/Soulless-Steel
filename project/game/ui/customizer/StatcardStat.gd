@@ -18,22 +18,12 @@ func update_stat(current_part, new_part):
 		$Values/Increments.visible = true
 		stat_diff = new_stat - current_stat
 		$Values/Value.text = str(new_stat)
-		if stat_diff > current_stat * 0.25:
-			$Values/Increments.text = "[+++]"
-		elif stat_diff > current_stat * 0.1:
-			$Values/Increments.text = "[++]"
-		else:
-			$Values/Increments.text = "[+]"
+		$Values/Increments.text = str("+" + str(stat_diff))
 	elif current_stat and new_stat < current_stat:
 		$Values/Increments.visible = true
 		$Values/Value.text = str(new_stat)
 		stat_diff = current_stat - new_stat
-		if stat_diff > current_stat * 0.25:
-			$Values/Increments.text = "[---]"
-		elif stat_diff > current_stat * 0.1:
-			$Values/Increments.text = "[--]"
-		else:
-			$Values/Increments.text = "[-]"
+		$Values/Increments.text = str("+" + str(stat_diff))
 	else:
 		$Values/Increments.visible = false
 		$Values/Value.text = str(new_stat)

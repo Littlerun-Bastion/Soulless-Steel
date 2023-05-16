@@ -40,6 +40,7 @@ var impact_effect
 var seek_time_expired := false
 
 var lifetime := 0.0
+var wiggle_lifetime := 0.0
 
 func setup(mecha, args, weapon):
 	data = args.weapon_data
@@ -67,6 +68,7 @@ func setup(mecha, args, weapon):
 	change_scaling(data.projectile_size)
 	home_node = weapon
 	scaling_variance = data.projectile_size_scaling + randf_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
+	wiggle_lifetime += randf()
 
 
 func _ready():
@@ -89,11 +91,12 @@ func _process(dt):
 	if dying:
 		return
 	lifetime += dt
+	wiggle_lifetime += dt
 	propulsion(dt)
 	guidance(dt)
 	fuse(dt)
 	if wiggle_amount > 0.0 and wiggle_freq > 0.0:
-		dir = true_dir.rotated((sin(2*PI*lifetime*wiggle_freq) * dt * (wiggle_amount*5)))
+		dir = true_dir.rotated((sin(2*PI*wiggle_lifetime*wiggle_freq) * dt * (wiggle_amount*5)))
 	else:
 		dir = true_dir
 	position += dir*speed*dt

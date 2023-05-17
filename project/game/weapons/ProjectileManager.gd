@@ -21,24 +21,19 @@ func create(mecha, args, weapon):
 		"create_node": false,
 		"node": null,
 	}
-	
-	if projectile_data.type == TYPE.INSTANT:
-		var projectile = INSTANT.instantiate()
-		projectile.setup(mecha, args)
-		data.create_node = true
-		data.node = projectile
-	
-	elif projectile_data.type == TYPE.REGULAR:
-		var projectile = REGULAR.instantiate()
-		projectile.setup(mecha, args)
-		data.create_node = true
-		data.node = projectile
-		
-	elif projectile_data.type == TYPE.COMPLEX:
-		var projectile = COMPLEX.instantiate()
-		projectile.setup(mecha, args, weapon)#
-		data.create_node = true
-		data.node = projectile
+	var projectile
+	match projectile_data.type:
+		TYPE.INSTANT:
+			projectile = INSTANT.instantiate()
+		TYPE.REGULAR:
+			projectile = REGULAR.instantiate()
+		TYPE.COMPLEX:
+			projectile = COMPLEX.instantiate()
+		_:
+			push_error("Not a valid projectile type: "+str(projectile_data.type))
+	projectile.setup(mecha, args, weapon)
+	data.create_node = true
+	data.node = projectile
 	
 	return data
 

@@ -64,7 +64,7 @@ func _physics_process(dt):
 	if lifetime_tick <= 0.0:
 		die()
 
-func setup(mecha, args):
+func setup(mecha, args, _weapon):
 	data = args.weapon_data
 	proj_data  = data.projectile.instantiate()
 	if proj_data:

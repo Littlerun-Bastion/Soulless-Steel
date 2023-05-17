@@ -4,6 +4,7 @@ extends Resource
 @export var manufacturer_name : String
 @export var tagline : String
 @export var description : String
+@export var price := 0.0
 @export var image : Texture2D
 @export var thrust_speed_multiplier := 3.0
 @export var thrust_max_speed := 400

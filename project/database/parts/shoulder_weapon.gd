@@ -4,6 +4,7 @@ extends Node
 @export var manufacturer_name : String
 @export var tagline : String
 @export var description : String
+@export var price := 0.0
 @export var image : Texture2D
 @export var type: String
 @export var muzzle_flash : PackedScene

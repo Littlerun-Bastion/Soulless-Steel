@@ -5,6 +5,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var part_name : String
 @export var manufacturer_name : String
 @export var tagline : String
+@export var price := 0.0
 @export var description : String
 @export var image : Texture2D
 @export var health := 4500.0

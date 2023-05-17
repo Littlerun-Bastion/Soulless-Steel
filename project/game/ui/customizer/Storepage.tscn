@@ -1,6 +1,6 @@
-[gd_scene load_steps=21 format=3 uid="uid://bu22r8a2ybnso"]
+[gd_scene load_steps=22 format=3 uid="uid://bu22r8a2ybnso"]
 
-[ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="1_4k3qg"]
+[ext_resource type="Script" path="res://game/ui/customizer/Storepage.gd" id="1_mota4"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="2_clna7"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="3_pwurs"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="4_o5x3i"]
@@ -38,7 +38,15 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_bottom = 2
 border_color = Color(1, 1, 1, 1)
 
-[node name="Customizer" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mwtti"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[node name="Storepage" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,7 +54,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(-611, -230)
-script = ExtResource("1_4k3qg")
+script = ExtResource("1_mota4")
 
 [node name="Mecha" parent="." instance=ExtResource("2_clna7")]
 visible = false
@@ -239,6 +247,7 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Wetware" type="GridContainer" parent="PartCategories"]
+visible = false
 layout_mode = 0
 offset_left = 40.0
 offset_top = 325.0
@@ -275,6 +284,7 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Equipment" type="GridContainer" parent="PartCategories"]
+visible = false
 layout_mode = 0
 offset_left = 40.0
 offset_top = 325.0
@@ -409,6 +419,129 @@ theme = ExtResource("6_1ptfd")
 layout_mode = 2
 theme_override_constants/separation = 120
 
+[node name="Basket" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 1225.0
+offset_top = 329.0
+offset_right = 1265.0
+offset_bottom = 369.0
+
+[node name="PanelContainer" type="PanelContainer" parent="Basket"]
+layout_mode = 0
+offset_left = -7.0
+offset_top = -6.0
+offset_right = 647.0
+offset_bottom = 670.0
+theme = ExtResource("6_1ptfd")
+
+[node name="Title" type="Label" parent="Basket"]
+layout_mode = 2
+offset_top = 5.0
+offset_right = 650.0
+offset_bottom = 50.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Basket"
+
+[node name="ColorRect" type="ColorRect" parent="Basket/Title"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 37.0
+offset_right = 639.0
+offset_bottom = 39.0
+
+[node name="BottomSect" type="Label" parent="Basket"]
+layout_mode = 2
+offset_left = -10.0
+offset_top = 587.0
+offset_right = 640.0
+offset_bottom = 632.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Total"
+horizontal_alignment = 2
+
+[node name="ColorRect" type="ColorRect" parent="Basket/BottomSect"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = -6.0
+offset_right = 649.0
+offset_bottom = -4.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Basket/BottomSect"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 3.0
+offset_right = 50.0
+offset_bottom = 43.0
+
+[node name="Total" type="Label" parent="Basket/BottomSect/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "
+0"
+
+[node name="Label2" type="Label" parent="Basket/BottomSect/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "ct"
+vertical_alignment = 2
+
+[node name="Button" type="Button" parent="Basket/BottomSect"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 41.0
+offset_right = 647.0
+offset_bottom = 72.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+text = "Purchase"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Basket"]
+layout_mode = 0
+offset_top = 49.0
+offset_right = 639.0
+offset_bottom = 577.0
+
+[node name="Basket" type="VBoxContainer" parent="Basket/ScrollContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="Label" type="Label" parent="."]
+custom_minimum_size = Vector2(600, 65)
+layout_mode = 0
+offset_left = 1236.0
+offset_top = 257.0
+offset_right = 1836.0
+offset_bottom = 322.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 60
+text = "100000
+"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Label2" type="Label" parent="Label"]
+layout_mode = 0
+offset_left = 424.0
+offset_top = -62.0
+offset_right = 638.0
+offset_bottom = 1.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Balance"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Label" type="Label" parent="Label"]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 23.0
+offset_right = 640.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 35
+text = "Ct"
+
 [node name="OptionButton" type="OptionButton" parent="."]
 layout_mode = 0
 offset_left = 38.0
@@ -459,18 +592,15 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Statcard" parent="." instance=ExtResource("11_5metr")]
-visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
 offset_left = 468.0
 offset_top = 378.0
 offset_right = 999.0
-offset_bottom = 1074.0
-scale = Vector2(0.75, 0.75)
+offset_bottom = 1000.0
 
 [node name="LoadScreen" parent="." instance=ExtResource("12_jvh0j")]
-visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -478,6 +608,269 @@ offset_left = 164.0
 offset_top = 337.0
 offset_right = -1756.0
 offset_bottom = -743.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="PurchaseConfirm" type="Control" parent="."]
+custom_minimum_size = Vector2(700, 400)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="PurchaseConfirm"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_1ptfd")
+
+[node name="confirm" type="VBoxContainer" parent="PurchaseConfirm"]
+custom_minimum_size = Vector2(680, 380)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -190.0
+offset_right = 340.0
+offset_bottom = 190.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/confirm"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_mwtti")
+text = "SAV_HUNTEROS.EXE -STOREHOOK -ESCROW"
+vertical_alignment = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PurchaseConfirm/confirm"]
+layout_mode = 2
+
+[node name="Market" type="Label" parent="PurchaseConfirm/confirm/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Market REgion"
+
+[node name="Market2" type="Label" parent="PurchaseConfirm/confirm/HBoxContainer2"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "United Federation of America"
+horizontal_alignment = 2
+
+[node name="Control" type="Control" parent="PurchaseConfirm/confirm"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/confirm/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Purchase 40 items?"
+horizontal_alignment = 1
+
+[node name="TotalCost" type="HBoxContainer" parent="PurchaseConfirm/confirm"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/confirm/TotalCost"]
+custom_minimum_size = Vector2(265, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+text = "Total Cost
+"
+vertical_alignment = 2
+
+[node name="Amount" type="Label" parent="PurchaseConfirm/confirm/TotalCost"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+text = "0000"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Label3" type="Label" parent="PurchaseConfirm/confirm/TotalCost"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 20
+text = "CT"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="CurrentBalance" type="HBoxContainer" parent="PurchaseConfirm/confirm"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/confirm/CurrentBalance"]
+custom_minimum_size = Vector2(265, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+text = "Current Balance"
+vertical_alignment = 2
+
+[node name="Amount" type="Label" parent="PurchaseConfirm/confirm/CurrentBalance"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+text = "0000"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Label3" type="Label" parent="PurchaseConfirm/confirm/CurrentBalance"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 20
+text = "CT"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="RemainingBalance" type="HBoxContainer" parent="PurchaseConfirm/confirm"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/confirm/RemainingBalance"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "BALANCE REMAINING"
+
+[node name="Amount" type="Label" parent="PurchaseConfirm/confirm/RemainingBalance"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "0000"
+horizontal_alignment = 2
+
+[node name="Label3" type="Label" parent="PurchaseConfirm/confirm/RemainingBalance"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 20
+text = "CT"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PurchaseConfirm/confirm"]
+custom_minimum_size = Vector2(680, 30)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Button" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+text = "Cancel"
+
+[node name="Button2" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+text = "Purchase
+"
+
+[node name="complete" type="VBoxContainer" parent="PurchaseConfirm"]
+visible = false
+custom_minimum_size = Vector2(680, 380)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -190.0
+offset_right = 340.0
+offset_bottom = 190.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/complete"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_mwtti")
+text = "SAV_HUNTEROS.EXE -STOREHOOK -ESCROW"
+vertical_alignment = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PurchaseConfirm/complete"]
+layout_mode = 2
+
+[node name="Market" type="Label" parent="PurchaseConfirm/complete/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Market REgion"
+
+[node name="Market2" type="Label" parent="PurchaseConfirm/complete/HBoxContainer2"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "United Federation of America"
+horizontal_alignment = 2
+
+[node name="Control" type="Control" parent="PurchaseConfirm/complete"]
+custom_minimum_size = Vector2(0, 265)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PurchaseConfirm/complete/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Thank you for your patronage!"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PurchaseConfirm/complete"]
+custom_minimum_size = Vector2(680, 30)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Button2" type="Button" parent="PurchaseConfirm/complete/HBoxContainer"]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+text = "Return
+"
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]
@@ -493,5 +886,6 @@ offset_bottom = -743.0
 [connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
+[connection signal="pressed" from="Basket/BottomSect/Button" to="." method="_on_purchase_pressed"]
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]

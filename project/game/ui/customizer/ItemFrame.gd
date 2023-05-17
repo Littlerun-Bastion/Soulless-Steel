@@ -2,7 +2,7 @@ extends Control
 
 var is_disabled = false
 
-func setup(part): 
+func setup(part, is_shopping): 
 	if part.part_name.is_empty() == false:
 		$PartLabel.text = part.part_name
 	else:
@@ -11,10 +11,10 @@ func setup(part):
 		$ManufacturerLabel.text = part.manufacturer_name
 	else:
 		$ManufacturerLabel.text = "???"
-	if part.tagline.is_empty() == false:
-		$TaglineLabel.text = part.tagline
+	if is_shopping:
+		$PriceLabel.text = str(part.price) + "ct"
 	else:
-		$TaglineLabel.text = "???"
+		$PriceLabel.text = part.tagline
 	if part.image:
 		$PartPreview.texture = part.image
 

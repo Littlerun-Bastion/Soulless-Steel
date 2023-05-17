@@ -18,6 +18,7 @@ const DESIGN_BUTTON = preload("res://game/ui/customizer/DesignButton.tscn")
 var designs = []
 var current_design
 var pressed_design
+var shopping_mode = true
 
 signal load_pressed
 
@@ -29,6 +30,10 @@ signal load_pressed
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	reload_designs()
+	if shopping_mode:
+		$LoadButton.visible = false
+	else:
+		$LoadButton.visible = true
 
 func check_pressed_design():
 	if pressed_design == null:

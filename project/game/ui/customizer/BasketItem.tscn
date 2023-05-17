@@ -1,0 +1,74 @@
+[gd_scene load_steps=6 format=3 uid="uid://drfrboexoshcw"]
+
+[ext_resource type="Script" path="res://game/ui/customizer/BasketItem.gd" id="1_c82ln"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="1_drs1j"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g66gv"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g5kpx"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ev5n8"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+
+[node name="BasketItem" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_c82ln")
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(638, 45)
+layout_mode = 0
+offset_right = 638.0
+offset_bottom = 45.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_g66gv")
+theme_override_styles/hover = SubResource("StyleBoxFlat_g5kpx")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ev5n8")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Button"]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 3.0
+offset_right = 637.0
+offset_bottom = 48.0
+
+[node name="Name" type="Label" parent="Button/HBoxContainer"]
+custom_minimum_size = Vector2(450, 45)
+layout_mode = 2
+theme = ExtResource("1_drs1j")
+theme_override_font_sizes/font_size = 30
+text = "Crystal moon shoulder"
+vertical_alignment = 1
+
+[node name="Price" type="Label" parent="Button/HBoxContainer"]
+custom_minimum_size = Vector2(140, 45)
+layout_mode = 2
+theme = ExtResource("1_drs1j")
+theme_override_font_sizes/font_size = 30
+text = "10000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ct" type="Label" parent="Button/HBoxContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme = ExtResource("1_drs1j")
+theme_override_font_sizes/font_size = 20
+text = "ct"
+vertical_alignment = 1

@@ -3,9 +3,9 @@
 [ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cqgbxcn3jd23y" path="res://assets/images/mechas/arm_weapons/MA-H250_sub.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://b7pwkvgetcili" path="res://assets/images/mechas/arm_weapons/MA-H250_glow.png" id="3"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/medium_bullet.tscn" id="3_qk1ss"]
 [ext_resource type="Texture2D" uid="uid://dd413wdbprxtb" path="res://assets/images/mechas/arm_weapons/MA-H250_main.png" id="4"]
 [ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_bullet.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="7"]
 
 [node name="Part" type="Node"]
@@ -17,13 +17,13 @@ type = "PewPew"
 muzzle_flash = ExtResource("5")
 muzzle_flash_size = 0.55
 muzzle_flash_speed = 1.8
-projectile = ExtResource("6")
+projectile = ExtResource("3_qk1ss")
 projectile_type = "25mm AP-DS"
 damage = 372.0
 shield_mult = 0.5
 health_mult = 1.5
 heat_damage = 0.0
-recoil_force = 0.55
+recoil_force = 1.0
 bloom_reset_time = 2.9
 fire_rate = 0.25
 base_accuracy = 0.7
@@ -39,8 +39,8 @@ sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0
 weight = 5.8
-bullet_velocity = 4350
-projectile_size = 0.25
+bullet_velocity = 5000
+projectile_size = 0.05
 impact_force = 8.0
 eject_casings = true
 casing_size = 0.8

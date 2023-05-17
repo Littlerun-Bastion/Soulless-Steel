@@ -33,6 +33,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_right = -1520.0
 offset_bottom = -960.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("2")
 
 [node name="Button" type="Button" parent="."]
@@ -54,7 +56,7 @@ theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 27
 text = "ML-01 Phoenix"
 
-[node name="TaglineLabel" type="Label" parent="."]
+[node name="PriceLabel" type="Label" parent="."]
 layout_mode = 0
 offset_left = 9.0
 offset_top = 71.0

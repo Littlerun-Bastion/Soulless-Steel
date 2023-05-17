@@ -159,6 +159,7 @@ fixed_fps = 240
 [node name="Effect1" type="GPUParticles2D" parent="."]
 z_index = -1
 z_as_relative = false
+emitting = false
 amount = 1
 process_material = SubResource("32")
 texture = ExtResource("2")

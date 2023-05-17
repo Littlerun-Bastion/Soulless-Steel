@@ -1,5 +1,4 @@
 extends Control
-
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
 const LERP_WEIGHT = 5
 
@@ -21,6 +20,7 @@ var comparing_part = false
 var type_name
 
 func _ready():
+	$LoadScreen.shopping_mode = false
 	if Profile.stats.current_mecha:
 		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
 		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
@@ -111,7 +111,7 @@ func _on_Category_pressed(type,group,side = false):
 		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
 			var part = parts[part_key]
 			var item = ITEMFRAME.instantiate()
-			item.setup(part)
+			item.setup(part, false)
 			if DisplayMecha.get(type_name):
 				if DisplayMecha.get(type_name) == part:
 					item.get_button().disabled = true

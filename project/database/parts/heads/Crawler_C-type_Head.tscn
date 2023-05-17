@@ -1,32 +1,33 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://bt7wp5cxrm3s1"]
 
-[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
-[ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_sub.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_glow.png" type="Texture2D" id=3]
-[ext_resource path="res://database/parts/head.gd" type="Script" id=4]
-[ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_main.png" type="Texture2D" id=5]
-[ext_resource path="res://game/fx/Heatmaps/NVRed.tres" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_pv.png" type="Texture2D" id=7]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="1"]
+[ext_resource type="Texture2D" uid="uid://blk5e4lg26uan" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://kfm1ov3q0npb" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_glow.png" id="3"]
+[ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
+[ext_resource type="Texture2D" uid="uid://c17poxvq8mml2" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_main.png" id="5"]
+[ext_resource type="Texture2D" path="res://game/fx/Heatmaps/NVRed.tres" id="6"]
+[ext_resource type="Texture2D" uid="uid://mpr6fc63fmr2" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_pv.png" id="7"]
 
 [node name="Part" type="Node2D"]
-script = ExtResource( 4 )
+script = ExtResource("4")
 part_name = "Crawler C-type Head"
 manufacturer_name = "Nomhoyi"
 tagline = "Test"
+price = 4500.0
 description = "Quite heavy head model with a unique visual sensor layout that grants 225 degrees of full-complement sight. Incredibly well protected and equipped with a best-in-class sensor suite and stabilization. Comes at a hefty price tag."
-image = ExtResource( 7 )
-heatmap = ExtResource( 6 )
+image = ExtResource("7")
+heatmap = ExtResource("6")
 accuracy_modifier = 1.5
 visual_range = 700
 health = 2175
 weight = 8.5
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Glow" type="Sprite2D" parent="."]
-material = ExtResource( 1 )
-texture = ExtResource( 3 )
+material = ExtResource("1")
+texture = ExtResource("3")

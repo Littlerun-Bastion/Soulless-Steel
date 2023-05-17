@@ -1,32 +1,33 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://bhln5bsjhteo6"]
 
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_glow.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://database/parts/head.gd" type="Script" id=4]
-[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=5]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head.png" type="Texture2D" id=6]
-[ext_resource path="res://game/fx/Heatmaps/Whitehot.tres" type="Texture2D" id=7]
+[ext_resource type="Texture2D" uid="uid://cmcm7jhratyj2" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_glow.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://fqale2cpmsgk" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_sub.png" id="3"]
+[ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="5"]
+[ext_resource type="Texture2D" uid="uid://hwy1kc605x5t" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head.png" id="6"]
+[ext_resource type="Texture2D" path="res://game/fx/Heatmaps/Whitehot.tres" id="7"]
 
 [node name="Part3" type="Node2D"]
-script = ExtResource( 4 )
+script = ExtResource("4")
 part_name = "MSV-L3J-H"
 manufacturer_name = "Martel"
 tagline = "Test"
+price = 4400.0
 description = "A cheap lightweight head part cobbled from scrap metal and spare parts. Poorly designed, though its visual sensors are surprisingly not the worst offering on the market."
-image = ExtResource( 6 )
-heatmap = ExtResource( 7 )
+image = ExtResource("6")
+heatmap = ExtResource("7")
 accuracy_modifier = 1.2
 visual_range = 300
 health = 825
 weight = 3.5
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Glow" type="Sprite2D" parent="."]
-material = ExtResource( 5 )
-texture = ExtResource( 1 )
+material = ExtResource("5")
+texture = ExtResource("1")

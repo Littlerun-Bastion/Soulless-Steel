@@ -1,6 +1,7 @@
 extends Control
-
+##Storepage
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
+const BASKET_ITEM = preload("res://game/ui/customizer/BasketItem.tscn")
 const LERP_WEIGHT = 5
 
 enum SIDE {LEFT, RIGHT, SINGLE}
@@ -15,10 +16,17 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 #onready var StatBars = $Statbars
 @onready var Statcard = $Statcard
 @onready var LoadScreen = $LoadScreen
+@onready var BasketList = $Basket/ScrollContainer/Basket
+@onready var PurchaseComplete = $PurchaseConfirm/complete
+@onready var PurchaseConfirm = $PurchaseConfirm/confirm
+@onready var TotalCostLabel = $PurchaseConfirm/confirm/TotalCost/Amount
+
 
 var category_visible = false
 var comparing_part = false
 var type_name
+var basket_total = 0.0
+var balance = 100000.0
 
 func _ready():
 	if Profile.stats.current_mecha:
@@ -27,19 +35,8 @@ func _ready():
 	else:
 		default_loadout()
 	#$Statbars.update_stats(DisplayMecha)
-	update_weight()
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
-	for child in $TopBar.get_children():
-		child.reset_comparison(DisplayMecha)
-
-func _process(dt):
-	if not comparing_part:
-		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, $WeightBar.value, LERP_WEIGHT*dt)
-		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, $WeightBar.max_value, LERP_WEIGHT*dt)
-	else:
-		$WeightComparisonBar.value = lerp($WeightComparisonBar.value, ComparisonMecha.get_stat("weight"), LERP_WEIGHT*dt)
-		$WeightComparisonBar.max_value = lerp($WeightComparisonBar.max_value, ComparisonMecha.get_stat("weight_capacity"), LERP_WEIGHT*dt)
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
@@ -76,7 +73,6 @@ func default_loadout():
 	ComparisonMecha.set_shoulders("MSV-M2-SG")
 	
 	shoulder_weapon_check()
-	update_weight()
 
 
 func show_category_button(parts, selected):
@@ -111,11 +107,7 @@ func _on_Category_pressed(type,group,side = false):
 		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
 			var part = parts[part_key]
 			var item = ITEMFRAME.instantiate()
-			item.setup(part)
-			if DisplayMecha.get(type_name):
-				if DisplayMecha.get(type_name) == part:
-					item.get_button().disabled = true
-					item.is_disabled = true
+			item.setup(part,true)
 			PartList.add_child(item)
 			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
 			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
@@ -142,32 +134,7 @@ func _on_EquipmentButton_pressed():
 
 
 func _on_ItemFrame_pressed(part_name,type,side,item):
-	if item.is_disabled == true:
-		if type == "core":
-			$MissingPartsScroll/MissingParts.text = ""
-			return
-		item.get_button().disabled = false
-		item.is_disabled = false
-		part_name = false
-		print("Disable")
-	else:
-		for child in item.get_parent().get_children():
-			child.get_button().disabled = false
-			child.is_disabled = false
-		item.is_disabled = true
-		item.get_button().disabled = true
-		item.get_button().button_pressed = false
-	if side:
-		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
-		DisplayMecha.callv("set_" + str(type), [part_name,side])
-		ComparisonMecha.callv("set_" + str(type), [part_name,side])
-	else:
-		DisplayMecha.callv("set_" + str(type), [part_name])
-		ComparisonMecha.callv("set_" + str(type), [part_name])
-	#$Statbars.update_stats(DisplayMecha)
-	update_weight()
-	shoulder_weapon_check()
-	comparing_part = false
+	add_to_basket(type, part_name)
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side,item):
@@ -179,14 +146,8 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	else:
 		ComparisonMecha.callv("set_" + str(type), [part_name])
 	#StatBars.set_comparing_part(ComparisonMecha)
-	for child in $TopBar.get_children():
-		child.set_comparing_part(DisplayMecha,ComparisonMecha)
 	var current_part = DisplayMecha.get(type_name)
 	var new_part = ComparisonMecha.get(type_name)
-	if ComparisonMecha.is_overweight():
-		$overweight.visible = true
-	else:
-		$overweight.visible = false
 	Statcard.display_part_stats(current_part, new_part, type_name)
 	Statcard.visible = true
 	comparing_part = true
@@ -227,21 +188,8 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	if item.is_disabled == true:
 		item.get_button().disabled = true
 	#StatBars.reset_comparing_part()
-	for child in $TopBar.get_children():
-		child.reset_comparison(DisplayMecha)
 	comparing_part = false
-	if DisplayMecha.is_overweight():
-		$overweight.visible = true
-	else:
-		$overweight.visible = false
 	Statcard.visible = false
-
-func update_weight():
-	$WeightBar.max_value = DisplayMecha.get_stat("weight_capacity")
-	$WeightBar.value = DisplayMecha.get_stat("weight")
-	$CurrentWeightLabel.text = str(DisplayMecha.get_stat("weight")) 
-	$MaxWeightLabel.text = str(DisplayMecha.get_stat("weight_capacity"))
-
 
 func _on_Save_pressed():
 	FileManager.save_mecha_design(DisplayMecha, "test")
@@ -255,10 +203,43 @@ func _on_Exit_pressed():
 		print("Build invalid")
 
 func _on_Load_pressed():
+	$LoadScreen.shopping_mode = true
 	$LoadScreen.visible = true
 
 func _LoadScreen_on_load_pressed(design):
 	DisplayMecha.set_parts_from_design(design)
 	ComparisonMecha.set_parts_from_design(design)
 	shoulder_weapon_check()
-	update_weight()
+
+func add_to_basket(type, part_name):
+	#Transaction code goes here
+	var item = PartManager.get_part(type, part_name)
+	var basket_item_entry = BASKET_ITEM.instantiate()
+	basket_item_entry.setup(item)
+	BasketList.add_child(basket_item_entry)
+	basket_item_entry.get_button().connect("pressed",Callable(self,"remove_from_basket").bind(basket_item_entry))
+	recalculate_total()
+
+func remove_from_basket(item):
+	BasketList.remove_child(item)
+	item.queue_free()
+	recalculate_total()
+
+func recalculate_total():
+	basket_total = 0.0
+	var num_items = 0
+	for item in BasketList.get_children():
+		basket_total += item.get_price()
+		num_items += 1
+	$Basket/BottomSect/HBoxContainer/Total.text = str(basket_total)
+	
+	$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
+	$PurchaseConfirm/confirm/TotalCost/Amount.text = str(basket_total)
+	$PurchaseConfirm/confirm/CurrentBalance/Amount.text = str(balance)
+	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
+
+
+func _on_purchase_pressed():
+	$PurchaseConfirm.visible = true
+	PurchaseConfirm.visible = true
+	PurchaseComplete.visible = false

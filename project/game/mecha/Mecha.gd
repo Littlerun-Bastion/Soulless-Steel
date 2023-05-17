@@ -768,10 +768,8 @@ func set_shoulder_weapon(part_name, side):
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
 		shoulder_weapon_left = part_data
-		print(shoulder_weapon_left.name)
 	else:
 		shoulder_weapon_right = part_data
-		print(shoulder_weapon_right.name)
 
 	node.setup(part_data, core, side)
 	
@@ -1198,15 +1196,12 @@ func apply_movement(dt, direction):
 			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
 			#Turn chassis to face the direction
 			if turn_angle > AI_TURN_DEADZONE:
-				#print("right")
 				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
 				global_rotation_degrees += target_rotation_acc*dt
 			elif turn_angle < -AI_TURN_DEADZONE:
-				#print("left")
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)
-			#print(target_speed)
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 			

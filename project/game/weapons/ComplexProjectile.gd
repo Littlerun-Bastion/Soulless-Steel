@@ -29,7 +29,8 @@ var wiggle_amount = 0.0
 var wiggle_freq = 0.0
 var is_seeking = false
 var scaling_variance
-var home_node
+var weapon_node
+var was_subprojectile = false
 
 var explosion_ray_directions = []
 var fuse_ray_directions = []
@@ -66,7 +67,8 @@ func setup(mecha, args, weapon):
 	position = args.pos
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	change_scaling(data.projectile_size)
-	home_node = weapon
+	weapon_node = weapon
+	was_subprojectile = args.is_subprojectile
 	scaling_variance = data.projectile_size_scaling + randf_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
 	wiggle_lifetime += randf()
 
@@ -112,7 +114,6 @@ func get_propulsion_stage():
 		if lifetime < total_delay:
 			break
 		cur_stage += 1
-	print(cur_stage)
 	return cur_stage
 
 
@@ -192,17 +193,22 @@ func fuse(_dt):
 					if data.fuse_detection_type == "IR":
 						if result.collider.mecha_heat / result.collider.max_heat > 0.1:
 							payload()
+							return
 					
 					elif data.fuse_detection_type == "RCS":
 						payload()
+						return
 						
 					elif data.fuse_detection_type == "Magnetic":
 						payload()
+						return
 	
 	if lifetime > data.fuse_arm_time + data.fuse_timer and data.fuse_timer > 0.0:
 		payload()
+		return
 		
 	queue_redraw()
+
 
 func die():
 	if dying:
@@ -214,6 +220,7 @@ func die():
 	await $Tickover.timeout
 	queue_free()
 
+
 func payload():
 	if data.payload_subprojectile:
 		var accuracy = randf_range(-data.payload_subprojectile_spread, data.payload_subprojectile_spread)
@@ -221,12 +228,12 @@ func payload():
 			emit_signal("create_projectile", origin,
 						{
 							"is_subprojectile": true,
-							"weapon_data": home_node.subprojectile_data,
+							"weapon_data": weapon_node.data,
 							"pos": global_position,
 							"pos_reference": null,
-							"dir": true_dir,
+							"dir": true_dir.rotated(accuracy),
 							"seeker_target": seeker_target,
-						}, home_node)
+						}, weapon_node)
 						
 	if data.payload_explosion_radius > 0.0:
 		var affected_mechs = []
@@ -247,9 +254,9 @@ func payload():
 											data.payload_explosion_status_damage, data.payload_explosion_status_type, data.payload_explosion_hitstop, original_mecha_info, data.part_id, proj_data.calibre)
 						result.collider.knockback(data.payload_explosion_force, ray, true)
 						affected_mechs.append(result.collider)
-	
 	queue_redraw()
 	die()
+
 
 func _on_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
@@ -284,8 +291,8 @@ func _on_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	(not proj_data.is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
-		if data.fuse_is_contact_enabled and lifetime > data.fuse_arm_time:
-			payload()
+		if not was_subprojectile and data.fuse_is_contact_enabled and lifetime > data.fuse_arm_time:
+			call_deferred("payload")
 		die()
 
 

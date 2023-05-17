@@ -46,7 +46,7 @@ func _process(dt):
 		modulate.a = min(1.0, $LifeTimer.time_left)
 
 
-func setup(mecha, args):
+func setup(mecha, args, _weapon):
 	data = args.weapon_data
 	proj_data = data.projectile.instantiate()
 	$Sprite2D.texture = proj_data.get_image()

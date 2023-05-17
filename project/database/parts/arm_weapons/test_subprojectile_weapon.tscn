@@ -1,10 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://d0pq3thtgox20"]
+[gd_scene load_steps=8 format=3 uid="uid://j7ti2els0tch"]
 
 [ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1_p6jyq"]
 [ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="2_jn3b6"]
 [ext_resource type="PackedScene" uid="uid://bqwmn6aymuj40" path="res://database/parts/projectiles/asr_rocket.tscn" id="3_7glsb"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="4_g14ym"]
-[ext_resource type="PackedScene" uid="uid://dbqgcpmjhgqri" path="res://database/subprojectile/test_subprojectile.tscn" id="5_u42rg"]
 [ext_resource type="Texture2D" uid="uid://7pr18mstyig2" path="res://assets/images/mechas/arm_weapons/MA-ASR1_sub.png" id="5_xd2wj"]
 [ext_resource type="Texture2D" uid="uid://b31upo5ajpuix" path="res://assets/images/mechas/arm_weapons/MA-ASR1_main.png" id="6_f7wwv"]
 [ext_resource type="Texture2D" uid="uid://chlgvag0hyh86" path="res://assets/images/mechas/arm_weapons/MA-ASR1_glow.png" id="7_dxyn4"]
@@ -53,15 +52,15 @@ has_wiggle = true
 seeker_agility = 0.003
 seek_time = 0.5
 stages = 2
-stage_max_speed = Array[int]([500, 4000])
-stage_acceleration = Array[float]([500.0, 4000.0])
-stage_thrust_delay = Array[float]([4.0, 4.0])
-stage_wiggle_amount = Array[float]([0.0, 6.0])
+stage_max_speed = Array[int]([500, 1000])
+stage_acceleration = Array[float]([500.0, 1000.0])
+stage_thrust_delay = Array[float]([0.1, 0.1])
+stage_wiggle_amount = Array[float]([0.0, 1.0])
 stage_wiggle_freq = Array[float]([0.0, 2.0])
 stage_seeker_type = Array[String](["IR", ""])
 stage_seeker_delay = Array[float]([2.0, 6.0])
 stage_seeker_angle = Array[float]([50.0, 0.0])
-fuse_arm_time = 1.0
+fuse_arm_time = 0.1
 fuse_timer = 0.0
 fuse_proximity_distance = 200
 fuse_detection_type = "IR"
@@ -69,7 +68,7 @@ fuse_angle = 40.0
 payload_explosion_damage = 999999.0
 payload_explosion_force = 500.0
 payload_explosion_radius = 400.0
-payload_subprojectile = ExtResource("5_u42rg")
+payload_subprojectile = ExtResource("3_7glsb")
 payload_subprojectile_count = 3.0
 
 [node name="Sub" type="Sprite2D" parent="."]

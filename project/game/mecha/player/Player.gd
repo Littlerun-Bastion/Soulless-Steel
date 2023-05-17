@@ -267,7 +267,6 @@ func get_input():
 	if Profile.get_option("invert_y") and invert_controls.y:
 		mov_vec.y *= -1
 	
-	#print(mov_vec)
 	return mov_vec
 
 

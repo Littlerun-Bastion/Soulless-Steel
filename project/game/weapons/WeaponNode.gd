@@ -12,7 +12,6 @@ signal finished_reloading
 
 var timer:= 0.0
 var data
-var subprojectile_data
 var total_ammo = false
 var clip_ammo = false
 var reloading := false
@@ -28,8 +27,6 @@ var cur_shooting_pos
 var side
 var burst_count = 0
 
-func test_name():
-	print("it's me!")
 
 func _process(dt):
 	timer = max(timer - dt, 0.0)
@@ -55,12 +52,6 @@ func setup(weapon_ref, core, _side):
 	position = core.get_arm_weapon_offset(side)
 	set_offsets(-weapon_ref.get_attach_pos())
 	
-	if data.payload_subprojectile:
-		print("subprojectile instanced")
-		subprojectile_data = data.payload_subprojectile.instantiate()
-		print(subprojectile_data)
-		add_child(subprojectile_data)
-		
 	if not data.is_melee:
 		clear_shooting_pos()
 		if weapon_ref.get_num_shooting_pos() > 0:

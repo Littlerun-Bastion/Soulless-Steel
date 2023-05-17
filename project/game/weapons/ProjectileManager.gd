@@ -13,8 +13,7 @@ func create(mecha, args, weapon):
 
 	var projectile_data
 	if args.is_subprojectile:
-		weapon.test_name()
-		projectile_data = weapon.subprojectile_data.instantiate()
+		projectile_data = args.weapon_data.payload_subprojectile.instantiate()
 	else:
 		projectile_data = args.weapon_data.projectile.instantiate()
 	var data = {
@@ -31,7 +30,7 @@ func create(mecha, args, weapon):
 	
 	elif projectile_data.type == TYPE.REGULAR:
 		var projectile = REGULAR.instantiate()
-		projectile.setup(mecha, args)#
+		projectile.setup(mecha, args)
 		data.create_node = true
 		data.node = projectile
 		

@@ -1,4 +1,9 @@
-extends Node
+[gd_scene load_steps=3 format=3 uid="uid://cixjcoxs2n6uq"]
+
+[ext_resource type="PackedScene" uid="uid://bqwmn6aymuj40" path="res://database/parts/projectiles/asr_rocket.tscn" id="1_wql80"]
+
+[sub_resource type="GDScript" id="GDScript_277tj"]
+script/source = "extends Node
 
 @export var projectile : Resource
 @export var damage := 10.0
@@ -9,7 +14,7 @@ extends Node
 @export var status_type : String
 @export var bullet_spread := PI/4 #Relevant for multi-shot
 @export var bullet_spread_delay := 0.0 #Relevant for multi-shot
-@export var sound_effect := "test"
+@export var sound_effect := \"test\"
 @export var sound_max_range := 2000
 @export var sound_att := 1.00
 @export var bullet_velocity := 2000
@@ -65,7 +70,7 @@ extends Node
 @export var stage_turn_rate :Array[float] = [0.0]
 @export var stage_wiggle_amount :Array[float] = [0.0]
 @export var stage_wiggle_freq :Array[float] = [0.0]
-@export var stage_seeker_type :Array[String] = ["IR"]
+@export var stage_seeker_type :Array[String] = [\"IR\"]
 @export var stage_seeker_delay :Array[float] = [0.0]
 @export var stage_seeker_angle :Array[float] = [0.0]
 
@@ -90,9 +95,9 @@ var part_id
 
 func get_stat(stat_name):
 	var stat
-	if stat_name == "armor_damage":
+	if stat_name == \"armor_damage\":
 		stat = 100 * damage * health_mult
-	elif stat_name == "shield_damage":
+	elif stat_name == \"shield_damage\":
 		stat = 100 * damage * shield_mult
 	else:
 		stat = get(stat_name)
@@ -101,3 +106,8 @@ func get_stat(stat_name):
 	
 
 
+"
+
+[node name="Part" type="Node"]
+script = SubResource("GDScript_277tj")
+projectile = ExtResource("1_wql80")

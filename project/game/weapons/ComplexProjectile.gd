@@ -29,7 +29,7 @@ var wiggle_amount = 0.0
 var wiggle_freq = 0.0
 var is_seeking = false
 var scaling_variance
-var home_node
+var weapon_node
 
 var explosion_ray_directions = []
 var fuse_ray_directions = []
@@ -66,7 +66,7 @@ func setup(mecha, args, weapon):
 	position = args.pos
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	change_scaling(data.projectile_size)
-	home_node = weapon
+	weapon_node = weapon
 	scaling_variance = data.projectile_size_scaling + randf_range(-data.projectile_size_scaling_var, data.projectile_size_scaling_var)
 	wiggle_lifetime += randf()
 
@@ -112,7 +112,6 @@ func get_propulsion_stage():
 		if lifetime < total_delay:
 			break
 		cur_stage += 1
-	print(cur_stage)
 	return cur_stage
 
 
@@ -221,12 +220,12 @@ func payload():
 			emit_signal("create_projectile", origin,
 						{
 							"is_subprojectile": true,
-							"weapon_data": home_node.subprojectile_data,
+							"weapon_data": weapon_node.data,
 							"pos": global_position,
 							"pos_reference": null,
 							"dir": true_dir,
 							"seeker_target": seeker_target,
-						}, home_node)
+						}, weapon_node)
 						
 	if data.payload_explosion_radius > 0.0:
 		var affected_mechs = []
@@ -285,7 +284,7 @@ func _on_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		if data.fuse_is_contact_enabled and lifetime > data.fuse_arm_time:
-			payload()
+			call_deferred("payload")
 		die()
 
 

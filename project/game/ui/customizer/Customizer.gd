@@ -149,7 +149,6 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 		item.get_button().disabled = false
 		item.is_disabled = false
 		part_name = false
-		print("Disable")
 	else:
 		for child in item.get_parent().get_children():
 			child.get_button().disabled = false

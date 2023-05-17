@@ -91,9 +91,8 @@ func setup(arena_ref, is_tutorial):
 		movement_type = "enemy_tank"
 	else:
 		movement_type = "free"
-	print(movement_type)
 
-#Combat functions
+#COMBAT METHODS
 
 func check_for_targets(engage_distance, max_shooting_distance):
 	#Check if current target is still in distance
@@ -220,8 +219,7 @@ func set_danger():
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
 		queue_redraw()
-		#else:
-		#	print("clear!")
+
 		if result:
 			var distance = self.global_position.distance_to(result.position)
 			danger[i] = pow((look_ahead_range - distance)/look_ahead_range,2)

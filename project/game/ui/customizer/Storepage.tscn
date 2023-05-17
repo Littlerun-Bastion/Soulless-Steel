@@ -1,0 +1,497 @@
+[gd_scene load_steps=21 format=3 uid="uid://bu22r8a2ybnso"]
+
+[ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="1_4k3qg"]
+[ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="2_clna7"]
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="3_pwurs"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="4_o5x3i"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_afve1"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="6_1ptfd"]
+[ext_resource type="Texture2D" uid="uid://cra1205ajebpl" path="res://assets/images/ui/menu/hardware_tab_selected.png" id="7_vn5lx"]
+[ext_resource type="Texture2D" uid="uid://dmb72nwar1al1" path="res://assets/images/ui/menu/wetware_tab_selected.png" id="8_qmmn5"]
+[ext_resource type="Texture2D" uid="uid://d0yi8iberc76q" path="res://assets/images/ui/menu/equipment_tab_selected.png" id="9_7sv3q"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="10_oi7dk"]
+[ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="11_5metr"]
+[ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="12_jvh0j"]
+
+[sub_resource type="Theme" id="14"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b5s5m"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vd7ux"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_414lh"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rot1g"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bgaso"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_axi2k"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3nyvn"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[node name="Customizer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(-611, -230)
+script = ExtResource("1_4k3qg")
+
+[node name="Mecha" parent="." instance=ExtResource("2_clna7")]
+visible = false
+position = Vector2(1558.73, 671)
+display_mode = true
+
+[node name="ComparisonMecha" parent="." instance=ExtResource("2_clna7")]
+visible = false
+position = Vector2(619, 671)
+display_mode = true
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("3_pwurs")
+
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+show_behind_parent = true
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource("14")
+color = Color(0, 0, 0, 1)
+
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("4_o5x3i")
+
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+offset_left = -664.0
+offset_top = -794.667
+offset_right = 3336.0
+offset_bottom = 3205.34
+texture = ExtResource("4_o5x3i")
+
+[node name="BackgroundElements" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LowerBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 0
+anchor_top = 0.978755
+anchor_right = 1.0
+anchor_bottom = 1.00005
+offset_top = 1021.85
+offset_bottom = 1036.0
+pivot_offset = Vector2(0.0615444, 39.8171)
+color = Color(0, 0, 0, 1)
+
+[node name="LeftBar" type="ColorRect" parent="BackgroundElements"]
+layout_mode = 0
+offset_right = 43.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
+
+[node name="RightBar" type="ColorRect" parent="BackgroundElements"]
+visible = false
+layout_mode = 0
+offset_left = 1383.0
+offset_right = 1923.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
+
+[node name="UpperBar2" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 112.0
+offset_right = 1879.0
+offset_bottom = 316.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
+
+[node name="UpperBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 0
+anchor_right = 1.0
+offset_top = 3.0
+offset_right = 1878.0
+offset_bottom = 207.0
+color = Color(0, 0, 0, 1)
+
+[node name="MainSystemContainer2" type="VBoxContainer" parent="BackgroundElements"]
+layout_mode = 2
+offset_left = 32.0
+offset_top = 47.0
+offset_right = 459.0
+offset_bottom = 100.0
+theme_override_constants/separation = -5
+
+[node name="Label" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("5_afve1")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 25
+text = "Market
+"
+
+[node name="Label2" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("5_afve1")
+theme_override_font_sizes/font_size = 25
+text = "SAV_hUNTERos.EXE -storehook"
+
+[node name="SideBar1" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_right = 14.0
+offset_bottom = 1040.0
+
+[node name="SideBar2" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(7, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_left = 17.2305
+offset_right = 24.2305
+offset_bottom = 1040.0
+
+[node name="PartCategories" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Hardware" type="GridContainer" parent="PartCategories"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 325.0
+offset_right = 1540.0
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
+columns = 4
+
+[node name="head" type="Button" parent="PartCategories/Hardware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Head"
+alignment = 0
+icon_alignment = 2
+
+[node name="core" type="Button" parent="PartCategories/Hardware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Core"
+alignment = 0
+icon_alignment = 2
+
+[node name="shoulders" type="Button" parent="PartCategories/Hardware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Shoulders"
+alignment = 0
+icon_alignment = 2
+
+[node name="chassis" type="Button" parent="PartCategories/Hardware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Chassis"
+alignment = 0
+icon_alignment = 2
+
+[node name="Wetware" type="GridContainer" parent="PartCategories"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 325.0
+offset_right = 1240.0
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
+columns = 4
+
+[node name="chipset" type="Button" parent="PartCategories/Wetware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Chipset"
+alignment = 0
+icon_alignment = 2
+
+[node name="generator" type="Button" parent="PartCategories/Wetware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Generator"
+alignment = 0
+icon_alignment = 2
+
+[node name="thruster" type="Button" parent="PartCategories/Wetware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Thruster"
+alignment = 0
+icon_alignment = 2
+
+[node name="Equipment" type="GridContainer" parent="PartCategories"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 325.0
+offset_right = 1540.0
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
+columns = 4
+
+[node name="arm_weapon_right" type="Button" parent="PartCategories/Equipment"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Right Arm"
+alignment = 0
+icon_alignment = 2
+
+[node name="arm_weapon_left" type="Button" parent="PartCategories/Equipment"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Left Arm"
+alignment = 0
+icon_alignment = 2
+
+[node name="shoulder_weapon_right" type="Button" parent="PartCategories/Equipment"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "R Shoulder"
+alignment = 0
+icon_alignment = 2
+
+[node name="shoulder_weapon_left" type="Button" parent="PartCategories/Equipment"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "L Shoulder"
+alignment = 0
+icon_alignment = 2
+
+[node name="CategorySelectedUI" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Hardware" type="TextureRect" parent="CategorySelectedUI"]
+layout_mode = 0
+offset_left = 43.44
+offset_top = 131.72
+offset_right = 1872.44
+offset_bottom = 205.72
+texture = ExtResource("7_vn5lx")
+
+[node name="Wetware" type="TextureRect" parent="CategorySelectedUI"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 132.0
+offset_right = 1873.0
+offset_bottom = 206.0
+texture = ExtResource("8_qmmn5")
+
+[node name="Equipment" type="TextureRect" parent="CategorySelectedUI"]
+visible = false
+layout_mode = 0
+offset_left = 44.0
+offset_top = 132.0
+offset_right = 1873.0
+offset_bottom = 206.0
+texture = ExtResource("9_7sv3q")
+
+[node name="CategoryButtons" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Hardware" type="Button" parent="CategoryButtons"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 139.0
+offset_right = 357.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("10_oi7dk")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b5s5m")
+theme_override_styles/hover = SubResource("StyleBoxFlat_vd7ux")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+text = "Hardware"
+icon_alignment = 1
+
+[node name="Wetware" type="Button" parent="CategoryButtons"]
+layout_mode = 0
+offset_left = 370.0
+offset_top = 139.0
+offset_right = 681.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("10_oi7dk")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxEmpty_rot1g")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bgaso")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+text = "Wetware"
+icon_alignment = 1
+
+[node name="Equipment" type="Button" parent="CategoryButtons"]
+layout_mode = 0
+offset_left = 692.0
+offset_top = 139.0
+offset_right = 1003.0
+offset_bottom = 199.0
+theme_override_fonts/font = ExtResource("10_oi7dk")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxTexture_axi2k")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3nyvn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+text = "weapons"
+icon_alignment = 1
+
+[node name="PartListContainer" type="ScrollContainer" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 377.217
+offset_right = 440.0
+offset_bottom = 995.217
+theme = ExtResource("6_1ptfd")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
+layout_mode = 2
+theme_override_constants/separation = 120
+
+[node name="OptionButton" type="OptionButton" parent="."]
+layout_mode = 0
+offset_left = 38.0
+offset_top = 262.0
+offset_right = 368.0
+offset_bottom = 307.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+item_count = 1
+selected = 0
+popup/item_0/text = "Nomhoyi Superheavy"
+popup/item_0/id = 0
+
+[node name="Label" type="Label" parent="OptionButton"]
+layout_mode = 0
+offset_top = -42.0
+offset_right = 136.0
+offset_bottom = 1.0
+theme_override_font_sizes/font_size = 40
+text = "Vendor"
+
+[node name="Load" type="Button" parent="."]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 0
+offset_left = 1428.63
+offset_top = 152.333
+offset_right = 1748.63
+offset_bottom = 212.333
+scale = Vector2(0.66, 0.66)
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "SAVE/LOAD"
+alignment = 0
+icon_alignment = 2
+
+[node name="Exit" type="Button" parent="."]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 0
+offset_left = 1660.0
+offset_top = 152.0
+offset_right = 1980.0
+offset_bottom = 212.0
+scale = Vector2(0.66, 0.66)
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Exit"
+alignment = 0
+icon_alignment = 2
+
+[node name="Statcard" parent="." instance=ExtResource("11_5metr")]
+visible = false
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 468.0
+offset_top = 378.0
+offset_right = 999.0
+offset_bottom = 1074.0
+scale = Vector2(0.75, 0.75)
+
+[node name="LoadScreen" parent="." instance=ExtResource("12_jvh0j")]
+visible = false
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 164.0
+offset_top = 337.0
+offset_right = -1756.0
+offset_bottom = -743.0
+
+[connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/shoulders" to="." method="_on_Category_pressed" binds= ["shoulders", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Hardware/chassis" to="." method="_on_Category_pressed" binds= ["chassis", "Hardware"]]
+[connection signal="pressed" from="PartCategories/Wetware/chipset" to="." method="_on_Category_pressed" binds= ["chipset", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Wetware/generator" to="." method="_on_Category_pressed" binds= ["generator", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= ["thruster", "Wetware"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "left"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "left"]]
+[connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
+[connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
+[connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
+[connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
+[connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]

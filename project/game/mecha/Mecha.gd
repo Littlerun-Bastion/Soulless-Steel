@@ -694,7 +694,7 @@ func update_heat(dt):
 		else:
 			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion * (mecha_heat/max_heat))*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-			weapon.update_heat(generator.heat_dispersion, dt)
+			weapon.update_heat(generator.heat_dispersion,mecha_heat_visible,dt)
 	if generator:
 		if mecha_heat >= max_heat:
 			set_status("overheating", 5.0)

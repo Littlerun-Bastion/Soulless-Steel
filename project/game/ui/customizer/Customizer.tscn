@@ -226,45 +226,44 @@ offset_bottom = 40.0
 [node name="Hardware" type="GridContainer" parent="PartCategories"]
 layout_mode = 0
 offset_left = 40.0
-offset_top = 326.172
-offset_right = 1315.0
-offset_bottom = 386.172
-scale = Vector2(0.66, 0.66)
-theme_override_constants/h_separation = 100
+offset_top = 325.0
+offset_right = 1390.0
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
 columns = 4
 
 [node name="head" type="Button" parent="PartCategories/Hardware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Head"
 alignment = 0
 icon_alignment = 2
 
 [node name="core" type="Button" parent="PartCategories/Hardware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Core"
 alignment = 0
 icon_alignment = 2
 
 [node name="shoulders" type="Button" parent="PartCategories/Hardware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Shoulders"
 alignment = 0
 icon_alignment = 2
 
 [node name="chassis" type="Button" parent="PartCategories/Hardware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Chassis"
 alignment = 0
 icon_alignment = 2
@@ -273,36 +272,35 @@ icon_alignment = 2
 visible = false
 layout_mode = 0
 offset_left = 40.0
-offset_top = 326.172
+offset_top = 325.0
 offset_right = 1240.0
-offset_bottom = 386.172
-scale = Vector2(0.66, 0.66)
-theme_override_constants/h_separation = 100
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
 columns = 4
 
 [node name="chipset" type="Button" parent="PartCategories/Wetware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Chipset"
 alignment = 0
 icon_alignment = 2
 
 [node name="generator" type="Button" parent="PartCategories/Wetware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Generator"
 alignment = 0
 icon_alignment = 2
 
 [node name="thruster" type="Button" parent="PartCategories/Wetware"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Thruster"
 alignment = 0
 icon_alignment = 2
@@ -311,45 +309,44 @@ icon_alignment = 2
 visible = false
 layout_mode = 0
 offset_left = 40.0
-offset_top = 326.172
-offset_right = 1315.0
-offset_bottom = 386.172
-scale = Vector2(0.66, 0.66)
-theme_override_constants/h_separation = 100
+offset_top = 325.0
+offset_right = 1390.0
+offset_bottom = 385.0
+theme_override_constants/h_separation = 20
 columns = 4
 
 [node name="arm_weapon_right" type="Button" parent="PartCategories/Equipment"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Right Arm"
 alignment = 0
 icon_alignment = 2
 
 [node name="arm_weapon_left" type="Button" parent="PartCategories/Equipment"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "Left Arm"
 alignment = 0
 icon_alignment = 2
 
 [node name="shoulder_weapon_right" type="Button" parent="PartCategories/Equipment"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "R Shoulder"
 alignment = 0
 icon_alignment = 2
 
 [node name="shoulder_weapon_left" type="Button" parent="PartCategories/Equipment"]
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(275, 45)
 layout_mode = 2
 theme = ExtResource("8")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 30
 text = "L Shoulder"
 alignment = 0
 icon_alignment = 2

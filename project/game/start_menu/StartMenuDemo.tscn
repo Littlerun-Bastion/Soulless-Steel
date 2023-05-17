@@ -348,6 +348,16 @@ Survive."
 visible_characters = 0
 visible_ratio = 0.0
 
+[node name="UpperBar" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = 17.0
+offset_bottom = 40.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
+
 [node name="SideBar1" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 0
@@ -361,15 +371,6 @@ layout_mode = 0
 anchor_bottom = 1.0
 offset_left = 17.2305
 offset_right = 24.2305
-
-[node name="UpperBar" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 0
-anchor_right = 1.0
-offset_left = 17.2305
-offset_right = 17.2305
-offset_bottom = 40.0
-color = Color(0, 0, 0, 1)
 
 [node name="LowerBar" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(0, 15)

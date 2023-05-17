@@ -1,155 +1,140 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=24 format=3 uid="uid://vgnw24sqctdr"]
 
-[ext_resource path="res://assets/images/anims/long_gun_flash1.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/anims/long_gun_flash2.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/spark_fx.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/fx/long_spark.png" type="Texture2D" id=4]
-[ext_resource path="res://game/ui/effects/MuzzleFlash.gd" type="Script" id=5]
-[ext_resource path="res://assets/images/light_sources/light_point_soft.png" type="Texture2D" id=6]
+[ext_resource type="Texture2D" uid="uid://e28455eyp1if" path="res://assets/images/anims/long_gun_flash1.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://bvccw4oui67qb" path="res://assets/images/anims/long_gun_flash2.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://dlnokjd0aqymr" path="res://assets/images/spark_fx.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="4"]
+[ext_resource type="Script" path="res://game/ui/effects/MuzzleFlash.gd" id="5"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="6"]
 
-[sub_resource type="CanvasItemMaterial" id=1]
+[sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1
 
-[sub_resource type="Curve" id=2]
-_data = [ Vector2( 0, 0 ), 0.0, 0.0, 0, 0, Vector2( 0.0383481, 0.979545 ), 1.64078, 1.64078, 0, 0, Vector2( 0.39823, 0 ), 0.0, 0.0, 0, 0 ]
+[sub_resource type="Curve" id="2"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.0383481, 0.979545), 1.64078, 1.64078, 0, 0, Vector2(0.39823, 0), 0.0, 0.0, 0, 0]
+point_count = 3
 
-[sub_resource type="CurveTexture" id=3]
-curve = SubResource( 2 )
+[sub_resource type="CurveTexture" id="3"]
+curve = SubResource("2")
 
-[sub_resource type="ParticleProcessMaterial" id=20]
-flag_disable_z = true
-direction = Vector3( 0, -1, 0 )
+[sub_resource type="ParticleProcessMaterial" id="20"]
+direction = Vector3(0, -1, 0)
 spread = 0.0
-gravity = Vector3( 0, 98, 0 )
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-scale = 0.75
-scale_curve = SubResource( 3 )
+gravity = Vector3(0, 98, 0)
+scale_curve = SubResource("3")
 
-[sub_resource type="AnimatedTexture" id=5]
+[sub_resource type="AnimatedTexture" id="5"]
 frames = 2
 one_shot = true
-fps = 60.0
-frame_0/texture = ExtResource( 1 )
-frame_1/texture = ExtResource( 2 )
-frame_1/delay_sec = 0.0
+frame_0/texture = ExtResource("1")
+frame_1/texture = ExtResource("2")
+frame_1/duration = 1.0
 
-[sub_resource type="CanvasItemMaterial" id=21]
+[sub_resource type="CanvasItemMaterial" id="21"]
 blend_mode = 1
 
-[sub_resource type="Gradient" id=22]
-offsets = PackedFloat32Array( 0.21519, 0.598101 )
-colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+[sub_resource type="Gradient" id="22"]
+offsets = PackedFloat32Array(0.21519, 0.598101)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id=23]
-gradient = SubResource( 22 )
+[sub_resource type="GradientTexture2D" id="23"]
+gradient = SubResource("22")
 
-[sub_resource type="ParticleProcessMaterial" id=24]
-flag_disable_z = true
-gravity = Vector3( 0, 0, 0 )
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-scale = 0.1
-scale_random = 0.1
-color_ramp = SubResource( 23 )
+[sub_resource type="ParticleProcessMaterial" id="24"]
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("23")
 
-[sub_resource type="Gradient" id=13]
-offsets = PackedFloat32Array( 0.174051, 0.955696 )
-colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+[sub_resource type="Gradient" id="Gradient_mcylb"]
+offsets = PackedFloat32Array(0.0987654, 0.209877, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id=14]
-gradient = SubResource( 13 )
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qu1yx"]
+gradient = SubResource("Gradient_mcylb")
 
-[sub_resource type="Curve" id=15]
-max_value = 526.17
-_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.353982, 526.17 ), 0.0, 0.0, 0, 0 ]
+[sub_resource type="Curve" id="Curve_7c2xj"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.988201, 0), 0.0, 0.0, 0, 0]
+point_count = 2
 
-[sub_resource type="CurveTexture" id=16]
-curve = SubResource( 15 )
+[sub_resource type="CurveTexture" id="CurveTexture_judud"]
+curve = SubResource("Curve_7c2xj")
 
-[sub_resource type="Curve" id=17]
-_data = [ Vector2( 0, 1 ), 0.0, 0.0, 0, 0, Vector2( 0.988201, 0 ), 0.0, 0.0, 0, 0 ]
-
-[sub_resource type="CurveTexture" id=18]
-curve = SubResource( 17 )
-
-[sub_resource type="ParticleProcessMaterial" id=19]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_8psj0"]
 lifetime_randomness = 0.52
-flag_align_y = true
-flag_disable_z = true
-direction = Vector3( 0, -1, 0 )
-spread = 86.77
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 1000.0
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-damping = 100.0
-damping_curve = SubResource( 16 )
-scale = 0.8
-scale_random = 0.25
-scale_curve = SubResource( 18 )
-color_ramp = SubResource( 14 )
+particle_flag_align_y = true
+direction = Vector3(0, -1, 0)
+spread = 75.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 1000.0
+initial_velocity_max = 1000.0
+damping_min = 100.0
+damping_max = 100.0
+scale_min = 0.5
+scale_curve = SubResource("CurveTexture_judud")
+color_ramp = SubResource("GradientTexture1D_qu1yx")
+turbulence_noise_strength = 20.0
+turbulence_noise_speed = Vector3(1, 1, 1)
+turbulence_noise_speed_random = 10.0
 
-[sub_resource type="Gradient" id=25]
-offsets = PackedFloat32Array( 0.25, 0.939873 )
-colors = PackedColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+[sub_resource type="Gradient" id="Gradient_pvv36"]
+offsets = PackedFloat32Array(0.17284, 0.753086)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id=26]
-gradient = SubResource( 25 )
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_migmo"]
+gradient = SubResource("Gradient_pvv36")
 
-[sub_resource type="ParticleProcessMaterial" id=27]
+[sub_resource type="ParticleProcessMaterial" id="27"]
 lifetime_randomness = 0.47
-flag_disable_z = true
-direction = Vector3( 0, -1, 0 )
+direction = Vector3(0, -1, 0)
 spread = 180.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 500.0
-initial_velocity_random = 0.85
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-damping = 100.0
-scale = 0.5
-scale_random = 0.18
-color_ramp = SubResource( 26 )
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 500.0
+damping_min = 100.0
+damping_max = 100.0
+scale_min = 0.4
+scale_max = 0.8
+color_ramp = SubResource("GradientTexture1D_migmo")
 
 [node name="Flash" type="GPUParticles2D"]
-material = SubResource( 1 )
+material = SubResource("1")
 emitting = false
 amount = 3
+process_material = SubResource("20")
+texture = SubResource("5")
 lifetime = 0.3
 one_shot = true
 speed_scale = 2.0
 explosiveness = 1.0
-process_material = SubResource( 20 )
-texture = SubResource( 5 )
-script = ExtResource( 5 )
+fixed_fps = 240
+script = ExtResource("5")
 
 [node name="Effect2" type="GPUParticles2D" parent="."]
-material = SubResource( 21 )
+material = SubResource("21")
 emitting = false
 amount = 1
+process_material = SubResource("24")
+texture = ExtResource("6")
 lifetime = 0.5
 one_shot = true
 explosiveness = 1.0
-local_coords = false
-process_material = SubResource( 24 )
-texture = ExtResource( 6 )
+fixed_fps = 240
 
 [node name="Effect1" type="GPUParticles2D" parent="."]
 emitting = false
 amount = 3
+process_material = SubResource("ParticleProcessMaterial_8psj0")
+texture = ExtResource("4")
 one_shot = true
 speed_scale = 2.0
 explosiveness = 1.0
-process_material = SubResource( 19 )
-texture = ExtResource( 4 )
+fixed_fps = 240
 
 [node name="Linger" type="GPUParticles2D" parent="."]
 emitting = false
 amount = 4
+process_material = SubResource("27")
+texture = ExtResource("3")
 lifetime = 1.25
 one_shot = true
 explosiveness = 1.0
-local_coords = false
-process_material = SubResource( 27 )
-texture = ExtResource( 3 )
+fixed_fps = 240

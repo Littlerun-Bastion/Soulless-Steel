@@ -1,23 +1,23 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://dmlsmkkmsl4q4"]
 
-[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-H250_sub.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-H250_glow.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/MA-H250_main.png" type="Texture2D" id=4]
-[ext_resource path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" type="PackedScene" id=5]
-[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=6]
-[ext_resource path="res://game/weapons/BallisticImpact.tscn" type="PackedScene" id=7]
+[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cqgbxcn3jd23y" path="res://assets/images/mechas/arm_weapons/MA-H250_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://b7pwkvgetcili" path="res://assets/images/mechas/arm_weapons/MA-H250_glow.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://dd413wdbprxtb" path="res://assets/images/mechas/arm_weapons/MA-H250_main.png" id="4"]
+[ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_bullet.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="7"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "MA-H250"
 manufacturer_name = "Martel"
 tagline = "Machine Gun"
 type = "PewPew"
-muzzle_flash = ExtResource( 5 )
+muzzle_flash = ExtResource("5")
 muzzle_flash_size = 0.55
 muzzle_flash_speed = 1.8
-projectile = ExtResource( 6 )
+projectile = ExtResource("6")
 projectile_type = "25mm AP-DS"
 damage = 372.0
 shield_mult = 0.5
@@ -35,7 +35,6 @@ max_ammo = 240
 reload_speed = 3.4
 muzzle_heat = 22.5
 ammo_cost = 1
-soundEffect = "medium_auto3"
 sound_max_range = 7500
 sound_att = 1.75
 battery_drain = 0.0
@@ -47,27 +46,26 @@ eject_casings = true
 casing_size = 0.8
 trail_lifetime_range = 5.0
 trail_min_spawn_distance = 5.0
-impact_effect = ExtResource( 7 )
-wiggle_amount = 0.01
+impact_effect = ExtResource("7")
 seeker_agility = 0.003
 seek_time = 0.5
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="Glow" type="Sprite2D" parent="."]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="AttachPos" type="Marker2D" parent="."]
-position = Vector2( 13.4073, 26.0568 )
+position = Vector2(13.4073, 26.0568)
 
 [node name="EjectorPos" type="Marker2D" parent="."]
-position = Vector2( -0.646783, 40.2722 )
+position = Vector2(-0.646783, 40.2722)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2( 0, -71.2815 )
+position = Vector2(0, -71.2815)

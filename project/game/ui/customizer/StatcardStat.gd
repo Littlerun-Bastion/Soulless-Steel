@@ -23,7 +23,7 @@ func update_stat(current_part, new_part):
 		$Values/Increments.visible = true
 		$Values/Value.text = str(new_stat)
 		stat_diff = current_stat - new_stat
-		$Values/Increments.text = str("+" + str(stat_diff))
+		$Values/Increments.text = str("-" + str(stat_diff))
 	else:
 		$Values/Increments.visible = false
 		$Values/Value.text = str(new_stat)

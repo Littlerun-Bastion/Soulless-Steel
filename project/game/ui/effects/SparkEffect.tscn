@@ -1,75 +1,98 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=3 uid="uid://c1gvtycr16g5n"]
 
-[ext_resource path="res://assets/images/spark_fx.png" type="Texture2D" id=1]
-[ext_resource path="res://game/ui/effects/SparkEffect.gd" type="Script" id=2]
+[ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="1_bcc5v"]
+[ext_resource type="Script" path="res://game/ui/effects/SparkEffect.gd" id="2"]
 
+[sub_resource type="Gradient" id="Gradient_p3cgd"]
+offsets = PackedFloat32Array(0.555556, 0.91358)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="Gradient" id=3]
-offsets = PackedFloat32Array( 0.703297, 1 )
-colors = PackedColorArray( 1, 1, 1, 1, 0.72549, 0.72549, 0.72549, 0 )
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g6bu8"]
+gradient = SubResource("Gradient_p3cgd")
 
-[sub_resource type="GradientTexture2D" id=4]
-gradient = SubResource( 3 )
-
-[sub_resource type="Curve" id=5]
+[sub_resource type="Curve" id="5"]
 min_value = -400.01
 max_value = 200.0
-_data = [ Vector2( 0, -11.3636 ), 0.0, 0.0, 0, 0, Vector2( 0.149123, -400.01 ), 0.0, 0.0, 0, 0 ]
+_data = [Vector2(0, -11.3636), 0.0, 0.0, 0, 0, Vector2(0.149123, -400.01), 0.0, 0.0, 0, 0]
+point_count = 2
 
-[sub_resource type="CurveTexture" id=6]
-curve = SubResource( 5 )
+[sub_resource type="CurveTexture" id="6"]
+curve = SubResource("5")
 
-[sub_resource type="Curve" id=7]
-_data = [ Vector2( 0, 0.954545 ), 0.0, 0.0, 0, 0, Vector2( 0.5, 0 ), 0.0, 0.0, 0, 0 ]
-
-[sub_resource type="CurveTexture" id=8]
-curve = SubResource( 7 )
-
-[sub_resource type="ParticleProcessMaterial" id=2]
+[sub_resource type="ParticleProcessMaterial" id="2"]
 lifetime_randomness = 0.19
-trail_size_modifier = SubResource( 8 )
-flag_align_y = true
-flag_disable_z = true
-direction = Vector3( 0, 1, 0 )
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
 spread = 50.0
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 300.0
-initial_velocity_random = 0.25
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-linear_accel_curve = SubResource( 6 )
-scale_random = 1.0
-color_ramp = SubResource( 4 )
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 300.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_curve = SubResource("6")
+scale_min = 0.2
+scale_max = 0.5
+color_ramp = SubResource("GradientTexture1D_g6bu8")
+turbulence_enabled = true
+turbulence_noise_strength = 2.0
+turbulence_noise_speed_random = 10.0
+turbulence_influence_min = 0.01
+turbulence_influence_max = 0.03
 
-[sub_resource type="ParticleProcessMaterial" id=9]
-lifetime_randomness = 0.25
-flag_disable_z = true
-direction = Vector3( 0, 1, 0 )
-gravity = Vector3( 0, 0, 0 )
-initial_velocity = 250.0
-initial_velocity_random = 0.71
-orbit_velocity = 0.0
-orbit_velocity_random = 0.0
-linear_accel_curve = SubResource( 6 )
-scale = 0.33
-scale_random = 0.12
-color_ramp = SubResource( 4 )
+[sub_resource type="Gradient" id="Gradient_8f6ur"]
+offsets = PackedFloat32Array(0.555556, 0.91358)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1w67j"]
+gradient = SubResource("Gradient_8f6ur")
+
+[sub_resource type="Curve" id="Curve_0yyw4"]
+min_value = -400.01
+max_value = 200.0
+_data = [Vector2(0, -11.3636), 0.0, 0.0, 0, 0, Vector2(0.149123, -400.01), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_a8dt7"]
+curve = SubResource("Curve_0yyw4")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4r4ly"]
+lifetime_randomness = 0.19
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 50.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 300.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_curve = SubResource("CurveTexture_a8dt7")
+scale_min = 0.2
+scale_max = 0.5
+color_ramp = SubResource("GradientTexture1D_1w67j")
+turbulence_enabled = true
+turbulence_noise_speed_random = 10.0
+turbulence_influence_min = 0.01
+turbulence_influence_max = 0.02
 
 [node name="SparkEffect" type="GPUParticles2D"]
 emitting = false
-amount = 15
+amount = 10
+process_material = SubResource("2")
+texture = ExtResource("1_bcc5v")
 one_shot = true
 speed_scale = 7.5
 explosiveness = 1.0
-process_material = SubResource( 2 )
-texture = ExtResource( 1 )
-script = ExtResource( 2 )
+fixed_fps = 240
+script = ExtResource("2")
 
 [node name="smallSparkEffect" type="GPUParticles2D" parent="."]
 emitting = false
-amount = 100
+amount = 20
+process_material = SubResource("ParticleProcessMaterial_4r4ly")
+texture = ExtResource("1_bcc5v")
 one_shot = true
 speed_scale = 3.0
 explosiveness = 1.0
-process_material = SubResource( 9 )
-texture = ExtResource( 1 )
+fixed_fps = 240

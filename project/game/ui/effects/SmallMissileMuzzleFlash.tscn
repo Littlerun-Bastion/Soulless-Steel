@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://byovnld2knw84"]
+[gd_scene load_steps=26 format=3 uid="uid://byovnld2knw84"]
 
 [ext_resource type="Texture2D" uid="uid://b6813ptt2gxxk" path="res://assets/images/fx/directional_flame.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://d26e6lcern0x7" path="res://assets/images/fx/missile_cap.png" id="2"]
@@ -16,21 +16,28 @@ point_count = 3
 curve = SubResource("2")
 
 [sub_resource type="ParticleProcessMaterial" id="4"]
+particle_flag_disable_z = true
 direction = Vector3(0, -1, 0)
 spread = 0.0
-gravity = Vector3(0, 98, 0)
+gravity = Vector3(0, 0, 0)
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+angle_min = 170.0
+angle_max = 190.0
+scale_min = 0.4
+scale_max = 1.2
 scale_curve = SubResource("3")
 
-[sub_resource type="Gradient" id="6"]
-offsets = PackedFloat32Array(0.0632911, 0.911392)
-colors = PackedColorArray(1, 1, 1, 0.317647, 1, 1, 1, 0)
+[sub_resource type="Gradient" id="Gradient_yxjap"]
+offsets = PackedFloat32Array(0, 0.395062, 0.851852)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.317647, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id="7"]
-gradient = SubResource("6")
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_nsbll"]
+gradient = SubResource("Gradient_yxjap")
 
 [sub_resource type="Curve" id="24"]
-max_value = 1024.0
-_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.146269, 269.964), 0.0, 0.0, 0, 0, Vector2(0.20649, 0), 0.0, 0.0, 0, 0]
+max_value = 25.0
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.0892857, 25), 0.0, 0.0, 0, 0, Vector2(0.20649, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
 [sub_resource type="CurveTexture" id="9"]
@@ -48,28 +55,27 @@ curve = SubResource("10")
 particle_flag_disable_z = true
 direction = Vector3(0, -1, 0)
 spread = 10.0
-gravity = Vector3(0, 98, 0)
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 250.0
+initial_velocity_max = 500.0
 orbit_velocity_min = 0.0
 orbit_velocity_max = 0.0
+damping_min = 100.0
+damping_max = 100.0
 damping_curve = SubResource("9")
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 0.0
+scale_max = 5.0
 scale_curve = SubResource("11")
-color_ramp = SubResource("7")
+color_ramp = SubResource("GradientTexture1D_nsbll")
 
-[sub_resource type="Curve" id="26"]
-min_value = -720.0
-max_value = 720.0
-_data = [Vector2(0, 720), 0.0, 0.0, 0, 0, Vector2(0.0766962, 720), 0.0, -122040.0, 0, 1, Vector2(0.0884956, -720), -122040.0, 0.0, 1, 0]
-point_count = 3
+[sub_resource type="Gradient" id="Gradient_ju3ak"]
+offsets = PackedFloat32Array(0.148148, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="CurveTexture" id="27"]
-curve = SubResource("26")
-
-[sub_resource type="Gradient" id="28"]
-offsets = PackedFloat32Array(0.0664557, 0.984177)
-colors = PackedColorArray(1, 1, 1, 1, 0.670588, 0.670588, 0.670588, 0)
-
-[sub_resource type="GradientTexture2D" id="29"]
-gradient = SubResource("28")
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wyqqw"]
+gradient = SubResource("Gradient_ju3ak")
 
 [sub_resource type="Curve" id="30"]
 max_value = 1024.0
@@ -80,11 +86,21 @@ point_count = 3
 curve = SubResource("30")
 
 [sub_resource type="ParticleProcessMaterial" id="32"]
+particle_flag_disable_z = true
 direction = Vector3(0, -1, 0)
 gravity = Vector3(0, 0, 0)
-angular_velocity_curve = SubResource("27")
+initial_velocity_min = 250.0
+initial_velocity_max = 500.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+damping_min = 100.0
+damping_max = 100.0
 damping_curve = SubResource("31")
-color_ramp = SubResource("29")
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 2.5
+scale_max = 2.5
+color_ramp = SubResource("GradientTexture1D_wyqqw")
 
 [sub_resource type="Gradient" id="Gradient_ydgjx"]
 offsets = PackedFloat32Array(0, 0.17284, 0.333333, 0.654321, 0.962963)
@@ -127,8 +143,8 @@ texture = ExtResource("1")
 lifetime = 0.3
 one_shot = true
 explosiveness = 1.0
+fixed_fps = 240
 script = ExtResource("5")
-is_local = false
 
 [node name="Effect2" type="GPUParticles2D" parent="."]
 emitting = false
@@ -138,17 +154,18 @@ texture = ExtResource("3")
 lifetime = 0.5
 one_shot = true
 explosiveness = 1.0
+fixed_fps = 240
 
 [node name="Effect1" type="GPUParticles2D" parent="."]
 z_index = -1
 z_as_relative = false
-emitting = false
 amount = 1
 process_material = SubResource("32")
 texture = ExtResource("2")
 lifetime = 4.0
 one_shot = true
 explosiveness = 1.0
+fixed_fps = 240
 
 [node name="Linger" type="GPUParticles2D" parent="."]
 emitting = false
@@ -158,3 +175,4 @@ texture = ExtResource("3")
 lifetime = 5.0
 one_shot = true
 explosiveness = 1.0
+fixed_fps = 240

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=18 format=3 uid="uid://d1jq50hkufdkk"]
+[gd_resource type="Theme" load_steps=19 format=3 uid="uid://d1jq50hkufdkk"]
 
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_normal.tres" id="1"]
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_pressed.tres" id="2"]
@@ -52,6 +52,27 @@ cache/0/16/0/underline_position = 0.0
 cache/0/16/0/underline_thickness = 0.0
 cache/0/16/0/scale = 1.0
 cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
+cache/0/16/0/kerning_overrides/25/0 = Vector2(0, 0)
+cache/0/25/0/ascent = 0.0
+cache/0/25/0/descent = 0.0
+cache/0/25/0/underline_position = 0.0
+cache/0/25/0/underline_thickness = 0.0
+cache/0/25/0/scale = 1.0
+cache/0/25/0/kerning_overrides/16/0 = Vector2(0, 0)
+cache/0/25/0/kerning_overrides/25/0 = Vector2(0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pptwv"]
+content_margin_left = 7.0
+content_margin_top = 7.0
+content_margin_right = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_detail = 1
 
 [sub_resource type="StyleBoxFlat" id="11"]
 bg_color = Color(0, 0, 0, 1)
@@ -120,6 +141,7 @@ HScrollBar/styles/grabber_pressed = SubResource("3")
 HScrollBar/styles/scroll = SubResource("10")
 HScrollBar/styles/scroll_focus = null
 LineEdit/fonts/font = SubResource("8")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_pptwv")
 PanelContainer/styles/panel = SubResource("11")
 TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
 TooltipLabel/fonts/font = SubResource("9")

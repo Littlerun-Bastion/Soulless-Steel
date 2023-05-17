@@ -37,6 +37,7 @@ func _ready():
 	#$Statbars.update_stats(DisplayMecha)
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
+	$BalanceLabel.text = str(balance)
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
@@ -231,15 +232,39 @@ func recalculate_total():
 	for item in BasketList.get_children():
 		basket_total += item.get_price()
 		num_items += 1
+	if balance < basket_total:
+		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = true
+		$PurchaseConfirm/confirm/Control/Label.text = "Insufficient funds."
+	else:
+		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = false
+		$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
 	$Basket/BottomSect/HBoxContainer/Total.text = str(basket_total)
-	
-	$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
 	$PurchaseConfirm/confirm/TotalCost/Amount.text = str(basket_total)
 	$PurchaseConfirm/confirm/CurrentBalance/Amount.text = str(balance)
 	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
 
 
 func _on_purchase_pressed():
+	#In basket
 	$PurchaseConfirm.visible = true
 	PurchaseConfirm.visible = true
 	PurchaseComplete.visible = false
+
+
+func _on_cancel_pressed():
+	$PurchaseConfirm.visible = false
+
+
+func _on_purchase_items_pressed():
+	#In confirmation screen
+	if balance < basket_total:
+		pass
+	else:
+		balance -= basket_total
+		for item in BasketList.get_children():
+			BasketList.remove_child(item)
+			item.queue_free()
+		recalculate_total()
+		PurchaseConfirm.visible = false
+		PurchaseComplete.visible = true
+		$BalanceLabel.text = str(balance)

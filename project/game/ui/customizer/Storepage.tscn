@@ -507,7 +507,7 @@ offset_bottom = 577.0
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="Label" type="Label" parent="."]
+[node name="BalanceLabel" type="Label" parent="."]
 custom_minimum_size = Vector2(600, 65)
 layout_mode = 0
 offset_left = 1236.0
@@ -521,7 +521,7 @@ text = "100000
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="Label2" type="Label" parent="Label"]
+[node name="Label2" type="Label" parent="BalanceLabel"]
 layout_mode = 0
 offset_left = 424.0
 offset_top = -62.0
@@ -533,7 +533,7 @@ text = "Balance"
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="Label" type="Label" parent="Label"]
+[node name="Label" type="Label" parent="BalanceLabel"]
 layout_mode = 0
 offset_left = 600.0
 offset_top = 23.0
@@ -782,13 +782,13 @@ layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Button" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
+[node name="Cancel" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
 custom_minimum_size = Vector2(330, 0)
 layout_mode = 2
 theme = ExtResource("6_1ptfd")
 text = "Cancel"
 
-[node name="Button2" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
+[node name="Purchase" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
 custom_minimum_size = Vector2(330, 0)
 layout_mode = 2
 theme = ExtResource("6_1ptfd")
@@ -865,7 +865,7 @@ layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Button2" type="Button" parent="PurchaseConfirm/complete/HBoxContainer"]
+[node name="Return" type="Button" parent="PurchaseConfirm/complete/HBoxContainer"]
 custom_minimum_size = Vector2(330, 0)
 layout_mode = 2
 theme = ExtResource("6_1ptfd")
@@ -889,3 +889,6 @@ text = "Return
 [connection signal="pressed" from="Basket/BottomSect/Button" to="." method="_on_purchase_pressed"]
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]
+[connection signal="pressed" from="PurchaseConfirm/confirm/HBoxContainer/Cancel" to="." method="_on_cancel_pressed"]
+[connection signal="pressed" from="PurchaseConfirm/confirm/HBoxContainer/Purchase" to="." method="_on_purchase_items_pressed"]
+[connection signal="pressed" from="PurchaseConfirm/complete/HBoxContainer/Return" to="." method="_on_cancel_pressed"]

@@ -193,17 +193,22 @@ func fuse(_dt):
 					if data.fuse_detection_type == "IR":
 						if result.collider.mecha_heat / result.collider.max_heat > 0.1:
 							payload()
+							return
 					
 					elif data.fuse_detection_type == "RCS":
 						payload()
+						return
 						
 					elif data.fuse_detection_type == "Magnetic":
 						payload()
+						return
 	
 	if lifetime > data.fuse_arm_time + data.fuse_timer and data.fuse_timer > 0.0:
 		payload()
+		return
 		
 	queue_redraw()
+
 
 func die():
 	if dying:
@@ -214,6 +219,7 @@ func die():
 	$Tickover.start()
 	await $Tickover.timeout
 	queue_free()
+
 
 func payload():
 	if data.payload_subprojectile:
@@ -248,9 +254,9 @@ func payload():
 											data.payload_explosion_status_damage, data.payload_explosion_status_type, data.payload_explosion_hitstop, original_mecha_info, data.part_id, proj_data.calibre)
 						result.collider.knockback(data.payload_explosion_force, ray, true)
 						affected_mechs.append(result.collider)
-	
 	queue_redraw()
 	die()
+
 
 func _on_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):

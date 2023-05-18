@@ -41,6 +41,7 @@ func _ready():
 	balance = Profile.stats.money
 	$BalanceLabel.text = str(balance)
 
+
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
@@ -53,7 +54,6 @@ func _input(event):
 		balance += 10000000
 		$BalanceLabel.text = str(balance)
 		recalculate_total()
-	
 
 
 func default_loadout():
@@ -95,6 +95,83 @@ func show_category_button(parts, selected):
 			part.button_pressed = false
 	for child in CategorySelectedUI.get_children():
 		child.visible = (child == selected)
+
+
+func shoulder_weapon_check():
+	var core
+	if DisplayMecha.core:
+		core = DisplayMecha.core
+	else:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
+		return
+	if not core.has_left_shoulder:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
+	else:
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = false
+	if not core.has_right_shoulder:
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
+	else:
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
+
+
+func is_build_valid():
+	var build_valid = true
+	var missing_parts : String
+	for part in ["head", "core", "shoulders", "generator",\
+				"chipset", "chassis", "thruster", "shoulders"]:
+		if not DisplayMecha.get(part):
+			build_valid = false
+			missing_parts = missing_parts + "WARN: " + part + " "
+	if not build_valid:
+		$MissingPartsScroll/MissingParts.text = missing_parts
+		$MissingPartsScroll/MissingParts.visible = true
+	else:
+		$MissingPartsScroll/MissingParts.visible = false
+	return build_valid
+
+
+func add_to_basket(type, part_name):
+	#Transaction code goes here
+	var item = PartManager.get_part(type, part_name)
+	var basket_item_entry = BASKET_ITEM.instantiate()
+	basket_item_entry.setup(item)
+	BasketList.add_child(basket_item_entry)
+	basket_item_entry.get_button().connect("pressed",Callable(self,"remove_from_basket").bind(basket_item_entry))
+	recalculate_total()
+
+
+func remove_from_basket(item):
+	BasketList.remove_child(item)
+	item.queue_free()
+	recalculate_total()
+
+
+func recalculate_total():
+	basket_total = 0.0
+	var num_items = 0
+	for item in BasketList.get_children():
+		basket_total += item.get_price()
+		num_items += 1
+	if balance < basket_total:
+		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = true
+		$PurchaseConfirm/confirm/Control/Label.text = "Insufficient funds."
+	else:
+		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = false
+		$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
+	$Basket/BottomSect/HBoxContainer/Total.text = str(basket_total)
+	$PurchaseConfirm/confirm/TotalCost/Amount.text = str(basket_total)
+	$PurchaseConfirm/confirm/CurrentBalance/Amount.text = str(balance)
+	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
+
+
+func add_to_inventory(item):
+	var inventory = Profile.get_inventory()
+	var item_name = item.current_item.part_name
+	if inventory.has(item_name):
+		inventory[item_name] += 1
+	else:
+		inventory[item_name] = 1
 
 
 func _on_Category_pressed(type,group,side = false):
@@ -161,37 +238,6 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	Statcard.visible = true
 	comparing_part = true
 
-func shoulder_weapon_check():
-	var core
-	if DisplayMecha.core:
-		core = DisplayMecha.core
-	else:
-		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
-		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
-		return
-	if not core.has_left_shoulder:
-		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
-	else:
-		$PartCategories/Equipment/shoulder_weapon_left.disabled = false
-	if not core.has_right_shoulder:
-		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
-	else:
-		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
-
-func is_build_valid():
-	var build_valid = true
-	var missing_parts : String
-	for part in ["head", "core", "shoulders", "generator",\
-				"chipset", "chassis", "thruster", "shoulders"]:
-		if not DisplayMecha.get(part):
-			build_valid = false
-			missing_parts = missing_parts + "WARN: " + part + " "
-	if not build_valid:
-		$MissingPartsScroll/MissingParts.text = missing_parts
-		$MissingPartsScroll/MissingParts.visible = true
-	else:
-		$MissingPartsScroll/MissingParts.visible = false
-	return build_valid
 
 func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	if item.is_disabled == true:
@@ -210,45 +256,16 @@ func _on_Exit_pressed():
 	else:
 		print("Build invalid")
 
+
 func _on_Load_pressed():
 	$LoadScreen.shopping_mode = true
 	$LoadScreen.visible = true
+
 
 func _LoadScreen_on_load_pressed(design):
 	DisplayMecha.set_parts_from_design(design)
 	ComparisonMecha.set_parts_from_design(design)
 	shoulder_weapon_check()
-
-func add_to_basket(type, part_name):
-	#Transaction code goes here
-	var item = PartManager.get_part(type, part_name)
-	var basket_item_entry = BASKET_ITEM.instantiate()
-	basket_item_entry.setup(item)
-	BasketList.add_child(basket_item_entry)
-	basket_item_entry.get_button().connect("pressed",Callable(self,"remove_from_basket").bind(basket_item_entry))
-	recalculate_total()
-
-func remove_from_basket(item):
-	BasketList.remove_child(item)
-	item.queue_free()
-	recalculate_total()
-
-func recalculate_total():
-	basket_total = 0.0
-	var num_items = 0
-	for item in BasketList.get_children():
-		basket_total += item.get_price()
-		num_items += 1
-	if balance < basket_total:
-		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = true
-		$PurchaseConfirm/confirm/Control/Label.text = "Insufficient funds."
-	else:
-		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = false
-		$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
-	$Basket/BottomSect/HBoxContainer/Total.text = str(basket_total)
-	$PurchaseConfirm/confirm/TotalCost/Amount.text = str(basket_total)
-	$PurchaseConfirm/confirm/CurrentBalance/Amount.text = str(balance)
-	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
 
 
 func _on_purchase_pressed():
@@ -278,11 +295,3 @@ func _on_purchase_items_pressed():
 		$BalanceLabel.text = str(balance)
 		Profile.stats.money = balance
 		FileManager.save_profile()
-
-func add_to_inventory(item):
-	var inventory = Profile.get_inventory()
-	var item_name = item.current_item.part_name
-	if inventory.has(item_name):
-		inventory[item_name] += 1
-	else:
-		inventory[item_name] = 1

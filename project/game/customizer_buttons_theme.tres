@@ -1,8 +1,7 @@
-[gd_resource type="Theme" load_steps=19 format=3 uid="uid://d1jq50hkufdkk"]
+[gd_resource type="Theme" load_steps=18 format=3 uid="uid://d1jq50hkufdkk"]
 
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_normal.tres" id="1"]
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_pressed.tres" id="2"]
-[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="3"]
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_focus.tres" id="4"]
 [ext_resource type="StyleBox" path="res://game/ui/theme_folder/basic_button_disabled.tres" id="5"]
 [ext_resource type="FontFile" uid="uid://dpxltenmvdn1h" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" id="6"]
@@ -125,7 +124,7 @@ border_width_bottom = 1
 border_color = Color(0.513726, 0.513726, 0.513726, 1)
 
 [resource]
-default_font = ExtResource("3")
+default_font = ExtResource("7")
 Button/colors/font_color = Color(1, 1, 1, 1)
 Button/colors/font_color_disabled = Color(1, 1, 1, 0.2)
 Button/colors/font_color_focus = Color(1, 1, 1, 1)

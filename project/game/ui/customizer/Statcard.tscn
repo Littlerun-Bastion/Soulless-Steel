@@ -1,10 +1,35 @@
-[gd_scene load_steps=6 format=3 uid="uid://b3kh381kob8js"]
+[gd_scene load_steps=9 format=3 uid="uid://b3kh381kob8js"]
 
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="1"]
 [ext_resource type="PackedScene" uid="uid://cxbfyt62xshhb" path="res://game/ui/customizer/StatcardStat.tscn" id="2"]
 [ext_resource type="Script" path="res://game/ui/customizer/Statcard.gd" id="3"]
 [ext_resource type="PackedScene" uid="uid://b5gglnlm4ys3c" path="res://game/ui/customizer/StatcardStat_gradient.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://bukexoji8hmrv" path="res://game/ui/customizer/StatcardStat_boolean.tscn" id="5"]
+[ext_resource type="FontFile" uid="uid://b31lkain7iil5" path="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf" id="7_wno4r"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oej6t"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ur7t0"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -67,6 +92,7 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="parts" type="ScrollContainer" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 8.0
 offset_top = 117.0
@@ -386,3 +412,73 @@ offset_bottom = 613.0
 theme = ExtResource("1")
 theme_override_font_sizes/font_size = 30
 text = "..."
+
+[node name="description" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 117.0
+offset_right = 520.0
+offset_bottom = 574.0
+
+[node name="Manufactuer" type="Label" parent="description"]
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 20
+text = "MARTEL SHIPPING AND INDUSTRIAL"
+
+[node name="Description" type="RichTextLabel" parent="description"]
+custom_minimum_size = Vector2(510, 350)
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_fonts/normal_font = ExtResource("7_wno4r")
+theme_override_fonts/bold_font = ExtResource("7_wno4r")
+theme_override_fonts/italics_font = ExtResource("7_wno4r")
+theme_override_fonts/bold_italics_font = ExtResource("7_wno4r")
+theme_override_fonts/mono_font = ExtResource("7_wno4r")
+theme_override_font_sizes/normal_font_size = 21
+theme_override_font_sizes/bold_font_size = 21
+theme_override_font_sizes/italics_font_size = 21
+theme_override_font_sizes/bold_italics_font_size = 21
+theme_override_font_sizes/mono_font_size = 21
+theme_override_styles/focus = SubResource("StyleBoxFlat_oej6t")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ur7t0")
+bbcode_enabled = true
+text = "dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+[b]Lorem ipsum dolor sit amet[/b], consectetur \\b adipiscing elit, \\b sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="description"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="description/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 20
+text = "MSRP*:"
+vertical_alignment = 2
+
+[node name="MSRP" type="Label" parent="description/HBoxContainer"]
+custom_minimum_size = Vector2(423, 0)
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 30
+text = "1000000"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Label4" type="Label" parent="description/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 20
+text = "ct"
+vertical_alignment = 2
+
+[node name="Label" type="Label" parent="description"]
+layout_mode = 2
+theme = ExtResource("1")
+text = "*tentative only and not indicative of current market escrow 
+prices. contact your retailer for further information."
+
+[connection signal="pressed" from="Button" to="." method="toggle_description"]

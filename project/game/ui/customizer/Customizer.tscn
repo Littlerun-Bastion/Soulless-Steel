@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://bsyltjhiirffe"]
+[gd_scene load_steps=24 format=3 uid="uid://bsyltjhiirffe"]
 
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="3"]
@@ -9,7 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://dmb72nwar1al1" path="res://assets/images/ui/menu/wetware_tab_selected.png" id="7"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="8"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="9"]
-[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="9_i8o8v"]
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
@@ -393,7 +392,7 @@ offset_left = 46.0
 offset_top = 139.0
 offset_right = 357.0
 offset_bottom = 199.0
-theme_override_fonts/font = ExtResource("9_i8o8v")
+theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxEmpty_b5s5m")
 theme_override_styles/hover = SubResource("StyleBoxFlat_vd7ux")
@@ -407,7 +406,7 @@ offset_left = 370.0
 offset_top = 139.0
 offset_right = 681.0
 offset_bottom = 199.0
-theme_override_fonts/font = ExtResource("9_i8o8v")
+theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxEmpty_rot1g")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bgaso")
@@ -421,7 +420,7 @@ offset_left = 692.0
 offset_top = 139.0
 offset_right = 1003.0
 offset_bottom = 199.0
-theme_override_fonts/font = ExtResource("9_i8o8v")
+theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxTexture_axi2k")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3nyvn")

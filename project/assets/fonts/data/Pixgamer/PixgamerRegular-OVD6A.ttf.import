@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://dpxltenmvdn1h"
-path="res://.godot/imported/TheJewishBitmap.otf-d0cbe001ac6394a7c2a9e2e82b07029a.fontdata"
+uid="uid://b31lkain7iil5"
+path="res://.godot/imported/PixgamerRegular-OVD6A.ttf-e876a27b68f55e38ba594e472c554b68.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf"
-dest_files=["res://.godot/imported/TheJewishBitmap.otf-d0cbe001ac6394a7c2a9e2e82b07029a.fontdata"]
+source_file="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf"
+dest_files=["res://.godot/imported/PixgamerRegular-OVD6A.ttf-e876a27b68f55e38ba594e472c554b68.fontdata"]
 
 [params]
 
@@ -31,7 +31,8 @@ preload=[{
 "chars": [],
 "glyphs": [],
 "name": "New Configuration",
-"size": Vector2i(16, 0)
+"size": Vector2i(16, 0),
+"variation_embolden": 0.0
 }]
 language_support={}
 script_support={}

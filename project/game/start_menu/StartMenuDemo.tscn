@@ -1,6 +1,5 @@
-[gd_scene load_steps=13 format=3 uid="uid://b2qq2eltnoung"]
+[gd_scene load_steps=12 format=3 uid="uid://b2qq2eltnoung"]
 
-[ext_resource type="FontFile" uid="uid://c42at6wi1s21b" path="res://assets/fonts/StartMenuUserGuideFont.tres" id="1"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2_q5sq0"]
 [ext_resource type="Script" path="res://game/start_menu/StartMenuDemo.gd" id="4"]
@@ -13,130 +12,10 @@
 
 [sub_resource type="Animation" id="14"]
 length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("UserGuide/Label1:visible_ratio")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("UserGuide/Label2:visible_ratio")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("UserGuide/Label3:visible_ratio")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("UserGuide/Label4:visible_ratio")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("UserGuide/Label5:visible_ratio")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
 
 [sub_resource type="Animation" id="15"]
 resource_name = "Typewrite"
 length = 15.0
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("UserGuide/Label1:visible_ratio")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1.4),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [0.0, 1.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("UserGuide/Label2:visible_ratio")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 2, 3.4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 1.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("UserGuide/Label3:visible_ratio")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 4, 5.2, 5.5, 6.8),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 0.429, 0.429, 1.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("UserGuide/Label4:visible_ratio")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 7.4, 8.3),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 1.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("UserGuide/Label5:visible_ratio")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 9.1, 11.2, 11.5, 12.6, 12.9, 13.7),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0]
-}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_hc8e2"]
 _data = {
@@ -287,66 +166,6 @@ layout_mode = 2
 theme = ExtResource("5_4l8ve")
 theme_override_font_sizes/font_size = 25
 text = "SAV_hUNTERos.EXE -Duelist"
-
-[node name="UserGuide" type="VBoxContainer" parent="."]
-layout_mode = 0
-anchor_left = 0.975
-anchor_top = 0.5
-anchor_right = 0.988
-anchor_bottom = 0.5
-offset_left = -852.476
-offset_top = -195.209
-offset_right = -8.47571
-offset_bottom = 108.791
-
-[node name="User Guide" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 30
-text = "User guide"
-
-[node name="Label1" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 25
-text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
-visible_characters = 0
-visible_ratio = 0.0
-
-[node name="Label2" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 25
-text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
-visible_characters = 0
-visible_ratio = 0.0
-
-[node name="Label3" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 25
-text = "[Q. e] = Fire right and left shoulder weapons.
-Current loadout does not feature a left shoulder weapon."
-visible_characters = 0
-visible_ratio = 0.0
-
-[node name="Label4" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 25
-text = "[R] = Toggle Reload "
-visible_characters = 0
-visible_ratio = 0.0
-
-[node name="Label5" type="Label" parent="UserGuide"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("1")
-theme_override_font_sizes/font_size = 25
-text = "Hunt and destroy enemy Sav units.
-Find extraction points.
-Survive."
-visible_characters = 0
-visible_ratio = 0.0
 
 [node name="UpperBar" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(0, 40)

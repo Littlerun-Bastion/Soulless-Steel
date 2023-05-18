@@ -1,13 +1,13 @@
-[gd_scene load_steps=9 format=3 uid="uid://bt5svi7vi1y03"]
+[gd_scene load_steps=9 format=3 uid="uid://byhwawhe4qq7a"]
 
 [ext_resource type="Texture2D" uid="uid://1lf4oq2x37fu" path="res://assets/images/mechas/shoulder_weapons/Arend_main.png" id="1"]
 [ext_resource type="Script" path="res://database/parts/shoulder_weapon.gd" id="2"]
-[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_missile.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://53dou6kmvpqc" path="res://database/parts/projectiles/small_missile.tscn" id="3"]
 [ext_resource type="Texture2D" uid="uid://np0kmkrfg73v" path="res://assets/images/mechas/shoulder_weapons/Arend_sub.png" id="4"]
+[ext_resource type="PackedScene" uid="uid://cc4y6un446yr6" path="res://game/weapons/SmokeTrail.tscn" id="4_0f1dl"]
 [ext_resource type="Texture2D" uid="uid://ebu8pn7urd5a" path="res://assets/images/mechas/shoulder_weapons/Arend_glow.png" id="5"]
-[ext_resource type="PackedScene" path="res://game/weapons/SmokeTrail.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="7"]
-[ext_resource type="PackedScene" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="8"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="8"]
 
 [node name="Part" type="Node"]
 script = ExtResource("2")
@@ -39,8 +39,8 @@ bullet_drag = 1.002
 projectile_size = 0.8
 lifetime = 3.0
 impact_force = 2500.0
+has_trail = ExtResource("4_0f1dl")
 trail_width = 100
-has_smoke = ExtResource("6")
 smoke_density = 500
 impact_effect = ExtResource("7")
 impact_size = 2.0

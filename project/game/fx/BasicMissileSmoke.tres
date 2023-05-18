@@ -9,12 +9,12 @@ point_count = 2
 [sub_resource type="CurveTexture" id="8"]
 curve = SubResource("7")
 
-[sub_resource type="Gradient" id="5"]
-offsets = PackedFloat32Array(0, 0.0352941, 0.129412, 0.541176, 0.694118, 1)
-colors = PackedColorArray(1, 1, 1, 1, 0.605469, 0.605469, 0.605469, 0.578947, 0.144531, 0.144531, 0.144531, 0.515625, 0.148438, 0.148438, 0.148438, 0.475259, 0.183594, 0.183594, 0.183594, 0.453394, 0, 0, 0, 0)
+[sub_resource type="Gradient" id="Gradient_gomk0"]
+offsets = PackedFloat32Array(0, 0.135802, 0.284946, 0.701613, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.6, 0.6, 0.6, 0.580392, 0.301961, 0.301961, 0.301961, 0.509804, 0.301961, 0.301961, 0.301961, 0.454902, 0.301961, 0.301961, 0.301961, 0)
 
-[sub_resource type="GradientTexture2D" id="23"]
-gradient = SubResource("5")
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_rff3f"]
+gradient = SubResource("Gradient_gomk0")
 
 [sub_resource type="Curve" id="2"]
 _data = [Vector2(0, 0.515909), 0.0, 0.0, 0, 0, Vector2(0.0442478, 0.997727), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.59403, 0.0, 0, 0]
@@ -25,8 +25,18 @@ curve = SubResource("2")
 
 [resource]
 lifetime_randomness = 0.29
+particle_flag_disable_z = true
 spread = 180.0
 gravity = Vector3(0, 0, 0)
+initial_velocity_max = 10.0
+angular_velocity_min = -80.0
 angular_velocity_curve = SubResource("8")
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+radial_accel_min = -4.0
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 0.2
+scale_max = 0.5
 scale_curve = SubResource("3")
-color_ramp = SubResource("23")
+color_ramp = SubResource("GradientTexture1D_rff3f")

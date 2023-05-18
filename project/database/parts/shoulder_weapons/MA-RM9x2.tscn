@@ -1,9 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://nkd3qi7l3eju"]
+[gd_scene load_steps=9 format=3 uid="uid://cgktvkbg4hr5a"]
 
 [ext_resource type="Script" path="res://database/parts/shoulder_weapon.gd" id="1_6lucl"]
 [ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="2_eoypc"]
 [ext_resource type="PackedScene" uid="uid://mouwri1ckrph" path="res://database/parts/projectiles/ma-rm9.tscn" id="3_wsw55"]
-[ext_resource type="PackedScene" uid="uid://dix1oxctlf7et" path="res://game/weapons/SmokeTrail.tscn" id="4_68lhj"]
+[ext_resource type="PackedScene" uid="uid://dhptw5qehdb0b" path="res://game/weapons/SmokeTrailLight.tscn" id="4_61q12"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="5_1fn7q"]
 [ext_resource type="Texture2D" uid="uid://da0icna6o22o7" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2_sub.png" id="6_j8p8s"]
 [ext_resource type="Texture2D" uid="uid://navhn1e854le" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2_main.png" id="7_i0rwe"]
@@ -43,8 +43,8 @@ bullet_velocity = 300.0
 projectile_size = 0.5
 lifetime = 3.0
 impact_force = 2500.0
+has_trail = ExtResource("4_61q12")
 trail_width = 100
-has_smoke = ExtResource("4_68lhj")
 smoke_density = 500
 impact_effect = ExtResource("5_1fn7q")
 impact_size = 2.0

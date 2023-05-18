@@ -5,12 +5,13 @@
 [ext_resource type="Texture2D" uid="uid://bm7wem78jd4ol" path="res://assets/images/mechas/arm_weapons/Clarent-01_Main.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://yt8qkmgfaaw" path="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://cc174ow616br0" path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" id="5"]
-[ext_resource type="PackedScene" path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://vgnw24sqctdr" path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" id="6"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1")
 part_name = "Clarent-01"
 manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "EN Shotgun"
 description = "An automatic energy shotgun made by Claymore International, designed for mechs with poor visual sensors to lay down a wall of fire without relying on accuracy. While the damage on impact is poor, especially against Armor, it imparts quite a lot of heat."
 type = "Multi-PewPew"

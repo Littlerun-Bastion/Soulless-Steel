@@ -11,7 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1")
 part_name = "MA-L127"
-manufacturer_name = "Martel"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
 tagline = "Machine Gun"
 type = "PewPew"
 muzzle_flash = ExtResource("8")

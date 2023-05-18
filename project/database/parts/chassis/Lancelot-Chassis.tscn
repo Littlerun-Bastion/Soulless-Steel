@@ -1,17 +1,18 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://dw35ovg4wj6q1"]
 
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_main.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_PV.png" type="Texture2D" id=5]
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://brhbhpuehw4gx" path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_main.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://dpmrcpf0w4rc7" path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_sub.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://c3jqhxqk31o1j" path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://87i0hquj7lbf" path="res://assets/images/mechas/legs/Lancelot/Lancelot-Chassis_PV.png" id="5"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Lancelot-Chassis"
 manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "Wheeled"
-image = ExtResource( 5 )
+image = ExtResource("5")
 movement_type = "tank"
 max_speed = 1000
 move_acc = 1.3
@@ -30,20 +31,20 @@ hover_particles = true
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="Chassis" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
 visible = false
-polygon = PackedVector2Array( -81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112 )
+polygon = PackedVector2Array(-81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112)
 
 [node name="RightSide" type="Node2D" parent="."]
-position = Vector2( 46, 0 )
+position = Vector2(46, 0)
 
 [node name="LeftSide" type="Node2D" parent="."]
-position = Vector2( -16, 0 )
+position = Vector2(-16, 0)

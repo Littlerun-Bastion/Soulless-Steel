@@ -1,17 +1,18 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://dunw6i7j1qsk0"]
 
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_glow.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_main.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_sub.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/legs/O30/O30-Chassis_pv.png" type="Texture2D" id=5]
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cqq3ray4jlatv" path="res://assets/images/mechas/legs/O30/O30-Chassis_glow.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://b88lbq8anrqta" path="res://assets/images/mechas/legs/O30/O30-Chassis_main.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://cbo5lcn012fmq" path="res://assets/images/mechas/legs/O30/O30-Chassis_sub.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://vtmfveslbo1c" path="res://assets/images/mechas/legs/O30/O30-Chassis_pv.png" id="5"]
 
 [node name="Part3" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "O30-Chassis12w"
-manufacturer_name = "Orontes"
+manufacturer_name = "Orontes Constructions"
+manufacturer_name_short = "Orontes"
 tagline = "Wheeled"
-image = ExtResource( 5 )
+image = ExtResource("5")
 movement_type = "tank"
 max_speed = 760
 move_acc = 1.12
@@ -29,19 +30,19 @@ stability = 90.0
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Chassis" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
-polygon = PackedVector2Array( -61, -96, -22, -95, -21, -53, 21, -53, 21, -94, 61, -96, 62, -46, 41, -45, 43, 93, 19, 93, 14, 99, -14, 100, -19, 94, -43, 92, -41, -46, -62, -46 )
+polygon = PackedVector2Array(-61, -96, -22, -95, -21, -53, 21, -53, 21, -94, 61, -96, 62, -46, 41, -45, 43, 93, 19, 93, 14, 99, -14, 100, -19, 94, -43, 92, -41, -46, -62, -46)
 
 [node name="RightSide" type="Node2D" parent="."]
-position = Vector2( 46, 0 )
+position = Vector2(46, 0)
 
 [node name="LeftSide" type="Node2D" parent="."]
-position = Vector2( -16, 0 )
+position = Vector2(-16, 0)

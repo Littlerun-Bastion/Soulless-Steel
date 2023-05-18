@@ -1,17 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://b1ss8po8ak60"]
 
-[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_rshoulder_main.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_lshoulder_main.png" type="Texture2D" id=2]
-[ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
-[ext_resource path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_shoulder_pv.png" type="Texture2D" id=4]
+[ext_resource type="Texture2D" uid="uid://ek5unf8gf7sw" path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_rshoulder_main.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://bucbc138k7uwn" path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_lshoulder_main.png" id="2"]
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://n6gkeiuo8a51" path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_shoulder_pv.png" id="4"]
 
 [node name="Part2" type="Node"]
-script = ExtResource( 3 )
+script = ExtResource("3")
 part_name = "Crawler C-type SG"
 manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
 tagline = "Test"
 description = "Heavyweight shoulderguard, built with shield projectors that can withstand significant punishment. Otherwise, it has below-average performance across the board."
-image = ExtResource( 4 )
+image = ExtResource("4")
 shield = 3750.0
 stability = 100.0
 arms_accuracy_modifier = 1.15
@@ -19,14 +20,14 @@ melee_modifier = 0.9
 weight = 8.2
 
 [node name="ShoulderLeft" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
-polygon = PackedVector2Array( 10.1081, -23.9291, 10.1081, 22.5632, 1.97635, 21.8561, 2.20417, 44.164, -12.8088, 44.0237, -34.6968, 21.5745, -34.7932, -21.1006, -13.0497, -43.1977, 2.15313, -43.1977, 2.15313, -24.2826 )
+polygon = PackedVector2Array(10.1081, -23.9291, 10.1081, 22.5632, 1.97635, 21.8561, 2.20417, 44.164, -12.8088, 44.0237, -34.6968, 21.5745, -34.7932, -21.1006, -13.0497, -43.1977, 2.15313, -43.1977, 2.15313, -24.2826)
 
 [node name="ShoulderRight" type="Sprite2D" parent="."]
-position = Vector2( 107.127, 0 )
-texture = ExtResource( 1 )
+position = Vector2(107.127, 0)
+texture = ExtResource("1")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
-polygon = PackedVector2Array( -10.544, -23.8708, -10.5562, 22.7704, -2.0496, 22.9117, -1.90929, 42.9757, 12.6827, 43.8175, 35.0937, 21.4906, 34.9886, -21.3951, 12.5007, -42.2404, -1.53008, -42.521, -0.968849, -23.7197 )
+polygon = PackedVector2Array(-10.544, -23.8708, -10.5562, 22.7704, -2.0496, 22.9117, -1.90929, 42.9757, 12.6827, 43.8175, 35.0937, 21.4906, 34.9886, -21.3951, 12.5007, -42.2404, -1.53008, -42.521, -0.968849, -23.7197)

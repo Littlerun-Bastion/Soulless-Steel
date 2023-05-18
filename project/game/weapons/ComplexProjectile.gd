@@ -42,6 +42,7 @@ var seek_time_expired := false
 
 var lifetime := 0.0
 var wiggle_lifetime := 0.0
+var payload_release = false
 
 func setup(mecha, args, weapon):
 	data = args.weapon_data
@@ -222,8 +223,9 @@ func die():
 
 
 func payload():
-	if data.payload_subprojectile:
+	if data.payload_subprojectile and not payload_release:
 		var accuracy = randf_range(-data.payload_subprojectile_spread, data.payload_subprojectile_spread)
+		payload_release = true
 		for _i in range(data.payload_subprojectile_count):
 			emit_signal("create_projectile", origin,
 						{
@@ -234,7 +236,7 @@ func payload():
 							"dir": true_dir.rotated(accuracy),
 							"seeker_target": seeker_target,
 						}, weapon_node)
-						
+					
 	if data.payload_explosion_radius > 0.0:
 		var affected_mechs = []
 		var space_state = get_world_2d().direct_space_state

@@ -1,22 +1,22 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=7 format=3 uid="uid://dolpq3gcq7wat"]
 
-[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://database/parts/projectiles/fire_bullet.tscn" type="PackedScene" id=2]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" type="Texture2D" id=5]
-[ext_resource path="res://game/ui/effects/FlamethrowerMuzzleFlash.tscn" type="PackedScene" id=6]
+[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bcpaibbipr57b" path="res://database/parts/projectiles/fire_bullet.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://b3b8wfiafix0o" path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://bvijoe5otuk0" path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" id="5"]
+[ext_resource type="PackedScene" uid="uid://id47kbxgm0c4" path="res://game/ui/effects/FlamethrowerMuzzleFlash.tscn" id="6"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Test Flamethrower"
 manufacturer_name = "Test"
 tagline = "Flamethrower"
 type = "Multi-PewPew"
-muzzle_flash = ExtResource( 6 )
+muzzle_flash = ExtResource("6")
 muzzle_flash_size = 0.5
 muzzle_flash_speed = 3.0
-projectile = ExtResource( 2 )
+projectile = ExtResource("2")
 projectile_type = "Flame"
 number_projectiles = 4
 damage = 2.0
@@ -38,23 +38,23 @@ projectile_size = -0.9
 projectile_size_scaling = 2.0
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Main" type="Sprite2D" parent="."]
-position = Vector2( -1.08598, 38.6246 )
-texture = ExtResource( 3 )
-offset = Vector2( 1.08598, -38.6246 )
+position = Vector2(-1.08598, 38.6246)
+texture = ExtResource("3")
+offset = Vector2(1.08598, -38.6246)
 
 [node name="Glow" type="Sprite2D" parent="."]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="AttachPos" type="Marker2D" parent="."]
-position = Vector2( 16, 36 )
+position = Vector2(16, 36)
 
 [node name="EjectorPos" type="Marker2D" parent="."]
-position = Vector2( -5.74732, 32.5813 )
+position = Vector2(-5.74732, 32.5813)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2( -4, -54 )
+position = Vector2(-4, -54)

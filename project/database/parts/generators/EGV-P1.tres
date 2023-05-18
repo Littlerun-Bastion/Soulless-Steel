@@ -1,12 +1,14 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://ch86tt5xmaw6s"]
 
-[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/generator.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "EGV-P1"
 manufacturer_name = "Espada Electronica"
+manufacturer_name_short = "Espada"
 tagline = ""
+price = 0.0
 description = "Low-middle weight generator, cobbled together rather ingeniously using old-world magnetics. Provides low-intensity, but fairly responsive shield characteristics. Abysmal heat capacitance and energy weapon support."
 shield = 4500.0
 shield_regen_speed = 540

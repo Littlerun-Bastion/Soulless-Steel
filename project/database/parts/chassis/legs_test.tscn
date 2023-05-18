@@ -1,15 +1,15 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://hikau2o8i1ck"]
 
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_glow.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_sub.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_glow.png" type="Texture2D" id=5]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture2D" id=6]
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=7]
+[ext_resource type="Texture2D" uid="uid://bovw20xdugpac" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_glow.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://coia7ob4vltjn" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://dr8o0wrmi8121" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_sub.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://boyvxsjn08acl" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://617qrt4lglue" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_glow.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://bjaftgx1ldlk1" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" id="6"]
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="7"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 7 )
+script = ExtResource("7")
 part_name = "Test 2 L3J"
 manufacturer_name = "Test Legged Chassis"
 tagline = "Bipedal"
@@ -21,33 +21,33 @@ move_heat = 15
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="RightSide" type="Node2D" parent="."]
-position = Vector2( 61, 0 )
+position = Vector2(61, 0)
 
 [node name="ChassisSub" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="ChassisGlow" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 1 )
+texture = ExtResource("1")
 
 [node name="Chassis" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="Collision" type="CollisionPolygon2D" parent="RightSide"]
 visible = false
-polygon = PackedVector2Array( -17.5909, 11.1932, -16.8113, -35.3562, -6.12054, -46.9379, 10.4109, -46.7634, 10.9722, 29.9849, -8.79324, 49.2791, -7.90234, 19.5454 )
+polygon = PackedVector2Array(-17.5909, 11.1932, -16.8113, -35.3562, -6.12054, -46.9379, 10.4109, -46.7634, 10.9722, 29.9849, -8.79324, 49.2791, -7.90234, 19.5454)
 
 [node name="LeftSide" type="Node2D" parent="."]
-position = Vector2( -16, 0 )
+position = Vector2(-16, 0)
 
 [node name="ChassisSub" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="ChassisGlow" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Chassis" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 6 )
+texture = ExtResource("6")
 
 [node name="Collision" type="CollisionPolygon2D" parent="LeftSide"]
 visible = false
-polygon = PackedVector2Array( -17.176, 29.7729, -17.0256, -47.3705, -0.0994415, -46.9659, 11.611, -33.9276, 10.6189, 11.3134, 1.66498, 18.2981, 2.875, 49.625 )
+polygon = PackedVector2Array(-17.176, 29.7729, -17.0256, -47.3705, -0.0994415, -46.9659, 11.611, -33.9276, 10.6189, 11.3134, 1.66498, 18.2981, 2.875, 49.625)

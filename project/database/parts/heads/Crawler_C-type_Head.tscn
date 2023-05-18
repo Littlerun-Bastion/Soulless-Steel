@@ -5,13 +5,14 @@
 [ext_resource type="Texture2D" uid="uid://kfm1ov3q0npb" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_glow.png" id="3"]
 [ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
 [ext_resource type="Texture2D" uid="uid://c17poxvq8mml2" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_main.png" id="5"]
-[ext_resource type="Texture2D" path="res://game/fx/Heatmaps/NVRed.tres" id="6"]
+[ext_resource type="Texture2D" uid="uid://d1q40vbwcikt4" path="res://game/fx/Heatmaps/NVRed.tres" id="6"]
 [ext_resource type="Texture2D" uid="uid://mpr6fc63fmr2" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_pv.png" id="7"]
 
 [node name="Part" type="Node2D"]
 script = ExtResource("4")
 part_name = "Crawler C-type Head"
-manufacturer_name = "Nomhoyi"
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
 tagline = "Test"
 price = 4500.0
 description = "Quite heavy head model with a unique visual sensor layout that grants 225 degrees of full-complement sight. Incredibly well protected and equipped with a best-in-class sensor suite and stabilization. Comes at a hefty price tag."

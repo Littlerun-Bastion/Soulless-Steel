@@ -1,17 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://csdmk67tpvv4a"]
 
-[ext_resource path="res://assets/images/mechas/shoulders/O30/O30-lshoulder_main.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/O30/O30-rshoulder_main.png" type="Texture2D" id=2]
-[ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
-[ext_resource path="res://assets/images/mechas/shoulders/O30/O30-shoulder_pv.png" type="Texture2D" id=4]
+[ext_resource type="Texture2D" uid="uid://dx6evonirgd65" path="res://assets/images/mechas/shoulders/O30/O30-lshoulder_main.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://bpf8lnce6ilhn" path="res://assets/images/mechas/shoulders/O30/O30-rshoulder_main.png" id="2"]
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://cmqfj304kv6r8" path="res://assets/images/mechas/shoulders/O30/O30-shoulder_pv.png" id="4"]
 
 [node name="Part3" type="Node"]
-script = ExtResource( 3 )
+script = ExtResource("3")
 part_name = "O30-Shoulderguard"
-manufacturer_name = "Orontes"
+manufacturer_name = "Orontes Constructions"
+manufacturer_name_short = "Orontes"
 tagline = "Test"
 description = "A lighter middle-weight part with decent overall stats and better melee weapon handling. Fairly inaccurate unlike its bigger brother, the O10."
-image = ExtResource( 4 )
+image = ExtResource("4")
 shield = 2250.0
 stability = 90.0
 arms_accuracy_modifier = 1.1
@@ -19,14 +20,14 @@ melee_modifier = 1.2
 weight = 4.7
 
 [node name="ShoulderLeft" type="Sprite2D" parent="."]
-texture = ExtResource( 1 )
+texture = ExtResource("1")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
-polygon = PackedVector2Array( 3.25702, 22.8259, -6.57263, 26.8352, -14.4237, 26.8909, -29.3126, 20.0279, -29.4039, -26.9964, -11.5917, -26.9302, 3.375, -10.9176 )
+polygon = PackedVector2Array(3.25702, 22.8259, -6.57263, 26.8352, -14.4237, 26.8909, -29.3126, 20.0279, -29.4039, -26.9964, -11.5917, -26.9302, 3.375, -10.9176)
 
 [node name="ShoulderRight" type="Sprite2D" parent="."]
-position = Vector2( 107.127, 0 )
-texture = ExtResource( 2 )
+position = Vector2(107.127, 0)
+texture = ExtResource("2")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
-polygon = PackedVector2Array( -3.42941, -10.8185, -3.4395, 22.9375, 6.87992, 27.0052, 14.5968, 27.0052, 29.6258, 20.193, 29.373, -27.25, 11.248, -27 )
+polygon = PackedVector2Array(-3.42941, -10.8185, -3.4395, 22.9375, 6.87992, 27.0052, 14.5968, 27.0052, 29.6258, 20.193, 29.373, -27.25, 11.248, -27)

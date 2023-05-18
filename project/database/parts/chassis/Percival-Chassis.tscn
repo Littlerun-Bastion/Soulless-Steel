@@ -10,6 +10,7 @@
 script = ExtResource("1")
 part_name = "Percival-Chassis"
 manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "Wheeled"
 image = ExtResource("5")
 movement_type = "tank"

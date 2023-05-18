@@ -12,13 +12,13 @@ func _physics_process(_dt):
 		queue_free()
 		
 
-func setup(weapon, size, speed, pos):
+func setup(weapon, size, speed, pos, dir):
 	if pos:
 		attach_reference = pos
 		global_position = attach_reference.global_position
 	if weapon:
 		node_reference = weapon
-		global_rotation = node_reference.get_direction(0, 0).angle() + (PI/2)
+		global_rotation = dir.angle() + (PI/2)#node_reference.get_direction(0, 0).angle() + (PI/2)
 	scale.x = size
 	scale.y = size
 	self.emitting = true

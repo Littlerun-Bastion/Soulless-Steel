@@ -1,31 +1,32 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://cssy5ewiq3x2c"]
 
-[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_sub.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_main.png" type="Texture2D" id=3]
-[ext_resource path="res://database/parts/head.gd" type="Script" id=4]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_glow.png" type="Texture2D" id=5]
-[ext_resource path="res://game/fx/Heatmaps/NVGreen.tres" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/mechas/heads/Percival/percival_head_PV.png" type="Texture2D" id=7]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="1"]
+[ext_resource type="Texture2D" uid="uid://dt0utdf7l8fb6" path="res://assets/images/mechas/heads/Percival/percival_head_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cnrrumysqgqb" path="res://assets/images/mechas/heads/Percival/percival_head_main.png" id="3"]
+[ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
+[ext_resource type="Texture2D" uid="uid://d2ntcn5cnv8ah" path="res://assets/images/mechas/heads/Percival/percival_head_glow.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://df8aij0flhom3" path="res://game/fx/Heatmaps/NVGreen.tres" id="6"]
+[ext_resource type="Texture2D" uid="uid://dfk1bd7qa7t6o" path="res://assets/images/mechas/heads/Percival/percival_head_PV.png" id="7"]
 
 [node name="Part" type="Node2D"]
-script = ExtResource( 4 )
+script = ExtResource("4")
 part_name = "Percival-Head"
-manufacturer_name = "Claymore"
+manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "Test"
 description = "Very lightweight head part with almost no defenses. Due to its light weight, it is incredibly unstable and offers zero aiming support."
-image = ExtResource( 7 )
-heatmap = ExtResource( 6 )
+image = ExtResource("7")
+heatmap = ExtResource("6")
 accuracy_modifier = 1.1
 health = 975
 weight = 3.0
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="Glow" type="Sprite2D" parent="."]
-material = ExtResource( 1 )
-texture = ExtResource( 5 )
+material = ExtResource("1")
+texture = ExtResource("5")

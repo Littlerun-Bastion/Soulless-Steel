@@ -1,32 +1,33 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://ddujc8s2dd7r8"]
 
-[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=1]
-[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_sub.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_main.png" type="Texture2D" id=3]
-[ext_resource path="res://database/parts/head.gd" type="Script" id=4]
-[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_glow.png" type="Texture2D" id=5]
-[ext_resource path="res://game/fx/Heatmaps/Sepia.tres" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/mechas/heads/O30/O30-Head_pv.png" type="Texture2D" id=7]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="1"]
+[ext_resource type="Texture2D" uid="uid://bgaxbfvfn0u4x" path="res://assets/images/mechas/heads/O30/O30-Head_sub.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://mrvea2ug4e7d" path="res://assets/images/mechas/heads/O30/O30-Head_main.png" id="3"]
+[ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
+[ext_resource type="Texture2D" uid="uid://bxxoaj4px1006" path="res://assets/images/mechas/heads/O30/O30-Head_glow.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://dkqnbjwsa4fei" path="res://game/fx/Heatmaps/Sepia.tres" id="6"]
+[ext_resource type="Texture2D" uid="uid://bupygocqubbmk" path="res://assets/images/mechas/heads/O30/O30-Head_pv.png" id="7"]
 
 [node name="Part3" type="Node2D"]
-script = ExtResource( 4 )
+script = ExtResource("4")
 part_name = "O30-Head"
-manufacturer_name = "Orontes"
+manufacturer_name = "Orontes Constructions"
+manufacturer_name_short = "Orontes"
 tagline = "Test"
 description = "Lighter than the O10 series, the O30 series features competitive visual sensors and stability, but sacrifices a lot of the armor plating that made the O10 so exceptional. "
-image = ExtResource( 7 )
-heatmap = ExtResource( 6 )
+image = ExtResource("7")
+heatmap = ExtResource("6")
 accuracy_modifier = 1.35
 visual_range = 700
 health = 1350
 weight = 5.0
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="Glow" type="Sprite2D" parent="."]
-material = ExtResource( 1 )
-texture = ExtResource( 5 )
+material = ExtResource("1")
+texture = ExtResource("5")

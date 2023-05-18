@@ -1,31 +1,32 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=7 format=3 uid="uid://dvs7u3gabc85h"]
 
-[ext_resource path="res://database/parts/head.gd" type="Script" id=1]
-[ext_resource path="res://database/parts/part_glow_canvas.tres" type="Material" id=2]
-[ext_resource path="res://assets/images/mechas/heads/O10/O10-Head_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/heads/O10/O10-Head_glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/heads/O10/O10-Head_main.png" type="Texture2D" id=5]
-[ext_resource path="res://game/fx/Heatmaps/Sepia.tres" type="Texture2D" id=6]
+[ext_resource type="Script" path="res://database/parts/head.gd" id="1"]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://dibeyop85nh5y" path="res://assets/images/mechas/heads/O10/O10-Head_sub.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://bjd1c4jb6icv5" path="res://assets/images/mechas/heads/O10/O10-Head_glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cxhli8sci7wi2" path="res://assets/images/mechas/heads/O10/O10-Head_main.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://dkqnbjwsa4fei" path="res://game/fx/Heatmaps/Sepia.tres" id="6"]
 
 [node name="Part3" type="Node2D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "O10-Head"
-manufacturer_name = "Orontes"
+manufacturer_name = "Orontes Constructions"
+manufacturer_name_short = "Orontes"
 tagline = "Test"
 description = "A heavyweight head model, quite popular amongst the Northern market. Excellent visual sensors in comparison to other civilian-market offerings. Strong defenses."
-image = ExtResource( 5 )
-heatmap = ExtResource( 6 )
+image = ExtResource("5")
+heatmap = ExtResource("6")
 accuracy_modifier = 1.3
 visual_range = 600
 health = 1800
 weight = 7.0
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Glow" type="Sprite2D" parent="."]
-material = ExtResource( 2 )
-texture = ExtResource( 4 )
+material = ExtResource("2")
+texture = ExtResource("4")

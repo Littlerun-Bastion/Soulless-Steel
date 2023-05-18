@@ -1,18 +1,18 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://cp8kq26jcxyjh"]
 
-[ext_resource path="res://database/parts/arm_weapon.gd" type="Script" id=1]
-[ext_resource path="res://database/parts/projectiles/small_bullet.tscn" type="PackedScene" id=2]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" type="Texture2D" id=5]
+[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/small_bullet.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://b3b8wfiafix0o" path="res://assets/images/mechas/arm_weapons/TT1_CN_Glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://bvijoe5otuk0" path="res://assets/images/mechas/arm_weapons/TT1_CN_Sub.png" id="5"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Test Shotgun"
 manufacturer_name = "Test"
 tagline = "Shotgun"
 type = "Multi-PewPew"
-projectile = ExtResource( 2 )
+projectile = ExtResource("2")
 projectile_type = "Buckshot"
 number_projectiles = 8
 damage = 2.0
@@ -27,29 +27,28 @@ clip_size = 80
 reload_speed = 1.4
 muzzle_heat = 20.0
 ammo_cost = 25
-soundEffect = "shotgun_shotA"
 sound_max_range = 1000
 sound_att = 1.75
 impact_size = 0.8
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource( 5 )
+texture = ExtResource("5")
 
 [node name="Main" type="Sprite2D" parent="."]
-position = Vector2( -1.08598, 38.6246 )
-texture = ExtResource( 3 )
-offset = Vector2( 1.08598, -38.6246 )
+position = Vector2(-1.08598, 38.6246)
+texture = ExtResource("3")
+offset = Vector2(1.08598, -38.6246)
 
 [node name="Glow" type="Sprite2D" parent="."]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="AttachPos" type="Marker2D" parent="."]
-position = Vector2( 16.7996, 36.7211 )
+position = Vector2(16.7996, 36.7211)
 
 [node name="EjectorPos" type="Marker2D" parent="."]
-position = Vector2( -8.49805, 33.2448 )
+position = Vector2(-8.49805, 33.2448)
 
 [node name="ShootingPosArray" type="Node2D" parent="."]
 
 [node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
-position = Vector2( -4, -54 )
+position = Vector2(-4, -54)

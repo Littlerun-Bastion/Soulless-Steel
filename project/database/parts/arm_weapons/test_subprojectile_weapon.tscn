@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://j7ti2els0tch"]
+[gd_scene load_steps=9 format=3 uid="uid://j7ti2els0tch"]
 
 [ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1_p6jyq"]
 [ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="2_jn3b6"]
 [ext_resource type="PackedScene" uid="uid://bqwmn6aymuj40" path="res://database/parts/projectiles/asr_rocket.tscn" id="3_7glsb"]
 [ext_resource type="PackedScene" path="res://game/weapons/MissileDirectedImpact.tscn" id="4_g14ym"]
+[ext_resource type="PackedScene" uid="uid://d4mcbubytgx7s" path="res://database/parts/shoulder_weapons/MA-RM9x6.tscn" id="5_tj1uk"]
 [ext_resource type="Texture2D" uid="uid://7pr18mstyig2" path="res://assets/images/mechas/arm_weapons/MA-ASR1_sub.png" id="5_xd2wj"]
 [ext_resource type="Texture2D" uid="uid://b31upo5ajpuix" path="res://assets/images/mechas/arm_weapons/MA-ASR1_main.png" id="6_f7wwv"]
 [ext_resource type="Texture2D" uid="uid://chlgvag0hyh86" path="res://assets/images/mechas/arm_weapons/MA-ASR1_glow.png" id="7_dxyn4"]
@@ -61,15 +62,16 @@ stage_seeker_type = Array[String](["IR", ""])
 stage_seeker_delay = Array[float]([2.0, 6.0])
 stage_seeker_angle = Array[float]([50.0, 0.0])
 fuse_arm_time = 0.1
-fuse_timer = 0.0
+fuse_timer = 1.0
 fuse_proximity_distance = 200
 fuse_detection_type = "IR"
 fuse_angle = 40.0
 payload_explosion_damage = 999999.0
 payload_explosion_force = 500.0
 payload_explosion_radius = 400.0
-payload_subprojectile = ExtResource("3_7glsb")
+payload_subprojectile = ExtResource("5_tj1uk")
 payload_subprojectile_count = 3.0
+payload_subprojectile_spread = 3.0
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_xd2wj")

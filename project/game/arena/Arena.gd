@@ -351,7 +351,7 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 		if not args.is_subprojectile:
 			if args.weapon_data.muzzle_flash:
 				if data:
-					var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data, args.pos_reference)
+					var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data, args.pos_reference, args.dir)
 					Flashes.add_child(flash)
 		if args.weapon_data.payload_subprojectile:
 			data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))

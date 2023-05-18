@@ -8,7 +8,7 @@ func setup(part, is_shopping):
 	else:
 		$PartLabel.text = "???"
 	if part.manufacturer_name.is_empty() == false:
-		$ManufacturerLabel.text = part.manufacturer_name
+		$ManufacturerLabel.text = part.manufacturer_name_short
 	else:
 		$ManufacturerLabel.text = "???"
 	if is_shopping:

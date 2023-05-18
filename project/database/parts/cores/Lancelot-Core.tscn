@@ -1,26 +1,27 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=14 format=3 uid="uid://bm52jhh6dg0b2"]
 
-[ext_resource path="res://database/parts/core.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_main.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/cores/head_slot_rusty.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_glow.png" type="Texture2D" id=5]
-[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" type="Texture2D" id=7]
-[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_sub.png" type="Texture2D" id=8]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" type="Texture2D" id=9]
-[ext_resource path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" type="Texture2D" id=10]
-[ext_resource path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" type="Texture2D" id=11]
-[ext_resource path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" type="Texture2D" id=12]
-[ext_resource path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_PV.png" type="Texture2D" id=13]
+[ext_resource type="Script" path="res://database/parts/core.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://43ytg7e1hhbu" path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_main.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://jiqpsq2g84m8" path="res://assets/images/mechas/cores/head_slot_rusty.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://c7jipmg4ia8ul" path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_glow.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://bgdyu4xpb3h0k" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://c3f0ehehtubij" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://g00yh0xamw1v" path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_sub.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://boyvxsjn08acl" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" id="9"]
+[ext_resource type="Texture2D" uid="uid://bjaftgx1ldlk1" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" id="10"]
+[ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="11"]
+[ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="12"]
+[ext_resource type="Texture2D" uid="uid://m5q7ipe5yuvi" path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_PV.png" id="13"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Lancelot-Core"
 manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "Light3D Core"
 description = "An ultralight core constructed only from a bare skeleton and paper-thin plating suitable only for protecting against armor. Revered for its excellent stability and mobility performance. No space for shoulder armament."
-image = ExtResource( 13 )
+image = ExtResource("13")
 health = 2250.0
 shield = 2000.0
 stability = 140.0
@@ -28,98 +29,98 @@ rotation_range = 46.0
 weight = 11.0
 
 [node name="LeftChassisOffset" type="Marker2D" parent="."]
-position = Vector2( -28, 52 )
+position = Vector2(-28, 52)
 
 [node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
-texture = ExtResource( 10 )
+texture = ExtResource("10")
 
 [node name="RightChassisOffset" type="Marker2D" parent="."]
-position = Vector2( 28, 52 )
+position = Vector2(28, 52)
 
 [node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
-texture = ExtResource( 9 )
+texture = ExtResource("9")
 
 [node name="HeadPort" type="Sprite2D" parent="."]
-position = Vector2( 0, -13.7985 )
-texture = ExtResource( 3 )
+position = Vector2(0, -13.7985)
+texture = ExtResource("3")
 
 [node name="CoreSub" type="Sprite2D" parent="."]
-texture = ExtResource( 8 )
+texture = ExtResource("8")
 
 [node name="Core" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="CoreGlow" type="Sprite2D" parent="."]
-modulate = Color( 1, 1, 1, 0.556863 )
-texture = ExtResource( 5 )
+modulate = Color(1, 1, 1, 0.556863)
+texture = ExtResource("5")
 
 [node name="OverheatOffset1" type="Marker2D" parent="."]
-position = Vector2( 0, -53 )
+position = Vector2(0, -53)
 
 [node name="OverheatOffset2" type="Marker2D" parent="."]
-position = Vector2( 0, 43 )
+position = Vector2(0, 43)
 
 [node name="OverheatOffset3" type="Marker2D" parent="."]
-position = Vector2( -28, -10 )
+position = Vector2(-28, -10)
 
 [node name="OverheatOffset4" type="Marker2D" parent="."]
-position = Vector2( 28, -10 )
+position = Vector2(28, -10)
 
 [node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
-position = Vector2( -47, -14 )
+position = Vector2(-47, -14)
 
 [node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
 visible = false
-texture = ExtResource( 12 )
-offset = Vector2( 4, -36 )
+texture = ExtResource("12")
+offset = Vector2(4, -36)
 
 [node name="RightArmWeaponOffset" type="Marker2D" parent="."]
-position = Vector2( 47, -14 )
+position = Vector2(47, -14)
 
 [node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
 visible = false
-scale = Vector2( -1, 1 )
-texture = ExtResource( 12 )
-offset = Vector2( 4, -36 )
+scale = Vector2(-1, 1)
+texture = ExtResource("12")
+offset = Vector2(4, -36)
 
 [node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
 visible = false
-position = Vector2( -30, 17 )
+position = Vector2(-30, 17)
 
 [node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
-texture = ExtResource( 11 )
-offset = Vector2( -9, -23 )
+texture = ExtResource("11")
+offset = Vector2(-9, -23)
 
 [node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
 visible = false
-position = Vector2( 30, 17 )
+position = Vector2(30, 17)
 
 [node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
-scale = Vector2( -1, 1 )
-texture = ExtResource( 11 )
-offset = Vector2( -9, -23 )
+scale = Vector2(-1, 1)
+texture = ExtResource("11")
+offset = Vector2(-9, -23)
 
 [node name="HeadOffset" type="Marker2D" parent="."]
-position = Vector2( 0, -14 )
+position = Vector2(0, -14)
 
 [node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
 visible = false
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="LeftShoulderOffset" type="Marker2D" parent="."]
-position = Vector2( -44, -9 )
+position = Vector2(-44, -9)
 
 [node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
 visible = false
-texture = ExtResource( 6 )
+texture = ExtResource("6")
 
 [node name="RightShoulderOffset" type="Marker2D" parent="."]
-position = Vector2( 44, -9 )
+position = Vector2(44, -9)
 
 [node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
 visible = false
-texture = ExtResource( 7 )
+texture = ExtResource("7")
 
 [node name="Collision" type="Polygon2D" parent="."]
-color = Color( 1, 0, 0, 0.176471 )
-polygon = PackedVector2Array( -21.0013, -75.5055, 21.0486, -75.8205, 24.8283, -57.0792, 33.8875, -52.8913, 50.5231, 0.274078, 35.1495, 45.1616, 24.633, 53.297, 12.7486, 72.6225, -0.0488319, 77.0366, -12.9719, 72.3865, -23.9812, 52.7017, -34.6961, 45.9553, -51.7272, -0.336342, -32.9818, -53.6851, -24.3086, -56.6067 )
+color = Color(1, 0, 0, 0.176471)
+polygon = PackedVector2Array(-21.0013, -75.5055, 21.0486, -75.8205, 24.8283, -57.0792, 33.8875, -52.8913, 50.5231, 0.274078, 35.1495, 45.1616, 24.633, 53.297, 12.7486, 72.6225, -0.0488319, 77.0366, -12.9719, 72.3865, -23.9812, 52.7017, -34.6961, 45.9553, -51.7272, -0.336342, -32.9818, -53.6851, -24.3086, -56.6067)

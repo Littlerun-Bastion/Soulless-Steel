@@ -10,9 +10,10 @@
 
 [node name="Part" type="Node"]
 script = ExtResource("1")
-part_name = "Test Chaingun"
-manufacturer_name = "Test"
-tagline = "Chaingun"
+part_name = "MA-L127-2"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Machine Gun"
 type = "PewPew"
 muzzle_flash = ExtResource("8")
 muzzle_flash_size = 0.33

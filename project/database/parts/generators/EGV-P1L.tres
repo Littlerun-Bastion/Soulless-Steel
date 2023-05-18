@@ -1,12 +1,14 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c8t3qpvvdtgmt"]
 
-[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/generator.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "EGV-P1L"
 manufacturer_name = "Espada Electronica"
+manufacturer_name_short = "Espada"
 tagline = ""
+price = 0.0
 description = "Heavier version of the P1 generator, with upgraded shield and heat capacity. Battery performance remains poor. Fairly effective but unnecessarily heavy."
 shield = 6600.0
 shield_regen_speed = 430

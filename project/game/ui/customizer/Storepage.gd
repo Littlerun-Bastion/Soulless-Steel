@@ -27,6 +27,7 @@ var comparing_part = false
 var type_name
 var basket_total = 0.0
 var balance = 100000.0
+var region = "United Federation of America" ##United Federation of America, Northern Circle, Continental African Republic, Pacific Association of Nations
 
 func _ready():
 	if Profile.stats.current_mecha:

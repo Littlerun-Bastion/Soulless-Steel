@@ -1,17 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://dpvalnjwpah2t"]
 
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" type="Texture2D" id=2]
-[ext_resource path="res://database/parts/shoulder.gd" type="Script" id=3]
-[ext_resource path="res://assets/images/mechas/shoulders/Percival/percival_shoulder_pv.png" type="Texture2D" id=4]
+[ext_resource type="Texture2D" uid="uid://ddlesqla1d82o" path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://duyw7tgkibmtg" path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" id="2"]
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://ucp7ef6b32l6" path="res://assets/images/mechas/shoulders/Percival/percival_shoulder_pv.png" id="4"]
 
 [node name="Part" type="Node"]
-script = ExtResource( 3 )
+script = ExtResource("3")
 part_name = "Percival-Pauldron"
 manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
 tagline = "Test"
 description = "An ultralight part with surprisingly strong shield projectors despite its light weight. Outstanding performance for its tech bracket, but terrible when paired with a need for accuracy."
-image = ExtResource( 4 )
+image = ExtResource("4")
 shield = 1875.0
 stability = 140.0
 arms_accuracy_modifier = 0.85
@@ -19,14 +20,14 @@ melee_modifier = 1.25
 weight = 2.8
 
 [node name="ShoulderLeft" type="Sprite2D" parent="."]
-texture = ExtResource( 1 )
+texture = ExtResource("1")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
-polygon = PackedVector2Array( 5.972, 31.9103, -4.94138, 21.7906, -17.7543, 21.9716, -37.0092, -4.12927, -19.7902, -28.9734, 0.945274, -30.8585, 6.00704, -26.0215 )
+polygon = PackedVector2Array(5.972, 31.9103, -4.94138, 21.7906, -17.7543, 21.9716, -37.0092, -4.12927, -19.7902, -28.9734, 0.945274, -30.8585, 6.00704, -26.0215)
 
 [node name="ShoulderRight" type="Sprite2D" parent="."]
-position = Vector2( 107.127, 0 )
-texture = ExtResource( 2 )
+position = Vector2(107.127, 0)
+texture = ExtResource("2")
 
 [node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
-polygon = PackedVector2Array( -5.99888, 31.9846, 4.98993, 21.7763, 18.0272, 21.9531, 35.9421, -4.30413, 19.873, -28.625, -0.939499, -30.9375, -5.9395, -25.9375 )
+polygon = PackedVector2Array(-5.99888, 31.9846, 4.98993, 21.7763, 18.0272, 21.9531, 35.9421, -4.30413, 19.873, -28.625, -0.939499, -30.9375, -5.9395, -25.9375)

@@ -2,6 +2,7 @@ extends Resource
 
 @export var part_name : String
 @export var manufacturer_name : String
+@export var manufacturer_name_short : String
 @export var tagline : String
 @export var description : String
 @export var price := 0.0

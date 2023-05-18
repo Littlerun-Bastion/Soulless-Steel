@@ -12,7 +12,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_6lucl")
 part_name = "MA-RM9x2"
-manufacturer_name = "Martel"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
 tagline = "Unguided Rocket"
 type = "Long_range Missile"
 muzzle_flash = ExtResource("2_eoypc")

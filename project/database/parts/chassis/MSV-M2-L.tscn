@@ -1,20 +1,21 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=9 format=3 uid="uid://bbc5q7q8unkid"]
 
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_main.png" type="Texture2D" id=1]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_glow.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_glow.png" type="Texture2D" id=4]
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=5]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_sub.png" type="Texture2D" id=6]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_main.png" type="Texture2D" id=7]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_leg_pv.png" type="Texture2D" id=8]
+[ext_resource type="Texture2D" uid="uid://d3jk1fgqjjy8m" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_main.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://cgyd7vnq31hdl" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_glow.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://c1jsbsual32xv" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_lleg_sub.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://4vdhogjvsk5u" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_glow.png" id="4"]
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="5"]
+[ext_resource type="Texture2D" uid="uid://bb2nuu156rml7" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_sub.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://bvmgtgwusmqw6" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_rleg_main.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://bip2snbrvugyu" path="res://assets/images/mechas/legs/MSV-M2/MSV-M2_leg_pv.png" id="8"]
 
 [node name="Part3" type="Node"]
-script = ExtResource( 5 )
+script = ExtResource("5")
 part_name = "MSV-M2-L"
-manufacturer_name = "Test Legged Chassis"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
 tagline = "Bipedal"
-image = ExtResource( 8 )
+image = ExtResource("8")
 is_legs = true
 movement_type = "relative"
 max_speed = 350
@@ -30,31 +31,31 @@ stability = 75.0
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="RightSide" type="Node2D" parent="."]
-position = Vector2( 61, 0 )
+position = Vector2(61, 0)
 
 [node name="ChassisSub" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 6 )
+texture = ExtResource("6")
 
 [node name="ChassisGlow" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="Chassis" type="Sprite2D" parent="RightSide"]
-texture = ExtResource( 7 )
+texture = ExtResource("7")
 
 [node name="Collision" type="CollisionPolygon2D" parent="RightSide"]
-polygon = PackedVector2Array( -8.5345, -48.4553, 23.5258, -48.4553, 23.604, 48.507, -0.464851, 48.389, -0.346863, -9.30529, -7.89786, -16.3844 )
+polygon = PackedVector2Array(-8.5345, -48.4553, 23.5258, -48.4553, 23.604, 48.507, -0.464851, 48.389, -0.346863, -9.30529, -7.89786, -16.3844)
 
 [node name="LeftSide" type="Node2D" parent="."]
-position = Vector2( -16, 0 )
+position = Vector2(-16, 0)
 
 [node name="ChassisSub" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="ChassisGlow" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Chassis" type="Sprite2D" parent="LeftSide"]
-texture = ExtResource( 1 )
+texture = ExtResource("1")
 
 [node name="Collision" type="CollisionPolygon2D" parent="LeftSide"]
-polygon = PackedVector2Array( 7.98733, -48.7419, 7.98733, -16.5686, 0.739479, -9.67429, 0.385925, 48.3085, -23.4789, 48.4852, -23.3022, -48.9187 )
+polygon = PackedVector2Array(7.98733, -48.7419, 7.98733, -16.5686, 0.739479, -9.67429, 0.385925, 48.3085, -23.4789, 48.4852, -23.3022, -48.9187)

@@ -1,17 +1,18 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://dg8upcfm5jxu3"]
 
-[ext_resource path="res://database/parts/chassis.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_main.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_sub.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_glow.png" type="Texture2D" id=4]
-[ext_resource path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_pv.png" type="Texture2D" id=5]
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://si7rxlx4s6bi" path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_main.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://b82j8yuobpn0" path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_sub.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://biforfiqjc5tg" path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_glow.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://dw32dyuh677n8" path="res://assets/images/mechas/legs/MSV-M3/MSV-M3_leg_pv.png" id="5"]
 
 [node name="Part3" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "MSV-M3-L"
-manufacturer_name = "Martel"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
 tagline = "Wheeled"
-image = ExtResource( 5 )
+image = ExtResource("5")
 movement_type = "tank"
 max_speed = 430
 move_acc = 0.8
@@ -29,19 +30,19 @@ stability = 75.0
 [node name="SingleSide" type="Node2D" parent="."]
 
 [node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 4 )
+texture = ExtResource("4")
 
 [node name="Chassis" type="Sprite2D" parent="SingleSide"]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
-polygon = PackedVector2Array( -61.9649, -85.5904, -33.3271, -85.2369, -32.9735, -67.5592, 33.141, -67.9128, 33.141, -85.5904, 62.1323, -85.2369, 62.1323, 8.45479, 37.03, 8.80833, 37.03, 85.5294, -36.8626, 85.1759, -35.802, 8.45479, -62.3185, 8.10123 )
+polygon = PackedVector2Array(-61.9649, -85.5904, -33.3271, -85.2369, -32.9735, -67.5592, 33.141, -67.9128, 33.141, -85.5904, 62.1323, -85.2369, 62.1323, 8.45479, 37.03, 8.80833, 37.03, 85.5294, -36.8626, 85.1759, -35.802, 8.45479, -62.3185, 8.10123)
 
 [node name="RightSide" type="Node2D" parent="."]
-position = Vector2( 46, 0 )
+position = Vector2(46, 0)
 
 [node name="LeftSide" type="Node2D" parent="."]
-position = Vector2( -16, 0 )
+position = Vector2(-16, 0)

@@ -38,9 +38,9 @@ func create(mecha, args, weapon):
 	return data
 
 
-func create_muzzle_flash(weapon, data, pos):
+func create_muzzle_flash(weapon, data, pos, dir):
 	var flash = data.muzzle_flash.instantiate()
-	flash.setup(weapon, data.muzzle_flash_size, data.muzzle_flash_speed, pos)
+	flash.setup(weapon, data.muzzle_flash_size, data.muzzle_flash_speed, pos, dir)
 	return flash
 
 

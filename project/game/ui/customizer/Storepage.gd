@@ -38,6 +38,7 @@ func _ready():
 	#$Statbars.update_stats(DisplayMecha)
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
+	balance = Profile.stats.money
 	$BalanceLabel.text = str(balance)
 
 func _input(event):
@@ -48,6 +49,11 @@ func _input(event):
 			await get_tree().idle_frame
 			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
 			get_window().position = Vector2(0,0)
+	if event.is_action_pressed("debug_1"):
+		balance += 10000000
+		$BalanceLabel.text = str(balance)
+		recalculate_total()
+	
 
 
 func default_loadout():
@@ -270,6 +276,7 @@ func _on_purchase_items_pressed():
 		PurchaseConfirm.visible = false
 		PurchaseComplete.visible = true
 		$BalanceLabel.text = str(balance)
+		Profile.stats.money = balance
 		FileManager.save_profile()
 
 func add_to_inventory(item):

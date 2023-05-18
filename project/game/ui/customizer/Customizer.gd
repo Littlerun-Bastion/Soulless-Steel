@@ -95,6 +95,7 @@ func show_category_button(parts, selected):
 
 func _on_Category_pressed(type,group,side = false):
 	var group_node = PartCategories.get_node(group)
+	Statcard.visible = false
 	type_name = type
 	if side:
 		type_name = type + "_" + side
@@ -233,7 +234,6 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 		$overweight.visible = true
 	else:
 		$overweight.visible = false
-	Statcard.visible = false
 
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.get_stat("weight_capacity")

@@ -93,6 +93,7 @@ func show_category_button(parts, selected):
 func _on_Category_pressed(type,group,side = false):
 	var group_node = PartCategories.get_node(group)
 	type_name = type
+	Statcard.visible = false
 	if side:
 		type_name = type + "_" + side
 	if category_visible == false:
@@ -190,7 +191,6 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 		item.get_button().disabled = true
 	#StatBars.reset_comparing_part()
 	comparing_part = false
-	Statcard.visible = false
 
 func _on_Save_pressed():
 	FileManager.save_mecha_design(DisplayMecha, "test")

@@ -592,6 +592,7 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Statcard" parent="." instance=ExtResource("11_5metr")]
+visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -601,6 +602,7 @@ offset_right = 999.0
 offset_bottom = 1000.0
 
 [node name="LoadScreen" parent="." instance=ExtResource("12_jvh0j")]
+visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -612,6 +614,7 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="PurchaseConfirm" type="Control" parent="."]
+visible = false
 custom_minimum_size = Vector2(700, 400)
 layout_mode = 1
 anchors_preset = 8

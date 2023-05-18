@@ -162,7 +162,7 @@ func recalculate_total():
 
 func add_to_inventory(item):
 	var inventory = Profile.get_inventory()
-	var item_name = item.current_item.part_name
+	var item_name = item.current_item.part_id
 	if inventory.has(item_name):
 		inventory[item_name] += 1
 	else:

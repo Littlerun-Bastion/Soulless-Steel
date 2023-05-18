@@ -83,7 +83,7 @@ func set_save_data(data):
 	set_data(data, "controls", controls)
 	set_data(data, "stats", stats)
 	set_data(data, "debug", Debug.debug_settings)
-	set_data(data, "inventory", inventory)
+	set_data(data, "inventory", inventory, true)
 	
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
@@ -93,7 +93,7 @@ func set_save_data(data):
 		edit_control_action(action, controls[action])
 
 
-func set_data(data, idx, default_values):
+func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):
 		return
 	
@@ -109,7 +109,7 @@ func set_data(data, idx, default_values):
 		#Ignore deprecated values
 		if default_values.has(key):
 			default_values[key] = data[idx][key]
-		else:
+		elif not ignore_deprecated:
 			data[idx].erase(key)
 			push_warning("Removing deprecated value '" + str(key) + str("' for " + str(idx)))
 

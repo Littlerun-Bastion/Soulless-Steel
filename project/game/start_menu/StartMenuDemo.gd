@@ -80,3 +80,7 @@ func _on_Arena_pressed():
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")
 	start_game("tutorial")
+
+
+func open_store():
+	get_tree().change_scene_to_file("res://game/ui/customizer/Storepage.tscn")

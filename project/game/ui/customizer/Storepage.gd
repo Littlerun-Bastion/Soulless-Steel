@@ -123,11 +123,6 @@ func is_build_valid():
 		if not DisplayMecha.get(part):
 			build_valid = false
 			missing_parts = missing_parts + "WARN: " + part + " "
-	if not build_valid:
-		$MissingPartsScroll/MissingParts.text = missing_parts
-		$MissingPartsScroll/MissingParts.visible = true
-	else:
-		$MissingPartsScroll/MissingParts.visible = false
 	return build_valid
 
 

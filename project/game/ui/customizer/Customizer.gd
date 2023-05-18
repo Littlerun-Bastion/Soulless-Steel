@@ -109,18 +109,21 @@ func _on_Category_pressed(type,group,side = false):
 		var parts = PartManager.get_parts(type)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
-		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
-			var part = parts[part_key]
-			var item = ITEMFRAME.instantiate()
-			item.setup(part, false)
-			if DisplayMecha.get(type_name):
-				if DisplayMecha.get(type_name) == part:
-					item.get_button().disabled = true
-					item.is_disabled = true
-			PartList.add_child(item)
-			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
-			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
-			item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
+		
+		var inventory = Profile.get_inventory()
+		for part_key in inventory.keys(): #Parsing through a dictionary using super.values()
+			if parts.has(part_key):
+				var part = parts[part_key]
+				var item = ITEMFRAME.instantiate()
+				item.setup(part, false)
+				if DisplayMecha.get(type_name):
+					if DisplayMecha.get(type_name) == part:
+						item.get_button().disabled = true
+						item.is_disabled = true
+				PartList.add_child(item)
+				item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
+				item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
+				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
 	else:
 		category_visible = false
 		for child in group_node.get_children():

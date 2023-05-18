@@ -263,9 +263,19 @@ func _on_purchase_items_pressed():
 	else:
 		balance -= basket_total
 		for item in BasketList.get_children():
+			add_to_inventory(item)
 			BasketList.remove_child(item)
 			item.queue_free()
 		recalculate_total()
 		PurchaseConfirm.visible = false
 		PurchaseComplete.visible = true
 		$BalanceLabel.text = str(balance)
+		FileManager.save_profile()
+
+func add_to_inventory(item):
+	var inventory = Profile.get_inventory()
+	var item_name = item.current_item.part_name
+	if inventory.has(item_name):
+		inventory[item_name] += 1
+	else:
+		inventory[item_name] = 1

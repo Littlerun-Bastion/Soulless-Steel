@@ -41,9 +41,7 @@ var stats = {
 	"money": 0,
 }
 
-var inventory = {
-	
-}
+var inventory = {}
 
 func get_locale_idx(locale):
 	var idx = 0
@@ -83,7 +81,8 @@ func set_save_data(data):
 	set_data(data, "controls", controls)
 	set_data(data, "stats", stats)
 	set_data(data, "debug", Debug.debug_settings)
-	set_data(data, "inventory", inventory, true)
+	
+	inventory = data.inventory
 	
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
@@ -155,6 +154,7 @@ func set_stat(type, value):
 	assert(stats.has(type),"Not a valid stat: "+str(type))
 	stats[type] = value
 	FileManager.save_profile()
+
 
 func get_inventory():
 	return inventory

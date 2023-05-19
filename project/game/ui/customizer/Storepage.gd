@@ -178,6 +178,18 @@ func add_to_inventory(item):
 		inventory[item_name] = 1
 
 
+func remove_from_inventory(item):
+	var inventory = Profile.get_inventory()
+	var item_name = item.current_item.part_id
+	if inventory.has(item_name):
+		if inventory[item_name] > 0:
+			inventory[item_name] -= 1
+		else:
+			inventory.erase(item_name)
+	else:
+		push_warning("Inventory doesn't have this item to remove: " + str(item_name))
+
+
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/market_parser --" + str(type))
 	var group_node = PartCategories.get_node(group)
@@ -252,6 +264,7 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 		item.get_button().disabled = true
 	#StatBars.reset_comparing_part()
 	comparing_part = false
+
 
 func _on_Save_pressed():
 	FileManager.save_mecha_design(DisplayMecha, "test")

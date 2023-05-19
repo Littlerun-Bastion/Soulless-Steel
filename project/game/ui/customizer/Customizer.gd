@@ -127,6 +127,8 @@ func _on_Category_pressed(type,group,side = false):
 				item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
+		if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
+			$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
 		$CurrentItemFrame.visible = true
 		$CurrentItemFrame.setup(DisplayMecha.get(type_name), false, false)
 		$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
@@ -181,6 +183,8 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	update_weight()
 	shoulder_weapon_check()
 	comparing_part = false
+	if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
+		$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
 	$CurrentItemFrame.visible = true
 	$CurrentItemFrame.setup(item.current_part, false, false)
 	$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
@@ -279,17 +283,16 @@ func _LoadScreen_on_load_pressed(design):
 	shoulder_weapon_check()
 	update_weight()
 
-func unequip_part(type_name, side):
+func unequip_part(_type_name, side):
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
-		DisplayMecha.callv("set_" + str(type_name), [null,side])
-		ComparisonMecha.callv("set_" + str(type_name), [null,side])
+		DisplayMecha.callv("set_" + str(_type_name), [null,side])
+		ComparisonMecha.callv("set_" + str(_type_name), [null,side])
 	else:
-		DisplayMecha.callv("set_" + str(type_name), [null])
-		ComparisonMecha.callv("set_" + str(type_name), [null])
+		DisplayMecha.callv("set_" + str(_type_name), [null])
+		ComparisonMecha.callv("set_" + str(_type_name), [null])
 	$CurrentItemFrame.visible = false
 	shoulder_weapon_check()
 	for child in PartList.get_children():
 		child.get_button().disabled = false
 		child.is_disabled = false
-	$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))

@@ -19,6 +19,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 var category_visible = false
 var comparing_part = false
 var type_name
+var current_group
 
 func _ready():
 	$LoadScreen.shopping_mode = false
@@ -97,6 +98,7 @@ func show_category_button(parts, selected):
 
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/inventory_parser --" + str(type))
+	current_group = group
 	var group_node = PartCategories.get_node(group)
 	Statcard.visible = false
 	type_name = type
@@ -112,7 +114,6 @@ func _on_Category_pressed(type,group,side = false):
 		var parts = PartManager.get_parts(type)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
-		
 		var inventory = Profile.get_inventory()
 		for part_key in inventory.keys(): #Parsing through a dictionary using super.values()
 			if parts.has(part_key):
@@ -129,9 +130,10 @@ func _on_Category_pressed(type,group,side = false):
 				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
 		if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
 			$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
-		$CurrentItemFrame.visible = true
-		$CurrentItemFrame.setup(DisplayMecha.get(type_name), false, false)
-		$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
+		if DisplayMecha.get(type_name):
+			$CurrentItemFrame.visible = true
+			$CurrentItemFrame.setup(DisplayMecha.get(type_name), false, false)
+			$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
 	else:
 		category_visible = false
 		$CurrentItemFrame.visible = false
@@ -179,6 +181,9 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	else:
 		DisplayMecha.callv("set_" + str(type), [part_name])
 		ComparisonMecha.callv("set_" + str(type), [part_name])
+	Profile.remove_from_inventory(part_name)
+	var inventory = Profile.get_inventory()
+	item.get_node("QuantityLabel").text = str(inventory.get(part_name))
 	#$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	shoulder_weapon_check()
@@ -284,6 +289,7 @@ func _LoadScreen_on_load_pressed(design):
 	update_weight()
 
 func unequip_part(_type_name, side):
+	Profile.add_to_inventory($CurrentItemFrame.current_part.part_id)
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		DisplayMecha.callv("set_" + str(_type_name), [null,side])
@@ -293,6 +299,9 @@ func unequip_part(_type_name, side):
 		ComparisonMecha.callv("set_" + str(_type_name), [null])
 	$CurrentItemFrame.visible = false
 	shoulder_weapon_check()
-	for child in PartList.get_children():
-		child.get_button().disabled = false
-		child.is_disabled = false
+	category_visible = false
+	$CurrentItemFrame.visible = false
+	for child in PartList.get_children(): #Clear PartList
+		if child.current_part == $CurrentItemFrame.current_part:
+			child.get_node("QuantityLabel").text = str(Profile.get_inventory().get($CurrentItemFrame.current_part.part_id))
+

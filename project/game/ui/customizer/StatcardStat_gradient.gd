@@ -4,7 +4,7 @@ extends Control
 var stat_name = "heatmap"
 
 func _ready():
-	$Title.text = stat_title
+	$TextureRect/Title.text = stat_title
 
 func update_stat(_current_part, new_part):
 	$TextureRect.texture = new_part.get(stat_name)

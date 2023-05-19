@@ -20,6 +20,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 @onready var PurchaseComplete = $PurchaseConfirm/complete
 @onready var PurchaseConfirm = $PurchaseConfirm/confirm
 @onready var TotalCostLabel = $PurchaseConfirm/confirm/TotalCost/Amount
+@onready var CommandLine = $commandline
 
 
 var category_visible = false
@@ -40,6 +41,8 @@ func _ready():
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	balance = Profile.stats.money
 	$BalanceLabel.text = str(balance)
+	if BasketList.get_child_count() == 0:
+		$Basket/BottomSect/Button.disabled = true
 
 
 func _input(event):
@@ -128,6 +131,7 @@ func is_build_valid():
 
 func add_to_basket(type, part_name):
 	#Transaction code goes here
+	CommandLine.display("market_basket_add_item_entry --" + str(part_name))
 	var item = PartManager.get_part(type, part_name)
 	var basket_item_entry = BASKET_ITEM.instantiate()
 	basket_item_entry.setup(item)
@@ -137,6 +141,7 @@ func add_to_basket(type, part_name):
 
 
 func remove_from_basket(item):
+	CommandLine.display("market_basket_remove_item_entry --" + str(item.current_item.part_name))
 	BasketList.remove_child(item)
 	item.queue_free()
 	recalculate_total()
@@ -148,6 +153,10 @@ func recalculate_total():
 	for item in BasketList.get_children():
 		basket_total += item.get_price()
 		num_items += 1
+	if BasketList.get_child_count() == 0:
+		$Basket/BottomSect/Button.disabled = true
+	else:
+		$Basket/BottomSect/Button.disabled = false
 	if balance < basket_total:
 		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = true
 		$PurchaseConfirm/confirm/Control/Label.text = "Insufficient funds."
@@ -170,6 +179,7 @@ func add_to_inventory(item):
 
 
 func _on_Category_pressed(type,group,side = false):
+	CommandLine.display("/market_parser --" + str(type))
 	var group_node = PartCategories.get_node(group)
 	type_name = type
 	Statcard.visible = false
@@ -188,7 +198,7 @@ func _on_Category_pressed(type,group,side = false):
 		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
 			var part = parts[part_key]
 			var item = ITEMFRAME.instantiate()
-			item.setup(part,true)
+			item.setup(part,true,false)
 			PartList.add_child(item)
 			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
 			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
@@ -203,14 +213,17 @@ func _on_Category_pressed(type,group,side = false):
 
 
 func _on_HardwareButton_pressed():
+	CommandLine.display("/market_category --hardware")
 	show_category_button($PartCategories/Hardware, $CategorySelectedUI/Hardware)
 
 
 func _on_WetwareButton_pressed():
+	CommandLine.display("/market_category --wetware")
 	show_category_button($PartCategories/Wetware, $CategorySelectedUI/Wetware)
 
 
 func _on_EquipmentButton_pressed():
+	CommandLine.display("/market_category --equipment")
 	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
@@ -253,6 +266,7 @@ func _on_Exit_pressed():
 
 
 func _on_Load_pressed():
+	CommandLine.display("/osshell --builddata")
 	$LoadScreen.shopping_mode = true
 	$LoadScreen.visible = true
 
@@ -265,6 +279,7 @@ func _LoadScreen_on_load_pressed(design):
 
 func _on_purchase_pressed():
 	#In basket
+	CommandLine.display("/market_basket_purchase")
 	$PurchaseConfirm.visible = true
 	PurchaseConfirm.visible = true
 	PurchaseComplete.visible = false
@@ -280,6 +295,7 @@ func _on_purchase_items_pressed():
 		pass
 	else:
 		balance -= basket_total
+		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
 		for item in BasketList.get_children():
 			add_to_inventory(item)
 			BasketList.remove_child(item)

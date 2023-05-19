@@ -2045,7 +2045,7 @@ custom_minimum_size = Vector2(1920, 1080)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0)
+color = Color(0, 0, 0, 1)
 
 [node name="CommandLine" type="Label" parent="."]
 anchors_preset = 2
@@ -2059,7 +2059,7 @@ theme = ExtResource("2_5gon4")
 theme_override_fonts/font = ExtResource("2_n72kf")
 theme_override_font_sizes/font_size = 36
 visible_characters = 0
-visible_ratio = 0.0
+visible_ratio = 0.48062
 metadata/_edit_use_anchors_ = true
 
 [node name="ScreenText" type="Label" parent="."]
@@ -2073,9 +2073,17 @@ offset_bottom = 1018.0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_n72kf")
 theme_override_font_sizes/font_size = 36
+text = "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+HunterOS ver. 1.02 LN
+KEY 192SK0A-LN4C-H4R
+c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
+---Break---
+Engaging wetware connection... Connected!
+Testing Limbic System Overriides.."
 
 [node name="EntranceSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2")
+stream_paused = true
 bus = &"SFX"
 
 [node name="Ent_misc1" type="AudioStreamPlayer" parent="."]
@@ -2104,6 +2112,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="VCREffect2" type="ColorRect" parent="."]
+visible = false
 material = SubResource("24")
 custom_minimum_size = Vector2(1920, 1080)
 anchors_preset = 15

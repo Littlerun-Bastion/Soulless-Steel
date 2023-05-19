@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://bsyltjhiirffe"]
+[gd_scene load_steps=26 format=3 uid="uid://bsyltjhiirffe"]
 
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="3"]
@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/commandline.tscn" id="13_ytkiv"]
+[ext_resource type="PackedScene" uid="uid://bgdtd2d23virp" path="res://game/ui/customizer/ItemFrame.tscn" id="14_75fbo"]
 
 [sub_resource type="Theme" id="14"]
 
@@ -69,7 +71,7 @@ pivot_offset = Vector2(-611, -230)
 script = ExtResource("3")
 
 [node name="Mecha" parent="." instance=ExtResource("9")]
-position = Vector2(1558.73, 671)
+position = Vector2(1558.73, 432)
 display_mode = true
 
 [node name="ComparisonMecha" parent="." instance=ExtResource("9")]
@@ -432,8 +434,8 @@ icon_alignment = 1
 layout_mode = 0
 offset_left = 40.0
 offset_top = 377.0
-offset_right = 440.0
-offset_bottom = 1000.0
+offset_right = 533.0
+offset_bottom = 995.0
 theme = ExtResource("8")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
@@ -542,14 +544,13 @@ offset_right = 1256.0
 offset_bottom = 1017.0
 
 [node name="Statcard" parent="." instance=ExtResource("10")]
-visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 468.0
+offset_left = 543.0
 offset_top = 378.0
-offset_right = 999.0
-offset_bottom = 1000.0
+offset_right = 1202.0
+offset_bottom = 974.0
 
 [node name="LoadScreen" parent="." instance=ExtResource("11")]
 visible = false
@@ -621,6 +622,20 @@ offset_bottom = 298.139
 scale = Vector2(1.2, 1.2)
 stat_name = "max_speed"
 stat_label = "SPD"
+
+[node name="commandline" parent="." instance=ExtResource("13_ytkiv")]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 1000.0
+offset_right = 1201.0
+offset_bottom = 1036.0
+
+[node name="CurrentItemFrame" parent="." instance=ExtResource("14_75fbo")]
+layout_mode = 1
+offset_left = 1322.0
+offset_top = 855.0
+offset_right = -123.0
+offset_bottom = -105.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]

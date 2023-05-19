@@ -1,8 +1,10 @@
 extends Control
 
 var is_disabled = false
+var current_part
 
-func setup(part, is_shopping): 
+func setup(part, is_shopping, quantity): 
+	current_part = part
 	if part.part_name.is_empty() == false:
 		$PartLabel.text = part.part_name
 	else:
@@ -17,6 +19,11 @@ func setup(part, is_shopping):
 		$PriceLabel.text = part.tagline
 	if part.image:
 		$PartPreview.texture = part.image
+	if quantity:
+		$QuantityLabel.visible = true
+		$QuantityLabel.text = str(quantity)
+	else:
+		$QuantityLabel.visible = false
 
 func get_button():
 	return $Button

@@ -7,14 +7,14 @@
 [node name="StatcardStat" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 375.0
+offset_right = 640.0
 offset_bottom = 46.0
 theme = ExtResource("2")
 script = ExtResource("3")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 0
-offset_right = 500.0
+offset_right = 640.0
 offset_bottom = 47.0
 theme = ExtResource("2")
 
@@ -22,7 +22,7 @@ theme = ExtResource("2")
 layout_mode = 0
 offset_left = 5.0
 offset_top = 26.0
-offset_right = 495.0
+offset_right = 635.0
 offset_bottom = 39.0
 texture = ExtResource("4")
 expand_mode = 1
@@ -36,18 +36,18 @@ text = "0"
 
 [node name="Label2" type="Label" parent="TextureRect"]
 layout_mode = 0
-offset_left = 469.0
+offset_left = 609.0
 offset_top = -14.0
-offset_right = 490.0
+offset_right = 630.0
 offset_bottom = 5.0
 text = "500"
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="TextureRect"]
 layout_mode = 0
-offset_left = 3.0
-offset_top = 5.0
-offset_right = 498.0
-offset_bottom = 40.0
+offset_left = -2.0
+offset_top = -21.0
+offset_right = 630.0
+offset_bottom = 14.0
 theme_override_font_sizes/font_size = 20
 text = "Heatmap"
 horizontal_alignment = 1

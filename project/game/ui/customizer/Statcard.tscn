@@ -35,18 +35,18 @@ border_color = Color(1, 1, 1, 1)
 layout_mode = 3
 anchor_right = 0.276
 anchor_bottom = 0.657
-offset_right = 0.0799561
+offset_right = 129.08
 offset_bottom = 0.440002
 script = ExtResource("3")
 
 [node name="Title" type="Control" parent="."]
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 659.0
+offset_bottom = 101.0
 
 [node name="PanelContainer" type="PanelContainer" parent="Title"]
 layout_mode = 0
-offset_right = 530.0
+offset_right = 659.0
 offset_bottom = 100.0
 theme = ExtResource("1")
 
@@ -75,28 +75,24 @@ text = "Bladibladibla"
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 0
 offset_top = 110.0
-offset_right = 530.0
-offset_bottom = 622.0
+offset_right = 659.0
+offset_bottom = 596.0
 theme = ExtResource("1")
 
 [node name="Description" type="Control" parent="."]
+visible = false
 anchors_preset = 0
 offset_left = 7.0
 offset_top = 117.0
 offset_right = 523.0
 offset_bottom = 571.0
 
-[node name="Manufacturer" type="Control" parent="Description"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
 [node name="parts" type="ScrollContainer" parent="."]
 visible = false
 layout_mode = 0
 offset_left = 8.0
 offset_top = 117.0
-offset_right = 523.0
+offset_right = 651.0
 offset_bottom = 572.0
 theme = ExtResource("1")
 
@@ -104,6 +100,7 @@ theme = ExtResource("1")
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Armor" parent="parts/head" instance=ExtResource("2")]
 layout_mode = 2
@@ -129,9 +126,9 @@ stat_name = "weight"
 layout_mode = 2
 
 [node name="core" type="VBoxContainer" parent="parts"]
-visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Armor" parent="parts/core" instance=ExtResource("2")]
 layout_mode = 2
@@ -167,6 +164,7 @@ stat_name = "weight"
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Shield" parent="parts/shoulders" instance=ExtResource("2")]
 layout_mode = 2
@@ -197,6 +195,7 @@ stat_name = "weight"
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Armor" parent="parts/chassis" instance=ExtResource("2")]
 layout_mode = 2
@@ -237,6 +236,7 @@ stat_name = "weight_capacity"
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Sprint Speed" parent="parts/thruster" instance=ExtResource("2")]
 layout_mode = 2
@@ -277,6 +277,7 @@ stat_name = "weight"
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Shield" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
@@ -332,6 +333,7 @@ stat_name = "weight"
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
+alignment = 1
 
 [node name="Accuracy mod" parent="parts/chipset" instance=ExtResource("2")]
 layout_mode = 2
@@ -403,21 +405,11 @@ layout_mode = 2
 stat_title = "Weight"
 stat_name = "weight"
 
-[node name="Button" type="Button" parent="."]
-layout_mode = 0
-offset_left = 9.0
-offset_top = 578.0
-offset_right = 521.0
-offset_bottom = 613.0
-theme = ExtResource("1")
-theme_override_font_sizes/font_size = 30
-text = "..."
-
 [node name="description" type="VBoxContainer" parent="."]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 117.0
-offset_right = 520.0
+offset_right = 648.0
 offset_bottom = 574.0
 
 [node name="Manufactuer" type="Label" parent="description"]
@@ -427,7 +419,7 @@ theme_override_font_sizes/font_size = 20
 text = "MARTEL SHIPPING AND INDUSTRIAL"
 
 [node name="Description" type="RichTextLabel" parent="description"]
-custom_minimum_size = Vector2(510, 350)
+custom_minimum_size = Vector2(510, 324)
 layout_mode = 2
 theme = ExtResource("1")
 theme_override_fonts/normal_font = ExtResource("7_wno4r")
@@ -460,7 +452,7 @@ text = "MSRP*:"
 vertical_alignment = 2
 
 [node name="MSRP" type="Label" parent="description/HBoxContainer"]
-custom_minimum_size = Vector2(423, 0)
+custom_minimum_size = Vector2(551, 0)
 layout_mode = 2
 theme = ExtResource("1")
 theme_override_font_sizes/font_size = 30
@@ -478,7 +470,13 @@ vertical_alignment = 2
 [node name="Label" type="Label" parent="description"]
 layout_mode = 2
 theme = ExtResource("1")
-text = "*tentative only and not indicative of current market escrow 
-prices. contact your retailer for further information."
+text = "*tentative only and not indicative of current market escrow prices. contact your retailer for further information."
+autowrap_mode = 2
 
-[connection signal="pressed" from="Button" to="." method="toggle_description"]
+[node name="Button" type="Button" parent="description"]
+layout_mode = 2
+theme = ExtResource("1")
+theme_override_font_sizes/font_size = 30
+text = "..."
+
+[connection signal="pressed" from="description/Button" to="." method="toggle_description"]

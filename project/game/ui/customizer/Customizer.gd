@@ -14,6 +14,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 #onready var StatBars = $Statbars
 @onready var Statcard = $Statcard
 @onready var LoadScreen = $LoadScreen
+@onready var CommandLine = $commandline
 
 var category_visible = false
 var comparing_part = false
@@ -32,6 +33,7 @@ func _ready():
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
+	shoulder_weapon_check()
 
 func _process(dt):
 	if not comparing_part:
@@ -94,6 +96,7 @@ func show_category_button(parts, selected):
 
 
 func _on_Category_pressed(type,group,side = false):
+	CommandLine.display("/inventory_parser --" + str(type))
 	var group_node = PartCategories.get_node(group)
 	Statcard.visible = false
 	type_name = type
@@ -115,7 +118,7 @@ func _on_Category_pressed(type,group,side = false):
 			if parts.has(part_key):
 				var part = parts[part_key]
 				var item = ITEMFRAME.instantiate()
-				item.setup(part, false)
+				item.setup(part, false, inventory.get(part_key))
 				if DisplayMecha.get(type_name):
 					if DisplayMecha.get(type_name) == part:
 						item.get_button().disabled = true
@@ -124,8 +127,12 @@ func _on_Category_pressed(type,group,side = false):
 				item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
+		$CurrentItemFrame.visible = true
+		$CurrentItemFrame.setup(DisplayMecha.get(type_name), false, false)
+		$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
 	else:
 		category_visible = false
+		$CurrentItemFrame.visible = false
 		for child in group_node.get_children():
 			child.visible = true
 		for child in PartList.get_children(): #Clear PartList
@@ -134,14 +141,17 @@ func _on_Category_pressed(type,group,side = false):
 
 
 func _on_HardwareButton_pressed():
+	CommandLine.display("/inventory_category --hardware")
 	show_category_button($PartCategories/Hardware, $CategorySelectedUI/Hardware)
 
 
 func _on_WetwareButton_pressed():
+	CommandLine.display("/inventory_category --wetware")
 	show_category_button($PartCategories/Wetware, $CategorySelectedUI/Wetware)
 
 
 func _on_EquipmentButton_pressed():
+	CommandLine.display("/inventory_category --equipment")
 	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
@@ -171,6 +181,10 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	update_weight()
 	shoulder_weapon_check()
 	comparing_part = false
+	$CurrentItemFrame.visible = true
+	$CurrentItemFrame.setup(item.current_part, false, false)
+	$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
+	
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side,item):
@@ -264,3 +278,18 @@ func _LoadScreen_on_load_pressed(design):
 	ComparisonMecha.set_parts_from_design(design)
 	shoulder_weapon_check()
 	update_weight()
+
+func unequip_part(type_name, side):
+	if side:
+		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
+		DisplayMecha.callv("set_" + str(type_name), [null,side])
+		ComparisonMecha.callv("set_" + str(type_name), [null,side])
+	else:
+		DisplayMecha.callv("set_" + str(type_name), [null])
+		ComparisonMecha.callv("set_" + str(type_name), [null])
+	$CurrentItemFrame.visible = false
+	shoulder_weapon_check()
+	for child in PartList.get_children():
+		child.get_button().disabled = false
+		child.is_disabled = false
+	$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))

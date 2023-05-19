@@ -6,14 +6,14 @@
 [node name="StatcardStat" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 375.0
+offset_right = 640.0
 offset_bottom = 46.0
 theme = ExtResource("2")
 script = ExtResource("3")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 0
-offset_right = 500.0
+offset_right = 640.0
 offset_bottom = 47.0
 theme = ExtResource("2")
 
@@ -23,6 +23,12 @@ offset_left = 6.0
 offset_top = 3.0
 offset_right = 172.0
 offset_bottom = 49.0
+
+[node name="Title" type="Label" parent="Values"]
+custom_minimum_size = Vector2(505, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Armor"
 
 [node name="Value" type="Label" parent="Values"]
 layout_mode = 2
@@ -35,12 +41,3 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 25
 text = "[+++]"
 vertical_alignment = 1
-
-[node name="Title" type="Label" parent="."]
-layout_mode = 0
-offset_left = 183.0
-offset_top = 11.0
-offset_right = 511.0
-offset_bottom = 46.0
-theme_override_font_sizes/font_size = 30
-text = "Armor"

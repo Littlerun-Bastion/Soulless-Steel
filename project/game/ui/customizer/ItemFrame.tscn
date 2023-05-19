@@ -31,7 +31,7 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1520.0
+offset_right = -1445.0
 offset_bottom = -960.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -39,7 +39,7 @@ script = ExtResource("2")
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 0
-offset_right = 400.0
+offset_right = 475.0
 offset_bottom = 120.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_621qk")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ab8rc")
@@ -77,6 +77,41 @@ theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 20
 text = "Euromeccanica "
 autowrap_mode = 2
+
+[node name="QuantityLabel" type="Label" parent="."]
+custom_minimum_size = Vector2(85, 65)
+layout_mode = 0
+offset_left = 381.0
+offset_top = 28.0
+offset_right = 466.0
+offset_bottom = 93.0
+theme = ExtResource("2_643w7")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 60
+text = "1"
+horizontal_alignment = 2
+vertical_alignment = 2
+text_overrun_behavior = 1
+
+[node name="QuantityLabel2" type="Label" parent="QuantityLabel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = 12.5
+offset_right = -1.0
+offset_bottom = 75.5
+grow_horizontal = 0
+grow_vertical = 2
+theme = ExtResource("2_643w7")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 30
+text = "pcs"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="PartPreview" type="TextureRect" parent="."]
 layout_mode = 0

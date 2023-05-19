@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bu22r8a2ybnso"]
+[gd_scene load_steps=23 format=3 uid="uid://bu22r8a2ybnso"]
 
 [ext_resource type="Script" path="res://game/ui/customizer/Storepage.gd" id="1_mota4"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="2_clna7"]
@@ -12,6 +12,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="10_oi7dk"]
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="11_5metr"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="12_jvh0j"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/commandline.tscn" id="13_hexso"]
 
 [sub_resource type="Theme" id="14"]
 
@@ -51,6 +52,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 32.0
+offset_right = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(-611, -230)
@@ -410,9 +413,9 @@ icon_alignment = 1
 [node name="PartListContainer" type="ScrollContainer" parent="."]
 layout_mode = 0
 offset_left = 40.0
-offset_top = 377.217
-offset_right = 440.0
-offset_bottom = 995.217
+offset_top = 377.0
+offset_right = 533.0
+offset_bottom = 995.0
 theme = ExtResource("6_1ptfd")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PartListContainer"]
@@ -495,6 +498,7 @@ offset_right = 647.0
 offset_bottom = 72.0
 theme = ExtResource("6_1ptfd")
 theme_override_font_sizes/font_size = 25
+disabled = true
 text = "Purchase"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Basket"]
@@ -592,13 +596,12 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Statcard" parent="." instance=ExtResource("11_5metr")]
-visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 468.0
+offset_left = 543.0
 offset_top = 378.0
-offset_right = 999.0
+offset_right = 1202.0
 offset_bottom = 1000.0
 
 [node name="LoadScreen" parent="." instance=ExtResource("12_jvh0j")]
@@ -874,6 +877,13 @@ layout_mode = 2
 theme = ExtResource("6_1ptfd")
 text = "Return
 "
+
+[node name="commandline" parent="." instance=ExtResource("13_hexso")]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 1000.0
+offset_right = 1201.0
+offset_bottom = 1036.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]

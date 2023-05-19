@@ -165,7 +165,7 @@ func add_to_inventory(item_name):
 		inventory[item_name] += 1
 	else:
 		inventory[item_name] = 1
-
+	FileManager.save_profile()
 
 func remove_from_inventory(item_name):
 	if inventory.has(item_name):
@@ -175,3 +175,4 @@ func remove_from_inventory(item_name):
 			inventory.erase(item_name)
 	else:
 		push_warning("Inventory doesn't have this item to remove: " + str(item_name))
+	FileManager.save_profile()

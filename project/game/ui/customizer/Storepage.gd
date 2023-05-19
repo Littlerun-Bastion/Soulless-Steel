@@ -169,27 +169,6 @@ func recalculate_total():
 	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
 
 
-func add_to_inventory(item):
-	var inventory = Profile.get_inventory()
-	var item_name = item.current_item.part_id
-	if inventory.has(item_name):
-		inventory[item_name] += 1
-	else:
-		inventory[item_name] = 1
-
-
-func remove_from_inventory(item):
-	var inventory = Profile.get_inventory()
-	var item_name = item.current_item.part_id
-	if inventory.has(item_name):
-		if inventory[item_name] > 0:
-			inventory[item_name] -= 1
-		else:
-			inventory.erase(item_name)
-	else:
-		push_warning("Inventory doesn't have this item to remove: " + str(item_name))
-
-
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/market_parser --" + str(type))
 	var group_node = PartCategories.get_node(group)
@@ -310,7 +289,7 @@ func _on_purchase_items_pressed():
 		balance -= basket_total
 		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
 		for item in BasketList.get_children():
-			add_to_inventory(item)
+			Profile.add_to_inventory(item.current_item.part_id)
 			BasketList.remove_child(item)
 			item.queue_free()
 		recalculate_total()

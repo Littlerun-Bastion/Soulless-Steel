@@ -158,3 +158,20 @@ func set_stat(type, value):
 
 func get_inventory():
 	return inventory
+
+
+func add_to_inventory(item_name):
+	if inventory.has(item_name):
+		inventory[item_name] += 1
+	else:
+		inventory[item_name] = 1
+
+
+func remove_from_inventory(item_name):
+	if inventory.has(item_name):
+		if inventory[item_name] > 0:
+			inventory[item_name] -= 1
+		else:
+			inventory.erase(item_name)
+	else:
+		push_warning("Inventory doesn't have this item to remove: " + str(item_name))

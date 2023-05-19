@@ -39,7 +39,7 @@ func _ready():
 	#$Statbars.update_stats(DisplayMecha)
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
-	balance = Profile.stats.money
+	balance = Profile.get_stat("money")
 	$BalanceLabel.text = str(balance)
 	if BasketList.get_child_count() == 0:
 		$Basket/BottomSect/Button.disabled = true
@@ -296,5 +296,4 @@ func _on_purchase_items_pressed():
 		PurchaseConfirm.visible = false
 		PurchaseComplete.visible = true
 		$BalanceLabel.text = str(balance)
-		Profile.stats.money = balance
-		FileManager.save_profile()
+		Profile.set_stat("money", balance)

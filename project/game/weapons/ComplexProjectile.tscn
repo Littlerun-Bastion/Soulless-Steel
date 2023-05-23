@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://b1lld56hnq3dv"]
+[gd_scene load_steps=5 format=3 uid="uid://doj23ywjnrjcl"]
 
-[ext_resource type="Script" path="res://game/weapons/ComplexProjectile.gd" id="1_4rskg"]
+[ext_resource type="Script" path="res://game/weapons/OLDComplexProjectile.gd" id="1_g8pww"]
 [ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="2_0eb56"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="3_a2uwe"]
 
@@ -9,7 +9,7 @@ blend_mode = 1
 
 [node name="ComplexProjectile" type="Area2D" groups=["projectile"]]
 collision_layer = 2
-script = ExtResource("1_4rskg")
+script = ExtResource("1_g8pww")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_0eb56")

@@ -146,9 +146,9 @@ func update_camera_offset(dt):
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
 		Cam.offset = Cam.offset.limit_length(head.visual_range)
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
 	var prev_hp = hp
-	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name, calibre)
+	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 

@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3 uid="uid://b4x265lin25mo"]
+
+[ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_1nnib"]
+[ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="2_5belh"]
+[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_qtyrp"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="3_ptith"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[node name="Projectile" type="Area2D" groups=["projectile"]]
+collision_layer = 2
+script = ExtResource("1_1nnib")
+projectile_size = 0.3
+light_energy = 0.1
+muzzle_speed = 4000
+impact_effect = ExtResource("2_qtyrp")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_5belh")
+
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+material = SubResource("1")
+scale = Vector2(5, 5)
+texture = ExtResource("3_ptith")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835)
+
+[node name="LifeTimer" type="Timer" parent="."]
+
+[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
+[connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://dvpdk7pmleuk2"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_aint1"]
+[ext_resource type="PackedScene" uid="uid://b4x265lin25mo" path="res://database/parts/projectiles/DefaultSimpleProjectile.tscn" id="2_aubk8"]
+[ext_resource type="Texture2D" uid="uid://cc174ow616br0" path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" id="4_76ilu"]
+[ext_resource type="Texture2D" uid="uid://bm7wem78jd4ol" path="res://assets/images/mechas/arm_weapons/Clarent-01_Main.png" id="5_j73mx"]
+[ext_resource type="Texture2D" uid="uid://yt8qkmgfaaw" path="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png" id="6_rfcxf"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_aint1")
+part_name = "Test New Weapon"
+projectile = ExtResource("2_aubk8")
+fire_rate = 0.05
+clip_size = 1000
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_76ilu")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_j73mx")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_rfcxf")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(14.3027, 21.4541)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-5.74732, 52.3138)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-4, -58.9403)
+
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-9.03267, -58.9403)

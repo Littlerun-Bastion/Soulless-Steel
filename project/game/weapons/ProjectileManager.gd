@@ -10,27 +10,11 @@ func create(mecha, args, weapon):
 	var wr = weakref(mecha)
 	if not wr.get_ref():
 		return false
-
-	var projectile_data
-	if args.is_subprojectile:
-		projectile_data = args.weapon_data.payload_subprojectile.instantiate()
-	else:
-		projectile_data = args.weapon_data.projectile.instantiate()
 	var data = {
-		"weapon_data": args.weapon_data,
 		"create_node": false,
 		"node": null,
 	}
-	var projectile
-	match projectile_data.type:
-		TYPE.INSTANT:
-			projectile = INSTANT.instantiate()
-		TYPE.REGULAR:
-			projectile = REGULAR.instantiate()
-		TYPE.COMPLEX:
-			projectile = COMPLEX.instantiate()
-		_:
-			push_error("Not a valid projectile type: "+str(projectile_data.type))
+	var projectile = args.projectile.instantiate()
 	projectile.setup(mecha, args, weapon)
 	data.create_node = true
 	data.node = projectile

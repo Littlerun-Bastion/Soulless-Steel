@@ -326,35 +326,19 @@ func _on_player_lost_health():
 
 
 func _on_mecha_create_projectile(mecha, args, weapon):
-	#To avoid warning when mecha is killed during delay
-	if not args.is_subprojectile:
-		var delay = randf_range(0, args.weapon_data.bullet_spread_delay)
-		if delay > 0:
-			var timer = Timer.new()
-			timer.wait_time = delay
-			add_child(timer)
-			timer.start()
-			await timer.timeout
-			timer.queue_free()
+#To avoid warning when mecha is killed during delay
+	#var delay = randf_range(0, args.weapon_data.bullet_spread_delay)
+	#if delay > 0:
+		#var timer = Timer.new()
+		#timer.wait_time = delay
+		#add_child(timer)
+		#timer.start()
+		#await timer.timeout
+		#timer.queue_free()
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
 		data.node.connect("bullet_impact",Callable(self,"_on_bullet_impact"))
-		if args.weapon_data.has_trail:
-			if data:
-				var trail = ProjectileManager.create_trail(data.node, data.weapon_data)
-				Trails.add_child(trail)
-		if args.weapon_data.has_smoke:
-			if data:
-				var smoke_trail = ProjectileManager.create_smoke_trail(data.node, data.weapon_data)
-				Smoke.add_child(smoke_trail)
-		if not args.is_subprojectile:
-			if args.weapon_data.muzzle_flash:
-				if data:
-					var flash = ProjectileManager.create_muzzle_flash(weapon, args.weapon_data, args.pos_reference, args.dir)
-					Flashes.add_child(flash)
-		if args.weapon_data.payload_subprojectile:
-			data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
 
 func _on_mecha_create_casing(args):
 	var next_casing = $Casings.get_next_particle()
@@ -365,8 +349,9 @@ func _on_mecha_create_casing(args):
 func _on_bullet_impact(projectile, effect):
 	if effect:
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
-		impact_effect.setup(projectile.data.impact_size, projectile.global_rotation, projectile.mech_hit)
+		impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
 		Explosions.add_child(impact_effect)
+	projectile.queue_free()
 
 
 func _on_mecha_died(mecha):

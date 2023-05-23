@@ -92,8 +92,6 @@ func die():
 	if not proj_data.is_overtime:
 		emit_signal("bullet_impact", self, impact_effect)
 
-	queue_free()
-
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_chassis(body_shape_id):

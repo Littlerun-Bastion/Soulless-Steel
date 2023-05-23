@@ -1,44 +1,90 @@
-extends Node2D
+extends Node
 
-enum TYPE {INSTANT, REGULAR, COMPLEX}
-enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
+@export var part_name : String
+@export var manufacturer_name : String
+@export var manufacturer_name_short : String
+@export var tagline : String
+@export var price := 0.0
+@export var description : String
+@export var type: String
+@export var image : Texture2D
+@export var muzzle_flash : PackedScene
+@export var muzzle_flash_size := 1.0
+@export var muzzle_flash_speed := 1.0
+@export var rotation_acc := 5
+@export var rotation_range := 10.0
+@export var projectile : PackedScene
+@export var projectile_type : String
+@export var parallax_offset := 0.0
+@export var number_projectiles := 1
+@export var burst_ammo_cost := 1
+@export var requires_lock := false
+@export var uses_battery := false
+@export var recoil_force := 0.0
+@export var bloom_reset_time := 1.0
+@export var fire_rate := .3
+@export var burst_size := 1
+@export var burst_fire_rate := 0.0
+@export var auto_fire := true
+@export var base_accuracy := 0.0
+@export var accuracy_bloom := 0.0
+@export var max_bloom_angle := 2.5
+@export var bullet_spread := PI/4 #Relevant for multi-shot
+@export var bullet_spread_delay := 0.0 #Relevant for multi-shot
+@export var total_ammo := 270
+@export var max_ammo := 270
+@export var clip_size := 30
+@export var reload_speed := 3.0
+@export var muzzle_heat := 3.8
+@export var ammo_cost := 10 #the monetary cost of the ammunition, not the ammo used when firing.
+@export var sound_effect := "test"
+@export var sound_max_range := 2000
+@export var sound_att := 1.00
+@export var battery_drain := 1.00
+@export var weight := 1.0
+@export var bullet_velocity := 2000
+@export var lifetime := 2.0
+@export var impact_force := 0.0
+@export var eject_casings := false
+@export var casing_size := 1.0
 
-signal bullet_impact
 
-@export var type : TYPE
-@export var projectile_size := 1.0
-@export var projectile_size_scaling := 0.0
-@export var projectile_size_scaling_var := 0.0
-@export var bullet_drag := 1.0
-@export var bullet_drag_var := 0.0
-@export var is_overtime := false
-@export var decal_type:= "bullet_hole"
-@export var texture_variations = []
-@export var calibre := CALIBRE_TYPES.SMALL
-@export var light_energy:= 0.5
-@export var muzzle_speed:= 400
-@export var life_time = -1.0 #-1 means it won't disappear
-@export var life_time_var = 0.0 #How much to vary from base life_time
-@export var random_rotation := false
+#---BEAM BEHAVIOUR---#
+@export var beam_range := 0.0
+@export var constant_beam := false
+@export var beam_effect : Resource
 
-#---TRAILS AND IMPACTS---#
+#---TRAILS AND IMPACTS---
+@export var has_trail : PackedScene
+@export var trail_lifetime := 1.0
+@export var trail_lifetime_range := 0.25
+@export var trail_eccentricity := 5.0
+@export var trail_min_spawn_distance := 20.0
+@export var trail_width := 20
 
-#---DAMAGE---#
+@export var has_smoke : PackedScene
+@export var smoke_density := 400
+@export var smoke_lifetime := 5.0
 
-@export var base_damage := 100
-@export var health_mult := 1.0
-@export var shield_mult := 1.0
-@export var dropoff_modifier := 0.8 
-@export var heat_damage := 10.0
-@export var status_damage := 0.0
-@export var status_type : String
+@export var impact_effect : PackedScene
+@export var impact_size := 1.0
+@export var hitstop := false
+#---MISSILE/ROCKET BEHAVIOURS---
+@export var has_wiggle := false
+@export var is_seeker := false
+@export var seeker_agility := 0.01
+@export var seek_time := 1.0
+@export var seeker_angle := 90
+
+#---MELEE BEHAVIOURS---
+@export var is_melee := false
+@export var melee_knockback := 20
 
 #----COMPLEX PROJECTILE BEHAVIOURS----#
 
 #---PROPULSION---#
 @export var stages := 1
 @export var stage_max_speed :Array[int] = [4000] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_min_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
 @export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second.
 @export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
 @export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
@@ -73,85 +119,45 @@ signal bullet_impact
 @export var payload_subprojectile_count := 0.0 ##How many subprojectiles the payload spawns.
 @export var payload_subprojectile_spread := 0.0 #In degrees
 
-var args
-#weapon_data - reference to the weapon
-#projectile - the projectile packed scene
-#pos - global position of the bullet at time of firing
-#pos_reference - reference to the shoot position node
-#dir - direction of the weapon's aim point
-#seeker_target - locked target
-var original_mecha_info
-var part_id	
-var seeker_target
-var dying
-var lifetime = 0
-var speed = 0.0
-var max_speed = 0.0
-var min_speed = 0.0
-var wiggle_amount = 0.0
-var wiggle_freq = 0.0
-var dir
-var acceleration = 0.0
+var cur_stage = 0
+var firing_timer = 0.0
+var part_id
 
-func _process(dt):
-	if dying:
-		return
-	lifetime += dt
-	position += dir*speed*dt
-	propulsion(dt)
 
-func setup(mecha, _args, weapon):
-	if random_rotation:
-		$Image.rotation_degrees = randf_range(0,360)
-	args = _args
-	position = args.pos
-	dir = args.dir.normalized()
-	rotation_degrees = rad_to_deg(dir.angle()) + 90
-	seeker_target = args.seeker_target
-	speed = muzzle_speed
-	original_mecha_info
-	
+func get_sub():
+	return $Sub.texture
+
+
 func get_image():
-	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
-		return $Image.texture
-	else:
-		texture_variations.shuffle()
-		return texture_variations.front()
-
-func get_collision():
-	return $CollisionShape3D.polygon
+	return $Main.texture
 
 
-func propulsion(dt):
-	var cur_stage = get_propulsion_stage()
-	if cur_stage > 0:
-		acceleration = get_propulsion_var("acceleration", cur_stage)
-		max_speed = get_propulsion_var("max_speed", cur_stage)
-		min_speed = get_propulsion_var("max_speed", cur_stage)
-		wiggle_amount = get_propulsion_var("wiggle_amount", cur_stage)
-		wiggle_freq = get_propulsion_var("wiggle_freq", cur_stage)
+func get_glow():
+	return $Glow.texture
+
+
+func get_num_shooting_pos():
+	return $ShootingPosArray.get_children().size()
+
+
+func get_shooting_pos(idx):
+	assert($ShootingPosArray.get_child_count() >= idx + 1,"Not a valid shooting pos index: " + str(idx))
+	return $ShootingPosArray.get_child(idx)
+
+
+func get_attach_pos():
+	return $AttachPos.position
+
+
+func get_attack_animation():
+	return $AttackAnimation.duplicate()
+
+
+func get_stat(stat_name):
+	var stat
+	stat = get(stat_name)
+	return stat
+
 	
-	if speed < max_speed and acceleration > 0.0:
-		speed = min(speed + acceleration*dt, max_speed) 
-		print("go faster!")
-		
-	elif speed > min_speed and acceleration < 0.0:
-		speed = max(speed + acceleration*dt, min_speed) 
 
 
-func get_propulsion_stage():
-	var cur_stage = 0
-	var total_delay = 0
-	for idx in stages:
-		total_delay += stage_thrust_delay[cur_stage]
-		if lifetime < total_delay:
-			break
-		cur_stage += 1
-	return cur_stage
-
-func get_propulsion_var(var_name, stage):
-	var var_data = get("stage_"+var_name)
-	if var_data.size() >= stage:
-		return var_data[stage - 1]
-	#Return last position if cur stage doesn't exist
-	return var_data.back()

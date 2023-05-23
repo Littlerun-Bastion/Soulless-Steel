@@ -206,7 +206,7 @@ var generator = null
 var chipset = null
 var thruster = null
 var chassis = null
-
+var projectiles = []
 
 var status_time = {
 	"fire": 0.0,
@@ -509,7 +509,7 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test", calibre := CALIBRE_TYPES.SMALL):
+func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
 	if is_dead:
 		return
 
@@ -530,10 +530,6 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	if amount > max_hp/0.25:
 		Particle.blood[2].emitting = true
 	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
-	if shield <= 0:
-		select_impact(calibre, false)
-	else:
-		select_impact(calibre, true)
 	emit_signal("took_damage", self, false)
 
 	last_damage_source = source_info
@@ -741,7 +737,8 @@ func set_arm_weapon(part_name, side):
 
 	node.setup(part_data, core, side)
 	set_max_heat()
-	
+	#if part_data.get("projectile_data") != null:
+		#print(part_data.projectile_data.dropoff_modifier)
 
 
 func set_shoulder_weapon(part_name, side):
@@ -1447,13 +1444,12 @@ func shoot(type, is_auto_fire = false):
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
 							{
-								"is_subprojectile": false,
-								"weapon_data": weapon_ref,
+								"projectile": weapon_ref.projectile,
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),
 								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
 								"seeker_target": locked_to,
-							}, node)
+							}, weapon_ref.part_id)
 			apply_recoil(type, node, weapon_ref.recoil_force)
 		if weapon_ref.eject_casings:
 			emit_signal("create_casing",

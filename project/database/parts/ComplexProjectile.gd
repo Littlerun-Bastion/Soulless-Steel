@@ -37,8 +37,8 @@ signal bullet_impact
 
 #---PROPULSION---#
 @export var stages := 1
-@export var stage_max_speed :Array[int] = [4000] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_min_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
+@export var stage_max_speed :Array[int] = [4000.0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
+@export var stage_min_speed :Array[int] = [0.0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
 @export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second.
 @export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
 @export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
@@ -109,7 +109,6 @@ func setup(mecha, _args, weapon):
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	seeker_target = args.seeker_target
 	speed = muzzle_speed
-	original_mecha_info
 	
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):

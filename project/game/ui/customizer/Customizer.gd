@@ -292,6 +292,10 @@ func unequip_part(_type_name, side):
 	Profile.add_to_inventory($CurrentItemFrame.current_part.part_id)
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
+		if "arm_weapon" in _type_name:
+			_type_name = "arm_weapon" 
+		if "shoulder_weapon" in _type_name:
+			_type_name = "shoulder_weapon" 
 		DisplayMecha.callv("set_" + str(_type_name), [null,side])
 		ComparisonMecha.callv("set_" + str(_type_name), [null,side])
 	else:

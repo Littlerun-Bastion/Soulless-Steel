@@ -1446,8 +1446,8 @@ func shoot(type, is_auto_fire = false):
 							{
 								"projectile": weapon_ref.projectile,
 								"pos": node.get_shoot_position().global_position,
-								"pos_reference": node.get_shoot_position(),
 								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
+								"align_dir": node.get_direction(),
 								"seeker_target": locked_to,
 							}, weapon_ref.part_id)
 			apply_recoil(type, node, weapon_ref.recoil_force)

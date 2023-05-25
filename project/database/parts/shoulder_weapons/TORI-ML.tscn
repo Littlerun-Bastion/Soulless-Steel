@@ -1,0 +1,45 @@
+[gd_scene load_steps=8 format=3 uid="uid://dbwtp76qcsd6m"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_36efv"]
+[ext_resource type="Texture2D" uid="uid://d0t7v1l6exdn5" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_pv.png" id="2_8ajeq"]
+[ext_resource type="Texture2D" uid="uid://dhdtto7p1da0q" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_sub.png" id="3_5avpx"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="3_dps17"]
+[ext_resource type="Texture2D" uid="uid://brs4otjcjk2u8" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_main.png" id="4_jo43e"]
+[ext_resource type="PackedScene" uid="uid://cu2d26uhqealo" path="res://database/parts/projectiles/TORI-ML_projectile.tscn" id="4_pykmr"]
+[ext_resource type="Texture2D" uid="uid://nvblg20eaorr" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_glow.png" id="5_s4nsc"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_36efv")
+part_name = "TORI-ML"
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Tamaguchi"
+tagline = "Cluster Missile"
+image = ExtResource("2_8ajeq")
+muzzle_flash = ExtResource("3_dps17")
+projectile = ExtResource("4_pykmr")
+requires_lock = true
+fire_rate = 5.0
+clip_size = 1000
+is_seeker = true
+stage_acceleration = Array[float]([1000.0])
+stage_thrust_delay = Array[float]([2.0])
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("3_5avpx")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("4_jo43e")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("5_s4nsc")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(2, 12)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(14, 25)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(14, 2)

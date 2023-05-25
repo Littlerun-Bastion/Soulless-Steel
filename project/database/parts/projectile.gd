@@ -77,7 +77,6 @@ var args
 #weapon_data - reference to the weapon
 #projectile - the projectile packed scene
 #pos - global position of the bullet at time of firing
-#pos_reference - reference to the shoot position node
 #dir - direction of the weapon's aim point
 #seeker_target - locked target
 var original_mecha_info
@@ -100,7 +99,7 @@ func _process(dt):
 	position += dir*speed*dt
 	propulsion(dt)
 
-func setup(mecha, _args, weapon):
+func setup(_mecha, _args, _weapon):
 	if random_rotation:
 		$Image.rotation_degrees = randf_range(0,360)
 	args = _args
@@ -109,7 +108,6 @@ func setup(mecha, _args, weapon):
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	seeker_target = args.seeker_target
 	speed = muzzle_speed
-	original_mecha_info
 	
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
@@ -138,7 +136,6 @@ func propulsion(dt):
 	elif speed > min_speed and acceleration < 0.0:
 		speed = max(speed + acceleration*dt, min_speed) 
 
-
 func get_propulsion_stage():
 	var cur_stage = 0
 	var total_delay = 0
@@ -155,3 +152,4 @@ func get_propulsion_var(var_name, stage):
 		return var_data[stage - 1]
 	#Return last position if cur stage doesn't exist
 	return var_data.back()
+

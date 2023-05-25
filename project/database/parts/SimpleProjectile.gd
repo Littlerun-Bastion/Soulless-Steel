@@ -45,7 +45,6 @@ var args
 #weapon_data - reference to the weapon
 #projectile - the projectile packed scene
 #pos - global position of the bullet at time of firing
-#pos_reference - reference to the shoot position node
 #dir - direction of the weapon's aim point
 #seeker_target - locked target
 var original_mecha_info

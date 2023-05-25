@@ -47,6 +47,7 @@ extends Node
 @export var impact_force := 0.0
 @export var eject_casings := false
 @export var casing_size := 1.0
+@export var show_idle_projectile := false
 
 
 #---BEAM BEHAVIOUR---#

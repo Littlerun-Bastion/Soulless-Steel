@@ -1272,6 +1272,11 @@ texture = ExtResource("25")
 material = SubResource("38")
 texture = ExtResource("5")
 
+[node name="Projectile" type="Sprite2D" parent="ArmWeaponLeft"]
+visible = false
+material = SubResource("38")
+texture = ExtResource("5")
+
 [node name="MeleeHitboxes" type="Node2D" parent="ArmWeaponLeft"]
 script = ExtResource("20")
 
@@ -1293,6 +1298,11 @@ texture = ExtResource("28")
 material = SubResource("33")
 position = Vector2(-9, -58)
 texture = ExtResource("27")
+
+[node name="Projectile" type="Sprite2D" parent="ArmWeaponRight"]
+visible = false
+material = SubResource("38")
+texture = ExtResource("5")
 
 [node name="MeleeHitboxes" type="Node2D" parent="ArmWeaponRight"]
 script = ExtResource("20")
@@ -1316,6 +1326,11 @@ material = SubResource("35")
 position = Vector2(-9, -57)
 texture = ExtResource("27")
 
+[node name="Projectile" type="Sprite2D" parent="ShoulderWeaponLeft"]
+visible = false
+material = SubResource("38")
+texture = ExtResource("5")
+
 [node name="ShoulderWeaponRight" type="Node2D" parent="."]
 material = SubResource("13")
 position = Vector2(52, 20)
@@ -1337,6 +1352,11 @@ texture = ExtResource("12")
 material = SubResource("37")
 position = Vector2(-13, -25)
 texture = ExtResource("8")
+
+[node name="Projectile" type="Sprite2D" parent="ShoulderWeaponRight"]
+visible = false
+material = SubResource("38")
+texture = ExtResource("5")
 
 [node name="LeftShoulder" type="Sprite2D" parent="."]
 material = SubResource("8")

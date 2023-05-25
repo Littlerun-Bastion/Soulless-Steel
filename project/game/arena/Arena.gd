@@ -339,6 +339,7 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
 		data.node.connect("bullet_impact",Callable(self,"_on_bullet_impact"))
+		data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
 
 func _on_mecha_create_casing(args):
 	var next_casing = $Casings.get_next_particle()

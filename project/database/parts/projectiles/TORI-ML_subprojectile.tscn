@@ -21,6 +21,7 @@ stage_thrust_delay = Array[float]([1.0])
 stage_turn_rate = Array[float]([180.0])
 stage_wiggle_amount = Array[float]([20.0])
 stage_wiggle_freq = Array[float]([0.5])
+stage_wiggle_err = Array[float]([1.0])
 stage_seeker_angle = Array[float]([360.0])
 fuse_timer = 10.0
 fuse_detection_type = "IR"

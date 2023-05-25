@@ -54,6 +54,7 @@ signal create_projectile
 @export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
 @export var stage_wiggle_amount :Array[float] = [0.0] ##Wiggle Amount: Maximum number of degrees a projectile can turn off its course.
 @export var stage_wiggle_freq :Array[float] = [0.0] ##Wiggle Freq: Number of wiggles per second (based on cosine).
+@export var stage_wiggle_err :Array[float] = [0.0] ##Wiggle Err: Randomness of wiggles by percentage.
 @export var stage_seeker_type :Array[String] = ["IR"] ##Seeker Type: Detection method the projectile will use to see if it is allowed to track a target./
 	## (IR: based on mecha_heat, RCS: based on mecha rcs (not implemented), Laser: based on the endpoint of a raycast from player's mech to the direction of the target (not implemented))
 @export var stage_seeker_delay :Array[float] = [0.0] ##Seeker Delay: Time in seconds before the stage of that seeker kicks in.
@@ -98,6 +99,7 @@ var seeker_target
 var dying
 var lifetime = 0.0
 var wiggle_lifetime = 0.0
+var wiggle_error_lifetime = 0.0
 var speed = 0.0
 var dir
 var mech_hit
@@ -108,6 +110,8 @@ var max_speed = 0.0
 var min_speed = 0.0
 var wiggle_amount = 0.0
 var wiggle_freq = 0.0
+var wiggle_err = 0.0
+var cur_wiggle_err = 0.0
 var seeker_angle = 0.0
 var seeker_type : String
 var turn_rate = 0.0
@@ -130,6 +134,11 @@ func _process(dt):
 	guidance(dt)
 	lifetime += dt
 	wiggle_lifetime += dt
+	if wiggle_error_lifetime < 1/wiggle_freq:
+		wiggle_error_lifetime += dt
+	else:
+		wiggle_error_lifetime = 0
+		cur_wiggle_err = randf_range(-wiggle_amount * wiggle_err,wiggle_amount * wiggle_err)
 	position += velocity*dt
 	distance += speed*dt
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
@@ -262,6 +271,8 @@ func propulsion(dt):
 		min_speed = get_propulsion_var("min_speed", cur_stage)
 		wiggle_amount = get_propulsion_var("wiggle_amount", cur_stage)
 		wiggle_freq = get_propulsion_var("wiggle_freq", cur_stage)
+		wiggle_amount += cur_wiggle_err
+		wiggle_err = get_propulsion_var("wiggle_err", cur_stage)
 		if not momentum_corrected:
 			true_dir = args.align_dir
 			momentum_corrected = true

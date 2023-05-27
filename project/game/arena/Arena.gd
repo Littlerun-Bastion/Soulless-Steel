@@ -338,8 +338,13 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
-		data.node.connect("bullet_impact",Callable(self,"_on_bullet_impact"))
-		data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
+		if data.node.has_signal("bullet_impact"):
+			data.node.connect("bullet_impact",Callable(self,"_on_bullet_impact"))
+		if data.node.has_signal("create_projectile"):
+			data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
+		if args.muzzle_flash != null and args.pos_reference != null and is_instance_valid(args.node_reference):
+			var flash = ProjectileManager.create_muzzle_flash(args.node_reference, args.muzzle_flash, args.pos_reference, args.dir)
+			Flashes.add_child(flash)
 
 func _on_mecha_create_casing(args):
 	var next_casing = $Casings.get_next_particle()

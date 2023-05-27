@@ -1,31 +1,27 @@
-[gd_scene load_steps=7 format=3 uid="uid://s4ucmbx7o4lm"]
+[gd_scene load_steps=8 format=3 uid="uid://df0x5yjviyqua"]
 
-[ext_resource type="Script" path="res://database/parts/arm_weapon.gd" id="1"]
-[ext_resource type="PackedScene" path="res://database/parts/projectiles/laser_bullet.tscn" id="2"]
-[ext_resource type="Texture2D" uid="uid://bm7wem78jd4ol" path="res://assets/images/mechas/arm_weapons/Clarent-01_Main.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://yt8qkmgfaaw" path="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png" id="4"]
-[ext_resource type="Texture2D" uid="uid://cc174ow616br0" path="res://assets/images/mechas/arm_weapons/Clarent-01_Sub.png" id="5"]
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_e4xy1"]
+[ext_resource type="Texture2D" uid="uid://djqjod5sr8lep" path="res://assets/images/mechas/arm_weapons/Clarent-01/Clarent-01_PV.png" id="2_e3xv8"]
+[ext_resource type="Texture2D" uid="uid://cc174ow616br0" path="res://assets/images/mechas/arm_weapons/Clarent-01/Clarent-01_Sub.png" id="2_irln7"]
+[ext_resource type="Texture2D" uid="uid://bm7wem78jd4ol" path="res://assets/images/mechas/arm_weapons/Clarent-01/Clarent-01_Main.png" id="3_3ppwt"]
+[ext_resource type="Texture2D" uid="uid://yt8qkmgfaaw" path="res://assets/images/mechas/arm_weapons/Clarent-01/Clarent-01_Glow.png" id="4_75mwn"]
+[ext_resource type="PackedScene" uid="uid://dhpej6kk61kn1" path="res://database/parts/projectiles/Clarent_01_projectile.tscn" id="4_r3dr1"]
 [ext_resource type="PackedScene" uid="uid://vgnw24sqctdr" path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" id="6"]
 
 [node name="Part" type="Node"]
-script = ExtResource("1")
+script = ExtResource("1_e4xy1")
 part_name = "Clarent-01"
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "EN Shotgun"
 description = "An automatic energy shotgun made by Claymore International, designed for mechs with poor visual sensors to lay down a wall of fire without relying on accuracy. While the damage on impact is poor, especially against Armor, it imparts quite a lot of heat."
-type = "Multi-PewPew"
+image = ExtResource("2_e3xv8")
 muzzle_flash = ExtResource("6")
 muzzle_flash_size = 0.5
 muzzle_flash_speed = 1.5
-projectile = ExtResource("2")
-projectile_type = "Flame"
+projectile = ExtResource("4_r3dr1")
 number_projectiles = 5
-damage = 75.0
 uses_battery = true
-shield_mult = 1.5
-health_mult = 0.5
-heat_damage = 20.0
 fire_rate = 0.33
 burst_size = 3
 burst_fire_rate = 0.1
@@ -36,21 +32,20 @@ bullet_spread = 2.8
 bullet_spread_delay = 0.05
 reload_speed = 1.4
 ammo_cost = 25
+sound_effect = "en_shotgun_light"
 sound_max_range = 1000
 sound_att = 1.75
 battery_drain = 12.0
 weight = 3.3
-bullet_velocity = 5000
-projectile_size = 0.5
 
 [node name="Sub" type="Sprite2D" parent="."]
-texture = ExtResource("5")
+texture = ExtResource("2_irln7")
 
 [node name="Main" type="Sprite2D" parent="."]
-texture = ExtResource("3")
+texture = ExtResource("3_3ppwt")
 
 [node name="Glow" type="Sprite2D" parent="."]
-texture = ExtResource("4")
+texture = ExtResource("4_75mwn")
 
 [node name="AttachPos" type="Marker2D" parent="."]
 position = Vector2(14.3027, 21.4541)

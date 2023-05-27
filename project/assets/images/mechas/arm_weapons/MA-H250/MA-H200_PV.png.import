@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7pwkvgetcili"
-path="res://.godot/imported/MA-H250_glow.png-83b760c5333e44fef509c88f159dc064.ctex"
+uid="uid://ca7bwvb5vjued"
+path="res://.godot/imported/MA-H200_PV.png-d43956489fda40669b47db0604ca1b17.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/arm_weapons/MA-H250_glow.png"
-dest_files=["res://.godot/imported/MA-H250_glow.png-83b760c5333e44fef509c88f159dc064.ctex"]
+source_file="res://assets/images/mechas/arm_weapons/MA-H250/MA-H200_PV.png"
+dest_files=["res://.godot/imported/MA-H200_PV.png-d43956489fda40669b47db0604ca1b17.ctex"]
 
 [params]
 

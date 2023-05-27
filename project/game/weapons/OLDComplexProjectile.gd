@@ -232,8 +232,10 @@ func payload():
 							"is_subprojectile": true,
 							"weapon_data": weapon_node.data,
 							"pos": global_position,
+							"pos_reference": null,
 							"dir": true_dir.rotated(accuracy),
 							"seeker_target": seeker_target,
+							"muzzle_flash": null,
 						}, weapon_node)
 					
 	if data.payload_explosion_radius > 0.0:

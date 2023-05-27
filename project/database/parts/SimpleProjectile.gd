@@ -7,7 +7,6 @@ var Collision
 
 signal bullet_impact
 
-@export var type : TYPE
 @export var projectile_size := 1.0
 @export var projectile_size_scaling := 0.0
 @export var projectile_size_scaling_var := 0.0
@@ -70,6 +69,8 @@ func _process(dt):
 	distance += speed*dt
 	speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, min_speed)
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
+	if not $LifeTimer.is_stopped():
+		modulate.a = min(1.0, ($LifeTimer.time_left/(life_time/4)))
 
 func setup(mecha, _args, _weapon):
 	if random_rotation:
@@ -87,6 +88,11 @@ func setup(mecha, _args, _weapon):
 	change_scaling(projectile_size)
 	
 	part_id = _weapon
+	$Sprite2D/LightEffect.modulate.a = light_energy
+	if life_time > 0 :
+		$LifeTimer.wait_time = life_time + randf_range(-life_time_var, life_time_var)
+		$LifeTimer.autostart = true
+		
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
@@ -106,8 +112,6 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 			
 			var size = Vector2(40,40)
 			body.add_decal(body_shape_id, collision_point, decal_type, size)
-			
-			print(final_damage)
 			body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
 								status_damage, status_type, hitstop, original_mecha_info, part_id)
 			if not is_overtime and impact_force > 0.0:
@@ -139,6 +143,10 @@ func die():
 
 	queue_free()
 
+
+func _on_LifeTimer_timeout():
+	queue_free()
+	
 
 #Workaround since RigidBody3D can't have its scale changed
 func change_scaling(sc):

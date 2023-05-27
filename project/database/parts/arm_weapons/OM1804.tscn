@@ -1,0 +1,61 @@
+[gd_scene load_steps=8 format=3 uid="uid://cmgw7wxljkkib"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_obyw8"]
+[ext_resource type="Texture2D" uid="uid://bx5t227vy82l" path="res://assets/images/mechas/arm_weapons/OM1804/OM1804_PV.png" id="2_rstpj"]
+[ext_resource type="PackedScene" uid="uid://cwb3xahle5c6j" path="res://game/ui/effects/PressureMuzzleFlash.tscn" id="3_lpgfo"]
+[ext_resource type="PackedScene" uid="uid://rwxs1b27djpr" path="res://database/parts/projectiles/OM1804_projectile.tscn" id="4_8hb42"]
+[ext_resource type="Texture2D" uid="uid://de1hy5010dcqf" path="res://assets/images/mechas/arm_weapons/OM1804/OM1804_sub.png" id="5_aa7ck"]
+[ext_resource type="Texture2D" uid="uid://0n03ct881jin" path="res://assets/images/mechas/arm_weapons/OM1804/OM1804_main.png" id="6_ej3no"]
+[ext_resource type="Texture2D" uid="uid://cx0xj30kwtgqw" path="res://assets/images/mechas/arm_weapons/OM1804/OM1804_glow.png" id="7_78xvo"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_obyw8")
+part_name = "OM1804"
+manufacturer_name = "Orontes Constructions"
+manufacturer_name_short = "Orontes"
+tagline = "Rivet Gun"
+image = ExtResource("2_rstpj")
+muzzle_flash = ExtResource("3_lpgfo")
+muzzle_flash_size = 0.8
+muzzle_flash_speed = 1.1
+projectile = ExtResource("4_8hb42")
+recoil_force = 2.0
+fire_rate = 0.4
+auto_fire = false
+base_accuracy = 0.8
+accuracy_bloom = 0.9
+max_bloom_angle = 9.7
+bullet_spread = 0.0
+total_ammo = 350
+max_ammo = 350
+clip_size = 35
+reload_speed = 2.4
+muzzle_heat = 12.2
+ammo_cost = 1
+sound_effect = "pressure_gun_light"
+sound_max_range = 7500
+sound_att = 1.75
+weight = 4.1
+impact_force = 7.0
+eject_casings = true
+casing_size = 0.75
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_aa7ck")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_ej3no")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_78xvo")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(14.909, 35.9012)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-0.646783, 40.2722)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -63.403)

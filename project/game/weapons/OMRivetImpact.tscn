@@ -1,0 +1,431 @@
+[gd_scene load_steps=27 format=3 uid="uid://b60qwou3y6iaw"]
+
+[ext_resource type="Script" path="res://game/fx/explosion.gd" id="1_phw11"]
+[ext_resource type="Texture2D" uid="uid://unns3w28576t" path="res://assets/images/light_sources/light_point_hard.png" id="2_etqyh"]
+[ext_resource type="Texture2D" uid="uid://dpiv0b1f102su" path="res://assets/images/fx/explosion_flash_1.png" id="3_qfepk"]
+[ext_resource type="Texture2D" uid="uid://dmf3n3824upru" path="res://assets/images/fx/explosion_flash_2.png" id="4_wkxxo"]
+[ext_resource type="Texture2D" uid="uid://ka2kf3slwefy" path="res://assets/images/fx/explosion_flash_3.png" id="5_5g5r5"]
+[ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="6_stebp"]
+[ext_resource type="Texture2D" uid="uid://cqmps4x0jpay1" path="res://assets/images/fx/cloud_small.png" id="7_lhvfm"]
+
+[sub_resource type="CanvasItemMaterial" id="19"]
+blend_mode = 1
+
+[sub_resource type="Animation" id="1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite1:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite1:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite3:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Sprite2:scale")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Sprite3:scale")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="2"]
+resource_name = "impact1"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite1:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.001, 0.02),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1, 1), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite1:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite3:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="3"]
+resource_name = "impact2"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.001, 0.02),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite3:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite1:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="4"]
+resource_name = "impact3"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite3:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.02),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite3:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Sprite1:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rhj3j"]
+_data = {
+"RESET": SubResource("1"),
+"impact1": SubResource("2"),
+"impact2": SubResource("3"),
+"impact3": SubResource("4")
+}
+
+[sub_resource type="Gradient" id="Gradient_8vwsm"]
+offsets = PackedFloat32Array(0.243902, 1)
+colors = PackedColorArray(1, 1, 1, 0.447059, 0.61, 0.61, 0.61, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_aqhm4"]
+gradient = SubResource("Gradient_8vwsm")
+
+[sub_resource type="Curve" id="8"]
+min_value = -918.07
+max_value = 0.0
+_data = [Vector2(0, 0), 0.0, -648.719, 0, 0, Vector2(0.62037, -348.449), -154.522, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="9"]
+curve = SubResource("8")
+
+[sub_resource type="Curve" id="10"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.111111, 1), 0.281374, 0.281374, 0, 0, Vector2(1, 0), -1.09011, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="11"]
+curve = SubResource("10")
+
+[sub_resource type="ParticleProcessMaterial" id="12"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 300.0
+initial_velocity_max = 500.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_min = -10.0
+linear_accel_curve = SubResource("9")
+scale_min = 0.7
+scale_curve = SubResource("11")
+color_ramp = SubResource("GradientTexture1D_aqhm4")
+turbulence_enabled = true
+turbulence_noise_strength = 20.0
+turbulence_noise_scale = 5.62
+turbulence_noise_speed = Vector3(1, 1, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_u78f2"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 90.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 300.0
+initial_velocity_max = 500.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_min = -10.0
+linear_accel_curve = SubResource("9")
+scale_min = 0.7
+scale_curve = SubResource("11")
+color_ramp = SubResource("GradientTexture1D_aqhm4")
+turbulence_enabled = true
+turbulence_noise_strength = 20.0
+turbulence_noise_scale = 5.62
+turbulence_noise_speed = Vector3(1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_uvvwk"]
+gradient = SubResource("Gradient_8vwsm")
+
+[sub_resource type="Curve" id="15"]
+min_value = -10.0
+max_value = 0.0
+_data = [Vector2(0, 0), 0.0, 2.48961, 0, 0, Vector2(1, -10), -10.6364, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="16"]
+curve = SubResource("15")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ibqa7"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 60.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 30.0
+initial_velocity_max = 60.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_min = 8.0
+linear_accel_max = 8.0
+linear_accel_curve = SubResource("16")
+scale_min = 0.5
+scale_max = 5.0
+scale_curve = SubResource("11")
+color_ramp = SubResource("GradientTexture1D_uvvwk")
+
+[sub_resource type="ParticleProcessMaterial" id="18"]
+particle_flag_align_y = true
+particle_flag_disable_z = true
+direction = Vector3(0, 1, 0)
+spread = 90.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 30.0
+initial_velocity_max = 60.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+linear_accel_min = 8.0
+linear_accel_max = 8.0
+linear_accel_curve = SubResource("16")
+scale_min = 0.5
+scale_max = 5.0
+scale_curve = SubResource("11")
+color_ramp = SubResource("GradientTexture1D_uvvwk")
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_phw11")
+light_decay_rate = 2.0
+
+[node name="LightEffect" type="Sprite2D" parent="."]
+material = SubResource("19")
+scale = Vector2(2, 2)
+texture = ExtResource("2_etqyh")
+
+[node name="Sprite1" type="Sprite2D" parent="."]
+texture = ExtResource("3_qfepk")
+
+[node name="Sprite2" type="Sprite2D" parent="."]
+texture = ExtResource("4_wkxxo")
+
+[node name="Sprite3" type="Sprite2D" parent="."]
+texture = ExtResource("5_5g5r5")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_rhj3j")
+}
+
+[node name="sparks_mech" type="GPUParticles2D" parent="."]
+position = Vector2(-4.76221, 1.5874)
+emitting = false
+amount = 20
+process_material = SubResource("12")
+texture = ExtResource("6_stebp")
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+fixed_fps = 60
+
+[node name="sparks_miss" type="GPUParticles2D" parent="."]
+position = Vector2(-4.76221, 1.5874)
+emitting = false
+amount = 10
+process_material = SubResource("ParticleProcessMaterial_u78f2")
+texture = ExtResource("6_stebp")
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+fixed_fps = 60
+
+[node name="hit_smoke" type="GPUParticles2D" parent="."]
+position = Vector2(-4.76221, 1.5874)
+emitting = false
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_ibqa7")
+texture = ExtResource("7_lhvfm")
+lifetime = 5.0
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+fixed_fps = 60
+
+[node name="miss_smoke" type="GPUParticles2D" parent="."]
+position = Vector2(-4.76221, 1.5874)
+emitting = false
+amount = 5
+process_material = SubResource("18")
+texture = ExtResource("7_lhvfm")
+lifetime = 5.0
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+fixed_fps = 60

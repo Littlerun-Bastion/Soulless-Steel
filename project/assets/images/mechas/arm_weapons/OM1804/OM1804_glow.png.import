@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://yt8qkmgfaaw"
-path="res://.godot/imported/Clarent-01_Glow.png-ba109f8a1bbed5f80d39303dc21c42f5.ctex"
+uid="uid://cx0xj30kwtgqw"
+path="res://.godot/imported/OM1804_glow.png-b5e3dfb6a03ef5a2e78d26a0ec7b043c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/arm_weapons/Clarent-01_Glow.png"
-dest_files=["res://.godot/imported/Clarent-01_Glow.png-ba109f8a1bbed5f80d39303dc21c42f5.ctex"]
+source_file="res://assets/images/mechas/arm_weapons/OM1804/OM1804_glow.png"
+dest_files=["res://.godot/imported/OM1804_glow.png-b5e3dfb6a03ef5a2e78d26a0ec7b043c.ctex"]
 
 [params]
 

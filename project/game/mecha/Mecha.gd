@@ -1446,9 +1446,16 @@ func shoot(type, is_auto_fire = false):
 							{
 								"projectile": weapon_ref.projectile,
 								"pos": node.get_shoot_position().global_position,
+								"pos_reference": node.get_shoot_position(),
 								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
 								"align_dir": node.get_direction(),
 								"seeker_target": locked_to,
+								"node_reference": node,
+								"muzzle_flash":{
+									"flash_effect": weapon_ref.muzzle_flash,
+									"flash_speed": weapon_ref.muzzle_flash_speed,
+									"flash_size": weapon_ref.muzzle_flash_size,
+								},
 							}, weapon_ref.part_id)
 			apply_recoil(type, node, weapon_ref.recoil_force)
 		if weapon_ref.eject_casings:

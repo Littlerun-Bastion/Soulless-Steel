@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx60kjyi47ogd"
-path="res://.godot/imported/MA-127_PV.png-6860de28fb10f8f98e56bac2481fc6ed.ctex"
+uid="uid://bm7wem78jd4ol"
+path="res://.godot/imported/Clarent-01_Main.png-b23ef727dff03855946e85ab20851dcf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/arm_weapons/MA-127_PV.png"
-dest_files=["res://.godot/imported/MA-127_PV.png-6860de28fb10f8f98e56bac2481fc6ed.ctex"]
+source_file="res://assets/images/mechas/arm_weapons/Clarent-01/Clarent-01_Main.png"
+dest_files=["res://.godot/imported/Clarent-01_Main.png-b23ef727dff03855946e85ab20851dcf.ctex"]
 
 [params]
 

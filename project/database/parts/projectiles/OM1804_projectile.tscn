@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://rwxs1b27djpr"]
+
+[ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_ewnn0"]
+[ext_resource type="PackedScene" uid="uid://b60qwou3y6iaw" path="res://game/weapons/OMRivetImpact.tscn" id="2_vuu1a"]
+[ext_resource type="Texture2D" uid="uid://2836aqdu4232" path="res://assets/images/mechas/projectiles/rivet_projectile.png" id="3_51kq3"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_it308"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[node name="Projectile" type="Area2D" groups=["projectile"]]
+collision_layer = 2
+script = ExtResource("1_ewnn0")
+light_energy = 0.1
+muzzle_speed = 2800
+impact_effect = ExtResource("2_vuu1a")
+base_damage = 405
+health_mult = 1.5
+shield_mult = 0.5
+heat_damage = 32.0
+impact_force = 8.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_51kq3")
+
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+material = SubResource("1")
+scale = Vector2(5, 5)
+texture = ExtResource("4_it308")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-4, -21, 4, -21, 3, 15, -3, 15)
+
+[node name="LifeTimer" type="Timer" parent="."]
+
+[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
+[connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

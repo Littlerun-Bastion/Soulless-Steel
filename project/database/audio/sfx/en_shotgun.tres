@@ -1,11 +1,11 @@
-[gd_resource type="Resource" load_steps=3 format=2]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://d3rmy38lm1nv8"]
 
-[ext_resource path="res://database/audio/SFX.gd" type="Script" id=1]
-[ext_resource path="res://assets/audio/sfx/en_shotgun.ogg" type="AudioStream" id=2]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://csj5k4d5a3qwr" path="res://assets/audio/sfx/en_shotgun.ogg" id="2"]
 
 [resource]
-script = ExtResource( 1 )
-asset = ExtResource( 2 )
+script = ExtResource("1")
+asset = ExtResource("2")
 base_db = 4.0
 random_db_var = 1.0
 base_pitch = 1.0

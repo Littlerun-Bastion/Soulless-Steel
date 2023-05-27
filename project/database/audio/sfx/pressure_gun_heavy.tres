@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://hmbx1ectu6nr"]
+
+[ext_resource type="AudioStream" uid="uid://dhl535k4ur3cr" path="res://assets/audio/sfx/pressure_gun_2.ogg" id="1_c44eo"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_k41ou"]
+
+[resource]
+script = ExtResource("2_k41ou")
+asset = ExtResource("1_c44eo")
+base_db = 10.0
+random_db_var = 0.0
+base_pitch = 0.95
+random_pitch_var = 0.1
+attenuation = 1.0
+max_range = 10000

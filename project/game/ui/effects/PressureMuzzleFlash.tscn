@@ -1,0 +1,164 @@
+[gd_scene load_steps=18 format=3 uid="uid://cwb3xahle5c6j"]
+
+[ext_resource type="Script" path="res://game/ui/effects/MuzzleFlash.gd" id="3_3om1p"]
+[ext_resource type="Texture2D" uid="uid://cqmps4x0jpay1" path="res://assets/images/fx/cloud_small.png" id="4_alpuy"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="2"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.0383481, 0.979545), 1.64078, 1.64078, 0, 0, Vector2(0.39823, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="3"]
+curve = SubResource("2")
+
+[sub_resource type="ParticleProcessMaterial" id="4"]
+direction = Vector3(0, -1, 0)
+spread = 0.0
+gravity = Vector3(0, 98, 0)
+angle_min = -5.0
+angle_max = 5.0
+scale_min = 0.5
+scale_curve = SubResource("3")
+
+[sub_resource type="Gradient" id="Gradient_3prhl"]
+offsets = PackedFloat32Array(0.160494, 0.888889)
+colors = PackedColorArray(1, 1, 1, 0.333333, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ttll6"]
+gradient = SubResource("Gradient_3prhl")
+
+[sub_resource type="Curve" id="10"]
+max_value = 2.0
+_data = [Vector2(0.0176991, 0), 0.0, 0.0, 0, 0, Vector2(0.0855457, 0.745454), 0.0, 0.0, 0, 0, Vector2(1, 1.325), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="11"]
+curve = SubResource("10")
+
+[sub_resource type="ParticleProcessMaterial" id="12"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 10.0
+initial_velocity_min = 250.0
+initial_velocity_max = 500.0
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+damping_min = 100.0
+damping_max = 100.0
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 2.5
+scale_max = 7.5
+scale_curve = SubResource("11")
+color_ramp = SubResource("GradientTexture1D_ttll6")
+
+[sub_resource type="Gradient" id="Gradient_qyk85"]
+offsets = PackedFloat32Array(0.0987654, 0.209877, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_phxa8"]
+gradient = SubResource("Gradient_qyk85")
+
+[sub_resource type="Curve" id="Curve_spmw7"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.988201, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_17ci8"]
+curve = SubResource("Curve_spmw7")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_yi5mb"]
+lifetime_randomness = 0.52
+particle_flag_align_y = true
+spread = 10.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 200.0
+initial_velocity_max = 200.0
+damping_min = 100.0
+damping_max = 100.0
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 3.0
+scale_max = 4.0
+scale_curve = SubResource("CurveTexture_17ci8")
+color_ramp = SubResource("GradientTexture1D_phxa8")
+turbulence_noise_strength = 20.0
+turbulence_noise_speed = Vector3(0.3, 0.3, 0.3)
+turbulence_noise_speed_random = 0.1
+turbulence_influence_min = 0.01
+turbulence_influence_max = 0.05
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_kernu"]
+lifetime_randomness = 0.52
+particle_flag_align_y = true
+direction = Vector3(-1, 0, 0)
+spread = 10.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 200.0
+initial_velocity_max = 200.0
+damping_min = 100.0
+damping_max = 100.0
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 3.0
+scale_max = 4.0
+scale_curve = SubResource("CurveTexture_17ci8")
+color_ramp = SubResource("GradientTexture1D_phxa8")
+turbulence_noise_strength = 20.0
+turbulence_noise_speed = Vector3(0.3, 0.3, 0.3)
+turbulence_noise_speed_random = 0.1
+turbulence_influence_min = 0.01
+turbulence_influence_max = 0.05
+
+[node name="Flash" type="GPUParticles2D"]
+material = SubResource("1")
+emitting = false
+amount = 3
+process_material = SubResource("4")
+lifetime = 0.3
+one_shot = true
+speed_scale = 2.0
+explosiveness = 1.0
+fixed_fps = 240
+script = ExtResource("3_3om1p")
+
+[node name="Effect2" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 15
+process_material = SubResource("12")
+texture = ExtResource("4_alpuy")
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+fixed_fps = 240
+
+[node name="Effect1" type="GPUParticles2D" parent="."]
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_yi5mb")
+texture = ExtResource("4_alpuy")
+one_shot = true
+speed_scale = 5.0
+explosiveness = 1.0
+fixed_fps = 240
+local_coords = true
+
+[node name="Effect3" type="GPUParticles2D" parent="."]
+emitting = false
+process_material = SubResource("ParticleProcessMaterial_kernu")
+texture = ExtResource("4_alpuy")
+one_shot = true
+speed_scale = 5.0
+explosiveness = 1.0
+fixed_fps = 240
+local_coords = true
+
+[node name="Linger" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 15
+process_material = SubResource("12")
+texture = ExtResource("4_alpuy")
+lifetime = 1.5
+one_shot = true
+explosiveness = 1.0
+fixed_fps = 240

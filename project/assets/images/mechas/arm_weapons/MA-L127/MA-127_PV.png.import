@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bn0mco6irfl0s"
-path="res://.godot/imported/MA-L178_main.png-1dbc6d8d323efd9454ba0fcd7268820e.ctex"
+uid="uid://cx60kjyi47ogd"
+path="res://.godot/imported/MA-127_PV.png-85f46cc916dbb38186a23bc52d43a8b3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/mechas/arm_weapons/MA-L178_main.png"
-dest_files=["res://.godot/imported/MA-L178_main.png-1dbc6d8d323efd9454ba0fcd7268820e.ctex"]
+source_file="res://assets/images/mechas/arm_weapons/MA-L127/MA-127_PV.png"
+dest_files=["res://.godot/imported/MA-127_PV.png-85f46cc916dbb38186a23bc52d43a8b3.ctex"]
 
 [params]
 

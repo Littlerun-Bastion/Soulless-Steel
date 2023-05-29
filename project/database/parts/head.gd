@@ -14,6 +14,7 @@ extends Node2D
 @export var visual_range := 450 
 @export var health := 1500
 @export var weight := 1.0 
+@export var tags :Array[String] = ["head"]
 
 var part_id
 

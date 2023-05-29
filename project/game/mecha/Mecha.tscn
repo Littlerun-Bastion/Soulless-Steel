@@ -1410,6 +1410,7 @@ process_material = SubResource("47")
 texture = SubResource("48")
 randomness = 1.0
 fixed_fps = 60
+local_coords = true
 
 [node name="Fire1" type="GPUParticles2D" parent="ParticlesLayer3"]
 emitting = false

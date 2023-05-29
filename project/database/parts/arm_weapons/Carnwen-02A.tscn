@@ -33,6 +33,7 @@ sound_max_range = 1000
 sound_att = 1.75
 battery_drain = 9.0
 weight = 3.3
+tags = Array[String](["arm_weapon", "claymore"])
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_0u6lv")

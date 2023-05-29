@@ -17,6 +17,7 @@ extends Resource
 @export var battery_recharge_rate := 10
 @export var power_output := 1.0
 @export var weight := 10.0
+@export var tags :Array[String] = ["generator"]
 
 var part_id
 

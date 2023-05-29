@@ -104,3 +104,21 @@ func get_max_stat_value(stat_name):
 func get_player_mech():
 	pass
 	#if current_player_mech:
+
+func search_parts_for_tags(type,search_tags):
+	var table = get_parts(type)
+	var final_list = []
+	for part in table:
+		var exclude = false
+		var part_tags = get_part(type,part).tags
+		print(part_tags)
+		for tag in search_tags:
+			print(tag)
+			print(part_tags.has(tag))
+			if not tag in part_tags:
+				exclude = true
+		if not exclude:
+			final_list.append(part)
+	print(final_list)
+	return final_list
+			

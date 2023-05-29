@@ -44,6 +44,7 @@ extends Node
 @export var eject_casings := false
 @export var casing_size := 1.0
 @export var show_idle_projectile := false
+@export var tags :Array[String] = ["arm_weapon"]
 
 
 #---BEAM BEHAVIOUR---#

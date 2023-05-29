@@ -1451,6 +1451,7 @@ func shoot(type, is_auto_fire = false):
 								"align_dir": node.get_direction(),
 								"seeker_target": locked_to,
 								"node_reference": node,
+								"inherited_velocity": velocity,
 								"muzzle_flash":{
 									"flash_effect": weapon_ref.muzzle_flash,
 									"flash_speed": weapon_ref.muzzle_flash_speed,

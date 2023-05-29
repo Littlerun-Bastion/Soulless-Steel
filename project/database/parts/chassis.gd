@@ -25,6 +25,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var weight_capacity := 1000.0
 @export var stability := 1.0
 @export var hover_particles := false
+@export var tags :Array[String] = ["chassis"]
 
 var part_id
 

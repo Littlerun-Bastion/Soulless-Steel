@@ -308,4 +308,3 @@ func unequip_part(_type_name, side):
 	for child in PartList.get_children(): #Clear PartList
 		if child.current_part == $CurrentItemFrame.current_part:
 			child.get_node("QuantityLabel").text = str(Profile.get_inventory().get($CurrentItemFrame.current_part.part_id))
-

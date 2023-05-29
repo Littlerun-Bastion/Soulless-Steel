@@ -21,6 +21,7 @@ extends Resource
 @export var loot_search_time := 1.0
 @export var radar_range := 1000.0
 @export var weight := 1.0
+@export var tags :Array[String] = ["chipset"]
 
 var part_id
 

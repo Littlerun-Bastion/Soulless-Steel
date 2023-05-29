@@ -15,6 +15,7 @@ extends Resource
 @export var dash_heat := 100
 @export var walk_heat := 5
 @export var weight := 1.0
+@export var tags :Array[String] = ["thruster"]
 
 var part_id
 

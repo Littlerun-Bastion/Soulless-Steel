@@ -26,10 +26,12 @@ signal create_projectile
 @export var random_rotation := false
 @export var release_aligned := true
 @export var momentum_corrected := false
+@export var inherit_velocity := false
 
 @export var impact_effect : PackedScene
 @export var impact_size := 1.0
 @export var hitstop := false
+
 
 #---TRAILS AND IMPACTS---#
 
@@ -48,10 +50,10 @@ signal create_projectile
 
 #---PROPULSION---#
 @export var stages := 1
-@export var stage_max_speed :Array[int] = [4000] ##Max Speed: Maximum possible speed the projectile can accelerate to.
+@export var stage_max_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
 @export var stage_min_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second..
-@export var stage_deceleration :Array[float] = [1000.0] ##Acceleration: Amount speed is increased by per second.
+@export var stage_acceleration :Array[float] = [0] ##Acceleration: Amount speed is increased by per second..
+@export var stage_deceleration :Array[float] = [0] ##Acceleration: Amount speed is increased by per second.
 @export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
 @export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
 @export var stage_wiggle_amount :Array[float] = [0.0] ##Wiggle Amount: Maximum number of degrees a projectile can turn off its course.
@@ -177,7 +179,7 @@ func setup(mecha, _args, _weapon):
 		rotation_degrees = rad_to_deg(args.align_dir.angle()) + 90
 	seeker_target = args.seeker_target
 	speed = muzzle_speed
-	if args.has("inherited_velocity"):
+	if inherit_velocity:
 		inherited_velocity = args.inherited_velocity
 	original_mecha_info = {
 		"body": mecha,
@@ -292,18 +294,18 @@ func propulsion(dt):
 			true_dir = args.align_dir
 			momentum_corrected = true
 		release_aligned = true
+		if thrusters_on:
+			speed += acceleration*dt
+		else:
+			speed -= deceleration*dt
+		if speed > max_speed:
+			speed = max_speed
+		elif speed < min_speed:
+			speed = min_speed
 	elif cur_stage == 0:
-		speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, min_speed)
+		speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, muzzle_min_speed)
 		velocity = (speed * true_dir) + inherited_velocity
 		
-	if thrusters_on:
-		speed += acceleration*dt
-	else:
-		speed -= deceleration*dt
-	if speed > max_speed:
-		speed = max_speed
-	elif speed < min_speed:
-		speed = min_speed
 
 func guidance(dt):
 	var cur_stage = get_propulsion_stage()
@@ -348,7 +350,7 @@ func guidance(dt):
 			true_dir = true_dir.rotated(current_turn)
 		if abs(turn_angle) < deg_to_rad(10) and is_instance_valid(seeker_target):
 			thrusters_on = true
-		elif not is_instance_valid(seeker_target):
+		elif not is_instance_valid(seeker_target) or seeker_target == null:
 			thrusters_on = true
 		else:
 			thrusters_on = false

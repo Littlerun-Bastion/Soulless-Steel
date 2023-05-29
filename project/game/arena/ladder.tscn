@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3 uid="uid://ctr8s3m4bp6jr"]
+
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="1_a5hg1"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="2_ksy2b"]
+
+[sub_resource type="Theme" id="Theme_cacnh"]
+
+[node name="Ladder" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("1_a5hg1")
+
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+show_behind_parent = true
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource("Theme_cacnh")
+color = Color(0, 0, 0, 1)
+
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("2_ksy2b")
+
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+offset_left = -664.0
+offset_top = -794.667
+offset_right = 3336.0
+offset_bottom = 3205.34
+texture = ExtResource("2_ksy2b")

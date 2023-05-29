@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=3 uid="uid://dlcdluiovubcl"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_ekwmf"]
+[ext_resource type="Texture2D" uid="uid://b03qjtanthiqu" path="res://assets/images/mechas/arm_weapons/Galatine-EM/Galatine-EM_pv.png" id="2_y7pf0"]
+[ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="3_ht6wr"]
+[ext_resource type="PackedScene" uid="uid://dahbyunxfucvp" path="res://database/parts/projectiles/Galatine-EM_projectile.tscn" id="4_dyjq1"]
+[ext_resource type="Texture2D" uid="uid://bdiibaj6jrewu" path="res://assets/images/mechas/arm_weapons/Galatine-EM/Galatine-EM_sub.png" id="5_uycb4"]
+[ext_resource type="Texture2D" uid="uid://b5pg1ig7jmhoq" path="res://assets/images/mechas/arm_weapons/Galatine-EM/Galatine-EM_main.png" id="6_n0ury"]
+[ext_resource type="Texture2D" uid="uid://dufv8jjypc172" path="res://assets/images/mechas/arm_weapons/Galatine-EM/Galatine-EM_glow.png" id="7_0lpwe"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_ekwmf")
+part_name = "Galatine-EM"
+manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
+tagline = "Canister Gun (EMP)"
+description = "Essentially a heavily modified MA-H250, the Galatine fires a 25mm cartridge loaded with effect shells. This particular platform fires flash-capacitor EMP rounds that can scramble electronics and impair Shields."
+image = ExtResource("2_y7pf0")
+muzzle_flash = ExtResource("3_ht6wr")
+projectile = ExtResource("4_dyjq1")
+recoil_force = 1.0
+bloom_reset_time = 2.9
+fire_rate = 0.22
+base_accuracy = 1.0
+accuracy_bloom = 1.0
+max_bloom_angle = 10.0
+total_ammo = 200
+max_ammo = 200
+clip_size = 25
+reload_speed = 3.4
+muzzle_heat = 22.5
+sound_effect = "medium_auto3"
+sound_max_range = 7500
+sound_att = 1.75
+weight = 5.8
+impact_force = 8.0
+eject_casings = true
+casing_size = 0.8
+tags = Array[String](["arm_weapon", "claymore"])
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_uycb4")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_n0ury")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_0lpwe")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(13.4073, 26.0568)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-0.646783, 40.2722)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -71.2815)

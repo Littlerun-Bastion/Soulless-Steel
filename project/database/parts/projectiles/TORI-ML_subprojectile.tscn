@@ -14,9 +14,11 @@ collision_layer = 2
 script = ExtResource("1_aa3uh")
 type = 2
 projectile_size = 0.5
+bullet_drag = 0.0
 light_energy = 0.1
 muzzle_speed = 100
 release_aligned = false
+inherit_velocity = true
 impact_effect = ExtResource("2_d673h")
 stage_max_speed = Array[int]([2000])
 stage_min_speed = Array[int]([400])
@@ -34,7 +36,9 @@ fuse_detection_type = "IR"
 fuse_angle = 20.0
 fuse_is_contact_enabled = false
 payload_subprojectile = ExtResource("3_bhwa3")
-payload_subprojectile_count = 1
+payload_subprojectile_count = 4
+payload_subprojectile_spread = 10.0
+payload_subprojectile_rate = 0.1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_kxg8j")

@@ -1,0 +1,55 @@
+[gd_scene load_steps=8 format=3 uid="uid://crgwoh07aotnw"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_8ujy5"]
+[ext_resource type="Texture2D" uid="uid://da0eh3thjm72b" path="res://assets/images/mechas/arm_weapons/Carnwen-02A/Carnwen-02A_PV.png" id="2_e3q53"]
+[ext_resource type="PackedScene" uid="uid://vgnw24sqctdr" path="res://game/ui/effects/SmallLaserMuzzleFlash.tscn" id="3_fk7gc"]
+[ext_resource type="PackedScene" uid="uid://d1jyd2oh71u71" path="res://database/parts/projectiles/Carnwen-02A_projectile.tscn" id="4_wjwkw"]
+[ext_resource type="Texture2D" uid="uid://2meydguk4m1y" path="res://assets/images/mechas/arm_weapons/Carnwen-02A/Carnwen-02A_sub.png" id="5_0u6lv"]
+[ext_resource type="Texture2D" uid="uid://bvj1xy4odjjlu" path="res://assets/images/mechas/arm_weapons/Carnwen-02A/Carnwen-02A_main.png" id="6_1qdnp"]
+[ext_resource type="Texture2D" uid="uid://c8naq1rwdlr74" path="res://assets/images/mechas/arm_weapons/Carnwen-02A/Carnwen-02A_glow.png" id="7_37ke7"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_8ujy5")
+part_name = "Carnwen-02A"
+manufacturer_name = "Claymore International"
+manufacturer_name_short = "Claymore"
+tagline = "EN Chaingun"
+description = "Based on the venerated Excalibur-model laser cannon, the Carnwen features a rapid q-switch to distribute the otherwise massive power of the Excalibur's condenser cavity into a rapid-fire weapon analogous to a chaingun in stopping power - making the weapon pass civilian-grade safety standards."
+image = ExtResource("2_e3q53")
+muzzle_flash = ExtResource("3_fk7gc")
+muzzle_flash_size = 0.5
+muzzle_flash_speed = 1.5
+projectile = ExtResource("4_wjwkw")
+uses_battery = true
+fire_rate = 0.11
+base_accuracy = 3.0
+accuracy_bloom = 0.1
+max_bloom_angle = 7.0
+reload_speed = 1.4
+muzzle_heat = 8.0
+ammo_cost = 25
+sound_effect = "en_shotgun"
+sound_max_range = 1000
+sound_att = 1.75
+battery_drain = 9.0
+weight = 3.3
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_0u6lv")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_1qdnp")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_37ke7")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(11, 8)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(-1, 14)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-6, -34)

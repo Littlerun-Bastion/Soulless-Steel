@@ -14,16 +14,18 @@ script = ExtResource("1_rp8k3")
 type = 2
 muzzle_speed = 100
 stage_max_speed = Array[int]([500])
+stage_min_speed = Array[int]([250])
 stage_acceleration = Array[float]([250.0])
-stage_turn_rate = Array[float]([60.0])
-stage_seeker_type = Array[String]([""])
+stage_deceleration = Array[float]([2000.0])
+stage_turn_rate = Array[float]([30.0])
 stage_seeker_angle = Array[float]([360.0])
 fuse_timer = 2.0
 fuse_detection_type = "IR"
 fuse_angle = 20.0
+fuse_is_contact_enabled = false
 payload_subprojectile = ExtResource("2_hyyfp")
 payload_subprojectile_count = 5
-payload_subprojectile_spread = 60.0
+payload_subprojectile_spread = 360.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_qrea7")

@@ -151,6 +151,6 @@ func _on_LifeTimer_timeout():
 #Workaround since RigidBody3D can't have its scale changed
 func change_scaling(sc):
 	var vec = Vector2(sc,sc)
-	$Sprite2D.scale = vec
-	$CollisionShape2D.scale = vec
+	$Sprite2D.scale *= vec
+	$CollisionShape2D.scale *= vec
 

@@ -20,9 +20,6 @@ projectile = ExtResource("4_pykmr")
 requires_lock = true
 fire_rate = 5.0
 clip_size = 1000
-is_seeker = true
-stage_acceleration = Array[float]([1000.0])
-stage_thrust_delay = Array[float]([2.0])
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("3_5avpx")

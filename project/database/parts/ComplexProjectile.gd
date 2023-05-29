@@ -4,6 +4,7 @@ enum TYPE {INSTANT, REGULAR, COMPLEX}
 
 var LightEffect
 var Collision
+var thrusters_on = false
 
 signal bullet_impact
 signal create_projectile
@@ -49,7 +50,8 @@ signal create_projectile
 @export var stages := 1
 @export var stage_max_speed :Array[int] = [4000] ##Max Speed: Maximum possible speed the projectile can accelerate to.
 @export var stage_min_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second.
+@export var stage_acceleration :Array[float] = [10.0] ##Acceleration: Amount speed is increased by per second..
+@export var stage_deceleration :Array[float] = [1000.0] ##Acceleration: Amount speed is increased by per second.
 @export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
 @export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
 @export var stage_wiggle_amount :Array[float] = [0.0] ##Wiggle Amount: Maximum number of degrees a projectile can turn off its course.
@@ -59,6 +61,7 @@ signal create_projectile
 	## (IR: based on mecha_heat, RCS: based on mecha rcs (not implemented), Laser: based on the endpoint of a raycast from player's mech to the direction of the target (not implemented))
 @export var stage_seeker_delay :Array[float] = [0.0] ##Seeker Delay: Time in seconds before the stage of that seeker kicks in.
 @export var stage_seeker_angle :Array[float] = [0.0] ##Seeker Angle: Angle beyond which the seeker will not chase the target.
+
 
 #---FUSE---#
 @export var fuse_arm_time := 0.0 ##Time in seconds before the projectile can impact an object or deploy its 'payload'
@@ -106,6 +109,7 @@ var mech_hit
 var final_damage = 0.0
 var distance = 0.0
 var acceleration = 0.0
+var deceleration = 0.0
 var max_speed = 0.0
 var min_speed = 0.0
 var wiggle_amount = 0.0
@@ -122,6 +126,7 @@ var inherited_velocity : Vector2
 var velocity : Vector2
 var payload_expended = false
 var explosion_targets = []
+var fuse_waiting = false
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -150,6 +155,14 @@ func _process(dt):
 	
 	if lifetime > fuse_timer and fuse_timer > 0.0:
 		payload()
+	
+	if fuse_waiting == true:
+		var in_range_targets = $Fuse.get_overlapping_bodies()
+		for body in in_range_targets:	
+			if not body.is_in_group("mecha"):
+				in_range_targets.erase(body)
+			else:
+				fuse(null, body, null, null)
 
 func setup(mecha, _args, _weapon):
 	if random_rotation:
@@ -171,6 +184,7 @@ func setup(mecha, _args, _weapon):
 		"name": mecha.mecha_name,
 	}
 	change_scaling(projectile_size)
+	$Sprite2D/LightEffect.modulate.a = light_energy
 	
 	part_id = _weapon
 	min_speed = muzzle_min_speed
@@ -187,7 +201,7 @@ func setup(mecha, _args, _weapon):
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
-		if body.is_shape_id_chassis(body_shape_id):
+		if body.is_shape_id_chassis(body_shape_id) or not fuse_is_contact_enabled:
 			return
 		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
@@ -267,6 +281,7 @@ func propulsion(dt):
 	if cur_stage > 0:
 		velocity = (speed + inherited_velocity.length()) * dir 
 		acceleration = get_propulsion_var("acceleration", cur_stage)
+		deceleration = get_propulsion_var("deceleration", cur_stage)
 		max_speed = get_propulsion_var("max_speed", cur_stage)
 		min_speed = get_propulsion_var("min_speed", cur_stage)
 		wiggle_amount = get_propulsion_var("wiggle_amount", cur_stage)
@@ -281,15 +296,14 @@ func propulsion(dt):
 		speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, min_speed)
 		velocity = (speed * true_dir) + inherited_velocity
 		
-
-	if speed < max_speed and acceleration > 0:
-		speed = min(speed + acceleration*dt, max_speed)
-		
-	if speed > max_speed and acceleration > 0:
-		speed = max(speed - acceleration*dt*0.5, max_speed)
-			
-	elif speed > min_speed and acceleration < 0:
-		speed = max(speed + acceleration*dt, min_speed)
+	if thrusters_on:
+		speed += acceleration*dt
+	else:
+		speed -= deceleration*dt
+	if speed > max_speed:
+		speed = max_speed
+	elif speed < min_speed:
+		speed = min_speed
 
 func guidance(dt):
 	var cur_stage = get_propulsion_stage()
@@ -308,7 +322,6 @@ func guidance(dt):
 		"IR":
 			if seeker_target and is_instance_valid(seeker_target):
 				is_seeking = true
-				print(seeker_target)
 				if seeker_target.mecha_heat / seeker_target.max_heat > 0.1:
 					is_seeking = true
 				else:
@@ -333,11 +346,18 @@ func guidance(dt):
 		if abs(turn_angle) < deg_to_rad(seeker_angle):
 			var current_turn = deg_to_rad(turn_rate) * sign(turn_angle) * dt
 			true_dir = true_dir.rotated(current_turn)
+		if abs(turn_angle) < deg_to_rad(10) and is_instance_valid(seeker_target):
+			thrusters_on = true
+		elif not is_instance_valid(seeker_target):
+			thrusters_on = true
+		else:
+			thrusters_on = false
 
 func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
-	if lifetime < fuse_arm_time:
-		return
 	if body.is_in_group("mecha") and fuse_proximity_distance > 0.0:
+		if lifetime < fuse_arm_time:
+			fuse_waiting = true
+			return
 		var enemy_direction = body.position - position
 		var detection_angle = dir.angle_to(enemy_direction)
 		if abs(detection_angle) < deg_to_rad(fuse_angle):
@@ -372,10 +392,13 @@ func payload():
 						{
 							"projectile":payload_subprojectile,
 							"pos": global_position,
+							"pos_reference": null,
 							"dir": dir.rotated(accuracy),
 							"align_dir":dir,
 							"seeker_target": seeker_target,
 							"inherited_velocity": speed*dir,
+							"node_reference": null,
+							"muzzle_flash": null,
 						}, part_id)
 	explosion()
 
@@ -407,3 +430,12 @@ func _on_explosion_body_exited(body):
 		return
 	if explosion_targets.has(body):
 		explosion_targets.erase(body)
+
+
+func _on_fuse_body_shape_exited(body_rid, body, body_shape_index, local_shape_index):
+	var in_range = $Fuse.get_overlapping_bodies()
+	for i in in_range:
+		if not i.is_in_group("mecha"):
+			in_range.erase(body)
+	if in_range == []:
+		fuse_waiting = false

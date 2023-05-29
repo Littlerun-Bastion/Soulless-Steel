@@ -1,7 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://bgw617u1kxuks"]
+[gd_scene load_steps=7 format=3 uid="uid://bgw617u1kxuks"]
 
 [ext_resource type="Script" path="res://database/parts/ComplexProjectile.gd" id="1_aa3uh"]
+[ext_resource type="PackedScene" uid="uid://bdbpomvxlpkr1" path="res://game/weapons/ShapedChargeImpact.tscn" id="2_d673h"]
 [ext_resource type="Texture2D" uid="uid://b6ymcg8kxavpl" path="res://assets/images/mechas/projectiles/TORI-ML_subprojectile.png" id="2_kxg8j"]
+[ext_resource type="PackedScene" uid="uid://cxuvx8yooiwc2" path="res://database/parts/projectiles/TORI-ML_subsubprojectile.tscn" id="3_bhwa3"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="3_oqupc"]
 
 [sub_resource type="CanvasItemMaterial" id="1"]
@@ -15,23 +17,29 @@ projectile_size = 0.5
 light_energy = 0.1
 muzzle_speed = 100
 release_aligned = false
-stage_max_speed = Array[int]([200])
-stage_acceleration = Array[float]([2000.0])
+impact_effect = ExtResource("2_d673h")
+stage_max_speed = Array[int]([2000])
+stage_min_speed = Array[int]([400])
+stage_acceleration = Array[float]([400.0])
 stage_thrust_delay = Array[float]([1.0])
 stage_turn_rate = Array[float]([180.0])
 stage_wiggle_amount = Array[float]([20.0])
 stage_wiggle_freq = Array[float]([0.5])
 stage_wiggle_err = Array[float]([1.0])
 stage_seeker_angle = Array[float]([360.0])
+fuse_arm_time = 2.0
 fuse_timer = 10.0
+fuse_proximity_distance = 300.0
 fuse_detection_type = "IR"
 fuse_angle = 20.0
+fuse_is_contact_enabled = false
+payload_subprojectile = ExtResource("3_bhwa3")
+payload_subprojectile_count = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_kxg8j")
 
 [node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
-visible = false
 material = SubResource("1")
 position = Vector2(0, 9)
 scale = Vector2(5, 5)
@@ -52,6 +60,7 @@ polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.2
 
 [connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
 [connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]
+[connection signal="body_shape_exited" from="Fuse" to="." method="_on_fuse_body_shape_exited"]
 [connection signal="body_entered" from="Explosion" to="." method="_on_explosion_body_entered"]
 [connection signal="body_exited" from="Explosion" to="." method="_on_explosion_body_exited"]
 [connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

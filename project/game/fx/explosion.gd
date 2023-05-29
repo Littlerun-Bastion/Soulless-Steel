@@ -2,7 +2,10 @@ extends Node2D
 
 @onready var Player = $AnimationPlayer
 @export var light_decay_rate := 1.0
-var lifetime := 5.0
+
+
+var lifetime := 10.0
+
 
 func _ready():
 	var num = randi() % 2
@@ -16,18 +19,14 @@ func _process(delta):
 	$LightEffect.modulate.a -= delta * light_decay_rate
 
 func setup(size, rot, isMech):
-	if isMech:
-		$sparks_mech.emitting = true
-		$sparks_miss.visible = false
-		$hit_smoke.amount = 8*size
-		$hit_smoke.emitting = true
-		lifetime = $hit_smoke.lifetime / $hit_smoke.speed_scale
+	if isMech: 
+		for child in get_node("OnHit").get_children():
+			child.amount = child.amount * size
+			child.emitting = true
 	else:
-		$sparks_miss.emitting = true
-		$sparks_mech.visible = false
-		$miss_smoke.amount = 12*size
-		$miss_smoke.emitting = true
-		lifetime = $miss_smoke.lifetime / $miss_smoke.speed_scale
+		for child in get_node("OnMiss").get_children():
+			child.amount = child.amount * size
+			child.emitting = true
 	
 	scale = Vector2(size,size)
 	self.global_rotation = rot

@@ -1,3 +1,6 @@
-[gd_resource type="Resource" format=3 uid="uid://m0rkq4ocft3x"]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://m0rkq4ocft3x"]
+
+[ext_resource type="Script" path="res://database/npcs/special_npc.gd" id="1_l3ihf"]
 
 [resource]
+script = ExtResource("1_l3ihf")

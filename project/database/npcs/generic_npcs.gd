@@ -1,6 +1,6 @@
 extends Node
 
-var npcs = [
+const NPCS = [
 	{
 		"mecha_build": {
 			"head": "MSV-L3J-H",
@@ -36,3 +36,6 @@ var npcs = [
 		"difficulty": 0.0,
 	},
 ]
+
+static func get_npcs():
+	return NPCS

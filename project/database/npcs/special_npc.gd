@@ -1,4 +1,9 @@
-extends Node
+extends Resource
+
+@export_category("Main Attributes")
+@export var name := "Example"
+@export var combat_behaviour := "default"
+@export_range(0.0, 10.0, 0.1) var difficulty := 5.0
 
 @export_category("Mecha Build")
 @export var head : Array[String] = ["MSV-L3J-H"]
@@ -12,7 +17,3 @@ extends Node
 @export var arm_weapon_right : Array[String] = ["MA-L127"]
 @export var shoulder_weapon_left : Array[String] = ["TORI-ML"]
 @export var shoulder_weapon_right : Array[String] = ["TORI-ML"]
-
-@export_category("Other Attributes")
-@export var combat_behaviour := "default"
-@export_range(0.0, 10.0, 0.1) var difficulty := 5.0

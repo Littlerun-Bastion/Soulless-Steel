@@ -39,7 +39,7 @@ func load_parts(part_name, dict):
 	var path = DATA_PATH + part_name + "/"
 	var dir = DirAccess.open(path)
 	if dir:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":

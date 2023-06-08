@@ -29,7 +29,7 @@ PlayerStatManager="*res://game/mecha/player/PlayerStatManager.gd"
 ArenaManager="*res://game/arena/ArenaManager.gd"
 ShaderEffects="*res://game/ui/ShaderEffects.tscn"
 MouseManager="*res://game/ui/MouseManager.gd"
-NpcManager="*res://game/mecha/NPCManager.gd"
+NPCManager="*res://game/mecha/NPCManager.gd"
 
 [display]
 

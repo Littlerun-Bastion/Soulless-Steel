@@ -80,6 +80,10 @@ func get_parts(type):
 			return false
 
 
+func is_valid_part(type, part_name):
+	return get_parts(type).has(part_name)
+
+
 func get_part(type, part_name):
 	var table = get_parts(type)
 	assert(table.has(part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
@@ -103,7 +107,7 @@ func get_max_stat_value(stat_name):
 	return float(max_value)
 
 
-func search_parts_for_tags(type, search_tags):
+func get_parts_by_tags(type, search_tags):
 	var table = get_parts(type)
 	var final_list = []
 	for part in table:

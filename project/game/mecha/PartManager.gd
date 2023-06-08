@@ -86,7 +86,7 @@ func is_valid_part(type, part_name):
 
 func get_part(type, part_name):
 	var table = get_parts(type)
-	assert(table.has(part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
+	assert(table.has( part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
 	return table[part_name]
 
 

@@ -1,7 +1,7 @@
 extends Resource
 
 @export_category("Main Attributes")
-@export var name := "Example"
+@export var npc_name := "Example"
 @export var combat_behaviour := "default"
 @export_range(0.0, 10.0, 0.1) var difficulty := 5.0
 

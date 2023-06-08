@@ -30,6 +30,14 @@ func setup():
 		push_error("An error occurred when trying to access special npcs path: " + str(DirAccess.get_open_error()))
 
 
+func get_special_npc(npc_name):
+	for npc in SPECIAL_NPCS:
+		if npc.npc_name == npc_name:
+			return npc
+	push_error("Couldn't find this special npc: " + str(npc_name))
+	return false
+
+
 func get_random_npc():
 	return NPCS.pick_random()
 

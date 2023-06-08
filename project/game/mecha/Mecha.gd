@@ -438,12 +438,10 @@ func set_parts_from_design(data):
 		elif part_name.find("right") != -1:
 			side = SIDE.RIGHT
 
-		if typeof(side) == TYPE_INT:
+		if typeof(side) ==  TYPE_INT:
 			callv("set_" + type, [data[part_name], side])
 		else:
 			callv("set_" + type, [data[part_name]])
-
-	return data
 
 
 func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):

@@ -1,11 +1,18 @@
 extends Node
 
+@export_category("Mecha Build")
+@export var head : Array[String] = ["MSV-L3J-H"]
+@export var core: Array[String] = ["MSV-L3J-C"]
+@export var shoulders : Array[String] = ["MSV-L3J-SG"]
+@export var generator : Array[String] = ["type_1"]
+@export var chipset : Array[String] = ["type_2"]
+@export var chassis : Array[String] = ["MSV-L3J-L"]
+@export var thruster : Array[String] = ["test1"]
+@export var arm_weapon_left : Array[String] = ["MA-L127"]
+@export var arm_weapon_right : Array[String] = ["MA-L127"]
+@export var shoulder_weapon_left : Array[String] = ["TORI-ML"]
+@export var shoulder_weapon_right : Array[String] = ["TORI-ML"]
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
+@export_category("Other Attributes")
+@export var combat_behaviour := "default"
+@export_range(0.0, 10.0, 0.1) var difficulty := 5.0

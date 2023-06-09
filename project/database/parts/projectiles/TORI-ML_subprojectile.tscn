@@ -38,7 +38,6 @@ fuse_is_contact_enabled = false
 payload_subprojectile = ExtResource("3_bhwa3")
 payload_subprojectile_count = 4
 payload_subprojectile_spread = 10.0
-payload_subprojectile_rate = 0.1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_kxg8j")

@@ -1,0 +1,375 @@
+[gd_scene load_steps=7 format=3 uid="uid://b1grwa577skp"]
+
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="1_iy2ma"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="2_yccjd"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="3_asuog"]
+[ext_resource type="PackedScene" uid="uid://barf05k0eqt63" path="res://game/ui/Ladder/LadderLabel.tscn" id="4_7gnip"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="5_3wwhl"]
+
+[sub_resource type="Theme" id="14"]
+
+[node name="Customizer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(-611, -230)
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("1_iy2ma")
+
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+show_behind_parent = true
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource("14")
+color = Color(0, 0, 0, 1)
+
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("2_yccjd")
+
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+offset_left = -664.0
+offset_top = -794.667
+offset_right = 3336.0
+offset_bottom = 3205.34
+texture = ExtResource("2_yccjd")
+
+[node name="BackgroundElements" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LowerBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 0
+anchor_top = 0.978755
+anchor_right = 1.0
+anchor_bottom = 1.00005
+offset_top = 1021.85
+offset_bottom = 1036.0
+pivot_offset = Vector2(0.0615444, 39.8171)
+color = Color(0, 0, 0, 1)
+
+[node name="LeftBar" type="ColorRect" parent="BackgroundElements"]
+layout_mode = 0
+offset_right = 43.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
+
+[node name="RightBar" type="ColorRect" parent="BackgroundElements"]
+visible = false
+layout_mode = 0
+offset_left = 1383.0
+offset_right = 1923.0
+offset_bottom = 1084.0
+color = Color(0, 0, 0, 1)
+
+[node name="UpperBar" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 3.0
+offset_right = 1878.0
+offset_bottom = 207.0
+color = Color(0, 0, 0, 1)
+
+[node name="MainSystemContainer2" type="VBoxContainer" parent="BackgroundElements"]
+layout_mode = 2
+offset_left = 32.0
+offset_top = 47.0
+offset_right = 459.0
+offset_bottom = 100.0
+theme_override_constants/separation = -5
+
+[node name="Label" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("3_asuog")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 25
+text = "LADDER"
+
+[node name="Label2" type="Label" parent="BackgroundElements/MainSystemContainer2"]
+layout_mode = 2
+theme = ExtResource("3_asuog")
+theme_override_font_sizes/font_size = 25
+text = "SAV_hUNTERos.EXE -LDR"
+
+[node name="SideBar1" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_right = 14.0
+offset_bottom = 1040.0
+
+[node name="SideBar2" type="ColorRect" parent="BackgroundElements"]
+custom_minimum_size = Vector2(7, 0)
+layout_mode = 0
+anchor_bottom = 1.0
+offset_left = 17.2305
+offset_right = 24.2305
+offset_bottom = 1040.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 56.0
+offset_top = 420.0
+offset_right = 456.0
+offset_bottom = 1040.0
+theme_override_constants/separation = 10
+
+[node name="LadderLabel" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel2" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel3" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel4" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel5" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel6" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel7" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel8" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="LadderLabel9" parent="VBoxContainer" instance=ExtResource("4_7gnip")]
+layout_mode = 2
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 56.0
+offset_top = 265.0
+offset_right = 456.0
+offset_bottom = 373.0
+theme_override_constants/separation = 20
+
+[node name="Button" type="Button" parent="VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "Challenge"
+
+[node name="Button2" type="Button" parent="VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "EXHIBITION"
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 477.0
+offset_top = 927.0
+offset_right = 939.0
+offset_bottom = 1030.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 100
+text = "CIV-GRADE"
+
+[node name="Label2" type="Label" parent="Label"]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 77.0
+offset_right = 149.0
+offset_bottom = 131.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 50
+text = "C-tier"
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 479.0
+offset_top = 418.0
+offset_right = 483.0
+offset_bottom = 921.0
+
+[node name="Payout" type="HBoxContainer" parent="ColorRect"]
+layout_mode = 2
+offset_left = 12.0
+offset_top = 458.0
+offset_right = 520.0
+offset_bottom = 521.0
+
+[node name="Label" type="Label" parent="ColorRect/Payout"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 60
+text = "PAYOUT:"
+
+[node name="Label2" type="Label" parent="ColorRect/Payout"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 60
+text = "100000"
+
+[node name="Label3" type="Label" parent="ColorRect/Payout"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 45
+text = "c"
+vertical_alignment = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ColorRect"]
+layout_mode = 0
+offset_left = 12.0
+offset_right = 123.0
+offset_bottom = 43.0
+
+[node name="Arena" type="HBoxContainer" parent="ColorRect/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ColorRect/VBoxContainer/Arena"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 40
+text = "Arena:"
+
+[node name="Label2" type="Label" parent="ColorRect/VBoxContainer/Arena"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "Old gate"
+
+[node name="Conditions" type="HBoxContainer" parent="ColorRect/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ColorRect/VBoxContainer/Conditions"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 40
+text = "Conditions:"
+
+[node name="Label2" type="Label" parent="ColorRect/VBoxContainer/Conditions"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "Clear"
+
+[node name="Temperature" type="HBoxContainer" parent="ColorRect/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ColorRect/VBoxContainer/Temperature"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 40
+text = "Temperature:"
+
+[node name="Label2" type="Label" parent="ColorRect/VBoxContainer/Temperature"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "Low"
+
+[node name="Opponents" type="HBoxContainer" parent="ColorRect/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ColorRect/VBoxContainer/Opponents"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 40
+text = "Opponents:"
+
+[node name="Label2" type="Label" parent="ColorRect/VBoxContainer/Opponents"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "'Signature'"
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1488.0
+offset_top = 960.0
+offset_right = 1888.0
+offset_bottom = 1040.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 50
+text = "Start Match"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Button"]
+layout_mode = 0
+offset_top = -194.0
+offset_right = 400.0
+offset_bottom = -34.0
+theme_override_constants/separation = 20
+alignment = 2
+
+[node name="Button" type="Button" parent="Button/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "Hangar"
+
+[node name="Button2" type="Button" parent="Button/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "Store"
+
+[node name="Button3" type="Button" parent="Button/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "PilotRelay"
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 111.0
+offset_right = 898.0
+offset_bottom = 185.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 60
+text = "Central African Republic"
+
+[node name="Label3" type="Label" parent="Label2"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 57.0
+offset_right = 847.0
+offset_bottom = 131.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 35
+text = "Regional Ladder"

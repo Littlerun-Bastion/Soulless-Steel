@@ -388,7 +388,7 @@ func payload():
 		payload_expended = true
 	if payload_subprojectile and payload_subprojectile_count > 0:
 		for _i in range(payload_subprojectile_count):
-			await get_tree().create_timer(max(payload_subprojectile_rate,0.035)).timeout
+			await get_tree().create_timer(max(payload_subprojectile_rate,0.01)).timeout
 			var accuracy = deg_to_rad(randf_range(-payload_subprojectile_spread, payload_subprojectile_spread))
 			emit_signal("create_projectile", original_mecha_info.body,
 						{

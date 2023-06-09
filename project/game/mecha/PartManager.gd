@@ -39,7 +39,7 @@ func load_parts(part_name, dict):
 	var path = DATA_PATH + part_name + "/"
 	var dir = DirAccess.open(path)
 	if dir:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
@@ -80,15 +80,20 @@ func get_parts(type):
 			return false
 
 
+func is_valid_part(type, part_name):
+	return get_parts(type).has(part_name)
+
+
 func get_part(type, part_name):
 	var table = get_parts(type)
-	assert(table.has(part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
+	assert(table.has( part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
 	return table[part_name]
 
 
 func get_random_part_name(type):
 	var table = get_parts(type)
 	return table.keys()[randi()%table.keys().size()]
+
 
 func get_max_stat_value(stat_name):
 	var max_value = 0.0
@@ -101,24 +106,18 @@ func get_max_stat_value(stat_name):
 		max_value += current_max
 	return float(max_value)
 
-func get_player_mech():
-	pass
-	#if current_player_mech:
 
-func search_parts_for_tags(type,search_tags):
+func get_parts_by_tags(type, search_tags):
 	var table = get_parts(type)
 	var final_list = []
 	for part in table:
-		var exclude = false
+		var valid = true
 		var part_tags = get_part(type,part).tags
-		print(part_tags)
 		for tag in search_tags:
-			print(tag)
-			print(part_tags.has(tag))
 			if not tag in part_tags:
-				exclude = true
-		if not exclude:
+				valid = false
+				break
+		if valid:
 			final_list.append(part)
-	print(final_list)
 	return final_list
-			
+

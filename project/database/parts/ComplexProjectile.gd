@@ -434,7 +434,7 @@ func _on_explosion_body_exited(body):
 		explosion_targets.erase(body)
 
 
-func _on_fuse_body_shape_exited(body_rid, body, body_shape_index, local_shape_index):
+func _on_fuse_body_shape_exited(_body_rid, body, _body_shape_index, _local_shape_index):
 	var in_range = $Fuse.get_overlapping_bodies()
 	for i in in_range:
 		if not i.is_in_group("mecha"):

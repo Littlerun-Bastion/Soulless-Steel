@@ -1,5 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://b1grwa577skp"]
+[gd_scene load_steps=8 format=3 uid="uid://b1grwa577skp"]
 
+[ext_resource type="Script" path="res://game/ui/ladder/Ladder.gd" id="1_agcil"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="1_iy2ma"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="2_yccjd"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="3_asuog"]
@@ -8,7 +9,7 @@
 
 [sub_resource type="Theme" id="14"]
 
-[node name="Customizer" type="Control"]
+[node name="Ladder" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,6 +17,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(-611, -230)
+script = ExtResource("1_agcil")
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 scale = Vector2(0.75, 0.75)
@@ -137,7 +139,7 @@ offset_left = 17.2305
 offset_right = 24.2305
 offset_bottom = 1040.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="LadderButtons" type="VBoxContainer" parent="."]
 layout_mode = 0
 offset_left = 56.0
 offset_top = 420.0
@@ -145,31 +147,31 @@ offset_right = 456.0
 offset_bottom = 1040.0
 theme_override_constants/separation = 10
 
-[node name="LadderLabel" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel2" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel2" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel3" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel3" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel4" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel4" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel5" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel5" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel6" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel6" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel7" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel7" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel8" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel8" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
-[node name="LadderLabel9" parent="VBoxContainer" instance=ExtResource("4_h3ipx")]
+[node name="LadderLabel9" parent="LadderButtons" instance=ExtResource("4_h3ipx")]
 layout_mode = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]

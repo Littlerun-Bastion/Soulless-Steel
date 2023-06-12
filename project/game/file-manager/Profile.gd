@@ -144,6 +144,11 @@ func set_option(opt_name: String, value, should_save := false):
 	if should_save:
 		FileManager.save_profile()
 
+
+func get_leaderboard(lb_name):
+	assert(leaderboards.has(lb_name), "Not a valid leaderboard name: " + str(lb_name))
+	return leaderboards[lb_name]
+
 func is_ctrl_pressed(ctrl_name):
 	assert(controls.has(ctrl_name),"Not a valid control action: " + str(ctrl_name))
 	return controls[ctrl_name]

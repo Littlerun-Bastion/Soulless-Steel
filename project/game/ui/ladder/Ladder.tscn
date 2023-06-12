@@ -195,7 +195,7 @@ theme_override_font_sizes/font_size = 40
 text = "EXHIBITION"
 icon_alignment = 1
 
-[node name="Label" type="Label" parent="."]
+[node name="LeaderboardsName" type="Label" parent="."]
 layout_mode = 0
 offset_left = 477.0
 offset_top = 927.0
@@ -205,7 +205,7 @@ theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 100
 text = "CIV-GRADE"
 
-[node name="Label2" type="Label" parent="Label"]
+[node name="Tier" type="Label" parent="LeaderboardsName"]
 layout_mode = 0
 offset_left = 2.0
 offset_top = 77.0

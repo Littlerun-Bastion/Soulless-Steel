@@ -44,7 +44,7 @@ var stats = {
 var leaderboards = {
 	"civ-grade": [
 		"Grob", "Lady Volk", "Avalynn",
-		"Damiran Metalhead", "Daerry-l", "AlD0H",
+		"Damiran Ghad", "Daerry-l", "AlD0H",
 		"Rylan Lira", "Siv Maeck", "Tann",
 	],
 	"mil-grade": [
@@ -149,6 +149,7 @@ func get_leaderboard(lb_name):
 	assert(leaderboards.has(lb_name), "Not a valid leaderboard name: " + str(lb_name))
 	return leaderboards[lb_name]
 
+
 func is_ctrl_pressed(ctrl_name):
 	assert(controls.has(ctrl_name),"Not a valid control action: " + str(ctrl_name))
 	return controls[ctrl_name]
@@ -165,7 +166,6 @@ func edit_control_action(action: String, keycode:int):
 	assert(InputMap.has_action(action),"Action not in InputMap: " + str(action))
 	var key = InputEventKey.new()
 	key.keycode = keycode
-	print()
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, key)
 

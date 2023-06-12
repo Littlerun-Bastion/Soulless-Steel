@@ -43,22 +43,19 @@ var stats = {
 
 var leaderboards = {
 	"civ-grade": [
-		"Codix",
-		"Lolea", "Avalynn", "Tann",
-		"Damiran", "Daerryl", "Aldoh",
-		"Rylan", "Maeck", "Graeham"
+		"Grob", "Lady Volk", "Avalynn",
+		"Damiran Metalhead", "Daerry-l", "AlD0H",
+		"Rylan Lira", "Siv Maeck", "Tann",
 	],
 	"mil-grade": [
-		"Saraia",
-		"Rusl", "Akyra", "Allany",
-		"Paxt", "Saria", "Ryker",
-		"Briyanna", "Banca", "Haelee"
+		"Rusl Senkou", "Akyra", "Allany-X",
+		"Paxt", "Saria III", "Ryker",
+		"Briyanna J", "Banca Ghyx", "Haelee Volk"
 	],
 	"state-of-the-art": [
-		"Elyot",
-		"Aerav", "Nix", "Caerson",
-		"Blayne", "Jenzen", "Jadirel",
-		"Brayln", "Moargan", "Aeden"
+		"LotterReed", "Nix", "Caerson",
+		"Bl4yn3", "Jenzen Jen", "Jadirel",
+		"Brayln", "Moargan", "Aeden Lyvl"
 	],
 }
 

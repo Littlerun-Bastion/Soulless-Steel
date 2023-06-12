@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="1_iy2ma"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="2_yccjd"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="3_asuog"]
-[ext_resource type="PackedScene" uid="uid://barf05k0eqt63" path="res://game/ui/laddert/LadderLabel.tscn" id="4_h3ipx"]
+[ext_resource type="PackedScene" uid="uid://barf05k0eqt63" path="res://game/ui/ladder/LadderLabel.tscn" id="4_h3ipx"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="5_3wwhl"]
 
 [sub_resource type="Theme" id="14"]

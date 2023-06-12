@@ -41,6 +41,27 @@ var stats = {
 	"money": 0,
 }
 
+var leaderboards = {
+	"civ-grade": [
+		"Codix",
+		"Lolea", "Avalynn", "Tann",
+		"Damiran", "Daerryl", "Aldoh",
+		"Rylan", "Maeck", "Graeham"
+	],
+	"mil-grade": [
+		"Saraia",
+		"Rusl", "Akyra", "Allany",
+		"Paxt", "Saria", "Ryker",
+		"Briyanna", "Banca", "Haelee"
+	],
+	"state-of-the-art": [
+		"Elyot",
+		"Aerav", "Nix", "Caerson",
+		"Blayne", "Jenzen", "Jadirel",
+		"Brayln", "Moargan", "Aeden"
+	],
+}
+
 var inventory = {}
 
 func get_locale_idx(locale):
@@ -63,6 +84,7 @@ func get_save_data():
 		"options": options,
 		"controls": controls,
 		"stats": stats,
+		"leaderboards": leaderboards,
 		"debug": Debug.debug_settings,
 		"inventory": inventory,
 	}
@@ -80,6 +102,7 @@ func set_save_data(data):
 	set_data(data, "options", options)
 	set_data(data, "controls", controls)
 	set_data(data, "stats", stats)
+	set_data(data, "leaderboards", leaderboards)
 	set_data(data, "debug", Debug.debug_settings)
 	
 	inventory = data.inventory

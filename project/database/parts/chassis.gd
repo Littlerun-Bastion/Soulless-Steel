@@ -10,6 +10,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var price := 0.0
 @export var description : String
 @export var image : Texture2D
+@export var ambient_sfx := preload("res://assets/audio/sfx/chassis_ambient/test_engine.mp3")
 @export var is_legs := false
 @export var movement_type = "free" # (String, "free", "tank", "relative")
 @export var max_speed = 500

@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_l3ihf")
-npc_name = "Example"
+mecha_name = "Example"
 combat_behaviour = "default"
 difficulty = 5.0
 head = Array[String](["MSV-L3J-H"])

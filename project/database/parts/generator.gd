@@ -7,6 +7,7 @@ extends Resource
 @export var price := 0.0
 @export var description : String
 @export var image : Texture2D
+@export var ambient_sfx := preload("res://assets/audio/sfx/generator_ambient/test.mp3")
 @export var shield := 6000.0
 @export var shield_regen_speed := 1
 @export var shield_regen_delay := 5

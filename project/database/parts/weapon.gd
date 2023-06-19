@@ -1,17 +1,26 @@
 extends Node
 
+@export_category("Main Attributes")
 @export var part_name : String
 @export var manufacturer_name : String
 @export var manufacturer_name_short : String
 @export var tagline : String
+@export var tags :Array[String] = ["arm_weapon"]
 @export var price := 0.0
+@export var weight := 1.0
 @export var description : String
 @export var image : Texture2D
+
+@export_category("Muzzle Flash")
 @export var muzzle_flash : PackedScene
 @export var muzzle_flash_size := 1.0
 @export var muzzle_flash_speed := 1.0
+
+@export_category("Rotation Parameters")
 @export var rotation_acc := 5
 @export var rotation_range := 10.0
+
+@export_category("Projectile Parameters")
 @export var projectile : PackedScene
 @export var parallax_offset := 0.0
 @export var number_projectiles := 1
@@ -35,24 +44,27 @@ extends Node
 @export var reload_speed := 3.0
 @export var muzzle_heat := 3.8
 @export var ammo_cost := 10 #the monetary cost of the ammunition, not the ammo used when firing.
-@export var sound_effect := "test"
-@export var sound_max_range := 2000
-@export var sound_att := 1.00
-@export var battery_drain := 1.00
-@export var weight := 1.0
-@export var impact_force := 0.0
 @export var eject_casings := false
 @export var casing_size := 1.0
 @export var show_idle_projectile := false
-@export var tags :Array[String] = ["arm_weapon"]
+@export var battery_drain := 1.00
+@export var impact_force := 0.0
+
+@export_category("Sound Attributes")
+@export var sound_effect := "test"
+@export var sound_max_range := 2000
+@export var sound_att := 1.00
+@export var spoolup_sfx := AudioStream
+@export var spooldown_sfx := AudioStream
+@export var shootloop_sfx := AudioStream
 
 
-#---BEAM BEHAVIOUR---#
+@export_category("Beam Behaviours")
 @export var beam_range := 0.0
 @export var constant_beam := false
 @export var beam_effect : Resource
 
-#---MELEE BEHAVIOURS---
+@export_category("Melee Behaviours")
 @export var is_melee := false
 @export var melee_knockback := 20
 

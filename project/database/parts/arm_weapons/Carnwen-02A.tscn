@@ -14,6 +14,8 @@ part_name = "Carnwen-02A"
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "EN Chaingun"
+tags = Array[String](["arm_weapon", "claymore"])
+weight = 3.3
 description = "Based on the venerated Excalibur-model laser cannon, the Carnwen features a rapid q-switch to distribute the otherwise massive power of the Excalibur's condenser cavity into a rapid-fire weapon analogous to a chaingun in stopping power - making the weapon pass civilian-grade safety standards."
 image = ExtResource("2_e3q53")
 muzzle_flash = ExtResource("3_fk7gc")
@@ -28,12 +30,10 @@ max_bloom_angle = 7.0
 reload_speed = 1.4
 muzzle_heat = 8.0
 ammo_cost = 25
+battery_drain = 9.0
 sound_effect = "en_shotgun"
 sound_max_range = 1000
 sound_att = 1.75
-battery_drain = 9.0
-weight = 3.3
-tags = Array[String](["arm_weapon", "claymore"])
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_0u6lv")

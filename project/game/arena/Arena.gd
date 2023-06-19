@@ -68,14 +68,6 @@ func _ready():
 
 
 func _input(event):
-	if event is InputEventKey:
-		if event.pressed and event.keycode == KEY_ESCAPE:
-			PauseMenu.toggle_pause()
-		elif event.pressed and event.keycode == KEY_P:
-			activate_debug_cam()
-		elif event.pressed and event.keycode == KEY_L:
-			if player:
-				player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 	if event is InputEventMouseButton:
 		if allow_debug_cam and ArenaCam.enabled:
 			var amount = Vector2(.8, .8)
@@ -83,8 +75,16 @@ func _input(event):
 				target_arena_zoom -= amount
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				target_arena_zoom += amount
+	
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
+	elif event.is_action_pressed("escape"):
+		PauseMenu.toggle_pause()
+	elif event.is_action_pressed("debug_1"):
+		activate_debug_cam()
+	elif event.is_action_pressed("debug_2"):
+		if player:
+			player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 
 
 func _process(dt):

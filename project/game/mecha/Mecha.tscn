@@ -1573,6 +1573,10 @@ estimate_radius = false
 radius = 200.0
 
 [node name="ChassisAmbientSound" type="AudioStreamPlayer2D" parent="."]
+pitch_scale = 1.5
+attenuation = 0.7
+panning_strength = 3.0
+bus = &"SFX"
 
 [connection signal="create_hitbox_signal" from="ArmWeaponLeft/MeleeHitboxes" to="." method="_on_MeleeHitboxes_create_hitbox" binds= ["left"]]
 [connection signal="create_hitbox_signal" from="ArmWeaponRight/MeleeHitboxes" to="." method="_on_MeleeHitboxes_create_hitbox" binds= ["right"]]

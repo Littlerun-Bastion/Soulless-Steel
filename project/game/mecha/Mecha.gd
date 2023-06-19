@@ -85,6 +85,7 @@ signal mecha_extracted
 @onready var RightChassis = $Chassis/Right/Main
 @onready var RightChassisSub = $Chassis/Right/Sub
 @onready var RightChassisGlow = $Chassis/Right/Glow
+@onready var ChassisAmbientSFX = $ChassisAmbientSound
 #Particles
 @onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
@@ -616,11 +617,12 @@ func freezing_status_heat(heat_disp):
 	return heat_disp
 
 
-
 func die(source_info, _weapon_name):
 	if is_dead:
 		return
 	is_dead = true
+	if ChassisAmbientSFX.stream:
+		ChassisAmbientSFX.stop()
 	await get_tree().create_timer(3.0).timeout
 	#TickerManager.new_message({
 	#	"type": "mecha_died",
@@ -845,6 +847,10 @@ func set_chassis(part_name):
 		return
 	chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = chassis.weight_capacity
+	ChassisAmbientSFX.stream = chassis.ambient_sfx
+	ChassisAmbientSFX.max_distance = chassis.ambient_sfx_max_distance
+	if ChassisAmbientSFX.stream:
+		ChassisAmbientSFX.play()
 	set_chassis_parts()
 	set_max_heat()
 

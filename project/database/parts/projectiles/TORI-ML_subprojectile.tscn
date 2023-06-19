@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://bgw617u1kxuks"]
 
-[ext_resource type="Script" path="res://database/parts/complexprrojectile.gd" id="1_aa3uh"]
+[ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_aa3uh"]
 [ext_resource type="PackedScene" uid="uid://bdbpomvxlpkr1" path="res://game/weapons/ShapedChargeImpact.tscn" id="2_d673h"]
 [ext_resource type="Texture2D" uid="uid://b6ymcg8kxavpl" path="res://assets/images/mechas/projectiles/TORI-ML_subprojectile.png" id="2_kxg8j"]
 [ext_resource type="PackedScene" uid="uid://cxuvx8yooiwc2" path="res://database/parts/projectiles/TORI-ML_subsubprojectile.tscn" id="3_bhwa3"]

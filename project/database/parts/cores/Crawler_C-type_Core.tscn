@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://coovjnchgwjnp" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" id="12"]
 [ext_resource type="Texture2D" uid="uid://bekdvtn4rrh6v" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" id="13"]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource("6")
 part_name = "Crawler C-type"
 manufacturer_name = "Nomhoyi Superheavy"

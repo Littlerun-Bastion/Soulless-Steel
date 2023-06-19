@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://c3cb2km5wxwr2" path="res://assets/images/mechas/cores/O30/O30-Core_glow.png" id="13"]
 [ext_resource type="Texture2D" uid="uid://y77l8neb5ix4" path="res://assets/images/mechas/cores/O30/O30-Core_pv.png" id="14"]
 
-[node name="Part3" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource("1")
 part_name = "O30-Core"
 manufacturer_name = "Orontes Constructions"

@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://database/parts/shoulder.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://n6gkeiuo8a51" path="res://assets/images/mechas/shoulders/Crawler C-type/Crawler_C-type_shoulder_pv.png" id="4"]
 
-[node name="Part2" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "Crawler C-type SG"
 manufacturer_name = "Nomhoyi Superheavy"

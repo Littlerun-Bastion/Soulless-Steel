@@ -86,6 +86,7 @@ signal mecha_extracted
 @onready var RightChassisSub = $Chassis/Right/Sub
 @onready var RightChassisGlow = $Chassis/Right/Glow
 @onready var ChassisAmbientSFX = $ChassisAmbientSound
+@onready var ChassisSprintGlow = $Chassis/SprintGlow
 #Particles
 @onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
@@ -119,7 +120,9 @@ signal mecha_extracted
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
 }
-@onready var ChassisSprintGlow = $Chassis/SprintGlow
+
+#Other parts
+@onready var GeneratorAmbientSFX = $GeneratorAmbientSound
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -621,8 +624,13 @@ func die(source_info, _weapon_name):
 	if is_dead:
 		return
 	is_dead = true
+	
+	#Update sfxs
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.stop()
+	if GeneratorAmbientSFX.stream:
+		GeneratorAmbientSFX.stop()
+	
 	await get_tree().create_timer(3.0).timeout
 	#TickerManager.new_message({
 	#	"type": "mecha_died",
@@ -814,6 +822,11 @@ func set_generator(part_name):
 		battery_capacity = generator.battery_capacity
 		battery = generator.battery_capacity
 		battery_recharge_rate = generator.battery_recharge_rate
+		
+		if is_player():
+			GeneratorAmbientSFX.stream = generator.ambient_sfx
+			if GeneratorAmbientSFX.stream:
+				GeneratorAmbientSFX.play()
 	else:
 		generator = false
 	update_max_shield_from_parts()

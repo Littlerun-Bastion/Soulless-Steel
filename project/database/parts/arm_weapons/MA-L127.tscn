@@ -14,6 +14,7 @@ part_name = "MA-L127"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Chaingun"
+weight = 3.25
 image = ExtResource("2_sp3op")
 muzzle_flash = ExtResource("8")
 muzzle_flash_size = 0.5
@@ -29,14 +30,13 @@ max_ammo = 400
 clip_size = 50
 reload_speed = 1.3
 ammo_cost = 1
-sound_effect = "small_auto1"
-sound_max_range = 7500
-sound_att = 1.75
-battery_drain = 0.0
-weight = 3.25
-impact_force = 5.0
 eject_casings = true
 casing_size = 0.5
+battery_drain = 0.0
+impact_force = 5.0
+shoot_single_sfx = "small_auto1"
+sound_max_range = 7500
+sound_att = 1.75
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("4_ithbj")

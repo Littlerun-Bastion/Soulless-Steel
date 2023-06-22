@@ -31,7 +31,6 @@ reload_speed = 1.4
 muzzle_heat = 8.0
 ammo_cost = 25
 battery_drain = 9.0
-sound_effect = "en_shotgun"
 sound_max_range = 1000
 sound_att = 1.75
 

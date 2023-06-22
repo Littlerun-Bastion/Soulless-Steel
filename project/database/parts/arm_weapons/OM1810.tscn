@@ -1,11 +1,14 @@
-[gd_scene load_steps=8 format=3 uid="uid://41ts7djf0gtg"]
+[gd_scene load_steps=11 format=3 uid="uid://41ts7djf0gtg"]
 
 [ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_nac44"]
 [ext_resource type="Texture2D" uid="uid://d3whgp21d11pf" path="res://assets/images/mechas/arm_weapons/OM1810/OM1810_PV.png" id="2_gh2f2"]
 [ext_resource type="PackedScene" uid="uid://cwb3xahle5c6j" path="res://game/ui/effects/PressureMuzzleFlash.tscn" id="3_kqwcc"]
 [ext_resource type="PackedScene" uid="uid://dygopina5r5nh" path="res://database/parts/projectiles/OM1810_projectile.tscn" id="4_px6kv"]
+[ext_resource type="AudioStream" uid="uid://urogo7x0v8m4" path="res://assets/audio/sfx/minigun_sfxs/minigun_shotloop_1.ogg" id="5_0kbpa"]
+[ext_resource type="AudioStream" uid="uid://cx32ugaj4sk36" path="res://assets/audio/sfx/minigun_sfxs/minigun_spoolup_1.ogg" id="5_7aw02"]
 [ext_resource type="Texture2D" uid="uid://dfggaiofb6lm" path="res://assets/images/mechas/arm_weapons/OM1810/OM1810_sub.png" id="5_nov0y"]
 [ext_resource type="Texture2D" uid="uid://b7m3x2rls7nri" path="res://assets/images/mechas/arm_weapons/OM1810/OM1810_main.png" id="6_6hwtx"]
+[ext_resource type="AudioStream" uid="uid://c1h6weww85r1b" path="res://assets/audio/sfx/minigun_sfxs/minigun_spooldown_1.ogg" id="6_ejvfk"]
 [ext_resource type="Texture2D" uid="uid://e72cmaimnq2o" path="res://assets/images/mechas/arm_weapons/OM1810/OM1810_glow.png" id="7_fhrjf"]
 
 [node name="Part" type="Node"]
@@ -14,6 +17,7 @@ part_name = "OM1810"
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "Rivet Gun"
+weight = 4.1
 image = ExtResource("2_gh2f2")
 muzzle_flash = ExtResource("3_kqwcc")
 muzzle_flash_size = 1.2
@@ -27,13 +31,15 @@ clip_size = 35
 reload_speed = 2.4
 muzzle_heat = 55.8
 ammo_cost = 1
-sound_effect = "pressure_gun_heavy"
-sound_max_range = 7500
-sound_att = 1.75
-weight = 4.1
-impact_force = 7.0
 eject_casings = true
 casing_size = 0.75
+impact_force = 7.0
+shoot_single_sfx = ""
+shoot_loop_sfx = ExtResource("5_0kbpa")
+sound_max_range = 7500
+sound_att = 1.75
+spoolup_sfx = ExtResource("5_7aw02")
+spooldown_sfx = ExtResource("6_ejvfk")
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_nov0y")

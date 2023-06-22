@@ -14,6 +14,7 @@ part_name = "MA-H250"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Autocannon"
+weight = 5.8
 image = ExtResource("2_pnixj")
 muzzle_flash = ExtResource("5")
 projectile = ExtResource("4_0sqvx")
@@ -27,13 +28,12 @@ total_ammo = 240
 max_ammo = 240
 reload_speed = 3.4
 muzzle_heat = 22.5
-sound_effect = "medium_auto1"
-sound_max_range = 7500
-sound_att = 1.75
-weight = 5.8
-impact_force = 8.0
 eject_casings = true
 casing_size = 0.8
+impact_force = 8.0
+shoot_single_sfx = "medium_auto1"
+sound_max_range = 7500
+sound_att = 1.75
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_5ffdo")

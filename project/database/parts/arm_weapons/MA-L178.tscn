@@ -14,6 +14,7 @@ part_name = "MA-L178"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Chaingun"
+weight = 4.1
 image = ExtResource("2_n47yx")
 muzzle_flash = ExtResource("8")
 muzzle_flash_size = 0.8
@@ -31,13 +32,12 @@ clip_size = 35
 reload_speed = 2.4
 muzzle_heat = 12.2
 ammo_cost = 1
-sound_effect = "small_auto2"
-sound_max_range = 7500
-sound_att = 1.75
-weight = 4.1
-impact_force = 7.0
 eject_casings = true
 casing_size = 0.75
+impact_force = 7.0
+shoot_single_sfx = "small_auto2"
+sound_max_range = 7500
+sound_att = 1.75
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_exs2e")

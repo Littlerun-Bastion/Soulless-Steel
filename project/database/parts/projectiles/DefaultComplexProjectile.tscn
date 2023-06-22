@@ -1,8 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://c2dreacxcacj6"]
 
-[ext_resource type="Script" path="res://database/parts/ComplexProjectile.gd" id="1_smont"]
+[ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_smont"]
 [ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="3_w0rh8"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_157bv"]
+
 
 [sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1

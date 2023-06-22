@@ -143,8 +143,8 @@ func shoot(amount := 1):
 	add_time(data.burst_fire_rate)
 	clip_ammo -= amount
 	heat = min(heat + data.muzzle_heat*4, 200)
-	if data.sound_effect:
-		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
+	if data.shoot_single_sfx:
+		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 
 func burst_cooldown():
 	add_time(data.fire_rate + data.burst_fire_rate)

@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://hwy1kc605x5t" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head.png" id="6"]
 [ext_resource type="Texture2D" path="res://game/fx/Heatmaps/Whitehot.tres" id="7"]
 
-[node name="Part3" type="Node2D"]
+[node name="Part" type="Node2D"]
 script = ExtResource("4")
 part_name = "MSV-L3J-H"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"

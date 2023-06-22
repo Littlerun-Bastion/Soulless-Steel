@@ -101,7 +101,7 @@ func _input(event):
 			dash(get_input().normalized())
 		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
-	elif event.is_action_pressed("debug_1"):
+	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
 
 
@@ -120,6 +120,7 @@ func update_camera_zoom(dt):
 		target *= INSIDE_BUILDING_ZOOM_MUL
 	
 	Cam.zoom = lerp(Cam.zoom, target, clamp(dt*ZOOM_SPEED, 0.0, 1.0))
+
 
 func update_camera_offset(dt):
 	if head and head.visual_range > 0:
@@ -146,14 +147,17 @@ func update_camera_offset(dt):
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
 		Cam.offset = Cam.offset.limit_length(head.visual_range)
 
+
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
 	var prev_hp = hp
 	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name)
 	if prev_hp > hp:
 		emit_signal("lost_health")
 
+
 func do_hitstop():
 	Cam.shake((HITSTOP_DURATION + 1) * HITSTOP_TIMESCALE, 15, 50, 10)
+
 
 func knockback(strength, dir, should_rotate = true):
 	super.knockback(strength, dir, should_rotate)
@@ -188,6 +192,10 @@ func check_weapon_input(weapon_name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
 	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
 		shoot(weapon_name, true)
+	if not Input.is_action_pressed(weapon_name+"_shoot"):
+		if spooling[weapon_name]:
+			WeaponSFXs[weapon_name].spool_up.stop()
+		spooling[weapon_name] = false
 
 
 func setup(arena_ref):

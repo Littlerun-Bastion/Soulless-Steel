@@ -14,7 +14,7 @@
 [ext_resource type="Script" path="res://database/parts/core.gd" id="12"]
 [ext_resource type="Texture2D" uid="uid://bvyblec7mahi8" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_pv.png" id="13"]
 
-[node name="Part3" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource("12")
 part_name = "MSV-L3J"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"

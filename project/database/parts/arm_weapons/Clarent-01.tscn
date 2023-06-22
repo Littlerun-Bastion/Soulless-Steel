@@ -14,6 +14,8 @@ part_name = "Clarent-01"
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "EN Shotgun"
+tags = Array[String](["arm_weapon", "claymore"])
+weight = 3.3
 description = "An automatic energy shotgun made by Claymore International, designed for mechs with poor visual sensors to lay down a wall of fire without relying on accuracy. While the damage on impact is poor, especially against Armor, it imparts quite a lot of heat."
 image = ExtResource("2_e3xv8")
 muzzle_flash = ExtResource("6")
@@ -32,12 +34,10 @@ bullet_spread = 2.8
 bullet_spread_delay = 0.05
 reload_speed = 1.4
 ammo_cost = 25
-sound_effect = "en_shotgun_light"
+battery_drain = 12.0
+shoot_single_sfx = "en_shotgun_light"
 sound_max_range = 1000
 sound_att = 1.75
-battery_drain = 12.0
-weight = 3.3
-tags = Array[String](["arm_weapon", "claymore"])
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("2_irln7")

@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://database/parts/shoulder.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://cc42osf883n2t" path="res://assets/images/mechas/shoulders/O10/O10-shoulder_pv.png" id="4"]
 
-[node name="Part3" type="Node"]
+[node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "O10-Shoulderguard"
 manufacturer_name = "Orontes Constructions"

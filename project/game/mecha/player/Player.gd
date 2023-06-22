@@ -192,6 +192,10 @@ func check_weapon_input(weapon_name, node, weapon_ref):
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
 	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
 		shoot(weapon_name, true)
+	if not Input.is_action_pressed(weapon_name+"_shoot"):
+		if spooling[weapon_name]:
+			WeaponSFXs[weapon_name].spool_up.stop()
+		spooling[weapon_name] = false
 
 
 func setup(arena_ref):

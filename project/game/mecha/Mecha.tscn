@@ -1598,6 +1598,17 @@ bus = &"SFX"
 [node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/LeftArmWeapon"]
 bus = &"SFX"
 
+[node name="LeftShoulderWeapon" type="Node" parent="SFXs"]
+
+[node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/LeftShoulderWeapon"]
+bus = &"SFX"
+
+[node name="SpoolUp" type="AudioStreamPlayer2D" parent="SFXs/LeftShoulderWeapon"]
+bus = &"SFX"
+
+[node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/LeftShoulderWeapon"]
+bus = &"SFX"
+
 [node name="RightArmWeapon" type="Node" parent="SFXs"]
 
 [node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/RightArmWeapon"]
@@ -1607,6 +1618,17 @@ bus = &"SFX"
 bus = &"SFX"
 
 [node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/RightArmWeapon"]
+bus = &"SFX"
+
+[node name="RightShoulderWeapon" type="Node" parent="SFXs"]
+
+[node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/RightShoulderWeapon"]
+bus = &"SFX"
+
+[node name="SpoolUp" type="AudioStreamPlayer2D" parent="SFXs/RightShoulderWeapon"]
+bus = &"SFX"
+
+[node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/RightShoulderWeapon"]
 bus = &"SFX"
 
 [connection signal="create_hitbox_signal" from="ArmWeaponLeft/MeleeHitboxes" to="." method="_on_MeleeHitboxes_create_hitbox" binds= ["left"]]

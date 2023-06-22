@@ -122,15 +122,28 @@ signal mecha_extracted
 #SFXs
 @onready var ChassisAmbientSFX = $SFXs/ChassisAmbient
 @onready var GeneratorAmbientSFX = $SFXs/GeneratorAmbient
-@onready var LeftArmWeaponSFX = {
-	"shoot_loop": $SFXs/LeftArmWeapon/ShootLoop,
-	"spool_up": $SFXs/LeftArmWeapon/SpoolUp,
-	"spool_down": $SFXs/LeftArmWeapon/SpoolDown,
-}
-@onready var RightArmWeaponSFX = {
-	"shoot_loop": $SFXs/RightArmWeapon/ShootLoop,
-	"spool_up": $SFXs/RightArmWeapon/SpoolUp,
-	"spool_down": $SFXs/RightArmWeapon/SpoolDown,
+@onready var WeaponSFXs = {
+	"arm_weapon_left": {
+		"shoot_loop": $SFXs/LeftArmWeapon/ShootLoop,
+		"spool_up": $SFXs/LeftArmWeapon/SpoolUp,
+		"spool_down": $SFXs/LeftArmWeapon/SpoolDown,
+	},
+	"arm_weapon_right": {
+		"shoot_loop": $SFXs/RightArmWeapon/ShootLoop,
+		"spool_up": $SFXs/RightArmWeapon/SpoolUp,
+		"spool_down": $SFXs/RightArmWeapon/SpoolDown,
+	},
+
+	"shoulder_weapon_left": {
+		"shoot_loop": $SFXs/LeftShoulderWeapon/ShootLoop,
+		"spool_up": $SFXs/LeftShoulderWeapon/SpoolUp,
+		"spool_down": $SFXs/LeftShoulderWeapon/SpoolDown,
+	},
+	"shoulder_weapon_right": {
+		"shoot_loop": $SFXs/RightShoulderWeapon/ShootLoop,
+		"spool_up": $SFXs/RightShoulderWeapon/SpoolUp,
+		"spool_down": $SFXs/RightShoulderWeapon/SpoolDown,
+	},
 }
 
 var mecha_name = "Mecha Name"
@@ -164,6 +177,12 @@ var lock_strength = 1.0
 var weight = 0.0
 var exposed_hits = 3.0
 var exposed_invuln_timer = 0.0
+var spooling = {
+	"arm_weapon_left": false,
+	"arm_weapon_right": false,
+	"shoulder_weapon_left": false,
+	"shoulder_weapon_right": false,
+}
 
 var weight_capacity = 100.0
 
@@ -728,14 +747,13 @@ func set_arm_weapon(part_name, side):
 		push_error("Mecha doesn't have a core to assign arm weapon")
 		return
 
-	var node
-	var sfx_node
+	var node; var sfx_node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
-		sfx_node = LeftArmWeaponSFX
+		sfx_node = WeaponSFXs["arm_weapon_left"]
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
-		sfx_node = RightArmWeaponSFX
+		sfx_node = WeaponSFXs["arm_weapon_right"]
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -768,11 +786,13 @@ func set_shoulder_weapon(part_name, side):
 		push_error("Mecha doesn't have a core to assign shoulder weapon")
 		return
 
-	var node
+	var node; var sfx_node
 	if side == SIDE.LEFT:
 		node = $ShoulderWeaponLeft
+		sfx_node = WeaponSFXs["shoulder_weapon_left"]
 	elif side == SIDE.RIGHT:
 		node = $ShoulderWeaponRight
+		sfx_node = WeaponSFXs["shoulder_weapon_right"]
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -791,6 +811,9 @@ func set_shoulder_weapon(part_name, side):
 		shoulder_weapon_right = part_data
 
 	node.setup(part_data, core, side)
+	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
+	sfx_node.spool_up.stream = part_data.spool_up_sfx
+	sfx_node.spool_down.stream = part_data.spool_down_sfx
 	
 	set_max_heat()
 
@@ -1406,10 +1429,10 @@ func stop_sprinting(sprint_dir):
 #COMBAT METHODS
 
 func shoot(type, is_auto_fire = false):
-	var node
-	var weapon_ref
-	var bloom
-	var eject_angle = 0.0
+	if is_dead:
+		return
+	
+	var node; var weapon_ref; var bloom; var eject_angle
 	if type == "arm_weapon_left":
 		node = $ArmWeaponLeft
 		weapon_ref = arm_weapon_left
@@ -1421,6 +1444,7 @@ func shoot(type, is_auto_fire = false):
 		weapon_ref = arm_weapon_right
 		right_arm_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_arm_bloom_count * weapon_ref.accuracy_bloom
+		eject_angle = 0.0
 	elif type == "shoulder_weapon_left":
 		node = $ShoulderWeaponLeft
 		weapon_ref = shoulder_weapon_left
@@ -1432,9 +1456,20 @@ func shoot(type, is_auto_fire = false):
 		weapon_ref = shoulder_weapon_right
 		right_shoulder_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
+		eject_angle = 0.0
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
-
+		return
+	var sfx_node = WeaponSFXs[type]
+	if weapon_ref.spool_up_sfx:
+		if not spooling[type]:
+			spooling[type] = true
+			sfx_node.spool_up.play()
+			return
+		elif sfx_node.spool_up.is_playing():
+			return
+			
+	
 	if weapon_ref.is_melee:
 		node.light_attack()
 		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
@@ -1442,8 +1477,6 @@ func shoot(type, is_auto_fire = false):
 		return
 
 	while node.burst_count < weapon_ref.burst_size:
-		if is_dead:
-			return
 		var amount
 		if weapon_ref.uses_battery:
 			amount = weapon_ref.number_projectiles

@@ -923,6 +923,7 @@ offset_bottom = 1005.0
 
 [node name="ExposedLabel2" type="Label" parent="SubViewportContainer/SubViewport/ExposedLabels"]
 visible = false
+layout_mode = 0
 offset_right = 474.0
 offset_bottom = 126.0
 theme_override_fonts/font = ExtResource("4_v3ahc")
@@ -931,6 +932,7 @@ text = "WARNING"
 horizontal_alignment = 2
 
 [node name="ExposedLabel" type="Label" parent="SubViewportContainer/SubViewport/ExposedLabels"]
+layout_mode = 0
 offset_left = -1.0
 offset_top = -23.0
 offset_right = 473.0

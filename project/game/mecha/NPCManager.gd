@@ -32,7 +32,7 @@ func setup():
 
 func get_special_npc(npc_name):
 	for npc in SPECIAL_NPCS:
-		if npc.npc_name == npc_name:
+		if npc.mecha_name == npc_name:
 			return npc
 	push_error("Couldn't find this special npc: " + str(npc_name))
 	return false

@@ -40,7 +40,9 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	add_enemy()
+	for enemy in ArenaManager.current_challengers:
+		var enemy_design = NPCManager.get_design_data(NPCManager.get_special_npc(enemy))
+		add_enemy(enemy_design, enemy)
 	
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting",Callable(self,"_on_ExitPos_mecha_extracting"))
@@ -188,7 +190,7 @@ func add_player():
 	player_ammo_set()
 
 
-func add_enemy():
+func add_enemy(design_data, enemy_name):
 	var enemy = ENEMY.instantiate()
 	Mechas.add_child(enemy)
 	enemy.position = get_random_start_position([0])
@@ -197,7 +199,7 @@ func add_enemy():
 	enemy.connect("died",Callable(self,"_on_mecha_died"))
 	enemy.connect("player_kill",Callable(self,"_on_mecha_player_kill"))
 	all_mechas.push_back(enemy)
-	enemy.setup(self, is_tutorial)
+	enemy.setup(self, is_tutorial, design_data, enemy_name)
 
 
 func get_mechas():

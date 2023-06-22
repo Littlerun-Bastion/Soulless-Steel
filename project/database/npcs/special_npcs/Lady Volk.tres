@@ -1,10 +1,10 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://m0rkq4ocft3x"]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://d3lxw0dmgds3x"]
 
-[ext_resource type="Script" path="res://database/npcs/special_npc.gd" id="1_l3ihf"]
+[ext_resource type="Script" path="res://database/npcs/special_npc.gd" id="1_mk1fg"]
 
 [resource]
-script = ExtResource("1_l3ihf")
-mecha_name = "Example"
+script = ExtResource("1_mk1fg")
+mecha_name = "Lady Volk"
 combat_behaviour = "default"
 difficulty = 5.0
 head = Array[String](["MSV-L3J-H"])
@@ -14,7 +14,7 @@ generator = Array[String](["type_1"])
 chipset = Array[String](["type_2"])
 chassis = Array[String](["MSV-L3J-L"])
 thruster = Array[String](["test1"])
-arm_weapon_left = Array[String](["OM1804"])
+arm_weapon_left = Array[String](["MA-L127"])
 arm_weapon_right = Array[String](["MA-L127"])
 shoulder_weapon_left = Array[String](["TORI-ML"])
-shoulder_weapon_right = Array[String]([])
+shoulder_weapon_right = Array[String](["TORI-ML"])

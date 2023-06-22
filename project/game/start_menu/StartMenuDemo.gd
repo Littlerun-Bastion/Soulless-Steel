@@ -75,7 +75,7 @@ func _on_Hangar_pressed():
 
 func _on_Arena_pressed():
 	AudioManager.play_sfx("confirm")
-	start_game("main")
+	get_tree().change_scene_to_file("res://game/ui/ladder/Ladder.tscn")
 
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")

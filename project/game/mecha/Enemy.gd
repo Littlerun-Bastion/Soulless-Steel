@@ -60,9 +60,12 @@ func _draw():
 			if i:
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
 
-func setup(arena_ref, is_tutorial):
+func setup(arena_ref, is_tutorial, design_data, _name):
 	arena = arena_ref
-	mecha_name = "Mecha " + str(randi()%2000)
+	if _name:
+		mecha_name = _name
+	else:
+		mecha_name = "Mecha " + str(randi()%2000)
 	if is_tutorial:
 		set_generator(PartManager.get_random_part_name("generator"))
 		set_chipset("type_2")
@@ -85,6 +88,7 @@ func setup(arena_ref, is_tutorial):
 		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
 		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
+		print(mecha_name  + " spawned in.")
 	
 	#For the moment hard set ies' movement type to free
 	if movement_type == "tank":

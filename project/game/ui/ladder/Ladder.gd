@@ -38,3 +38,24 @@ func setup_leaderboards(lb_idx):
 	#Setup labels
 	LeaderboardName.text = lb_data.name
 	LeaderboardTier.text = lb_data.tier
+
+func start_game(mode):
+	AudioManager.stop_bgm()
+	PlayerStatManager.NumberofExtracts = 0
+	PlayerStatManager.Credits = 0
+	match mode:
+		"main":
+			ArenaManager.set_map_to_load("arena_oldgate")
+		"tutorial":
+			ArenaManager.set_map_to_load("tutorial")
+		"test":
+			ArenaManager.set_map_to_load("test_buildings")
+		_:
+			push_error("Not a valid mode: " + str(mode))
+	ShaderEffects.play_transition(5000.0, 0, 0.5)
+	# warning-ignore:return_value_discarded
+	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
+
+func start_match():
+	start_game("main")
+	pass # Replace with function body.

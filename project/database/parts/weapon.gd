@@ -53,10 +53,10 @@ extends Node
 @export_category("Sound Attributes")
 @export var shoot_single_sfx := "test"
 @export var shoot_loop_sfx := AudioStream
+@export var spool_up_sfx := AudioStream
+@export var spool_down_sfx := AudioStream
 @export var sound_max_range := 2000
 @export var sound_att := 1.00
-@export var spoolup_sfx := AudioStream
-@export var spooldown_sfx := AudioStream
 
 
 @export_category("Beam Behaviours")

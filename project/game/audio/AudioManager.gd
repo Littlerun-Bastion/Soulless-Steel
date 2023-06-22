@@ -70,7 +70,7 @@ func setup_sfxs():
 	else:
 		push_error("An error occurred when trying to access sfxs path: " + str(DirAccess.get_open_error()))
 
-#Bus methods
+##BUS METHODS
 
 #Expects a value between 0 and 1
 func set_bus_volume(which_bus: int, value: float):
@@ -92,7 +92,7 @@ func get_bus_volume(which_bus: int):
 	else:
 		push_error("Not a valid bus to set volume: " + str(which_bus))
 
-#BGM methods
+##BGM METHODS
 
 func play_bgm(bgm_name, start_from_beginning = false, fade_in_speed_override = false):
 	if cur_bgm:

@@ -36,10 +36,10 @@ casing_size = 0.75
 impact_force = 7.0
 shoot_single_sfx = ""
 shoot_loop_sfx = ExtResource("5_0kbpa")
+spool_up_sfx = ExtResource("5_7aw02")
+spool_down_sfx = ExtResource("6_ejvfk")
 sound_max_range = 7500
 sound_att = 1.75
-spoolup_sfx = ExtResource("5_7aw02")
-spooldown_sfx = ExtResource("6_ejvfk")
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_nov0y")

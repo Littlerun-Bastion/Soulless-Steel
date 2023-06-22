@@ -85,7 +85,6 @@ signal mecha_extracted
 @onready var RightChassis = $Chassis/Right/Main
 @onready var RightChassisSub = $Chassis/Right/Sub
 @onready var RightChassisGlow = $Chassis/Right/Glow
-@onready var ChassisAmbientSFX = $ChassisAmbientSound
 @onready var ChassisSprintGlow = $Chassis/SprintGlow
 #Particles
 @onready var Particle = {
@@ -120,9 +119,19 @@ signal mecha_extracted
 	"chassis_hover": [$Chassis/HoverParticles1, $Chassis/HoverParticles2],
 	"chassis_sprint": [$Chassis/SprintThrust1, $Chassis/SprintThrust2],
 }
-
-#Other parts
-@onready var GeneratorAmbientSFX = $GeneratorAmbientSound
+#SFXs
+@onready var ChassisAmbientSFX = $SFXs/ChassisAmbient
+@onready var GeneratorAmbientSFX = $SFXs/GeneratorAmbient
+@onready var LeftArmWeaponSFX = {
+	"shoot_loop": $SFXs/LeftArmWeapon/ShootLoop,
+	"spool_up": $SFXs/LeftArmWeapon/SpoolUp,
+	"spool_down": $SFXs/LeftArmWeapon/SpoolDown,
+}
+@onready var RightArmWeaponSFX = {
+	"shoot_loop": $SFXs/RightArmWeapon/ShootLoop,
+	"spool_up": $SFXs/RightArmWeapon/SpoolUp,
+	"spool_down": $SFXs/RightArmWeapon/SpoolDown,
+}
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -720,10 +729,13 @@ func set_arm_weapon(part_name, side):
 		return
 
 	var node
+	var sfx_node
 	if side == SIDE.LEFT:
 		node = $ArmWeaponLeft
+		sfx_node = LeftArmWeaponSFX
 	elif side == SIDE.RIGHT:
 		node = $ArmWeaponRight
+		sfx_node = RightArmWeaponSFX
 	else:
 		push_error("Not a valid side: " + str(side))
 
@@ -744,9 +756,11 @@ func set_arm_weapon(part_name, side):
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
 	node.setup(part_data, core, side)
+	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
+	sfx_node.spool_up.stream = part_data.spool_up_sfx
+	sfx_node.spool_down.stream = part_data.spool_down_sfx
+		
 	set_max_heat()
-	#if part_data.get("projectile_data") != null:
-		#print(part_data.projectile_data.dropoff_modifier)
 
 
 func set_shoulder_weapon(part_name, side):

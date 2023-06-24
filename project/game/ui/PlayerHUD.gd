@@ -159,8 +159,8 @@ func setup(player_ref, mechas_ref):
 	setup_heatbar()
 	setup_weapon_slots()
 	setup_cursor()
-	if player.chipset.has_radar:
-		PlayerRadar.setup(mechas, player, player.chipset.radar_range, player.chipset.radar_refresh_rate)
+	if player.build.chipset.has_radar:
+		PlayerRadar.setup(mechas, player, player.build.chipset.radar_range, player.build.chipset.radar_refresh_rate)
 		PlayerRadar.show()
 	else:
 		PlayerRadar.hide()
@@ -196,16 +196,16 @@ func setup_weapon_slots():
 	for slot in WeaponSlots.get_children():
 		slot.queue_free()
 	for weapon in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
-		if player.get(weapon):
+		if player.build[weapon]:
 			var slot = WEAPON_SLOT.instantiate()
 			WeaponSlots.add_child(slot)
-			slot.setup(player.get(weapon), weapon)
+			slot.setup(player.build[weapon], weapon)
 
 
 func setup_cursor():
 	Cursor.set_max_ammo("left", player.get_clip_ammo("arm_weapon_left"))
 	Cursor.set_max_ammo("right", player.get_clip_ammo("arm_weapon_right"))
-	Cursor.set_lock_on_reticle_size(player.chipset.lock_on_reticle_size)
+	Cursor.set_lock_on_reticle_size(player.build.chipset.lock_on_reticle_size)
 
 
 func update_lifebar(value):

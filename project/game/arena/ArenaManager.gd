@@ -44,6 +44,7 @@ func get_map(map_name):
 	assert(MAPS.has(map_name),"Not a valid map name: " + str(map_name))
 	return MAPS[map_name].instantiate()
 
+
 func setup_challenge(npc_name):
 	current_challengers = []
 	var npc = NPCManager.get_special_npc(npc_name)

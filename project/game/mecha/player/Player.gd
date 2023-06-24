@@ -65,20 +65,20 @@ func _input(event):
 	
 	if event.is_action_pressed("interact"):
 		AudioManager.play_sfx("test", global_position)
-	elif event.is_action_pressed("arm_weapon_left_shoot") and arm_weapon_left:
+	elif event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponLeft.reloading:
 			shoot("arm_weapon_left")
-	elif event.is_action_pressed("arm_weapon_right_shoot") and arm_weapon_right:
+	elif event.is_action_pressed("arm_weapon_right_shoot") and build.arm_weapon_right:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponRight.reload()
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponRight.reloading:
 			shoot("arm_weapon_right")
-	elif event.is_action_pressed("shoulder_weapon_left_shoot") and shoulder_weapon_left and\
+	elif event.is_action_pressed("shoulder_weapon_left_shoot") and build.shoulder_weapon_left and\
 	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_left")
-	elif event.is_action_pressed("shoulder_weapon_right_shoot") and shoulder_weapon_right and\
+	elif event.is_action_pressed("shoulder_weapon_right_shoot") and build.shoulder_weapon_right and\
 	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode"):
@@ -87,10 +87,10 @@ func _input(event):
 	elif event.is_action_released("reload_mode"):
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_reload_mode", false)
-	elif event.is_action_pressed("lock_mode") and chipset.can_lock:
+	elif event.is_action_pressed("lock_mode") and build.chipset.can_lock:
 		cur_mode = MODES.ACTIVATING_LOCK
 		emit_signal("update_lock_mode", true)
-	elif event.is_action_released("lock_mode") and chipset.can_lock:
+	elif event.is_action_released("lock_mode") and build.chipset.can_lock:
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
@@ -123,7 +123,7 @@ func update_camera_zoom(dt):
 
 
 func update_camera_offset(dt):
-	if head and head.visual_range > 0:
+	if build.head and build.head.visual_range > 0:
 		var mp = get_viewport().get_mouse_position()
 		var vp_size = get_viewport().get_visible_rect().size
 		var margin = MOVE_CAMERA_SCREEN_MARGIN
@@ -145,7 +145,7 @@ func update_camera_offset(dt):
 		abs_dir = abs_dir.normalized()
 		strength *= strength*strength #Make it cubically strong on edges
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
-		Cam.offset = Cam.offset.limit_length(head.visual_range)
+		Cam.offset = Cam.offset.limit_length(build.head.visual_range)
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
@@ -178,17 +178,20 @@ func apply_recoil(type, node, recoil):
 
 
 func check_input():
-	check_weapon_input("arm_weapon_left", $ArmWeaponLeft, arm_weapon_left)
-	check_weapon_input("arm_weapon_right", $ArmWeaponRight, arm_weapon_right)
-	check_weapon_input("shoulder_weapon_left", $ShoulderWeaponLeft, shoulder_weapon_left)
-	check_weapon_input("shoulder_weapon_right", $ShoulderWeaponRight, shoulder_weapon_right)
+	check_weapon_input("arm_weapon_left")
+	check_weapon_input("arm_weapon_right")
+	check_weapon_input("shoulder_weapon_left")
+	check_weapon_input("shoulder_weapon_right")
 	
 	#Safety check for sprinting, since it was bugging sometimes
 	if not Input.is_action_pressed("thruster_dash"):
 		stop_sprinting(get_input().normalized())
 		sprinting_timer = 0.0
 
-func check_weapon_input(weapon_name, node, weapon_ref):
+
+func check_weapon_input(weapon_name):
+	var node = get_weapon_part(weapon_name)
+	var weapon_ref = build[weapon_name]
 	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
 	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
 		shoot(weapon_name, true)

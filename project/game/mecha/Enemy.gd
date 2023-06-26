@@ -62,7 +62,7 @@ func _draw():
 
 func setup(arena_ref, is_tutorial, design_data, _name):
 	arena = arena_ref
-	if _name:
+	if _name and typeof(_name) == TYPE_STRING:
 		mecha_name = _name
 	else:
 		mecha_name = "Mecha " + str(randi()%2000)

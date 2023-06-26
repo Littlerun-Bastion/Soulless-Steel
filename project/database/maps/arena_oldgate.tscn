@@ -111,7 +111,19 @@ scale = Vector2(5, 5)
 position = Vector2(-3997.62, 8827.38)
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(-678.811, 4405.45)
+position = Vector2(-1506, -2665)
+
+[node name="Pos3" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(5961, -2360)
+
+[node name="Pos4" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(2608, 3863)
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(805, -8608)
+
+[node name="Pos6" parent="StartPositions" instance=ExtResource("6")]
+position = Vector2(-4259, 186)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852

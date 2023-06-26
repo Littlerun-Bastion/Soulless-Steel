@@ -6,11 +6,13 @@ const MAPS_PATH = "res://database/maps/"
 
 var map_to_load = false
 var current_challengers = ["Lady Volk"]
+var exhibitioner_count = 0
+var mode = ""
 
-enum MODE {CHALLENGE, EXHIBITION, EXPEDITION}
 
 
 func _ready():
+	refresh_exhibition()
 	setup_maps()
 
 
@@ -43,8 +45,6 @@ func get_current_map():
 func get_map(map_name):
 	assert(MAPS.has(map_name),"Not a valid map name: " + str(map_name))
 	return MAPS[map_name].instantiate()
-
-
-func setup_challenge(npc_name):
-	current_challengers = []
-	var npc = NPCManager.get_special_npc(npc_name)
+	
+func refresh_exhibition():
+	exhibitioner_count = randi_range(2, 5)

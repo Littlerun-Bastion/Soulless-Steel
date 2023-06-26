@@ -23,6 +23,8 @@ const LEADERBOARDS =[
 @onready var LeaderboardTier = $LeaderboardsName/Tier
 @onready var OpponentsLabel = $ColorRect/VBoxContainer/Opponents/Label2
 
+var selected_challenger
+
 func _ready():
 	setup_leaderboards(1)
 
@@ -63,8 +65,26 @@ func start_match():
 	pass # Replace with function body.
 
 func on_ladderlabel_pressed(selected_mecha):
-	ArenaManager.current_challengers = [selected_mecha]
-	OpponentsLabel.text = str("'" + selected_mecha + "'")
-	print(ArenaManager.current_challengers)
+	selected_challenger = selected_mecha
+	$VBoxContainer2/Button.disabled = false
+	for child in LadderButtons.get_children():
+		if child.Name.text == selected_mecha:
+			child.press()
+		else:
+			child.unpress()
 
-		
+func set_challenge_mode():
+	ArenaManager.mode = "Challenge"
+	ArenaManager.current_challengers = [selected_challenger]
+	OpponentsLabel.text = str("'" + selected_challenger + "'")
+	for child in LadderButtons.get_children():
+		if child.Name.text == selected_challenger:
+			child.press()
+		else:
+			child.unpress()
+	$VBoxContainer2/Button.disabled = true
+
+func set_exhibition_mode():
+	ArenaManager.mode = "Exhibition"
+	OpponentsLabel.text = str("'" + str(ArenaManager.exhibitioner_count) + " PARTICIPANTS'")
+	

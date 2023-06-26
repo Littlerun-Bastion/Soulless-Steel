@@ -40,9 +40,14 @@ func _ready():
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
-	for enemy in ArenaManager.current_challengers:
-		var enemy_design = NPCManager.get_design_data(NPCManager.get_special_npc(enemy))
-		add_enemy(enemy_design, enemy)
+	if ArenaManager.mode == "Challenge":
+		for enemy in ArenaManager.current_challengers:
+			var enemy_design = NPCManager.get_design_data(NPCManager.get_special_npc(enemy))
+			add_enemy(enemy_design, enemy)
+	elif ArenaManager.mode == "Exhibition":
+		for enemy in ArenaManager.exhibitioner_count:
+			var enemy_design = NPCManager.get_design_data(NPCManager.get_random_npc())
+			add_enemy(enemy_design, enemy)
 	
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting",Callable(self,"_on_ExitPos_mecha_extracting"))

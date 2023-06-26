@@ -195,6 +195,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 40
+disabled = true
 text = "Challenge"
 
 [node name="Button2" type="Button" parent="VBoxContainer2"]
@@ -386,4 +387,6 @@ theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 35
 text = "Regional Ladder"
 
+[connection signal="pressed" from="VBoxContainer2/Button" to="." method="set_challenge_mode"]
+[connection signal="pressed" from="VBoxContainer2/Button2" to="." method="set_exhibition_mode"]
 [connection signal="pressed" from="StartMatch" to="." method="start_match"]

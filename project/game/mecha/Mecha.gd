@@ -23,6 +23,8 @@ const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
 const EXPOSED_INVULN_WINDOW = 1
+const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
+const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
 
 signal create_projectile
 signal create_casing
@@ -31,6 +33,7 @@ signal took_damage
 signal died
 signal player_kill
 signal mecha_extracted
+signal made_sound
 
 @export var speed_modifier = 1.0
 @export var display_mode = false
@@ -154,6 +157,7 @@ var arena = false
 var is_inside_building = false
 var is_entering_building = false
 var is_exposed = false
+var passive_sounds_timer = 0.0
 
 var max_hp = 10
 var hp = 10
@@ -286,7 +290,12 @@ func _ready():
 
 
 func _physics_process(dt):
-	if paused or is_stunned():
+	if paused:
+		return
+	
+	generate_passive_sounds(dt)
+	
+	if is_stunned():
 		return
 	
 	tank_lookat_target = global_position + tank_move_target
@@ -479,6 +488,19 @@ func set_parts_from_design(data):
 			callv("set_" + type, [data[part_name]])
 
 
+func generate_passive_sounds(dt):
+	passive_sounds_timer = max(passive_sounds_timer - dt, 0.0)
+	if passive_sounds_timer <= 0.0:
+		passive_sounds_timer = PASSIVE_SOUNDS_INTERVAL
+		if build.chassis:
+			create_sound("quiet", "chassis", build.chassis.ambient_sfx_max_distance)
+		for weapon_type in WeaponSFXs.keys():
+			var sfx_node = WeaponSFXs[weapon_type]
+			if sfx_node.shoot_loop.is_playing():
+				create_sound("loud", "shooting", sfx_node.shoot_loop.max_distance)
+			
+
+
 func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	max_speed = _max_speed
 	friction = _friction
@@ -576,6 +598,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 			exposed_invuln_timer = 0.0
 			if exposed_hits <= 0:
 				AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
+				create_sound("loud", "explosion", 10000)
 				die(source_info, weapon_name)
 
 
@@ -744,6 +767,16 @@ func update_heat(dt):
 		node.material.set_shader_parameter("heat", mecha_heat_visible)
 
 
+func create_sound(volume_type, type, max_distance):
+	emit_signal("made_sound", {
+		"volume_type": volume_type,
+		"type": type,
+		"position": global_position,
+		"max_distance": max_distance,
+		"source": self
+	})
+
+
 #PARTS SETTERS
 
 func set_arm_weapon(part_name, side):
@@ -777,11 +810,8 @@ func set_arm_weapon(part_name, side):
 		build.arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
-	node.setup(part_data, build.core, side)
-	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
-	sfx_node.spool_up.stream = part_data.spool_up_sfx
-	sfx_node.spool_down.stream = part_data.spool_down_sfx
-	print(sfx_node.shoot_loop.stream, sfx_node.spool_up.stream,sfx_node.spool_down.stream)
+	node.setup(self, part_data, build.core, side)
+	set_weapon_sfx_nodes(sfx_node, part_data)
 	set_max_heat()
 
 
@@ -814,13 +844,18 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		build.shoulder_weapon_right = part_data
 
-	node.setup(part_data, build.core, side)
-
-	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
-	sfx_node.spool_up.stream = part_data.spool_up_sfx
-	sfx_node.spool_down.stream = part_data.spool_down_sfx
-	
+	node.setup(self, part_data, build.core, side)
+	set_weapon_sfx_nodes(sfx_node, part_data)
 	set_max_heat()
+
+
+func set_weapon_sfx_nodes(sfx_node, part_data):
+	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
+	sfx_node.shoot_loop.max_distance = part_data.sound_max_range
+	sfx_node.spool_up.stream = part_data.spool_up_sfx
+	sfx_node.spool_up.max_distance = part_data.sound_max_range*SPOOLING_DISTANCE_ATT
+	sfx_node.spool_down.stream = part_data.spool_down_sfx
+	sfx_node.spool_down.max_distance = part_data.sound_max_range*SPOOLING_DISTANCE_ATT
 
 
 func set_core(part_name):
@@ -1442,7 +1477,7 @@ func shoot(type, is_auto_fire = false):
 		if not spooling[type]:
 			spooling[type] = true
 			sfx_node.spool_up.play()
-			print("PLaying spool up")
+			create_sound("loud", "spooling", sfx_node.spool_up.max_distance*SPOOLING_DISTANCE_ATT)
 			return
 		elif sfx_node.spool_up.is_playing():
 			return
@@ -1478,7 +1513,6 @@ func shoot(type, is_auto_fire = false):
 	
 	if weapon_ref.shoot_loop_sfx and not sfx_node.shoot_loop.is_playing():
 		sfx_node.shoot_loop.play()
-		print("Printing shoot_loop")
 		
 	while node.burst_count < weapon_ref.burst_size:
 		var amount
@@ -1487,6 +1521,7 @@ func shoot(type, is_auto_fire = false):
 			if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
 				if is_player() and weapon_ref.battery_drain > battery and not is_auto_fire:
 					AudioManager.play_sfx("no_ammo", global_position)
+					create_sound("quiet", "no_ammo", 600)
 				return
 			node.shoot_battery()
 			battery = max(battery - weapon_ref.battery_drain, 0)
@@ -1496,6 +1531,8 @@ func shoot(type, is_auto_fire = false):
 			if not node.can_shoot(amount):
 				if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
 					AudioManager.play_sfx("no_ammo", global_position)
+					create_sound("quiet", "no_ammo", 600)
+					
 				return
 			node.shoot(amount)
 
@@ -1728,33 +1765,6 @@ func cancel_extract():
 	$ExtractTimer.wait_time = 5
 
 
-func select_impact(calibre, is_shield):
-	var sfx_idx
-	match calibre:
-		CALIBRE_TYPES.LARGE:
-			if is_shield:
-				sfx_idx = "large_shield_impact" + str((randi()%2) + 1)
-			else:
-				sfx_idx = "large_impact" + str((randi()%2) + 1)
-		CALIBRE_TYPES.MEDIUM:
-			if is_shield:
-				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
-			else:
-				sfx_idx = "medium_impact" + str((randi()%2) + 1)
-		CALIBRE_TYPES.SMALL:
-			if is_shield:
-				sfx_idx = "small_shield_impact" + str((randi()%3) + 1)
-			else:
-				sfx_idx = "small_impact" + str((randi()%2) + 1)
-		CALIBRE_TYPES.FIRE:
-			sfx_idx = false
-		_:
-			push_error("Not a valid calibre type:" + str(calibre))
-
-	if sfx_idx:
-		AudioManager.play_sfx(sfx_idx, global_position)
-
-
 func play_step_sound(is_left := true):
 	if mecha_name != "Player" or not moving:
 		return
@@ -1764,8 +1774,9 @@ func play_step_sound(is_left := true):
 	else:
 		pitch = randf_range(.95, .97)
 
-	var volume = min(pow(velocity.length(), 1.3)/300.0 - 23.0, -5.0)
-	AudioManager.play_sfx("robot_step", global_position, pitch, volume)
+	var volume = min(pow(velocity.length(), 1.3)/300.0 - 9.0, -5.0)
+	AudioManager.play_sfx("robot_step", global_position, pitch, volume, 1.0, build.chassis.step_sound_max_distance)
+	create_sound("quiet", "step", build.chassis.step_sound_max_distance)
 
 
 func extracting():

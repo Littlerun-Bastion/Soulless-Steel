@@ -112,8 +112,6 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 #AI METHODS
 
 func heard_sound(sound_data):
-	print("Heard a sound")
-	print(sound_data)
 	senses.sounds.append({
 		"volume_type": sound_data.volume_type,
 		"type": sound_data.type,

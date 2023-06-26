@@ -489,7 +489,16 @@ func set_parts_from_design(data):
 
 
 func generate_passive_sounds(dt):
-	pass
+	passive_sounds_timer = max(passive_sounds_timer - dt, 0.0)
+	if passive_sounds_timer <= 0.0:
+		passive_sounds_timer = PASSIVE_SOUNDS_INTERVAL
+		if build.chassis:
+			create_sound("quiet", "chassis", build.chassis.ambient_sfx_max_distance)
+		for weapon_type in WeaponSFXs.keys():
+			var sfx_node = WeaponSFXs[weapon_type]
+			if sfx_node.shoot_loop.is_playing():
+				create_sound("loud", "shooting", sfx_node.shoot_loop.max_distance)
+			
 
 
 func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):

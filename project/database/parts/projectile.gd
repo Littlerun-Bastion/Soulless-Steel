@@ -131,6 +131,7 @@ func propulsion(dt):
 	
 	if speed < max_speed and acceleration > 0.0:
 		speed = min(speed + acceleration*dt, max_speed) 
+		print("go faster!")
 		
 	elif speed > min_speed and acceleration < 0.0:
 		speed = max(speed + acceleration*dt, min_speed) 

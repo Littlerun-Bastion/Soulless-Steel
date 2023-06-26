@@ -11,7 +11,6 @@ signal finished_reloading
 @onready var Glow = $Glow
 
 var timer:= 0.0
-var mecha_ref
 var data
 var total_ammo = false
 var clip_ammo = false
@@ -33,8 +32,7 @@ func _process(dt):
 	timer = max(timer - dt, 0.0)
 
 
-func setup(mecha, weapon_ref, core, _side):
-	mecha_ref = mecha
+func setup(weapon_ref, core, _side):
 	data = weapon_ref
 	side = _side
 	total_ammo = data.total_ammo
@@ -147,8 +145,6 @@ func shoot(amount := 1):
 	heat = min(heat + data.muzzle_heat*4, 200)
 	if data.shoot_single_sfx:
 		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
-		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)
-
 
 func burst_cooldown():
 	add_time(data.fire_rate + data.burst_fire_rate)
@@ -161,7 +157,7 @@ func shoot_battery():
 	heat = min(heat + data.muzzle_heat*4, 200)
 	if data.sound_effect:
 		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
-		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)
+
 
 func set_shooting_pos(pos):
 	shooting_pos_array.append(pos)

@@ -55,7 +55,7 @@ extends Node
 @export var shoot_loop_sfx := AudioStream
 @export var spool_up_sfx := AudioStream
 @export var spool_down_sfx := AudioStream
-@export var sound_max_range := 20000
+@export var sound_max_range := 2000
 @export var sound_att := 1.00
 
 

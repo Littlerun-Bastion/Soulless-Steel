@@ -24,7 +24,9 @@ func targeting_to_roaming(enemy):
 		enemy.going_to_position = false
 	return not enemy.valid_target
 
+
 ## STATE METHODS ##
+
 
 func do_roaming(dt, enemy):
 	if not enemy.going_to_position:

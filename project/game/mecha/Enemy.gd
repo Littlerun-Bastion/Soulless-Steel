@@ -1,7 +1,6 @@
 extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
-const SOUND_LIFETIME = 60
 
 @export var look_ahead_range = 500
 @export var num_rays = 16
@@ -19,10 +18,6 @@ var mov_vec = Vector2()
 var going_to_position = false
 var logic
 var all_mechas
-var senses = {
-	"sounds": [],
-	
-}
 var valid_target = false
 
 
@@ -45,15 +40,10 @@ func _ready():
 
 
 func _physics_process(delta):
-	if paused:
+	if paused or is_stunned():
 		return
 	
 	super(delta)
-	
-	if is_stunned():
-		return
-	
-	update_senses(delta)
 	
 	logic.update(self)
 	logic.run(self, delta)
@@ -63,14 +53,12 @@ func _physics_process(delta):
 	else:
 		$Debug/StateLabel.text = ""
 
-
 func _draw():
 	if Debug.get_setting("draw_debug_lines"):
 		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.WHITE, 5)
 		for i in debug_lines:
 			if i:
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
-
 
 func setup(arena_ref, is_tutorial, design_data, _name):
 	arena = arena_ref
@@ -107,28 +95,6 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 		movement_type = "enemy_tank"
 	else:
 		movement_type = "free"
-
-
-#AI METHODS
-
-func heard_sound(sound_data):
-	senses.sounds.append({
-		"volume_type": sound_data.volume_type,
-		"type": sound_data.type,
-		"position": sound_data.position,
-		"lifetime": SOUND_LIFETIME,
-	})
-
-
-func update_senses(dt):
-	var to_remove = []
-	for sound in senses.sounds:
-		sound.lifetime -= dt
-		if sound.lifetime <= 0:
-			to_remove.append(sound)
-	for sound in to_remove:
-		senses.sounds.erase(sound)
-
 
 #COMBAT METHODS
 

@@ -41,6 +41,7 @@ func setup_leaderboards(lb_idx):
 	LeaderboardName.text = lb_data.name
 	LeaderboardTier.text = lb_data.tier
 
+
 func start_game(mode):
 	AudioManager.stop_bgm()
 	PlayerStatManager.NumberofExtracts = 0
@@ -58,13 +59,12 @@ func start_game(mode):
 	# warning-ignore:return_value_discarded
 	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
 
+
 func start_match():
 	start_game("main")
-	pass # Replace with function body.
+
 
 func on_ladderlabel_pressed(selected_mecha):
 	ArenaManager.current_challengers = [selected_mecha]
 	OpponentsLabel.text = str("'" + selected_mecha + "'")
 	print(ArenaManager.current_challengers)
-
-		

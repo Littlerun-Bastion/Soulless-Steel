@@ -781,7 +781,7 @@ func set_arm_weapon(part_name, side):
 	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
 	sfx_node.spool_up.stream = part_data.spool_up_sfx
 	sfx_node.spool_down.stream = part_data.spool_down_sfx
-	print(sfx_node.shoot_loop.stream, sfx_node.spool_up.stream,sfx_node.spool_down.stream)
+
 	set_max_heat()
 
 
@@ -1442,7 +1442,6 @@ func shoot(type, is_auto_fire = false):
 		if not spooling[type]:
 			spooling[type] = true
 			sfx_node.spool_up.play()
-			print("PLaying spool up")
 			return
 		elif sfx_node.spool_up.is_playing():
 			return
@@ -1478,7 +1477,6 @@ func shoot(type, is_auto_fire = false):
 	
 	if weapon_ref.shoot_loop_sfx and not sfx_node.shoot_loop.is_playing():
 		sfx_node.shoot_loop.play()
-		print("Printing shoot_loop")
 		
 	while node.burst_count < weapon_ref.burst_size:
 		var amount

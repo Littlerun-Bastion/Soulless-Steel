@@ -18,9 +18,10 @@ const LEADERBOARDS =[
 	}
 ]
 
-@onready var LadderButtons = $LadderButtons
+@onready var LadderButtons = $ScrollContainer/LadderButtons
 @onready var LeaderboardName = $LeaderboardsName
 @onready var LeaderboardTier = $LeaderboardsName/Tier
+@onready var OpponentsLabel = $ColorRect/VBoxContainer/Opponents/Label2
 
 func _ready():
 	setup_leaderboards(1)
@@ -35,6 +36,7 @@ func setup_leaderboards(lb_idx):
 		child.set_mecha_name(lb[idx])
 		idx += 1
 		child.set_ranking(idx)
+		child.connect("ladderlabel_pressed", Callable(self,"on_ladderlabel_pressed"))
 	#Setup labels
 	LeaderboardName.text = lb_data.name
 	LeaderboardTier.text = lb_data.tier
@@ -59,3 +61,10 @@ func start_game(mode):
 func start_match():
 	start_game("main")
 	pass # Replace with function body.
+
+func on_ladderlabel_pressed(selected_mecha):
+	ArenaManager.current_challengers = [selected_mecha]
+	OpponentsLabel.text = str("'" + selected_mecha + "'")
+	print(ArenaManager.current_challengers)
+
+		

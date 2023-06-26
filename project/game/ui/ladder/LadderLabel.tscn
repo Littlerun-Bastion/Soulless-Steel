@@ -55,3 +55,5 @@ theme_override_font_sizes/font_size = 40
 text = "Player"
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[connection signal="pressed" from="Button" to="." method="_on_LadderLabel_pressed"]

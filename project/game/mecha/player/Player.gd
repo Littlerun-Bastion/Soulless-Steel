@@ -198,6 +198,9 @@ func check_weapon_input(weapon_name):
 	if not Input.is_action_pressed(weapon_name+"_shoot"):
 		if spooling[weapon_name]:
 			WeaponSFXs[weapon_name].spool_up.stop()
+			WeaponSFXs[weapon_name].spool_down.play()
+		if WeaponSFXs[weapon_name].shoot_loop.is_playing():
+			WeaponSFXs[weapon_name].shoot_loop.stop()
 		spooling[weapon_name] = false
 
 

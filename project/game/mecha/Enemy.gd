@@ -45,10 +45,13 @@ func _ready():
 
 
 func _physics_process(delta):
-	if paused or is_stunned():
+	if paused:
 		return
 	
 	super(delta)
+	
+	if is_stunned():
+		return
 	
 	update_senses(delta)
 	
@@ -109,7 +112,10 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 #AI METHODS
 
 func heard_sound(sound_data):
+	print("Heard a sound")
+	print(sound_data)
 	senses.sounds.append({
+		"volume_type": sound_data.volume_type,
 		"type": sound_data.type,
 		"position": sound_data.position,
 		"lifetime": SOUND_LIFETIME,
@@ -117,7 +123,7 @@ func heard_sound(sound_data):
 
 
 func update_senses(dt):
-	var to_remove
+	var to_remove = []
 	for sound in senses.sounds:
 		sound.lifetime -= dt
 		if sound.lifetime <= 0:

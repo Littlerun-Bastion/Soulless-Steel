@@ -1572,7 +1572,7 @@ debug_enabled = true
 estimate_radius = false
 radius = 200.0
 
-[node name="SFXs" type="Node" parent="."]
+[node name="SFXs" type="Node2D" parent="."]
 
 [node name="ChassisAmbient" type="AudioStreamPlayer2D" parent="SFXs"]
 position = Vector2(0.667419, 0)
@@ -1587,7 +1587,7 @@ attenuation = 0.7
 panning_strength = 3.0
 bus = &"SFX"
 
-[node name="LeftArmWeapon" type="Node" parent="SFXs"]
+[node name="LeftArmWeapon" type="Node2D" parent="SFXs"]
 
 [node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/LeftArmWeapon"]
 bus = &"SFX"
@@ -1598,7 +1598,7 @@ bus = &"SFX"
 [node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/LeftArmWeapon"]
 bus = &"SFX"
 
-[node name="LeftShoulderWeapon" type="Node" parent="SFXs"]
+[node name="LeftShoulderWeapon" type="Node2D" parent="SFXs"]
 
 [node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/LeftShoulderWeapon"]
 bus = &"SFX"
@@ -1609,7 +1609,7 @@ bus = &"SFX"
 [node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/LeftShoulderWeapon"]
 bus = &"SFX"
 
-[node name="RightArmWeapon" type="Node" parent="SFXs"]
+[node name="RightArmWeapon" type="Node2D" parent="SFXs"]
 
 [node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/RightArmWeapon"]
 bus = &"SFX"
@@ -1620,7 +1620,7 @@ bus = &"SFX"
 [node name="SpoolDown" type="AudioStreamPlayer2D" parent="SFXs/RightArmWeapon"]
 bus = &"SFX"
 
-[node name="RightShoulderWeapon" type="Node" parent="SFXs"]
+[node name="RightShoulderWeapon" type="Node2D" parent="SFXs"]
 
 [node name="ShootLoop" type="AudioStreamPlayer2D" parent="SFXs/RightShoulderWeapon"]
 bus = &"SFX"

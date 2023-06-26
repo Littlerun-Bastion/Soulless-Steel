@@ -54,8 +54,8 @@ func _ready():
 	
 	set_mechas_block_status(true)
 	
-	if player and player.head and player.head.heatmap:
-		Heatmap.change_heatmap(player.head.heatmap)
+	if player and player.build.head and player.build.head.heatmap:
+		Heatmap.change_heatmap(player.build.head.heatmap)
 	
 	if is_tutorial:
 		IntroAnimation.play("simEntrance")

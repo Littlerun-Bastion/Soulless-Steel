@@ -227,17 +227,20 @@ var locking_targets = []
 var locking_to = false
 var locked_to = false
 
-var arm_weapon_left = null
-var arm_weapon_right = null
-var shoulders = null
-var shoulder_weapon_left = null
-var shoulder_weapon_right = null
-var head = null
-var core = null
-var generator = null
-var chipset = null
-var thruster = null
-var chassis = null
+var build = {
+	"arm_weapon_left": null,
+	"arm_weapon_right": null,
+	"shoulder_weapon_left": null,
+	"shoulder_weapon_right": null,
+	"shoulders": null,
+	"head": null,
+	"core": null,
+	"generator": null,
+	"chipset": null,
+	"thruster": null,
+	"chassis": null,
+}
+
 var projectiles = []
 
 var status_time = {
@@ -338,10 +341,10 @@ func _physics_process(dt):
 			set(part+"_bloom_count", 0)
 
 	#Handle shield
-	if generator and shield < max_shield:
+	if build.generator and shield < max_shield:
 		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
 		if shield_regen_cooldown <= 0 and has_status("electrified"):
-			shield = min(shield + generator.shield_regen_speed*dt, max_shield)
+			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
 
@@ -371,7 +374,7 @@ func _physics_process(dt):
 			apply_movement(dt, Vector2())
 
 	#Update shoulder weapons rotation
-	for data in [[shoulder_weapon_left, LeftShoulderWeapon], [shoulder_weapon_right, RightShoulderWeapon]]:
+	for data in [[build.shoulder_weapon_left, LeftShoulderWeapon], [build.shoulder_weapon_right, RightShoulderWeapon]]:
 		if data[0]:
 			data[1].rotation_degrees += get_best_rotation_diff(data[1].rotation_degrees, 0)*data[0].rotation_acc*dt
 
@@ -391,7 +394,7 @@ func _physics_process(dt):
 			dash_velocity = Vector2()
 
 	#Walking animation
-	if chassis and chassis.is_legs:
+	if build.chassis and build.chassis.is_legs:
 		if moving and not MovementAnimation.is_playing() and\
 		not is_sprinting and dash_velocity.length() <= 0.0:
 			MovementAnimation.play("Walking")
@@ -435,7 +438,7 @@ func _physics_process(dt):
 	
 	process_hitboxes(dt)
 	
-	if chassis and chassis.hover_particles and not display_mode:
+	if build.chassis and build.chassis.hover_particles and not display_mode:
 		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
 		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 
@@ -482,7 +485,7 @@ func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	rotation_acc = _rotation_acc
 	move_acc = _move_acc
 	MovementAnimation.speed_scale = move_acc
-	if chassis and chassis.is_legs:
+	if build.chassis and build.chassis.is_legs:
 		move_acc *= 50
 	var animation = MovementAnimation.get_animation("Walking")
 	var track = 0 #animation.find_track("Mecha:speed_modifier")
@@ -492,24 +495,24 @@ func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 
 func update_max_life_from_parts():
 	var value = 0
-	if core:
-		value += core.health
-	if head:
-		value += head.health
-	if chassis:
-		value += chassis.health
+	if build.core:
+		value += build.core.health
+	if build.head:
+		value += build.head.health
+	if build.chassis:
+		value += build.chassis.health
 	set_max_life(value)
 
 
 func update_max_shield_from_parts():
 	var value = 0
-	if core:
-		value += core.shield
-	if generator:
-		value += generator.shield
+	if build.core:
+		value += build.core.shield
+	if build.generator:
+		value += build.generator.shield
 	#Check shoulders
-	if shoulders:
-		value += shoulders.shield
+	if build.shoulders:
+		value += build.shoulders.shield
 
 	set_max_shield(value)
 
@@ -547,8 +550,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		if source_info.name == "Player" or self.name == "Player":
 			do_hitstop()
 
-	if amount > 0 and generator:
-		shield_regen_cooldown = generator.shield_regen_delay
+	if amount > 0 and build.generator:
+		shield_regen_cooldown = build.generator.shield_regen_delay
 	var temp_shield = shield
 	shield = max(shield - (shield_mult * amount), 0)
 	amount = max(amount - temp_shield, 0)
@@ -621,8 +624,8 @@ func take_status_damage(dt):
 	if has_status("electrified"):
 		shield = round(max(shield - (dt * 100), 0))
 		emit_signal("took_damage", self, true)
-		if generator:
-			shield_regen_cooldown = generator.shield_regen_delay
+		if build.generator:
+			shield_regen_cooldown = build.generator.shield_regen_delay
 
 	if has_status("corrosion"):
 		if hp <= 0:
@@ -720,18 +723,19 @@ func update_heat(dt):
 	if display_mode:
 		mecha_heat = 0
 		return
-	if generator and not has_status("fire"):
+	#TODO remove freezing func and expand it here
+	if build.generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
-			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion)*dt, max_heat*idle_threshold)
+			mecha_heat = max(mecha_heat - freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
 		else:
-			mecha_heat = max(mecha_heat - freezing_status_heat(generator.heat_dispersion * (mecha_heat/max_heat))*dt, 0)
+			mecha_heat = max(mecha_heat - freezing_status_heat(build.generator.heat_dispersion * (mecha_heat/max_heat))*dt, 0)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-			weapon.update_heat(generator.heat_dispersion,mecha_heat_visible,dt)
-	if generator:
+			weapon.update_heat(build.generator.heat_dispersion,mecha_heat_visible,dt)
+	if build.generator:
 		if mecha_heat >= max_heat:
 			set_status("overheating", 5.0)
 	if not has_status("overheating"):
-		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(generator.heat_dispersion)*dt*4, mecha_heat)
+		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(build.generator.heat_dispersion)*dt*4, mecha_heat)
 	else:
 		mecha_heat_visible = 300
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
@@ -743,7 +747,7 @@ func update_heat(dt):
 #PARTS SETTERS
 
 func set_arm_weapon(part_name, side):
-	if part_name and not core:
+	if part_name and not build.core:
 		push_error("Mecha doesn't have a core to assign arm weapon")
 		return
 
@@ -759,30 +763,30 @@ func set_arm_weapon(part_name, side):
 
 	if typeof(part_name) != TYPE_STRING:
 		if side == SIDE.LEFT:
-			arm_weapon_left = null
+			build.arm_weapon_left = null
 		else:
-			arm_weapon_right = null
+			build.arm_weapon_right = null
 		node.set_images(null, null, null)
 		return
 
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
-		arm_weapon_left = part_data
+		build.arm_weapon_left = part_data
 		node.rotation_degrees = -ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 	else:
-		arm_weapon_right = part_data
+		build.arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
-	node.setup(part_data, core, side)
+	node.setup(part_data, build.core, side)
 	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
 	sfx_node.spool_up.stream = part_data.spool_up_sfx
 	sfx_node.spool_down.stream = part_data.spool_down_sfx
-		
+	print(sfx_node.shoot_loop.stream, sfx_node.spool_up.stream,sfx_node.spool_down.stream)
 	set_max_heat()
 
 
 func set_shoulder_weapon(part_name, side):
-	if part_name and not core:
+	if part_name and not build.core:
 		push_error("Mecha doesn't have a core to assign shoulder weapon")
 		return
 
@@ -796,21 +800,22 @@ func set_shoulder_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-	if typeof(part_name) != TYPE_STRING or not core.has_left_shoulder or not core.has_right_shoulder:
-		if side == SIDE.LEFT or not core.has_left_shoulder:
-			shoulder_weapon_left = null
-		elif side == SIDE.RIGHT or not core.has_right_shoulder:
-			shoulder_weapon_right = null
+	if typeof(part_name) != TYPE_STRING or not build.core.has_left_shoulder or not build.core.has_right_shoulder:
+		if side == SIDE.LEFT or not build.core.has_left_shoulder:
+			build.shoulder_weapon_left = null
+		elif side == SIDE.RIGHT or not build.core.has_right_shoulder:
+			build.shoulder_weapon_right = null
 		node.set_images(null, null, null)
 		return
 
 	var part_data = PartManager.get_part("shoulder_weapon", part_name)
 	if side == SIDE.LEFT:
-		shoulder_weapon_left = part_data
+		build.shoulder_weapon_left = part_data
 	else:
-		shoulder_weapon_right = part_data
+		build.shoulder_weapon_right = part_data
 
-	node.setup(part_data, core, side)
+	node.setup(part_data, build.core, side)
+
 	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
 	sfx_node.spool_up.stream = part_data.spool_up_sfx
 	sfx_node.spool_down.stream = part_data.spool_down_sfx
@@ -822,28 +827,28 @@ func set_core(part_name):
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
-	core = part_data
-	if core.get_head_port() != null:
-		$HeadPort.texture = core.get_head_port()
-		$HeadPort.position = core.get_head_offset()
+	build.core = part_data
+	if build.core.get_head_port() != null:
+		$HeadPort.texture = build.core.get_head_port()
+		$HeadPort.position = build.core.get_head_offset()
 	else:
 		$HeadPort.texture = null
 	var index = 1
 	for node in Particle.overheating:
 		#Ignores "OverheatingSparks"
 		if node.name.find("Sparks") == -1:
-			var offset = core.get_overheat_offset(index)
+			var offset = build.core.get_overheat_offset(index)
 			if offset:
 				node.position = offset
 			else:
 				node.visible = false
 			index += 1
-	if not core.has_left_shoulder:
+	if not build.core.has_left_shoulder:
 		set_shoulder_weapon(null, SIDE.LEFT)
-	if not core.has_right_shoulder:
+	if not build.core.has_right_shoulder:
 		set_shoulder_weapon(null, SIDE.RIGHT)
-	CoreSub.texture = core.get_sub()
-	CoreGlow.texture = core.get_glow()
+	CoreSub.texture = build.core.get_sub()
+	CoreGlow.texture = build.core.get_glow()
 	update_max_life_from_parts()
 	update_max_shield_from_parts()
 	stability = get_stat("stability")
@@ -854,18 +859,18 @@ func set_core(part_name):
 func set_generator(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
-		generator = part_data
-		idle_threshold = generator.idle_threshold / 100
-		battery_capacity = generator.battery_capacity
-		battery = generator.battery_capacity
-		battery_recharge_rate = generator.battery_recharge_rate
+		build.generator = part_data
+		idle_threshold = build.generator.idle_threshold / 100
+		battery_capacity = build.generator.battery_capacity
+		battery = build.generator.battery_capacity
+		battery_recharge_rate = build.generator.battery_recharge_rate
 		
 		if is_player():
-			GeneratorAmbientSFX.stream = generator.ambient_sfx
+			GeneratorAmbientSFX.stream = build.generator.ambient_sfx
 			if GeneratorAmbientSFX.stream:
 				GeneratorAmbientSFX.play()
 	else:
-		generator = false
+		build.generator = false
 	update_max_shield_from_parts()
 	set_max_heat()
 
@@ -873,20 +878,21 @@ func set_generator(part_name):
 func set_chipset(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("chipset", part_name)
-		chipset = part_data
-		ecm = chipset.ECM
-		ecm_frequency = chipset.ECM_frequency
-		lock_strength = chipset.lock_on_strength
+		build.chipset = part_data
+		#TODO remove this variables
+		ecm = build.chipset.ECM
+		ecm_frequency = build.chipset.ECM_frequency
+		lock_strength = build.chipset.lock_on_strength
 	else:
-		chipset = false
+		build.chipset = false
 
 
 func set_thruster(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("thruster", part_name)
-		thruster = part_data
+		build.thruster = part_data
 	else:
-		thruster = false
+		build.thruster = false
 
 
 func set_chassis(part_name):
@@ -895,10 +901,10 @@ func set_chassis(part_name):
 		remove_chassis("pair")
 		movement_type = "free"
 		return
-	chassis = PartManager.get_part("chassis", part_name)
-	weight_capacity = chassis.weight_capacity
-	ChassisAmbientSFX.stream = chassis.ambient_sfx
-	ChassisAmbientSFX.max_distance = chassis.ambient_sfx_max_distance
+	build.chassis = PartManager.get_part("chassis", part_name)
+	weight_capacity = build.chassis.weight_capacity
+	ChassisAmbientSFX.stream = build.chassis.ambient_sfx
+	ChassisAmbientSFX.max_distance = build.chassis.ambient_sfx_max_distance
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.play()
 	set_chassis_parts()
@@ -906,7 +912,7 @@ func set_chassis(part_name):
 
 
 func set_chassis_parts():
-	if chassis.is_legs:
+	if build.chassis.is_legs:
 			remove_chassis("single")
 			set_chassis_nodes(RightChassis, RightChassisSub, RightChassisGlow, $ChassisRightCollision, SIDE.RIGHT)
 			set_chassis_nodes(LeftChassis, LeftChassisSub, LeftChassisGlow, $ChassisLeftCollision, SIDE.LEFT)
@@ -914,13 +920,14 @@ func set_chassis_parts():
 		remove_chassis("pair")
 		set_chassis_nodes(SingleChassis, SingleChassisSub, SingleChassisGlow, $ChassisSingleCollision, false)
 	stability = get_stat("stability")
-	Particle.chassis_hover[0].emitting = (chassis.hover_particles and not display_mode)
-	Particle.chassis_hover[1].emitting = (chassis.hover_particles and not display_mode)
+	Particle.chassis_hover[0].emitting = (build.chassis.hover_particles and not display_mode)
+	Particle.chassis_hover[1].emitting = (build.chassis.hover_particles and not display_mode)
 
 
 func set_chassis_nodes(main,sub,glow,collision,side = false):
-	if core and chassis.is_legs:
-		var pos = core.get_chassis_offset(side)
+	var chassis = build.chassis
+	if build.core and chassis.is_legs:
+		var pos = build.core.get_chassis_offset(side)
 		main.position = pos
 		sub.position = pos
 		glow.position = pos
@@ -958,14 +965,14 @@ func set_head(part_name):
 		Head.texture = part_data.get_image()
 		HeadSub.texture = part_data.get_sub()
 		HeadGlow.texture = part_data.get_glow()
-		head = part_data
-		if core:
-			Head.position = core.get_head_offset()
+		build.head = part_data
+		if build.core:
+			Head.position = build.core.get_head_offset()
 	else:
 		Head.texture = null
 		HeadSub.texture = null
 		HeadGlow.texture = null
-		head = null
+		build.head = null
 	update_max_life_from_parts()
 	set_max_heat()
 
@@ -973,12 +980,12 @@ func set_head(part_name):
 func set_shoulders(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("shoulders", part_name)
-		shoulders = part_data
-		if core:
-			$LeftShoulder.position = core.get_shoulder_offset(SIDE.LEFT)
-			$LeftShoulderCollision.position = core.get_shoulder_offset(SIDE.LEFT)
-			$RightShoulder.position = core.get_shoulder_offset(SIDE.RIGHT)
-			$RightShoulderCollision.position = core.get_shoulder_offset(SIDE.RIGHT)
+		build.shoulders = part_data
+		if build.core:
+			$LeftShoulder.position = build.core.get_shoulder_offset(SIDE.LEFT)
+			$LeftShoulderCollision.position = build.core.get_shoulder_offset(SIDE.LEFT)
+			$RightShoulder.position = build.core.get_shoulder_offset(SIDE.RIGHT)
+			$RightShoulderCollision.position = build.core.get_shoulder_offset(SIDE.RIGHT)
 		else:
 			push_error("No core for putting on shoulders.")
 		$LeftShoulder.texture = part_data.get_image(SIDE.LEFT)
@@ -986,7 +993,7 @@ func set_shoulders(part_name):
 		$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
 		$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
 	else:
-		shoulders = null
+		build.shoulders = null
 		$LeftShoulder.texture = null
 		$RightShoulder.texture = null
 	update_max_shield_from_parts()
@@ -995,6 +1002,7 @@ func set_shoulders(part_name):
 	set_max_heat()
 
 func reset_offsets():
+	var core = build.core
 	if core:
 		$Head.position = core.get_head_offset()
 		$HeadPort.position = core.get_headport_offset()
@@ -1006,7 +1014,7 @@ func reset_offsets():
 		$ArmWeaponRight.position = core.get_arm_weapon_offset(SIDE.RIGHT)
 		$ShoulderWeaponLeft.position = core.get_shoulder_weapon_offset(SIDE.LEFT)
 		$ShoulderWeaponRight.position = core.get_shoulder_weapon_offset(SIDE.RIGHT)
-		if chassis:
+		if build.chassis:
 			set_chassis_parts()
 
 #ATTRIBUTE METHODS
@@ -1017,11 +1025,7 @@ func get_max_hp():
 
 func get_stat(stat_name):
 	var total_stat = 0.0
-	var parts = [arm_weapon_left, arm_weapon_right, shoulders,\
-				shoulder_weapon_left, shoulder_weapon_right,\
-				head, core, generator, chipset, thruster,\
-				chassis]
-	for part in parts:
+	for part in build.values():
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
 	if stat_name == "max_speed" and is_overweight():
@@ -1032,16 +1036,16 @@ func get_stat(stat_name):
 
 func get_weapon_part(part_name):
 	if part_name == "arm_weapon_left":
-		if arm_weapon_left:
+		if build.arm_weapon_left:
 			return $ArmWeaponLeft
 	elif part_name == "arm_weapon_right":
-		if arm_weapon_right:
+		if build.arm_weapon_right:
 			return $ArmWeaponRight
 	elif part_name == "shoulder_weapon_left":
-		if shoulder_weapon_left:
+		if build.shoulder_weapon_left:
 			return $ShoulderWeaponLeft
 	elif part_name == "shoulder_weapon_right":
-		if shoulder_weapon_right:
+		if build.shoulder_weapon_right:
 			return $ShoulderWeaponRight
 	else:
 		push_error("Not a valid weapon part name: " + str(part_name))
@@ -1165,7 +1169,7 @@ func dash(dash_dir):
 		return #Not a valid dash direction
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
-		mecha_heat = min(mecha_heat + thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
+		mecha_heat = min(mecha_heat + build.thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
 		dash_velocity = dash_dir.normalized()*dash_strength
 		for node in Particle.chassis_dash:
 			node.rotation_degrees = rad_to_deg(dash_dir.angle()) + 90
@@ -1175,15 +1179,15 @@ func dash(dash_dir):
 		Particle.grind[0].emitting = true
 		if movement_type == "relative":
 			dash_velocity = dash_velocity.rotated(deg_to_rad(rotation_degrees))
-		dash_cooldown[dir] = thruster.dash_cooldown
+		dash_cooldown[dir] = build.thruster.dash_cooldown
 		Particle.dash[dir].cooldown.emitting = true
 
 
 func update_dash_cooldown_visuals():
-	if is_dead or not thruster:
+	if is_dead or not build.thruster:
 		return
 	for dir in ["fwd", "rwd", "left", "right"]:
-		Particle.dash[dir].cooldown.modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / thruster.dash_cooldown))
+		Particle.dash[dir].cooldown.modulate = Color(1, 1, 1, 0.33*(dash_cooldown[dir] / build.thruster.dash_cooldown))
 
 
 func apply_movement(dt, direction):
@@ -1195,12 +1199,12 @@ func apply_movement(dt, direction):
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
 	var target_speed = direction.normalized() * max_speed
 	var mult = 1.0
-	if thruster:
-		var thrust_max_speed = max_speed + thruster.thrust_max_speed
+	if build.thruster:
+		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
 
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
-			mult = apply_movement_modifiers(thruster.thrust_speed_multiplier)
-			mecha_heat = min(mecha_heat + thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
+			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
+			mecha_heat = min(mecha_heat + build.thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
 			for node in Particle.chassis_sprint:
 				node.emitting = true
 			ChassisSprintGlow.visible = true
@@ -1220,7 +1224,7 @@ func apply_movement(dt, direction):
 			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
-			velocity *= 1 - chassis.friction
+			velocity *= 1 - build.chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
 		move(apply_movement_modifiers(velocity*mod))
 	elif movement_type == "relative":
@@ -1235,13 +1239,13 @@ func apply_movement(dt, direction):
 			moving = false
 			moving_axis.x = false
 			moving_axis.y = false
-			velocity *= 1 - chassis.friction
+			velocity *= 1 - build.chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
 		move(apply_movement_modifiers(velocity*mod))
 	if movement_type == "enemy_tank":
 		if direction.length() > 0:
 			moving = true
-			var target_rotation_acc = apply_movement_modifiers(chassis.rotation_acc * 50)
+			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
 			var rotated_tank_move_target = tank_move_target.rotated(deg_to_rad(270))
 			#Compare direction we want to go to the way the Chassis is facing.
 			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
@@ -1267,11 +1271,11 @@ func apply_movement(dt, direction):
 			if direction.y < 0:
 				moving = true
 				target_speed = tank_move_target.rotated(deg_to_rad(270)) * max_speed * mult/1.5
-			if thruster:
-				var thrust_max_speed = max_speed + thruster.thrust_max_speed
+			if build.thruster:
+				var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
 				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
 					target_speed = target_speed.normalized() * thrust_max_speed
-			var target_rotation_acc = apply_movement_modifiers(chassis.rotation_acc * 50)
+			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
 			if direction.y == 0:
 				target_rotation_acc *= 2
 			if direction.x > 0:
@@ -1281,13 +1285,13 @@ func apply_movement(dt, direction):
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			if not moving:
-				velocity *= 1 - chassis.friction
+				velocity *= 1 - build.chassis.friction
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
 				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 		else:
-			if chassis:
-				velocity *= 1 - chassis.friction/2
+			if build.chassis:
+				velocity *= 1 - build.chassis.friction/2
 		move(apply_movement_modifiers(velocity))
 	#else:
 		#push_error("Not a valid movement type: " + str(movement_type))
@@ -1309,8 +1313,8 @@ func apply_rotation_by_direction(dt, direction):
 func apply_rotation_by_point(dt, target_pos, stand_still):
 	#Rotate Body
 	var rot_acc = rotation_acc
-	if movement_type == "tank" and chassis:
-		rot_acc = chassis.trim_acc
+	if movement_type == "tank" and build.chassis:
+		rot_acc = build.chassis.trim_acc
 	if is_sprinting == true and movement_type != "tank":
 		rot_acc = rotation_acc/2
 	if not stand_still:
@@ -1318,7 +1322,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 
 
 	#Rotate Head and Shoulders
-	for data in [[$Head, head], [$LeftShoulder, shoulders], [$RightShoulder, shoulders]]:
+	for data in [[$Head, build.head], [$LeftShoulder, build.shoulders], [$RightShoulder, build.shoulders]]:
 		var node_ref = data[1]
 		if node_ref:
 			var node = data[0]
@@ -1327,7 +1331,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
 
 	#Rotate Non-Melee Arm Weapons
-	for data in [[$ArmWeaponLeft, arm_weapon_left], [$ArmWeaponRight, arm_weapon_right]]:
+	for data in [[$ArmWeaponLeft, build.arm_weapon_left], [$ArmWeaponRight, build.arm_weapon_right]]:
 		var node_ref = data[1]
 		if node_ref and not node_ref.is_melee:
 			var node = data[0]
@@ -1337,9 +1341,9 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 				node.rotation_degrees += node_ref.parallax_offset
 			else:
 				node.rotation_degrees -= node_ref.parallax_offset
-			node.rotation_degrees = clamp(node.rotation_degrees, -core.rotation_range, core.rotation_range)
+			node.rotation_degrees = clamp(node.rotation_degrees, -build.core.rotation_range, build.core.rotation_range)
 
-	for data in	[[$Chassis/Left, chassis], [$Chassis/Right, chassis]]:
+	for data in	[[$Chassis/Left, build.chassis], [$Chassis/Right, build.chassis]]:
 		var node_ref = data[1]
 		if node_ref:
 			var node = data[0]
@@ -1378,7 +1382,7 @@ func knockback(strength, knockback_dir, should_rotate = true):
 
 func update_chassis_visuals(dt):
 	var angulation = 25
-	if chassis and chassis.is_legs:
+	if build.chassis and build.chassis.is_legs:
 		var rot_vec = Vector2(1, 0).rotated(deg_to_rad(rotation_degrees))
 		var vel_vec = velocity
 		var left_target_angle
@@ -1419,7 +1423,7 @@ func stop_sprinting(sprint_dir):
 			node.rotation_degrees = rad_to_deg(Vector2(0,-1).angle()) + 90
 			node.restart()
 			node.emitting = true
-		mecha_heat = min(mecha_heat + thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
+		mecha_heat = min(mecha_heat + build.thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
 	is_sprinting = false
 	for node in Particle.chassis_sprint:
 		node.emitting = false
@@ -1432,50 +1436,50 @@ func shoot(type, is_auto_fire = false):
 	if is_dead:
 		return
 	
-	var node; var weapon_ref; var bloom; var eject_angle
+	#Check for spool up
+	var sfx_node = WeaponSFXs[type]
+	if build[type].spool_up_sfx:
+		if not spooling[type]:
+			spooling[type] = true
+			sfx_node.spool_up.play()
+			print("PLaying spool up")
+			return
+		elif sfx_node.spool_up.is_playing():
+			return
+	
+	var weapon_ref = build[type]
+	var node = get_weapon_part(type)
+	var bloom; var eject_angle
 	if type == "arm_weapon_left":
-		node = $ArmWeaponLeft
-		weapon_ref = arm_weapon_left
 		left_arm_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = left_arm_bloom_count * weapon_ref.accuracy_bloom
 		eject_angle = 180.0
 	elif type ==  "arm_weapon_right":
-		node = $ArmWeaponRight
-		weapon_ref = arm_weapon_right
 		right_arm_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_arm_bloom_count * weapon_ref.accuracy_bloom
 		eject_angle = 0.0
 	elif type == "shoulder_weapon_left":
-		node = $ShoulderWeaponLeft
-		weapon_ref = shoulder_weapon_left
 		left_shoulder_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = left_shoulder_bloom_count * weapon_ref.accuracy_bloom
 		eject_angle = 180.0
 	elif type ==  "shoulder_weapon_right":
-		node = $ShoulderWeaponRight
-		weapon_ref = shoulder_weapon_right
 		right_shoulder_bloom_time = weapon_ref.bloom_reset_time * get_stability()
 		bloom = right_shoulder_bloom_count * weapon_ref.accuracy_bloom
 		eject_angle = 0.0
 	else:
 		push_error("Not a valid type of weapon to shoot: " + str(type))
 		return
-	var sfx_node = WeaponSFXs[type]
-	if weapon_ref.spool_up_sfx:
-		if not spooling[type]:
-			spooling[type] = true
-			sfx_node.spool_up.play()
-			return
-		elif sfx_node.spool_up.is_playing():
-			return
-			
 	
 	if weapon_ref.is_melee:
 		node.light_attack()
 		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
 		emit_signal("shoot_signal")
 		return
-
+	
+	if weapon_ref.shoot_loop_sfx and not sfx_node.shoot_loop.is_playing():
+		sfx_node.shoot_loop.play()
+		print("Printing shoot_loop")
+		
 	while node.burst_count < weapon_ref.burst_size:
 		var amount
 		if weapon_ref.uses_battery:
@@ -1497,13 +1501,13 @@ func shoot(type, is_auto_fire = false):
 
 		#Create projectile
 		if not weapon_ref.is_melee:
-			var max_angle = weapon_ref.max_bloom_angle/head.accuracy_modifier
+			var max_angle = weapon_ref.max_bloom_angle/build.head.accuracy_modifier
 			if type == "arm_weapon_left" or type == "arm_weapon_right":
 				max_angle = max_angle/arm_accuracy_mod
 				bloom /= arm_accuracy_mod
 			if locked_to:
-				max_angle = max_angle/chipset.accuracy_modifier
-			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head.accuracy_modifier
+				max_angle = max_angle/build.chipset.accuracy_modifier
+			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/build.head.accuracy_modifier
 			var current_accuracy = randf_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				emit_signal("create_projectile", self,
@@ -1589,7 +1593,7 @@ func update_locking(dt):
 			var mecha = area.get_parent()
 			var a_radius = area.get_node("CollisionShape2D").shape.radius
 			if  mecha != self and\
-			mouse_pos.distance_to(area.global_position) <= chipset.lock_on_reticle_size + a_radius:
+			mouse_pos.distance_to(area.global_position) <= build.chipset.lock_on_reticle_size + a_radius:
 				could_lock.append(area.get_parent())
 
 		for target in locking_targets:
@@ -1625,9 +1629,9 @@ func update_locking(dt):
 						locking_to.progress = 0
 					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
 			if has_status("electrified"):
-				locking_to.progress = min(locking_to.progress + (dt*chipset.lock_on_speed * 0.5), 1.0)
+				locking_to.progress = min(locking_to.progress + (dt*build.chipset.lock_on_speed * 0.5), 1.0)
 			else:
-				locking_to.progress = min(locking_to.progress + dt*chipset.lock_on_speed, 1.0)
+				locking_to.progress = min(locking_to.progress + dt*build.chipset.lock_on_speed, 1.0)
 			if locking_to.progress >= 1.0:
 				locked_to = locking_to.mecha
 

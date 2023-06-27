@@ -234,7 +234,7 @@ var locking_to = false
 var locked_to = false
 
 var is_shielding = false
-var is_parrying = false
+var is_parrying = true
 var shield_project_cooldown_timer = 0.0
 var shield_parry_timer = 0.0
 
@@ -351,7 +351,7 @@ func _physics_process(dt):
 		shield_project_cooldown_timer = max(shield_project_cooldown_timer - dt, 0.0)
 	
 	if shield_parry_timer <= 0.0:
-		is_parrying = false
+		is_parrying = true
 	else:
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
 	

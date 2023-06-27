@@ -5,7 +5,7 @@ var attach_reference
 var node_reference
 
 func _physics_process(_dt):
-	if attach_reference and node_reference and is_local:
+	if attach_reference and node_reference and is_local and is_instance_valid(attach_reference):
 		global_position = attach_reference.global_position
 		global_rotation = node_reference.get_direction(0, 0).angle() + (PI/2)
 	if not $Linger.is_emitting(): #Linger must always be the longest lasting particle effect

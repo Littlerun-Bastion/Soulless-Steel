@@ -155,8 +155,8 @@ func shoot_battery():
 	burst_count += 1
 	add_time(data.burst_fire_rate)
 	heat = min(heat + data.muzzle_heat*4, 200)
-	if data.sound_effect and is_instance_valid(data.sound_effect):
-		AudioManager.play_sfx(data.sound_effect, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
+	if data.shoot_single_sfx:
+		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 
 
 func set_shooting_pos(pos):

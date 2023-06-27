@@ -101,14 +101,17 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
 			var shape = body.get_shape_from_id(body_shape_id)
-			var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
-																	shape.polygon, shape.global_transform)
-			
 			var collision_point
-			if points.size() > 0:
-				collision_point = points[0]
+			if shape is CollisionPolygon2D:
+				var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
+																		shape.polygon, shape.global_transform)
+				if points.size() > 0:
+					collision_point = points[0]
+				else:
+					collision_point = global_position
 			else:
 				collision_point = global_position
+				
 			
 			var size = Vector2(40,40)
 			if body.is_parrying and not is_overtime:

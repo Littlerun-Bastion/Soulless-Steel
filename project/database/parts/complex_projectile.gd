@@ -218,13 +218,19 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 				collision_point = global_position
 			
 			var size = Vector2(40,40)
-			body.add_decal(body_shape_id, collision_point, decal_type, size)
 			
-			body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
-								status_damage, status_type, hitstop, original_mecha_info, part_id)
-			if not is_overtime and impact_force > 0.0:
-				body.knockback(impact_force, dir, true)
-			mech_hit = true
+			if body.is_parrying and not is_overtime:
+				dir = -dir
+				true_dir = -true_dir
+				original_mecha_info.body = body
+				original_mecha_info.name = body.mecha_name
+			else:
+				body.add_decal(body_shape_id, collision_point, decal_type, size)
+				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
+									status_damage, status_type, hitstop, original_mecha_info, part_id)
+				if not is_overtime and impact_force > 0.0:
+					body.knockback(impact_force, dir, true)
+				mech_hit = true
 			
 	if not body.is_in_group("mecha") or\
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):

@@ -11,6 +11,8 @@ extends Resource
 @export var shield := 6000.0
 @export var shield_regen_speed := 1
 @export var shield_regen_delay := 5
+@export var shield_project_cooldown := 0.5
+@export var shield_project_heat := 10
 @export var heat_dispersion := 10
 @export var heat_capacity := 100
 @export var idle_threshold := 33.0

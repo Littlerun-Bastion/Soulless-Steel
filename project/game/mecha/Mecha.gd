@@ -23,7 +23,8 @@ const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
 const EXPOSED_INVULN_WINDOW = 1
-const SHIELD_PARTICLE_AMOUNT = 400
+const SHIELD_PARTICLE_AMOUNT = 5
+const SHIELD_PARRY_TIME = 0.15
 
 signal create_projectile
 signal create_casing
@@ -32,6 +33,8 @@ signal took_damage
 signal died
 signal player_kill
 signal mecha_extracted
+signal shield_ready
+signal parried
 
 @export var speed_modifier = 1.0
 @export var display_mode = false
@@ -161,6 +164,8 @@ var hp = 10
 var max_shield = 10
 var shield = 10
 var shield_regen_cooldown = 5
+var shield_project_cooldown = 0.5
+var shield_project_heat
 var max_energy = 100
 var energy = 100
 var total_kills = 0
@@ -229,6 +234,9 @@ var locking_to = false
 var locked_to = false
 
 var is_shielding = false
+var is_parrying = false
+var shield_project_cooldown_timer = 0.0
+var shield_parry_timer = 0.0
 
 var build = {
 	"arm_weapon_left": null,
@@ -335,6 +343,21 @@ func _physics_process(dt):
 
 	#ECM
 	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
+	
+	#SHIELDS
+	if shield_project_cooldown_timer <= 0.0:
+		emit_signal("shield_ready")
+	else:
+		shield_project_cooldown_timer = max(shield_project_cooldown_timer - dt, 0.0)
+	
+	if shield_parry_timer <= 0.0:
+		is_parrying = false
+	else:
+		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
+	
+	if is_shielding:
+		mecha_heat = min(mecha_heat + (shield_project_heat*dt), max_heat * OVERHEAT_BUFFER)
+		
 
 	#Bloom
 	for part in ["right_arm", "left_arm", "right_shoulder", "left_shoulder"]:
@@ -353,7 +376,8 @@ func _physics_process(dt):
 			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
-	$ParticlesLayer3/Shield.amount = SHIELD_PARTICLE_AMOUNT * (shield/max_shield)
+	$ParticlesLayer3/ShieldRing.amount = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield/max_shield))))
+	$ParticlesLayer3/ShieldStartup.amount = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield/max_shield))))
 
 	#Handle sprinting momentum
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
@@ -556,8 +580,13 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	if hitstop:
 		if source_info.name == "Player" or self.name == "Player":
 			do_hitstop()
+	
+	if is_parrying:
+		emit_signal("parried")
+		do_hitstop()
+		return
 
-	if shield_up:
+	if is_shielding:
 		var temp_shield = shield
 		shield = max(shield - (shield_mult * amount), 0)
 		amount = max(amount - temp_shield, 0)
@@ -730,7 +759,7 @@ func update_heat(dt):
 		mecha_heat = 0
 		return
 	#TODO remove freezing func and expand it here
-	if build.generator and not has_status("fire"):
+	if build.generator and not has_status("fire") and not is_shielding:
 		if mecha_heat > max_heat*idle_threshold:
 			mecha_heat = max(mecha_heat - freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
 		else:
@@ -870,6 +899,8 @@ func set_generator(part_name):
 		battery_capacity = build.generator.battery_capacity
 		battery = build.generator.battery_capacity
 		battery_recharge_rate = build.generator.battery_recharge_rate
+		shield_project_cooldown = build.generator.shield_project_cooldown
+		shield_project_heat = build.generator.shield_project_heat
 		
 		if is_player():
 			GeneratorAmbientSFX.stream = build.generator.ambient_sfx
@@ -1562,17 +1593,25 @@ func apply_recoil(type, node, recoil):
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
 func shield_up():
+	await shield_ready
+	$ParticlesLayer3/ShieldStartup.emitting = true
 	if shield > 0.0:
 		$ShieldCollision.disabled = false
 		is_shielding = true
-		$ParticlesLayer3/Shield.emitting = true
 		$ParticlesLayer3/ShieldRing.emitting = true
 	
 func shield_down():
+	shield_parry()
 	$ShieldCollision.disabled = true
 	is_shielding = false
-	$ParticlesLayer3/Shield.emitting = false
 	$ParticlesLayer3/ShieldRing.emitting = false
+	shield_project_cooldown_timer = shield_project_cooldown
+
+func shield_parry():
+	if shield > 0.0 and shield_project_cooldown_timer == 0.0:
+		is_parrying = true
+		shield_parry_timer = SHIELD_PARRY_TIME
+		$ParticlesLayer3/ShieldParry.emitting = true
 
 func get_stability():
 	var sum = get_stat("stability")/1000

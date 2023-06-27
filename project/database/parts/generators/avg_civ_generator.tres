@@ -1,16 +1,21 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dhsxrvidn1etk"]
 
-[ext_resource path="res://database/parts/generator.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://database/parts/generator.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://csm1i2ls3ycus" path="res://assets/audio/sfx/generator_ambient/test.mp3" id="1_0qr0j"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource("1")
 part_name = "Average Civ Grade"
 manufacturer_name = "Martel"
+manufacturer_name_short = ""
 tagline = ""
+price = 0.0
 description = ""
+ambient_sfx = ExtResource("1_0qr0j")
 shield = 6000.0
 shield_regen_speed = 666
 shield_regen_delay = 7
+shield_project_cooldown = 2.0
 heat_dispersion = 125
 heat_capacity = 250
 idle_threshold = 20.0
@@ -18,3 +23,4 @@ battery_capacity = 100
 battery_recharge_rate = 50
 power_output = 1.0
 weight = 7.92
+tags = Array[String](["generator"])

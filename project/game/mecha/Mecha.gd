@@ -345,13 +345,15 @@ func _physics_process(dt):
 
 	#Handle shield
 	if build.generator and shield < max_shield:
-		shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
+		if not is_shielding:
+			shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
+		else:
+			shield_regen_cooldown = build.generator.shield_regen_delay
 		if shield_regen_cooldown <= 0 and has_status("electrified"):
 			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
 	$ParticlesLayer3/Shield.amount = SHIELD_PARTICLE_AMOUNT * (shield/max_shield)
-	$ParticlesLayer3/ShieldRing.amount = SHIELD_PARTICLE_AMOUNT * (shield/max_shield)
 
 	#Handle sprinting momentum
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
@@ -555,11 +557,10 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		if source_info.name == "Player" or self.name == "Player":
 			do_hitstop()
 
-	if amount > 0 and build.generator:
-		shield_regen_cooldown = build.generator.shield_regen_delay
-	var temp_shield = shield
-	shield = max(shield - (shield_mult * amount), 0)
-	amount = max(amount - temp_shield, 0)
+	if shield_up:
+		var temp_shield = shield
+		shield = max(shield - (shield_mult * amount), 0)
+		amount = max(amount - temp_shield, 0)
 
 	if status_type and status_amount > 0.0:
 		set_status(status_type, status_amount)
@@ -1561,11 +1562,14 @@ func apply_recoil(type, node, recoil):
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
 
 func shield_up():
-	is_shielding = true
-	$ParticlesLayer3/Shield.emitting = true
-	$ParticlesLayer3/ShieldRing.emitting = true
+	if shield > 0.0:
+		$ShieldCollision.disabled = false
+		is_shielding = true
+		$ParticlesLayer3/Shield.emitting = true
+		$ParticlesLayer3/ShieldRing.emitting = true
 	
 func shield_down():
+	$ShieldCollision.disabled = true
 	is_shielding = false
 	$ParticlesLayer3/Shield.emitting = false
 	$ParticlesLayer3/ShieldRing.emitting = false

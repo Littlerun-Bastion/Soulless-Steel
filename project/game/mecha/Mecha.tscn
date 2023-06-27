@@ -1,4 +1,4 @@
-[gd_scene load_steps=172 format=3 uid="uid://cbjnlqrdalvrn"]
+[gd_scene load_steps=171 format=3 uid="uid://cbjnlqrdalvrn"]
 
 [ext_resource type="Script" path="res://game/mecha/Mecha.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ctouokk3ybmhs" path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" id="2"]
@@ -42,6 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="41"]
 [ext_resource type="Texture2D" uid="uid://cqmps4x0jpay1" path="res://assets/images/fx/cloud_small.png" id="42"]
 [ext_resource type="Texture2D" uid="uid://eio7nh8alera" path="res://assets/images/fx/spark_long.png" id="43"]
+[ext_resource type="Texture2D" uid="uid://de4alci5yhgo1" path="res://assets/images/fx/shield_ring_1.png" id="43_gm66f"]
 [ext_resource type="Texture2D" uid="uid://civftnx3kxt4x" path="res://assets/images/fx/blood_drip_sheet.png" id="44"]
 
 [sub_resource type="CanvasItemMaterial" id="87"]
@@ -888,7 +889,6 @@ scale_curve = SubResource("43")
 color_ramp = SubResource("GradientTexture1D_w307h")
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_sdx5e"]
-blend_mode = 1
 
 [sub_resource type="Gradient" id="Gradient_nh57f"]
 offsets = PackedFloat32Array(0, 0.0864198, 0.580247, 1)
@@ -929,44 +929,24 @@ turbulence_noise_scale = 1.18
 turbulence_noise_speed_random = 10.0
 turbulence_influence_max = 0.42
 
-[sub_resource type="Gradient" id="Gradient_eashq"]
-offsets = PackedFloat32Array(0, 0.0864198, 0.580247, 1)
-colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+[sub_resource type="Gradient" id="Gradient_5dyvt"]
+offsets = PackedFloat32Array(0, 0.419753, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_spm3p"]
-gradient = SubResource("Gradient_eashq")
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fa2ur"]
+gradient = SubResource("Gradient_5dyvt")
 
-[sub_resource type="Curve" id="Curve_maevb"]
-max_value = 2.0
-_data = [Vector2(0, 0.636364), 0.0, 0.0, 0, 0, Vector2(0.169643, 1.56364), 0.0, 0.0, 0, 0, Vector2(1, 0.0636363), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="CurveTexture" id="CurveTexture_gkcfs"]
-curve = SubResource("Curve_maevb")
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ib1cj"]
-emission_shape = 6
-emission_ring_axis = Vector3(0, 0, 1)
-emission_ring_height = 1.0
-emission_ring_radius = 150.0
-emission_ring_inner_radius = 148.0
-particle_flag_align_y = true
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ilqcl"]
 particle_flag_disable_z = true
-direction = Vector3(0, 1, 0)
-spread = 180.0
 gravity = Vector3(0, 0, 0)
-initial_velocity_min = 10.0
-initial_velocity_max = 40.0
 orbit_velocity_min = 0.0
 orbit_velocity_max = 0.0
-scale_min = 0.2
-scale_max = 0.4
-scale_curve = SubResource("CurveTexture_gkcfs")
-color_ramp = SubResource("GradientTexture1D_spm3p")
+angle_min = -720.0
+angle_max = 720.0
+scale_min = 0.97
+scale_max = 1.03
+color_ramp = SubResource("GradientTexture1D_fa2ur")
 turbulence_enabled = true
-turbulence_noise_scale = 1.18
-turbulence_noise_speed_random = 10.0
-turbulence_influence_max = 0.42
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_atqrs"]
 radius = 150.0
@@ -1587,12 +1567,11 @@ lifetime = 0.3
 speed_scale = 2.0
 
 [node name="ShieldRing" type="GPUParticles2D" parent="ParticlesLayer3"]
-material = SubResource("CanvasItemMaterial_sdx5e")
-amount = 400
-process_material = SubResource("ParticleProcessMaterial_ib1cj")
-texture = ExtResource("36")
-lifetime = 0.2
-speed_scale = 2.0
+amount = 3
+process_material = SubResource("ParticleProcessMaterial_ilqcl")
+texture = ExtResource("43_gm66f")
+lifetime = 0.1
+fixed_fps = 120
 local_coords = true
 
 [node name="ShieldCollision" type="CollisionShape2D" parent="."]

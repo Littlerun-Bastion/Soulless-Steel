@@ -216,7 +216,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	Statcard.display_part_stats(current_part, new_part, type_name)
 	Statcard.visible = true
 	comparing_part = true
-
+	
 func shoulder_weapon_check():
 	var core
 	if DisplayMecha.core:

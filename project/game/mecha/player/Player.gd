@@ -103,6 +103,10 @@ func _input(event):
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
+	elif event.is_action_pressed("shield"):
+		shield_up()
+	elif event.is_action_released("shield"):
+		shield_down()
 
 
 func get_camera_3d():

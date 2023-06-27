@@ -171,7 +171,7 @@ func navigate_to_target(dt):
 		set_danger()
 		choose_direction()
 		apply_movement(dt, chosen_dir)
-		if valid_target:
+		if valid_target and is_instance_valid(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)

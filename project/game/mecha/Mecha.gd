@@ -23,6 +23,7 @@ const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
 const EXPOSED_INVULN_WINDOW = 1
+const SHIELD_PARTICLE_AMOUNT = 400
 
 signal create_projectile
 signal create_casing
@@ -227,6 +228,8 @@ var locking_targets = []
 var locking_to = false
 var locked_to = false
 
+var is_shielding = false
+
 var build = {
 	"arm_weapon_left": null,
 	"arm_weapon_right": null,
@@ -347,6 +350,8 @@ func _physics_process(dt):
 			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
+	$ParticlesLayer3/Shield.amount = SHIELD_PARTICLE_AMOUNT * (shield/max_shield)
+	$ParticlesLayer3/ShieldRing.amount = SHIELD_PARTICLE_AMOUNT * (shield/max_shield)
 
 	#Handle sprinting momentum
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
@@ -1435,6 +1440,8 @@ func stop_sprinting(sprint_dir):
 func shoot(type, is_auto_fire = false):
 	if is_dead:
 		return
+	if is_shielding:
+		return
 	
 	#Check for spool up
 	var sfx_node = WeaponSFXs[type]
@@ -1552,6 +1559,16 @@ func apply_recoil(type, node, recoil):
 		target_rotation *= -1
 	rotation_degrees += target_rotation
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
+
+func shield_up():
+	is_shielding = true
+	$ParticlesLayer3/Shield.emitting = true
+	$ParticlesLayer3/ShieldRing.emitting = true
+	
+func shield_down():
+	is_shielding = false
+	$ParticlesLayer3/Shield.emitting = false
+	$ParticlesLayer3/ShieldRing.emitting = false
 
 func get_stability():
 	var sum = get_stat("stability")/1000

@@ -968,7 +968,8 @@ color_ramp = SubResource("GradientTexture1D_7qllu")
 turbulence_enabled = true
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_atqrs"]
-radius = 150.0
+custom_solver_bias = 0.2
+radius = 170.0
 
 [sub_resource type="CircleShape2D" id="39"]
 radius = 206.0
@@ -1608,11 +1609,6 @@ explosiveness = 0.92
 fixed_fps = 120
 local_coords = true
 
-[node name="ShieldCollision" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_atqrs")
-disabled = true
-one_way_collision = true
-
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 polygon = PackedVector2Array(56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696)
@@ -1636,6 +1632,11 @@ polygon = PackedVector2Array(-74.7051, -26.6216, -25.3168, 14.9095, -38.7863, 29
 [node name="RightShoulderCollision" type="CollisionPolygon2D" parent="."]
 visible = false
 polygon = PackedVector2Array(79.6946, -37.5237, 30.9226, 11.2483, 35.1271, 15.8732, 39.752, 10.8278, 61.6153, 33.9525, 62.4562, 71.7928, 48.1609, 72.2133, 47.7405, 84.4063, 80.9559, 116.781, 120.058, 116.781, 120.058, 110.054, 116.694, 109.633, 117.535, 2.83932, 84.3195, -29.5352, 86.4217, -33.7397)
+
+[node name="ShieldCollision" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_atqrs")
+disabled = true
+one_way_collision = true
 
 [node name="LockCollision" type="Area2D" parent="."]
 visible = false

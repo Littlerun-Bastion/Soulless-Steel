@@ -583,7 +583,6 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	
 	if is_parrying:
 		emit_signal("parried")
-		print("parried " + name)
 		do_hitstop()
 		return
 
@@ -1483,7 +1482,6 @@ func shoot(type, is_auto_fire = false):
 		if not spooling[type]:
 			spooling[type] = true
 			sfx_node.spool_up.play()
-			print("PLaying spool up")
 			return
 		elif sfx_node.spool_up.is_playing():
 			return
@@ -1595,8 +1593,8 @@ func apply_recoil(type, node, recoil):
 
 func shield_up():
 	await shield_ready
-	$ParticlesLayer3/ShieldStartup.emitting = true
 	if shield > 0.0:
+		$ParticlesLayer3/ShieldStartup.emitting = true
 		$ShieldCollision.disabled = false
 		is_shielding = true
 		$ParticlesLayer3/ShieldRing.emitting = true

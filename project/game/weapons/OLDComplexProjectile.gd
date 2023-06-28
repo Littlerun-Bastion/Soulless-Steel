@@ -216,7 +216,7 @@ func die():
 		return
 	dying = true
 	if not proj_data.is_overtime:
-		emit_signal("bullet_impact", self, impact_effect)
+		emit_signal("bullet_impact", self, impact_effect, true)
 	$Tickover.start()
 	await $Tickover.timeout
 	queue_free()

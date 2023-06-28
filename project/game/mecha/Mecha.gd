@@ -234,7 +234,7 @@ var locking_to = false
 var locked_to = false
 
 var is_shielding = false
-var is_parrying = true
+var is_parrying = false
 var shield_project_cooldown_timer = 0.0
 var shield_parry_timer = 0.0
 
@@ -351,7 +351,7 @@ func _physics_process(dt):
 		shield_project_cooldown_timer = max(shield_project_cooldown_timer - dt, 0.0)
 	
 	if shield_parry_timer <= 0.0:
-		is_parrying = true
+		is_parrying = false
 	else:
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
 	
@@ -583,6 +583,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	
 	if is_parrying:
 		emit_signal("parried")
+		print("parried " + name)
 		do_hitstop()
 		return
 
@@ -590,14 +591,15 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		var temp_shield = shield
 		shield = max(shield - (shield_mult * amount), 0)
 		amount = max(amount - temp_shield, 0)
+		hp = max(hp - (health_mult * amount), 0)
+	else:
+		hp = max(hp - (health_mult * amount), 0)
+		mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)		
+		if status_type and status_amount > 0.0:
+			set_status(status_type, status_amount)
+		if amount > max_hp/0.25:
+			Particle.blood[2].emitting = true
 
-	if status_type and status_amount > 0.0:
-		set_status(status_type, status_amount)
-
-	hp = max(hp - (health_mult * amount), 0)
-	if amount > max_hp/0.25:
-		Particle.blood[2].emitting = true
-	mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)
 	emit_signal("took_damage", self, false)
 
 	last_damage_source = source_info
@@ -1517,7 +1519,6 @@ func shoot(type, is_auto_fire = false):
 	
 	if weapon_ref.shoot_loop_sfx and not sfx_node.shoot_loop.is_playing():
 		sfx_node.shoot_loop.play()
-		print("Printing shoot_loop")
 		
 	while node.burst_count < weapon_ref.burst_size:
 		var amount

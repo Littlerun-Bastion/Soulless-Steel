@@ -1579,6 +1579,7 @@ randomness = 0.75
 fixed_fps = 60
 
 [node name="ShieldRing" type="GPUParticles2D" parent="ParticlesLayer3"]
+emitting = false
 amount = 1
 process_material = SubResource("ParticleProcessMaterial_ilqcl")
 texture = ExtResource("43_gm66f")

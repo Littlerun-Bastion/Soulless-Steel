@@ -185,11 +185,12 @@ func add_player():
 	Mechas.add_child(player)
 	player.setup(self)
 	player.position = get_start_position(0)
-	player.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
-	player.connect("create_casing",Callable(self,"_on_mecha_create_casing"))
-	player.connect("died",Callable(self,"_on_mecha_died"))
-	player.connect("lost_health",Callable(self,"_on_player_lost_health"))
-	player.connect("mecha_extracted",Callable(self,"_on_player_mech_extracted"))
+	player.connect("create_projectile", Callable(self,"_on_mecha_create_projectile"))
+	player.connect("create_casing", Callable(self,"_on_mecha_create_casing"))
+	player.connect("died", Callable(self,"_on_mecha_died"))
+	player.connect("lost_health", Callable(self,"_on_player_lost_health"))
+	player.connect("mecha_extracted", Callable(self,"_on_player_mech_extracted"))
+	player.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
 	player_ammo_set()
@@ -203,6 +204,7 @@ func add_enemy(design_data, enemy_name):
 	enemy.connect("create_casing",Callable(self,"_on_mecha_create_casing"))
 	enemy.connect("died",Callable(self,"_on_mecha_died"))
 	enemy.connect("player_kill",Callable(self,"_on_mecha_player_kill"))
+	enemy.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
 	all_mechas.push_back(enemy)
 	enemy.setup(self, is_tutorial, design_data, enemy_name)
 
@@ -378,6 +380,13 @@ func _on_mecha_died(mecha):
 		player_died()
 	else:
 		mecha.queue_free()
+
+
+func _on_mecha_made_sound(sound_data):
+	for mecha in all_mechas:
+		if not mecha.is_player() and sound_data.source != mecha and\
+		   mecha.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
+			mecha.heard_sound(sound_data)
 
 
 func _on_mecha_player_kill():

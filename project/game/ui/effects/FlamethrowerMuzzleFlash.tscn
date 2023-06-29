@@ -123,6 +123,7 @@ lifetime = 0.3
 one_shot = true
 explosiveness = 1.0
 fixed_fps = 240
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 script = ExtResource("5")
 
 [node name="Effect2" type="GPUParticles2D" parent="."]
@@ -137,6 +138,7 @@ speed_scale = 1.5
 explosiveness = 1.0
 randomness = 0.45
 fixed_fps = 120
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="Effect1" type="GPUParticles2D" parent="."]
 emitting = false
@@ -148,6 +150,7 @@ one_shot = true
 speed_scale = 2.0
 explosiveness = 0.8
 fixed_fps = 120
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="Linger" type="GPUParticles2D" parent="."]
 emitting = false
@@ -158,3 +161,4 @@ lifetime = 2.5
 one_shot = true
 explosiveness = 1.0
 fixed_fps = 120
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)

@@ -357,7 +357,8 @@ func _physics_process(dt):
 	
 	if is_shielding:
 		mecha_heat = min(mecha_heat + (shield_project_heat*dt), max_heat * OVERHEAT_BUFFER)
-		
+		if shield <= 0.0:
+			shield_down()
 
 	#Bloom
 	for part in ["right_arm", "left_arm", "right_shoulder", "left_shoulder"]:
@@ -372,7 +373,7 @@ func _physics_process(dt):
 			shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
 		else:
 			shield_regen_cooldown = build.generator.shield_regen_delay
-		if shield_regen_cooldown <= 0 and has_status("electrified"):
+		if shield_regen_cooldown <= 0 and not has_status("electrified"):
 			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)

@@ -464,6 +464,7 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="hit_smoke" type="GPUParticles2D" parent="OnHit"]
 position = Vector2(-4.76221, 1.5874)
@@ -477,6 +478,7 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="hit_smoke2" type="GPUParticles2D" parent="OnHit"]
 position = Vector2(-4.76221, 1.5874)
@@ -490,6 +492,7 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="OnMiss" type="Node2D" parent="."]
 
@@ -504,6 +507,7 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="miss_smoke" type="GPUParticles2D" parent="OnMiss"]
 position = Vector2(-4.76221, 1.5874)
@@ -517,6 +521,7 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
 
 [node name="miss_smoke2" type="GPUParticles2D" parent="OnMiss"]
 position = Vector2(-4.76221, 1.5874)
@@ -530,3 +535,4 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
+visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)

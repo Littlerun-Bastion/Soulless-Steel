@@ -35,10 +35,13 @@ func _ready():
 
 
 func _physics_process(delta):
-	if paused or is_stunned():
+	if paused:
 		return
 	
 	super(delta)
+	
+	if is_stunned():
+		return
 	
 	check_input()
 	
@@ -64,7 +67,7 @@ func _input(event):
 		return
 	
 	if event.is_action_pressed("interact"):
-		AudioManager.play_sfx("test", global_position)
+		pass
 	elif event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
@@ -200,11 +203,13 @@ func check_weapon_input(weapon_name):
 	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
 		shoot(weapon_name, true)
 	if not Input.is_action_pressed(weapon_name+"_shoot"):
+		var sfx_node = WeaponSFXs[weapon_name]
 		if spooling[weapon_name]:
-			WeaponSFXs[weapon_name].spool_up.stop()
-			WeaponSFXs[weapon_name].spool_down.play()
-		if WeaponSFXs[weapon_name].shoot_loop.is_playing():
-			WeaponSFXs[weapon_name].shoot_loop.stop()
+			sfx_node.spool_up.stop()
+			sfx_node.spool_down.play()
+			create_sound("loud", "spooling", sfx_node.spool_down.max_distance*SPOOLING_DISTANCE_ATT)
+		if sfx_node.shoot_loop.is_playing():
+			sfx_node.shoot_loop.stop()
 		spooling[weapon_name] = false
 
 

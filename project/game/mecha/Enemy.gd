@@ -1,7 +1,8 @@
 extends Mecha
 
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
-const SOUND_LIFETIME = 60
+const SOUND_LIFETIME = 25
+const BODY_LIFETIME = 35
 
 @export var look_ahead_range = 500
 @export var num_rays = 16
@@ -19,9 +20,10 @@ var mov_vec = Vector2()
 var going_to_position = false
 var logic
 var all_mechas
+var engage_distance = 2000 #How far too see other mechas
 var senses = {
 	"sounds": [],
-	
+	"bodies": [],
 }
 var valid_target = false
 
@@ -44,19 +46,19 @@ func _ready():
 	
 
 
-func _physics_process(delta):
+func _physics_process(dt):
 	if paused:
 		return
 	
-	super(delta)
+	super(dt)
 	
 	if is_stunned():
 		return
 	
-	update_senses(delta)
+	update_senses(dt)
 	
 	logic.update(self)
-	logic.run(self, delta)
+	logic.run(self, dt)
 	
 	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
@@ -121,6 +123,7 @@ func heard_sound(sound_data):
 
 
 func update_senses(dt):
+	#Tick down sounds
 	var to_remove = []
 	for sound in senses.sounds:
 		sound.lifetime -= dt
@@ -128,11 +131,41 @@ func update_senses(dt):
 			to_remove.append(sound)
 	for sound in to_remove:
 		senses.sounds.erase(sound)
-
-
+	
+	#Tick down unseen bodies
+	to_remove = []
+	for data in senses.bodies:
+		if data.is_seen:
+			data.is_seen = false
+			data.lifetime = BODY_LIFETIME
+		else:
+			data.lifetime -= dt
+			if data.lifetime <= 0:
+				to_remove.append(data)
+	for data in to_remove:
+		senses.bodies.erase(data)
+	
+	#Check for nearby bodies
+	for target in arena.get_mechas():
+		var distance = position.distance_to(target.position)
+		if target != self and distance <= engage_distance:
+			var found = false
+			for data in senses.bodies:
+				if data.body == target:
+					data.is_seen = true
+					found = true
+					break
+			if not found:
+				senses.bodies.append({
+					"body": target,
+					"last_position": target.global_position,
+					"is_seen": true,
+					"lifetime": BODY_LIFETIME,
+				})
+	
 #COMBAT METHODS
 
-func check_for_targets(engage_distance, max_shooting_distance):
+func check_for_targets(eng_distance, max_shooting_distance):
 	#Check if current target is still in distance
 	if valid_target and is_instance_valid(valid_target):
 		if position.distance_to(valid_target.position) > max_shooting_distance:
@@ -145,7 +178,7 @@ func check_for_targets(engage_distance, max_shooting_distance):
 		var min_distance = 99999999
 		for target in arena.get_mechas():
 			var distance = position.distance_to(target.position)
-			if target != self and distance <= engage_distance and distance < min_distance:
+			if target != self and distance <= eng_distance and distance < min_distance:
 				valid_target = target
 				min_distance = distance
 

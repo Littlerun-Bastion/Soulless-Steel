@@ -153,6 +153,7 @@ func update_senses(dt):
 			for data in senses.bodies:
 				if data.body == target:
 					data.is_seen = true
+					data.last_position = target.global_position
 					found = true
 					break
 			if not found:

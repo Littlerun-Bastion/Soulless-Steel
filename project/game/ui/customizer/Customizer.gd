@@ -219,8 +219,8 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	
 func shoulder_weapon_check():
 	var core
-	if DisplayMecha.core:
-		core = DisplayMecha.core
+	if DisplayMecha.build.core:
+		core = DisplayMecha.build.core
 	else:
 		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = true

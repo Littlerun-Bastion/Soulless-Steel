@@ -1,7 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://b84s4spch2si0"]
+[gd_scene load_steps=5 format=3 uid="uid://b84s4spch2si0"]
 
 [ext_resource type="Script" path="res://game/ui/TransitionManager.gd" id="1_0nrmn"]
 [ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="2_8jay6"]
+[ext_resource type="Shader" path="res://assets/shaders/BlurShader.gdshader" id="3_31r00"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8a1ln"]
+shader = ExtResource("3_31r00")
+shader_parameter/lod = 0.0
 
 [node name="TransitionManager" type="CanvasLayer"]
 layer = 4
@@ -21,3 +26,12 @@ offset_top = 1004.0
 offset_right = 1197.0
 offset_bottom = 1040.0
 lifespan = 0.5
+
+[node name="BlurScreen" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_8a1ln")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1

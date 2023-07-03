@@ -79,6 +79,7 @@ func _on_Arena_pressed():
 
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")
+	ArenaManager.mode = "Tutorial"
 	start_game("tutorial")
 
 

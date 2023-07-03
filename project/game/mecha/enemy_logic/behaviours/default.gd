@@ -27,13 +27,19 @@ func targeting_to_roaming(enemy):
 ## STATE METHODS ##
 
 func do_roaming(dt, enemy):
-	if not enemy.going_to_position:
-		enemy.going_to_position = true
-		enemy.NavAgent.target_position = enemy.arena.get_random_position()
+	if enemy.senses.sounds.is_empty():
+		if not enemy.going_to_position:
+			enemy.going_to_position = true
+			enemy.NavAgent.target_position = enemy.arena.get_random_position()
+	else:
+		if enemy.get_most_recent_loud_noise():
+			enemy.going_to_position = true
+			enemy.NavAgent.target_position = enemy.get_most_recent_loud_noise().position
+			print(enemy.name + " moving to loud noise.")
 	enemy.navigate_to_target(dt)
 	
 	
-	enemy.check_for_targets(engage_distance, max_shooting_distance)
+	#enemy.check_for_targets(engage_distance, max_shooting_distance)
 
 
 func do_targeting(dt, enemy):

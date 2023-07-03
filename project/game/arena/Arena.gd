@@ -48,6 +48,9 @@ func _ready():
 		for enemy in ArenaManager.exhibitioner_count:
 			var enemy_design = NPCManager.get_design_data(NPCManager.get_random_npc())
 			add_enemy(enemy_design, enemy)
+	elif ArenaManager.mode == "Tutorial":
+		var enemy_design = NPCManager.get_design_data(NPCManager.get_random_npc())
+		add_enemy(enemy_design, 1)
 	
 	for exitposition in $Exits.get_children():
 		exitposition.connect("mecha_extracting",Callable(self,"_on_ExitPos_mecha_extracting"))

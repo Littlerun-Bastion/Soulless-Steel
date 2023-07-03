@@ -1625,12 +1625,25 @@ func shoot(type, is_auto_fire = false):
 		emit_signal("shoot_signal")
 	node.burst_cooldown()
 
+
+func stop_shooting(weapon_type):
+	var sfx_node = WeaponSFXs[weapon_type]
+	if spooling[weapon_type]:
+		sfx_node.spool_up.stop()
+		sfx_node.spool_down.play()
+		create_sound("loud", "spooling", sfx_node.spool_down.max_distance*SPOOLING_DISTANCE_ATT)
+	if sfx_node.shoot_loop.is_playing():
+		sfx_node.shoot_loop.stop()
+	spooling[weapon_type] = false
+
+
 func apply_recoil(type, node, recoil):
 	var target_rotation = recoil*300/get_stat("weight")
 	if "left" in type:
 		target_rotation *= -1
 	rotation_degrees += target_rotation
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
+
 
 func shield_up():
 	await shield_ready

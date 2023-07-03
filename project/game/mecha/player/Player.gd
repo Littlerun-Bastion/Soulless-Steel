@@ -93,6 +93,8 @@ func _input(event):
 	elif event.is_action_pressed("lock_mode") and build.chipset.can_lock:
 		cur_mode = MODES.ACTIVATING_LOCK
 		emit_signal("update_lock_mode", true)
+		for weapon_type in WeaponSFXs.keys():
+			stop_shooting(weapon_type)
 	elif event.is_action_released("lock_mode") and build.chipset.can_lock:
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
@@ -203,14 +205,7 @@ func check_weapon_input(weapon_name):
 	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
 		shoot(weapon_name, true)
 	if not Input.is_action_pressed(weapon_name+"_shoot"):
-		var sfx_node = WeaponSFXs[weapon_name]
-		if spooling[weapon_name]:
-			sfx_node.spool_up.stop()
-			sfx_node.spool_down.play()
-			create_sound("loud", "spooling", sfx_node.spool_down.max_distance*SPOOLING_DISTANCE_ATT)
-		if sfx_node.shoot_loop.is_playing():
-			sfx_node.shoot_loop.stop()
-		spooling[weapon_name] = false
+		stop_shooting(weapon_name)
 
 
 func setup(arena_ref):

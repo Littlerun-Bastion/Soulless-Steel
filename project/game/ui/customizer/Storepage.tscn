@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://bu22r8a2ybnso"]
+[gd_scene load_steps=22 format=3 uid="uid://bu22r8a2ybnso"]
 
 [ext_resource type="Script" path="res://game/ui/customizer/Storepage.gd" id="1_mota4"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="2_clna7"]
@@ -12,7 +12,6 @@
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="10_oi7dk"]
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="11_5metr"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="12_jvh0j"]
-[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CoommandLine.tscn" id="13_hexso"]
 
 [sub_resource type="Theme" id="14"]
 
@@ -877,13 +876,6 @@ layout_mode = 2
 theme = ExtResource("6_1ptfd")
 text = "Return
 "
-
-[node name="CommandLine" parent="." instance=ExtResource("13_hexso")]
-layout_mode = 0
-offset_left = 46.0
-offset_top = 1000.0
-offset_right = 1201.0
-offset_bottom = 1036.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]

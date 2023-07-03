@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
-[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CoommandLine.tscn" id="13_ytkiv"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="13_ytkiv"]
 [ext_resource type="PackedScene" uid="uid://bgdtd2d23virp" path="res://game/ui/customizer/ItemFrame.tscn" id="14_75fbo"]
 
 [sub_resource type="Theme" id="14"]

@@ -252,7 +252,7 @@ func _on_Save_pressed():
 func _on_Exit_pressed():
 	if is_build_valid():
 		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 	else:
 		print("Build invalid")
 

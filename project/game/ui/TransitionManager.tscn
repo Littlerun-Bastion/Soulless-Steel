@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="2_8jay6"]
 
 [node name="TransitionManager" type="CanvasLayer"]
-layer = 3
+layer = 4
 script = ExtResource("1_0nrmn")
 
 [node name="BlockScreen" type="ColorRect" parent="."]

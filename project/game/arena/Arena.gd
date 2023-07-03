@@ -414,8 +414,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
-# warning-ignore:return_value_discarded
-		get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 	else:
 		#TODO: Fix this
 		PlayerStatManager.PlayerKills += player_kills
@@ -437,8 +436,8 @@ func _on_player_mech_extracted(playerMech):
 		PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
 		PlayerStatManager.RepairedLastRound = false
 		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
-# warning-ignore:return_value_discarded
-		get_tree().change_scene_to_file("res://ScoreScreen.tscn")
+
+		TransitionManager.transition_to("res://ScoreScreen.tscn", "Downloading Data...")
 
 
 func _on_WindsTimer_timeout():

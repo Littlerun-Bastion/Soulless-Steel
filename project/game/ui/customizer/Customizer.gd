@@ -210,9 +210,9 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	var current_part = DisplayMecha.get(type_name)
 	var new_part = ComparisonMecha.get(type_name)
 	if ComparisonMecha.is_overweight():
-		$overweight.visible = true
+		$Overweight.visible = true
 	else:
-		$overweight.visible = false
+		$Overweight.visible = false
 	Statcard.display_part_stats(current_part, new_part, type_name)
 	Statcard.visible = true
 	comparing_part = true
@@ -257,9 +257,9 @@ func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 		child.reset_comparison(DisplayMecha)
 	comparing_part = false
 	if DisplayMecha.is_overweight():
-		$overweight.visible = true
+		$Overweight.visible = true
 	else:
-		$overweight.visible = false
+		$Overweight.visible = false
 
 func update_weight():
 	$WeightBar.max_value = DisplayMecha.get_stat("weight_capacity")
@@ -275,7 +275,7 @@ func _on_Save_pressed():
 func _on_Exit_pressed():
 	if is_build_valid():
 		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 	else:
 		print("Build invalid")
 

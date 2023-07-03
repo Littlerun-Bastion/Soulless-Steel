@@ -57,8 +57,7 @@ func start_game(mode):
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Simulation...")
 
 func start_match():
 	start_game("main")

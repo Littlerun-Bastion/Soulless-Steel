@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://bsyltjhiirffe"]
+[gd_scene load_steps=25 format=3 uid="uid://bsyltjhiirffe"]
 
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="Script" path="res://game/ui/customizer/Customizer.gd" id="3"]
@@ -12,7 +12,6 @@
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
-[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="13_ytkiv"]
 [ext_resource type="PackedScene" uid="uid://bgdtd2d23virp" path="res://game/ui/customizer/ItemFrame.tscn" id="14_75fbo"]
 
 [sub_resource type="Theme" id="14"]
@@ -622,13 +621,6 @@ offset_bottom = 298.139
 scale = Vector2(1.2, 1.2)
 stat_name = "max_speed"
 stat_label = "SPD"
-
-[node name="CommandLine" parent="." instance=ExtResource("13_ytkiv")]
-layout_mode = 0
-offset_left = 46.0
-offset_top = 1000.0
-offset_right = 1201.0
-offset_bottom = 1036.0
 
 [node name="CurrentItemFrame" parent="." instance=ExtResource("14_75fbo")]
 layout_mode = 1

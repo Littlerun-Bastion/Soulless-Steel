@@ -18,7 +18,7 @@ func _ready():
 	AudioManager.play_bgm("main-menu")
 	
 	if Debug.get_setting("go_to_mode"):
-		await get_tree().idle_frame
+		await get_tree().process_frame
 		start_game(Debug.get_setting("go_to_mode"))
 
 

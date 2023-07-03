@@ -280,7 +280,7 @@ libraries = {
 [connection signal="pressed" from="MainButtons/HangarContainer/Button" to="." method="_on_Hangar_pressed"]
 [connection signal="mouse_entered" from="MainButtons/StoreContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/StoreContainer/Button" to="." method="_on_Button_mouse_exited"]
-[connection signal="pressed" from="MainButtons/StoreContainer/Button" to="." method="open_store"]
+[connection signal="pressed" from="MainButtons/StoreContainer/Button" to="." method="_on_Store_pressed"]
 [connection signal="mouse_entered" from="MainButtons/SettingsContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/SettingsContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="mouse_entered" from="MainButtons/ExitContainer/Button" to="." method="_on_Button_mouse_entered"]

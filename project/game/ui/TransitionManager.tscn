@@ -1,14 +1,23 @@
-[gd_scene load_steps=2 format=3 uid="uid://b84s4spch2si0"]
+[gd_scene load_steps=3 format=3 uid="uid://b84s4spch2si0"]
 
 [ext_resource type="Script" path="res://game/ui/TransitionManager.gd" id="1_0nrmn"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="2_8jay6"]
 
 [node name="TransitionManager" type="CanvasLayer"]
+layer = 3
 script = ExtResource("1_0nrmn")
 
-[node name="BlackScreen" type="ColorRect" parent="."]
+[node name="BlockScreen" type="ColorRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+
+[node name="CommandLine" parent="." instance=ExtResource("2_8jay6")]
+offset_left = 42.0
+offset_top = 1004.0
+offset_right = 1197.0
+offset_bottom = 1040.0
+lifespan = 0.5

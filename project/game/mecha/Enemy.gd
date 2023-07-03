@@ -175,11 +175,11 @@ func get_most_recent_quiet_noise():
 
 func get_recent_noise(var_type, var_value):
 	var recent_noise = false
-	var shortest_lifetime = 99999999
+	var biggest_lifetime = -99999999
 	for sound in senses.sounds:
-		if sound[var_type] == var_value and sound.lifetime < shortest_lifetime:
+		if sound[var_type] == var_value and sound.lifetime > biggest_lifetime:
 			recent_noise = sound
-			shortest_lifetime = sound.lifetime
+			biggest_lifetime = sound.lifetime
 	
 	return recent_noise
 

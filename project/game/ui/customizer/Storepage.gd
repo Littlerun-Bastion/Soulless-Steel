@@ -20,7 +20,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 @onready var PurchaseComplete = $PurchaseConfirm/complete
 @onready var PurchaseConfirm = $PurchaseConfirm/confirm
 @onready var TotalCostLabel = $PurchaseConfirm/confirm/TotalCost/Amount
-@onready var CommandLine = $commandline
+@onready var CommandLine = $CommandLine
 
 
 var category_visible = false

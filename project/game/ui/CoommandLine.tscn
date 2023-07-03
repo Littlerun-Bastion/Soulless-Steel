@@ -1,11 +1,11 @@
 [gd_scene load_steps=3 format=3 uid="uid://fy4bi7jm7ag0"]
 
 [ext_resource type="FontFile" uid="uid://b31lkain7iil5" path="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf" id="1_3umcw"]
-[ext_resource type="Script" path="res://game/ui/commandline.gd" id="2_jg100"]
+[ext_resource type="Script" path="res://game/ui/CoommandLine.gd" id="2_kbxcb"]
 
-[node name="commandline" type="Label"]
+[node name="CommandLine" type="Label"]
 offset_right = 1155.0
 offset_bottom = 29.0
 theme_override_fonts/font = ExtResource("1_3umcw")
 theme_override_font_sizes/font_size = 35
-script = ExtResource("2_jg100")
+script = ExtResource("2_kbxcb")

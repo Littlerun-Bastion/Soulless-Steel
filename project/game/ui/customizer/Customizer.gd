@@ -14,7 +14,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 #onready var StatBars = $Statbars
 @onready var Statcard = $Statcard
 @onready var LoadScreen = $LoadScreen
-@onready var CommandLine = $commandline
+@onready var CommandLine = $CommandLine
 
 var category_visible = false
 var comparing_part = false

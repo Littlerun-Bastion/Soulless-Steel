@@ -163,7 +163,26 @@ func update_senses(dt):
 					"is_seen": true,
 					"lifetime": BODY_LIFETIME,
 				})
+
+
+func get_most_recent_loud_noise():
+	return get_recent_noise("volume_type", "loud")
+
+
+func get_most_recent_quiet_noise():
+	return get_recent_noise("volume_type", "quiet")
+
+
+func get_recent_noise(var_type, var_value):
+	var recent_noise = false
+	var shortest_lifetime = 99999999
+	for sound in senses.sounds:
+		if sound[var_type] == var_value and sound.lifetime < shortest_lifetime:
+			recent_noise = sound
+			shortest_lifetime = sound.lifetime
 	
+	return recent_noise
+
 #COMBAT METHODS
 
 func check_for_targets(eng_distance, max_shooting_distance):

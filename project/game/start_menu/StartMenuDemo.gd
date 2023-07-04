@@ -18,7 +18,7 @@ func _ready():
 	AudioManager.play_bgm("main-menu")
 	
 	if Debug.get_setting("go_to_mode"):
-		await get_tree().idle_frame
+		await get_tree().process_frame
 		start_game(Debug.get_setting("go_to_mode"))
 
 
@@ -43,14 +43,16 @@ func start_game(mode):
 		"main":
 			ArenaManager.set_map_to_load("arena_oldgate")
 		"tutorial":
+			ArenaManager.mode = "Tutorial"
 			ArenaManager.set_map_to_load("tutorial")
 		"test":
 			ArenaManager.set_map_to_load("test_buildings")
 		_:
 			push_error("Not a valid mode: " + str(mode))
-	ShaderEffects.play_transition(5000.0, 0, 0.5)
+	
+	#ShaderEffects.play_transition(5000.0, 0, 0.5)
 	# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence")
 
 
 func _on_Button_mouse_entered():
@@ -61,6 +63,7 @@ func _on_Button_mouse_entered():
 func _on_Button_mouse_exited():
 	Parallax.mouse_hovered = false
 
+
 func _on_SettingsButton_pressed():
 	AudioManager.play_sfx("back")
 
@@ -69,19 +72,22 @@ func _on_ExitButton_pressed():
 	AudioManager.play_sfx("back")
 	FileManager.save_and_quit()
 
+
 func _on_Hangar_pressed():
-# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/ui/customizer/Customizer.tscn")
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer")
+
 
 func _on_Arena_pressed():
 	AudioManager.play_sfx("confirm")
-	get_tree().change_scene_to_file("res://game/ui/ladder/Ladder.tscn")
+	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings")
+
 
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")
-	ArenaManager.mode = "Tutorial"
 	start_game("tutorial")
 
 
-func open_store():
-	get_tree().change_scene_to_file("res://game/ui/customizer/Storepage.tscn")
+func _on_Store_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store")

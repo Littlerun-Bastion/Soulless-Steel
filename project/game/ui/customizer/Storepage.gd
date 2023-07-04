@@ -20,7 +20,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 @onready var PurchaseComplete = $PurchaseConfirm/complete
 @onready var PurchaseConfirm = $PurchaseConfirm/confirm
 @onready var TotalCostLabel = $PurchaseConfirm/confirm/TotalCost/Amount
-@onready var CommandLine = $commandline
+@onready var CommandLine = $CommandLine
 
 
 var category_visible = false
@@ -50,7 +50,7 @@ func _input(event):
 		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
 		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
 		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().idle_frame
+			await get_tree().process_frame
 			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
 			get_window().position = Vector2(0,0)
 	if event.is_action_pressed("debug_1"):
@@ -252,7 +252,7 @@ func _on_Save_pressed():
 func _on_Exit_pressed():
 	if is_build_valid():
 		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 	else:
 		print("Build invalid")
 

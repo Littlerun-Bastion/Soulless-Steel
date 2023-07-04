@@ -24,5 +24,5 @@ func killed():
 
 
 func _on_ReturnButton_pressed():
-# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+	TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
+

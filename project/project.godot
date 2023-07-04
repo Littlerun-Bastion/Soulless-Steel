@@ -30,6 +30,7 @@ ArenaManager="*res://game/arena/ArenaManager.gd"
 ShaderEffects="*res://game/ui/ShaderEffects.tscn"
 MouseManager="*res://game/ui/MouseManager.gd"
 NPCManager="*res://game/mecha/NPCManager.gd"
+TransitionManager="*res://game/ui/TransitionManager.tscn"
 
 [display]
 

@@ -83,16 +83,14 @@ func _on_RepairButton_pressed():
 
 
 func _on_ContinueButton_pressed():
-# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/arena/Arena.tscn")
 	PlayerStatManager.PlayerKills = 0
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence")
 
 
 func _on_ExitButton_pressed():
-# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
 	PlayerStatManager.PlayerKills = 0
 	PlayerStatManager.NumberofExtracts = 0
+	TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 
 
 func _on_RABuy_pressed():

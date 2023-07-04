@@ -49,8 +49,7 @@ func _on_Button_mouse_entered():
 
 func _on_Quit_pressed():
 	AudioManager.play_sfx("back")
-# warning-ignore:return_value_discarded
-	get_tree().change_scene_to_file("res://game/start_menu/StartMenuDemo.tscn")
+	TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
 
 
 func _on_Resume_pressed():

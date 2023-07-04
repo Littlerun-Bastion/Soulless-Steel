@@ -12,8 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="10"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://65kdix3bjqtj" path="res://game/ui/customizer/TopBarStatbox.tscn" id="13"]
-[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/commandline.tscn" id="13_ytkiv"]
 [ext_resource type="PackedScene" uid="uid://bgdtd2d23virp" path="res://game/ui/customizer/ItemFrame.tscn" id="14_75fbo"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="14_um0cw"]
 
 [sub_resource type="Theme" id="14"]
 
@@ -564,7 +564,7 @@ offset_bottom = -743.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="overweight" type="Label" parent="."]
+[node name="Overweight" type="Label" parent="."]
 visible = false
 layout_mode = 0
 offset_left = 391.217
@@ -623,19 +623,19 @@ scale = Vector2(1.2, 1.2)
 stat_name = "max_speed"
 stat_label = "SPD"
 
-[node name="commandline" parent="." instance=ExtResource("13_ytkiv")]
-layout_mode = 0
-offset_left = 46.0
-offset_top = 1000.0
-offset_right = 1201.0
-offset_bottom = 1036.0
-
 [node name="CurrentItemFrame" parent="." instance=ExtResource("14_75fbo")]
 layout_mode = 1
 offset_left = 1322.0
 offset_top = 855.0
 offset_right = -123.0
 offset_bottom = -105.0
+
+[node name="CommandLine" parent="." instance=ExtResource("14_um0cw")]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 1033.0
+offset_right = 1192.0
+offset_bottom = 1069.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]

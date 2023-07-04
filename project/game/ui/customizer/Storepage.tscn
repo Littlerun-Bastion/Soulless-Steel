@@ -12,7 +12,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="10_oi7dk"]
 [ext_resource type="PackedScene" uid="uid://b3kh381kob8js" path="res://game/ui/customizer/Statcard.tscn" id="11_5metr"]
 [ext_resource type="PackedScene" uid="uid://jv4g5y13talv" path="res://game/ui/customizer/LoadScreen.tscn" id="12_jvh0j"]
-[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/commandline.tscn" id="13_hexso"]
+[ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="13_qi0db"]
 
 [sub_resource type="Theme" id="14"]
 
@@ -878,12 +878,12 @@ theme = ExtResource("6_1ptfd")
 text = "Return
 "
 
-[node name="commandline" parent="." instance=ExtResource("13_hexso")]
+[node name="CommandLine" parent="." instance=ExtResource("13_qi0db")]
 layout_mode = 0
-offset_left = 46.0
-offset_top = 1000.0
-offset_right = 1201.0
-offset_bottom = 1036.0
+offset_left = 57.0
+offset_top = 1034.0
+offset_right = 1212.0
+offset_bottom = 1070.0
 
 [connection signal="pressed" from="PartCategories/Hardware/head" to="." method="_on_Category_pressed" binds= ["head", "Hardware"]]
 [connection signal="pressed" from="PartCategories/Hardware/core" to="." method="_on_Category_pressed" binds= ["core", "Hardware"]]

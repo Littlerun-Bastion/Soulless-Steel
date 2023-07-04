@@ -35,7 +35,6 @@ func do_roaming(dt, enemy):
 		if enemy.get_most_recent_loud_noise():
 			enemy.going_to_position = true
 			enemy.NavAgent.target_position = enemy.get_most_recent_loud_noise().position
-			print(enemy.name + " moving to loud noise.")
 	enemy.navigate_to_target(dt)
 	
 	

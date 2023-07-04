@@ -1219,12 +1219,10 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 
 
 func move(vec):
-	if is_player():
-		NavAgent.set_velocity(vec)
-		set_velocity(vec)
-		move_and_slide()
-	else:
-		NavAgent.set_velocity(vec)
+	NavAgent.set_velocity(vec)
+	set_velocity(vec)
+	move_and_slide()
+
 
 
 func get_dir_name(dir):
@@ -1304,7 +1302,8 @@ func apply_movement(dt, direction):
 			moving = false
 			velocity *= 1 - build.chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
-		move(apply_movement_modifiers(velocity*mod))
+		velocity = apply_movement_modifiers(velocity*mod)
+		move(velocity)
 	elif movement_type == "relative":
 		if direction.length() > 0:
 			moving = true
@@ -1319,7 +1318,8 @@ func apply_movement(dt, direction):
 			moving_axis.y = false
 			velocity *= 1 - build.chassis.friction
 		var mod = 1.0 if is_sprinting else speed_modifier
-		move(apply_movement_modifiers(velocity*mod))
+		velocity = apply_movement_modifiers(velocity*mod)
+		move(velocity)
 	if movement_type == "enemy_tank":
 		if direction.length() > 0:
 			moving = true
@@ -1337,8 +1337,10 @@ func apply_movement(dt, direction):
 			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
-			
 			move(apply_movement_modifiers(velocity))
+			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
+			velocity = apply_movement_modifiers(velocity)
+			move(velocity)
 			#Move forward or backward depending on how closely the chassis is facing the angle
 	elif movement_type == "tank":
 		if direction.length() > 0:

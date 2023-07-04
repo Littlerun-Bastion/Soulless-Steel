@@ -38,11 +38,10 @@ offset_right = 127.037
 offset_bottom = 69.3082
 text = "STATE"
 
-[node name="NavigationAgent2D" parent="." index="28"]
+[node name="NavigationAgent2D" parent="." index="29"]
 target_desired_distance = 400.0
 path_max_distance = 200.0
 debug_enabled = false
 
 [connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_navigation_finished"]
 [connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_target_reached"]
-[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_velocity_computed"]

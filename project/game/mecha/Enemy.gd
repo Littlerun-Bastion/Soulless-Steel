@@ -274,12 +274,6 @@ func _on_NavigationAgent2D_navigation_finished():
 	going_to_position = false
 
 
-func _on_NavigationAgent2D_velocity_computed(safe_velocity):
-	set_velocity(safe_velocity)
-	move_and_slide()
-	velocity = velocity
-
-
 func _on_NavigationAgent2D_target_reached():
 	going_to_position = false
 

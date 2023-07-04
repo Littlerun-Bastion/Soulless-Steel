@@ -16,7 +16,6 @@ light_energy = 0.1
 muzzle_speed = 3000
 impact_effect = ExtResource("2_8yf3b")
 base_damage = 145
-health_mult = 1.5
 shield_mult = 0.5
 dropoff_modifier = 0.9
 heat_damage = 0.0

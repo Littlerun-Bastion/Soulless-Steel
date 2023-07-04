@@ -13,7 +13,6 @@ script = ExtResource("1_g8o00")
 light_energy = 0.1
 muzzle_speed = 3800
 base_damage = 182
-health_mult = 1.5
 shield_mult = 0.5
 heat_damage = 3.0
 

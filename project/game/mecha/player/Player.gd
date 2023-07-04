@@ -110,6 +110,10 @@ func _input(event):
 		shield_up()
 	elif event.is_action_released("shield"):
 		shield_down()
+	elif event.is_action_pressed("throttle_up"):
+		increase_throttle(false)
+	elif event.is_action_pressed("throttle_down"):
+		decrease_throttle(false)
 
 
 func get_camera_3d():

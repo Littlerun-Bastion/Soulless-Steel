@@ -27,6 +27,7 @@ const SHIELD_PARTICLE_AMOUNT = 5
 const SHIELD_PARRY_TIME = 0.15
 const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
 const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
+const THROTTLE_STEP = 0.1
 
 signal create_projectile
 signal create_casing
@@ -163,6 +164,7 @@ var is_inside_building = false
 var is_entering_building = false
 var is_exposed = false
 var passive_sounds_timer = 0.0
+var throttle :float = 1.0
 
 var max_hp = 10
 var hp = 10
@@ -1267,12 +1269,13 @@ func update_dash_cooldown_visuals():
 
 func apply_movement(dt, direction):
 	if is_sprinting:
+		increase_throttle(1.0)
 		#Disable horizontal and backwards movement when sprinting
 		if movement_type != "tank":
 			direction.x = 0
 		direction.y = min(direction.y, 0.0)
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
-	var target_speed = direction.normalized() * max_speed
+	var target_speed = direction.normalized() * (max_speed * throttle)
 	var mult = 1.0
 	if build.thruster:
 		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
@@ -1296,7 +1299,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat +move_heat*dt, max_heat * OVERHEAT_BUFFER)
+			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
 			velocity *= 1 - build.chassis.friction
@@ -1309,7 +1312,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat += move_heat*dt
+			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
 		else:
 			moving = false
 			moving_axis.x = false
@@ -1333,7 +1336,7 @@ func apply_movement(dt, direction):
 				global_rotation_degrees -= target_rotation_acc*dt
 			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
+			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
 			
 			move(apply_movement_modifiers(velocity))
 			#Move forward or backward depending on how closely the chassis is facing the angle
@@ -1363,7 +1366,7 @@ func apply_movement(dt, direction):
 				velocity *= 1 - build.chassis.friction
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
-				mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
+			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
 		else:
 			if build.chassis:
 				velocity *= 1 - build.chassis.friction/2
@@ -1504,6 +1507,18 @@ func stop_sprinting(sprint_dir):
 		node.emitting = false
 	ChassisSprintGlow.visible = false
 	Particle.grind[1].emitting = false
+
+func increase_throttle(set_value):
+	if set_value:
+		throttle = set_value
+	else:
+		throttle = min(throttle + THROTTLE_STEP, 1.0)
+
+func decrease_throttle(set_value):
+	if set_value:
+		throttle = set_value
+	else:
+		throttle = max(throttle - THROTTLE_STEP, 0.0)
 
 #COMBAT METHODS
 

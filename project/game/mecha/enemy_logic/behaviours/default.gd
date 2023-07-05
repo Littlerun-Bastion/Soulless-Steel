@@ -38,8 +38,10 @@ func do_roaming(dt, enemy):
 		if enemy.global_position.distance_to(enemy.get_most_recent_loud_noise().position) > POSITIONAL_ACCURACY:
 			point_of_interest = enemy.get_most_recent_loud_noise().position
 			enemy.going_to_position = true
-			#enemy.going_to_position = false
-			#point_of_interest = false
+		else:
+			enemy.senses.sounds.erase(enemy.get_most_recent_loud_noise())
+			enemy.going_to_position = false
+			point_of_interest = false
 			#else:
 	
 	if point_of_interest:		

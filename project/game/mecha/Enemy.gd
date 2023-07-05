@@ -120,6 +120,7 @@ func heard_sound(sound_data):
 		"position": sound_data.position,
 		"lifetime": SOUND_LIFETIME,
 	})
+	print(mecha_name + " heard a sound: " + sound_data.type)
 
 
 func update_senses(dt):

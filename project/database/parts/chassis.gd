@@ -11,8 +11,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var description : String
 @export var image : Texture2D
 @export var ambient_sfx := preload("res://assets/audio/sfx/chassis_ambient/test_engine.mp3")
-@export var ambient_sfx_max_distance := 600
-@export var step_sound_max_distance := 1000
+@export var ambient_sfx_max_distance := 1500
+@export var step_sound_max_distance := 2000
 @export var is_legs := false
 @export var movement_type = "free" # (String, "free", "tank", "relative")
 @export var max_speed = 500

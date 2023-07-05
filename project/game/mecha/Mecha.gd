@@ -1267,7 +1267,7 @@ func update_dash_cooldown_visuals():
 
 func apply_movement(dt, direction):
 	if is_sprinting:
-		increase_throttle(1.0)
+		increase_throttle(1.0, THROTTLE_STEP)
 		#Disable horizontal and backwards movement when sprinting
 		if movement_type != "tank":
 			direction.x = 0
@@ -1510,17 +1510,17 @@ func stop_sprinting(sprint_dir):
 	ChassisSprintGlow.visible = false
 	Particle.grind[1].emitting = false
 
-func increase_throttle(set_value):
+func increase_throttle(set_value, step):
 	if set_value:
 		throttle = set_value
 	else:
-		throttle = min(throttle + THROTTLE_STEP, 1.0)
+		throttle = min(throttle + step, 1.0)
 
-func decrease_throttle(set_value):
+func decrease_throttle(set_value, step):
 	if set_value:
 		throttle = set_value
 	else:
-		throttle = max(throttle - THROTTLE_STEP, 0.0)
+		throttle = max(throttle - step, 0.0)
 
 #COMBAT METHODS
 

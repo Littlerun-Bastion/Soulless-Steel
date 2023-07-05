@@ -49,7 +49,7 @@ func start_game(mode):
 		_:
 			push_error("Not a valid mode: " + str(mode))
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Simulation")
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Simulation...")
 
 
 func _on_Button_mouse_entered():

@@ -3,14 +3,16 @@ extends CanvasLayer
 signal finished
 
 @onready var BlockScreen = $BlockScreen
-@onready var BlurScreen = $BlurScreen
 @onready var CommandLine = $CommandLine
+@onready var BlurScreen = $BlurScreen
+@onready var VCREffect = $VCREffect
 
 var active = false
 
 func _ready():
 	BlockScreen.hide()
 	BlurScreen.hide()
+	VCREffect.hide()
 
 
 func transition_to(scene_path: String, command_line_text: String):
@@ -38,17 +40,27 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	BlockScreen.color = Color.WHITE
 	BlurScreen.show()
+	VCREffect.show()
 	tween = get_tree().create_tween()
 	tween.tween_property(BlockScreen, "color:a", 0.0, .8)
 	tween.parallel().tween_method(set_blur_value, 5.0, 0.0, .8)
-
+	set_noise_value(10)
+	tween.parallel().tween_method(set_noise_value, 10.0, 2000.0, 1.5).set_delay(.2)
+	
 	await tween.finished
 	
-	BlurScreen.hide()
 	BlockScreen.hide()
+	BlurScreen.hide()
+	VCREffect.hide()
+	
 	active = false
 	emit_signal("finished")
 
 
 func set_blur_value(value: float):
-	BlurScreen.material.set_shader_parameter("lod", value);
+	BlurScreen.material.set_shader_parameter("lod", value)
+
+
+func set_noise_value(value: float):
+	VCREffect.material.set_shader_parameter("noiseQuality", value);
+

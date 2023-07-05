@@ -414,7 +414,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
-		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
+		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System...")
 	else:
 		#TODO: Fix this
 		PlayerStatManager.PlayerKills += player_kills

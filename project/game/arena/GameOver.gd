@@ -24,5 +24,5 @@ func killed():
 
 
 func _on_ReturnButton_pressed():
-	TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System")
+	TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System...")
 

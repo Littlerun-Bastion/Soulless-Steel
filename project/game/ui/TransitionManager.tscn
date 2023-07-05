@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://b84s4spch2si0"]
+[gd_scene load_steps=7 format=3 uid="uid://b84s4spch2si0"]
 
 [ext_resource type="Script" path="res://game/ui/TransitionManager.gd" id="1_0nrmn"]
 [ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="2_8jay6"]
@@ -7,6 +7,91 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8a1ln"]
 shader = ExtResource("3_31r00")
 shader_parameter/lod = 0.0
+
+[sub_resource type="Shader" id="7"]
+code = "shader_type canvas_item;
+
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
+uniform float barRange : hint_range(0.0, 0.1) = 0.01;
+uniform float barOffsetIntensity : hint_range(0.0, 0.01) = 0.000;
+uniform float noiseQuality : hint_range(1.0, 5000) = 500;
+uniform float noiseIntensity : hint_range(0.0, 0.03) = 0.000;
+uniform float colorOffsetIntensity : hint_range(0.0, 2.0) = 0.175;
+uniform float redMultiplier : hint_range(0.0, 0.01) = 0.006;
+uniform float redIntensity : hint_range(0.0, 1.0) = 1.0;
+uniform float greenMultiplier : hint_range(0.0, 0.01) = 0.0073;
+uniform float greenIntensity : hint_range(0.0, 1.0) = 0.97;
+uniform float warpAmount : hint_range(0.0, 1.0) = 0.97;
+
+
+float rand(vec2 co)
+{
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+vec2 warp(vec2 uv){
+    vec2 delta = uv - 0.5;
+    float delta2 = dot(delta.xy, delta.xy);
+    float delta4 = delta2 * delta2;
+    float delta_offset = delta4 * warpAmount;
+
+    return uv + delta * delta_offset;
+}
+
+float verticalBar(float pos, float uvY, float offset)
+{
+    float edge0 = (pos - barRange);
+    float edge1 = (pos + barRange);
+
+    float x = smoothstep(edge0, pos, uvY) * offset;
+    x -= smoothstep(pos, edge1, uvY) * offset;
+    return x;
+}
+
+void fragment()
+{
+	// screen distort
+	
+	vec2 warp_uv = warp(UV);
+	float uvX, uvY;
+	uvX = warp_uv.x;
+	uvY = warp_uv.y;
+    for (float i = 0.0; i < 0.71; i += 0.1313)
+    {
+        float d = mod(TIME * i, 1.7);
+        float o = sin(1.0 - tan(TIME * 0.24 * i));
+    	o *= barOffsetIntensity;
+        uvX += verticalBar(d, uvY, o);
+    }
+
+    uvY *= noiseQuality;
+    uvY = float(int(uvY)) * (1.0 / noiseQuality);
+    float noise = rand(vec2(TIME * 0.00001, uvY));
+	uvX += noise * noiseIntensity;
+
+    vec2 offsetR = vec2(redMultiplier * sin(TIME * redIntensity), 0.0) * colorOffsetIntensity;
+    vec2 offsetG = vec2(greenMultiplier * cos(TIME * greenIntensity), 0.0) * colorOffsetIntensity;
+
+	vec2 uv = vec2(uvX, uvY);
+    float r = texture(SCREEN_TEXTURE, uv + offsetR).r;
+    float g = texture(SCREEN_TEXTURE, uv + offsetG).g;
+    float b = texture(SCREEN_TEXTURE, uv).b;
+
+    COLOR = vec4(r, g, b, 1.0);
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2tkoy"]
+shader = SubResource("7")
+shader_parameter/barRange = 0.0
+shader_parameter/barOffsetIntensity = 0.0
+shader_parameter/noiseQuality = 1600.0
+shader_parameter/noiseIntensity = 0.0
+shader_parameter/colorOffsetIntensity = 0.0
+shader_parameter/redMultiplier = 0.0
+shader_parameter/redIntensity = 0.0
+shader_parameter/greenMultiplier = 0.0
+shader_parameter/greenIntensity = 0.0
+shader_parameter/warpAmount = 0.0
 
 [node name="TransitionManager" type="CanvasLayer"]
 layer = 4
@@ -35,3 +120,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
+
+[node name="VCREffect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_2tkoy")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

@@ -52,7 +52,7 @@ func start_game(mode):
 	
 	#ShaderEffects.play_transition(5000.0, 0, 0.5)
 	# warning-ignore:return_value_discarded
-	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence")
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence...")
 
 
 func _on_Button_mouse_entered():
@@ -75,12 +75,12 @@ func _on_ExitButton_pressed():
 
 func _on_Hangar_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer")
+	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer...")
 
 
 func _on_Arena_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings")
+	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings...")
 
 
 func _on_TestMode_pressed():
@@ -90,4 +90,4 @@ func _on_TestMode_pressed():
 
 func _on_Store_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store")
+	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")

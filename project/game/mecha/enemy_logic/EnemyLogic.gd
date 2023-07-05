@@ -32,10 +32,9 @@ func get_current_state():
 	
 func update(enemy):
 	var a_node = g.get_a_node(g.current_state)
-	var valid_connections = a_node.get_best_connection(enemy)
-	for connection in valid_connections:
-		g.set_state(connection.id)
-		break
+	var valid_connection = a_node.get_best_connection(enemy)
+	if valid_connection:
+		g.set_state(valid_connection.id)
 
 
 func run(enemy, dt):

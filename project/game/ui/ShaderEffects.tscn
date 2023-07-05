@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/ui/ShaderEffects.gd" id="2"]
 
-[sub_resource type="Shader" id="7"]
+[sub_resource type="Shader" id="Shader_t4gpn"]
 code = "shader_type canvas_item;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
@@ -75,7 +75,7 @@ void fragment()
 }"
 
 [sub_resource type="ShaderMaterial" id="4"]
-shader = SubResource("7")
+shader = SubResource("Shader_t4gpn")
 shader_parameter/barRange = 0.01
 shader_parameter/barOffsetIntensity = 0.003
 shader_parameter/noiseQuality = 1600.0

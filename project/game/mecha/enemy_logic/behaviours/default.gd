@@ -1,6 +1,6 @@
 extends Node
 
-const POSITIONAL_ACCURACY = 200.0
+const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
@@ -28,6 +28,7 @@ func roaming_to_ambushing(enemy):
 	var priority = 0
 	if enemy.get_most_recent_quiet_noise():
 		priority = 2
+		print("Ambushing")
 	return priority
 	
 func ambushing_to_roaming(enemy):
@@ -35,7 +36,9 @@ func ambushing_to_roaming(enemy):
 	if enemy.get_most_recent_quiet_noise():
 		pass
 	else:
-		return 2
+		priority = 2
+		print("Roaming")
+	return priority
 
 func targeting_to_roaming(enemy):
 	var priority = 0
@@ -68,15 +71,12 @@ func do_roaming(dt, enemy):
 	if point_of_interest:		
 		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 			enemy.NavAgent.target_position = point_of_interest
-	else:
-		print("No POI")
 	
 	enemy.navigate_to_target(dt)
 	
 	if enemy.NavAgent.is_navigation_finished():
 		enemy.going_to_position = false
 		point_of_interest = false
-		print("Point reached")
 	
 	
 	#enemy.check_for_targets(engage_distance, max_shooting_distance)
@@ -104,6 +104,9 @@ func do_ambushing(dt, enemy):
 			point_of_interest = enemy.get_most_recent_quiet_noise().position
 			enemy.going_to_position = true
 		else:
+			for sound in enemy.senses.sounds:
+				if sound.source == enemy.get_most_recent_quiet_noise().source and sound.volume_type == "quiet":
+					enemy.senses.sounds.erase(sound)
 			enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
 			enemy.going_to_position = false
 			point_of_interest = false
@@ -111,15 +114,12 @@ func do_ambushing(dt, enemy):
 	if point_of_interest:		
 		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 			enemy.NavAgent.target_position = point_of_interest
-	else:
-		print("No POI")
 	
 	enemy.navigate_to_target(dt)
 	
 	if enemy.NavAgent.is_navigation_finished():
 		enemy.going_to_position = false
 		point_of_interest = false
-		print("Point reached")
 	
 
 func do_targeting(dt, enemy):

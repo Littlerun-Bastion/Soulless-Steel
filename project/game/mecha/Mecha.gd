@@ -28,6 +28,7 @@ const SHIELD_PARRY_TIME = 0.15
 const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
 const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
 const THROTTLE_STEP = 0.1
+const WHEELS_SPEED_FACTOR = 0.6 #Made to balance wheels with legs since they aren't equal speed due to the animation
 
 signal create_projectile
 signal create_casing
@@ -1334,7 +1335,8 @@ func apply_movement(dt, direction):
 			elif turn_angle < -AI_TURN_DEADZONE:
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
-			target_speed = rotated_tank_move_target * max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)
+			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
+			target_speed *= WHEELS_SPEED_FACTOR
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
 			move(apply_movement_modifiers(velocity))
@@ -1347,14 +1349,14 @@ func apply_movement(dt, direction):
 			moving = false
 			if direction.y > 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg_to_rad(90)) * max_speed * mult/1.5
+				target_speed = tank_move_target.rotated(deg_to_rad(90)) * max_speed * mult/1.5 * WHEELS_SPEED_FACTOR
 			if direction.y < 0:
 				moving = true
-				target_speed = tank_move_target.rotated(deg_to_rad(270)) * max_speed * mult/1.5
+				target_speed = tank_move_target.rotated(deg_to_rad(270)) * max_speed * mult/1.5 * WHEELS_SPEED_FACTOR
 			if build.thruster:
 				var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
 				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
-					target_speed = target_speed.normalized() * thrust_max_speed
+					target_speed = target_speed.normalized() * thrust_max_speed * WHEELS_SPEED_FACTOR
 			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
 			if direction.y == 0:
 				target_rotation_acc *= 2

@@ -405,13 +405,8 @@ func _physics_process(dt):
 		var collided = false
 		for collision in all_collisions:
 			if collision and collision.get_collider().is_in_group("mecha"):
-				collided = true
-				var mod = 2.0
-				var rand = randf_range(-PI/8, PI/8)
-				var collision_dir = (global_position - collision.get_collider().global_position).rotated(rand)
-				apply_movement(mod*dt, collision_dir)
-		if collided:
-			lock_movement(0.1)
+				lock_movement(0.1)
+				break
 	else:
 		if sprinting_ending_correction.length():
 			move(sprinting_ending_correction)

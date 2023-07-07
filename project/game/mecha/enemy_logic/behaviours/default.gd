@@ -105,7 +105,8 @@ func do_ambushing(dt, enemy):
 			enemy.going_to_position = true
 		else:
 			for sound in enemy.senses.sounds:
-				if sound.source == enemy.get_most_recent_quiet_noise().source and sound.volume_type == "quiet":
+				if sound.source and\
+				   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
 					enemy.senses.sounds.erase(sound)
 			enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
 			enemy.going_to_position = false

@@ -402,7 +402,6 @@ func _physics_process(dt):
 		for i in get_slide_collision_count():
 			all_collisions.append(get_slide_collision(i))
 
-		var collided = false
 		for collision in all_collisions:
 			if collision and collision.get_collider().is_in_group("mecha"):
 				lock_movement(0.1)

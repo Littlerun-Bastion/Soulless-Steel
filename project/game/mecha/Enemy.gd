@@ -104,7 +104,7 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
 		print(mecha_name  + " spawned in.")
 	
-	#For the moment hard set ies' movement type to free
+	#For the moment hard set movement type
 	if movement_type == "tank":
 		movement_type = "enemy_tank"
 	else:

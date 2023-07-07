@@ -33,7 +33,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	await CommandLine.finished
 	
-# warning-ignore:return_value_discarded
+	# warning-ignore:return_value_discarded
 	get_tree().change_scene_to_file(scene_path)
 	
 	await get_tree().process_frame

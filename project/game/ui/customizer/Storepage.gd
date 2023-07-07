@@ -13,7 +13,6 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 @onready var PartCategories = $PartCategories
 @onready var DisplayMecha = $Mecha
 @onready var ComparisonMecha = $ComparisonMecha
-#onready var StatBars = $Statbars
 @onready var Statcard = $Statcard
 @onready var LoadScreen = $LoadScreen
 @onready var BasketList = $Basket/ScrollContainer/Basket
@@ -36,7 +35,6 @@ func _ready():
 		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 	else:
 		default_loadout()
-	#$Statbars.update_stats(DisplayMecha)
 	DisplayMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	balance = Profile.get_stat("money")
@@ -70,7 +68,6 @@ func default_loadout():
 	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	DisplayMecha.set_shoulders("MSV-L3J-SG")
-	
 	
 	ComparisonMecha.set_core("MSV-L3J-C")
 	ComparisonMecha.set_generator("type_1")
@@ -230,7 +227,6 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 		ComparisonMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		ComparisonMecha.callv("set_" + str(type), [part_name])
-	#StatBars.set_comparing_part(ComparisonMecha)
 	var current_part = DisplayMecha.get(type_name)
 	var new_part = ComparisonMecha.get(type_name)
 	Statcard.display_part_stats(current_part, new_part, type_name)
@@ -241,7 +237,6 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	if item.is_disabled == true:
 		item.get_button().disabled = true
-	#StatBars.reset_comparing_part()
 	comparing_part = false
 
 
@@ -270,7 +265,6 @@ func _LoadScreen_on_load_pressed(design):
 
 
 func _on_purchase_pressed():
-	#In basket
 	CommandLine.display("/market_basket_purchase")
 	$PurchaseConfirm.visible = true
 	PurchaseConfirm.visible = true
@@ -282,10 +276,7 @@ func _on_cancel_pressed():
 
 
 func _on_purchase_items_pressed():
-	#In confirmation screen
-	if balance < basket_total:
-		pass
-	else:
+	if balance >= basket_total:
 		balance -= basket_total
 		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
 		for item in BasketList.get_children():

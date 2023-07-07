@@ -49,9 +49,7 @@ func start_game(mode):
 			ArenaManager.set_map_to_load("test_buildings")
 		_:
 			push_error("Not a valid mode: " + str(mode))
-	
-	#ShaderEffects.play_transition(5000.0, 0, 0.5)
-	# warning-ignore:return_value_discarded
+		
 	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence...")
 
 

@@ -5,7 +5,6 @@ var LArmTotal = 0
 var RShdTotal = 0
 var LShdTotal = 0
 
-
 func _ready():
 	MouseManager.show_cursor()
 	ShaderEffects.reset_shader_effect("score_screen")
@@ -16,6 +15,7 @@ func _ready():
 	$PlayerKills.text = "Player Kills: " + str(PlayerStatManager.PlayerKills)
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
 	update_prices()
+
 
 func update_prices():
 	$EarnedCredits.text = "Earned Credits: " + str(PlayerStatManager.Credits) + "C"
@@ -46,10 +46,8 @@ func update_prices():
 	$HBoxContainer/VBoxContainer/RepairButton/RepairCost.text = str(PlayerStatManager.RepairCost)+"C"
 	$HBoxContainer/VBoxContainer/ReloadButton2/ReloadCost.text = str(PlayerStatManager.ReloadCost)+"C"
 	$VBoxContainer2/ArmorBox/RemainingArmor.text = str(PlayerStatManager.PlayerHP)
-	
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+
+
 func not_enough_credits():
 	$AnimationPlayer.stop(true)
 	$AnimationPlayer.play("noCredits")

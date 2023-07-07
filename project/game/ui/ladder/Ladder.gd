@@ -43,6 +43,7 @@ func setup_leaderboards(lb_idx):
 	LeaderboardName.text = lb_data.name
 	LeaderboardTier.text = lb_data.tier
 
+
 func start_game(mode):
 	AudioManager.stop_bgm()
 	PlayerStatManager.NumberofExtracts = 0
@@ -59,9 +60,10 @@ func start_game(mode):
 	ShaderEffects.play_transition(5000.0, 0, 0.5)
 	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Simulation...")
 
+
 func start_match():
 	start_game("main")
-	pass # Replace with function body.
+
 
 func on_ladderlabel_pressed(selected_mecha):
 	selected_challenger = selected_mecha
@@ -71,6 +73,7 @@ func on_ladderlabel_pressed(selected_mecha):
 			child.press()
 		else:
 			child.unpress()
+
 
 func set_challenge_mode():
 	ArenaManager.mode = "Challenge"
@@ -83,7 +86,7 @@ func set_challenge_mode():
 			child.unpress()
 	$VBoxContainer2/Button.disabled = true
 
+
 func set_exhibition_mode():
 	ArenaManager.mode = "Exhibition"
 	OpponentsLabel.text = str("'" + str(ArenaManager.exhibitioner_count) + " PARTICIPANTS'")
-	

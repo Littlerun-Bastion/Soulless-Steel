@@ -11,7 +11,6 @@ func enable():
 	$SubViewportContainer.visible = true
 	ShaderEffects.reset_shader_effect("gameover")
 	ReturnButton.disabled = false
-	
 
 
 func disable():

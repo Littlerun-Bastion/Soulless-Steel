@@ -66,7 +66,6 @@ func default_loadout():
 	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
 	DisplayMecha.set_shoulders("MSV-L3J-SG")
 	
-	
 	ComparisonMecha.set_core("MSV-L3J-C")
 	ComparisonMecha.set_generator("type_1")
 	ComparisonMecha.set_chipset("type_1")
@@ -184,7 +183,6 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	Profile.remove_from_inventory(part_name)
 	var inventory = Profile.get_inventory()
 	item.get_node("QuantityLabel").text = str(inventory.get(part_name))
-	#$Statbars.update_stats(DisplayMecha)
 	update_weight()
 	shoulder_weapon_check()
 	comparing_part = false
@@ -193,7 +191,6 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 	$CurrentItemFrame.visible = true
 	$CurrentItemFrame.setup(item.current_part, false, false)
 	$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
-	
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side,item):
@@ -216,7 +213,8 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	Statcard.display_part_stats(current_part, new_part, type_name)
 	Statcard.visible = true
 	comparing_part = true
-	
+
+
 func shoulder_weapon_check():
 	var core
 	if DisplayMecha.build.core:
@@ -233,6 +231,7 @@ func shoulder_weapon_check():
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
 	else:
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
+
 
 func is_build_valid():
 	var build_valid = true

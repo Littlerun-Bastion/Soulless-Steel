@@ -20,12 +20,13 @@ var mov_vec = Vector2()
 var going_to_position = false
 var logic
 var all_mechas
-var engage_distance = 2000 #How far too see other mechas
+var engage_distance = 2000 #How far to see other mechas
 var senses = {
 	"sounds": [],
 	"bodies": [],
 }
 var valid_target = false
+var is_locking = false
 
 
 func _ready():
@@ -60,6 +61,9 @@ func _physics_process(dt):
 	logic.update(self)
 	logic.run(self, dt)
 	
+	if is_locking:
+		update_enemy_locking(dt, valid_target)
+		
 	if Debug.get_setting("enemy_state"):
 		$Debug/StateLabel.text = logic.get_current_state()
 	else:
@@ -250,12 +254,14 @@ func get_navigation_path():
 	return NavAgent.get_nav_path()
 
 
-func navigate_to_target(dt):
+func navigate_to_target(dt,direction:=0.0, wander := 0.0):
+	#Forward when direction = 0, Backwards when direction = 1, 
+	#Clockwise when direction = -0.5, Anticlockwise when direction = 0.5
 	if going_to_position:
 		var target = NavAgent.get_next_path_position()
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
-		set_interest(dir)
+		set_interest(dir.rotated(PI * direction), wander)
 		set_danger()
 		choose_direction()
 		apply_movement(dt, chosen_dir)
@@ -263,6 +269,7 @@ func navigate_to_target(dt):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
+			
 
 
 func get_target_navigation_pos():
@@ -288,10 +295,12 @@ func steering_setup():
 		var angle = i * 2 * PI / num_rays
 		ray_directions[i] = Vector2.UP.rotated(angle)
 
-func set_interest(target):
+func set_interest(target, wander):
 	if target:
 		for i in num_rays:
 			var d = ray_directions[i].dot(target)
+			if wander != 0.0:
+				d = 1.0 - abs(d - wander)
 			interest[i] = max(0, d)
 	else:
 		for i in num_rays:

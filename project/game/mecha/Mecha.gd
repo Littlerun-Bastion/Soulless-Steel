@@ -444,7 +444,8 @@ func _physics_process(dt):
 			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
 
 	#Locking mechanic
-	update_locking(dt)
+	if is_player():
+		update_locking(dt)
 	if get_locked_to():
 		var target_pos = locked_to.global_position
 		apply_rotation_by_point(dt, target_pos, false)
@@ -1324,9 +1325,11 @@ func apply_movement(dt, direction):
 			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
 			#Turn chassis to face the direction
 			if turn_angle > AI_TURN_DEADZONE:
+				#Right
 				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
 				global_rotation_degrees += target_rotation_acc*dt
 			elif turn_angle < -AI_TURN_DEADZONE:
+				#Left
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
@@ -1708,6 +1711,33 @@ func lock_movement(time):
 func get_lock_area():
 	return LockCollision
 
+func update_enemy_locking(dt, target):
+	if target:
+		if not locking_to:
+			locking_to = {
+				"progress": 0,
+				"mecha": target,
+			}
+		if locking_to.mecha == target:
+			if locking_to.mecha.ecm > lock_strength:
+				if ecm_attempt_cooldown <= 0.0:
+					ecm_strength_difference = (locking_to.mecha.ecm - lock_strength) * 0.05
+					var percent = randf()
+					if (percent < ecm_strength_difference):
+						locking_to.progress = 0
+					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
+			if has_status("electrified"):
+				locking_to.progress = min(locking_to.progress + (dt*build.chipset.lock_on_speed * 0.5), 1.0)
+			else:
+				locking_to.progress = min(locking_to.progress + dt*build.chipset.lock_on_speed, 1.0)
+			if locking_to.progress >= 1.0:
+				locked_to = locking_to.mecha
+		else:
+			locking_to = {
+				"progress": 0,
+				"mecha": target,
+			}
+	
 
 func update_locking(dt):
 	if cur_mode == MODES.LOCK:

@@ -36,6 +36,7 @@ offset_left = -111.963
 offset_top = -40.6918
 offset_right = 127.037
 offset_bottom = 69.3082
+theme_override_font_sizes/font_size = 40
 text = "STATE"
 
 [node name="NavigationAgent2D" parent="." index="29"]

@@ -11,6 +11,7 @@ var ray_directions = []
 var interest = []
 var danger = []
 var debug_lines = []
+var wait_for_map_sync = .1
 
 var chosen_dir = Vector2()
 
@@ -59,8 +60,10 @@ func _physics_process(dt):
 	
 	update_senses(dt)
 	
-	logic.update(self)
-	logic.run(self, dt)
+	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
+	if not wait_for_map_sync:
+		logic.update(self)
+		logic.run(self, dt)
 	
 	if is_locking:
 		update_enemy_locking(dt, valid_target)

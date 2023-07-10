@@ -370,7 +370,7 @@ func _physics_process(dt):
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
 	
 	if is_shielding:
-		increase_heat(shield_project_heat*dt)
+		increase_heat(shield_project_heat*dt, "shielding")
 		if shield <= 0.0:
 			shield_down()
 
@@ -616,7 +616,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		hp = max(hp - (health_mult * amount), 0)
 	else:
 		hp = max(hp - (health_mult * amount), 0)
-		increase_heat(heat_damage)
+		increase_heat(heat_damage, "heat_damage")
 		if status_type and status_amount > 0.0:
 			set_status(status_type, status_amount)
 		if amount > max_hp/0.25:
@@ -679,7 +679,7 @@ func take_status_damage(dt):
 			hp = round(hp)
 
 	if has_status("fire"):
-		increase_heat(FIRE_DAMAGE*dt)
+		increase_heat(FIRE_DAMAGE*dt, "fire_damage")
 
 	if has_status("electrified"):
 		shield = round(max(shield - (dt * 100), 0))
@@ -779,6 +779,8 @@ func add_decal(id, decal_position, type, size):
 
 #Origin is for debugging purposes
 func increase_heat(amount, _origin := ""):
+#	if not is_player() and _origin != "":
+#		printt(_origin, amount)
 	mecha_heat = min(mecha_heat + amount, max_heat * OVERHEAT_BUFFER)
 
 

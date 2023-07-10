@@ -1718,7 +1718,7 @@ func update_enemy_locking(dt, target):
 				"progress": 0,
 				"mecha": target,
 			}
-		if locking_to.mecha == target:
+		if locking_to.mecha == target and is_instance_valid(locking_to.mecha):
 			if locking_to.mecha.ecm > lock_strength:
 				if ecm_attempt_cooldown <= 0.0:
 					ecm_strength_difference = (locking_to.mecha.ecm - lock_strength) * 0.05

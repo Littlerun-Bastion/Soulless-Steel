@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://bcuqdw8iq7ja5"]
+[gd_scene load_steps=6 format=3 uid="uid://bcuqdw8iq7ja5"]
 
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="1"]
 [ext_resource type="Script" path="res://game/mecha/Enemy.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://cups4su68lf0u" path="res://assets/images/mechas/arm_weapons/Type1_Glow.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7h6ex"]
+radius = 750.0
 
 [node name="Enemy" instance=ExtResource("1")]
 position = Vector2(0, 0)
@@ -29,7 +32,16 @@ position = Vector2(-56, 13)
 [node name="RightShoulder" parent="." index="11"]
 position = Vector2(56, 13)
 
-[node name="Debug" type="Node2D" parent="." index="22"]
+[node name="Corrosion2" parent="ParticlesLayer3" index="0"]
+visible = false
+
+[node name="NearbyProjectile" type="Area2D" parent="." index="20"]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NearbyProjectile" index="0"]
+shape = SubResource("CircleShape2D_7h6ex")
+
+[node name="Debug" type="Node2D" parent="." index="23"]
 
 [node name="StateLabel" type="Label" parent="Debug" index="0"]
 offset_left = -111.963
@@ -39,10 +51,11 @@ offset_bottom = 69.3082
 theme_override_font_sizes/font_size = 40
 text = "STATE"
 
-[node name="NavigationAgent2D" parent="." index="29"]
+[node name="NavigationAgent2D" parent="." index="30"]
 target_desired_distance = 400.0
 path_max_distance = 200.0
 debug_enabled = false
 
+[connection signal="area_entered" from="NearbyProjectile" to="." method="_on_nearby_projectile_area_entered"]
 [connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_navigation_finished"]
 [connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_NavigationAgent2D_target_reached"]

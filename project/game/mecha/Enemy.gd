@@ -27,6 +27,7 @@ var senses = {
 }
 var valid_target = false
 var is_locking = false
+var under_fire_timer = 0.0
 
 
 func _ready():
@@ -68,6 +69,8 @@ func _physics_process(dt):
 		$Debug/StateLabel.text = logic.get_current_state()
 	else:
 		$Debug/StateLabel.text = ""
+	
+	under_fire_timer = max(under_fire_timer - dt, 0)
 
 
 func _draw():
@@ -168,7 +171,7 @@ func update_senses(dt):
 					"is_seen": true,
 					"lifetime": BODY_LIFETIME,
 				})
-
+	
 
 func get_most_recent_loud_noise():
 	return get_recent_noise("volume_type", "loud")
@@ -334,3 +337,9 @@ func choose_direction():
 		chosen_dir += ray_directions[i] * interest[i]
 	chosen_dir = chosen_dir.normalized()
 	queue_redraw()
+
+
+func _on_nearby_projectile_area_entered(area):
+	if area.original_mecha_info.name != mecha_name:
+		under_fire_timer = 2.0
+

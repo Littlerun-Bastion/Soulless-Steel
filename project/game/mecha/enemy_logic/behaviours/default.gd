@@ -15,10 +15,12 @@ var max_shooting_distance = 3500
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
 var cooldown_time = 6.0
+var barrage_min_time = 2.0
 
 
 var point_of_interest
 var cooldown_timer = 0.0
+var barrage_timer = 0.0
 
 func get_nodes():
 	return nodes
@@ -94,7 +96,7 @@ func cooling_to_locking(enemy):
 ## STATE METHODS ##
 
 func do_roaming(dt, enemy):
-	if enemy:
+	if is_instance_valid(enemy):
 		if enemy.throttle < 1.0:
 			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -124,11 +126,10 @@ func do_roaming(dt, enemy):
 		
 		
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
-		if enemy.is_shielding:
-			enemy.shield_down()
+		shield_check(enemy)
 
 func do_ambushing(dt, enemy):
-	if enemy:
+	if is_instance_valid(enemy):
 		if enemy.throttle > 0.5:
 			enemy.decrease_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -170,11 +171,10 @@ func do_ambushing(dt, enemy):
 			point_of_interest = false
 			
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
-		if enemy.is_shielding:
-			enemy.shield_down()
+		shield_check(enemy)
 
 func do_locking(dt, enemy):
-	if enemy:
+	if is_instance_valid(enemy):
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
 		if not enemy.valid_target:
 			enemy.is_locking = false
@@ -192,12 +192,11 @@ func do_locking(dt, enemy):
 			enemy.decrease_throttle(0.5, 0.5)
 			enemy.navigate_to_target(dt, 1.0, 0.8)
 		enemy.is_locking = true	
-		if not enemy.is_shielding and enemy.mecha_heat < enemy.max_heat*general_heat_threshold:
-			enemy.shield_up()
+		shield_check(enemy)
 
 func do_barraging(dt, enemy):
-	if enemy:
-		if enemy.is_shielding:
+	if is_instance_valid(enemy):
+		if enemy.is_shielding and enemy.under_fire_timer == 0.0:
 			enemy.shield_down()
 		if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
 			enemy.increase_throttle(1, 1)
@@ -208,11 +207,14 @@ func do_barraging(dt, enemy):
 		else:
 			enemy.decrease_throttle(0.5, 0.5)
 			enemy.navigate_to_target(dt, 1.0, 0.8)
-		if enemy.mecha_heat < enemy.max_heat*weapon_heat_threshold:
+		if enemy.mecha_heat < enemy.max_heat*weapon_heat_threshold and barrage_timer < barrage_min_time:
 			enemy.shoot_weapons()
+			barrage_timer += dt
+		if barrage_timer > barrage_min_time:
+			shield_check(enemy)
 
 func do_cooling(dt, enemy):
-	if enemy:
+	if is_instance_valid(enemy):
 		if enemy.valid_target:
 			enemy.navigate_to_target(dt, 1.0, 0.0)
 			enemy.increase_throttle(1.0, 1.0)
@@ -225,5 +227,13 @@ func do_cooling(dt, enemy):
 			enemy.going_to_position = false
 			cooldown_time = max(cooldown_time - dt, 0)
 		
-		
 
+func shield_check(enemy):
+	if is_instance_valid(enemy):
+		barrage_timer = 0.0
+		if enemy.under_fire_timer > 0.0:
+			if not enemy.is_shielding and enemy.mecha_heat < enemy.max_heat*general_heat_threshold:
+				enemy.shield_up()
+		else:
+			if enemy.is_shielding:
+				enemy.shield_down()

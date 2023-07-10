@@ -6,6 +6,7 @@ signal finished
 @onready var CommandLine = $CommandLine
 @onready var BlurScreen = $BlurScreen
 @onready var VCREffect = $VCREffect
+@onready var VCREffect2 = $VCREffect2
 
 var active = false
 
@@ -13,6 +14,7 @@ func _ready():
 	BlockScreen.hide()
 	BlurScreen.hide()
 	VCREffect.hide()
+	VCREffect2.hide()
 
 
 func transition_to(scene_path: String, command_line_text: String):
@@ -29,6 +31,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	await tween.finished
 	
+	VCREffect2.show()
 	CommandLine.display(command_line_text)
 	
 	await CommandLine.finished
@@ -38,6 +41,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	await get_tree().process_frame
 	
+	VCREffect2.hide()
 	BlockScreen.color = Color.WHITE
 	BlurScreen.show()
 	VCREffect.show()

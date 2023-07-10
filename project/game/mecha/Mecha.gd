@@ -19,6 +19,7 @@ const OVERWEIGHT_SPEED_MOD = 4
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
 const OVERHEAT_BUFFER = 1.1
+const FIRE_DAMAGE = 10.0
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
@@ -314,7 +315,7 @@ func _physics_process(dt):
 		return
 	
 	tank_lookat_target = global_position + tank_move_target
-	if movement_type == "tank" or movement_type == "enemy_tank":
+	if movement_type == "tank":
 		$Chassis.look_at(tank_lookat_target)
 
 	if impact_velocity.length() > 0:
@@ -369,7 +370,7 @@ func _physics_process(dt):
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
 	
 	if is_shielding:
-		mecha_heat = min(mecha_heat + (shield_project_heat*dt), max_heat * OVERHEAT_BUFFER)
+		increase_heat(shield_project_heat*dt)
 		if shield <= 0.0:
 			shield_down()
 
@@ -615,7 +616,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		hp = max(hp - (health_mult * amount), 0)
 	else:
 		hp = max(hp - (health_mult * amount), 0)
-		mecha_heat = min(mecha_heat + heat_damage, max_heat * OVERHEAT_BUFFER)		
+		increase_heat(heat_damage)
 		if status_type and status_amount > 0.0:
 			set_status(status_type, status_amount)
 		if amount > max_hp/0.25:
@@ -678,7 +679,7 @@ func take_status_damage(dt):
 			hp = round(hp)
 
 	if has_status("fire"):
-		mecha_heat = min(mecha_heat + dt * 10, max_heat * OVERHEAT_BUFFER)
+		increase_heat(FIRE_DAMAGE*dt)
 
 	if has_status("electrified"):
 		shield = round(max(shield - (dt * 100), 0))
@@ -776,6 +777,14 @@ func add_decal(id, decal_position, type, size):
 		decals_node.add_child(decal)
 		decal.setup(type, size, final_pos)
 
+#Origin is for debugging purposes
+func increase_heat(amount, _origin := ""):
+	mecha_heat = min(mecha_heat + amount, max_heat * OVERHEAT_BUFFER)
+
+
+func reduce_heat(amount, min_value := 0.0):
+	mecha_heat = max(mecha_heat - amount, min_value)
+
 
 func update_heat(dt):
 	#Main Mecha Heat
@@ -785,9 +794,9 @@ func update_heat(dt):
 	#TODO remove freezing func and expand it here
 	if build.generator and not has_status("fire") and not is_shielding:
 		if mecha_heat > max_heat*idle_threshold:
-			mecha_heat = max(mecha_heat - freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
+			reduce_heat(freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
 		else:
-			mecha_heat = max(mecha_heat - freezing_status_heat(build.generator.heat_dispersion * (mecha_heat/max_heat))*dt, 0)
+			reduce_heat(freezing_status_heat(build.generator.heat_dispersion * (mecha_heat/float(max_heat)))*dt)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(build.generator.heat_dispersion,mecha_heat_visible,dt)
 	if build.generator:
@@ -1220,7 +1229,6 @@ func move(vec):
 	move_and_slide()
 
 
-
 func get_dir_name(dir):
 	if dir == Vector2(0,-1):
 		return "fwd"
@@ -1235,12 +1243,15 @@ func get_dir_name(dir):
 
 
 func dash(dash_dir):
+	if dash_dir == Vector2():
+		return
 	var dir = get_dir_name(dash_dir)
 	if typeof(dir) != TYPE_STRING:
-		return #Not a valid dash direction
+		push_error("Not a valid dash direction:" + str(dir))
+		return
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
-		mecha_heat = min(mecha_heat + build.thruster.dash_heat, max_heat  * OVERHEAT_BUFFER)
+		increase_heat(build.thruster.dash_heat, "dash")
 		dash_velocity = dash_dir.normalized()*dash_strength
 		for node in Particle.chassis_dash:
 			node.rotation_degrees = rad_to_deg(dash_dir.angle()) + 90
@@ -1276,7 +1287,7 @@ func apply_movement(dt, direction):
 
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
-			mecha_heat = min(mecha_heat + build.thruster.sprinting_heat*dt, max_heat * OVERHEAT_BUFFER)
+			increase_heat(build.thruster.sprinting_heat*dt, "sprinting")
 			for node in Particle.chassis_sprint:
 				node.emitting = true
 			ChassisSprintGlow.visible = true
@@ -1293,7 +1304,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
+			increase_heat(move_heat*throttle*dt, "free_movement")
 		else:
 			moving = false
 			velocity *= 1 - build.chassis.friction
@@ -1307,7 +1318,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
+			increase_heat(move_heat*throttle*dt, "relative_movement")
 		else:
 			moving = false
 			moving_axis.x = false
@@ -1316,7 +1327,7 @@ func apply_movement(dt, direction):
 		var mod = 1.0 if is_sprinting else speed_modifier
 		velocity = apply_movement_modifiers(velocity*mod)
 		move(velocity)
-	if movement_type == "enemy_tank":
+	elif movement_type == "tank" and not is_player():
 		if direction.length() > 0:
 			moving = true
 			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
@@ -1335,9 +1346,8 @@ func apply_movement(dt, direction):
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
 			target_speed *= WHEELS_SPEED_FACTOR
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
+			increase_heat(move_heat*throttle*dt, "enemy_tank")
 			move(apply_movement_modifiers(velocity))
-			mecha_heat = min(mecha_heat + move_heat*dt, max_heat * OVERHEAT_BUFFER)
 			velocity = apply_movement_modifiers(velocity)
 			move(velocity)
 			#Move forward or backward depending on how closely the chassis is facing the angle
@@ -1367,13 +1377,13 @@ func apply_movement(dt, direction):
 				velocity *= 1 - build.chassis.friction
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
-			mecha_heat = min(mecha_heat + move_heat*dt*throttle, max_heat * OVERHEAT_BUFFER)
+			increase_heat(move_heat*throttle*dt, "tank")
 		else:
 			if build.chassis:
 				velocity *= 1 - build.chassis.friction/2
 		move(apply_movement_modifiers(velocity))
-	#else:
-		#push_error("Not a valid movement type: " + str(movement_type))
+	else:
+		push_error("Not a valid movement type: " + str(movement_type))
 	update_chassis_visuals(dt)
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
@@ -1502,7 +1512,7 @@ func stop_sprinting(sprint_dir):
 			node.rotation_degrees = rad_to_deg(Vector2(0,-1).angle()) + 90
 			node.restart()
 			node.emitting = true
-		mecha_heat = min(mecha_heat + build.thruster.dash_heat/2, max_heat  * OVERHEAT_BUFFER)
+		increase_heat(build.thruster.dash_heat/2.0, "stop_sprinting")
 	is_sprinting = false
 	for node in Particle.chassis_sprint:
 		node.emitting = false
@@ -1565,7 +1575,7 @@ func shoot(type, is_auto_fire = false):
 	
 	if weapon_ref.is_melee:
 		node.light_attack()
-		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
+		increase_heat(weapon_ref.muzzle_heat, "melee attack")
 		emit_signal("shoot_signal")
 		return
 	
@@ -1629,7 +1639,7 @@ func shoot(type, is_auto_fire = false):
 								"casing_eject_angle": eject_angle + self.global_rotation_degrees,
 								"casing_size": weapon_ref.casing_size,
 							})
-		mecha_heat = min(mecha_heat + weapon_ref.muzzle_heat, max_heat * OVERHEAT_BUFFER)
+		increase_heat(weapon_ref.muzzle_heat, "shooting")
 		if type == "arm_weapon_left":
 			left_arm_bloom_count += 1
 		elif type ==  "arm_weapon_right":

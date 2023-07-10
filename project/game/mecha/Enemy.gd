@@ -110,12 +110,6 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
 		set_shoulders(PartManager.get_random_part_name("shoulders"))
 		print(mecha_name  + " spawned in.")
-	
-	#For the moment hard set movement type
-	if movement_type == "tank":
-		movement_type = "enemy_tank"
-	else:
-		movement_type = "free"
 
 
 #AI METHODS

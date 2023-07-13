@@ -57,7 +57,7 @@ func ambushing_to_locking(enemy):
 
 func locking_to_barraging(enemy):
 	var priority = 0
-	if enemy.valid_target and enemy.locked_to:
+	if enemy.valid_target and enemy.locked_to and barrage_timer < barrage_min_time:
 		priority = 6
 	return priority
 
@@ -193,6 +193,7 @@ func do_locking(dt, enemy):
 			enemy.navigate_to_target(dt, 1.0, 0.8)
 		enemy.is_locking = true	
 		shield_check(enemy)
+		barrage_timer = 0.0
 
 func do_barraging(dt, enemy):
 	if is_instance_valid(enemy):
@@ -210,8 +211,22 @@ func do_barraging(dt, enemy):
 		if enemy.mecha_heat < enemy.max_heat*weapon_heat_threshold and barrage_timer < barrage_min_time:
 			enemy.shoot_weapons()
 			barrage_timer += dt
-		if barrage_timer > barrage_min_time:
-			shield_check(enemy)
+
+func do_skirmishing(dt, enemy):
+	if is_instance_valid(enemy):
+		if enemy.is_shielding and enemy.under_fire_timer == 0.0:
+			enemy.shield_down()
+		if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
+			enemy.increase_throttle(1, 1)
+			enemy.navigate_to_target(dt, 1.0, 0.65)
+		elif enemy.global_position.distance_to(enemy.valid_target.global_position) > max_kite_distance:
+			enemy.increase_throttle(1, 1)
+			enemy.navigate_to_target(dt, 0.0, 0.65)
+		else:
+			enemy.decrease_throttle(0.5, 0.5)
+			enemy.navigate_to_target(dt, 1.0, 0.8)
+		if enemy.mecha_heat < enemy.max_heat*weapon_heat_threshold and barrage_timer < barrage_min_time:
+			enemy.shoot_weapons()
 
 func do_cooling(dt, enemy):
 	if is_instance_valid(enemy):
@@ -226,11 +241,11 @@ func do_cooling(dt, enemy):
 		else:
 			enemy.going_to_position = false
 			cooldown_time = max(cooldown_time - dt, 0)
+		barrage_timer = 0.0
 		
 
 func shield_check(enemy):
 	if is_instance_valid(enemy):
-		barrage_timer = 0.0
 		if enemy.under_fire_timer > 0.0:
 			if not enemy.is_shielding and enemy.mecha_heat < enemy.max_heat*general_heat_threshold:
 				enemy.shield_up()

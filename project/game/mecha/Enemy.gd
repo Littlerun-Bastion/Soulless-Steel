@@ -53,6 +53,9 @@ func _physics_process(dt):
 	if paused:
 		return
 	
+	if is_dead:
+		return
+	
 	super(dt)
 	
 	if is_stunned():
@@ -61,7 +64,7 @@ func _physics_process(dt):
 	update_senses(dt)
 	
 	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
-	if not wait_for_map_sync:
+	if not wait_for_map_sync and not is_dead:
 		logic.update(self)
 		logic.run(self, dt)
 	

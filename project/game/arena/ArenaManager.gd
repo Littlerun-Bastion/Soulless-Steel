@@ -2,12 +2,20 @@ extends Node
 
 const MAPS_PATH = "res://database/maps/"
 
+const CIV_GRADE_PAYOUT = 100000.0
+const MIL_GRADE_PAYOUT = 1000000.0
+const SOA_GRADE_PAYOUT = 10000000.0
+const UNDERGROUND_PAYOUT_MODIFIER = 1.5
+
 @onready var MAPS = {}
 
 var map_to_load = false
 var current_challengers = ["Lady Volk"]
 var exhibitioner_count = 0
 var mode = ""
+var tier = "Civ-Grade"
+var last_match
+var last_match_unread = false
 
 
 

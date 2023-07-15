@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://brny0mhtvyx57"]
+[gd_scene load_steps=22 format=3 uid="uid://brny0mhtvyx57"]
 
 [ext_resource type="Script" path="res://database/maps/Map.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://c7cm57g0x8t3r" path="res://assets/images/map/floor/arena_oldgate.png" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://database/buildings/old_gate_building5.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://database/props/tree2_prop.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://database/props/tree1_prop.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://game/arena/ExitPoint.tscn" id="13_8l1yw"]
 [ext_resource type="PackedScene" path="res://database/props/tree_leafless_2_prop.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://database/props/tree_leafless_3_prop.tscn" id="15"]
 [ext_resource type="PackedScene" path="res://database/props/tree3_prop.tscn" id="16"]
@@ -127,6 +128,15 @@ position = Vector2(-4259, 186)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
+
+[node name="ExitPoint" parent="Exits" instance=ExtResource("13_8l1yw")]
+position = Vector2(-3406.16, 10054.3)
+rotation = 0.78026
+scale = Vector2(0.2, 0.2)
+
+[node name="ExitPoint2" parent="Exits" instance=ExtResource("13_8l1yw")]
+position = Vector2(3577.12, -9986.17)
+scale = Vector2(0.2, 0.2)
 
 [node name="Trees" type="Node2D" parent="."]
 

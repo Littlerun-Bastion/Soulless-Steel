@@ -23,10 +23,40 @@ const LEADERBOARDS =[
 @onready var LeaderboardTier = $LeaderboardsName/Tier
 @onready var OpponentsLabel = $ColorRect/VBoxContainer/Opponents/Label2
 
+@onready var PayoutScreen = $PayoutScreen
+@onready var BasePayout = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer/Label2
+@onready var WinPayout = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer2/Label2
+@onready var ConductPayout = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3/Label2
+@onready var ConductKills = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4/Label2
+@onready var ConductPerformance = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5/Label2
+
+@onready var RepairsCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer/Label2
+@onready var AmmoCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2/Label2
+
 var selected_challenger
 
 func _ready():
 	setup_leaderboards(1)
+	if ArenaManager.last_match_unread:
+		if ArenaManager.last_match:
+			BasePayout.text = str(ArenaManager.last_match.payout)
+			if ArenaManager.last_match.win:
+				WinPayout.text = str(ArenaManager.last_match.payout)
+			ConductPayout.text = str(ArenaManager.last_match.conduct)
+			if ArenaManager.last_match.conduct_kill_deduction > 0:
+				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4.visible = true
+				ConductKills.text = str(ArenaManager.last_match.conduct_kill_deduction)
+			else:
+				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4.visible = false
+			
+			if ArenaManager.last_match.conduct_downs_reward > 0:
+				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = true
+				ConductPerformance.text = str(ArenaManager.last_match.conduct_downs_reward)
+			else:
+				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = false
+		ArenaManager.last_match_unread = false
+		PayoutScreen.visible = true
+		
 
 
 func setup_leaderboards(lb_idx):
@@ -90,3 +120,7 @@ func set_challenge_mode():
 func set_exhibition_mode():
 	ArenaManager.mode = "Exhibition"
 	OpponentsLabel.text = str("'" + str(ArenaManager.exhibitioner_count) + " PARTICIPANTS'")
+
+
+func _on_Dismiss_pressed():
+	PayoutScreen.visible = false

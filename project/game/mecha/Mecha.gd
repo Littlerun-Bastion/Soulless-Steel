@@ -36,7 +36,7 @@ signal create_casing
 signal shoot_signal
 signal took_damage
 signal died
-signal player_kill
+signal exposed
 signal mecha_extracted
 signal shield_ready
 signal parried
@@ -629,6 +629,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 	if hp <= 0 and not is_exposed:
 		is_exposed = true
+		emit_signal("exposed",self)
 	elif hp <= 0 and is_exposed:
 		if exposed_invuln_timer == EXPOSED_INVULN_WINDOW:
 			exposed_hits -= 1
@@ -729,9 +730,6 @@ func die(source_info, _weapon_name):
 	#	"self": self.mecha_name,
 	#	"weapon_name": weapon_name,
 	#	})
-	if is_instance_valid(source_info):
-		if is_player():
-			emit_signal("player_kill")
 	emit_signal("died", self)
 
 

@@ -23,7 +23,8 @@ const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png"
 
 var player
 var all_mechas = []
-var player_kills = 0
+var player_downs = []
+var player_kills = []
 var is_tutorial := false
 
 # Debug vars
@@ -36,7 +37,8 @@ func _ready():
 	
 	setup_arena()
 	
-	player_kills = 0
+	player_downs = []
+	player_kills = []
 	target_arena_zoom = ArenaCam.zoom
 	
 	add_player()
@@ -191,6 +193,7 @@ func add_player():
 	player.connect("create_projectile", Callable(self,"_on_mecha_create_projectile"))
 	player.connect("create_casing", Callable(self,"_on_mecha_create_casing"))
 	player.connect("died", Callable(self,"_on_mecha_died"))
+	player.connect("exposed", Callable(self,"_on_mecha_exposed"))
 	player.connect("lost_health", Callable(self,"_on_player_lost_health"))
 	player.connect("mecha_extracted", Callable(self,"_on_player_mech_extracted"))
 	player.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
@@ -206,7 +209,7 @@ func add_enemy(design_data, enemy_name):
 	enemy.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
 	enemy.connect("create_casing",Callable(self,"_on_mecha_create_casing"))
 	enemy.connect("died",Callable(self,"_on_mecha_died"))
-	enemy.connect("player_kill",Callable(self,"_on_mecha_player_kill"))
+	enemy.connect("exposed",Callable(self,"_on_mecha_exposed"))
 	enemy.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
 	all_mechas.push_back(enemy)
 	enemy.setup(self, is_tutorial, design_data, enemy_name)
@@ -372,8 +375,14 @@ func _on_bullet_impact(projectile, effect, clear):
 	if clear:
 		projectile.queue_free()
 
+func _on_mecha_exposed(mecha):
+	if mecha.last_damage_source.name == "Player":
+		player_downs.append(mecha.mecha_name)
+		print(player_downs)
 
 func _on_mecha_died(mecha):
+	mecha.is_dead = true
+	
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove_at(idx)
@@ -382,6 +391,9 @@ func _on_mecha_died(mecha):
 	if mecha == player:
 		player_died()
 	else:
+		if mecha.last_damage_source.name == "Player":
+			player_kills.append(mecha.mecha_name)
+			print(player_kills)
 		mecha.queue_free()
 
 
@@ -390,10 +402,6 @@ func _on_mecha_made_sound(sound_data):
 		if not mecha.is_player() and sound_data.source != mecha and\
 		   mecha.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
 			mecha.heard_sound(sound_data)
-
-
-func _on_mecha_player_kill():
-	player_kills += 1
 
 
 func _on_ExitPos_mecha_extracting(extractingMech):
@@ -416,28 +424,58 @@ func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
 		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System...")
 	else:
-		#TODO: Fix this
-		PlayerStatManager.PlayerKills += player_kills
-		PlayerStatManager.PlayerHP = playerMech.hp
-		PlayerStatManager.PlayerMaxHP = playerMech.max_hp
-		PlayerStatManager.NumberofExtracts += 1
-		PlayerStatManager.Armor = playerMech.hp
-		PlayerStatManager.RArmAmmo = player.get_total_ammo("arm_weapon_right")
-		PlayerStatManager.RArmAmmoMax = player.get_max_ammo("arm_weapon_right")
-		PlayerStatManager.RArmCost = player.get_ammo_cost("arm_weapon_right")
-		PlayerStatManager.LArmAmmo = player.get_total_ammo("arm_weapon_left")
-		PlayerStatManager.LArmAmmoMax = player.get_max_ammo("arm_weapon_left")
-		PlayerStatManager.LArmCost = player.get_ammo_cost("arm_weapon_left")
-		PlayerStatManager.RShoulderAmmo = player.get_total_ammo("shoulder_weapon_right")
-		PlayerStatManager.RShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_right")
-		PlayerStatManager.RShoulderCost = player.get_ammo_cost("shoulder_weapon_right")
-		PlayerStatManager.LShoulderAmmo = player.get_total_ammo("shoulder_weapon_left")
-		PlayerStatManager.LShoulderAmmoMax = player.get_max_ammo("shoulder_weapon_left")
-		PlayerStatManager.LShoulderCost = player.get_ammo_cost("shoulder_weapon_left")
-		PlayerStatManager.RepairedLastRound = false
+		var right_arm_ammo_cost = 0.0
+		if player.get_max_ammo("arm_weapon_right") and player.get_ammo_cost("arm_weapon_right"):
+			right_arm_ammo_cost = (player.get_max_ammo("arm_weapon_right") - player.get_total_ammo("arm_weapon_right")) * player.get_ammo_cost("arm_weapon_right")
+		
+		var left_arm_ammo_cost = 0.0
+		if player.get_max_ammo("arm_weapon_left") and player.get_ammo_cost("arm_weapon_left"):
+			left_arm_ammo_cost = (player.get_max_ammo("arm_weapon_left") - player.get_total_ammo("arm_weapon_left")) * player.get_ammo_cost("arm_weapon_left")
+		
+		var right_shoulder_ammo_cost = 0.0
+		if player.get_max_ammo("shoulder_weapon_right") and player.get_ammo_cost("shoulder_weapon_right"):
+			right_shoulder_ammo_cost = (player.get_max_ammo("shoulder_weapon_right") - player.get_total_ammo("shoulder_weapon_right")) * player.get_ammo_cost("shoulder_weapon_right")
+		
+		var left_shoulder_ammo_cost = 0.0
+		if player.get_max_ammo("shoulder_weapon_left") and player.get_ammo_cost("shoulder_weapon_left"):
+			left_shoulder_ammo_cost = (player.get_max_ammo("shoulder_weapon_left") - player.get_total_ammo("shoulder_weapon_left")) * player.get_ammo_cost("shoulder_weapon_left")
 		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
-
-		TransitionManager.transition_to("res://ScoreScreen.tscn", "Downloading Data...")
+		
+		var payout = 0
+		if ArenaManager.tier == "Civ-Grade":
+			payout = ArenaManager.CIV_GRADE_PAYOUT
+		elif ArenaManager.tier == "Mil-Grade":
+			payout = ArenaManager.MIL_GRADE_PAYOUT
+		elif ArenaManager.tier == "State-Of-The-Art":
+			payout = ArenaManager.SOA_GRADE_PAYOUT
+		
+		var conduct_kill_deduction = player_kills.size() * payout
+		var conduct_downs_reward = player_downs.size() * payout * 0.25
+		if conduct_kill_deduction > 0:
+			conduct_downs_reward = 0
+		var conduct = conduct_downs_reward - conduct_kill_deduction
+		
+		ArenaManager.last_match = {
+			"mode": ArenaManager.mode,
+			"tier": ArenaManager.tier,
+			"payout": payout,
+			"win": true,
+			"downs": player_downs,
+			"kills": player_kills,
+			"conduct": conduct,
+			"conduct_kill_deduction": conduct_kill_deduction,
+			"conduct_downs_reward": conduct_downs_reward,
+			"damage_taken": playerMech.max_hp - playerMech.hp,
+			"right_arm_ammo_cost": right_arm_ammo_cost,
+			"left_arm_ammo_cost": left_arm_ammo_cost,
+			"right_shoulder_ammo_cost": right_shoulder_ammo_cost,
+			"left_shoulder_ammo_cost": left_shoulder_ammo_cost,
+		}
+		if ArenaManager.mode == "Exhibition" or ArenaManager.mode == "Challenge":
+			TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Downloading Data...")
+			ArenaManager.last_match_unread = true
+		elif ArenaManager.mode == "Tutorial":
+			TransitionManager.transition_to("res://StartMenuDemo.tscn", "Downloading Data...")
 
 
 func _on_WindsTimer_timeout():

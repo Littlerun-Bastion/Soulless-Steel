@@ -196,7 +196,7 @@ func do_locking(dt, enemy):
 		barrage_timer = 0.0
 
 func do_barraging(dt, enemy):
-	if is_instance_valid(enemy):
+	if is_instance_valid(enemy) and is_instance_valid(enemy.valid_target):
 		if enemy.is_shielding and enemy.under_fire_timer == 0.0:
 			enemy.shield_down()
 		if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
@@ -213,7 +213,7 @@ func do_barraging(dt, enemy):
 			barrage_timer += dt
 
 func do_skirmishing(dt, enemy):
-	if is_instance_valid(enemy):
+	if is_instance_valid(enemy) and is_instance_valid(enemy.valid_target):
 		if enemy.is_shielding and enemy.under_fire_timer == 0.0:
 			enemy.shield_down()
 		if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:

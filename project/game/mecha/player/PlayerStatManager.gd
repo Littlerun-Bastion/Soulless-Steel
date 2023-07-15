@@ -1,6 +1,7 @@
 extends Node
 
-var PlayerKills = 0
+var PlayerKills = []
+var PlayerDowns = []
 var PlayerHP = 0
 var PlayerMaxHP = 0
 var NumberofExtracts = 0

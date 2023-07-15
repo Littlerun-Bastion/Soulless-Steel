@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://b1grwa577skp"]
+[gd_scene load_steps=11 format=3 uid="uid://b1grwa577skp"]
 
 [ext_resource type="Script" path="res://game/ui/ladder/Ladder.gd" id="1_agcil"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="1_iy2ma"]
@@ -12,6 +12,17 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hqt4t"]
 content_margin_left = 10.0
 content_margin_top = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ws5ka"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2wbg2"]
+bg_color = Color(0, 0, 0, 1)
 
 [node name="Ladder" type="Control"]
 layout_mode = 3
@@ -387,6 +398,361 @@ theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 35
 text = "Regional Ladder"
 
+[node name="PayoutScreen" type="Panel" parent="."]
+custom_minimum_size = Vector2(1200, 600)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ws5ka")
+
+[node name="Label" type="Label" parent="PayoutScreen"]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 188.0
+offset_bottom = 74.0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 60
+text = "Payout"
+
+[node name="ColorRect" type="ColorRect" parent="PayoutScreen/Label"]
+layout_mode = 0
+offset_left = 222.0
+offset_top = 13.0
+offset_right = 1160.0
+offset_bottom = 33.0
+
+[node name="ColorRect2" type="ColorRect" parent="PayoutScreen/Label"]
+layout_mode = 0
+offset_left = 222.0
+offset_top = 39.0
+offset_right = 1160.0
+offset_bottom = 45.0
+
+[node name="ColorRect" type="ColorRect" parent="PayoutScreen"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 76.0
+offset_right = 1180.0
+offset_bottom = 80.0
+
+[node name="Label2" type="Label" parent="PayoutScreen"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 17.0
+offset_top = -115.0
+offset_right = 204.0
+offset_bottom = -61.0
+grow_vertical = 0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 50
+text = "Total:"
+
+[node name="Label3" type="Label" parent="PayoutScreen"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 17.0
+offset_top = -73.0
+offset_right = 420.0
+offset_bottom = 1.0
+grow_vertical = 0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 70
+text = "1000000000000"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PayoutScreen"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 89.0
+offset_right = 1180.0
+offset_bottom = 463.0
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="PayoutScreen/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "Base"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "c"
+vertical_alignment = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer2"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "WIN"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer2"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "c"
+vertical_alignment = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "Conduct"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-
+"
+
+[node name="Label5" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "c"
+vertical_alignment = 2
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2wbg2")
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 24
+text = "Pilot Kills"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 20
+text = "c"
+vertical_alignment = 2
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2wbg2")
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 24
+text = "Performance"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 20
+text = "c"
+vertical_alignment = 2
+
+[node name="ColorRect" type="ColorRect" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PayoutScreen/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "Repairs"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "c"
+vertical_alignment = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PayoutScreen/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "Ammo"
+
+[node name="Label4" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "-"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 30
+text = "0
+"
+
+[node name="Label3" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "c"
+vertical_alignment = 2
+
+[node name="ColorRect" type="ColorRect" parent="PayoutScreen/VBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="Button" type="Button" parent="PayoutScreen"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -222.0
+offset_top = -72.0
+offset_right = -22.0
+offset_bottom = -22.0
+grow_horizontal = 0
+grow_vertical = 0
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 40
+text = "Dismiss"
+
 [connection signal="pressed" from="VBoxContainer2/Button" to="." method="set_challenge_mode"]
 [connection signal="pressed" from="VBoxContainer2/Button2" to="." method="set_exhibition_mode"]
 [connection signal="pressed" from="StartMatch" to="." method="start_match"]
+[connection signal="pressed" from="PayoutScreen/Button" to="." method="_on_Dismiss_pressed"]

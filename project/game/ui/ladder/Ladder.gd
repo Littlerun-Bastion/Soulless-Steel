@@ -29,6 +29,7 @@ const LEADERBOARDS =[
 @onready var ConductPayout = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3/Label2
 @onready var ConductKills = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4/Label2
 @onready var ConductPerformance = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5/Label2
+@onready var PayoutTotal = $PayoutScreen/HBoxContainer/Label3
 
 @onready var RepairsCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer/Label2
 @onready var AmmoCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2/Label2
@@ -45,15 +46,19 @@ func _ready():
 			ConductPayout.text = str(ArenaManager.last_match.conduct)
 			if ArenaManager.last_match.conduct_kill_deduction > 0:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4.visible = true
-				ConductKills.text = str(ArenaManager.last_match.conduct_kill_deduction)
+				ConductKills.text = str("-" + str(ArenaManager.last_match.conduct_kill_deduction))
+				$PayoutScreen/VBoxContainer/VBoxContainer2/KillWarning.visible = true
 			else:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4.visible = false
+				$PayoutScreen/VBoxContainer/VBoxContainer2/KillWarning.visible = false
 			
 			if ArenaManager.last_match.conduct_downs_reward > 0:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = true
 				ConductPerformance.text = str(ArenaManager.last_match.conduct_downs_reward)
 			else:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = false
+			AmmoCost.text = str(ArenaManager.last_match.total_ammo_cost)
+			PayoutTotal.text = str(ArenaManager.last_match.total_payout)
 		ArenaManager.last_match_unread = false
 		PayoutScreen.visible = true
 		

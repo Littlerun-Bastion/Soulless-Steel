@@ -459,19 +459,25 @@ theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 50
 text = "Total:"
 
-[node name="Label3" type="Label" parent="PayoutScreen"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
+[node name="HBoxContainer" type="HBoxContainer" parent="PayoutScreen"]
+layout_mode = 0
 offset_left = 17.0
-offset_top = -73.0
+offset_top = 532.0
 offset_right = 420.0
-offset_bottom = 1.0
-grow_vertical = 0
+offset_bottom = 606.0
+
+[node name="Label3" type="Label" parent="PayoutScreen/HBoxContainer"]
+layout_mode = 2
 theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 70
-text = "1000000000000"
+text = "0"
+
+[node name="Label4" type="Label" parent="PayoutScreen/HBoxContainer"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 50
+text = "c"
+vertical_alignment = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PayoutScreen"]
 layout_mode = 0
@@ -659,6 +665,13 @@ theme = ExtResource("5_3wwhl")
 theme_override_font_sizes/font_size = 20
 text = "c"
 vertical_alignment = 2
+
+[node name="KillWarning" type="Label" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("5_3wwhl")
+theme_override_font_sizes/font_size = 25
+text = "You will not be rewarded for killing fellow pilots during a 
+league-sanctioned SPorting event."
 
 [node name="ColorRect" type="ColorRect" parent="PayoutScreen/VBoxContainer/VBoxContainer2"]
 custom_minimum_size = Vector2(0, 2)

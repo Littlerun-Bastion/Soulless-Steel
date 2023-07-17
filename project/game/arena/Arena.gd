@@ -441,6 +441,8 @@ func _on_player_mech_extracted(playerMech):
 			left_shoulder_ammo_cost = (player.get_max_ammo("shoulder_weapon_left") - player.get_total_ammo("shoulder_weapon_left")) * player.get_ammo_cost("shoulder_weapon_left")
 		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
 		
+		var total_ammo_cost = right_arm_ammo_cost + left_arm_ammo_cost + right_shoulder_ammo_cost + left_shoulder_ammo_cost
+		
 		var payout = 0
 		if ArenaManager.tier == "Civ-Grade":
 			payout = ArenaManager.CIV_GRADE_PAYOUT
@@ -453,12 +455,16 @@ func _on_player_mech_extracted(playerMech):
 		var conduct_downs_reward = player_downs.size() * payout * 0.25
 		if conduct_kill_deduction > 0:
 			conduct_downs_reward = 0
+			payout = 0
 		var conduct = conduct_downs_reward - conduct_kill_deduction
+		
+		var total_payout = (payout * 1.5) + conduct - total_ammo_cost
 		
 		ArenaManager.last_match = {
 			"mode": ArenaManager.mode,
 			"tier": ArenaManager.tier,
 			"payout": payout,
+			"total_payout": total_payout,
 			"win": true,
 			"downs": player_downs,
 			"kills": player_kills,
@@ -470,6 +476,7 @@ func _on_player_mech_extracted(playerMech):
 			"left_arm_ammo_cost": left_arm_ammo_cost,
 			"right_shoulder_ammo_cost": right_shoulder_ammo_cost,
 			"left_shoulder_ammo_cost": left_shoulder_ammo_cost,
+			"total_ammo_cost": total_ammo_cost,
 		}
 		if ArenaManager.mode == "Exhibition" or ArenaManager.mode == "Challenge":
 			TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Downloading Data...")

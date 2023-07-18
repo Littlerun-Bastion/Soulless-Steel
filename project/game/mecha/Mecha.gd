@@ -494,12 +494,9 @@ func set_pause(value):
 
 func get_design_data():
 	var data = {}
-	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
-					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
-					"shoulder_weapon_left", "shoulder_weapon_right"]:
-		var part = get(part_type)
+	for part_type in build.keys():
+		var part = build[part_type]
 		data[part_type] = part.part_id if part else false
-
 	return data
 
 
@@ -514,7 +511,7 @@ func set_parts_from_design(data):
 		elif part_name.find("right") != -1:
 			side = SIDE.RIGHT
 
-		if typeof(side) ==  TYPE_INT:
+		if typeof(side) == TYPE_INT:
 			callv("set_" + type, [data[part_name], side])
 		else:
 			callv("set_" + type, [data[part_name]])
@@ -712,7 +709,7 @@ func freezing_status_heat(heat_disp):
 	return heat_disp
 
 
-func die(source_info, _weapon_name):
+func die(_source_info, _weapon_name):
 	if is_dead:
 		return
 	is_dead = true

@@ -238,7 +238,7 @@ func is_build_valid():
 	var missing_parts : String
 	for part in ["head", "core", "shoulders", "generator",\
 				"chipset", "chassis", "thruster", "shoulders"]:
-		if not DisplayMecha.get(part):
+		if not DisplayMecha.build[part]:
 			build_valid = false
 			missing_parts = missing_parts + "WARN: " + part + " "
 	if not build_valid:

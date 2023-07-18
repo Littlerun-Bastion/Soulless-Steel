@@ -49,7 +49,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	tween.tween_property(BlockScreen, "color:a", 0.0, .8)
 	tween.parallel().tween_method(set_blur_value, 5.0, 0.0, .8)
 	set_noise_value(10)
-	tween.parallel().tween_method(set_noise_value, 10.0, 2000.0, 1.5).set_delay(.2)
+	tween.parallel().tween_method(set_noise_value, 10.0, 2000.0, .8).set_delay(.2)
 	
 	await tween.finished
 	

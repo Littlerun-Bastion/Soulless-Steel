@@ -7,9 +7,6 @@
 
 [sub_resource type="FontFile" id="12"]
 fallbacks = Array[Font]([ExtResource("7")])
-face_index = null
-embolden = null
-transform = null
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
@@ -10567,9 +10564,6 @@ anti_aliasing_size = 0.01
 
 [sub_resource type="FontFile" id="8"]
 fallbacks = Array[Font]([ExtResource("6")])
-face_index = null
-embolden = null
-transform = null
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
@@ -21073,9 +21067,6 @@ cache/0/100/0/kerning_overrides/100/0 = Vector2(0, 0)
 
 [sub_resource type="FontFile" id="9"]
 fallbacks = Array[Font]([ExtResource("7")])
-face_index = null
-embolden = null
-transform = null
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0

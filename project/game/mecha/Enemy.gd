@@ -341,5 +341,5 @@ func choose_direction():
 
 func _on_nearby_projectile_area_entered(area):
 	if area.original_mecha_info.name != mecha_name:
-		under_fire_timer = 2.0
+		under_fire_timer = 0.5
 

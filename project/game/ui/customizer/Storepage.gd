@@ -120,9 +120,11 @@ func is_build_valid():
 	var missing_parts : String
 	for part in ["head", "core", "shoulders", "generator",\
 				"chipset", "chassis", "thruster", "shoulders"]:
-		if not DisplayMecha.get(part):
+		if not DisplayMecha.build[part]:
 			build_valid = false
 			missing_parts = missing_parts + "WARN: " + part + " "
+	if not build_valid:
+		print(missing_parts)
 	return build_valid
 
 
@@ -215,7 +217,7 @@ func _on_EquipmentButton_pressed():
 	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
-func _on_ItemFrame_pressed(part_name,type,side,item):
+func _on_ItemFrame_pressed(part_name,type,_side,_item):
 	add_to_basket(type, part_name)
 
 

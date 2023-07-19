@@ -95,12 +95,15 @@ func get_bus_volume(which_bus: int):
 ##BGM METHODS
 
 func play_bgm(bgm_name, start_from_beginning = false, fade_in_speed_override = false):
+	var player = $BGMS/BGMPlayer1
 	if cur_bgm:
-		stop_bgm()
+		if start_from_beginning or player.stream != BGMS[bgm_name].asset:
+			stop_bgm()
+		else:
+			return
 	
 	assert(BGMS.has(bgm_name),"Not a valid bgm name: " + str(bgm_name))
 	cur_bgm = bgm_name
-	var player = $BGMS/BGMPlayer1
 	player.stream = BGMS[bgm_name].asset
 	player.volume_db = MUTE_DB
 	if start_from_beginning:

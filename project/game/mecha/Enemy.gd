@@ -4,8 +4,8 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 const SOUND_LIFETIME = 25
 const BODY_LIFETIME = 35
 
-@export var look_ahead_range = 500
-@export var num_rays = 16
+@export var look_ahead_range = 1500
+@export var num_rays = 32
 
 var ray_directions = []
 var interest = []
@@ -28,6 +28,8 @@ var senses = {
 }
 var valid_target = false
 var is_locking = false
+var most_recent_attacker = false
+var last_attack_position = false
 var under_fire_timer = 0.0
 
 
@@ -81,7 +83,7 @@ func _physics_process(dt):
 
 func _draw():
 	if Debug.get_setting("draw_debug_lines"):
-		draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation)* 500, Color.WHITE, 5)
+		draw_line(Vector2.ZERO, chosen_dir * 500, Color.WHITE, 5)
 		for i in debug_lines:
 			if i:
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
@@ -93,29 +95,8 @@ func setup(arena_ref, is_tutorial, design_data, _name):
 		mecha_name = _name
 	else:
 		mecha_name = "Mecha " + str(randi()%2000)
-	if is_tutorial:
-		set_generator(PartManager.get_random_part_name("generator"))
-		set_chipset("type_2")
-		set_core("MSV-L3J-C")
-		set_head(PartManager.get_random_part_name("head"))
-		set_chassis(PartManager.get_random_part_name("chassis"))
-		set_arm_weapon(false, SIDE.RIGHT)
-		set_arm_weapon(false, SIDE.LEFT)
-		set_shoulder_weapon(false, SIDE.RIGHT)
-		set_shoulder_weapon(false, SIDE.LEFT)
-		set_shoulders(PartManager.get_random_part_name("shoulders"))
-	else:
-		set_generator("type_1")
-		set_chipset("type_2")
-		set_core(PartManager.get_random_part_name("core"))
-		set_head(PartManager.get_random_part_name("head"))
-		set_chassis(PartManager.get_random_part_name("chassis"))
-		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.RIGHT)
-		set_arm_weapon(PartManager.get_random_part_name("arm_weapon"), SIDE.LEFT)
-		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .8 else false, SIDE.RIGHT)
-		#set_shoulder_weapon(PartManager.get_random_part_name("shoulder_weapon") if randf() > .9 else false, SIDE.LEFT)
-		set_shoulders(PartManager.get_random_part_name("shoulders"))
-		print(mecha_name  + " spawned in.")
+		
+	set_parts_from_design(design_data)
 
 
 #AI METHODS
@@ -257,7 +238,7 @@ func get_navigation_path():
 	return NavAgent.get_nav_path()
 
 
-func navigate_to_target(dt,direction:=0.0, wander := 0.0):
+func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 	#Forward when direction = 0, Backwards when direction = 1, 
 	#Clockwise when direction = -0.5, Anticlockwise when direction = 0.5
 	if going_to_position:
@@ -267,12 +248,18 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0):
 		set_interest(dir.rotated(PI * direction), wander)
 		set_danger()
 		choose_direction()
+		if sprint:
+			is_sprinting = true
+		elif not sprint and is_sprinting:
+			stop_sprinting(chosen_dir)
+		#print(str(chosen_dir) + "Enemy.tscn")
+		chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
 		if valid_target and is_instance_valid(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
-			
+		
 
 
 func get_target_navigation_pos():
@@ -320,7 +307,7 @@ func set_danger():
 
 		if result:
 			var distance = self.global_position.distance_to(result.position)
-			danger[i] = pow((look_ahead_range - distance)/look_ahead_range,2)
+			danger[i] = (look_ahead_range - distance)/look_ahead_range
 		else:
 			danger[i] = 0.0
 
@@ -328,18 +315,24 @@ func choose_direction():
 	# Eliminate interest in slots with danger
 	for i in num_rays:
 		if danger[i] > 0.0:
-			interest[i] = -danger[i]
+			interest[i] -= danger[i]
 	# Choose direction based on remaining interest
 	chosen_dir = Vector2.ZERO
 	debug_lines = []
 	for i in num_rays:
-		debug_lines.append(ray_directions[i] * interest[i])
+		var cur_ray = ray_directions[i] * interest[i]
+		debug_lines.append(cur_ray)
 		chosen_dir += ray_directions[i] * interest[i]
+		#if cur_ray.length() > chosen_dir.length():
+			#chosen_dir = cur_ray
 	chosen_dir = chosen_dir.normalized()
 	queue_redraw()
 
 
 func _on_nearby_projectile_area_entered(area):
 	if area.original_mecha_info.name != mecha_name:
+		print("Under fire!")
 		under_fire_timer = 0.5
+		most_recent_attacker = area.original_mecha_info.body
+		last_attack_position = area.original_mecha_info.body.global_position
 

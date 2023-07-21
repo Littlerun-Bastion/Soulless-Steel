@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek"]
+var nodes = ["roam", "seek", "alert"]
 var initial_state = "roam"
 
 #Custom variables
@@ -42,6 +42,19 @@ func seek_to_roam(enemy):
 		print("Roaming")
 	return priority
 
+func seek_to_alert(enemy):
+	var priority = 0
+	if enemy.under_fire_timer:
+		priority = 3
+		print("Alert")
+	return priority
+
+func roam_to_alert(enemy):
+	var priority = 0
+	if enemy.under_fire_timer:
+		priority = 3
+		print("Alert")
+	return priority
 
 ## STATE METHODS ##
 
@@ -59,9 +72,9 @@ func do_roam(dt, enemy):
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
 		
-		enemy.navigate_to_target(dt, 0, 0.65)
+		enemy.navigate_to_target(dt, 0, 0.65, false)
 		
-		if enemy.NavAgent.is_navigation_finished():
+		if enemy.NavAgent.is_navigation_finished(): 
 			enemy.going_to_position = false
 			point_of_interest = false
 
@@ -85,9 +98,27 @@ func do_seek(dt, enemy):
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
 		
-		enemy.navigate_to_target(dt, 0, 0)
+		enemy.navigate_to_target(dt, 0, 0, false)
 		
 		if enemy.NavAgent.is_navigation_finished():
 			enemy.going_to_position = false
 			point_of_interest = false
+
+func do_alert(dt, enemy):
+	if is_instance_valid(enemy):
+		if enemy.throttle < 1.0:
+			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
+		else:
+			enemy.decrease_throttle(1.0, 1.0)
 		
+		#enemy.check_for_targets(engage_distance, max_shooting_distance)
+		if enemy.last_attack_position:
+			point_of_interest = enemy.last_attack_position
+			enemy.going_to_position = true
+			
+	if point_of_interest:
+		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+			enemy.NavAgent.target_position = point_of_interest
+	
+	enemy.navigate_to_target(dt, 0, 0, true)
+	

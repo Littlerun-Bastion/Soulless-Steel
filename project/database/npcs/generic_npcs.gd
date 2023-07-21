@@ -28,7 +28,7 @@ const NPCS = [
 		"shoulders": ["MSV-M2-SG"],
 		"generator": ["EGV-P1"],
 		"chipset": ["type_1"],
-		"chassis": ["MSV-M2-L"],
+		"chassis": ["Crawler_C-type_Chassis"],
 		"thruster": ["test1"],
 		"arm_weapon_left": ["OM1804"],
 		"arm_weapon_right": ["OM1810"],

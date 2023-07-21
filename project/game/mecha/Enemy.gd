@@ -83,7 +83,10 @@ func _physics_process(dt):
 
 func _draw():
 	if Debug.get_setting("draw_debug_lines"):
-		draw_line(Vector2.ZERO, chosen_dir * 500, Color.WHITE, 5)
+		if movement_type != "tank":
+			draw_line(Vector2.ZERO, chosen_dir * 500, Color.WHITE, 5)
+		else:
+			draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation) * 500, Color.WHITE, 5)
 		for i in debug_lines:
 			if i:
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
@@ -253,7 +256,8 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		elif not sprint and is_sprinting:
 			stop_sprinting(chosen_dir)
 		#print(str(chosen_dir) + "Enemy.tscn")
-		chosen_dir = chosen_dir.rotated(-global_rotation)
+		if movement_type != "tank":
+			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
 		if valid_target and is_instance_valid(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)

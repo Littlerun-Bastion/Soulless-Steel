@@ -1282,10 +1282,7 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * (max_speed * throttle)
 	var mult = 1.0
 	if build.thruster:
-		if not is_player():
-			print("Is sprinting - " + str(is_sprinting))
 		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
-
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
 			if not is_player():
@@ -1389,8 +1386,6 @@ func apply_movement(dt, direction):
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
 	update_chassis_visuals(dt)
-	if not is_player():
-		print(str(apply_movement_modifiers(velocity)))
 
 #Rotates solely the body given a direction ('clock' or 'counter'clock wise)
 func apply_rotation_by_direction(dt, direction):

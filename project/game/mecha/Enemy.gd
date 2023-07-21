@@ -255,7 +255,6 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 			is_sprinting = true
 		elif not sprint and is_sprinting:
 			stop_sprinting(chosen_dir)
-		#print(str(chosen_dir) + "Enemy.tscn")
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
@@ -335,7 +334,6 @@ func choose_direction():
 
 func _on_nearby_projectile_area_entered(area):
 	if area.original_mecha_info.name != mecha_name:
-		print("Under fire!")
 		under_fire_timer = 0.5
 		most_recent_attacker = area.original_mecha_info.body
 		last_attack_position = area.original_mecha_info.body.global_position

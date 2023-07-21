@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush"]
 var initial_state = "roam"
 
 #Custom variables
@@ -49,7 +49,30 @@ func seek_to_alert(enemy):
 		print("Alert")
 	return priority
 
+func seek_to_ambush(enemy):
+	var priority = 0
+	if enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
+		priority = 3
+		print("Ambush")
+	return priority
+
 func roam_to_alert(enemy):
+	var priority = 0
+	if enemy.under_fire_timer:
+		priority = 3
+		print("Alert")
+	return priority
+
+func alert_to_alert_roam(enemy):
+	var priority = 0
+	if point_of_interest:
+		pass
+	else:
+		priority = 4
+		print("Alert Roaming")
+	return priority
+	
+func alert_roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
@@ -111,14 +134,123 @@ func do_alert(dt, enemy):
 		else:
 			enemy.decrease_throttle(1.0, 1.0)
 		
+		shield_check(enemy)
+		
 		#enemy.check_for_targets(engage_distance, max_shooting_distance)
 		if enemy.last_attack_position:
 			point_of_interest = enemy.last_attack_position
 			enemy.going_to_position = true
 			
-	if point_of_interest:
-		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-			enemy.NavAgent.target_position = point_of_interest
+		if enemy.get_most_recent_quiet_noise():
+			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
+				point_of_interest = enemy.get_most_recent_quiet_noise().position
+				enemy.going_to_position = true
+			else:
+				for sound in enemy.senses.sounds:
+					if sound.source and\
+					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
+						enemy.senses.sounds.erase(sound)
+				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+				enemy.going_to_position = false
+				point_of_interest = false
+			
+		if point_of_interest:
+			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+				enemy.NavAgent.target_position = point_of_interest
+			
+		if enemy.NavAgent.is_navigation_finished():
+			enemy.going_to_position = false
+			point_of_interest = false
 	
-	enemy.navigate_to_target(dt, 0, 0, true)
+		enemy.navigate_to_target(dt, 0, 0, false)
 	
+
+func do_alert_roam(dt, enemy):
+	if is_instance_valid(enemy):
+		if enemy.throttle < 1.0:
+			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
+		else:
+			enemy.decrease_throttle(1.0, 1.0)
+		if not enemy.going_to_position: #Wander around if we are in the state and have no points of interest.
+			point_of_interest = enemy.arena.get_random_position()
+			enemy.going_to_position = true
+			
+		if enemy.get_most_recent_quiet_noise():
+			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
+				point_of_interest = enemy.get_most_recent_quiet_noise().position
+				enemy.going_to_position = true
+			else:
+				for sound in enemy.senses.sounds:
+					if sound.source and\
+					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
+						enemy.senses.sounds.erase(sound)
+				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+				enemy.going_to_position = false
+				point_of_interest = false
+		
+		if enemy.is_shielding:
+			enemy.shield_down()
+		
+		if point_of_interest:
+			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+				enemy.NavAgent.target_position = point_of_interest
+		
+		enemy.navigate_to_target(dt, 0, 0, false)
+		
+		if enemy.NavAgent.is_navigation_finished(): 
+			enemy.going_to_position = false
+			point_of_interest = false
+			
+func do_ambush(dt, enemy):
+	if is_instance_valid(enemy):
+		if enemy.throttle > 0.5:
+			enemy.decrease_throttle(false, dt/THROTTLE_CHANGE_TIME)
+		else:
+			enemy.increase_throttle(0.5, 0.5)
+		if not enemy.going_to_position: #Wander around if we are in the state and have no points of interest.
+			point_of_interest = enemy.arena.get_random_position()
+			enemy.going_to_position = true
+		
+		if enemy.get_most_recent_loud_noise():
+			if enemy.global_position.distance_to(enemy.get_most_recent_loud_noise().position) > POSITIONAL_ACCURACY:
+				point_of_interest = enemy.get_most_recent_loud_noise().position
+				enemy.going_to_position = true
+			else:
+				enemy.senses.sounds.erase(enemy.get_most_recent_loud_noise())
+				enemy.going_to_position = false
+				point_of_interest = false
+				
+		if enemy.get_most_recent_quiet_noise():
+			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
+				point_of_interest = enemy.get_most_recent_quiet_noise().position
+				enemy.going_to_position = true
+			else:
+				for sound in enemy.senses.sounds:
+					if sound.source and\
+					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
+						enemy.senses.sounds.erase(sound)
+				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+				enemy.going_to_position = false
+				point_of_interest = false
+			
+		if point_of_interest:		
+			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+				enemy.NavAgent.target_position = point_of_interest
+		
+		enemy.navigate_to_target(dt, 0, 0)
+		
+		if enemy.NavAgent.is_navigation_finished():
+			enemy.going_to_position = false
+			point_of_interest = false
+			
+		enemy.check_for_targets(engage_distance, max_shooting_distance)
+		shield_check(enemy)
+
+func shield_check(enemy):
+	if is_instance_valid(enemy):
+		if enemy.under_fire_timer > 0.0:
+			if not enemy.is_shielding and enemy.mecha_heat < enemy.max_heat*general_heat_threshold:
+				enemy.shield_up()
+		else:
+			if enemy.is_shielding:
+				enemy.shield_down()

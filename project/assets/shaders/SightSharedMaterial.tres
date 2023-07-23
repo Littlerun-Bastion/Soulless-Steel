@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://b61oprabe17mo"]
+
+[ext_resource type="Shader" path="res://assets/shaders/SightDistortion.gdshader" id="1_vivdb"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pqw0p"]
+noise_type = 0
+seed = 5
+frequency = 0.001
+domain_warp_type = 1
+domain_warp_fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_lnb3s"]
+width = 1920
+height = 1080
+generate_mipmaps = false
+noise = SubResource("FastNoiseLite_pqw0p")
+
+[resource]
+shader = ExtResource("1_vivdb")
+shader_parameter/noiseTex = SubResource("NoiseTexture2D_lnb3s")

@@ -49,7 +49,7 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 
-var use_fog = true
+var use_fog = false
 var player = false
 var mechas
 var blink_timer = 0.66

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cgrq82l583gkv"]
+[gd_scene load_steps=11 format=3 uid="uid://cgrq82l583gkv"]
 
 [ext_resource type="Script" path="res://game/mecha/player/Player.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dbtbvevksievu" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
 [ext_resource type="Texture2D" uid="uid://q747mpc0pxt" path="res://assets/images/light_sources/vision_cone1.png" id="9_nc772"]
+[ext_resource type="Material" uid="uid://b61oprabe17mo" path="res://assets/shaders/SightSharedMaterial.tres" id="9_ot5le"]
 
 [node name="Player" instance=ExtResource("5")]
 script = ExtResource("1")
@@ -53,4 +54,10 @@ rotation = -1.5708
 range_layer_max = 3
 range_item_cull_mask = 4
 shadow_item_cull_mask = 0
+texture = ExtResource("9_nc772")
+
+[node name="SightDebugSprite" type="Sprite2D" parent="." index="27"]
+visible = false
+material = ExtResource("9_ot5le")
+position = Vector2(-0.667419, 0)
 texture = ExtResource("9_nc772")

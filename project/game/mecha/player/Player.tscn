@@ -54,5 +54,3 @@ range_layer_max = 3
 range_item_cull_mask = 4
 shadow_item_cull_mask = 0
 texture = ExtResource("9_nc772")
-offset = Vector2(450, 0)
-texture_scale = 4.0

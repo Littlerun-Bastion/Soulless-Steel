@@ -164,8 +164,9 @@ func update_camera_offset(dt):
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
 		Cam.offset = Cam.offset.limit_length(build.head.visual_range)
 
+
 func rotate_sight(_dt, target_pos):
-	Sight.rotation = get_angle_to(target_pos)
+	Sight.rotation = get_angle_to(target_pos) + PI/2
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):

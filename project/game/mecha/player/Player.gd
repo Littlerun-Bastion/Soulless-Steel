@@ -17,6 +17,7 @@ const MOVE_CAMERA_MAX_SPEED = 800
 const SPRINTING_TIMEOUT = .13 #How much the player needs to hold the button to enter sprint mode
 
 @onready var Cam = $Camera2D
+@onready var Sight = $Sight 
 
 var sprinting_timer = 0
 var invert_controls = {
@@ -34,32 +35,35 @@ func _ready():
 		Cam.zoom = DEFAULT_CAM_ZOOM 
 
 
-func _physics_process(delta):
+func _physics_process(dt):
 	if paused:
 		return
 	
-	super(delta)
+	super(dt)
+	
 	
 	if is_stunned():
 		return
 	
 	check_input()
 	
-	apply_movement(delta, get_input())
+	
+	apply_movement(dt, get_input())
 	
 	#Update sprinting timer
 	if sprinting_timer > 0.0:
-		sprinting_timer = max(sprinting_timer - delta, 0.0)
+		sprinting_timer = max(sprinting_timer - dt, 0.0)
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
 	if not get_locked_to():# and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-			apply_rotation_by_point(delta, target_pos, Input.is_action_pressed("strafe"))
-	
-	update_camera_zoom(delta)
-	update_camera_offset(delta)
+			apply_rotation_by_point(dt, target_pos, Input.is_action_pressed("strafe"))
+		rotate_sight(dt, target_pos)
+		
+	update_camera_zoom(dt)
+	update_camera_offset(dt)
 
 
 func _input(event):
@@ -159,6 +163,9 @@ func update_camera_offset(dt):
 		strength *= strength*strength #Make it cubically strong on edges
 		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
 		Cam.offset = Cam.offset.limit_length(build.head.visual_range)
+
+func rotate_sight(_dt, target_pos):
+	Sight.rotation = get_angle_to(target_pos)
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):

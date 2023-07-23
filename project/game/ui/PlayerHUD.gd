@@ -18,6 +18,7 @@ const STATUS_BLINK_SPEED = 0.66
 const EXPOSED_BLINK_SPEED = 0.66
 const BUILDING_SPEED = 1.5
 
+@onready var Fog = $Fog
 @onready var LifeBar = $SubViewportContainer/SubViewport/LifeBar
 @onready var ShieldBar = $SubViewportContainer/SubViewport/ShieldBar
 @onready var HeatBar = $SubViewportContainer/SubViewport/HeatBar
@@ -48,6 +49,7 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 
+var use_fog = true
 var player = false
 var mechas
 var blink_timer = 0.66
@@ -56,6 +58,7 @@ var exposed_blink_timer = 0.0
 
 
 func _ready():
+	Fog.visible = use_fog
 	BuildingEffect.modulate.a = 0
 
 

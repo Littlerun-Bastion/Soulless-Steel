@@ -1,9 +1,11 @@
-[gd_scene load_steps=29 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=32 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
+[ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cpmc45grydn76" path="res://assets/images/ui/fog_effect.PNG" id="4_m1g1l"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="4_v3ahc"]
 [ext_resource type="Texture2D" uid="uid://bjsewyv2hkidw" path="res://assets/images/ui/player_ui/ui_vignette.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://vup205tntx1e" path="res://assets/images/ui/player_ui/small_bullethole3.png" id="7"]
@@ -14,6 +16,9 @@
 [ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
 [ext_resource type="PackedScene" uid="uid://d0kc3mk5xv2t" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
 [ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
+shader = ExtResource("3_3y8od")
 
 [sub_resource type="Animation" id="17"]
 length = 0.001
@@ -884,6 +889,13 @@ shader_parameter/noise = SubResource("27")
 [node name="PlayerHUD" type="CanvasLayer"]
 layer = 2
 script = ExtResource("1")
+
+[node name="Fog" type="TextureRect" parent="."]
+light_mask = 4
+material = SubResource("ShaderMaterial_bps1e")
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("4_m1g1l")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
 material = ExtResource("11")

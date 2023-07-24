@@ -196,33 +196,33 @@ func check_for_targets(eng_distance, max_shooting_distance):
 				min_distance = distance
 
 
-func shoot_weapons():
-	try_to_shoot("arm_weapon_left")
-	try_to_shoot("arm_weapon_right")
-	try_to_shoot("shoulder_weapon_left")
-	try_to_shoot("shoulder_weapon_right")
+func shoot_weapons(target):
+	try_to_shoot("arm_weapon_left", target)
+	try_to_shoot("arm_weapon_right", target)
+	try_to_shoot("shoulder_weapon_left", target)
+	try_to_shoot("shoulder_weapon_right", target)
 
 
-func try_to_shoot(weapon_name):
+func try_to_shoot(weapon_name, target):
 	var node = get_weapon_part(weapon_name)
 	if node:
 		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
 			node.reload()
 		elif node.can_shoot():
-			if can_see_target():
+			if can_see_target(target):
 				shoot(weapon_name)
 
 
-func can_see_target():
-	if valid_target:
+func can_see_target(target):
+	if target and is_instance_valid(target):
 		var space_state = get_world_2d().direct_space_state
-		var ray = PhysicsRayQueryParameters2D.create(position, valid_target.position)
+		var ray = PhysicsRayQueryParameters2D.create(position, target.position)
 		ray.exclude = [self]
 		var result = space_state.intersect_ray(ray)
 		if result:
-			return (result.collider == valid_target)
+			return (result.collider == target)
 		return false
-	return true
+	return false
 
 
 # Navigation

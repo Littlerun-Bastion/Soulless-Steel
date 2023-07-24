@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat", "attack"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat", "attack", "defend"]
 var initial_state = "roam"
 
 #Custom variables
@@ -24,6 +24,7 @@ var cooldown_timer = 0.0
 var barrage_timer = 0.0
 var lock_timer = 0.0
 var aggression = 0
+var aiming_at_enemy = false
 
 func get_nodes():
 	return nodes
@@ -33,7 +34,7 @@ func get_nodes():
 
 func roam_to_seek(enemy):
 	var priority = 0
-	if enemy.get_most_recent_loud_noise():
+	if enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise():
 		priority = 1
 		print("Seeking")
 	return priority
@@ -150,6 +151,36 @@ func in_combat_to_attack(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.current_target and aggression > 0:
 		priority = 7
+	return priority
+
+func in_combat_to_defend(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.current_target and aggression == 0:
+		priority = 7
+	return priority
+	
+func attack_to_defend(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.current_target and aggression == 0:
+		priority = 7
+	return priority
+	
+func defend_to_attack(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.current_target and aggression > 0:
+		priority = 7
+	return priority
+
+func attack_to_roam(enemy):
+	var priority = 0
+	if not enemy.valid_target:
+		priority = 8
+	return priority
+
+func defend_to_roam(enemy):
+	var priority = 0
+	if not enemy.valid_target:
+		priority = 8
 	return priority
 ## STATE METHODS ##
 
@@ -368,40 +399,74 @@ func do_in_combat(dt, enemy):
 		if not enemy.current_target:
 			enemy.valid_target = enemy.current_target
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		print(aggression)
+		printt("Aggro level ", aggression)
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		if enemy.is_shielding:
 			enemy.shield_down()
-		enemy.shoot_weapons()
+		enemy.shoot_weapons(enemy.current_target)
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		printt("Aggro level ", aggression)
 		enemy.going_to_position = true
-		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
-		if enemy.get_locked_to():
-			if enemy.global_position.distance_to(point_of_interest) < min_kite_distance:
+		if enemy.can_see_target(enemy.current_target):
+			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+			aiming_at_enemy = true
+		else:
+			if aiming_at_enemy or not point_of_interest:
+				point_of_interest = enemy.get_random_point_on_radius(enemy.current_target.global_position, cqb_distance)
+				aiming_at_enemy = false
+		if enemy.get_locked_to() and aiming_at_enemy:
+			if enemy.global_position.distance_to(enemy.current_target.global_position) < min_kite_distance:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif enemy.global_position.distance_to(point_of_interest) > max_kite_distance:
+			elif enemy.global_position.distance_to(enemy.current_target.global_position) > max_kite_distance:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
 			else:
 				enemy.decrease_throttle(0, 0.05)
 				enemy.navigate_to_target(dt, 1.0, 0.8)
+		elif aiming_at_enemy:
+			if enemy.global_position.distance_to(enemy.current_target.global_position) > cqb_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 0.0, 0.65)
+			else:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 1.0, 0.65)
 		else:
-			if enemy.global_position.distance_to(point_of_interest) > cqb_distance:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 0.0, 0.65)
-			else:
-				enemy.decrease_throttle(0, 0.05)
-				enemy.navigate_to_target(dt, 1.0, 0.8)
+			enemy.increase_throttle(1, 0.01)
+			enemy.navigate_to_target(dt, 0.0, 0.65)
 			
+		if point_of_interest:
+			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+				enemy.NavAgent.target_position = point_of_interest
+			
+		if enemy.NavAgent.is_navigation_finished():
+			enemy.going_to_position = false
+			point_of_interest = false
+
+func do_defend(dt, enemy):
+	if is_instance_valid(enemy):
+		shield_check(enemy)
+		enemy.going_to_position = true
+		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		printt("Aggro level ", aggression)
+		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance:
+			enemy.increase_throttle(1, 0.01)
+			enemy.navigate_to_target(dt, 0.0, 0.65)
+		else:
+			enemy.decrease_throttle(0, 0.05)
+			enemy.navigate_to_target(dt, 1.0, 0.8)
+		if enemy.global_position.distance_to(point_of_interest) < cqb_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
+			enemy.shoot_weapons(enemy.current_target)
 
 func health_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
 			var health_pc = enemy.hp/enemy.max_hp
 			var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
+			printt(health_pc, " our health, ", health_target_pc, " enemy's health")
 			if health_target_pc <= 0.33:
 				return 2
 			if health_pc >= health_target_pc:	
@@ -424,6 +489,7 @@ func heat_diff(enemy):
 		if is_instance_valid(enemy.current_target):
 			var heat_pc = enemy.mecha_heat/enemy.max_heat
 			var heat_target_pc = enemy.current_target.mecha_heat/enemy.current_target.max_heat
+			printt(heat_pc, " our heat, ", heat_target_pc, " enemy's heat")
 			if heat_pc > weapon_heat_threshold:
 				if heat_pc > general_heat_threshold:
 					if health_diff(enemy) == 2:
@@ -438,10 +504,7 @@ func heat_diff(enemy):
 				else:
 					return 0
 			else:
-				if heat_target_pc - 0.33 >= heat_pc:
-					return -1
-				else:
-					return 0
+				return 0
 		else:
 			return 0
 	else:

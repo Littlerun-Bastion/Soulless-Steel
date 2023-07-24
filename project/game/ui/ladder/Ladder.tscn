@@ -399,6 +399,7 @@ theme_override_font_sizes/font_size = 35
 text = "Regional Ladder"
 
 [node name="PayoutScreen" type="Panel" parent="."]
+visible = false
 custom_minimum_size = Vector2(1200, 600)
 layout_mode = 1
 anchors_preset = 8

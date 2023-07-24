@@ -618,11 +618,11 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 	if is_shielding:
 		var temp_shield = shield
-		shield = max(shield - (shield_mult * amount), 0)
+		shield = round(max(shield - (shield_mult * amount), 0))
 		amount = max(amount - temp_shield, 0)
-		hp = max(hp - (health_mult * amount), 0)
+		hp = round(max(hp - (health_mult * amount), 0))
 	else:
-		hp = max(hp - (health_mult * amount), 0)
+		hp = round(max(hp - (health_mult * amount), 0))
 		increase_heat(heat_damage, "heat_damage")
 		if status_type and status_amount > 0.0:
 			set_status(status_type, status_amount)

@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
 [ext_resource type="Texture2D" uid="uid://q747mpc0pxt" path="res://assets/images/light_sources/vision_cone1.png" id="9_nc772"]
-[ext_resource type="Material" uid="uid://b61oprabe17mo" path="res://assets/shaders/SightSharedMaterial.tres" id="9_ot5le"]
+[ext_resource type="Material" uid="uid://5om27vep062v" path="res://assets/shaders/SightSharedMaterial.tres" id="9_ot5le"]
 
 [node name="Player" instance=ExtResource("5")]
 script = ExtResource("1")

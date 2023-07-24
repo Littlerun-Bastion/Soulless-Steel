@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://b61oprabe17mo"]
+[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://5om27vep062v"]
 
 [ext_resource type="Shader" path="res://assets/shaders/SightDistortion.gdshader" id="1_vivdb"]
 

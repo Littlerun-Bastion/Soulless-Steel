@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat", "attack"]
 var initial_state = "roam"
 
 #Custom variables
@@ -23,6 +23,7 @@ var point_of_interest
 var cooldown_timer = 0.0
 var barrage_timer = 0.0
 var lock_timer = 0.0
+var aggression = 0
 
 func get_nodes():
 	return nodes
@@ -113,6 +114,11 @@ func ambush_lock_to_in_combat(enemy):
 	var priority = 0 
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			if enemy.get_locked_to():
+				enemy.current_target = enemy.get_locked_to()
+			else:
+				enemy.current_target = enemy.valid_target
+			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 
@@ -120,6 +126,11 @@ func defending_lock_to_in_combat(enemy):
 	var priority = 0 
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			if enemy.get_locked_to():
+				enemy.current_target = enemy.get_locked_to()
+			else:
+				enemy.current_target = enemy.valid_target
+			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 	
@@ -127,7 +138,18 @@ func alert_to_in_combat(enemy):
 	var priority = 0 
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			if enemy.get_locked_to():
+				enemy.current_target = enemy.get_locked_to()
+			else:
+				enemy.current_target = enemy.valid_target
+			print("Targeting " + str(enemy.current_target))
 			priority = 6
+	return priority
+
+func in_combat_to_attack(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.current_target and aggression > 0:
+		priority = 7
 	return priority
 ## STATE METHODS ##
 
@@ -345,54 +367,104 @@ func do_in_combat(dt, enemy):
 		shield_check(enemy)
 		if not enemy.current_target:
 			enemy.valid_target = enemy.current_target
+		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		print(aggression)
+
+func do_attack(dt, enemy):
+	if is_instance_valid(enemy):
+		if enemy.is_shielding:
+			enemy.shield_down()
+		enemy.shoot_weapons()
+		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		enemy.going_to_position = true
+		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+		if enemy.get_locked_to():
+			if enemy.global_position.distance_to(point_of_interest) < min_kite_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 1.0, 0.65)
+			elif enemy.global_position.distance_to(point_of_interest) > max_kite_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 0.0, 0.65)
+			else:
+				enemy.decrease_throttle(0, 0.05)
+				enemy.navigate_to_target(dt, 1.0, 0.8)
+		else:
+			if enemy.global_position.distance_to(point_of_interest) > cqb_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 0.0, 0.65)
+			else:
+				enemy.decrease_throttle(0, 0.05)
+				enemy.navigate_to_target(dt, 1.0, 0.8)
+			
 
 func health_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
-		var health_pc = enemy.hp/enemy.max_hp
-		var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
-		if health_target_pc <= 0.33:
-			return 2
-		if health_pc >= health_target_pc:
-			if health_pc - 0.33 >= health_target_pc:
+		if is_instance_valid(enemy.current_target):
+			var health_pc = enemy.hp/enemy.max_hp
+			var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
+			if health_target_pc <= 0.33:
 				return 2
+			if health_pc >= health_target_pc:	
+				if health_pc - 0.33 >= health_target_pc:
+					return 2
+				else:
+					return 1
 			else:
-				return 1
+				if health_target_pc - 0.33 >= health_pc:
+					return -1
+				else:
+					return 0
 		else:
-			if health_target_pc - 0.33 >= health_pc:
-				return -1
-			else:
-				return 0
+			return 0
 	else:
 		return 0
 
 func heat_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
-		var heat_pc = enemy.hp/enemy.max_hp
-		var heat_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
-		if heat_pc > weapon_heat_threshold:
-			if heat_pc > general_heat_threshold:
-				if health_diff(enemy) == 2:
+		if is_instance_valid(enemy.current_target):
+			var heat_pc = enemy.mecha_heat/enemy.max_heat
+			var heat_target_pc = enemy.current_target.mecha_heat/enemy.current_target.max_heat
+			if heat_pc > weapon_heat_threshold:
+				if heat_pc > general_heat_threshold:
+					if health_diff(enemy) == 2:
+						return 1
+					else:
+						return -2
+				else:
+					return -1
+			if heat_pc >= heat_target_pc:
+				if heat_pc - 0.33 >= heat_target_pc:
 					return 1
 				else:
-					return -2
+					return 0
 			else:
-				return -1
-		if heat_pc >= heat_target_pc:
-			if heat_pc - 0.33 >= heat_target_pc:
-				return 1
-			else:
-				return 0
+				if heat_target_pc - 0.33 >= heat_pc:
+					return -1
+				else:
+					return 0
 		else:
-			if heat_target_pc - 0.33 >= heat_pc:
-				return -1
-			else:
-				return 0
+			return 0
 	else:
 		return 0
 
 func status_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
-		pass
+		if is_instance_valid(enemy.current_target):
+			if enemy.has_any_status():
+				if enemy.current_target.has_any_status():
+					return 0
+				else:
+					return -1
+			else:
+				if enemy.current_target.has_any_status():
+					if heat_diff(enemy) >= 0:
+						return 1
+					else:
+						return 0
+				else:
+					return 0
+		else:
+			return 0	
 	else:
 		return 0
 

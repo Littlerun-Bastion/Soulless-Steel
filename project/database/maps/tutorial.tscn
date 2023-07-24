@@ -86,35 +86,6 @@ scale = Vector2(2, 2)
 
 [node name="Texts" type="Node2D" parent="."]
 
-[node name="Label" type="Label" parent="Texts"]
-offset_left = 117.646
-offset_top = 97.3877
-offset_right = 828.646
-offset_bottom = 268.388
-text = "Destroy other Surface 
-Activity vehicles 
-(sav Units)."
-
-[node name="Label2" type="Label" parent="Texts"]
-offset_left = -2242.53
-offset_top = -168.467
-offset_right = -1408.53
-offset_bottom = 176.533
-text = "you do not recover armor or
-ammunition after extracting.
-you must purchase armor
-and hardware repairs with 
-credits gained from destroying
-other sav units."
-
-[node name="Label3" type="Label" parent="Texts"]
-offset_left = 1578.04
-offset_top = -44.345
-offset_right = 2289.04
-offset_bottom = 126.655
-text = "Find extraction Points 
-to recover armor, shields
-and munitions."
-
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+visible = false
 navigation_polygon = SubResource("8")

@@ -596,6 +596,7 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Statcard" parent="." instance=ExtResource("11_5metr")]
+visible = false
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0

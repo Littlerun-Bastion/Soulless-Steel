@@ -27,6 +27,7 @@ var senses = {
 	"bodies": [],
 }
 var valid_target = false
+var current_target = false
 var is_locking = false
 var most_recent_attacker = false
 var last_attack_position = false

@@ -241,6 +241,8 @@ var left_shoulder_bloom_count = 0
 var locking_targets = []
 var locking_to = false
 var locked_to = false
+var lock_on_duration = 0.0
+var lock_timer = 0.0
 
 var is_shielding = false
 var is_parrying = false
@@ -342,12 +344,12 @@ func _physics_process(dt):
 		return
 
 	#Blood
-	if hp/float(max_hp) < 0.8:
+	if hp/float(max_hp) < 0.66:
 		bleed_timer = max(bleed_timer - dt, 0.0)
 		if bleed_timer <= 0.0:
 			bleed_timer = randf_range(1, 1.1*max_hp/hp)
 			Particle.blood[0].emitting = !Particle.blood[0].emitting
-			if hp/float(max_hp) < 0.3:
+			if hp/float(max_hp) < 0.33:
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
@@ -482,6 +484,14 @@ func _physics_process(dt):
 	if build.chassis and build.chassis.hover_particles and not display_mode:
 		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
 		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
+	
+	#Lock-on Updating
+	if get_locked_to():
+		if lock_timer >= lock_on_duration:
+			locked_to = false
+			lock_timer = 0.0
+		else:
+			lock_timer += dt
 
 
 func is_player():
@@ -789,7 +799,7 @@ func update_heat(dt):
 		mecha_heat = 0
 		return
 	#TODO remove freezing func and expand it here
-	if build.generator and not has_status("fire") and not is_shielding:
+	if build.generator and not has_status("fire"):
 		if mecha_heat > max_heat*idle_threshold:
 			reduce_heat(freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
 		else:
@@ -962,6 +972,7 @@ func set_chipset(part_name):
 		ecm = build.chipset.ECM
 		ecm_frequency = build.chipset.ECM_frequency
 		lock_strength = build.chipset.lock_on_strength
+		lock_on_duration = build.chipset.lock_on_duration
 	else:
 		build.chipset = false
 
@@ -1285,9 +1296,6 @@ func apply_movement(dt, direction):
 		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
-			if not is_player():
-				print("Sprinting")
-				printt(velocity, mult)
 			increase_heat(build.thruster.sprinting_heat*dt, "sprinting")
 			for node in Particle.chassis_sprint:
 				node.emitting = true

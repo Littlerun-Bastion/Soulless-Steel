@@ -4,13 +4,14 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat"]
 var initial_state = "roam"
 
 #Custom variables
 var engage_distance = 2000
 var min_kite_distance = 1500
 var max_kite_distance = 1700
+var cqb_distance = 1200
 var max_shooting_distance = 3500
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
@@ -21,6 +22,7 @@ var barrage_min_time = 2.0
 var point_of_interest
 var cooldown_timer = 0.0
 var barrage_timer = 0.0
+var lock_timer = 0.0
 
 func get_nodes():
 	return nodes
@@ -79,6 +81,54 @@ func alert_roam_to_alert(enemy):
 		print("Alert")
 	return priority
 
+func ambush_to_ambush_lock(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.under_fire_timer <= 0:
+		priority = 5
+		print("Ambush Locking")
+	return priority
+
+func ambush_lock_to_defending_lock(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.under_fire_timer > 0:
+		priority = 5
+		print("Defend Locking")
+	return priority
+
+func alert_to_defending_lock(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.under_fire_timer > 0:
+		priority = 5
+		print("Defend Locking")
+	return priority
+
+func alert_roam_to_defending_lock(enemy):
+	var priority = 0
+	if enemy.valid_target and enemy.under_fire_timer > 0:
+		priority = 5
+		print("Defend Locking")
+	return priority
+
+func ambush_lock_to_in_combat(enemy):
+	var priority = 0 
+	if enemy.valid_target:
+		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			priority = 6
+	return priority
+
+func defending_lock_to_in_combat(enemy):
+	var priority = 0 
+	if enemy.valid_target:
+		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			priority = 6
+	return priority
+	
+func alert_to_in_combat(enemy):
+	var priority = 0 
+	if enemy.valid_target:
+		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+			priority = 6
+	return priority
 ## STATE METHODS ##
 
 func do_roam(dt, enemy):
@@ -136,7 +186,7 @@ func do_alert(dt, enemy):
 		
 		shield_check(enemy)
 		
-		#enemy.check_for_targets(engage_distance, max_shooting_distance)
+		enemy.check_for_targets(engage_distance, max_shooting_distance)
 		if enemy.last_attack_position:
 			point_of_interest = enemy.last_attack_position
 			enemy.going_to_position = true
@@ -245,6 +295,106 @@ func do_ambush(dt, enemy):
 			
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
 		shield_check(enemy)
+
+func do_ambush_lock(dt, enemy):
+	if is_instance_valid(enemy):
+		enemy.check_for_targets(engage_distance, max_shooting_distance)
+		if not enemy.valid_target:
+			enemy.is_locking = false
+			return
+		
+		else:
+			enemy.going_to_position = true
+			point_of_interest = enemy.valid_target.global_position
+			if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
+				enemy.decrease_throttle(0.25, 0.01)
+				enemy.navigate_to_target(dt, 1.0, 0.65)
+			elif enemy.global_position.distance_to(enemy.valid_target.global_position) > max_kite_distance:
+				enemy.decrease_throttle(0.75, 0.01)
+				enemy.navigate_to_target(dt, 0.0, 0.65)
+			else:
+				enemy.decrease_throttle(0, 0.05)
+				enemy.navigate_to_target(dt, 1.0, 0.8)
+			enemy.is_locking = true	
+			shield_check(enemy)
+
+func do_defending_lock(dt, enemy):
+	if is_instance_valid(enemy):
+		enemy.check_for_targets(engage_distance, max_shooting_distance)
+		if not enemy.valid_target:
+			enemy.is_locking = false
+			return
+		
+		else:
+			enemy.going_to_position = true
+			point_of_interest = enemy.valid_target.global_position
+			if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 1.0, 0.65)
+			elif enemy.global_position.distance_to(enemy.valid_target.global_position) > max_kite_distance:
+				enemy.increase_throttle(1, 0.01)
+				enemy.navigate_to_target(dt, 0.0, 0.65)
+			else:
+				enemy.decrease_throttle(0, 0.05)
+				enemy.navigate_to_target(dt, 1.0, 0.8)
+			enemy.is_locking = true	
+			shield_check(enemy)
+
+func do_in_combat(dt, enemy):
+	if is_instance_valid(enemy):
+		shield_check(enemy)
+		if not enemy.current_target:
+			enemy.valid_target = enemy.current_target
+
+func health_diff(enemy):
+	if is_instance_valid(enemy) and enemy.current_target:
+		var health_pc = enemy.hp/enemy.max_hp
+		var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
+		if health_target_pc <= 0.33:
+			return 2
+		if health_pc >= health_target_pc:
+			if health_pc - 0.33 >= health_target_pc:
+				return 2
+			else:
+				return 1
+		else:
+			if health_target_pc - 0.33 >= health_pc:
+				return -1
+			else:
+				return 0
+	else:
+		return 0
+
+func heat_diff(enemy):
+	if is_instance_valid(enemy) and enemy.current_target:
+		var heat_pc = enemy.hp/enemy.max_hp
+		var heat_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
+		if heat_pc > weapon_heat_threshold:
+			if heat_pc > general_heat_threshold:
+				if health_diff(enemy) == 2:
+					return 1
+				else:
+					return -2
+			else:
+				return -1
+		if heat_pc >= heat_target_pc:
+			if heat_pc - 0.33 >= heat_target_pc:
+				return 1
+			else:
+				return 0
+		else:
+			if heat_target_pc - 0.33 >= heat_pc:
+				return -1
+			else:
+				return 0
+	else:
+		return 0
+
+func status_diff(enemy):
+	if is_instance_valid(enemy) and enemy.current_target:
+		pass
+	else:
+		return 0
 
 func shield_check(enemy):
 	if is_instance_valid(enemy):

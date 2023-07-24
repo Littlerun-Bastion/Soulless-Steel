@@ -334,9 +334,9 @@ func _physics_process(dt):
 			if impact_velocity.length() < 1:
 				impact_velocity = Vector2()
 
-	if impact_rotation_velocity > 0 or impact_rotation_velocity < 0:
+	if abs(impact_rotation_velocity) > 0:
 		global_rotation += impact_rotation_velocity * dt
-		impact_rotation_velocity *= 0.95
+		impact_rotation_velocity *= min(0.95, 3*dt)
 		if abs(impact_rotation_velocity) < 0.001:
 			impact_rotation_velocity = 0
 

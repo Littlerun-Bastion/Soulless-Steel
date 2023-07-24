@@ -339,7 +339,8 @@ func choose_direction():
 
 
 func _on_nearby_projectile_area_entered(area):
-	if area.original_mecha_info.name != mecha_name:
+	if area.original_mecha_info.name != mecha_name and\
+	   is_instance_valid(area.original_mecha_info.body):
 		under_fire_timer = 0.5
 		most_recent_attacker = area.original_mecha_info.body
 		last_attack_position = area.original_mecha_info.body.global_position

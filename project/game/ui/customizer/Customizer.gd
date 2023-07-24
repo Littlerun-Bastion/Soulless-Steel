@@ -119,19 +119,18 @@ func _on_Category_pressed(type,group,side = false):
 				var part = parts[part_key]
 				var item = ITEMFRAME.instantiate()
 				item.setup(part, false, inventory.get(part_key))
-				if DisplayMecha.get(type_name):
-					if DisplayMecha.get(type_name) == part:
-						item.get_button().disabled = true
-						item.is_disabled = true
+				if DisplayMecha.build[type_name] and DisplayMecha.build[type_name] == part:
+					item.get_button().disabled = true
+					item.is_disabled = true
 				PartList.add_child(item)
 				item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
 				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
 		if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
 			$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
-		if DisplayMecha.get(type_name):
+		if DisplayMecha.build[type_name]:
 			$CurrentItemFrame.visible = true
-			$CurrentItemFrame.setup(DisplayMecha.get(type_name), false, false)
+			$CurrentItemFrame.setup(DisplayMecha.build[type_name], false, false)
 			$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
 	else:
 		category_visible = false

@@ -1418,7 +1418,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 	if not stand_still:
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, rot_acc)
 
-
+	
 	#Rotate Head and Shoulders
 	for data in [[$Head, build.head], [$LeftShoulder, build.shoulders], [$RightShoulder, build.shoulders]]:
 		var node_ref = data[1]

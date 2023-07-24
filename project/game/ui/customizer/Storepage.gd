@@ -229,8 +229,8 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 		ComparisonMecha.callv("set_" + str(type), [part_name,side])
 	else:
 		ComparisonMecha.callv("set_" + str(type), [part_name])
-	var current_part = DisplayMecha.get(type_name)
-	var new_part = ComparisonMecha.get(type_name)
+	var current_part = DisplayMecha.build[type_name]
+	var new_part = ComparisonMecha.build[type_name]
 	Statcard.display_part_stats(current_part, new_part, type_name)
 	Statcard.visible = true
 	comparing_part = true

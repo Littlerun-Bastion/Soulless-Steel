@@ -263,13 +263,18 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
-		
 
 
 func get_target_navigation_pos():
 	if going_to_position:
 		return NavAgent.get_final_location()
 	return false
+
+#Gets an randomly (uniformed) position within a circle
+func get_random_point_on_radius(pos : Vector2, radius : float):
+	var r = radius * sqrt(randf())
+	var angle = 2*PI*randf()
+	return Vector2(pos.x + r * cos(angle), pos.y + r * sin(angle))
 
 
 func _on_NavigationAgent2D_navigation_finished():

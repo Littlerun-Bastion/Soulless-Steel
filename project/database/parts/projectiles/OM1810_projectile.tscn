@@ -15,10 +15,10 @@ projectile_size = 1.3
 light_energy = 0.1
 muzzle_speed = 3900
 impact_effect = ExtResource("2_6vgwe")
-base_damage = 850
+base_damage = 700
 shield_mult = 0.5
 heat_damage = 32.0
-impact_force = 200.0
+impact_force = 20.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("3_1hicv")

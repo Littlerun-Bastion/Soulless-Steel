@@ -29,7 +29,8 @@ const LEADERBOARDS =[
 @onready var ConductPayout = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer3/Label2
 @onready var ConductKills = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer4/Label2
 @onready var ConductPerformance = $PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5/Label2
-@onready var PayoutTotal = $PayoutScreen/HBoxContainer/Label3
+@onready var PayoutTotal = $PayoutScreen/VBoxContainer2/HBoxContainer/Label3
+@onready var Balance = $PayoutScreen/VBoxContainer2/HBoxContainer2/Label3
 
 @onready var RepairsCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer/Label2
 @onready var AmmoCost = $PayoutScreen/VBoxContainer/VBoxContainer/HBoxContainer2/Label2
@@ -57,6 +58,9 @@ func _ready():
 				ConductPerformance.text = str(ArenaManager.last_match.conduct_downs_reward)
 			else:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = false
+			var balance = Profile.get_stat("money") + ArenaManager.last_match.total_payout
+			Profile.set_stat("money", balance)
+			Balance.text = Profile.get_stat("money")
 			AmmoCost.text = str(ArenaManager.last_match.total_ammo_cost)
 			PayoutTotal.text = str(ArenaManager.last_match.total_payout)
 		ArenaManager.last_match_unread = false

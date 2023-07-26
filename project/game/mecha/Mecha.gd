@@ -372,7 +372,7 @@ func _physics_process(dt):
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
 	
 	if is_shielding:
-		increase_heat(shield_project_heat*dt, "shielding")
+		increase_heat(shield_project_heat*dt)
 		if shield <= 0.0:
 			shield_down()
 
@@ -422,6 +422,7 @@ func _physics_process(dt):
 
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
+		speed_modifier = 1.0
 		move(dash_velocity)
 		if dash_velocity.x > 0:
 			dash_velocity.x = max(dash_velocity.x * (1 - DASH_DECAY*dt), 0)
@@ -623,7 +624,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		hp = round(max(hp - (health_mult * amount), 0))
 	else:
 		hp = round(max(hp - (health_mult * amount), 0))
-		increase_heat(heat_damage, "heat_damage")
+		increase_heat(heat_damage)
 		if status_type and status_amount > 0.0:
 			set_status(status_type, status_amount)
 		if amount > max_hp/0.25:
@@ -687,7 +688,7 @@ func take_status_damage(dt):
 			hp = round(hp)
 
 	if has_status("fire"):
-		increase_heat(FIRE_DAMAGE*dt, "fire_damage")
+		increase_heat(FIRE_DAMAGE*dt)
 
 	if has_status("electrified"):
 		shield = round(max(shield - (dt * 100), 0))
@@ -782,10 +783,8 @@ func add_decal(id, decal_position, type, size):
 		decals_node.add_child(decal)
 		decal.setup(type, size, final_pos)
 
-#Origin is for debugging purposes
-func increase_heat(amount, _origin := ""):
-#	if not is_player() and _origin != "":
-#		printt(_origin, amount)
+
+func increase_heat(amount):
 	mecha_heat = min(mecha_heat + amount, max_heat * OVERHEAT_BUFFER)
 
 
@@ -1259,7 +1258,7 @@ func dash(dash_dir):
 		return
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):
-		increase_heat(build.thruster.dash_heat, "dash")
+		increase_heat(build.thruster.dash_heat)
 		dash_velocity = dash_dir.normalized()*dash_strength
 		for node in Particle.chassis_dash:
 			node.rotation_degrees = rad_to_deg(dash_dir.angle()) + 90
@@ -1296,7 +1295,7 @@ func apply_movement(dt, direction):
 		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
-			increase_heat(build.thruster.sprinting_heat*dt, "sprinting")
+			increase_heat(build.thruster.sprinting_heat*dt)
 			for node in Particle.chassis_sprint:
 				node.emitting = true
 			ChassisSprintGlow.visible = true
@@ -1313,7 +1312,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt, "free_movement")
+			increase_heat(move_heat*throttle*dt)
 		else:
 			moving = false
 			velocity *= 1 - build.chassis.friction
@@ -1327,7 +1326,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt, "relative_movement")
+			increase_heat(move_heat*throttle*dt)
 		else:
 			moving = false
 			moving_axis.x = false
@@ -1355,7 +1354,7 @@ func apply_movement(dt, direction):
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
 			target_speed *= WHEELS_SPEED_FACTOR
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt, "enemy_tank")
+			increase_heat(move_heat*throttle*dt)
 			move(apply_movement_modifiers(velocity))
 			velocity = apply_movement_modifiers(velocity)
 			move(velocity)
@@ -1386,7 +1385,7 @@ func apply_movement(dt, direction):
 				velocity *= 1 - build.chassis.friction
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt, "tank")
+			increase_heat(move_heat*throttle*dt)
 		else:
 			if build.chassis:
 				velocity *= 1 - build.chassis.friction/2
@@ -1521,7 +1520,7 @@ func stop_sprinting(sprint_dir):
 			node.rotation_degrees = rad_to_deg(Vector2(0,-1).angle()) + 90
 			node.restart()
 			node.emitting = true
-		increase_heat(build.thruster.dash_heat/2.0, "stop_sprinting")
+		increase_heat(build.thruster.dash_heat/2.0)
 	is_sprinting = false
 	for node in Particle.chassis_sprint:
 		node.emitting = false
@@ -1584,7 +1583,7 @@ func shoot(type, is_auto_fire = false):
 	
 	if weapon_ref.is_melee:
 		node.light_attack()
-		increase_heat(weapon_ref.muzzle_heat, "melee attack")
+		increase_heat(weapon_ref.muzzle_heat)
 		emit_signal("shoot_signal")
 		return
 	
@@ -1648,7 +1647,7 @@ func shoot(type, is_auto_fire = false):
 								"casing_eject_angle": eject_angle + self.global_rotation_degrees,
 								"casing_size": weapon_ref.casing_size,
 							})
-		increase_heat(weapon_ref.muzzle_heat, "shooting")
+		increase_heat(weapon_ref.muzzle_heat)
 		if type == "arm_weapon_left":
 			left_arm_bloom_count += 1
 		elif type ==  "arm_weapon_right":

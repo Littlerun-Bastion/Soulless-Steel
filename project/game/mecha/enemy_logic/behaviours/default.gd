@@ -38,79 +38,68 @@ func roam_to_seek(enemy):
 	var priority = 0
 	if enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise():
 		priority = 1
-		print("Seeking")
 	return priority
 
 func seek_to_roam(enemy):
 	var priority = 0
 	if not enemy.get_most_recent_loud_noise():
 		priority = 1
-		print("Roaming")
 	return priority
 
 func seek_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
 func seek_to_ambush(enemy):
 	var priority = 0
 	if enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
 		priority = 3
-		print("Ambush")
 	return priority
 
 func roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
-func alert_to_alert_roam(enemy):
+func alert_to_alert_roam(_enemy):
 	var priority = 0
 	if point_of_interest:
 		pass
 	else:
 		priority = 4
-		print("Alert Roaming")
 	return priority
 	
 func alert_roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
 func ambush_to_ambush_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer <= 0:
 		priority = 5
-		print("Ambush Locking")
 	return priority
 
 func ambush_lock_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func alert_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func alert_roam_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func ambush_lock_to_in_combat(enemy):
@@ -121,7 +110,6 @@ func ambush_lock_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 
@@ -133,7 +121,6 @@ func defending_lock_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 	
@@ -145,7 +132,6 @@ func alert_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 
@@ -402,7 +388,7 @@ func do_defending_lock(dt, enemy):
 			enemy.is_locking = true	
 			shield_check(enemy)
 
-func do_in_combat(dt, enemy):
+func do_in_combat(_dt, enemy):
 	if is_instance_valid(enemy):
 		shield_check(enemy)
 		if not enemy.current_target:

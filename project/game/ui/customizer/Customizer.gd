@@ -203,8 +203,8 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	#StatBars.set_comparing_part(ComparisonMecha)
 	for child in $TopBar.get_children():
 		child.set_comparing_part(DisplayMecha,ComparisonMecha)
-	var current_part = DisplayMecha.build[part_name]
-	var new_part = ComparisonMecha.build[part_name]
+	var current_part = DisplayMecha.build[type_name]
+	var new_part = ComparisonMecha.build[type_name]
 	if ComparisonMecha.is_overweight():
 		$Overweight.visible = true
 	else:

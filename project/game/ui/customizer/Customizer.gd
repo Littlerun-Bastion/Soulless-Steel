@@ -287,6 +287,9 @@ func _LoadScreen_on_load_pressed(design):
 	update_weight()
 
 func unequip_part(_type_name, side):
+	if _type_name == "core":
+		#TODO: play an error sfx here at some point, maybe throw an in-game message too
+		return
 	Profile.add_to_inventory($CurrentItemFrame.current_part.part_id)
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT

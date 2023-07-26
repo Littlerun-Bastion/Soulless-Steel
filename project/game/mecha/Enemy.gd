@@ -259,7 +259,7 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
-		if valid_target and is_instance_valid(valid_target):
+		if current_target and is_instance_valid(current_target) and can_see_target(current_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)

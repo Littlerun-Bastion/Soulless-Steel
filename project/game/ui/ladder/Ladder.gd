@@ -65,7 +65,7 @@ func _ready():
 			PayoutTotal.text = str(ArenaManager.last_match.total_payout)
 		ArenaManager.last_match_unread = false
 		PayoutScreen.visible = true
-		
+		$StartMatch.disabled = true
 
 
 func setup_leaderboards(lb_idx):
@@ -106,7 +106,7 @@ func start_match():
 
 func on_ladderlabel_pressed(selected_mecha):
 	selected_challenger = selected_mecha
-	$VBoxContainer2/Button.disabled = false
+	#$VBoxContainer2/Button.disabled = false
 	for child in LadderButtons.get_children():
 		if child.Name.text == selected_mecha:
 			child.press()
@@ -129,6 +129,7 @@ func set_challenge_mode():
 func set_exhibition_mode():
 	ArenaManager.mode = "Exhibition"
 	OpponentsLabel.text = str("'" + str(ArenaManager.exhibitioner_count) + " PARTICIPANTS'")
+	$StartMatch.visible 
 
 
 func _on_Dismiss_pressed():

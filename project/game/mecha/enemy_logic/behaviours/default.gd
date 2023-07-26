@@ -17,6 +17,7 @@ var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
 var cooldown_time = 6.0
 var barrage_min_time = 2.0
+var reaction_speed = 2
 
 
 var point_of_interest
@@ -25,6 +26,7 @@ var barrage_timer = 0.0
 var lock_timer = 0.0
 var aggression = 0
 var aiming_at_enemy = false
+var reaction_timer = 0.0
 
 func get_nodes():
 	return nodes
@@ -186,6 +188,7 @@ func defend_to_roam(enemy):
 
 func do_roam(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		if enemy.throttle < 1.0:
 			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -206,6 +209,7 @@ func do_roam(dt, enemy):
 
 func do_seek(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		if enemy.throttle < 1.0:
 			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -232,6 +236,7 @@ func do_seek(dt, enemy):
 
 func do_alert(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		if enemy.throttle < 1.0:
 			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -270,6 +275,7 @@ func do_alert(dt, enemy):
 
 func do_alert_roam(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		if enemy.throttle < 1.0:
 			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -306,6 +312,7 @@ func do_alert_roam(dt, enemy):
 			
 func do_ambush(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		if enemy.throttle > 0.5:
 			enemy.decrease_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
@@ -351,6 +358,7 @@ func do_ambush(dt, enemy):
 
 func do_ambush_lock(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
 		if not enemy.valid_target:
 			enemy.is_locking = false
@@ -373,6 +381,7 @@ func do_ambush_lock(dt, enemy):
 
 func do_defending_lock(dt, enemy):
 	if is_instance_valid(enemy):
+		aiming_at_enemy = false
 		enemy.check_for_targets(engage_distance, max_shooting_distance)
 		if not enemy.valid_target:
 			enemy.is_locking = false
@@ -399,16 +408,18 @@ func do_in_combat(dt, enemy):
 		if not enemy.current_target:
 			enemy.valid_target = enemy.current_target
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		if enemy.is_shielding:
 			enemy.shield_down()
-		enemy.shoot_weapons(enemy.current_target)
+		if reaction_timer >= reaction_speed:
+			enemy.shoot_weapons(enemy.current_target)
+		else:
+			reaction_timer += dt
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 		enemy.going_to_position = true
+		
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 			aiming_at_enemy = true
@@ -416,7 +427,8 @@ func do_attack(dt, enemy):
 			if aiming_at_enemy or not point_of_interest:
 				point_of_interest = enemy.get_random_point_on_radius(enemy.current_target.global_position, cqb_distance)
 				aiming_at_enemy = false
-		if enemy.get_locked_to() and aiming_at_enemy:
+				reaction_timer = 0.0
+		if enemy.get_locked_to() and aiming_at_enemy and reaction_timer >= reaction_speed:
 			if enemy.global_position.distance_to(enemy.current_target.global_position) < min_kite_distance:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65)
@@ -426,7 +438,7 @@ func do_attack(dt, enemy):
 			else:
 				enemy.decrease_throttle(0, 0.05)
 				enemy.navigate_to_target(dt, 1.0, 0.8)
-		elif aiming_at_enemy:
+		elif aiming_at_enemy and reaction_timer >= reaction_speed:
 			if enemy.global_position.distance_to(enemy.current_target.global_position) > cqb_distance:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
@@ -450,7 +462,6 @@ func do_defend(dt, enemy):
 		shield_check(enemy)
 		enemy.going_to_position = true
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance:
 			enemy.increase_throttle(1, 0.01)
@@ -458,15 +469,27 @@ func do_defend(dt, enemy):
 		else:
 			enemy.decrease_throttle(0, 0.05)
 			enemy.navigate_to_target(dt, 1.0, 0.8)
-		if enemy.global_position.distance_to(point_of_interest) < cqb_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
-			enemy.shoot_weapons(enemy.current_target)
+			
+		
+		if enemy.can_see_target(enemy.current_target):
+			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+			aiming_at_enemy = true
+		else:
+			if aiming_at_enemy or not point_of_interest:
+				aiming_at_enemy = false
+				reaction_timer = 0.0
+				
+		if enemy.global_position.distance_to(point_of_interest) < min_kite_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
+			if reaction_timer >= reaction_speed:
+				enemy.shoot_weapons(enemy.current_target)
+			else:
+				reaction_timer += dt
 
 func health_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
 			var health_pc = enemy.hp/enemy.max_hp
 			var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
-			printt(health_pc, " our health, ", health_target_pc, " enemy's health")
 			if health_target_pc <= 0.33:
 				return 2
 			if health_pc >= health_target_pc:	
@@ -489,7 +512,6 @@ func heat_diff(enemy):
 		if is_instance_valid(enemy.current_target):
 			var heat_pc = enemy.mecha_heat/enemy.max_heat
 			var heat_target_pc = enemy.current_target.mecha_heat/enemy.current_target.max_heat
-			printt(heat_pc, " our heat, ", heat_target_pc, " enemy's heat")
 			if heat_pc > weapon_heat_threshold:
 				if heat_pc > general_heat_threshold:
 					if health_diff(enemy) == 2:

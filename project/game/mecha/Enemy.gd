@@ -93,7 +93,7 @@ func _draw():
 				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
 
 
-func setup(arena_ref, is_tutorial, design_data, _name):
+func setup(arena_ref, design_data, _name):
 	arena = arena_ref
 	if _name and typeof(_name) == TYPE_STRING:
 		mecha_name = _name

@@ -108,8 +108,8 @@ func _input(event):
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0 and movement_type != "tank":
 			dash(get_input().normalized())
-		stop_sprinting(get_input().normalized())
-		sprinting_timer = 0.0
+			#stop_sprinting(get_input().normalized())
+			sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
 	elif event.is_action_pressed("shield"):

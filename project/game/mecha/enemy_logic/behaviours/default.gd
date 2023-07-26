@@ -36,79 +36,68 @@ func roam_to_seek(enemy):
 	var priority = 0
 	if enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise():
 		priority = 1
-		print("Seeking")
 	return priority
 
 func seek_to_roam(enemy):
 	var priority = 0
 	if not enemy.get_most_recent_loud_noise():
 		priority = 1
-		print("Roaming")
 	return priority
 
 func seek_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
 func seek_to_ambush(enemy):
 	var priority = 0
 	if enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
 		priority = 3
-		print("Ambush")
 	return priority
 
 func roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
-func alert_to_alert_roam(enemy):
+func alert_to_alert_roam(_enemy):
 	var priority = 0
 	if point_of_interest:
 		pass
 	else:
 		priority = 4
-		print("Alert Roaming")
 	return priority
 	
 func alert_roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
-		print("Alert")
 	return priority
 
 func ambush_to_ambush_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer <= 0:
 		priority = 5
-		print("Ambush Locking")
 	return priority
 
 func ambush_lock_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func alert_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func alert_roam_to_defending_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer > 0:
 		priority = 5
-		print("Defend Locking")
 	return priority
 
 func ambush_lock_to_in_combat(enemy):
@@ -119,7 +108,6 @@ func ambush_lock_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 
@@ -131,7 +119,6 @@ func defending_lock_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 	
@@ -143,7 +130,6 @@ func alert_to_in_combat(enemy):
 				enemy.current_target = enemy.get_locked_to()
 			else:
 				enemy.current_target = enemy.valid_target
-			print("Targeting " + str(enemy.current_target))
 			priority = 6
 	return priority
 
@@ -393,13 +379,12 @@ func do_defending_lock(dt, enemy):
 			enemy.is_locking = true	
 			shield_check(enemy)
 
-func do_in_combat(dt, enemy):
+func do_in_combat(_dt, enemy):
 	if is_instance_valid(enemy):
 		shield_check(enemy)
 		if not enemy.current_target:
 			enemy.valid_target = enemy.current_target
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
@@ -407,7 +392,6 @@ func do_attack(dt, enemy):
 			enemy.shield_down()
 		enemy.shoot_weapons(enemy.current_target)
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 		enemy.going_to_position = true
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
@@ -450,7 +434,6 @@ func do_defend(dt, enemy):
 		shield_check(enemy)
 		enemy.going_to_position = true
 		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		printt("Aggro level ", aggression)
 		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance:
 			enemy.increase_throttle(1, 0.01)
@@ -466,7 +449,6 @@ func health_diff(enemy):
 		if is_instance_valid(enemy.current_target):
 			var health_pc = enemy.hp/enemy.max_hp
 			var health_target_pc = enemy.current_target.hp/enemy.current_target.max_hp
-			printt(health_pc, " our health, ", health_target_pc, " enemy's health")
 			if health_target_pc <= 0.33:
 				return 2
 			if health_pc >= health_target_pc:	
@@ -489,7 +471,6 @@ func heat_diff(enemy):
 		if is_instance_valid(enemy.current_target):
 			var heat_pc = enemy.mecha_heat/enemy.max_heat
 			var heat_target_pc = enemy.current_target.mecha_heat/enemy.current_target.max_heat
-			printt(heat_pc, " our heat, ", heat_target_pc, " enemy's heat")
 			if heat_pc > weapon_heat_threshold:
 				if heat_pc > general_heat_threshold:
 					if health_diff(enemy) == 2:

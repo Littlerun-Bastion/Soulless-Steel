@@ -212,7 +212,7 @@ func add_enemy(design_data, enemy_name):
 	enemy.connect("exposed",Callable(self,"_on_mecha_exposed"))
 	enemy.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
 	all_mechas.push_back(enemy)
-	enemy.setup(self, is_tutorial, design_data, enemy_name)
+	enemy.setup(self, design_data, enemy_name)
 
 
 func get_mechas():

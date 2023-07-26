@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=3 uid="uid://xpli6ykylfsn"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_6faml"]
+[ext_resource type="Texture2D" uid="uid://culjc63y8kmvn" path="res://assets/images/mechas/arm_weapons/Kruis-HVC/Kruis_HVC_pv.png" id="2_ra5bf"]
+[ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="3_p0qu2"]
+[ext_resource type="PackedScene" uid="uid://ch1amgk1txlw0" path="res://database/parts/projectiles/Kruis_projectile.tscn" id="4_lu74e"]
+[ext_resource type="Texture2D" uid="uid://dn8qeeabu8oap" path="res://assets/images/mechas/arm_weapons/Kruis-HVC/Kruis_HVC_sub.png" id="5_xa57q"]
+[ext_resource type="Texture2D" uid="uid://bbkmwwckypnhu" path="res://assets/images/mechas/arm_weapons/Kruis-HVC/Kruis_HVC_main.png" id="6_tuu5b"]
+[ext_resource type="Texture2D" uid="uid://drrw5mq8u3i7c" path="res://assets/images/mechas/arm_weapons/Kruis-HVC/Kruis_HVC_glow.png" id="7_6wl2v"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_6faml")
+part_name = "Kruis CL157.0"
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
+tagline = "Cannon"
+weight = 7.8
+description = "Nomhoyi skirts the line between civilian grade and military grade with this hefty 157mm cannon. Accurate and devastating to unshielded targets, though prohibitively heavy."
+image = ExtResource("2_ra5bf")
+muzzle_flash = ExtResource("3_p0qu2")
+muzzle_flash_size = 2.0
+projectile = ExtResource("4_lu74e")
+recoil_force = 1.0
+bloom_reset_time = 2.9
+fire_rate = 3.1
+auto_fire = false
+base_accuracy = 0.7
+accuracy_bloom = 0.7
+max_bloom_angle = 9.2
+total_ammo = 240
+max_ammo = 240
+reload_speed = 3.4
+muzzle_heat = 80.0
+eject_casings = true
+casing_size = 0.8
+impact_force = 8.0
+shoot_single_sfx = "medium_auto1"
+sound_max_range = 7500
+sound_att = 1.75
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_xa57q")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_tuu5b")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_6wl2v")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(18, 56)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(9, 75)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-2, -81)

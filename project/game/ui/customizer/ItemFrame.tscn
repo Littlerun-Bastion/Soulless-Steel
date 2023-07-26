@@ -120,6 +120,7 @@ offset_top = 120.0
 offset_right = 388.0
 offset_bottom = 234.0
 rotation = -1.5708
+mouse_filter = 2
 texture = ExtResource("3")
 expand_mode = 1
 stretch_mode = 5

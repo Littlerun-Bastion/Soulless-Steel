@@ -7,7 +7,7 @@ func _ready():
 	$Values/Title.text = stat_title
 
 func update_stat(current_part, new_part):
-	var current_stat = current_part.get(stat_name)
+	var current_stat = current_part.get(stat_name) if current_part else 0
 	var new_stat = new_part.get(stat_name)
 	if new_stat:
 		if not current_stat:

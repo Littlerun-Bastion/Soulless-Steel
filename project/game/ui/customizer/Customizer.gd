@@ -18,8 +18,9 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 
 var category_visible = false
 var comparing_part = false
-var type_name
+var cur_type_selected
 var current_group
+
 
 func _ready():
 	$LoadScreen.shopping_mode = false
@@ -35,6 +36,7 @@ func _ready():
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
 	shoulder_weapon_check()
+
 
 func _process(dt):
 	if not comparing_part:
@@ -100,14 +102,14 @@ func _on_Category_pressed(type,group,side = false):
 	current_group = group
 	var group_node = PartCategories.get_node(group)
 	Statcard.visible = false
-	type_name = type
+	cur_type_selected = type
 	if side:
-		type_name = type + "_" + side
+		cur_type_selected = type + "_" + side
 	if category_visible == false:
 		category_visible = true
 		PartList.visible = true
 		for child in group_node.get_children():
-			if child.name != type_name:
+			if child.name != cur_type_selected:
 				child.visible = false
 				child.button_pressed = false
 		var parts = PartManager.get_parts(type)
@@ -119,7 +121,7 @@ func _on_Category_pressed(type,group,side = false):
 				var part = parts[part_key]
 				var item = ITEMFRAME.instantiate()
 				item.setup(part, false, inventory.get(part_key))
-				if DisplayMecha.build[type_name] and DisplayMecha.build[type_name] == part:
+				if DisplayMecha.build[cur_type_selected] and DisplayMecha.build[cur_type_selected] == part:
 					item.get_button().disabled = true
 					item.is_disabled = true
 				PartList.add_child(item)
@@ -128,10 +130,10 @@ func _on_Category_pressed(type,group,side = false):
 				item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
 		if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
 			$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
-		if DisplayMecha.build[type_name]:
+		if DisplayMecha.build[cur_type_selected]:
 			$CurrentItemFrame.visible = true
-			$CurrentItemFrame.setup(DisplayMecha.build[type_name], false, false)
-			$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
+			$CurrentItemFrame.setup(DisplayMecha.build[cur_type_selected], false, false)
+			$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(cur_type_selected,side))
 	else:
 		category_visible = false
 		$CurrentItemFrame.visible = false
@@ -189,7 +191,7 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 		$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
 	$CurrentItemFrame.visible = true
 	$CurrentItemFrame.setup(item.current_part, false, false)
-	$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type_name,side))
+	$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(cur_type_selected,side))
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side,item):
@@ -203,33 +205,24 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	#StatBars.set_comparing_part(ComparisonMecha)
 	for child in $TopBar.get_children():
 		child.set_comparing_part(DisplayMecha,ComparisonMecha)
-	var current_part = DisplayMecha.build[type_name]
-	var new_part = ComparisonMecha.build[type_name]
+	var current_part = DisplayMecha.build[cur_type_selected]
+	var new_part = ComparisonMecha.build[cur_type_selected]
 	if ComparisonMecha.is_overweight():
 		$Overweight.visible = true
 	else:
 		$Overweight.visible = false
-	Statcard.display_part_stats(current_part, new_part, type_name)
+	Statcard.display_part_stats(current_part, new_part, cur_type_selected)
 	Statcard.visible = true
 	comparing_part = true
 
 
 func shoulder_weapon_check():
-	var core
-	if DisplayMecha.build.core:
-		core = DisplayMecha.build.core
-	else:
+	if not DisplayMecha.build.core:
 		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
-		return
-	if not core.has_left_shoulder:
-		$PartCategories/Equipment/shoulder_weapon_left.disabled = true
 	else:
-		$PartCategories/Equipment/shoulder_weapon_left.disabled = false
-	if not core.has_right_shoulder:
-		$PartCategories/Equipment/shoulder_weapon_right.disabled = true
-	else:
-		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
+		$PartCategories/Equipment/shoulder_weapon_left.disabled = not DisplayMecha.build.core.has_left_shoulder
+		$PartCategories/Equipment/shoulder_weapon_right.disabled = not DisplayMecha.build.core.has_right_shoulder
 
 
 func is_build_valid():
@@ -240,12 +233,11 @@ func is_build_valid():
 		if not DisplayMecha.build[part]:
 			build_valid = false
 			missing_parts = missing_parts + "WARN: " + part + " "
+	$MissingPartsScroll/MissingParts.visible = not build_valid
 	if not build_valid:
 		$MissingPartsScroll/MissingParts.text = missing_parts
-		$MissingPartsScroll/MissingParts.visible = true
-	else:
-		$MissingPartsScroll/MissingParts.visible = false
 	return build_valid
+
 
 func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
 	if item.is_disabled == true:
@@ -277,8 +269,10 @@ func _on_Exit_pressed():
 	else:
 		print("Build invalid")
 
+
 func _on_Load_pressed():
 	$LoadScreen.visible = true
+
 
 func _LoadScreen_on_load_pressed(design):
 	DisplayMecha.set_parts_from_design(design)
@@ -286,26 +280,27 @@ func _LoadScreen_on_load_pressed(design):
 	shoulder_weapon_check()
 	update_weight()
 
-func unequip_part(_type_name, side):
-	if _type_name == "core":
+
+func unequip_part(type, side):
+	if type == "core":
 		#TODO: play an error sfx here at some point, maybe throw an in-game message too
 		return
 	Profile.add_to_inventory($CurrentItemFrame.current_part.part_id)
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
-		if "arm_weapon" in _type_name:
-			_type_name = "arm_weapon" 
-		if "shoulder_weapon" in _type_name:
-			_type_name = "shoulder_weapon" 
-		DisplayMecha.callv("set_" + str(_type_name), [null,side])
-		ComparisonMecha.callv("set_" + str(_type_name), [null,side])
+		if "arm_weapon" in type:
+			type = "arm_weapon" 
+		if "shoulder_weapon" in type:
+			type = "shoulder_weapon" 
+		DisplayMecha.callv("set_" + str(type), [null,side])
+		ComparisonMecha.callv("set_" + str(type), [null,side])
 	else:
-		DisplayMecha.callv("set_" + str(_type_name), [null])
-		ComparisonMecha.callv("set_" + str(_type_name), [null])
+		DisplayMecha.callv("set_" + str(type), [null])
+		ComparisonMecha.callv("set_" + str(type), [null])
 	$CurrentItemFrame.visible = false
 	shoulder_weapon_check()
 	category_visible = false
 	$CurrentItemFrame.visible = false
-	for child in PartList.get_children(): #Clear PartList
+	for child in PartList.get_children():
 		if child.current_part == $CurrentItemFrame.current_part:
 			child.get_node("QuantityLabel").text = str(Profile.get_inventory().get($CurrentItemFrame.current_part.part_id))

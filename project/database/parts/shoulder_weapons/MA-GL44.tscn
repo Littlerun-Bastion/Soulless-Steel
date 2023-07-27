@@ -1,0 +1,48 @@
+[gd_scene load_steps=8 format=3 uid="uid://bfnuilxcfvo1e"]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_kq17r"]
+[ext_resource type="Texture2D" uid="uid://br7xqmhpqkbar" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_pv.png" id="2_oov2b"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="3_qfmip"]
+[ext_resource type="PackedScene" uid="uid://bo4v66786hgs4" path="res://database/parts/projectiles/GL44_projectile.tscn" id="4_2431j"]
+[ext_resource type="Texture2D" uid="uid://dp82f5jd8e7tv" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_sub.png" id="5_qla44"]
+[ext_resource type="Texture2D" uid="uid://dd6lcgv1a5ab2" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_main.png" id="6_jypjt"]
+[ext_resource type="Texture2D" uid="uid://powv3oj3mtej" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_glow.png" id="7_80p1g"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_kq17r")
+part_name = "MA-GL44"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Grenade Launcher"
+image = ExtResource("2_oov2b")
+muzzle_flash = ExtResource("3_qfmip")
+projectile = ExtResource("4_2431j")
+fire_rate = 2.0
+burst_size = 6
+burst_fire_rate = 0.1
+base_accuracy = 5.0
+accuracy_bloom = 2.0
+max_bloom_angle = 15.0
+clip_size = 1000
+eject_casings = true
+shoot_single_sfx = "medium_auto3"
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_qla44")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_jypjt")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_80p1g")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 17)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 17)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -46)

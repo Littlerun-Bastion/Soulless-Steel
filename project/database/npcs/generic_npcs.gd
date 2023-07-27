@@ -33,7 +33,7 @@ const NPCS = [
 		"arm_weapon_left": ["OM1804"],
 		"arm_weapon_right": ["OM1810"],
 		"shoulder_weapon_left": ["TORI-ML"],
-		"shoulder_weapon_right": [],
+		"shoulder_weapon_right": ["MA-GL44"],
 	},
 ]
 

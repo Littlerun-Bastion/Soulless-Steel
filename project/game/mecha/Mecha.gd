@@ -1623,13 +1623,14 @@ func shoot(type, is_auto_fire = false):
 			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/build.head.accuracy_modifier
 			var current_accuracy = randf_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
+				var fire_dir = node.get_direction(weapon_ref.bullet_spread, current_accuracy)
 				emit_signal("create_projectile", self,
 							{
 								"projectile": weapon_ref.projectile,
 								"pos": node.get_shoot_position().global_position,
 								"pos_reference": node.get_shoot_position(),
-								"dir": node.get_direction(weapon_ref.bullet_spread, current_accuracy),
-								"align_dir": node.get_direction(),
+								"dir": fire_dir,
+								"align_dir": fire_dir,
 								"seeker_target": locked_to,
 								"node_reference": node,
 								"inherited_velocity": velocity,

@@ -156,6 +156,8 @@ signal made_sound
 		"spool_down": $SFXs/RightShoulderWeapon/SpoolDown,
 	},
 }
+#Misc
+@onready var VisibilityNode = $VisibleOnScreenNotifier2D
 
 var mecha_name = "Mecha Name"
 var paused = false
@@ -649,9 +651,10 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 
 func do_hitstop():
-	Engine.time_scale = HITSTOP_TIMESCALE
-	await get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE).timeout
-	Engine.time_scale = 1.0
+	if VisibilityNode.is_on_screen():
+		Engine.time_scale = HITSTOP_TIMESCALE
+		await get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE).timeout
+		Engine.time_scale = 1.0
 
 
 func has_status(status_name):

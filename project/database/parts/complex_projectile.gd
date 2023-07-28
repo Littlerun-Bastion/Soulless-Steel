@@ -415,6 +415,7 @@ func payload():
 							"seeker_target": seeker_target,
 							"inherited_velocity": speed*dir,
 							"node_reference": null,
+							"bullet_spread_delay": 0,
 							"muzzle_flash": null,
 						}, part_id)
 	explosion()

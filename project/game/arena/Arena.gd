@@ -90,7 +90,7 @@ func _input(event):
 	
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
-	elif event.is_action_pressed("escape"):
+	elif event.is_action_pressed("escape") and player:
 		PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
 		activate_debug_cam()
@@ -299,7 +299,7 @@ func create_mecha_scraps(mecha):
 
 		var impulse_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
 		var impulse_force = randf_range(400,700)
-		var impulse_torque = randf_range(5, 15)
+		var impulse_torque = randf_range(10, 20)
 		if randf() > .5:
 			impulse_torque = -impulse_torque
 		scrap.apply_impulse(impulse_dir*impulse_force, Vector2())
@@ -341,7 +341,6 @@ func _on_player_lost_health():
 
 
 func _on_mecha_create_projectile(mecha, args, weapon):
-	
 	if args.bullet_spread_delay > 0:
 		var delay = randf_range(0, args.bullet_spread_delay)
 		if delay > 0:

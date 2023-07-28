@@ -418,7 +418,7 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 
 func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
-		TransitionManager.transition_to("res://game/start_menu/StartMenuDemo.tscn", "Rebooting System...")
+		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 	else:
 		var right_arm_ammo_cost = 0.0
 		if player.get_max_ammo("arm_weapon_right") and player.get_ammo_cost("arm_weapon_right"):
@@ -478,7 +478,7 @@ func _on_player_mech_extracted(playerMech):
 			TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Downloading Data...")
 			ArenaManager.last_match_unread = true
 		elif ArenaManager.mode == "Tutorial":
-			TransitionManager.transition_to("res://StartMenuDemo.tscn", "Downloading Data...")
+			TransitionManager.transition_to("res://StartMenu.tscn", "Downloading Data...")
 
 
 func _on_WindsTimer_timeout():

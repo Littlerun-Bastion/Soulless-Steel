@@ -7,7 +7,6 @@ const FADEOUT_MAX = .8
 
 
 func _ready():
-	inertia = 1.0 #Need to set some value to allow rotation
 	start_death()
 
 

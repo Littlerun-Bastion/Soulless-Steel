@@ -29,7 +29,7 @@ func _input(event):
 		var mouse_y = event.position.y
 		var relative_x = (mouse_x - (viewport_size.x/2)) / (viewport_size.x/2)
 		var relative_y = (mouse_y - (viewport_size.y/2)) / (viewport_size.y/2)
-		$ParallaxBackground/GridLayer.motion_offset.x = parallaxMult * relative_x
+		$ParallaxBackground/GridLayer.motion_offset.x  = parallaxMult * relative_x
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
@@ -41,15 +41,16 @@ func start_game(mode):
 	PlayerStatManager.Credits = 0
 	match mode:
 		"main":
-			ArenaManager.set_map_to_load("map1")
+			ArenaManager.set_map_to_load("arena_oldgate")
 		"tutorial":
+			ArenaManager.mode = "Tutorial"
 			ArenaManager.set_map_to_load("tutorial")
 		"test":
 			ArenaManager.set_map_to_load("test_buildings")
 		_:
 			push_error("Not a valid mode: " + str(mode))
-	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Simulation...")
+		
+	TransitionManager.transition_to("res://game/arena/Arena.tscn", "Initializing Combat Sequence...")
 
 
 func _on_Button_mouse_entered():
@@ -61,18 +62,6 @@ func _on_Button_mouse_exited():
 	Parallax.mouse_hovered = false
 
 
-func _on_TutorialButton_pressed():
-	AudioManager.play_sfx("confirm")
-	start_game("tutorial")
-
-
-
-func _on_LaunchSystemButton_pressed():
-	AudioManager.play_sfx("confirm")
-	start_game("main")
-
-
-
 func _on_SettingsButton_pressed():
 	AudioManager.play_sfx("back")
 
@@ -82,3 +71,21 @@ func _on_ExitButton_pressed():
 	FileManager.save_and_quit()
 
 
+func _on_Hangar_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer...")
+
+
+func _on_Arena_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings...")
+
+
+func _on_TestMode_pressed():
+	AudioManager.play_sfx("confirm")
+	start_game("tutorial")
+
+
+func _on_Store_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")

@@ -1637,6 +1637,7 @@ func shoot(type, is_auto_fire = false):
 								"seeker_target": locked_to,
 								"node_reference": node,
 								"inherited_velocity": velocity,
+								"bullet_spread_delay": weapon_ref.bullet_spread_delay,
 								"muzzle_flash":{
 									"flash_effect": weapon_ref.muzzle_flash,
 									"flash_speed": weapon_ref.muzzle_flash_speed,

@@ -114,7 +114,10 @@ func set_max_ammo(side, max_ammo):
 
 func set_ammo(side, ammo):
 	var node = get_side_node(side)
-	node.get_node("CurAmmo").text = "%02d" % ammo
+	if ammo:
+		node.get_node("CurAmmo").text = "%02d" % ammo
+	else:
+		node.get_node("CurAmmo").text = "-"
 
 
 func set_lock_on_reticle_size(value):

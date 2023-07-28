@@ -341,15 +341,12 @@ func _on_player_lost_health():
 
 
 func _on_mecha_create_projectile(mecha, args, weapon):
-#To avoid warning when mecha is killed during delay
-	#var delay = randf_range(0, args.weapon_data.bullet_spread_delay)
-	#if delay > 0:
-		#var timer = Timer.new()
-		#timer.wait_time = delay
-		#add_child(timer)
-		#timer.start()
-		#await timer.timeout
-		#timer.queue_free()
+	
+	if args.bullet_spread_delay > 0:
+		var delay = randf_range(0, args.bullet_spread_delay)
+		if delay > 0:
+			await get_tree().create_timer(delay).timeout
+		
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)

@@ -8,7 +8,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const HITBOX = preload("res://game/mecha/Hitbox.tscn")
 const ARM_WEAPON_INITIAL_ROT =  9
-const SPEED_MOD_CORRECTION = 3
+const SPEED_MOD_CORRECTION = 8
 const WEAPON_RECOIL_MOD = .9
 const CHASSIS_SPEED = 20
 const SPRINTING_COOLDOWN_SPEED = 2

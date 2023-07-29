@@ -1255,9 +1255,9 @@ func get_dir_name(dir):
 func dash(dash_dir):
 	if dash_dir == Vector2():
 		return
-	var dir = get_dir_name(dash_dir)
+	var dir = get_dir_name(dash_dir.normalized())
 	if typeof(dir) != TYPE_STRING:
-		push_error("Not a valid dash direction:" + str(dir))
+		#Not a valid dierction, should be a diagonal
 		return
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):

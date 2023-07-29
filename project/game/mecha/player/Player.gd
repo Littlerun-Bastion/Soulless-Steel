@@ -14,7 +14,7 @@ const ZOOM_SPEED = 2
 const ROTATION_DEADZONE = 20
 const MOVE_CAMERA_SCREEN_MARGIN = 260
 const MOVE_CAMERA_MAX_SPEED = 800
-const SPRINTING_TIMEOUT = .13 #How much the player needs to hold the button to enter sprint mode
+const SPRINTING_TIMEOUT = .25 #How much the player needs to hold the button to enter sprint mode
 
 @onready var Cam = $Camera2D
 @onready var Sight = $Sight 
@@ -107,9 +107,9 @@ func _input(event):
 		sprinting_timer = SPRINTING_TIMEOUT
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0 and movement_type != "tank":
-			dash(get_input().normalized())
-			#stop_sprinting(get_input().normalized())
-			sprinting_timer = 0.0
+			dash(get_input())
+		stop_sprinting(get_input().normalized())
+		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
 	elif event.is_action_pressed("shield"):
@@ -203,11 +203,6 @@ func check_input():
 	check_weapon_input("arm_weapon_right")
 	check_weapon_input("shoulder_weapon_left")
 	check_weapon_input("shoulder_weapon_right")
-	
-	#Safety check for sprinting, since it was bugging sometimes
-	if not Input.is_action_pressed("thruster_dash"):
-		stop_sprinting(get_input().normalized())
-		sprinting_timer = 0.0
 
 
 func check_weapon_input(weapon_name):

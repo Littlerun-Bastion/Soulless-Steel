@@ -1,237 +1,23 @@
-[gd_scene load_steps=20 format=3 uid="uid://b2qq2eltnoung"]
+[gd_scene load_steps=12 format=3 uid="uid://b2qq2eltnoung"]
 
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://c4tdfkle8kf3v" path="res://assets/images/ui/menu/exit_button.png" id="6"]
-[ext_resource type="Texture2D" uid="uid://dxo5rjmpoettw" path="res://assets/images/ui/menu/tutorial_button_pressed.png" id="7"]
-[ext_resource type="Texture2D" uid="uid://ciow8ltxbe3f1" path="res://assets/images/ui/menu/settings_button.png" id="8"]
-[ext_resource type="Texture2D" uid="uid://b5xjhl65vjtb5" path="res://assets/images/ui/menu/settings_button_pressed.png" id="9"]
-[ext_resource type="Texture2D" uid="uid://cd7hptkoy5g5x" path="res://assets/images/ui/menu/tutorial_button.png" id="10"]
-[ext_resource type="Texture2D" uid="uid://dcs4het7y76w5" path="res://assets/images/ui/menu/settings_button_highlight.png" id="11"]
-[ext_resource type="Texture2D" uid="uid://bwb04rc1g113b" path="res://assets/images/ui/menu/play_button.png" id="12"]
-[ext_resource type="Texture2D" uid="uid://c1e6222mvh2na" path="res://assets/images/ui/menu/play_button_pressed.png" id="13"]
+[ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2_q5sq0"]
+[ext_resource type="Script" path="res://game/start_menu/StartMenu.gd" id="4"]
+[ext_resource type="FontFile" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_4l8ve"]
+[ext_resource type="Theme" uid="uid://cqlnn7sur6eiy" path="res://game/title_buttons_theme.tres" id="12"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="14"]
-[ext_resource type="Texture2D" uid="uid://bnf6jt2v8i0r0" path="res://assets/images/ui/menu/play_button_highlight.png" id="15"]
-[ext_resource type="Texture2D" uid="uid://eg8mnhms63h" path="res://assets/images/ui/menu/exit_button_highlight.png" id="16"]
-[ext_resource type="Texture2D" uid="uid://dm77swqmsy7xd" path="res://assets/images/ui/menu/exit_button_pressed.png" id="17"]
-[ext_resource type="Texture2D" uid="uid://bfa6hp3xdgwg2" path="res://assets/images/ui/menu/tutorial_button_highlight.png" id="18"]
-
-[sub_resource type="GDScript" id="GDScript_5fatx"]
-script/source = "extends Control
-
-@onready var Parallax = $ParallaxBackground
-
-var parallaxMult = 30.0
-
-
-func _ready():
-	FileManager.load_game()
-	
-	if Debug.get_setting(\"window\"):
-		Debug.window_debug_mode()
-	
-	randomize()
-	MouseManager.show_cursor()
-	ShaderEffects.reset_shader_effect(\"main_menu\")
-	$AnimationPlayer.play(\"Typewrite\")
-	AudioManager.play_bgm(\"main-menu\")
-	
-	if Debug.get_setting(\"go_to_mode\"):
-		await get_tree().process_frame
-		start_game(Debug.get_setting(\"go_to_mode\"))
-
-
-func _input(event):
-	if event is InputEventMouseMotion:
-		var viewport_size = get_viewport().size
-		var mouse_x = event.position.x
-		var mouse_y = event.position.y
-		var relative_x = (mouse_x - (viewport_size.x/2)) / (viewport_size.x/2)
-		var relative_y = (mouse_y - (viewport_size.y/2)) / (viewport_size.y/2)
-		$ParallaxBackground/GridLayer.motion_offset.x = parallaxMult * relative_x
-		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
-	if event.is_action_pressed(\"toggle_fullscreen\"):
-		Global.toggle_fullscreen()
-
-
-func start_game(mode):
-	AudioManager.stop_bgm()
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
-	match mode:
-		\"main\":
-			ArenaManager.set_map_to_load(\"map1\")
-		\"tutorial\":
-			ArenaManager.set_map_to_load(\"tutorial\")
-		\"test\":
-			ArenaManager.set_map_to_load(\"test_buildings\")
-		_:
-			push_error(\"Not a valid mode: \" + str(mode))
-	ShaderEffects.play_transition(5000.0, 0, 0.5)
-	TransitionManager.transition_to(\"res://game/arena/Arena.tscn\", \"Initializing Combat Simulation...\")
-
-
-func _on_Button_mouse_entered():
-	AudioManager.play_sfx(\"select\")
-	Parallax.mouse_hovered = true
-
-
-func _on_Button_mouse_exited():
-	Parallax.mouse_hovered = false
-
-
-func _on_TutorialButton_pressed():
-	AudioManager.play_sfx(\"confirm\")
-	start_game(\"tutorial\")
-
-
-
-func _on_LaunchSystemButton_pressed():
-	AudioManager.play_sfx(\"confirm\")
-	start_game(\"main\")
-
-
-
-func _on_SettingsButton_pressed():
-	AudioManager.play_sfx(\"back\")
-
-
-func _on_ExitButton_pressed():
-	AudioManager.play_sfx(\"back\")
-	FileManager.save_and_quit()
-
-
-"
 
 [sub_resource type="Theme" id="1"]
 
 [sub_resource type="Animation" id="14"]
 length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("UserGuide/Label:percent_visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [0.0]
-}
 
 [sub_resource type="Animation" id="15"]
 resource_name = "Typewrite"
 length = 15.0
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("UserGuide/Label:percent_visible")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1.4),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [0.0, 1.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("UserGuide/Label2:percent_visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 2, 3.4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 1.0]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("UserGuide/Label3:percent_visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 4, 5.2, 5.5, 6.8),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 0.428571, 0.428571, 1.0]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("UserGuide/Label4:percent_visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 7.4, 8.3),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 1.0]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("UserGuide/Label6:percent_visible")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 9.1, 11.2, 11.5, 12.6, 12.9, 13.7),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
-"update": 0,
-"values": [0.0, 0.0, 0.48, 0.48, 0.84, 0.84, 1.0]
-}
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_vam0p"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hc8e2"]
 _data = {
 "RESET": SubResource("14"),
 "Typewrite": SubResource("15")
@@ -244,22 +30,33 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = SubResource("GDScript_5fatx")
+script = ExtResource("4")
 
 [node name="Title" type="VBoxContainer" parent="."]
 layout_mode = 0
 offset_left = 31.0
-offset_top = 968.0
-offset_right = 595.0
-offset_bottom = 1083.0
+offset_top = 895.0
+offset_right = 637.0
+offset_bottom = 1066.0
 alignment = 2
+
+[node name="Demo" type="Label" parent="Title"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 25
+text = "DEMO"
 
 [node name="CompanyName" type="Label" parent="Title"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 33
 text = "Littlerun Bastion"
 
 [node name="MainTitle" type="Label" parent="Title"]
 layout_mode = 2
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_q5sq0")
+theme_override_font_sizes/font_size = 80
 text = "Soulless Steel"
 
 [node name="MainButtons" type="VBoxContainer" parent="."]
@@ -267,120 +64,133 @@ custom_minimum_size = Vector2(750, 0)
 layout_mode = 0
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 29.0187
-offset_top = -128.979
-offset_right = 779.019
-offset_bottom = 518.021
+offset_left = 30.0
+offset_top = -240.0
+offset_right = 1030.0
+offset_bottom = 1268.0
 scale = Vector2(0.36, 0.36)
+theme_override_constants/separation = 100
 
 [node name="NewGameContainer" type="VBoxContainer" parent="MainButtons"]
 layout_mode = 2
 
-[node name="Button" type="TextureButton" parent="MainButtons/NewGameContainer"]
+[node name="Button" type="Button" parent="MainButtons/NewGameContainer"]
 layout_mode = 2
-texture_normal = ExtResource("12")
-texture_pressed = ExtResource("13")
-texture_hover = ExtResource("15")
-texture_focused = ExtResource("15")
+theme = ExtResource("12")
+text = "Arena Mode"
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/NewGameContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "SAV BOOT SEQUENCE"
 
-[node name="TutorialContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="TestModeContainer" type="VBoxContainer" parent="MainButtons"]
 layout_mode = 2
 
-[node name="Button" type="TextureButton" parent="MainButtons/TutorialContainer"]
+[node name="Button" type="Button" parent="MainButtons/TestModeContainer"]
 layout_mode = 2
-texture_normal = ExtResource("10")
-texture_pressed = ExtResource("7")
-texture_hover = ExtResource("18")
-texture_focused = ExtResource("18")
+theme = ExtResource("12")
+text = "TEST MODE"
+alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/TutorialContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/TestModeContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "New user system simulation"
+
+[node name="HangarContainer" type="VBoxContainer" parent="MainButtons"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MainButtons/HangarContainer"]
+layout_mode = 2
+theme = ExtResource("12")
+text = "Hangar"
+alignment = 0
+
+[node name="Descriptor" type="Label" parent="MainButtons/HangarContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
+text = "sav configuration "
+
+[node name="StoreContainer" type="VBoxContainer" parent="MainButtons"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MainButtons/StoreContainer"]
+layout_mode = 2
+theme = ExtResource("12")
+text = "Store"
+alignment = 0
+
+[node name="Descriptor" type="Label" parent="MainButtons/StoreContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
+text = "Market and trade interface"
 
 [node name="SettingsContainer" type="VBoxContainer" parent="MainButtons"]
 layout_mode = 2
 
-[node name="Button" type="TextureButton" parent="MainButtons/SettingsContainer"]
+[node name="Button" type="Button" parent="MainButtons/SettingsContainer"]
 layout_mode = 2
-texture_normal = ExtResource("8")
-texture_pressed = ExtResource("9")
-texture_hover = ExtResource("11")
-texture_focused = ExtResource("11")
+theme = ExtResource("12")
+text = "Settings"
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/SettingsContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "system runtime parameters"
 
 [node name="ExitContainer" type="VBoxContainer" parent="MainButtons"]
 layout_mode = 2
 
-[node name="Button" type="TextureButton" parent="MainButtons/ExitContainer"]
+[node name="Button" type="Button" parent="MainButtons/ExitContainer"]
 layout_mode = 2
-texture_normal = ExtResource("6")
-texture_pressed = ExtResource("17")
-texture_hover = ExtResource("16")
-texture_focused = ExtResource("16")
+theme = ExtResource("12")
+text = "Exit Program"
+alignment = 0
 
 [node name="Descriptor" type="Label" parent="MainButtons/ExitContainer"]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
 text = "terminate program runtime"
 
 [node name="MainSystemContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 32.56
-offset_top = 47.28
-offset_right = 459.56
-offset_bottom = 152.28
+offset_left = 32.0
+offset_top = 47.0
+offset_right = 459.0
+offset_bottom = 152.0
+theme_override_constants/separation = -5
 
 [node name="Label" type="Label" parent="MainSystemContainer"]
 layout_mode = 2
+theme = ExtResource("5_4l8ve")
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 25
 text = "MAIN SYSTEM"
 
 [node name="Label2" type="Label" parent="MainSystemContainer"]
 layout_mode = 2
-text = "SAV_hUNTERos.EXE"
+theme = ExtResource("5_4l8ve")
+theme_override_font_sizes/font_size = 25
+text = "SAV_hUNTERos.EXE -Duelist"
 
-[node name="UserGuide" type="VBoxContainer" parent="."]
-layout_mode = 0
-anchor_left = 0.975
-anchor_top = 0.5
-anchor_right = 0.988
-anchor_bottom = 0.5
-offset_left = -852.476
-offset_top = -195.209
-offset_right = -8.47571
-offset_bottom = 108.791
-
-[node name="Label5" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "User guide"
-
-[node name="Label" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "[w, a, s, d] - Control Surface Activity Vehicle Movement"
-
-[node name="Label2" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "[LeftMouse/RightMouse] - Fire Right and Left Weapons"
-
-[node name="Label3" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "[Q. e] = Fire right and left shoulder weapons.
-Current loadout does not feature a left shoulder weapon."
-
-[node name="Label4" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "[R] = Toggle Reload "
-
-[node name="Label6" type="Label" parent="UserGuide"]
-layout_mode = 2
-text = "Hunt and destroy enemy Sav units.
-Find extraction points.
-Survive."
+[node name="UpperBar" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = 17.0
+offset_bottom = 40.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
 
 [node name="SideBar1" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(2, 0)
@@ -395,15 +205,6 @@ layout_mode = 0
 anchor_bottom = 1.0
 offset_left = 17.2305
 offset_right = 24.2305
-
-[node name="UpperBar" type="ColorRect" parent="."]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 0
-anchor_right = 1.0
-offset_left = 17.2305
-offset_right = 17.2305
-offset_bottom = 40.0
-color = Color(0, 0, 0, 1)
 
 [node name="LowerBar" type="ColorRect" parent="."]
 custom_minimum_size = Vector2(0, 15)
@@ -456,20 +257,32 @@ offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("14")
 
+[node name="Grid2" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("14")
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("AnimationLibrary_vam0p")
+"": SubResource("AnimationLibrary_hc8e2")
 }
 
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]
-[connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_LaunchSystemButton_pressed"]
-[connection signal="mouse_entered" from="MainButtons/TutorialContainer/Button" to="." method="_on_Button_mouse_entered"]
-[connection signal="mouse_exited" from="MainButtons/TutorialContainer/Button" to="." method="_on_Button_mouse_exited"]
-[connection signal="pressed" from="MainButtons/TutorialContainer/Button" to="." method="_on_TutorialButton_pressed"]
+[connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_Arena_pressed"]
+[connection signal="mouse_entered" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/TestModeContainer/Button" to="." method="_on_TestMode_pressed"]
+[connection signal="mouse_entered" from="MainButtons/HangarContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/HangarContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/HangarContainer/Button" to="." method="_on_Hangar_pressed"]
+[connection signal="mouse_entered" from="MainButtons/StoreContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/StoreContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/StoreContainer/Button" to="." method="_on_Store_pressed"]
 [connection signal="mouse_entered" from="MainButtons/SettingsContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/SettingsContainer/Button" to="." method="_on_Button_mouse_exited"]
-[connection signal="pressed" from="MainButtons/SettingsContainer/Button" to="." method="_on_SettingsButton_pressed"]
 [connection signal="mouse_entered" from="MainButtons/ExitContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/ExitContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/ExitContainer/Button" to="." method="_on_ExitButton_pressed"]

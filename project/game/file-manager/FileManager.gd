@@ -8,7 +8,7 @@ func _notification(what):
 
 func save_and_quit():
 	save_game()
-	get_tree().quit()
+	TransitionManager.transition_to("res://game/start_menu/Exiting.tscn", "Closing out application...")
 
 
 func save_game():

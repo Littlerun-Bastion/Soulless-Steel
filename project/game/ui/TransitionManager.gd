@@ -8,14 +8,25 @@ signal finished
 @onready var VCREffect = $VCREffect
 @onready var VCREffect2 = $VCREffect2
 
+var sound_repeat_time = 0.1
+var sound_tick = 0.0
+
 var active = false
+var play_sound = false
 
 func _ready():
 	BlockScreen.hide()
 	BlurScreen.hide()
 	VCREffect.hide()
 	VCREffect2.hide()
-
+	
+func _process(dt):
+	if play_sound:
+		if sound_tick >= sound_repeat_time:
+			AudioManager.play_sfx("rapid_beep")
+			sound_tick = 0.0
+		else:
+			sound_tick += dt
 
 func transition_to(scene_path: String, command_line_text: String):
 	if active:
@@ -30,7 +41,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	tween.tween_property(BlockScreen, "color:a", 1.0, .1)
 	
 	await tween.finished
-	
+	play_sound = true
 	VCREffect2.show()
 	CommandLine.display(command_line_text)
 	
@@ -41,6 +52,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	await get_tree().process_frame
 	
+	play_sound = false
 	VCREffect2.hide()
 	BlockScreen.color = Color.WHITE
 	BlurScreen.show()

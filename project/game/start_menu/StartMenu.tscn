@@ -132,6 +132,7 @@ theme_override_font_sizes/font_size = 50
 text = "Market and trade interface"
 
 [node name="SettingsContainer" type="VBoxContainer" parent="MainButtons"]
+visible = false
 layout_mode = 2
 
 [node name="Button" type="Button" parent="MainButtons/SettingsContainer"]

@@ -14,7 +14,7 @@ const BGM_PATH = "res://database/audio/bgm/"
 @onready var BGMS = {}
 
 #SFX
-const MAX_SFX_NODES = 30
+const MAX_SFX_NODES = 200
 const MAX_POS_SFX_NODES = 200
 const SFX_PATH = "res://database/audio/sfx/"
 @onready var SFXS = {}
@@ -166,7 +166,6 @@ func play_sfx(sfx_name: String, pos = false, override_pitch = false, override_db
 		player.attenuation = override_att if override_att else sfx.attenuation
 		
 	player.play()
-	printt(sfx_name, sfx.asset)
 
 
 func get_sfx_duration(sfx_name: String):

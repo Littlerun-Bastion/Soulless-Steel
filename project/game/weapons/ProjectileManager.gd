@@ -5,6 +5,7 @@ enum TYPE {INSTANT, REGULAR, COMPLEX}
 const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
 const COMPLEX = preload("res://game/weapons/ComplexProjectile.tscn")
 const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
+const NUM_SIDES = 30
 
 func create(mecha, args, weapon):
 	var wr = weakref(mecha)
@@ -78,3 +79,14 @@ func get_intersection_points(poly1, trans1, poly2, trans2):
 			if intersect != null:
 				result.append(intersect)
 	return result
+
+
+func generate_circle_polygon(radius: float, position: Vector2) -> PackedVector2Array:
+	var angle_delta: float = (PI * 2) / NUM_SIDES
+	var vector: Vector2 = Vector2(radius, 0)
+	var polygon := PackedVector2Array()
+	for _i in NUM_SIDES:
+		polygon.append(vector + position)
+		vector = vector.rotated(angle_delta)
+
+	return polygon

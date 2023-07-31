@@ -1093,6 +1093,7 @@ func set_shoulders(part_name):
 	stability = get_stat("stability")
 	set_max_heat()
 
+
 func reset_offsets():
 	var core = build.core
 	if core:
@@ -1257,7 +1258,7 @@ func dash(dash_dir):
 		return
 	var dir = get_dir_name(dash_dir.normalized())
 	if typeof(dir) != TYPE_STRING:
-		#Not a valid dierction, should be a diagonal
+		#Not a valid direction, should be a diagonal
 		return
 
 	if dash_cooldown[dir] <= 0.0 and not has_status("freezing"):

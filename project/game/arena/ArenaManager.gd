@@ -32,7 +32,7 @@ func setup_maps():
 		while file_name != "":
 			if file_name != "." and file_name != "..":
 				#Found map file, creating data on memory
-				MAPS[file_name.replace(".tscn", "")] = load(MAPS_PATH + file_name)
+				MAPS[file_name.replace(".tscn", "").replace(".remap", "")] = load(MAPS_PATH + file_name.replace(".remap", ""))
 				
 			file_name = dir.get_next()
 	else:

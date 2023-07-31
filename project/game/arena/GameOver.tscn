@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://bad6i3ad8t17j"]
+[gd_scene load_steps=8 format=3 uid="uid://bad6i3ad8t17j"]
 
 [ext_resource type="Script" path="res://game/arena/GameOver.gd" id="2"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2_8dhrv"]
 [ext_resource type="Texture2D" uid="uid://cce5c46a32yhd" path="res://assets/images/ui/pause_menu/return_button_highlight.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://c26exnrusfy22" path="res://assets/images/ui/pause_menu/return_button_pressed.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://cfms3yoylaqw7" path="res://assets/images/ui/pause_menu/return_button.png" id="5"]
@@ -64,6 +65,7 @@ offset_left = 12.0208
 offset_top = 974.013
 offset_right = 861.021
 offset_bottom = 1069.01
+theme = ExtResource("2_8dhrv")
 text = "Lost connection...
 Would you like to return to the menu?"
 

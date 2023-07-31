@@ -43,8 +43,8 @@ func load_parts(part_name, dict):
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
-				var key = file_name.replace(".tres", "").replace(".tscn", "")
-				dict[key] = load(path + file_name)
+				var key = file_name.replace(".tres", "").replace(".tscn", "").replace(".remap", "")
+				dict[key] = load(path + file_name.replace(".remap", ""))
 				if dict[key] is PackedScene:
 					dict[key] = dict[key].instantiate()
 				dict[key].part_id = key

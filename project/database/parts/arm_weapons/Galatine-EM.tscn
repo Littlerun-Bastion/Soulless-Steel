@@ -14,6 +14,8 @@ part_name = "Galatine-EM"
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Canister Gun (EMP)"
+tags = Array[String](["arm_weapon", "claymore"])
+weight = 5.8
 description = "Essentially a heavily modified MA-H250, the Galatine fires a 25mm cartridge loaded with effect shells. This particular platform fires flash-capacitor EMP rounds that can scramble electronics and impair Shields."
 image = ExtResource("2_y7pf0")
 muzzle_flash = ExtResource("3_ht6wr")
@@ -29,14 +31,11 @@ max_ammo = 200
 clip_size = 25
 reload_speed = 3.4
 muzzle_heat = 22.5
-sound_effect = "medium_auto3"
-sound_max_range = 7500
-sound_att = 1.75
-weight = 5.8
-impact_force = 8.0
 eject_casings = true
 casing_size = 0.8
-tags = Array[String](["arm_weapon", "claymore"])
+impact_force = 8.0
+sound_max_range = 7500
+sound_att = 1.75
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_uycb4")

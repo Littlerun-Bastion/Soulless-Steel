@@ -24,7 +24,7 @@ func setup():
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
-				SPECIAL_NPCS.append(load(SPECIAL_NPCS_PATH + file_name))
+				SPECIAL_NPCS.append(load(SPECIAL_NPCS_PATH + file_name.replace(".remap", "")))
 			file_name = dir.get_next()
 	else:
 		push_error("An error occurred when trying to access special npcs path: " + str(DirAccess.get_open_error()))

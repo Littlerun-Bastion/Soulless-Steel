@@ -51,7 +51,7 @@ func setup_bgms():
 		while file_name != "":
 			if file_name != "." and file_name != "..":
 				#Found bgm file, creating data on memory
-				BGMS[file_name.replace(".tres", "")] = load(BGM_PATH + file_name)
+				BGMS[file_name.replace(".tres", "").replace(".remap", "")] = load(BGM_PATH + file_name.replace(".remap", ""))
 				
 			file_name = dir.get_next()
 	else:
@@ -65,7 +65,7 @@ func setup_sfxs():
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir() and file_name != "." and file_name != "..":
-				SFXS[file_name.replace(".tres", "")] = load(SFX_PATH + file_name)
+				SFXS[file_name.replace(".tres", "").replace(".remap", "")] = load(SFX_PATH + file_name.replace(".remap", ""))
 			file_name = dir.get_next()
 	else:
 		push_error("An error occurred when trying to access sfxs path: " + str(DirAccess.get_open_error()))

@@ -9,7 +9,8 @@ const LANGUAGES = [
 	{"locale":"pt_BR", "name": "Português"},
 ]
 
-const VERSION := "v0.0.1dev"
+const VERSION := "v0.0.2dev"
+const SHOW_VERSION = true
 
 var options = {
 	"master_volume": 0.25,
@@ -92,7 +93,7 @@ func get_save_data():
 func set_save_data(data):
 	if data.version != VERSION:
 		#Handle version diff here.
-		push_warning("Different save version for profile. Its version: " + str(data.version) + " Current version: " + str(Debug.VERSION)) 
+		push_warning("Different save version for profile. Its version: " + str(data.version) + " Current version: " + str(Profile.VERSION)) 
 		push_warning("Properly updating to new save version")
 		push_warning("Profile updated!")
 	

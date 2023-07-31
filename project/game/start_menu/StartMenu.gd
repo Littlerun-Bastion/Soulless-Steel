@@ -1,12 +1,18 @@
 extends Control
 
 @onready var Parallax = $ParallaxBackground
+@onready var VersionLabel = $VersionLabel
 
 var parallaxMult = 30.0
 
 
 func _ready():
 	FileManager.load_game()
+	if Profile.SHOW_VERSION:
+		VersionLabel.visible = true
+		VersionLabel.text = str(Profile.VERSION)
+	else:
+		VersionLabel.visible = false
 	
 	if Debug.get_setting("window"):
 		Debug.window_debug_mode()

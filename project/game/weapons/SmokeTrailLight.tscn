@@ -11,5 +11,5 @@ texture = ExtResource("2_3o2ya")
 lifetime = 0.5
 speed_scale = 2.0
 fixed_fps = 240
-visibility_rect = Rect2(-1e+07, -1e+07, 2e+07, 2e+07)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 script = ExtResource("3_vnpuu")

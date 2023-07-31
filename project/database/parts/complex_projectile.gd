@@ -8,6 +8,7 @@ var thrusters_on = false
 
 signal bullet_impact
 signal create_projectile
+signal create_trail
 
 @export var type : TYPE
 @export var projectile_size := 1.0
@@ -31,10 +32,11 @@ signal create_projectile
 @export var impact_effect : PackedScene
 @export var impact_size := 1.0
 @export var hitstop := false
-
+@export var trail : PackedScene
 
 #---TRAILS AND IMPACTS---#
-
+@export var smoke_density = 500
+@export var smoke_lifetime = 10.0
 #---DAMAGE---#
 
 @export var 	base_damage := 100
@@ -130,12 +132,17 @@ var payload_expended = false
 var explosion_targets = []
 var fuse_waiting = false
 var has_impacted = false
+var is_trail_created = false
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
 	Collision = get_node("CollisionShape2D")
 
 func _process(dt):
+	if not is_trail_created:
+		instance_trail()
+		is_trail_created = true
+
 	if dying:
 		return
 	propulsion(dt)
@@ -166,6 +173,7 @@ func _process(dt):
 				in_range_targets.erase(body)
 			else:
 				fuse(null, body, null, null)
+				
 
 func setup(mecha, _args, _weapon):
 	if random_rotation:
@@ -201,6 +209,7 @@ func setup(mecha, _args, _weapon):
 		explosion_radius.radius = payload_explosion_radius
 		$Explosion/ExplosionSensor.shape = explosion_radius
 	
+	instance_trail()
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
@@ -462,3 +471,6 @@ func _on_fuse_body_shape_exited(_body_rid, body, _body_shape_index, _local_shape
 			in_range.erase(body)
 	if in_range == []:
 		fuse_waiting = false
+
+func instance_trail():
+	emit_signal("create_trail", self, trail)

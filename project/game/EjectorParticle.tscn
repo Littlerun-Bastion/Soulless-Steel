@@ -41,3 +41,4 @@ lifetime = 5.0
 one_shot = true
 speed_scale = 3.0
 fixed_fps = 120
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)

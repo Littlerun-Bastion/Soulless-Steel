@@ -6,6 +6,7 @@ var LightEffect
 var Collision
 
 signal bullet_impact
+signal create_trail
 
 @export var projectile_size := 1.0
 @export var projectile_size_scaling := 0.0
@@ -25,9 +26,11 @@ signal bullet_impact
 @export var impact_effect : PackedScene
 @export var impact_size := 1.0
 @export var hitstop := false
+@export var trail : PackedScene
 
 #---TRAILS AND IMPACTS---#
-
+@export var smoke_density = 200
+@export var smoke_lifetime = 10.0
 #---DAMAGE---#
 
 @export var base_damage := 100
@@ -93,6 +96,8 @@ func setup(mecha, _args, _weapon):
 	if life_time > 0 :
 		$LifeTimer.wait_time = life_time + randf_range(-life_time_var, life_time_var)
 		$LifeTimer.autostart = true
+	
+	instance_trail()
 		
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
@@ -173,3 +178,5 @@ func change_scaling(sc):
 	$Sprite2D.scale *= vec
 	$CollisionShape2D.scale *= vec
 
+func instance_trail():
+	emit_signal("create_trail", self, trail)

@@ -351,6 +351,8 @@ func _on_mecha_create_projectile(mecha, args, weapon):
 		Projectiles.add_child(data.node)
 		if data.node.has_signal("bullet_impact"):
 			data.node.connect("bullet_impact",Callable(self,"_on_bullet_impact"))
+		if data.node.has_signal("create_trail"):
+			data.node.connect("create_trail",Callable(self,"_on_create_trail"))
 		if data.node.has_signal("create_projectile"):
 			data.node.connect("create_projectile",Callable(self,"_on_mecha_create_projectile"))
 		if args.muzzle_flash != null and args.pos_reference != null and is_instance_valid(args.node_reference):
@@ -370,6 +372,12 @@ func _on_bullet_impact(projectile, effect, clear):
 		Explosions.add_child(impact_effect)
 	if clear:
 		projectile.queue_free()
+
+func _on_create_trail(projectile, trail):
+	print("!")
+	if trail:
+		var created_trail = ProjectileManager.create_trail(projectile, trail)
+		Trails.add_child(created_trail)
 
 func _on_mecha_exposed(mecha):
 	if mecha.last_damage_source.name == "Player":

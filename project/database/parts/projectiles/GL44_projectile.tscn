@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3 uid="uid://bo4v66786hgs4"]
 
 [ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_w757g"]
+[ext_resource type="PackedScene" uid="uid://cc4y6un446yr6" path="res://game/weapons/SmokeTrail.tscn" id="2_8narh"]
 [ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_dy3pr"]
 [ext_resource type="Texture2D" uid="uid://ccx58kuy5awnm" path="res://assets/images/mechas/projectiles/GL44_projectile.png" id="3_4613c"]
 [ext_resource type="PackedScene" uid="uid://dkj4mi4wpw7ww" path="res://game/weapons/MissileDirectedImpact.tscn" id="3_osxj7"]
-[ext_resource type="PackedScene" uid="uid://5gxvtwvldk5w" path="res://database/parts/projectiles/GL-44_subprojectile.tscn" id="4_8dxti"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_elu12"]
 
 [sub_resource type="CanvasItemMaterial" id="1"]
@@ -21,6 +21,7 @@ muzzle_speed = 2000
 release_aligned = false
 impact_effect = ExtResource("2_dy3pr")
 impact_size = 2.0
+trail = ExtResource("2_8narh")
 stage_max_speed = Array[int]([2000])
 stage_min_speed = Array[int]([750])
 stage_deceleration = Array[float]([1000.0])
@@ -34,9 +35,6 @@ payload_explosion = ExtResource("3_osxj7")
 payload_explosion_damage = 200.0
 payload_explosion_shield_mult = 0.5
 payload_explosion_radius = 150.0
-payload_subprojectile = ExtResource("4_8dxti")
-payload_subprojectile_count = 15
-payload_subprojectile_spread = 360.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)

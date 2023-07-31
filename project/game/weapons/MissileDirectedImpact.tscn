@@ -395,7 +395,7 @@ one_shot = true
 speed_scale = 5.0
 explosiveness = 0.97
 randomness = 1.0
-visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 
 [node name="hit_smoke" type="GPUParticles2D" parent="OnHit"]
 z_index = 1
@@ -409,7 +409,7 @@ one_shot = true
 speed_scale = 1.5
 explosiveness = 1.0
 randomness = 1.0
-visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 
 [node name="OnMiss" type="Node2D" parent="."]
 
@@ -422,7 +422,7 @@ one_shot = true
 speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
-visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 
 [node name="miss_smoke" type="GPUParticles2D" parent="OnMiss"]
 z_index = 1
@@ -436,4 +436,4 @@ one_shot = true
 speed_scale = 1.5
 explosiveness = 1.0
 randomness = 1.0
-visibility_rect = Rect2(-100, -100, 2e+06, 2e+06)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)

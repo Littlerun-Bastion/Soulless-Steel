@@ -10,7 +10,7 @@ point_count = 2
 curve = SubResource("7")
 
 [sub_resource type="Gradient" id="Gradient_gomk0"]
-offsets = PackedFloat32Array(0, 0.135802, 0.284946, 0.701613, 1)
+offsets = PackedFloat32Array(0, 0.135802, 0.311594, 0.701613, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0.6, 0.6, 0.6, 0.580392, 0.301961, 0.301961, 0.301961, 0.509804, 0.301961, 0.301961, 0.301961, 0.454902, 0.301961, 0.301961, 0.301961, 0)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_rff3f"]
@@ -25,18 +25,20 @@ curve = SubResource("2")
 
 [resource]
 lifetime_randomness = 0.29
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 10.0
+emission_ring_radius = 10.0
+emission_ring_inner_radius = 0.0
 particle_flag_disable_z = true
 spread = 180.0
 gravity = Vector3(0, 0, 0)
-initial_velocity_max = 10.0
 angular_velocity_min = -80.0
 angular_velocity_curve = SubResource("8")
 orbit_velocity_min = 0.0
 orbit_velocity_max = 0.0
-radial_accel_min = -4.0
 angle_min = -720.0
 angle_max = 720.0
-scale_min = 0.2
-scale_max = 0.5
+scale_min = 0.5
 scale_curve = SubResource("3")
 color_ramp = SubResource("GradientTexture1D_rff3f")

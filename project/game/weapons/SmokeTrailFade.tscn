@@ -39,5 +39,5 @@ process_mode = 2
 amount = 400
 process_material = SubResource("24")
 texture = ExtResource("3")
-visibility_rect = Rect2(-100000, -100000, 200000, 200000)
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 script = ExtResource("1")

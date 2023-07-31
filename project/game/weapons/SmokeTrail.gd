@@ -13,11 +13,11 @@ func _process(dt):
 			die()
 
 
-func setup(data, projectile):
+func setup(projectile):
 	home_projectile = projectile
-	amount = data.smoke_density
-	lifetime = data.smoke_lifetime
-	tickdown = data.smoke_lifetime
+	amount = projectile.smoke_density
+	lifetime = projectile.smoke_lifetime
+	tickdown = projectile.smoke_lifetime
 	emitting = true
 
 

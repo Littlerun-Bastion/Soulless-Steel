@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cwklg6b0vgsov"]
+[gd_scene load_steps=3 format=3 uid="uid://cwklg6b0vgsov"]
 
 [ext_resource type="Script" path="res://game/start_menu/Intro.gd" id="1_xx4ge"]
+[ext_resource type="Texture2D" uid="uid://cpqpmfw53svpi" path="res://assets/images/LBLogoNoText.png" id="2_r4u02"]
 
 [node name="Intro" type="Control"]
 layout_mode = 3
@@ -17,3 +18,8 @@ offset_bottom = 1080.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+
+[node name="Logo" type="Sprite2D" parent="."]
+position = Vector2(960, 540)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_r4u02")

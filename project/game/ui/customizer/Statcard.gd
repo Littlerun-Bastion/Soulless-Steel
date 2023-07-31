@@ -24,6 +24,8 @@ func display_part_stats(current_part, new_part, part_type):
 
 
 func toggle_description():
+	AudioManager.play_sfx("keystrike")
+	AudioManager.play_sfx("boop")
 	$description.visible = !$description.visible
 	$parts.visible = !$parts.visible
 	pass # Replace with function body.

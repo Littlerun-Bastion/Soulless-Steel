@@ -267,6 +267,11 @@ func _LoadScreen_on_load_pressed(design):
 
 
 func _on_purchase_pressed():
+	if balance < basket_total:
+		AudioManager.play_sfx("keystrike")
+		AudioManager.play_sfx("deny_softer")
+	else:
+		AudioManager.play_sfx("question")
 	CommandLine.display("/market_basket_purchase")
 	$PurchaseConfirm.visible = true
 	PurchaseConfirm.visible = true
@@ -274,6 +279,7 @@ func _on_purchase_pressed():
 
 
 func _on_cancel_pressed():
+	AudioManager.play_sfx("select")
 	$PurchaseConfirm.visible = false
 
 
@@ -290,3 +296,14 @@ func _on_purchase_items_pressed():
 		PurchaseComplete.visible = true
 		$BalanceLabel.text = str(balance)
 		Profile.set_stat("money", balance)
+		AudioManager.play_sfx("confirm")
+	else:
+		AudioManager.play_sfx("keystrike")
+		AudioManager.play_sfx("deny_softer")
+
+func _on_storebuttons_mouse_entered():
+	AudioManager.play_sfx("keystroke")
+
+
+func _on_purchase_mouse_entered():
+	AudioManager.play_sfx("select")

@@ -473,10 +473,14 @@ theme = ExtResource("1")
 text = "*tentative only and not indicative of current market escrow prices. contact your retailer for further information."
 autowrap_mode = 2
 
-[node name="Button" type="Button" parent="description"]
+[node name="Button" type="Button" parent="."]
 layout_mode = 2
+offset_left = 8.0
+offset_top = 552.0
+offset_right = 648.0
+offset_bottom = 587.0
 theme = ExtResource("1")
 theme_override_font_sizes/font_size = 30
 text = "..."
 
-[connection signal="pressed" from="description/Button" to="." method="toggle_description"]
+[connection signal="pressed" from="Button" to="." method="toggle_description"]

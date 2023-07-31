@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://31thwhpa33rk"]
+
+[ext_resource type="AudioStream" uid="uid://b6rg3v34lv6lk" path="res://assets/audio/sfx/ui/question.wav" id="1_wt3fx"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_1ioj8"]
+
+[resource]
+script = ExtResource("2_1ioj8")
+asset = ExtResource("1_wt3fx")
+base_db = 0.0
+random_db_var = 0.0
+base_pitch = 1.0
+random_pitch_var = 0.02
+attenuation = 1.0
+max_range = 10000

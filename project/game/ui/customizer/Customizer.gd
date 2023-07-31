@@ -312,3 +312,5 @@ func unequip_part(type, side):
 
 func _on_category_mouse_entered():
 	AudioManager.play_sfx("keystroke")
+
+

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://uk7752y6ombp"]
+
+[ext_resource type="AudioStream" uid="uid://3kjs6vlllro8" path="res://assets/audio/sfx/ui/deny_softer.wav" id="1_h00ov"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_0opi1"]
+
+[resource]
+script = ExtResource("2_0opi1")
+asset = ExtResource("1_h00ov")
+base_db = 2.0
+random_db_var = 0.0
+base_pitch = 1.0
+random_pitch_var = 0.02
+attenuation = 1.0
+max_range = 10000

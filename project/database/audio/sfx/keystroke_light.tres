@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://vdn6dbm2oeia"]
+
+[ext_resource type="AudioStream" uid="uid://bxbogxpkcn4y2" path="res://assets/audio/sfx/ui/keystroke1.wav" id="1_xkbtw"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_otqfk"]
+
+[resource]
+script = ExtResource("2_otqfk")
+asset = ExtResource("1_xkbtw")
+base_db = 0.0
+random_db_var = 0.0
+base_pitch = 1.2
+random_pitch_var = 0.05
+attenuation = 1.0
+max_range = 10000

@@ -195,6 +195,7 @@ func _on_ItemFrame_pressed(part_name,type,side,item):
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side,item):
+	AudioManager.play_sfx("keystroke")
 	if item.is_disabled == true:
 		item.get_button().disabled = false
 	if side:
@@ -214,6 +215,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	Statcard.display_part_stats(current_part, new_part, cur_type_selected)
 	Statcard.visible = true
 	comparing_part = true
+	AudioManager.play_sfx("boop")
 
 
 func shoulder_weapon_check():
@@ -264,9 +266,11 @@ func _on_Save_pressed():
 
 func _on_Exit_pressed():
 	if is_build_valid():
+		AudioManager.play_sfx("confirm")
 		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
 		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 	else:
+		AudioManager.play_sfx("deny")
 		print("Build invalid")
 
 
@@ -304,3 +308,7 @@ func unequip_part(type, side):
 	for child in PartList.get_children():
 		if child.current_part == $CurrentItemFrame.current_part:
 			child.get_node("QuantityLabel").text = str(Profile.get_inventory().get($CurrentItemFrame.current_part.part_id))
+
+
+func _on_category_mouse_entered():
+	AudioManager.play_sfx("keystroke")

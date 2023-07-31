@@ -49,6 +49,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	
 	# warning-ignore:return_value_discarded
 	get_tree().change_scene_to_file(scene_path)
+	AudioManager.play_sfx("low_tone")
 	
 	await get_tree().process_frame
 	

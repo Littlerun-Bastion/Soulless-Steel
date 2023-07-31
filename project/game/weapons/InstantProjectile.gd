@@ -87,7 +87,7 @@ func die():
 		return
 	dying = true
 	modulate.a = 1.0
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(self, "modulate:a", 0.0, 1.0)
 	tween.tween_callback(self.queue_free)

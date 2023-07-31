@@ -18,7 +18,7 @@ func shake(duration := 0.2, frequency := 15, amplitude := 16, prio := 0):
 
 func new_shake():
 	var target = Vector2(randf_range(-amp, amp), randf_range(-amp, amp))
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(self, "offset", target, $Frequency.wait_time)
 	tweens.append(tween)
@@ -28,7 +28,7 @@ func stop_shake():
 	for tween in tweens:
 		tween.kill()
 	tweens = []
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	tween.tween_property(self, "offset", Vector2(), $Frequency.wait_time/2)
 	tweens.append(tween)

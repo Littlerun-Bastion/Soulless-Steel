@@ -65,7 +65,7 @@ func update_shader_effect(player):
 
 func damage_burst_effect():
 	if tweens.is_empty():
-		var tween = get_tree().create_tween()
+		var tween = create_tween()
 		tween.set_parallel()
 		tween.tween_property(VCREffect.material, "shader_param/noiseIntensity", 0.02, .1)
 		tween.tween_property(VCREffect.material, "shader_param/colorOffsetIntensity", 1.2, .1)

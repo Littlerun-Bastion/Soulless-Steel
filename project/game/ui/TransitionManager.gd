@@ -26,7 +26,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	BlockScreen.show()
 	BlockScreen.color = Color.BLACK
 	BlockScreen.color.a = 0.0
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.tween_property(BlockScreen, "color:a", 1.0, .1)
 	
 	await tween.finished
@@ -45,7 +45,7 @@ func transition_to(scene_path: String, command_line_text: String):
 	BlockScreen.color = Color.WHITE
 	BlurScreen.show()
 	VCREffect.show()
-	tween = get_tree().create_tween()
+	tween = create_tween()
 	tween.tween_property(BlockScreen, "color:a", 0.0, .8)
 	tween.parallel().tween_method(set_blur_value, 5.0, 0.0, .8)
 	set_noise_value(10)
@@ -57,8 +57,8 @@ func transition_to(scene_path: String, command_line_text: String):
 	BlurScreen.hide()
 	VCREffect.hide()
 	
-	active = false
 	emit_signal("finished")
+	active = false
 
 
 func set_blur_value(value: float):

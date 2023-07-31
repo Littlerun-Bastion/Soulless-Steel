@@ -261,7 +261,7 @@ func _on_player_took_damage(_p, is_status):
 				visible_holes.append(hole)
 		if not visible_holes.is_empty():
 			var hole = visible_holes[randi() % visible_holes.size()]
-			var tween = get_tree().create_tween()
+			var tween = create_tween()
 			hole.modulate.a = 0.0
 			tween.tween_property(hole, "modulate:a", 1.0, HOLE_FADE_DUR)
 

@@ -146,7 +146,7 @@ func reloading(reload_time, side):
 	weapon_node.hide()
 	reload_node.show()
 	reload_node.value = 0
-	var tween = get_tree().create_tween()
+	var tween = create_tween()
 	tween.tween_property(reload_node, "value", 100, reload_time)
 	
 	await tween.finished

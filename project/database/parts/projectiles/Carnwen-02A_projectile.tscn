@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://d1jyd2oh71u71"]
 
 [ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_hk11o"]
-[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_yg3c8"]
+[ext_resource type="PackedScene" uid="uid://cpgbpt3ahxc7v" path="res://game/weapons/BallisticImpactMini.tscn" id="2_abadl"]
 [ext_resource type="Texture2D" uid="uid://pjib3b8w6n45" path="res://assets/images/fx/bullet_laser.png" id="3_8pqrn"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_w5gxl"]
 
@@ -15,7 +15,7 @@ light_energy = 0.35
 muzzle_speed = 5000
 life_time = 0.4
 life_time_var = 0.02
-impact_effect = ExtResource("2_yg3c8")
+impact_effect = ExtResource("2_abadl")
 impact_size = 0.5
 base_damage = 115
 health_mult = 0.5

@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://bqa7xmqpn5xrl"]
 
 [ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_ynw62"]
-[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_ii7jo"]
+[ext_resource type="PackedScene" uid="uid://cpgbpt3ahxc7v" path="res://game/weapons/BallisticImpactMini.tscn" id="2_tctpp"]
 [ext_resource type="Texture2D" uid="uid://stgxl8nglmsh" path="res://assets/images/mechas/projectiles/bullet_small.png" id="3_hcoae"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_j88lm"]
 
@@ -14,7 +14,7 @@ script = ExtResource("1_ynw62")
 projectile_size = 0.75
 light_energy = 0.15
 muzzle_speed = 3800
-impact_effect = ExtResource("2_ii7jo")
+impact_effect = ExtResource("2_tctpp")
 base_damage = 210
 shield_mult = 0.5
 dropoff_modifier = 0.85

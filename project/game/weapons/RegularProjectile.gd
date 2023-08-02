@@ -90,7 +90,7 @@ func die():
 		return
 	dying = true
 	if not proj_data.is_overtime:
-		emit_signal("bullet_impact", self, impact_effect, true)
+		emit_signal("bullet_impact", self, impact_effect, true, false)
 
 func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):

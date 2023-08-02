@@ -360,6 +360,9 @@ color_ramp = SubResource("GradientTexture1D_uvvwk")
 [node name="Node2D" type="Node2D"]
 script = ExtResource("5")
 light_decay_rate = 2.0
+on_hit_sfxs = ["mech_impact_light1", "mech_impact_light2", "mech_impact_light3", "mech_impact_light4", "mech_impact_light5"]
+on_shield_sfxs = Array[String](["shield_impact_light1", "shield_impact_light2", "shield_impact_light3", "shield_impact_light4"])
+on_miss_sfxs = Array[String](["miss_impact_light1", "miss_impact_light2", "miss_impact_light3", "miss_impact_light4", "miss_impact_light5"])
 
 [node name="LightEffect" type="Sprite2D" parent="."]
 material = SubResource("19")

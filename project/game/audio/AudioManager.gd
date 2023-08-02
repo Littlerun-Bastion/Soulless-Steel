@@ -14,8 +14,8 @@ const BGM_PATH = "res://database/audio/bgm/"
 @onready var BGMS = {}
 
 #SFX
-const MAX_SFX_NODES = 200
-const MAX_POS_SFX_NODES = 200
+const MAX_SFX_NODES = 2000
+const MAX_POS_SFX_NODES = 2000
 const SFX_PATH = "res://database/audio/sfx/"
 @onready var SFXS = {}
 

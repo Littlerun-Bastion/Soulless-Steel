@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://5wdt47m70ow4"]
+
+[ext_resource type="AudioStream" uid="uid://c1j8geclt4e0y" path="res://assets/audio/sfx/small_impacts/miss_impact_light3.wav" id="1_opvfs"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_vn46j"]
+
+[resource]
+script = ExtResource("2_vn46j")
+asset = ExtResource("1_opvfs")
+base_db = -8.0
+random_db_var = 0.2
+base_pitch = 1.0
+random_pitch_var = 0.05
+attenuation = 1.5
+max_range = 2000

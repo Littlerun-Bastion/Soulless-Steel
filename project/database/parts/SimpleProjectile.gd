@@ -57,6 +57,7 @@ var lifetime = 0
 var speed = 0.0
 var dir
 var mech_hit
+var shield_hit
 var final_damage = 0.0
 var distance = 0.0
 var has_impacted = false
@@ -136,7 +137,10 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 					rotation_degrees = rad_to_deg(dir.angle()) + 90
 					original_mecha_info.body = body
 					original_mecha_info.name = body.mecha_name
-					emit_signal("bullet_impact", self, impact_effect, false)
+					shield_hit = true
+					emit_signal("bullet_impact", self, impact_effect, false, body)
+				elif not body.is_shielding:
+					emit_signal("bullet_impact", self, impact_effect, false, body)
 				has_impacted = true
 			if not is_overtime and impact_force > 0.0:
 				body.knockback(impact_force, dir, true)
@@ -146,7 +150,7 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
-		die()
+		die(body)
 	
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
@@ -158,15 +162,14 @@ func get_image():
 func get_collision():
 	return $CollisionShape3D.polygon
 
-func die():
+func die(body):
 	if dying:
 		return
 	dying = true
 	if not is_overtime:
-		emit_signal("bullet_impact", self, impact_effect, true)
+		emit_signal("bullet_impact", self, impact_effect, true, body)
 
 	queue_free()
-
 
 func _on_LifeTimer_timeout():
 	queue_free()

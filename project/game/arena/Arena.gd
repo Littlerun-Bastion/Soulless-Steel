@@ -277,8 +277,8 @@ func random_wind_sound():
 	var x = randf_range(-10000.00,10000.00)
 	var y = randf_range(-10000.00,10000.00)
 	var sound_pos = Vector2(x,y)
-	var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
-	AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
+	#var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
+	#AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
 
 
 func set_mechas_block_status(status):
@@ -365,16 +365,18 @@ func _on_mecha_create_casing(args):
 	next_casing.rotation_degrees = args.casing_eject_angle
 	$Casings.trigger(args.casing_size)
 
-func _on_bullet_impact(projectile, effect, clear):
+func _on_bullet_impact(projectile, effect, clear, body):
 	if effect:
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
-		impact_effect.setup(projectile.impact_size, projectile.global_rotation, projectile.mech_hit)
+		var mecha_hit
+		if body and body.is_in_group("mecha"):
+			mecha_hit = true
+		impact_effect.setup(projectile.impact_size, projectile.global_rotation, mecha_hit, projectile.shield_hit)
 		Explosions.add_child(impact_effect)
 	if clear:
 		projectile.queue_free()
 
 func _on_create_trail(projectile, trail):
-	print("!")
 	if trail:
 		var created_trail = ProjectileManager.create_trail(projectile, trail)
 		Trails.add_child(created_trail)

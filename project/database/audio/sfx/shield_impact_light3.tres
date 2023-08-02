@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://b2f6wdhmu11by"]
+
+[ext_resource type="AudioStream" uid="uid://bp7yt2k4qtohe" path="res://assets/audio/sfx/small_impacts/shield_impact_light3.wav" id="1_f2wey"]
+[ext_resource type="Script" path="res://database/audio/SFX.gd" id="2_wojpa"]
+
+[resource]
+script = ExtResource("2_wojpa")
+asset = ExtResource("1_f2wey")
+base_db = -5.0
+random_db_var = 0.2
+base_pitch = 1.0
+random_pitch_var = 0.05
+attenuation = 1.5
+max_range = 2500

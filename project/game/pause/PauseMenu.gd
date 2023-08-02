@@ -33,8 +33,10 @@ func toggle_pause():
 	$ParallaxBackground/GridLayer.visible = not $ParallaxBackground/GridLayer.visible
 	$ParallaxBackground/GridLayer2.visible = not $ParallaxBackground/GridLayer2.visible
 	if $SubViewportContainer.visible:
+		AudioManager.play_sfx("pause")
 		enable()
 	else:
+		AudioManager.play_sfx("unpause")
 		MouseManager.hide_cursor()
 		disable()
 	

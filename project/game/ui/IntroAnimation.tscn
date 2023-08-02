@@ -47,7 +47,7 @@ tracks/2/keys = {
 "times": PackedFloat32Array(0, 4.5, 5, 5.2, 5.4, 5.5, 5.7, 6, 6.3, 6.6, 7, 7.3, 7.6, 7.9, 8.2, 8.5, 9, 9.5, 9.7, 9.9, 9.95, 12.5, 13, 13.55, 14.5, 14.6, 14.8, 14.9, 15, 15.1, 15.2, 15.3, 15.5, 15.6, 15.7, 15.8, 15.9, 16.1, 16.3, 16.5, 16.7, 16.8, 16.9, 17, 17.1, 17.2, 17.3, 17.4, 17.5, 17.8, 17.85, 17.9, 17.95, 18, 18.05, 18.1, 18.15, 18.2, 18.25, 18.3, 18.35, 18.4, 18.45, 18.5, 18.55, 18.6, 18.65, 18.7, 18.75, 18.8, 18.85, 18.9, 18.95, 19, 21.8),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": ["", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+"values": ["", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALISING.
 HunterOS ver. 1.02 LN", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -88,44 +88,44 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+Testing Limbic System Overrides", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+Testing Limbic System Overrides.", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides..", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+Testing Limbic System Overrides..", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides...", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+Testing Limbic System Overrides...", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+Testing Limbic System Overrides... done", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
@@ -133,7 +133,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -142,32 +142,32 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
+	      Free: 54.23Tb (1023.32 Total)", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 		", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
 KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.		", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
 HunterOS ver. 1.02 LN
@@ -175,11 +175,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"		", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -188,11 +188,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password. USER PROMPT: \"Speak friend, and enter.\"	", "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
@@ -201,11 +201,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -215,11 +215,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -230,7 +230,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -246,7 +246,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -263,7 +263,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -281,7 +281,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -299,7 +299,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -317,7 +317,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -335,7 +335,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -353,7 +353,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -372,7 +372,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -392,7 +392,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -413,7 +413,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -435,7 +435,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -457,7 +457,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -479,7 +479,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -501,7 +501,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -523,11 +523,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -546,11 +546,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -569,11 +569,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -592,11 +592,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -616,11 +616,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -640,11 +640,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -665,11 +665,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -690,11 +690,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -715,11 +715,11 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -741,7 +741,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -767,7 +767,7 @@ KEY 192SK0A-LN4C-H4R
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -793,7 +793,7 @@ Good hunting, Pilot.", "
 c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -819,7 +819,7 @@ Good hunting, Pilot.", "
 
 ---Break---
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -845,7 +845,7 @@ Good hunting, Pilot.", "
 
 
 Engaging wetware connection... Connected!
-Testing Limbic System Overriides... done
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -871,33 +871,7 @@ Good hunting, Pilot.", "
 
 
 
-Testing Limbic System Overriides... done
-CHIPSET Neural Handshake
-CHIPSET WZC-Mod. 12K9700
-      Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
-
-Initiating Combat Mode.
-Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
-Password Accepted.
-Sig Profile RCSS - 34004c
-NAV 0x400c4003, 0x400c4503
-SHIELDS ENGAGING
-Calibrating weapons  .  .  .  done
-WARNING: EXTERIOR RADIATION DETECTED.
-Heatsink coupled.
-     Rest Temperature: 285.15K
-Initiating IR/Vis Sensors. . . . . . done!
-HARDCheck - [All Green]
-WETCheck - [All Green]
-SOFTCheck - [All Green]
-Good hunting, Pilot.", "
-
-
-
-
-
-
+Testing Limbic System Overrides... done
 CHIPSET Neural Handshake
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
@@ -924,10 +898,36 @@ Good hunting, Pilot.", "
 
 
 
+CHIPSET Neural Handshake
+CHIPSET WZC-Mod. 12K9700
+       Rest Freq: 1.244THz
+	      Free: 54.23Tb (1023.32 Total)
+
+Initiating Combat Mode.
+Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
+Password Accepted.
+Sig Profile RCSS - 34004c
+NAV 0x400c4003, 0x400c4503
+SHIELDS ENGAGING
+Calibrating weapons  .  .  .  done
+WARNING: EXTERIOR RADIATION DETECTED.
+Heatsink coupled.
+     Rest Temperature: 285.15K
+Initiating IR/Vis Sensors. . . . . . done!
+HARDCheck - [All Green]
+WETCheck - [All Green]
+SOFTCheck - [All Green]
+Good hunting, Pilot.", "
+
+
+
+
+
+
 
 CHIPSET WZC-Mod. 12K9700
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -953,7 +953,7 @@ Good hunting, Pilot.", "
 
 
       Rest Freq: 1.244THz
-	      Free: 54.23Tb (1023.32 Totall)
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -979,33 +979,7 @@ Good hunting, Pilot.", "
 
 
 
-	      Free: 54.23Tb (1023.32 Totall)
-
-Initiating Combat Mode.
-Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
-Password Accepted.
-Sig Profile RCSS - 34004c
-NAV 0x400c4003, 0x400c4503
-SHIELDS ENGAGING
-Calibrating weapons  .  .  .  done
-WARNING: EXTERIOR RADIATION DETECTED.
-Heatsink coupled.
-     Rest Temperature: 285.15K
-Initiating IR/Vis Sensors. . . . . . done!
-HARDCheck - [All Green]
-WETCheck - [All Green]
-SOFTCheck - [All Green]
-Good hunting, Pilot.", "
-
-
-
-
-
-
-
-
-
-
+	      Free: 54.23Tb (1023.32 Total)
 
 Initiating Combat Mode.
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
@@ -1033,6 +1007,32 @@ Good hunting, Pilot.", "
 
 
 
+Initiating Combat Mode.
+Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
+Password Accepted.
+Sig Profile RCSS - 34004c
+NAV 0x400c4003, 0x400c4503
+SHIELDS ENGAGING
+Calibrating weapons  .  .  .  done
+WARNING: EXTERIOR RADIATION DETECTED.
+Heatsink coupled.
+     Rest Temperature: 285.15K
+Initiating IR/Vis Sensors. . . . . . done!
+HARDCheck - [All Green]
+WETCheck - [All Green]
+SOFTCheck - [All Green]
+Good hunting, Pilot.", "
+
+
+
+
+
+
+
+
+
+
+
 
 Enter Password.	 USER PROMPT: \"Speak friend, and enter.\"
 Password Accepted.
@@ -1087,6 +1087,7 @@ Good hunting, Pilot.", "
 
 
 
+
 Sig Profile RCSS - 34004c
 NAV 0x400c4003, 0x400c4503
 SHIELDS ENGAGING
@@ -1099,6 +1100,7 @@ HARDCheck - [All Green]
 WETCheck - [All Green]
 SOFTCheck - [All Green]
 Good hunting, Pilot.", "
+
 
 
 
@@ -2045,7 +2047,7 @@ custom_minimum_size = Vector2(1920, 1080)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 1)
+color = Color(0, 0, 0, 0)
 
 [node name="CommandLine" type="Label" parent="."]
 anchors_preset = 2
@@ -2059,7 +2061,7 @@ theme = ExtResource("2_5gon4")
 theme_override_fonts/font = ExtResource("2_n72kf")
 theme_override_font_sizes/font_size = 36
 visible_characters = 0
-visible_ratio = 0.48062
+visible_ratio = 0.0
 metadata/_edit_use_anchors_ = true
 
 [node name="ScreenText" type="Label" parent="."]
@@ -2071,19 +2073,13 @@ offset_top = 982.0
 offset_right = 871.0
 offset_bottom = 1018.0
 grow_vertical = 0
+theme_override_constants/line_spacing = 1
 theme_override_fonts/font = ExtResource("2_n72kf")
 theme_override_font_sizes/font_size = 36
-text = "SURFACE ACTIVITY VEHICLE NEURALOS INITIALIZING.
-HunterOS ver. 1.02 LN
-KEY 192SK0A-LN4C-H4R
-c3210. 05 Wuzhi Corp. Wetware and Tech / Stay frosty, pilot!
----Break---
-Engaging wetware connection... Connected!
-Testing Limbic System Overriides.."
+justification_flags = 0
 
 [node name="EntranceSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2")
-stream_paused = true
 bus = &"SFX"
 
 [node name="Ent_misc1" type="AudioStreamPlayer" parent="."]
@@ -2112,7 +2108,6 @@ anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="VCREffect2" type="ColorRect" parent="."]
-visible = false
 material = SubResource("24")
 custom_minimum_size = Vector2(1920, 1080)
 anchors_preset = 15

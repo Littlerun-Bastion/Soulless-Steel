@@ -1,11 +1,9 @@
-[gd_resource type="FontFile" load_steps=2 format=2]
-
-[ext_resource path="res://assets/fonts/data/TheJewishBitmap/PixelFJVerdana12pt.ttf" type="FontFile" id=1]
+[gd_resource type="FontFile" format=3 uid="uid://cfp5x03w4b1bk"]
 
 [resource]
-size = 11
-extra_spacing_top = 1
-extra_spacing_bottom = -6
-extra_spacing_char = 2
-extra_spacing_space = 2
-font_data = ExtResource( 1 )
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)

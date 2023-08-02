@@ -274,9 +274,10 @@ func player_ammo_set():
 
 
 func random_wind_sound():
-	var x = randf_range(-10000.00,10000.00)
-	var y = randf_range(-10000.00,10000.00)
-	var sound_pos = Vector2(x,y)
+	pass
+#	var x = randf_range(-10000.00,10000.00)
+#	var y = randf_range(-10000.00,10000.00)
+#	var sound_pos = Vector2(x,y)
 	#var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
 	#AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
 

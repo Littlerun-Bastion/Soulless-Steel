@@ -1,6 +1,6 @@
 [gd_scene load_steps=27 format=3 uid="uid://b60qwou3y6iaw"]
 
-[ext_resource type="Script" path="res://game/fx/explosion.gd" id="1_phw11"]
+[ext_resource type="Script" path="res://game/fx/Explosion.gd" id="1_uwtfg"]
 [ext_resource type="Texture2D" uid="uid://unns3w28576t" path="res://assets/images/light_sources/light_point_hard.png" id="2_etqyh"]
 [ext_resource type="Texture2D" uid="uid://dpiv0b1f102su" path="res://assets/images/fx/explosion_flash_1.png" id="3_qfepk"]
 [ext_resource type="Texture2D" uid="uid://dmf3n3824upru" path="res://assets/images/fx/explosion_flash_2.png" id="4_wkxxo"]
@@ -357,8 +357,8 @@ scale_max = 5.0
 scale_curve = SubResource("11")
 color_ramp = SubResource("GradientTexture1D_uvvwk")
 
-[node name="Node2D" type="Node2D"]
-script = ExtResource("1_phw11")
+[node name="OMRivetImpact" type="Node2D"]
+script = ExtResource("1_uwtfg")
 light_decay_rate = 2.0
 
 [node name="LightEffect" type="Sprite2D" parent="."]

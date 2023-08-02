@@ -1,10 +1,10 @@
 [gd_scene load_steps=40 format=3 uid="uid://dkj4mi4wpw7ww"]
 
 [ext_resource type="Texture2D" uid="uid://d03o7t2hxs101" path="res://assets/images/fx/explosion_directed_1.png" id="1"]
+[ext_resource type="Script" path="res://game/fx/Explosion.gd" id="1_y1clt"]
 [ext_resource type="Texture2D" uid="uid://unns3w28576t" path="res://assets/images/light_sources/light_point_hard.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://bt64gwk4rn6y5" path="res://assets/images/fx/explosion_directed_2.png" id="4"]
-[ext_resource type="Script" path="res://game/fx/explosion.gd" id="5"]
 [ext_resource type="Texture2D" uid="uid://dag6eh5h67cwx" path="res://assets/images/fx/explosion_directed_3.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://dlnokjd0aqymr" path="res://assets/images/spark_fx.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://bh7nsrbql34kq" path="res://assets/images/fx/cold_cloud.png" id="8"]
@@ -358,8 +358,8 @@ scale_curve = SubResource("20")
 color_ramp = SubResource("18")
 color_initial_ramp = SubResource("34")
 
-[node name="Node2D" type="Node2D"]
-script = ExtResource("5")
+[node name="MissileDirectedImpact" type="Node2D"]
+script = ExtResource("1_y1clt")
 light_decay_rate = 2.0
 
 [node name="LightEffect" type="Sprite2D" parent="."]

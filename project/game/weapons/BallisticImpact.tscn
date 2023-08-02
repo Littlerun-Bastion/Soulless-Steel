@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cqmps4x0jpay1" path="res://assets/images/fx/cloud_small.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://dmf3n3824upru" path="res://assets/images/fx/explosion_flash_2.png" id="4"]
-[ext_resource type="Script" path="res://game/fx/explosion.gd" id="5"]
+[ext_resource type="Script" path="res://game/fx/Explosion.gd" id="5"]
 [ext_resource type="Texture2D" uid="uid://ka2kf3slwefy" path="res://assets/images/fx/explosion_flash_3.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://unns3w28576t" path="res://assets/images/light_sources/light_point_hard.png" id="7"]
 
@@ -357,7 +357,7 @@ scale_max = 5.0
 scale_curve = SubResource("11")
 color_ramp = SubResource("GradientTexture1D_uvvwk")
 
-[node name="Node2D" type="Node2D"]
+[node name="BallisticImpact" type="Node2D"]
 script = ExtResource("5")
 light_decay_rate = 2.0
 on_hit_sfxs = Array[String](["mech_impact_light1", "mech_impact_light2", "mech_impact_light3", "mech_impact_light4", "mech_impact_light5"])

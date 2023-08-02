@@ -6,9 +6,9 @@
 [resource]
 script = ExtResource("2_u7crg")
 asset = ExtResource("1_jgimg")
-base_db = -5.0
+base_db = 0.0
 random_db_var = 0.2
 base_pitch = 1.0
 random_pitch_var = 0.05
-attenuation = 1.5
+attenuation = 1.0
 max_range = 2500

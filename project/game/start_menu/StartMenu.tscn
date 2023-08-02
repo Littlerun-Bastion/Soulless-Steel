@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2_q5sq0"]
 [ext_resource type="Script" path="res://game/start_menu/StartMenu.gd" id="4"]
-[ext_resource type="FontFile" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
+[ext_resource type="FontFile" uid="uid://blbssisrebbh6" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_4l8ve"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="8_fdr4d"]
 [ext_resource type="Theme" uid="uid://cqlnn7sur6eiy" path="res://game/title_buttons_theme.tres" id="12"]

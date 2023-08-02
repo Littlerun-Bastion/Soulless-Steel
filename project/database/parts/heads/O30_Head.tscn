@@ -3,9 +3,9 @@
 [ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="1"]
 [ext_resource type="Texture2D" uid="uid://bgaxbfvfn0u4x" path="res://assets/images/mechas/heads/O30/O30-Head_sub.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://mrvea2ug4e7d" path="res://assets/images/mechas/heads/O30/O30-Head_main.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://ctmy8fgqx45av" path="res://game/fx/Heatmaps/BluehotBow.tres" id="3_bytkj"]
 [ext_resource type="Script" path="res://database/parts/head.gd" id="4"]
 [ext_resource type="Texture2D" uid="uid://bxxoaj4px1006" path="res://assets/images/mechas/heads/O30/O30-Head_glow.png" id="5"]
-[ext_resource type="Texture2D" uid="uid://dkqnbjwsa4fei" path="res://game/fx/Heatmaps/Sepia.tres" id="6"]
 [ext_resource type="Texture2D" uid="uid://bupygocqubbmk" path="res://assets/images/mechas/heads/O30/O30-Head_pv.png" id="7"]
 
 [node name="Part" type="Node2D"]
@@ -16,7 +16,7 @@ manufacturer_name_short = "Orontes"
 tagline = "Test"
 description = "Lighter than the O10 series, the O30 series features competitive visual sensors and stability, but sacrifices a lot of the armor plating that made the O10 so exceptional. "
 image = ExtResource("7")
-heatmap = ExtResource("6")
+heatmap = ExtResource("3_bytkj")
 accuracy_modifier = 1.35
 visual_range = 700
 health = 1350

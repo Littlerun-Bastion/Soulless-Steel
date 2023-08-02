@@ -465,7 +465,7 @@ func do_defend(dt, enemy):
 				aiming_at_enemy = false
 				reaction_timer = 0.0
 				
-		if enemy.global_position.distance_to(point_of_interest) < min_kite_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
+		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
 			if reaction_timer >= reaction_speed:
 				enemy.shoot_weapons(enemy.current_target)
 			else:

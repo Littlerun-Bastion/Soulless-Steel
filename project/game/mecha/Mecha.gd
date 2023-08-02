@@ -1470,17 +1470,18 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 
 
 func knockback(strength, knockback_dir, should_rotate = true):
-	impact_velocity += (knockback_dir.normalized() * (strength * get_stability()))
-	if should_rotate:
-		if impact_rotation_velocity > 0:
-			impact_rotation_velocity += strength / (get_stat("stability")*10)
-		elif impact_rotation_velocity < 0:
-			impact_rotation_velocity -= strength / (get_stat("stability")*10)
-		else:
-			if randi()%2 == 1:
-				impact_rotation_velocity += strength / (get_stat("stability")*10)
-			else:
-				impact_rotation_velocity -= strength / (get_stat("stability")*10)
+	return
+	#impact_velocity += (knockback_dir.normalized() * (strength * get_stability()))
+	#if should_rotate:
+	#	if impact_rotation_velocity > 0:
+	#		impact_rotation_velocity += strength / (get_stat("stability")*10)
+	#	elif impact_rotation_velocity < 0:
+	#		impact_rotation_velocity -= strength / (get_stat("stability")*10)
+	#	else:
+	#		if randi()%2 == 1:
+	#			impact_rotation_velocity += strength / (get_stat("stability")*10)
+	#		else:
+	#			impact_rotation_velocity -= strength / (get_stat("stability")*10)
 
 
 func update_chassis_visuals(dt):

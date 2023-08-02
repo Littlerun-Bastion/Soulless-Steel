@@ -38,6 +38,7 @@ const LEADERBOARDS =[
 var selected_challenger
 
 func _ready():
+	MouseManager.show_cursor()
 	setup_leaderboards(1)
 	if ArenaManager.last_match_unread:
 		if ArenaManager.last_match:
@@ -60,7 +61,7 @@ func _ready():
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = false
 			var balance = Profile.get_stat("money") + ArenaManager.last_match.total_payout
 			Profile.set_stat("money", balance)
-			Balance.text = Profile.get_stat("money")
+			Balance.text = str(Profile.get_stat("money"))
 			AmmoCost.text = str(ArenaManager.last_match.total_ammo_cost)
 			PayoutTotal.text = str(ArenaManager.last_match.total_payout)
 		ArenaManager.last_match_unread = false
@@ -134,3 +135,18 @@ func set_exhibition_mode():
 
 func _on_Dismiss_pressed():
 	PayoutScreen.visible = false
+
+
+func _on_main_menu_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Unloading...")
+
+
+func _on_hangar_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer...")
+
+
+func _on_store_pressed():
+	AudioManager.play_sfx("confirm")
+	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")

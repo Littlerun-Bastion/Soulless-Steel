@@ -11,7 +11,7 @@ const UNDERGROUND_PAYOUT_MODIFIER = 1.5
 
 var map_to_load = false
 var current_challengers = ["Lady Volk"]
-var exhibitioner_count = 0
+var exhibitioner_count = 2
 var mode = ""
 var tier = "Civ-Grade"
 var last_match

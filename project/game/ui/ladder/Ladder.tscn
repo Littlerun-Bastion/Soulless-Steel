@@ -357,11 +357,16 @@ text = "Start Match"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="StartMatch"]
 layout_mode = 0
-offset_top = -194.0
+offset_top = -246.0
 offset_right = 400.0
-offset_bottom = -34.0
+offset_bottom = -26.0
 theme_override_constants/separation = 20
 alignment = 2
+
+[node name="Button4" type="Button" parent="StartMatch/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "Main Menu"
 
 [node name="Button" type="Button" parent="StartMatch/VBoxContainer"]
 layout_mode = 2
@@ -376,6 +381,7 @@ text = "Store"
 [node name="Button3" type="Button" parent="StartMatch/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 35
+disabled = true
 text = "PilotRelay"
 
 [node name="Label2" type="Label" parent="."]
@@ -786,4 +792,7 @@ text = "Dismiss"
 [connection signal="pressed" from="VBoxContainer2/Button" to="." method="set_challenge_mode"]
 [connection signal="pressed" from="VBoxContainer2/Button2" to="." method="set_exhibition_mode"]
 [connection signal="pressed" from="StartMatch" to="." method="start_match"]
+[connection signal="pressed" from="StartMatch/VBoxContainer/Button4" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="StartMatch/VBoxContainer/Button" to="." method="_on_hangar_pressed"]
+[connection signal="pressed" from="StartMatch/VBoxContainer/Button2" to="." method="_on_store_pressed"]
 [connection signal="pressed" from="PayoutScreen/Button" to="." method="_on_Dismiss_pressed"]

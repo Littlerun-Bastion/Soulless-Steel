@@ -14,7 +14,6 @@ part_name = "MSV-L3J-H"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Test"
-price = 4400.0
 description = "A cheap lightweight head part cobbled from scrap metal and spare parts. Poorly designed, though its visual sensors are surprisingly not the worst offering on the market."
 image = ExtResource("6")
 heatmap = ExtResource("7")

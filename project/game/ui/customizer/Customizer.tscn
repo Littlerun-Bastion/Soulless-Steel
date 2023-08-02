@@ -442,66 +442,75 @@ theme = ExtResource("8")
 layout_mode = 2
 theme_override_constants/separation = 120
 
-[node name="WeightBar" type="ProgressBar" parent="."]
-layout_mode = 0
+[node name="WeightNodes" type="Control" parent="."]
+anchors_preset = 0
 offset_left = 1216.0
 offset_top = 974.0
-offset_right = 1975.0
-offset_bottom = 1018.0
+offset_right = 1256.0
+offset_bottom = 1014.0
+
+[node name="CurrentBar" type="ProgressBar" parent="WeightNodes"]
+layout_mode = 0
+offset_right = 759.0
+offset_bottom = 44.0
 rotation = -1.5708
 theme_override_styles/background = SubResource("StyleBoxFlat_uy8tw")
 theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
 
-[node name="WeightComparisonBar" type="ProgressBar" parent="."]
+[node name="ComparisonBar" type="ProgressBar" parent="WeightNodes"]
 layout_mode = 0
-offset_left = 1237.0
-offset_top = 974.0
-offset_right = 1996.0
-offset_bottom = 997.0
+offset_left = 21.0
+offset_right = 780.0
+offset_bottom = 25.0
 rotation = -1.5708
 theme_override_styles/background = SubResource("StyleBoxFlat_lx7ir")
 theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
 
-[node name="CurrentWeightLabel" type="Label" parent="."]
+[node name="WeightAmounts" type="VBoxContainer" parent="WeightNodes"]
 layout_mode = 0
-offset_left = 1199.0
-offset_top = 976.0
-offset_right = 1265.0
-offset_bottom = 1007.0
+offset_left = -16.0
+offset_top = 5.0
+offset_right = 63.0
+offset_bottom = 85.0
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="CurrentWeight" type="HBoxContainer" parent="WeightNodes/WeightAmounts"]
+layout_mode = 2
+alignment = 1
+
+[node name="Value" type="Label" parent="WeightNodes/WeightAmounts/CurrentWeight"]
+layout_mode = 2
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 30
 text = "4000"
 
-[node name="MaxWeightLabel" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1199.0
-offset_top = 1019.0
-offset_right = 1265.0
-offset_bottom = 1050.0
-theme = ExtResource("8")
-theme_override_font_sizes/font_size = 30
-text = "4000"
-
-[node name="kg" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1210.0
-offset_top = 976.0
-offset_right = 1276.0
-offset_bottom = 1007.0
+[node name="Metric" type="Label" parent="WeightNodes/WeightAmounts/CurrentWeight"]
+layout_mode = 2
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 20
 text = "tn"
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="kg2" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1210.0
-offset_top = 1019.0
-offset_right = 1276.0
-offset_bottom = 1050.0
+[node name="Separator" type="ColorRect" parent="WeightNodes/WeightAmounts"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
+[node name="MaxWeight" type="HBoxContainer" parent="WeightNodes/WeightAmounts"]
+layout_mode = 2
+alignment = 1
+
+[node name="Value" type="Label" parent="WeightNodes/WeightAmounts/MaxWeight"]
+layout_mode = 2
+theme = ExtResource("8")
+theme_override_font_sizes/font_size = 30
+text = "4000"
+
+[node name="Metric" type="Label" parent="WeightNodes/WeightAmounts/MaxWeight"]
+layout_mode = 2
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 20
 text = "tn"
@@ -536,13 +545,6 @@ text = "Exit"
 alignment = 0
 icon_alignment = 2
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 0
-offset_left = 1202.0
-offset_top = 1015.0
-offset_right = 1256.0
-offset_bottom = 1017.0
-
 [node name="Statcard" parent="." instance=ExtResource("10")]
 visible = false
 anchors_preset = 0
@@ -573,6 +575,7 @@ offset_top = 278.732
 offset_right = 548.217
 offset_bottom = 299.732
 theme = ExtResource("8")
+theme_override_colors/font_color = Color(1, 0.27451, 0.211765, 1)
 theme_override_font_sizes/font_size = 30
 text = "overweight"
 
@@ -625,6 +628,7 @@ stat_name = "max_speed"
 stat_label = "SPD"
 
 [node name="CurrentItemFrame" parent="." instance=ExtResource("14_75fbo")]
+visible = false
 layout_mode = 1
 offset_left = 1322.0
 offset_top = 855.0
@@ -653,13 +657,13 @@ offset_bottom = 1069.0
 [connection signal="mouse_entered" from="PartCategories/Wetware/thruster" to="." method="_on_category_mouse_entered"]
 [connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= ["thruster", "Wetware"]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_category_mouse_entered"]
-[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", 1]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_category_mouse_entered"]
-[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "left"]]
+[connection signal="pressed" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", 0]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_category_mouse_entered"]
-[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "right"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_right" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", 1]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_category_mouse_entered"]
-[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", "left"]]
+[connection signal="pressed" from="PartCategories/Equipment/shoulder_weapon_left" to="." method="_on_Category_pressed" binds= ["shoulder_weapon", "Equipment", 0]]
 [connection signal="mouse_entered" from="CategoryButtons/Hardware" to="." method="_on_category_mouse_entered"]
 [connection signal="pressed" from="CategoryButtons/Hardware" to="." method="_on_HardwareButton_pressed"]
 [connection signal="mouse_entered" from="CategoryButtons/Wetware" to="." method="_on_category_mouse_entered"]

@@ -1,13 +1,81 @@
 [gd_scene load_steps=40 format=3 uid="uid://dkj4mi4wpw7ww"]
 
 [ext_resource type="Texture2D" uid="uid://d03o7t2hxs101" path="res://assets/images/fx/explosion_directed_1.png" id="1"]
-[ext_resource type="Script" path="res://game/fx/Explosion.gd" id="1_y1clt"]
 [ext_resource type="Texture2D" uid="uid://unns3w28576t" path="res://assets/images/light_sources/light_point_hard.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://8vyib7idhw2s" path="res://assets/images/fx/long_spark.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://bt64gwk4rn6y5" path="res://assets/images/fx/explosion_directed_2.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://dag6eh5h67cwx" path="res://assets/images/fx/explosion_directed_3.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://dlnokjd0aqymr" path="res://assets/images/spark_fx.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://bh7nsrbql34kq" path="res://assets/images/fx/cold_cloud.png" id="8"]
+
+[sub_resource type="GDScript" id="GDScript_orjvh"]
+script/source = "extends Node2D
+
+@onready var Player = $AnimationPlayer
+@export var light_decay_rate := 1.0
+@export var on_hit_sfxs : Array[String] = []
+@export var on_shield_sfxs : Array[String] = []
+@export var on_miss_sfxs : Array[String] = []
+
+var lifetime := 10.0
+var is_mecha = false
+var is_shield = false
+
+func _ready():
+	var num = randi() % 2
+	Player.play(\"impact\" + str(num + 1))
+	play_sfx()
+
+
+func _process(delta):
+	if lifetime <= 0.0:
+		queue_free()
+	else:
+		lifetime -= delta
+	$LightEffect.modulate.a -= delta * light_decay_rate
+
+
+func setup(size, rot, mecha, shield):
+	is_mecha = mecha
+	is_shield = shield
+	
+	if is_mecha and is_shield:
+		for child in get_node(\"OnShield\").get_children():
+			child.amount = child.amount * size
+			child.emitting = true
+	elif is_mecha:
+		for child in get_node(\"OnHit\").get_children():
+			child.amount = child.amount * size
+			child.emitting = true
+	else:
+		for child in get_node(\"OnMiss\").get_children():
+			child.amount = child.amount * size
+			child.emitting = true
+	
+	scale = Vector2(size,size)
+	self.global_rotation = rot
+
+
+func play_sfx():
+	if is_mecha and is_shield:
+		for child in get_node(\"OnShield\").get_children():
+			if on_hit_sfxs.size() > 0:
+				var play_audio = on_shield_sfxs.pick_random()
+				if play_audio:
+					AudioManager.play_sfx(play_audio, child.global_position)
+	elif is_mecha:
+		for child in get_node(\"OnHit\").get_children():
+			if on_hit_sfxs.size() > 0:
+				var play_audio = on_hit_sfxs.pick_random()
+				if play_audio:
+					AudioManager.play_sfx(play_audio, child.global_position)
+	else:
+		for child in get_node(\"OnMiss\").get_children():
+			if on_miss_sfxs.size() > 0:
+				var play_audio = on_miss_sfxs.pick_random()
+				if play_audio:
+					AudioManager.play_sfx(play_audio, child.global_position)
+"
 
 [sub_resource type="CanvasItemMaterial" id="38"]
 blend_mode = 1
@@ -359,7 +427,7 @@ color_ramp = SubResource("18")
 color_initial_ramp = SubResource("34")
 
 [node name="MissileDirectedImpact" type="Node2D"]
-script = ExtResource("1_y1clt")
+script = SubResource("GDScript_orjvh")
 light_decay_rate = 2.0
 
 [node name="LightEffect" type="Sprite2D" parent="."]
@@ -398,6 +466,36 @@ randomness = 1.0
 visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 
 [node name="hit_smoke" type="GPUParticles2D" parent="OnHit"]
+z_index = 1
+material = SubResource("35")
+emitting = false
+amount = 50
+process_material = SubResource("37")
+texture = ExtResource("8")
+lifetime = 5.0
+one_shot = true
+speed_scale = 1.5
+explosiveness = 1.0
+randomness = 1.0
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+
+[node name="OnShield" type="Node2D" parent="."]
+
+[node name="sparks_mech" type="GPUParticles2D" parent="OnShield"]
+material = SubResource("30")
+position = Vector2(0.80098, -0.800995)
+emitting = false
+amount = 100
+process_material = SubResource("29")
+texture = ExtResource("7")
+lifetime = 2.0
+one_shot = true
+speed_scale = 5.0
+explosiveness = 0.97
+randomness = 1.0
+visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+
+[node name="hit_smoke" type="GPUParticles2D" parent="OnShield"]
 z_index = 1
 material = SubResource("35")
 emitting = false

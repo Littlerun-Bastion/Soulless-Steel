@@ -10,8 +10,8 @@ point_count = 2
 curve = SubResource("7")
 
 [sub_resource type="Gradient" id="Gradient_gomk0"]
-offsets = PackedFloat32Array(0, 0.135802, 0.311594, 0.701613, 1)
-colors = PackedColorArray(1, 1, 1, 1, 0.6, 0.6, 0.6, 0.580392, 0.301961, 0.301961, 0.301961, 0.509804, 0.301961, 0.301961, 0.301961, 0.454902, 0.301961, 0.301961, 0.301961, 0)
+offsets = PackedFloat32Array(0, 0.030303, 0.136364, 0.578283, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.6, 0.6, 0.6, 0.580392, 0.2, 0.2, 0.2, 0.509804, 0.1, 0.1, 0.1, 0.454902, 0.1, 0.1, 0.1, 0)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_rff3f"]
 gradient = SubResource("Gradient_gomk0")
@@ -33,7 +33,6 @@ emission_ring_inner_radius = 0.0
 particle_flag_disable_z = true
 spread = 180.0
 gravity = Vector3(0, 0, 0)
-angular_velocity_min = -80.0
 angular_velocity_curve = SubResource("8")
 orbit_velocity_min = 0.0
 orbit_velocity_max = 0.0

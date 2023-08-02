@@ -9,7 +9,7 @@ extends Resource
 @export var head : Array[String] = ["MSV-L3J-H"]
 @export var core: Array[String] = ["MSV-L3J-C"]
 @export var shoulders : Array[String] = ["MSV-L3J-SG"]
-@export var generator : Array[String] = ["type_1"]
+@export var generator : Array[String] = ["type_1_gen"]
 @export var chipset : Array[String] = ["type_2"]
 @export var chassis : Array[String] = ["MSV-L3J-L"]
 @export var thruster : Array[String] = ["test1"]

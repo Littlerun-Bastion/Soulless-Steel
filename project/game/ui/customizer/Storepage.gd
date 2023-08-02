@@ -65,8 +65,8 @@ func _input(event):
 
 func default_loadout():
 	DisplayMecha.set_core("MSV-L3J-C")
-	DisplayMecha.set_generator("type_1")
-	DisplayMecha.set_chipset("type_1")
+	DisplayMecha.set_generator("type_1_gen")
+	DisplayMecha.set_chipset("type_1_chip")
 	DisplayMecha.set_head("MSV-L3J-H")
 	DisplayMecha.set_chassis("MSV-L3J-L")
 	DisplayMecha.set_arm_weapon("MA-L127", SIDE.LEFT)

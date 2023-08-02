@@ -913,6 +913,8 @@ func set_weapon_sfx_nodes(sfx_node, part_data):
 
 
 func set_core(part_name):
+	if not part_name:
+		return
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()

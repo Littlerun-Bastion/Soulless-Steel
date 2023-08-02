@@ -1,8 +1,14 @@
 extends Control
-##Storepage
+
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
 const BASKET_ITEM = preload("res://game/ui/customizer/BasketItem.tscn")
 const LERP_WEIGHT = 5
+const WEAPON_NAMES = {
+	"arm_weapon_right": "Right Arm",
+	"arm_weapon_left": "Left Arm",
+	"shoulder_weapon_right": "R Shoulder",
+	"shoulder_weapon_left": "L Shoulder",
+}
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
@@ -92,6 +98,7 @@ func show_category_button(parts, selected):
 	for category in PartCategories.get_children():
 		category.visible = (category == parts)
 		for part in category.get_children():
+			reset_category_name(part)
 			part.visible = true
 			part.button_pressed = false
 	for child in CategorySelectedUI.get_children():
@@ -169,6 +176,14 @@ func recalculate_total():
 	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
 
 
+func reset_category_name(button):
+	if WEAPON_NAMES.has(button.name):
+		button.text = WEAPON_NAMES[button.name]
+	else:
+		button.text = button.name
+	button.text[0] = button.text[0].capitalize()
+
+
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/market_parser --" + str(type))
 	var group_node = PartCategories.get_node(group)
@@ -183,6 +198,8 @@ func _on_Category_pressed(type,group,side = false):
 			if child.name != type_name:
 				child.visible = false
 				child.button_pressed = false
+			else:
+				child.text = "Back"
 		var parts = PartManager.get_parts(type)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
@@ -196,7 +213,10 @@ func _on_Category_pressed(type,group,side = false):
 	else:
 		category_visible = false
 		for child in group_node.get_children():
-			child.visible = true
+			if not child.visible:
+				child.visible = true
+			else:
+				reset_category_name(child)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
 		PartList.visible = false

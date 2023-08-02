@@ -9,7 +9,7 @@ const LANGUAGES = [
 	{"locale":"pt_BR", "name": "Português"},
 ]
 
-const VERSION := "v0.0.2dev"
+const VERSION := "v0.0.3"
 const SHOW_VERSION = true
 
 var options = {
@@ -34,8 +34,8 @@ var stats = {
 	"gameover": 0,
 	"current_mecha" : {
 		"head": "MSV-L3J-H", "core": "MSV-L3J-C", "shoulders": "MSV-L3J-SG",
-		"generator": "type_1", "chipset": "type_2", "chassis": "MSV-L3J-L",
-		"thruster": "test1",
+		"generator": "type_1_gen", "chipset": "type_2_chip", "chassis": "MSV-L3J-L",
+		"thruster": "type_1_thruster",
 		"arm_weapon_left": "MA-L127", "arm_weapon_right": "MA-L127",
 		"shoulder_weapon_left": false, "shoulder_weapon_right": false,
 	},
@@ -60,7 +60,16 @@ var leaderboards = {
 	],
 }
 
-var inventory = {}
+var inventory = {
+	"MSV-L3J-H": 1,
+	"MSV-L3J-C": 1,
+	"MSV-L3J-SG": 1,
+	"type_1_gen": 1,
+	"type_2_chip": 1,
+	"MSV-L3J-L": 1,
+	"type_1_thruster": 1,
+	"MA-L127": 2,
+}
 
 func get_locale_idx(locale):
 	var idx = 0
@@ -95,6 +104,8 @@ func set_save_data(data):
 		#Handle version diff here.
 		push_warning("Different save version for profile. Its version: " + str(data.version) + " Current version: " + str(Profile.VERSION)) 
 		push_warning("Properly updating to new save version")
+		if data.version == "v0.0.2dev":
+			data.inventory = inventory 
 		push_warning("Profile updated!")
 	
 	set_data(data, "options", options)
@@ -186,19 +197,24 @@ func get_inventory():
 	return inventory
 
 
-func add_to_inventory(item_name):
-	if inventory.has(item_name):
-		inventory[item_name] += 1
+func get_inventory_amount(part_name):
+	assert(inventory.has(part_name), "Inventory doesn't have this item to get amount: " + str(part_name))
+	return inventory[part_name]
+
+
+func add_to_inventory(part_name):
+	if inventory.has(part_name):
+		inventory[part_name] += 1
 	else:
-		inventory[item_name] = 1
+		inventory[part_name] = 1
 	FileManager.save_profile()
 
-func remove_from_inventory(item_name):
-	if inventory.has(item_name):
-		if inventory[item_name] > 0:
-			inventory[item_name] -= 1
-		else:
-			inventory.erase(item_name)
+
+func remove_from_inventory(part_name):
+	assert(inventory.has(part_name), "Inventory doesn't have this item to remove: " + str(part_name))
+	if inventory[part_name] > 0:
+		inventory[part_name] -= 1
 	else:
-		push_warning("Inventory doesn't have this item to remove: " + str(item_name))
+		push_warning("Inventory doesn't have enough of item to remove: " + str(part_name))
+	
 	FileManager.save_profile()

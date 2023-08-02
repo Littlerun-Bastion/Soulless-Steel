@@ -790,18 +790,18 @@ layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Cancel" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
-custom_minimum_size = Vector2(330, 0)
-layout_mode = 2
-theme = ExtResource("6_1ptfd")
-text = "Cancel"
-
 [node name="Purchase" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
 custom_minimum_size = Vector2(330, 0)
 layout_mode = 2
 theme = ExtResource("6_1ptfd")
 text = "Purchase
 "
+
+[node name="Cancel" type="Button" parent="PurchaseConfirm/confirm/HBoxContainer"]
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+text = "Cancel"
 
 [node name="complete" type="VBoxContainer" parent="PurchaseConfirm"]
 visible = false
@@ -921,9 +921,9 @@ offset_bottom = 1070.0
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="mouse_entered" from="Exit" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="Exit" to="." method="_on_Exit_pressed"]
-[connection signal="mouse_entered" from="PurchaseConfirm/confirm/HBoxContainer/Cancel" to="." method="_on_storebuttons_mouse_entered"]
-[connection signal="pressed" from="PurchaseConfirm/confirm/HBoxContainer/Cancel" to="." method="_on_cancel_pressed"]
 [connection signal="mouse_entered" from="PurchaseConfirm/confirm/HBoxContainer/Purchase" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="PurchaseConfirm/confirm/HBoxContainer/Purchase" to="." method="_on_purchase_items_pressed"]
+[connection signal="mouse_entered" from="PurchaseConfirm/confirm/HBoxContainer/Cancel" to="." method="_on_storebuttons_mouse_entered"]
+[connection signal="pressed" from="PurchaseConfirm/confirm/HBoxContainer/Cancel" to="." method="_on_cancel_pressed"]
 [connection signal="mouse_entered" from="PurchaseConfirm/complete/HBoxContainer/Return" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="PurchaseConfirm/complete/HBoxContainer/Return" to="." method="_on_cancel_pressed"]

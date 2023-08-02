@@ -3,6 +3,8 @@ extends Control
 @onready var Logo = $Logo
 
 func _ready():
+	FileManager.load_game()
+	
 	AudioManager.play_sfx("startup")
 	Logo.modulate.a = 0.0
 	

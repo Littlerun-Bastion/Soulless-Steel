@@ -84,6 +84,7 @@ func default_loadout():
 
 
 func show_category_button(parts, selected):
+	Statcard.visible = false
 	category_visible = false
 	PartList.visible = false
 	for child in PartList.get_children():
@@ -186,13 +187,12 @@ func _on_Category_pressed(type,group,side = false):
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
 		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
-			var part = parts[part_key]
 			var item = ITEMFRAME.instantiate()
-			item.setup(part,true,false)
 			PartList.add_child(item)
-			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key,type,side,item))
-			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type,side,item))
-			item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited").bind(part_key,type,side,item))
+			item.setup(part_key, type, true,false)
+			item.get_button().connect("pressed",Callable(self,"_on_ItemFrame_pressed").bind(part_key, type))
+			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type, side))
+			item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited"))
 	else:
 		category_visible = false
 		for child in group_node.get_children():
@@ -217,13 +217,11 @@ func _on_EquipmentButton_pressed():
 	show_category_button($PartCategories/Equipment, $CategorySelectedUI/Equipment)
 
 
-func _on_ItemFrame_pressed(part_name,type,_side,_item):
+func _on_ItemFrame_pressed(part_name,type):
 	add_to_basket(type, part_name)
 
 
-func _on_ItemFrame_mouse_entered(part_name,type,side,item):
-	if item.is_disabled == true:
-		item.get_button().disabled = false
+func _on_ItemFrame_mouse_entered(part_name,type,side):
 	if side:
 		side = DisplayMecha.SIDE.LEFT if side == "left" else DisplayMecha.SIDE.RIGHT
 		ComparisonMecha.callv("set_" + str(type), [part_name,side])
@@ -236,9 +234,7 @@ func _on_ItemFrame_mouse_entered(part_name,type,side,item):
 	comparing_part = true
 
 
-func _on_ItemFrame_mouse_exited(_part_name,_type,_side, item):
-	if item.is_disabled == true:
-		item.get_button().disabled = true
+func _on_ItemFrame_mouse_exited():
 	comparing_part = false
 
 

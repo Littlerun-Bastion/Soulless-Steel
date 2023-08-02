@@ -7,7 +7,6 @@ var parallaxMult = 30.0
 
 
 func _ready():
-	FileManager.load_game()
 	if Profile.SHOW_VERSION:
 		VersionLabel.visible = true
 		VersionLabel.text = str(Profile.VERSION)

@@ -42,7 +42,7 @@ func _ready():
 	else:
 		push_error("Couldn't find a current mecha")
 	update_weight()
-	DisplayMecha.global_rotation = 0
+	ComparisonMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	for child in $TopBar.get_children():
 		child.reset_comparison(DisplayMecha)
@@ -171,6 +171,7 @@ func reset_category_name(button):
 
 func _on_Category_pressed(type, group, side = false):
 	CommandLine.display("/inventory_parser --" + str(type))
+	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 	current_group = group
 	var group_node = PartCategories.get_node(group)
 	Statcard.visible = false

@@ -71,12 +71,14 @@ pivot_offset = Vector2(-611, -230)
 script = ExtResource("3")
 
 [node name="Mecha" parent="." instance=ExtResource("9")]
-position = Vector2(1558.73, 432)
+visible = false
+position = Vector2(1558.73, 500)
+scale = Vector2(1.25, 1.25)
 display_mode = true
 
 [node name="ComparisonMecha" parent="." instance=ExtResource("9")]
-visible = false
-position = Vector2(619, 671)
+position = Vector2(1558.73, 500)
+scale = Vector2(1.25, 1.25)
 display_mode = true
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
@@ -457,6 +459,7 @@ rotation = -1.5708
 theme_override_styles/background = SubResource("StyleBoxFlat_uy8tw")
 theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
+show_percentage = false
 
 [node name="ComparisonBar" type="ProgressBar" parent="WeightNodes"]
 layout_mode = 0
@@ -467,6 +470,7 @@ rotation = -1.5708
 theme_override_styles/background = SubResource("StyleBoxFlat_lx7ir")
 theme_override_styles/fill = SubResource("StyleBoxFlat_chsvg")
 value = 75.0
+show_percentage = false
 
 [node name="WeightAmounts" type="VBoxContainer" parent="WeightNodes"]
 layout_mode = 0

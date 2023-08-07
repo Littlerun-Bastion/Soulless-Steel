@@ -42,11 +42,16 @@ func _ready():
 	else:
 		default_loadout()
 	DisplayMecha.global_rotation = 0
+	ComparisonMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
 	balance = Profile.get_stat("money")
 	$BalanceLabel.text = str(balance)
 	if BasketList.get_child_count() == 0:
 		$Basket/BottomSect/Button.disabled = true
+		$Basket2/BottomSect/Button.disabled = true
+	$Basket.visible = true	
+	$Basket2.visible = false
+	ComparisonMecha.visible = false
 
 
 func _input(event):
@@ -162,8 +167,10 @@ func recalculate_total():
 		num_items += 1
 	if BasketList.get_child_count() == 0:
 		$Basket/BottomSect/Button.disabled = true
+		$Basket2/BottomSect/Button.disabled = true
 	else:
 		$Basket/BottomSect/Button.disabled = false
+		$Basket2/BottomSect/Button.disabled = false
 	if balance < basket_total:
 		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = true
 		$PurchaseConfirm/confirm/Control/Label.text = "Insufficient funds."
@@ -171,6 +178,7 @@ func recalculate_total():
 		$PurchaseConfirm/confirm/HBoxContainer/Purchase.disabled = false
 		$PurchaseConfirm/confirm/Control/Label.text = "Purchase " + str(num_items) + " items?"
 	$Basket/BottomSect/HBoxContainer/Total.text = str(basket_total)
+	$Basket2/BottomSect/HBoxContainer/Total.text = str(basket_total)
 	$PurchaseConfirm/confirm/TotalCost/Amount.text = str(basket_total)
 	$PurchaseConfirm/confirm/CurrentBalance/Amount.text = str(balance)
 	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
@@ -186,6 +194,7 @@ func reset_category_name(button):
 
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/market_parser --" + str(type))
+	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 	var group_node = PartCategories.get_node(group)
 	type_name = type
 	Statcard.visible = false
@@ -323,3 +332,15 @@ func _on_storebuttons_mouse_entered():
 
 func _on_purchase_mouse_entered():
 	AudioManager.play_sfx("select")
+
+
+func _on_expand_pressed():
+	$Basket.visible = true
+	$Basket2.visible = false
+	ComparisonMecha.visible = false
+
+
+func _on_collapse_pressed():
+	$Basket.visible = false
+	$Basket2.visible = true
+	ComparisonMecha.visible = true

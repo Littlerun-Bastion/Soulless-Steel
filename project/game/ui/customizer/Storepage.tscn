@@ -65,8 +65,8 @@ position = Vector2(1558.73, 671)
 display_mode = true
 
 [node name="ComparisonMecha" parent="." instance=ExtResource("2_clna7")]
-visible = false
-position = Vector2(619, 671)
+position = Vector2(1558, 500)
+scale = Vector2(1.25, 1.25)
 display_mode = true
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
@@ -147,7 +147,7 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = 112.0
-offset_right = 1879.0
+offset_right = 1162.0
 offset_bottom = 316.0
 grow_horizontal = 2
 color = Color(0, 0, 0, 1)
@@ -437,6 +437,14 @@ offset_right = 647.0
 offset_bottom = 670.0
 theme = ExtResource("6_1ptfd")
 
+[node name="Collapse" type="Button" parent="Basket"]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 8.0
+offset_right = 637.0
+offset_bottom = 33.0
+theme = ExtResource("6_1ptfd")
+
 [node name="Title" type="Label" parent="Basket"]
 layout_mode = 2
 offset_top = 5.0
@@ -511,12 +519,100 @@ offset_bottom = 577.0
 layout_mode = 2
 theme_override_constants/separation = 50
 
+[node name="Basket2" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_left = 1225.0
+offset_top = 329.0
+offset_right = 1265.0
+offset_bottom = 369.0
+
+[node name="PanelContainer" type="PanelContainer" parent="Basket2"]
+layout_mode = 0
+offset_left = -7.0
+offset_top = 482.0
+offset_right = 647.0
+offset_bottom = 670.0
+theme = ExtResource("6_1ptfd")
+
+[node name="Expand" type="Button" parent="Basket2"]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 495.0
+offset_right = 637.0
+offset_bottom = 520.0
+theme = ExtResource("6_1ptfd")
+
+[node name="Title" type="Label" parent="Basket2"]
+layout_mode = 2
+offset_top = 492.0
+offset_right = 650.0
+offset_bottom = 537.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Basket"
+
+[node name="ColorRect" type="ColorRect" parent="Basket2/Title"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 37.0
+offset_right = 639.0
+offset_bottom = 39.0
+
+[node name="BottomSect" type="Label" parent="Basket2"]
+layout_mode = 2
+offset_left = -10.0
+offset_top = 587.0
+offset_right = 640.0
+offset_bottom = 632.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 40
+text = "Total"
+horizontal_alignment = 2
+
+[node name="ColorRect" type="ColorRect" parent="Basket2/BottomSect"]
+layout_mode = 0
+offset_left = 11.0
+offset_top = -6.0
+offset_right = 649.0
+offset_bottom = -4.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Basket2/BottomSect"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 3.0
+offset_right = 50.0
+offset_bottom = 43.0
+
+[node name="Total" type="Label" parent="Basket2/BottomSect/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "
+0"
+
+[node name="Label2" type="Label" parent="Basket2/BottomSect/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "ct"
+vertical_alignment = 2
+
+[node name="Button" type="Button" parent="Basket2/BottomSect"]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 41.0
+offset_right = 647.0
+offset_bottom = 72.0
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 25
+disabled = true
+text = "Purchase"
+
 [node name="BalanceLabel" type="Label" parent="."]
 custom_minimum_size = Vector2(600, 65)
 layout_mode = 0
-offset_left = 1236.0
+offset_left = 553.0
 offset_top = 257.0
-offset_right = 1836.0
+offset_right = 1153.0
 offset_bottom = 322.0
 theme = ExtResource("6_1ptfd")
 theme_override_font_sizes/font_size = 60
@@ -915,8 +1011,12 @@ offset_bottom = 1070.0
 [connection signal="pressed" from="CategoryButtons/Wetware" to="." method="_on_WetwareButton_pressed"]
 [connection signal="mouse_entered" from="CategoryButtons/Equipment" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="CategoryButtons/Equipment" to="." method="_on_EquipmentButton_pressed"]
+[connection signal="pressed" from="Basket/Collapse" to="." method="_on_collapse_pressed"]
 [connection signal="mouse_entered" from="Basket/BottomSect/Button" to="." method="_on_purchase_mouse_entered"]
 [connection signal="pressed" from="Basket/BottomSect/Button" to="." method="_on_purchase_pressed"]
+[connection signal="pressed" from="Basket2/Expand" to="." method="_on_expand_pressed"]
+[connection signal="mouse_entered" from="Basket2/BottomSect/Button" to="." method="_on_purchase_mouse_entered"]
+[connection signal="pressed" from="Basket2/BottomSect/Button" to="." method="_on_purchase_pressed"]
 [connection signal="mouse_entered" from="Load" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="Load" to="." method="_on_Load_pressed"]
 [connection signal="mouse_entered" from="Exit" to="." method="_on_storebuttons_mouse_entered"]

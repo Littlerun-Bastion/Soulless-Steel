@@ -33,7 +33,7 @@ func reset_shader_effect(mode):
 	elif mode == "score_screen":
 		set_shader_params(0.022, 0.002, 3900.0, 0.001, 0.1, 0.002, 0.133, 0.002, 0.12, 0.0)
 	elif mode == "main_menu":
-		set_shader_params(0.01, 0.002, 5000.0, 0, 0.1, 0.002, 0.133, 0.002, 0.13, .2)
+		set_shader_params(0.01, 0.002, 5000.0, 0, 0.02, 0.002, 0.133, 0.002, 0.13, .2)
 	else:
 		push_error("Not a valid shader mode:" + str(mode))
 

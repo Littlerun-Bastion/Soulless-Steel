@@ -489,8 +489,7 @@ offset_bottom = 43.0
 [node name="Total" type="Label" parent="Basket/BottomSect/HBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "
-0"
+text = "0"
 
 [node name="Label2" type="Label" parent="Basket/BottomSect/HBoxContainer"]
 layout_mode = 2

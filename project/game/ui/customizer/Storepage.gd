@@ -63,8 +63,13 @@ func _input(event):
 		else:
 			exit()
 	elif event.is_action_pressed("confirm"):
-		if $PurchaseConfirm.visible:
-			confirm_purchase()
+		if not $PurchaseConfirm.visible:
+			confirm_basket()
+		else:
+			if PurchaseComplete.visible:
+				cancel_purchase()
+			else:
+				confirm_purchase()
 	elif event.is_action_pressed("debug_1"):
 		balance += 10000000
 		$BalanceLabel.text = str(balance)
@@ -204,7 +209,7 @@ func exit():
 		print("Build invalid")
 
 
-func confirm_purchase():
+func confirm_basket():
 	if balance < basket_total:
 		AudioManager.play_sfx("keystrike")
 		AudioManager.play_sfx("deny_softer")
@@ -214,6 +219,25 @@ func confirm_purchase():
 	$PurchaseConfirm.visible = true
 	PurchaseConfirm.visible = true
 	PurchaseComplete.visible = false
+
+
+func confirm_purchase():
+	if balance >= basket_total:
+		balance -= basket_total
+		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
+		for item in BasketList.get_children():
+			Profile.add_to_inventory(item.current_item.part_id)
+			BasketList.remove_child(item)
+			item.queue_free()
+		recalculate_total()
+		PurchaseConfirm.visible = false
+		PurchaseComplete.visible = true
+		$BalanceLabel.text = str(balance)
+		Profile.set_stat("money", balance)
+		AudioManager.play_sfx("confirm")
+	else:
+		AudioManager.play_sfx("keystrike")
+		AudioManager.play_sfx("deny_softer")
 
 
 func cancel_purchase():
@@ -276,7 +300,8 @@ func _on_EquipmentButton_pressed():
 
 
 func _on_ItemFrame_pressed(part_name,type):
-	add_to_basket(type, part_name)
+	if not $PurchaseConfirm.visible:
+		add_to_basket(type, part_name)
 
 
 func _on_ItemFrame_mouse_entered(part_name,type,side):
@@ -317,7 +342,7 @@ func _LoadScreen_on_load_pressed(design):
 
 
 func _on_purchase_pressed():
-	confirm_purchase()
+	confirm_basket()
 
 
 func _on_cancel_pressed():
@@ -325,22 +350,8 @@ func _on_cancel_pressed():
 
 
 func _on_purchase_items_pressed():
-	if balance >= basket_total:
-		balance -= basket_total
-		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
-		for item in BasketList.get_children():
-			Profile.add_to_inventory(item.current_item.part_id)
-			BasketList.remove_child(item)
-			item.queue_free()
-		recalculate_total()
-		PurchaseConfirm.visible = false
-		PurchaseComplete.visible = true
-		$BalanceLabel.text = str(balance)
-		Profile.set_stat("money", balance)
-		AudioManager.play_sfx("confirm")
-	else:
-		AudioManager.play_sfx("keystrike")
-		AudioManager.play_sfx("deny_softer")
+	confirm_purchase()
+
 
 func _on_storebuttons_mouse_entered():
 	AudioManager.play_sfx("keystroke")

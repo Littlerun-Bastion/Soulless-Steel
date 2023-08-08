@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://d3krjr1dqbv7c"]
+[gd_scene load_steps=12 format=3 uid="uid://d3krjr1dqbv7c"]
 
 [ext_resource type="Script" path="res://game/pause/PauseMenu.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dr0bfwtqvloo" path="res://assets/images/ui/pause_menu/self_destruct_button.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://dptx3mq7l7mua" path="res://assets/images/ui/pause_menu/resume_button.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://c3sqxceaogggy" path="res://assets/images/ui/pause_menu/resume_button_highlight.png" id="4"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="4_teyo3"]
 [ext_resource type="Texture2D" uid="uid://dlfxbqecqq746" path="res://assets/images/ui/pause_menu/self_destruct_button_highlight.png" id="5"]
 [ext_resource type="Script" path="res://game/pause/PauseMenuParallax.gd" id="6"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="8"]
@@ -118,6 +119,7 @@ offset_left = 40.6972
 offset_top = 16.1432
 offset_right = 1145.7
 offset_bottom = 167.143
+theme = ExtResource("4_teyo3")
 text = "Runtime Functions"
 
 [node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/Control"]
@@ -126,6 +128,8 @@ offset_left = 40.6972
 offset_top = 117.591
 offset_right = 1457.7
 offset_bottom = 268.591
+theme = ExtResource("4_teyo3")
+theme_override_font_sizes/font_size = 35
 text = "User advisory: This Interface does not halt the remote program runtime."
 
 [node name="MarginContainer" type="MarginContainer" parent="SubViewportContainer/SubViewport/Control"]

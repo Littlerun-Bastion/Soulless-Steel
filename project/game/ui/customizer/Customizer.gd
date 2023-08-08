@@ -1,7 +1,8 @@
 extends Control
 
 const ITEMFRAME = preload("res://game/ui/customizer/ItemFrame.tscn")
-const LERP_WEIGHT = 5
+const LERP_WEIGHT = 3
+const LERP_EPS = .1
 const WEAPON_NAMES = {
 	"arm_weapon_right": "Right Arm",
 	"arm_weapon_left": "Left Arm",
@@ -50,13 +51,13 @@ func _ready():
 
 
 func _process(dt):
-	var lerp_v = clamp(LERP_WEIGHT*dt, 0.0, 1.0)
 	if not comparing_part:
-		Weight.comparison_bar.value = lerp(Weight.comparison_bar.value, Weight.current_bar.value, lerp_v)
-		Weight.comparison_bar.max_value = lerp(Weight.comparison_bar.max_value, Weight.current_bar.max_value, lerp_v)
+		lerp_value(Weight.comparison_bar, "value", Weight.current_bar.value, dt)
+		lerp_value(Weight.comparison_bar, "max_value", Weight.comparison_bar.max_value, dt)
+		
 	else:
-		Weight.comparison_bar.value = lerp(Weight.comparison_bar.value, ComparisonMecha.get_stat("weight"), lerp_v)
-		Weight.comparison_bar.max_value = lerp(Weight.comparison_bar.max_value, ComparisonMecha.get_stat("weight_capacity"), lerp_v)
+		lerp_value(Weight.comparison_bar, "value", ComparisonMecha.get_stat("weight"), dt)
+		lerp_value(Weight.comparison_bar, "max_value", ComparisonMecha.get_stat("weight_capacity"), dt)
 
 
 func _input(event):
@@ -67,6 +68,12 @@ func _input(event):
 	shoulder_weapon_check()
 	update_weight()
 
+
+func lerp_value(node, stat, target, dt):
+	var lerp_v = clamp(LERP_WEIGHT*dt, 0.0, 1.0)
+	node[stat] = lerp(node[stat], target, lerp_v)
+	if abs(node[stat] - target) <= LERP_EPS:
+		node[stat] = target
 
 func show_category_button(parts, selected):
 	Statcard.visible = false

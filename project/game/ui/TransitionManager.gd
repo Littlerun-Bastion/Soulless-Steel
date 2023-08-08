@@ -30,7 +30,7 @@ func _process(dt):
 
 func transition_to(scene_path: String, command_line_text: String):
 	if active:
-		push_warning("Already has an active transition")
+		#push_warning("Already has an active transition, aborting " + str(scene_path))
 		return
 	active = true
 	

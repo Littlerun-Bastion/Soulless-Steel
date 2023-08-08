@@ -61,13 +61,7 @@ func _process(dt):
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
-		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
-		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().process_frame
-			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			get_window().position = Vector2(0,0)
-
+		Global.toggle_fullscreen()
 	shoulder_weapon_check()
 	update_weight()
 

@@ -56,13 +56,16 @@ func _ready():
 
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
-		get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))) else Window.MODE_WINDOWED
-		Profile.set_option("fullscreen", ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)), true)
-		if not ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)):
-			await get_tree().process_frame
-			get_window().size = Profile.WINDOW_SIZES[Profile.get_option("window_size")]
-			get_window().position = Vector2(0,0)
-	if event.is_action_pressed("debug_1"):
+		Global.toggle_fullscreen()
+	elif event.is_action_pressed("back"):
+		if $PurchaseConfirm.visible:
+			cancel_purchase()
+		else:
+			exit()
+	elif event.is_action_pressed("confirm"):
+		if $PurchaseConfirm.visible:
+			confirm_purchase()
+	elif event.is_action_pressed("debug_1"):
 		balance += 10000000
 		$BalanceLabel.text = str(balance)
 		recalculate_total()
@@ -192,6 +195,32 @@ func reset_category_name(button):
 	button.text[0] = button.text[0].capitalize()
 
 
+func exit():
+	AudioManager.play_sfx("back")
+	if is_build_valid():
+		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
+	else:
+		print("Build invalid")
+
+
+func confirm_purchase():
+	if balance < basket_total:
+		AudioManager.play_sfx("keystrike")
+		AudioManager.play_sfx("deny_softer")
+	else:
+		AudioManager.play_sfx("question")
+	CommandLine.display("/market_basket_purchase")
+	$PurchaseConfirm.visible = true
+	PurchaseConfirm.visible = true
+	PurchaseComplete.visible = false
+
+
+func cancel_purchase():
+	AudioManager.play_sfx("back")
+	$PurchaseConfirm.visible = false
+
+
 func _on_Category_pressed(type,group,side = false):
 	CommandLine.display("/market_parser --" + str(type))
 	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
@@ -272,11 +301,7 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
-	if is_build_valid():
-		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
-	else:
-		print("Build invalid")
+	exit()
 
 
 func _on_Load_pressed():
@@ -292,20 +317,11 @@ func _LoadScreen_on_load_pressed(design):
 
 
 func _on_purchase_pressed():
-	if balance < basket_total:
-		AudioManager.play_sfx("keystrike")
-		AudioManager.play_sfx("deny_softer")
-	else:
-		AudioManager.play_sfx("question")
-	CommandLine.display("/market_basket_purchase")
-	$PurchaseConfirm.visible = true
-	PurchaseConfirm.visible = true
-	PurchaseComplete.visible = false
+	confirm_purchase()
 
 
 func _on_cancel_pressed():
-	AudioManager.play_sfx("select")
-	$PurchaseConfirm.visible = false
+	cancel_purchase()
 
 
 func _on_purchase_items_pressed():

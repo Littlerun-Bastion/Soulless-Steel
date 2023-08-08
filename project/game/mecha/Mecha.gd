@@ -1469,7 +1469,7 @@ func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
 
 
-func knockback(strength, knockback_dir, should_rotate = true):
+func knockback(_strength, _knockback_dir, _should_rotate = true):
 	return
 	#impact_velocity += (knockback_dir.normalized() * (strength * get_stability()))
 	#if should_rotate:

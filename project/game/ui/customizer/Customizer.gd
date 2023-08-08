@@ -62,6 +62,8 @@ func _process(dt):
 func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
+	elif event.is_action_pressed("back"):
+		exit()
 	shoulder_weapon_check()
 	update_weight()
 
@@ -155,12 +157,23 @@ func is_build_valid():
 		$MissingPartsScroll/MissingParts.text = missing_parts
 	return build_valid
 
+
 func reset_category_name(button):
 	if WEAPON_NAMES.has(button.name):
 		button.text = WEAPON_NAMES[button.name]
 	else:
 		button.text = button.name
 	button.text[0] = button.text[0].capitalize()
+
+
+func exit():
+	if is_build_valid():
+		AudioManager.play_sfx("confirm")
+		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
+	else:
+		AudioManager.play_sfx("deny")
+		print("Build invalid")
 
 
 func _on_Category_pressed(type, group, side = false):
@@ -278,13 +291,7 @@ func _on_Save_pressed():
 
 
 func _on_Exit_pressed():
-	if is_build_valid():
-		AudioManager.play_sfx("confirm")
-		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
-	else:
-		AudioManager.play_sfx("deny")
-		print("Build invalid")
+	exit()
 
 
 func _on_Load_pressed():

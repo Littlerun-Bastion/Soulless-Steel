@@ -444,11 +444,13 @@ offset_top = 8.0
 offset_right = 637.0
 offset_bottom = 33.0
 theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 22
+text = "V"
 
 [node name="Title" type="Label" parent="Basket"]
 layout_mode = 2
 offset_top = 5.0
-offset_right = 650.0
+offset_right = 548.0
 offset_bottom = 50.0
 theme = ExtResource("6_1ptfd")
 theme_override_font_sizes/font_size = 40

@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvtw2rmyhtr0p"]
+
+[ext_resource type="Script" path="res://game/ui/DashCooldown.gd" id="1_sgf7q"]
+[ext_resource type="Texture2D" uid="uid://0eng5tr3lrvd" path="res://assets/images/ui/player_ui/thruster_arrow.png" id="2_dumu5"]
+
+[node name="DashCooldown" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_sgf7q")
+
+[node name="Fwd" type="Sprite2D" parent="."]
+position = Vector2(0, -150)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_dumu5")
+
+[node name="Rwd" type="Sprite2D" parent="."]
+position = Vector2(0, 150)
+rotation = 3.14159
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_dumu5")
+
+[node name="Left" type="Sprite2D" parent="."]
+position = Vector2(-150, 0)
+rotation = -1.5708
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_dumu5")
+
+[node name="Right" type="Sprite2D" parent="."]
+position = Vector2(150, 0)
+rotation = 1.5708
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("2_dumu5")

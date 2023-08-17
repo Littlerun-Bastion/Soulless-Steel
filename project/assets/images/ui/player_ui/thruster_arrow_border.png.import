@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0eng5tr3lrvd"
-path="res://.godot/imported/thruster_arrow.png-23715d45e4982aa33a425c0606bf6f5c.ctex"
+uid="uid://bddk57k8obcu7"
+path="res://.godot/imported/thruster_arrow_border.png-3e5c05cc18ac82c59cef068961c16057.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/ui/player_ui/thruster_arrow.png"
-dest_files=["res://.godot/imported/thruster_arrow.png-23715d45e4982aa33a425c0606bf6f5c.ctex"]
+source_file="res://assets/images/ui/player_ui/thruster_arrow_border.png"
+dest_files=["res://.godot/imported/thruster_arrow_border.png-3e5c05cc18ac82c59cef068961c16057.ctex"]
 
 [params]
 

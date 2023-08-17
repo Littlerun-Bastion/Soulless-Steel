@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://bvtw2rmyhtr0p"]
+[gd_scene load_steps=9 format=3 uid="uid://bvtw2rmyhtr0p"]
 
 [ext_resource type="Script" path="res://game/ui/DashCooldown.gd" id="1_sgf7q"]
 [ext_resource type="Shader" path="res://assets/shaders/DashCooldown.gdshader" id="2_8f7ha"]
 [ext_resource type="Texture2D" uid="uid://0eng5tr3lrvd" path="res://assets/images/ui/player_ui/thruster_arrow.png" id="2_dumu5"]
+[ext_resource type="Texture2D" uid="uid://bddk57k8obcu7" path="res://assets/images/ui/player_ui/thruster_arrow_border.png" id="4_ti6a7"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b7vis"]
 shader = ExtResource("2_8f7ha")
@@ -31,12 +32,18 @@ position = Vector2(0, -150)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
 
+[node name="Border" type="Sprite2D" parent="Fwd"]
+texture = ExtResource("4_ti6a7")
+
 [node name="Rwd" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_mhhly")
 position = Vector2(0, 150)
 rotation = 3.14159
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
+
+[node name="Border" type="Sprite2D" parent="Rwd"]
+texture = ExtResource("4_ti6a7")
 
 [node name="Left" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_08sw0")
@@ -45,9 +52,15 @@ rotation = -1.5708
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
 
+[node name="Border" type="Sprite2D" parent="Left"]
+texture = ExtResource("4_ti6a7")
+
 [node name="Right" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_112kp")
 position = Vector2(150, 0)
 rotation = 1.5708
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
+
+[node name="Border" type="Sprite2D" parent="Right"]
+texture = ExtResource("4_ti6a7")

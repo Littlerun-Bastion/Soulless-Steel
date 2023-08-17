@@ -34,7 +34,6 @@ var comparing_part = false
 var cur_type_selected
 var current_group
 
-
 func _ready():
 	$LoadScreen.shopping_mode = false
 	if Profile.stats.current_mecha:
@@ -73,6 +72,8 @@ func _input(event):
 
 
 func lerp_value(node, stat, target, dt):
+	if node[stat] == target:
+		return
 	var lerp_v = clamp(LERP_WEIGHT*dt, 0.0, 1.0)
 	node[stat] = lerp(node[stat], target, lerp_v)
 	if abs(node[stat] - target) <= LERP_EPS:

@@ -1,7 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://bvtw2rmyhtr0p"]
+[gd_scene load_steps=8 format=3 uid="uid://bvtw2rmyhtr0p"]
 
 [ext_resource type="Script" path="res://game/ui/DashCooldown.gd" id="1_sgf7q"]
+[ext_resource type="Shader" path="res://assets/shaders/DashCooldown.gdshader" id="2_8f7ha"]
 [ext_resource type="Texture2D" uid="uid://0eng5tr3lrvd" path="res://assets/images/ui/player_ui/thruster_arrow.png" id="2_dumu5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b7vis"]
+shader = ExtResource("2_8f7ha")
+shader_parameter/show_percent = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mhhly"]
+shader = ExtResource("2_8f7ha")
+shader_parameter/show_percent = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_08sw0"]
+shader = ExtResource("2_8f7ha")
+shader_parameter/show_percent = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_112kp"]
+shader = ExtResource("2_8f7ha")
+shader_parameter/show_percent = 1.0
 
 [node name="DashCooldown" type="Control"]
 layout_mode = 3
@@ -9,23 +26,27 @@ anchors_preset = 0
 script = ExtResource("1_sgf7q")
 
 [node name="Fwd" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_b7vis")
 position = Vector2(0, -150)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
 
 [node name="Rwd" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_mhhly")
 position = Vector2(0, 150)
 rotation = 3.14159
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
 
 [node name="Left" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_08sw0")
 position = Vector2(-150, 0)
 rotation = -1.5708
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("2_dumu5")
 
 [node name="Right" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_112kp")
 position = Vector2(150, 0)
 rotation = 1.5708
 scale = Vector2(0.7, 0.7)

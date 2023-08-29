@@ -1,16 +1,12 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://brr0hf80g46ef"]
 
-[ext_resource path="res://assets/images/ui/player_ui/player_directional_pointer_near.png" type="Texture2D" id=1]
-
+[ext_resource type="Texture2D" uid="uid://ccn20ww8rlavd" path="res://assets/images/ui/player_ui/player_directional_pointer_near.png" id="1"]
 
 [node name="Pointer" type="TextureRect"]
 offset_left = 210.0
 offset_top = 90.0
-offset_right = 290.0
-offset_bottom = 139.0
-scale = Vector2( 2, 2 )
-pivot_offset = Vector2( 40, 160 )
-texture = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+offset_right = 230.0
+offset_bottom = 110.0
+scale = Vector2(2, 2)
+pivot_offset = Vector2(40, 160)
+texture = ExtResource("1")

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://c5r3r3jlxvedd"]
 
-[ext_resource type="PackedScene" path="res://game/ui/player_radar/Pointer.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://brr0hf80g46ef" path="res://game/ui/player_radar/Pointer.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://ctcxeaw445bsb" path="res://assets/images/ui/player_ui/player_directional_circle.png" id="2"]
 [ext_resource type="Script" path="res://game/ui/player_radar/PlayerRadar.gd" id="3"]
 
@@ -29,8 +29,9 @@ offset_bottom = -210.0
 layout_mode = 0
 offset_left = 0.0
 offset_top = 0.0
-offset_right = 80.0
-offset_bottom = 49.0
+offset_right = 20.0
+offset_bottom = 20.0
+stretch_mode = 2
 
 [node name="UpdateTimer" type="Timer" parent="."]
 

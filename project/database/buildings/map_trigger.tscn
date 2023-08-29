@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bpk0f6sknlcu0"]
+
+[ext_resource type="Script" path="res://database/buildings/map_trigger.gd" id="1_rkdwd"]
+
+[node name="pt1" type="Area2D"]
+script = ExtResource("1_rkdwd")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

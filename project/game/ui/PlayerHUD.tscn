@@ -1,13 +1,14 @@
-[gd_scene load_steps=32 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=36 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
-[ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
+[ext_resource type="Shader" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://cpmc45grydn76" path="res://assets/images/ui/fog_effect.PNG" id="4_m1g1l"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="4_v3ahc"]
 [ext_resource type="Texture2D" uid="uid://bjsewyv2hkidw" path="res://assets/images/ui/player_ui/ui_vignette.png" id="6"]
+[ext_resource type="FontFile" uid="uid://cfp5x03w4b1bk" path="res://assets/fonts/non_caps_general.tres" id="6_i8srv"]
 [ext_resource type="Texture2D" uid="uid://vup205tntx1e" path="res://assets/images/ui/player_ui/small_bullethole3.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://exlflvupk2ki" path="res://assets/images/ui/player_ui/small_bullethole1.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://cg71sm0cm02we" path="res://assets/images/ui/player_ui/small_bullethole2.png" id="9"]
@@ -19,6 +20,42 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
 shader = ExtResource("3_3y8od")
+
+[sub_resource type="Animation" id="Animation_ds285"]
+resource_name = "t1"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SubViewport/Dialog:text")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": ["", "Test"]
+}
+
+[sub_resource type="Animation" id="Animation_muj6a"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SubViewport/Dialog:text")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [""]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_pbwkt"]
+_data = {
+"RESET": SubResource("Animation_muj6a"),
+"t1": SubResource("Animation_ds285")
+}
 
 [sub_resource type="Animation" id="17"]
 length = 0.001
@@ -96,9 +133,6 @@ subpixel_positioning = 0
 msdf_pixel_range = 14
 msdf_size = 128
 fallbacks = Array[Font]([ExtResource("3")])
-face_index = null
-embolden = null
-transform = null
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
@@ -916,6 +950,29 @@ offset_bottom = 1080.0
 texture = ExtResource("6")
 expand_mode = 1
 
+[node name="Tutorial" type="AnimationPlayer" parent="SubViewportContainer/SubViewport"]
+root_node = NodePath("../..")
+libraries = {
+"": SubResource("AnimationLibrary_pbwkt")
+}
+
+[node name="Dialog" type="Label" parent="SubViewportContainer/SubViewport"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -14.0
+offset_top = -71.405
+offset_right = 14.0
+offset_bottom = -45.4048
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_fonts/font = ExtResource("6_i8srv")
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="LockingSprite" type="Sprite2D" parent="SubViewportContainer/SubViewport"]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="SubViewportContainer/SubViewport/LockingSprite"]
@@ -1248,8 +1305,12 @@ anchor_bottom = 1.0
 offset_left = -135.5
 offset_top = -57.0
 offset_right = 135.5
+grow_horizontal = 2
+grow_vertical = 0
 theme = ExtResource("2")
 text = "extracting"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Bulletholes" type="Control" parent="SubViewportContainer/SubViewport"]
 layout_mode = 3

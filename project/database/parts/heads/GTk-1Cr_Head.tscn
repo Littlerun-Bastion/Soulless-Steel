@@ -1,0 +1,32 @@
+[gd_scene load_steps=8 format=3 uid="uid://b4wutyq1ctvwd"]
+
+[ext_resource type="Script" path="res://database/parts/head.gd" id="1_e1vdi"]
+[ext_resource type="Texture2D" uid="uid://c5bgjcyrwvqfq" path="res://assets/images/mechas/heads/GTk-1Cr/GTk-1Cr-Head_pv.png" id="2_5otfk"]
+[ext_resource type="Texture2D" uid="uid://dkqnbjwsa4fei" path="res://game/fx/Heatmaps/Sepia.tres" id="3_i6y2j"]
+[ext_resource type="Texture2D" uid="uid://dt4dv2k7rji58" path="res://assets/images/mechas/heads/GTk-1Cr/GTk-1Cr-Head_sub.png" id="4_wvv00"]
+[ext_resource type="Texture2D" uid="uid://78oywdecv5ik" path="res://assets/images/mechas/heads/GTk-1Cr/GTk-1Cr-Head_main.png" id="5_kab6o"]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="6_0aonm"]
+[ext_resource type="Texture2D" uid="uid://dfg1khcc1dbdj" path="res://assets/images/mechas/heads/GTk-1Cr/GTk-1Cr-Head_glow.png" id="7_r87ri"]
+
+[node name="Part" type="Node2D"]
+script = ExtResource("1_e1vdi")
+part_name = "'Barong' GTk-1Cr Head"
+manufacturer_name = "PT Gajah Teknis"
+manufacturer_name_short = "Gajah Tek"
+tagline = "Heavyweight"
+image = ExtResource("2_5otfk")
+heatmap = ExtResource("3_i6y2j")
+accuracy_modifier = 1.4
+visual_range = 570
+health = 2025
+weight = 7.85
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_wvv00")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_kab6o")
+
+[node name="Glow" type="Sprite2D" parent="."]
+material = ExtResource("6_0aonm")
+texture = ExtResource("7_r87ri")

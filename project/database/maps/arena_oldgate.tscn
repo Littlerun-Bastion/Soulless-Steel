@@ -2,18 +2,18 @@
 
 [ext_resource type="Script" path="res://database/maps/Map.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://c7cm57g0x8t3r" path="res://assets/images/map/floor/arena_oldgate.png" id="2"]
-[ext_resource type="PackedScene" path="res://database/buildings/building2_long.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://cdk2qpw0x0e46" path="res://database/buildings/building2_long.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://database/buildings/old_gate_building2.tscn" id="4"]
 [ext_resource type="Texture2D" uid="uid://biido47jin7bt" path="res://assets/images/map/border_texture.png" id="5"]
 [ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://database/buildings/building3_long.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://database/buildings/building4_long.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://database/buildings/old_gate_building.tscn" id="9"]
-[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building3.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://dstl8syajrw1c" path="res://database/buildings/old_gate_building3.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://database/buildings/old_gate_building5.tscn" id="11"]
 [ext_resource type="PackedScene" path="res://database/props/tree2_prop.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://database/props/tree1_prop.tscn" id="13"]
-[ext_resource type="PackedScene" path="res://game/arena/ExitPoint.tscn" id="13_8l1yw"]
+[ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="13_8l1yw"]
 [ext_resource type="PackedScene" path="res://database/props/tree_leafless_2_prop.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://database/props/tree_leafless_3_prop.tscn" id="15"]
 [ext_resource type="PackedScene" path="res://database/props/tree3_prop.tscn" id="16"]
@@ -241,3 +241,5 @@ visible = false
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 visible = false
 navigation_polygon = SubResource("1")
+
+[node name="Triggers" type="Node2D" parent="."]

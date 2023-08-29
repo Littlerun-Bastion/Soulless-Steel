@@ -26,6 +26,7 @@ var all_mechas = []
 var player_downs = []
 var player_kills = []
 var is_tutorial := false
+var trigger_data
 
 # Debug vars
 var allow_debug_cam = false
@@ -136,6 +137,10 @@ func setup_arena():
 		$Buildings.add_child(child.duplicate(7))
 	for child in arena_data.get_texts():
 		$Texts.add_child(child.duplicate(7))
+	for child in arena_data.get_triggers():
+		var obj = child.duplicate(7)
+		$Triggers.add_child(obj)
+		obj.connect("trigger_entered",Callable(self,"_on_player_trigger_entered"))
 	
 	$NavigationPolygon.navpoly = arena_data.get_navigation_polygon()
 
@@ -426,6 +431,9 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 	if extractingMech.name == "Player":
 		$PlayerHUD/SubViewportContainer/SubViewport/ExtractingLabel.visible = false
 
+func _on_player_trigger_entered(trigger):
+	if has_method(trigger):
+		call(trigger)
 
 func _on_player_mech_extracted(playerMech):
 	if is_tutorial:
@@ -498,3 +506,9 @@ func _on_WindsTimer_timeout():
 
 func _on_IntroAnimation_animation_ending():
 	set_mechas_block_status(false)
+
+#---TRIGGERS---
+
+func tutorial1():
+	var tutorial_text = PlayerHUD.get_node("SubViewportContainer/SubViewport/Tutorial")
+	tutorial_text.play("t1")

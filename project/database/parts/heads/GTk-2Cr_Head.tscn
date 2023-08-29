@@ -1,0 +1,32 @@
+[gd_scene load_steps=8 format=3 uid="uid://cvokh2otf5hvt"]
+
+[ext_resource type="Script" path="res://database/parts/head.gd" id="1_beknh"]
+[ext_resource type="Texture2D" uid="uid://cx0tccp853e4a" path="res://assets/images/mechas/heads/GTk-2Cr/GTk-2Cr-Head_pv.png" id="2_skso1"]
+[ext_resource type="Texture2D" uid="uid://ctmy8fgqx45av" path="res://game/fx/Heatmaps/BluehotBow.tres" id="3_1xwlc"]
+[ext_resource type="Texture2D" uid="uid://6ficyehhsdju" path="res://assets/images/mechas/heads/GTk-2Cr/GTk-2Cr-Head_sub.png" id="4_hjaae"]
+[ext_resource type="Texture2D" uid="uid://cdxeieojmxw6b" path="res://assets/images/mechas/heads/GTk-2Cr/GTk-2Cr-Head_main.png" id="5_66h5r"]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="6_althv"]
+[ext_resource type="Texture2D" uid="uid://cw2gbmh7iara8" path="res://assets/images/mechas/heads/GTk-2Cr/GTk-2Cr-Head_glow.png" id="7_05uhu"]
+
+[node name="Part" type="Node2D"]
+script = ExtResource("1_beknh")
+part_name = "'Rangda' GTk-2Cr Head"
+manufacturer_name = "PT Gajah Teknis"
+manufacturer_name_short = "Gajah Tek"
+tagline = "Heavyweight"
+image = ExtResource("2_skso1")
+heatmap = ExtResource("3_1xwlc")
+accuracy_modifier = 1.37
+visual_range = 850
+health = 1800
+weight = 6.95
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_hjaae")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_66h5r")
+
+[node name="Glow" type="Sprite2D" parent="."]
+material = ExtResource("6_althv")
+texture = ExtResource("7_05uhu")

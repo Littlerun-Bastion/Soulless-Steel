@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://bqgp8c3aiog10"]
+
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="1_ojvcp"]
+[ext_resource type="Texture2D" uid="uid://dj81lvnccx3vu" path="res://assets/images/mechas/shoulders/GTk-2Cr/GTk-2Cr-Shoulder_pv.png" id="2_dyeha"]
+[ext_resource type="Texture2D" uid="uid://ba3m5ywp4v4jy" path="res://assets/images/mechas/shoulders/GTk-2Cr/GTk-2Cr-LShoulder.png" id="3_4n4h4"]
+[ext_resource type="Texture2D" uid="uid://m7ad6g76eha3" path="res://assets/images/mechas/shoulders/GTk-2Cr/GTk-2Cr-RShoulder.png" id="4_lojvw"]
+
+[node name="Part3" type="Node"]
+script = ExtResource("1_ojvcp")
+part_name = "'Rangda' GTk-2Cr Shoulder"
+manufacturer_name = "PT Gajah Teknis"
+manufacturer_name_short = "Gajah Tek"
+tagline = "Heavyweight"
+image = ExtResource("2_dyeha")
+shield = 3000.0
+stability = 115.0
+arms_accuracy_modifier = 1.05
+melee_modifier = 1.1
+weight = 6.5
+
+[node name="ShoulderLeft" type="Sprite2D" parent="."]
+texture = ExtResource("3_4n4h4")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
+polygon = PackedVector2Array(-18, -6, -12, 0, -12, 11, -18, 17, -18, 42, -5, 42, 7, 31, 7, 9, 18, 9, 18, -27, 7, -27, 7, -39, 5, -42, -18, -17)
+
+[node name="ShoulderRight" type="Sprite2D" parent="."]
+position = Vector2(107.127, 0)
+texture = ExtResource("4_lojvw")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
+polygon = PackedVector2Array(17.873, -6, 12.873, -1, 12.873, 12, 17.873, 17, 17.873, 43, 4.873, 43, -7.127, 31, -7.127, 9, -18.127, 9, -18.127, -27, -7.127, -27, -7.127, -39, -4.127, -42, 17.873, -17)

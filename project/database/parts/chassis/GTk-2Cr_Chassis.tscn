@@ -1,0 +1,70 @@
+[gd_scene load_steps=9 format=3 uid="uid://d2c0na2mms6gi"]
+
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1_3xd2y"]
+[ext_resource type="Texture2D" uid="uid://8hopgh2au32l" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-Leg_pv.png" id="2_80a5w"]
+[ext_resource type="Texture2D" uid="uid://caxuqh6y744bd" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-RLeg_sub.png" id="3_b56t0"]
+[ext_resource type="Texture2D" uid="uid://2hq2f2f8eix2" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-RLeg_glow.png" id="4_la41i"]
+[ext_resource type="Texture2D" uid="uid://c332m6suc11hm" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-RLeg_main.png" id="5_nfxod"]
+[ext_resource type="Texture2D" uid="uid://ceo7by7jswrar" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-LLeg_sub.png" id="6_a2a75"]
+[ext_resource type="Texture2D" uid="uid://cv7baneup461n" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-LLeg_glow.png" id="7_w1xco"]
+[ext_resource type="Texture2D" uid="uid://bewlngcsfgjxj" path="res://assets/images/mechas/legs/GTk-2Cr/GTk-2Cr-LLeg_main.png" id="8_otm8a"]
+
+[node name="Part3" type="Node"]
+script = ExtResource("1_3xd2y")
+part_name = "'Rangda' GTk-2Cr Chassis"
+manufacturer_name = "PT Gajah Teknis"
+manufacturer_name_short = "Gajah Tek"
+tagline = "Bipedal"
+description = "A rugged, well balanced bipedal chassis "
+image = ExtResource("2_80a5w")
+is_legs = true
+movement_type = "relative"
+max_speed = 420
+move_acc = 1.1
+accuracy_modifier = 1.2
+friction = 0.22
+rotation_acc = 0.8
+trim_acc = 45.0
+health = 3000.0
+move_heat = 16
+weight = 22.8
+weight_capacity = 105.0
+stability = 100.0
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2(61, 0)
+
+[node name="ChassisSub" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("3_b56t0")
+
+[node name="ChassisGlow" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("4_la41i")
+
+[node name="Chassis" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("5_nfxod")
+
+[node name="Collision" type="CollisionPolygon2D" parent="RightSide"]
+polygon = PackedVector2Array(9, 61, 2, 61, -7, 53, -7, 41, -11, 41, -11, -10, -13, -42, -13, -62, -3, -62, 11, -48, 11, -17, 22, -7, 22, 37)
+
+[node name="RightSideOffset" type="Marker2D" parent="RightSide"]
+position = Vector2(-17, -27)
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2(-16, 0)
+
+[node name="ChassisSub" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("6_a2a75")
+
+[node name="ChassisGlow" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("7_w1xco")
+
+[node name="Chassis" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("8_otm8a")
+
+[node name="Collision" type="CollisionPolygon2D" parent="LeftSide"]
+polygon = PackedVector2Array(-8, 62, -22, 36, -22, -7, -11, -17, -11, -47, 3, -62, 13, -62, 13, -42, 11, -10, 11, 40, 6, 40, 6, 54, -2, 62)
+
+[node name="LeftSideOffset" type="Marker2D" parent="LeftSide"]
+position = Vector2(17, -27)

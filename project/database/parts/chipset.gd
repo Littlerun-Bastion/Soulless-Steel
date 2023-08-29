@@ -16,10 +16,10 @@ extends Resource
 @export var lock_on_strength := 5
 @export var ECM := 10
 @export var ECM_frequency := .3
-@export var has_radar := false
+@export var has_radar := true
 @export var radar_refresh_rate := 1.0
 @export var loot_search_time := 1.0
-@export var radar_range := 1000.0
+@export var radar_range := 5000.0
 @export var weight := 1.0
 @export var tags :Array[String] = ["chipset"]
 

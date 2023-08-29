@@ -61,6 +61,8 @@ casings_count = 2000
 
 [node name="Trees" type="Node2D" parent="."]
 
+[node name="Triggers" type="Node2D" parent="."]
+
 [node name="DebugNavigation" type="Node2D" parent="."]
 
 [node name="Texts" type="Node2D" parent="."]

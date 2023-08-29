@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://dam07jyvxl8oo"]
+
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="1_1eppx"]
+[ext_resource type="Texture2D" uid="uid://ca4gfsutnmwsd" path="res://assets/images/mechas/shoulders/GTk-1Cr/GTk-1Cr-Shoulder_pv.png" id="2_s7mal"]
+[ext_resource type="Texture2D" uid="uid://c0sh45jomepcd" path="res://assets/images/mechas/shoulders/GTk-1Cr/GTk-1Cr-LShoulder_pv.png" id="3_limis"]
+[ext_resource type="Texture2D" uid="uid://c0ac3syuhr677" path="res://assets/images/mechas/shoulders/GTk-1Cr/GTk-1Cr-RShoulder_pv.png" id="4_mpm51"]
+
+[node name="Part3" type="Node"]
+script = ExtResource("1_1eppx")
+part_name = "'Barong' GTk-1Cr Shoulder"
+manufacturer_name = "PT Gajah Teknis"
+manufacturer_name_short = "Gajah Tek"
+tagline = "Heavyweight"
+image = ExtResource("2_s7mal")
+shield = 3375.0
+stability = 115.0
+arms_accuracy_modifier = 1.3
+melee_modifier = 1.1
+weight = 7.2
+
+[node name="ShoulderLeft" type="Sprite2D" parent="."]
+texture = ExtResource("3_limis")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
+polygon = PackedVector2Array(6, -46, -15, -46, -18, -43, -18, -6, -12, 0, -12, 15, -18, 21, -18, 46, -5, 46, 7, 34, 7, 9, 18, 9, 18, -27, 7, -27, 7, -45)
+
+[node name="ShoulderRight" type="Sprite2D" parent="."]
+position = Vector2(107.127, 0)
+texture = ExtResource("4_mpm51")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
+polygon = PackedVector2Array(-6.127, -46, 14.873, -46, 17.873, -43, 17.873, -6, 12.873, -1, 12.873, 15, 17.873, 20, 17.873, 46, 4.873, 46, -7.127, 34, -7.127, 9, -18.127, 9, -18.127, -27, -7.127, -27, -7.127, -45)

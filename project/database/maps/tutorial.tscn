@@ -1,16 +1,30 @@
-[gd_scene load_steps=8 format=3 uid="uid://codkg1mfdpptf"]
+[gd_scene load_steps=22 format=3 uid="uid://codkg1mfdpptf"]
 
 [ext_resource type="Script" path="res://database/maps/Map.gd" id="1"]
-[ext_resource type="PackedScene" uid="uid://c0ylnebtr6uly" path="res://database/props/box1_prop.tscn" id="4"]
+[ext_resource type="Texture2D" uid="uid://cigthfo1prvqt" path="res://assets/images/map/floor/tutorial_room.png" id="2_sd72f"]
+[ext_resource type="PackedScene" path="res://database/buildings/old_gate_building4.tscn" id="4_ywm2c"]
 [ext_resource type="Script" path="res://database/props/Prop.gd" id="5"]
+[ext_resource type="PackedScene" uid="uid://dstl8syajrw1c" path="res://database/buildings/old_gate_building3.tscn" id="5_hgax4"]
 [ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://game/arena/ExitPoint.tscn" id="7"]
-[ext_resource type="Texture2D" uid="uid://npmjhn3pox42" path="res://assets/images/map/floor/TestArenaBox.png" id="12"]
+[ext_resource type="PackedScene" path="res://database/buildings/building4_long.tscn" id="6_5p1sn"]
+[ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://cdk2qpw0x0e46" path="res://database/buildings/building2_long.tscn" id="7_0pf60"]
+[ext_resource type="PackedScene" path="res://database/props/tree_leafless_1_prop.tscn" id="7_w2ahm"]
+[ext_resource type="PackedScene" path="res://database/props/tree_leafless_2_prop.tscn" id="8_r6wai"]
+[ext_resource type="PackedScene" path="res://database/buildings/building1.tscn" id="8_vipbd"]
+[ext_resource type="PackedScene" path="res://database/props/tree1_prop.tscn" id="9_tobyd"]
+[ext_resource type="PackedScene" path="res://database/props/bush5_prop.tscn" id="11_8h6c0"]
+[ext_resource type="PackedScene" path="res://database/props/bush1_prop.tscn" id="12_47a3r"]
+[ext_resource type="PackedScene" path="res://database/props/bush3_prop.tscn" id="12_o7xpe"]
+[ext_resource type="PackedScene" path="res://database/props/bush4_prop.tscn" id="13_j7l7i"]
+[ext_resource type="PackedScene" path="res://database/props/bush2_prop.tscn" id="14_toa2g"]
+[ext_resource type="PackedScene" path="res://database/props/tree3_prop.tscn" id="18_trhiw"]
+[ext_resource type="PackedScene" uid="uid://bpk0f6sknlcu0" path="res://database/buildings/map_trigger.tscn" id="20_yke2c"]
 
 [sub_resource type="NavigationPolygon" id="8"]
-vertices = PackedVector2Array(1425, -2799, 2796, -1396, 1730, -1631, 2790, 1384, 1668, 1681, 1685, 350, 1720, -321, 1431, 2797, -1436, -2780, 349, -1606, -340, -1594, -1645, -1594, 346, 1672, -1439, 2762, -332, 1698, -306, -369, 339, -326, -316, 359, -2780, -1418, -2810, 1445, -1632, -428, -1663, 392, 354, 342, -1697, 1689)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2), PackedInt32Array(1, 3, 4, 5, 6), PackedInt32Array(4, 3, 7), PackedInt32Array(8, 0, 2, 9, 10, 11), PackedInt32Array(6, 2, 1), PackedInt32Array(12, 4, 7, 13, 14), PackedInt32Array(15, 9, 16, 17), PackedInt32Array(9, 15, 10), PackedInt32Array(18, 8, 11), PackedInt32Array(19, 18, 11, 20, 21), PackedInt32Array(16, 6, 5, 22), PackedInt32Array(17, 16, 22, 12, 14), PackedInt32Array(23, 14, 13), PackedInt32Array(23, 13, 19), PackedInt32Array(21, 23, 19), PackedInt32Array(17, 21, 20, 15)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-2810, 1445, -1439, 2762, 1431, 2797, 2790, 1384, 2796, -1396, 1425, -2799, -1436, -2780, -2780, -1418), PackedVector2Array(-1645, -1594, -1632, -428, -306, -369, -340, -1594), PackedVector2Array(349, -1606, 339, -326, 1720, -321, 1730, -1631), PackedVector2Array(-1663, 392, -1697, 1689, -332, 1698, -316, 359), PackedVector2Array(354, 342, 346, 1672, 1668, 1681, 1685, 350)])
+vertices = PackedVector2Array(-2409, -1992, 2385, -1996, 2385, 1148, -2412, 1145)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2412, 1145, 2385, 1148, 2385, -1996, -2409, -1992)])
 
 [node name="Map" type="Node2D"]
 script = ExtResource("1")
@@ -20,25 +34,13 @@ is_tutorial = true
 z_index = -15
 z_as_relative = false
 scale = Vector2(3, 3)
-texture = ExtResource("12")
+texture = ExtResource("2_sd72f")
 
 [node name="Bushes" type="Node2D" parent="."]
 scale = Vector2(2, 2)
 
 [node name="Props" type="Node2D" parent="."]
 scale = Vector2(2, 2)
-
-[node name="box1" parent="Props" instance=ExtResource("4")]
-position = Vector2(-500, -500)
-
-[node name="box2" parent="Props" instance=ExtResource("4")]
-position = Vector2(500, -500)
-
-[node name="box3" parent="Props" instance=ExtResource("4")]
-position = Vector2(-500, 500)
-
-[node name="box4" parent="Props" instance=ExtResource("4")]
-position = Vector2(500, 500)
 
 [node name="Walls" type="Node2D" parent="."]
 
@@ -49,43 +51,119 @@ script = ExtResource("5")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/tutorial_wall/StaticBody2D"]
 position = Vector2(635, -6832)
-polygon = PackedVector2Array(-2776, 3306, 1611, 3508, 3656, 7679, 2295, 8297, 2324, 5437, 743, 3920, -2161, 3856, -3620, 5418, -3620, 8339, -2096, 9786, 825, 9812, 2307, 8292, 2942, 9455, -744, 11015, -3641, 9860, -4759, 6837)
+polygon = PackedVector2Array(-2731, 6228, 1171, 6228, 1170, 6389, 722, 6389, 720, 10438, 560, 10436, 558, 6388, -2733, 6386, -2730, 9080, -1980, 9080, -1980, 9394, -2129, 9394, -2127, 10725, -343, 10723, -343, 9386, -1541, 9388, -1541, 9227, -640, 9224, -641, 6826, -28, 6825, -28, 6988, -480, 6988, -478, 9225, -179, 9225, -179, 10729, 2059, 10727, 2059, 6388, 1608, 6387, 1609, 6227, 2060, 6226, 2059, 3088, -2730, 3089, -2732, 6228, -2891, 6227, -2888, 2929, 2219, 2931, 2225, 10890, -2294, 10892, -2290, 9238, -2892, 9238, -2891, 6227, -2732, 6228)
 
 [node name="Buildings" type="Node2D" parent="."]
+
+[node name="Building6" parent="Buildings" instance=ExtResource("4_ywm2c")]
+position = Vector2(-720, -1541)
+rotation = 0.785398
+
+[node name="Building5" parent="Buildings" instance=ExtResource("5_hgax4")]
+position = Vector2(54.9999, -2728)
+rotation = 0.785398
+
+[node name="Building3" parent="Buildings" instance=ExtResource("6_5p1sn")]
+position = Vector2(1626, -2348)
+rotation = -0.785398
+
+[node name="Building4" parent="Buildings" instance=ExtResource("6_5p1sn")]
+position = Vector2(1263, -2705)
+rotation = -0.785398
+
+[node name="Building" parent="Buildings" instance=ExtResource("7_0pf60")]
+position = Vector2(554, 1282)
+rotation = 1.5708
+scale = Vector2(2, 2)
+
+[node name="Building2" parent="Buildings" instance=ExtResource("8_vipbd")]
+position = Vector2(480, -1364)
+rotation = -0.785398
 
 [node name="StartPositions" type="Node2D" parent="."]
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(0, 2570)
+position = Vector2(-162, 3205)
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(0, -2606)
-
-[node name="Pos3" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(-1776, -4)
-
-[node name="Pos4" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(1924, -4)
-
-[node name="Pos5" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(12, 222)
+position = Vector2(543, -2387)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
 
 [node name="ExitPos" parent="Exits" instance=ExtResource("7")]
-position = Vector2(-2607.5, 0.596485)
-scale = Vector2(0.33, 0.33)
-
-[node name="ExitPos2" parent="Exits" instance=ExtResource("7")]
-position = Vector2(2606.5, 3.27049)
+position = Vector2(-1060.56, -2813.54)
+rotation = 0.785398
 scale = Vector2(0.33, 0.33)
 
 [node name="Trees" type="Node2D" parent="."]
-scale = Vector2(2, 2)
+
+[node name="pt1" type="Node2D" parent="Trees"]
+
+[node name="bush5_prop" parent="Trees/pt1" instance=ExtResource("11_8h6c0")]
+position = Vector2(-1292, 1558)
+rotation = -1.02346
+scale = Vector2(0.650608, 0.651119)
+
+[node name="bush3_prop" parent="Trees/pt1" instance=ExtResource("12_o7xpe")]
+position = Vector2(-691, 1260)
+rotation = -0.0961487
+scale = Vector2(0.616007, 0.616007)
+
+[node name="bush1_prop" parent="Trees/pt1" instance=ExtResource("12_47a3r")]
+position = Vector2(-1427, 1605)
+
+[node name="bush1_prop2" parent="Trees/pt1" instance=ExtResource("12_47a3r")]
+position = Vector2(-1012, 495)
+rotation = -0.689147
+
+[node name="bush4_prop" parent="Trees/pt1" instance=ExtResource("13_j7l7i")]
+position = Vector2(-596, 1113)
+rotation = -1.45085
+
+[node name="bush4_prop2" parent="Trees/pt1" instance=ExtResource("13_j7l7i")]
+position = Vector2(-523, 130)
+rotation = -1.45085
+
+[node name="bush2_prop" parent="Trees/pt1" instance=ExtResource("14_toa2g")]
+position = Vector2(-812, 1119)
+rotation = -1.265
+
+[node name="bush2_prop2" parent="Trees/pt1" instance=ExtResource("14_toa2g")]
+position = Vector2(-338, 240)
+rotation = -1.265
+scale = Vector2(0.778192, 0.804921)
+
+[node name="tree_leafless_2_prop" parent="Trees/pt1" instance=ExtResource("8_r6wai")]
+position = Vector2(-763, 1823)
+rotation = 0.751637
+
+[node name="tree_leafless_1_prop2" parent="Trees/pt1" instance=ExtResource("7_w2ahm")]
+position = Vector2(-343, 90)
+rotation = -1.00562
+scale = Vector2(0.8, 0.8)
+
+[node name="tree_leafless_1_prop" parent="Trees/pt1" instance=ExtResource("7_w2ahm")]
+position = Vector2(-397, 1391)
+
+[node name="tree3_prop" parent="Trees/pt1" instance=ExtResource("18_trhiw")]
+position = Vector2(-338, 2106)
+rotation = -1.0717
+
+[node name="tree1_prop" parent="Trees/pt1" instance=ExtResource("9_tobyd")]
+position = Vector2(-1648, 861)
 
 [node name="Texts" type="Node2D" parent="."]
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 visible = false
+position = Vector2(310, -1752)
 navigation_polygon = SubResource("8")
+
+[node name="Triggers" type="Node2D" parent="."]
+
+[node name="pt1" parent="Triggers" instance=ExtResource("20_yke2c")]
+trigger = "tutorial1"
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Triggers/pt1"]
+polygon = PackedVector2Array(-1349, 2559, -908, 2559, -908, 2189, -1346, 2189)

@@ -34,10 +34,11 @@ func get_trees():
 func get_buildings():
 	return $Buildings.get_children()
 
-
 func get_texts():
 	return $Texts.get_children()
 
-
 func get_navigation_polygon():
 	return $NavigationRegion2D.navpoly
+
+func get_triggers():
+	return $Triggers.get_children()

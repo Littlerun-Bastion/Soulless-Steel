@@ -34,7 +34,6 @@ var comparing_part = false
 var cur_type_selected
 var current_group
 
-
 func _ready():
 	$LoadScreen.shopping_mode = false
 	if Profile.stats.current_mecha:
@@ -64,12 +63,17 @@ func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("back"):
-		exit()
+		if category_visible:
+			reset_category()
+		else:
+			exit()
 	shoulder_weapon_check()
 	update_weight()
 
 
 func lerp_value(node, stat, target, dt):
+	if node[stat] == target:
+		return
 	var lerp_v = clamp(LERP_WEIGHT*dt, 0.0, 1.0)
 	node[stat] = lerp(node[stat], target, lerp_v)
 	if abs(node[stat] - target) <= LERP_EPS:
@@ -165,6 +169,25 @@ func is_build_valid():
 	return build_valid
 
 
+func reset_category():
+	CommandLine.display("/inventory_parser --clear")
+	Statcard.visible = false
+	var group_node = PartCategories.get_node(current_group)
+	cur_type_selected = false
+	current_group = false
+	category_visible = false
+	$CurrentItemFrame.visible = false
+	for child in group_node.get_children():
+		if not child.visible:
+			child.visible = true
+		else:
+			reset_category_name(child)
+	for child in PartList.get_children(): #Clear PartList
+		PartList.remove_child(child)
+	PartList.visible = false
+
+
+
 func reset_category_name(button):
 	if WEAPON_NAMES.has(button.name):
 		button.text = WEAPON_NAMES[button.name]
@@ -184,20 +207,22 @@ func exit():
 
 
 func _on_Category_pressed(type, group, side = false):
-	CommandLine.display("/inventory_parser --" + str(type))
 	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
-	current_group = group
-	var group_node = PartCategories.get_node(group)
-	Statcard.visible = false
-	cur_type_selected = type
-	if typeof(side) == TYPE_INT:
-		if side == SIDE.LEFT:
-			cur_type_selected = type + "_" + "left"
-		elif side == SIDE.RIGHT:
-			cur_type_selected = type + "_" + "right"
-		else:
-			push_error("Not a valid side: " + str(side))
 	if not category_visible:
+		current_group = group
+		var group_node = PartCategories.get_node(group)
+		Statcard.visible = false
+		cur_type_selected = type
+		
+		if typeof(side) == TYPE_INT:
+			if side == SIDE.LEFT:
+				cur_type_selected = type + "_" + "left"
+			elif side == SIDE.RIGHT:
+				cur_type_selected = type + "_" + "right"
+			else:
+				push_error("Not a valid side: " + str(side))
+			
+		CommandLine.display("/inventory_parser --" + str(type))
 		category_visible = true
 		PartList.visible = true
 		for child in group_node.get_children():
@@ -222,16 +247,7 @@ func _on_Category_pressed(type, group, side = false):
 		if DisplayMecha.build[cur_type_selected]:
 			equip_part(DisplayMecha.build[cur_type_selected].part_id, type, side)
 	else:
-		category_visible = false
-		$CurrentItemFrame.visible = false
-		for child in group_node.get_children():
-			if not child.visible:
-				child.visible = true
-			else:
-				reset_category_name(child)
-		for child in PartList.get_children(): #Clear PartList
-			PartList.remove_child(child)
-		PartList.visible = false
+		reset_category()
 
 
 func _on_HardwareButton_pressed():

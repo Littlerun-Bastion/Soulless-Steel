@@ -25,6 +25,7 @@ const BUILDING_SPEED = 1.5
 @onready var WeaponSlots = $SubViewportContainer/SubViewport/WeaponSlots
 @onready var Cursor = $SubViewportContainer/SubViewport/MechaCursorCrosshair
 @onready var PlayerRadar = $SubViewportContainer/SubViewport/PlayerRadar
+@onready var DashCooldown = $SubViewportContainer/SubViewport/DashCooldown
 @onready var Bulletholes = $SubViewportContainer/SubViewport/Bulletholes
 @onready var LockingSprite = $SubViewportContainer/SubViewport/LockingSprite
 @onready var LockingAnim = $SubViewportContainer/SubViewport/LockingSprite/AnimationPlayer
@@ -167,6 +168,7 @@ func setup(player_ref, mechas_ref):
 		PlayerRadar.show()
 	else:
 		PlayerRadar.hide()
+	DashCooldown.setup(player)
 	ExtractingLabel.visible = false
 	update_lifebar(player.hp)
 	update_shieldbar(player.shield)
@@ -238,6 +240,7 @@ func update_arsenal():
 func player_died():
 	player = false
 	PlayerRadar.player_died()
+	DashCooldown.player_died()
 	Cursor.hide()
 
 

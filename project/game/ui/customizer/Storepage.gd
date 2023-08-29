@@ -29,6 +29,7 @@ enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOU
 
 
 var category_visible = false
+var current_group = false
 var comparing_part = false
 var type_name
 var basket_total = 0.0
@@ -60,6 +61,8 @@ func _input(event):
 	elif event.is_action_pressed("back"):
 		if $PurchaseConfirm.visible:
 			cancel_purchase()
+		elif current_group:
+			reset_category()
 		else:
 			exit()
 	elif event.is_action_pressed("confirm"):
@@ -192,6 +195,23 @@ func recalculate_total():
 	$PurchaseConfirm/confirm/RemainingBalance/Amount.text = str(balance - basket_total)
 
 
+func reset_category():
+	CommandLine.display("/market_parser --clear")
+	var group_node = PartCategories.get_node(current_group)
+	current_group = false
+	type_name = false
+	Statcard.visible = false
+	category_visible = false
+	for child in group_node.get_children():
+		if not child.visible:
+			child.visible = true
+		else:
+			reset_category_name(child)
+	for child in PartList.get_children(): #Clear PartList
+		PartList.remove_child(child)
+	PartList.visible = false
+
+
 func reset_category_name(button):
 	if WEAPON_NAMES.has(button.name):
 		button.text = WEAPON_NAMES[button.name]
@@ -246,14 +266,15 @@ func cancel_purchase():
 
 
 func _on_Category_pressed(type,group,side = false):
-	CommandLine.display("/market_parser --" + str(type))
 	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
-	var group_node = PartCategories.get_node(group)
-	type_name = type
-	Statcard.visible = false
-	if side:
-		type_name = type + "_" + side
-	if category_visible == false:
+	if not category_visible:
+		CommandLine.display("/market_parser --" + str(type))
+		current_group = group
+		var group_node = PartCategories.get_node(group)
+		type_name = type
+		Statcard.visible = false
+		if side:
+			type_name = type + "_" + side
 		category_visible = true
 		PartList.visible = true
 		for child in group_node.get_children():
@@ -273,15 +294,7 @@ func _on_Category_pressed(type,group,side = false):
 			item.get_button().connect("mouse_entered",Callable(self,"_on_ItemFrame_mouse_entered").bind(part_key,type, side))
 			item.get_button().connect("mouse_exited",Callable(self,"_on_ItemFrame_mouse_exited"))
 	else:
-		category_visible = false
-		for child in group_node.get_children():
-			if not child.visible:
-				child.visible = true
-			else:
-				reset_category_name(child)
-		for child in PartList.get_children(): #Clear PartList
-			PartList.remove_child(child)
-		PartList.visible = false
+		reset_category()
 
 
 func _on_HardwareButton_pressed():

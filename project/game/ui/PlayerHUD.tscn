@@ -1,9 +1,9 @@
-[gd_scene load_steps=36 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=37 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
-[ext_resource type="Shader" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
+[ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://cpmc45grydn76" path="res://assets/images/ui/fog_effect.PNG" id="4_m1g1l"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="4_v3ahc"]
@@ -17,24 +17,10 @@
 [ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
 [ext_resource type="PackedScene" uid="uid://d0kc3mk5xv2t" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
 [ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
+[ext_resource type="PackedScene" uid="uid://bvtw2rmyhtr0p" path="res://game/ui/DashCooldown.tscn" id="18_hvc7y"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
 shader = ExtResource("3_3y8od")
-
-[sub_resource type="Animation" id="Animation_ds285"]
-resource_name = "t1"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("SubViewport/Dialog:text")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 1,
-"values": ["", "Test"]
-}
 
 [sub_resource type="Animation" id="Animation_muj6a"]
 length = 0.001
@@ -49,6 +35,21 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [""]
+}
+
+[sub_resource type="Animation" id="Animation_ds285"]
+resource_name = "t1"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SubViewport/Dialog:text")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": ["", "Test"]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_pbwkt"]
@@ -1498,6 +1499,8 @@ stream = ExtResource("12")
 volume_db = -25.0
 pitch_scale = 1.51
 bus = &"SFX"
+
+[node name="DashCooldown" parent="SubViewportContainer/SubViewport" instance=ExtResource("18_hvc7y")]
 
 [node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
 visible = false

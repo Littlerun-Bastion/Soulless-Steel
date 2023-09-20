@@ -97,8 +97,8 @@ func update_pointer(pointer_data):
 	var pointer = pointer_data.pointer
 	
 	#Rotate
-	var angle = player.global_position.angle_to_point(target_pos) - PI/2
-	pointer.rotation = rad_to_deg(angle)
+	var angle = player.global_position.angle_to_point(target_pos) + PI/2
+	pointer.rotation = angle
 	
 	var distance = player.global_position.distance_to(target_pos)
 	if distance > range_radius:

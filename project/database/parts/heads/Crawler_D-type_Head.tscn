@@ -1,0 +1,33 @@
+[gd_scene load_steps=8 format=3 uid="uid://o7t8pq1jyj3g"]
+
+[ext_resource type="Script" path="res://database/parts/head.gd" id="1_mg7rs"]
+[ext_resource type="Texture2D" uid="uid://bs45ymct1w1tt" path="res://assets/images/mechas/heads/Crawler D-type/Crawler_D-type_head_pv.png" id="2_iprcr"]
+[ext_resource type="Texture2D" uid="uid://d1q40vbwcikt4" path="res://game/fx/Heatmaps/NVRed.tres" id="3_2kame"]
+[ext_resource type="Texture2D" uid="uid://d2wkoaun4ou2c" path="res://assets/images/mechas/heads/Crawler D-type/Crawler_D-type_head_sub.png" id="4_xagr0"]
+[ext_resource type="Texture2D" uid="uid://bchgqnxbo47t8" path="res://assets/images/mechas/heads/Crawler D-type/Crawler_D-type_head_main.png" id="5_mupsw"]
+[ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="6_y6a6w"]
+[ext_resource type="Texture2D" uid="uid://cmnp6uudp2yiu" path="res://assets/images/mechas/heads/Crawler D-type/Crawler_D-type_head_glow.png" id="7_5u21o"]
+
+[node name="Part" type="Node2D"]
+script = ExtResource("1_mg7rs")
+part_name = "Crawler C-type Head"
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
+tagline = "Test"
+description = "Quite heavy head model with a unique visual sensor layout that grants 225 degrees of full-complement sight. Incredibly well protected and equipped with a best-in-class sensor suite and stabilization. Comes at a hefty price tag."
+image = ExtResource("2_iprcr")
+heatmap = ExtResource("3_2kame")
+accuracy_modifier = 1.5
+visual_range = 700
+health = 2175
+weight = 8.5
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_xagr0")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_mupsw")
+
+[node name="Glow" type="Sprite2D" parent="."]
+material = ExtResource("6_y6a6w")
+texture = ExtResource("7_5u21o")

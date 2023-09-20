@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://cu7hmf5muwngc"]
+
+[ext_resource type="Script" path="res://database/parts/shoulder.gd" id="1_orul2"]
+[ext_resource type="Texture2D" uid="uid://db308vs8sp1fw" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-shoulder_pv.png" id="2_ny0ow"]
+[ext_resource type="Texture2D" uid="uid://ceatqoom26jwv" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-lshoulder_main.png" id="3_j41di"]
+[ext_resource type="Texture2D" uid="uid://cg78j6u76eo8q" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-rshoulder_main.png" id="4_1tk5c"]
+
+[node name="Part3" type="Node"]
+script = ExtResource("1_orul2")
+part_name = "SAMURAI-03S"
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Yamaguchi"
+tagline = "Lightweight"
+description = "A light scrapyard shoulderguard with very poor shielding, abysmal stability, and terrible melee performance. Decent weapon accuracy."
+image = ExtResource("2_ny0ow")
+shield = 3125.0
+stability = 110.0
+arms_accuracy_modifier = 1.2
+melee_modifier = 1.1
+weight = 6.6
+
+[node name="ShoulderLeft" type="Sprite2D" parent="."]
+texture = ExtResource("3_j41di")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderLeft"]
+polygon = PackedVector2Array(7, -54, 13, -40, 7, -2, 20, 30, 4, 52, -5, 33, -5, 50, -9, 53, -13, 50, -13, 19, -17, 23, -21, 18, -17, -1)
+
+[node name="ShoulderRight" type="Sprite2D" parent="."]
+position = Vector2(107.127, 0)
+texture = ExtResource("4_1tk5c")
+
+[node name="Collision" type="CollisionPolygon2D" parent="ShoulderRight"]
+polygon = PackedVector2Array(-7.127, -54, 16.873, 0, 19.873, 18, 16.873, 22, 12.873, 19, 12.873, 50, 8.873, 53, 4.873, 50, 4.873, 32, -4.127, 52, -20.127, 30, -7.127, -1, -13.127, -40)

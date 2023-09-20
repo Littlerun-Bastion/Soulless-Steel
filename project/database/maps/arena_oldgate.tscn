@@ -109,22 +109,22 @@ scale = Vector2(5, 5)
 [node name="StartPositions" type="Node2D" parent="."]
 
 [node name="Pos1" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(-3997.62, 8827.38)
+position = Vector2(796, -2506)
 
 [node name="Pos2" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(-1506, -2665)
+position = Vector2(3634, -3935)
 
 [node name="Pos3" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(5961, -2360)
+position = Vector2(-901, 4543)
 
 [node name="Pos4" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(2608, 3863)
+position = Vector2(5099, -8941)
 
 [node name="Pos5" parent="StartPositions" instance=ExtResource("6")]
 position = Vector2(805, -8608)
 
 [node name="Pos6" parent="StartPositions" instance=ExtResource("6")]
-position = Vector2(-4259, 186)
+position = Vector2(2084, -6096)
 
 [node name="Exits" type="Node2D" parent="."]
 rotation = -0.000512852
@@ -165,7 +165,7 @@ position = Vector2(-3415.08, 1548.55)
 position = Vector2(-3616.98, 482.404)
 
 [node name="tree1_prop" parent="Trees" instance=ExtResource("13")]
-position = Vector2(-3719.94, 8851.83)
+position = Vector2(-3384, 8996)
 
 [node name="tree3_prop" parent="Trees" instance=ExtResource("16")]
 position = Vector2(-2576, 9136)
@@ -233,7 +233,7 @@ position = Vector2(3790.09, -2670.04)
 rotation = -0.0332854
 
 [node name="tree2_prop7" parent="Trees" instance=ExtResource("12")]
-position = Vector2(3809.76, -6717.88)
+position = Vector2(3991, -6447)
 
 [node name="Texts" type="Node2D" parent="."]
 visible = false

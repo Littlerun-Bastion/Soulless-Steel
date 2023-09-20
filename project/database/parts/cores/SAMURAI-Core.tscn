@@ -1,0 +1,118 @@
+[gd_scene load_steps=14 format=3 uid="uid://dodyvu3lwneqx"]
+
+[ext_resource type="Script" path="res://database/parts/core.gd" id="1_yxj72"]
+[ext_resource type="Texture2D" uid="uid://bvyblec7mahi8" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_pv.png" id="2_8ltop"]
+[ext_resource type="Texture2D" uid="uid://cesxvbfvphm2r" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-lleg_main.png" id="3_lbya4"]
+[ext_resource type="Texture2D" uid="uid://b0el004mgmj6a" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-rleg_main.png" id="4_xhpyf"]
+[ext_resource type="Texture2D" uid="uid://jiqpsq2g84m8" path="res://assets/images/mechas/cores/head_slot_rusty.png" id="5_75u5d"]
+[ext_resource type="Texture2D" uid="uid://blho5f728doke" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_sub.png" id="6_4n4kd"]
+[ext_resource type="Texture2D" uid="uid://cxbksd51uduyb" path="res://assets/images/mechas/cores/SAMURAI/SAMURAI-core_main.png" id="7_ra7er"]
+[ext_resource type="Texture2D" uid="uid://bjpl0qh6fssme" path="res://assets/images/mechas/cores/SAMURAI/SAMURAI-core_glow.png" id="8_rj3ci"]
+[ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="9_xjase"]
+[ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="10_1f1tc"]
+[ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="11_y1eoa"]
+[ext_resource type="Texture2D" uid="uid://ceatqoom26jwv" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-lshoulder_main.png" id="12_niyg5"]
+[ext_resource type="Texture2D" uid="uid://cg78j6u76eo8q" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-rshoulder_main.png" id="13_w00p0"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_yxj72")
+part_name = "SAMURAI-03C"
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Yamaguchi"
+tagline = "Light3D Core"
+description = "A light, scrapyard core part manufactured solely for its cheapness. Has no merit other than its light weight. No space for shoulder-mounted equipment."
+image = ExtResource("2_8ltop")
+health = 2475.0
+shield = 1250.0
+stability = 0.0
+rotation_range = 28.0
+weight = 15.7
+
+[node name="LeftChassisOffset" type="Marker2D" parent="."]
+position = Vector2(-40, 70)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
+texture = ExtResource("3_lbya4")
+
+[node name="RightChassisOffset" type="Marker2D" parent="."]
+position = Vector2(40, 70)
+
+[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
+texture = ExtResource("4_xhpyf")
+
+[node name="HeadPort" type="Sprite2D" parent="."]
+texture = ExtResource("5_75u5d")
+
+[node name="CoreSub" type="Sprite2D" parent="."]
+texture = ExtResource("6_4n4kd")
+
+[node name="Core" type="Sprite2D" parent="."]
+texture = ExtResource("7_ra7er")
+
+[node name="CoreGlow" type="Sprite2D" parent="."]
+texture = ExtResource("8_rj3ci")
+
+[node name="OverheatOffset1" type="Marker2D" parent="."]
+position = Vector2(-8, 76)
+
+[node name="OverheatOffset2" type="Marker2D" parent="."]
+position = Vector2(8, 76)
+
+[node name="OverheatOffset3" type="Marker2D" parent="."]
+position = Vector2(0, -63)
+
+[node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(-40, -13)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
+visible = false
+texture = ExtResource("9_xjase")
+offset = Vector2(4, -36)
+
+[node name="RightArmWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(40, -13)
+
+[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
+visible = false
+scale = Vector2(-1, 1)
+texture = ExtResource("9_xjase")
+offset = Vector2(4, -36)
+
+[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(-30, 17)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
+visible = false
+texture = ExtResource("10_1f1tc")
+offset = Vector2(-9, -23)
+
+[node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(30, 17)
+
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
+visible = false
+scale = Vector2(-1, 1)
+texture = ExtResource("10_1f1tc")
+offset = Vector2(-9, -23)
+
+[node name="HeadOffset" type="Marker2D" parent="."]
+
+[node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
+visible = false
+texture = ExtResource("11_y1eoa")
+
+[node name="LeftShoulderOffset" type="Marker2D" parent="."]
+position = Vector2(-64, 8)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
+texture = ExtResource("12_niyg5")
+
+[node name="RightShoulderOffset" type="Marker2D" parent="."]
+position = Vector2(64, 8)
+
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
+texture = ExtResource("13_w00p0")
+
+[node name="Collision" type="Polygon2D" parent="."]
+color = Color(1, 0, 0, 0.176471)
+polygon = PackedVector2Array(-32, -63, -20, -75, 20, -75, 32, -63, 39, -36, 48, -46, 61, -2, 65, 14, 65, 45, 61, 50, 61, 59, 42, 101, 31, 90, 20, 108, -20, 108, -32, 90, -41, 101, -60, 58, -60, 49, -66, 43, -66, 14, -61, -3, -48, -46, -39, -37)

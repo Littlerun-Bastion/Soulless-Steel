@@ -1,0 +1,48 @@
+[gd_scene load_steps=6 format=3 uid="uid://ckvj1jynrp4ap"]
+
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1_eel2p"]
+[ext_resource type="Texture2D" uid="uid://bgr02164q3nqh" path="res://assets/images/mechas/legs/Crawler D-type/Crawler_D-type_chassis_pv.png" id="2_6d1ah"]
+[ext_resource type="Texture2D" uid="uid://x5bt0okg4tqk" path="res://assets/images/mechas/legs/Crawler D-type/Crawler_D-type_chassis_sub.png" id="3_6vmm1"]
+[ext_resource type="Texture2D" uid="uid://de2u5lpqwhnyg" path="res://assets/images/mechas/legs/Crawler D-type/Crawler_D-type_chassis_glow.png" id="4_tgvhc"]
+[ext_resource type="Texture2D" uid="uid://ccoq1lrnjqbhn" path="res://assets/images/mechas/legs/Crawler D-type/Crawler_D-type_chassis_main.png" id="5_513yw"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_eel2p")
+part_name = "Crawler C-type Chassis"
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
+tagline = "Tank"
+image = ExtResource("2_6d1ah")
+movement_type = "tank"
+max_speed = 280
+move_acc = 0.88
+accuracy_modifier = 1.15
+friction = 0.22
+rotation_acc = 0.75
+trim_acc = 0.85
+rotation_range = 180.0
+health = 3625.0
+move_heat = 44
+weight = 31.0
+weight_capacity = 152.5
+stability = 100.0
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
+texture = ExtResource("3_6vmm1")
+
+[node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
+texture = ExtResource("4_tgvhc")
+
+[node name="Chassis" type="Sprite2D" parent="SingleSide"]
+texture = ExtResource("5_513yw")
+
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+polygon = PackedVector2Array(-49, -86, -31, -86, -26, -81, -17, -77, 17, -77, 26, -81, 32, -86, 50, -86, 56, -76, 56, 80, 54, 82, 17, 82, 12, 86, -13, 86, -17, 82, -53, 82, -56, 79, -56, -77)
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2(46, 0)
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2(-16, 0)

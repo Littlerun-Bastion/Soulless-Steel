@@ -1,0 +1,64 @@
+[gd_scene load_steps=9 format=3 uid="uid://c8ywsxui8wqyt"]
+
+[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1_f3nmu"]
+[ext_resource type="Texture2D" uid="uid://dxxmgpb6ux4qo" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-leg_pv.png" id="2_xhir4"]
+[ext_resource type="Texture2D" uid="uid://djiesoc6r2um5" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-rleg_sub.png" id="3_gh27x"]
+[ext_resource type="Texture2D" uid="uid://jyddhf68quv3" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-rleg_glow.png" id="4_t1kbt"]
+[ext_resource type="Texture2D" uid="uid://b0el004mgmj6a" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-rleg_main.png" id="5_nkgca"]
+[ext_resource type="Texture2D" uid="uid://bpxgppxylsuk" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-lleg_sub.png" id="6_q72sw"]
+[ext_resource type="Texture2D" uid="uid://d3f52txc0tyb2" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-lleg_glow.png" id="7_8ydab"]
+[ext_resource type="Texture2D" uid="uid://cesxvbfvphm2r" path="res://assets/images/mechas/legs/SAMURAI/SAMURAI-lleg_main.png" id="8_5gjyg"]
+
+[node name="Part3" type="Node"]
+script = ExtResource("1_f3nmu")
+part_name = "SAMURAI-03L"
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Yamaguchi"
+tagline = "Bipedal"
+image = ExtResource("2_xhir4")
+is_legs = true
+movement_type = "relative"
+accuracy_modifier = 1.33
+rotation_acc = 1.5
+health = 2200.0
+move_heat = 20
+weight = 12.3
+weight_capacity = 62.5
+
+[node name="SingleSide" type="Node2D" parent="."]
+
+[node name="RightSide" type="Node2D" parent="."]
+position = Vector2(61, 0)
+
+[node name="ChassisSub" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("3_gh27x")
+
+[node name="ChassisGlow" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("4_t1kbt")
+
+[node name="Chassis" type="Sprite2D" parent="RightSide"]
+texture = ExtResource("5_nkgca")
+
+[node name="Collision" type="CollisionPolygon2D" parent="RightSide"]
+polygon = PackedVector2Array(-11, 45, -13, -3, -24, -39, -1, -68, -1, -46, 23, -1, 6, 69, -4, 52)
+
+[node name="RightSideOffset" type="Marker2D" parent="RightSide"]
+position = Vector2(-6, -38)
+
+[node name="LeftSide" type="Node2D" parent="."]
+position = Vector2(-16, 0)
+
+[node name="ChassisSub" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("6_q72sw")
+
+[node name="ChassisGlow" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("7_8ydab")
+
+[node name="Chassis" type="Sprite2D" parent="LeftSide"]
+texture = ExtResource("8_5gjyg")
+
+[node name="Collision" type="CollisionPolygon2D" parent="LeftSide"]
+polygon = PackedVector2Array(-23, -1, 1, -47, 1, -68, 24, -39, 14, -2, 11, 45, 4, 50, -5, 69)
+
+[node name="LeftSideOffset" type="Marker2D" parent="LeftSide"]
+position = Vector2(6, -38)

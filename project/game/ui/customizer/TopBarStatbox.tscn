@@ -1,13 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://65kdix3bjqtj"]
+[gd_scene load_steps=4 format=3 uid="uid://65kdix3bjqtj"]
 
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="1"]
 [ext_resource type="Script" path="res://game/ui/customizer/TopBarStatbox.gd" id="2"]
+[ext_resource type="Theme" uid="uid://bsq5ybsckbso5" path="res://game/ui/MainTheme.tres" id="3_mpqpk"]
 
 [node name="Statbox" type="Control"]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 173.0
-offset_bottom = 43.0
+anchor_right = 0.09
+anchor_bottom = 0.04
+offset_right = 0.199997
+offset_bottom = -0.200005
 script = ExtResource("2")
 
 [node name="StatLabelMain" type="Label" parent="."]
@@ -37,3 +39,19 @@ scale = Vector2(0.4, 0.4)
 theme = ExtResource("1")
 theme_override_font_sizes/font_size = 50
 text = "[+++]"
+
+[node name="ms" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+theme = ExtResource("3_mpqpk")
+text = "m/s"
+horizontal_alignment = 2
+vertical_alignment = 2

@@ -22,6 +22,7 @@ extends Resource
 @export var radar_range := 5000.0
 @export var weight := 1.0
 @export var tags :Array[String] = ["chipset"]
+@export var item_size := [2,2]
 
 var part_id
 

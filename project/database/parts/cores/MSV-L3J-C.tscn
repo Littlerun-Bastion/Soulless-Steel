@@ -19,13 +19,15 @@ script = ExtResource("12")
 part_name = "MSV-L3J"
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
-tagline = "Light3D Core"
+tagline = "L3JC"
 description = "A light, scrapyard core part manufactured solely for its cheapness. Has no merit other than its light weight. No space for shoulder-mounted equipment."
 image = ExtResource("13")
 health = 2475.0
 shield = 1250.0
 stability = 0.0
 rotation_range = 28.0
+has_left_shoulder = true
+has_right_shoulder = true
 weight = 15.7
 
 [node name="LeftChassisOffset" type="Marker2D" parent="."]

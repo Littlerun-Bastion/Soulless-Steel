@@ -139,7 +139,7 @@ func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
 	Collision = get_node("CollisionShape2D")
 
-func _process(dt):
+func _physics_process(dt):
 	if not is_trail_created:
 		instance_trail()
 		is_trail_created = true
@@ -155,7 +155,16 @@ func _process(dt):
 	else:
 		wiggle_error_lifetime = 0
 		cur_wiggle_err = randf_range(-wiggle_amount * wiggle_err,wiggle_amount * wiggle_err)
-	position += velocity*dt
+	
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(position, position + (velocity*dt))
+	query.exclude = [self]
+	var result = space_state.intersect_ray(query)
+	if result and result.collider:
+		position = result.position
+	else:
+		position += velocity*dt
+	
 	distance += speed*dt
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	if wiggle_amount > 0.0 and wiggle_freq > 0.0:

@@ -1,0 +1,121 @@
+[gd_resource type="Theme" load_steps=22 format=3 uid="uid://bsq5ybsckbso5"]
+
+[ext_resource type="FontFile" uid="uid://dpxltenmvdn1h" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.otf" id="1_xm8de"]
+[ext_resource type="StyleBox" uid="uid://dnl46ah115hwe" path="res://game/ui/styles/ButtonDisabled.tres" id="2_viukt"]
+[ext_resource type="StyleBox" uid="uid://ceec1y7c7yxqg" path="res://game/ui/styles/ButtonFocused.tres" id="3_v1smj"]
+[ext_resource type="StyleBox" uid="uid://kvjwjfs7jt56" path="res://game/ui/styles/ButtonHover.tres" id="4_gjorn"]
+[ext_resource type="StyleBox" uid="uid://iasv5gelrhw3" path="res://game/ui/styles/ButtonNormal.tres" id="5_ns4m4"]
+[ext_resource type="StyleBox" uid="uid://88ipbf3atnxj" path="res://game/ui/styles/ButtonPressed.tres" id="6_f8bcw"]
+[ext_resource type="Texture2D" uid="uid://doa3x7rcxl8w6" path="res://assets/images/ui/menu/checked.png" id="7_etb6o"]
+[ext_resource type="Texture2D" uid="uid://bo5yi5olp6g66" path="res://assets/images/ui/menu/checked_disabled.png" id="8_8tn0o"]
+[ext_resource type="Texture2D" uid="uid://dq58d1gjrm546" path="res://assets/images/ui/menu/checked_disabled_mirrored.png" id="9_xfv81"]
+[ext_resource type="Texture2D" uid="uid://bml2arbir1pnl" path="res://assets/images/ui/menu/checked_mirrored.png" id="10_y4ucb"]
+[ext_resource type="Texture2D" uid="uid://bwlyn0gpvsv8a" path="res://assets/images/ui/menu/unchecked.png" id="11_oi03s"]
+[ext_resource type="Texture2D" uid="uid://bixws40ajhkut" path="res://assets/images/ui/menu/unchecked_disabled.png" id="12_s8jq3"]
+[ext_resource type="Texture2D" uid="uid://wyk577du4ygh" path="res://assets/images/ui/menu/unchecked_disabled_mirrored.png" id="13_6pxx0"]
+[ext_resource type="Texture2D" uid="uid://dxmk1j8gb53sl" path="res://assets/images/ui/menu/unchecked_mirrored.png" id="14_flujm"]
+[ext_resource type="StyleBox" uid="uid://b78fx7cw2vv4i" path="res://game/ui/styles/Grabber.tres" id="15_myxbb"]
+[ext_resource type="StyleBox" uid="uid://0xqg2uavj7sm" path="res://game/ui/styles/Grabber_Highlight.tres" id="16_au5q8"]
+[ext_resource type="StyleBox" uid="uid://dpdcy4ucchoak" path="res://game/ui/styles/GrabberPressed.tres" id="17_vi6rq"]
+[ext_resource type="StyleBox" uid="uid://b6dggnmaittjt" path="res://game/ui/styles/Slider.tres" id="18_vuqf7"]
+[ext_resource type="FontFile" uid="uid://b31lkain7iil5" path="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf" id="19_iv08d"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mcjia"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ut6c1"]
+bg_color = Color(0.52549, 0.52549, 0.52549, 1)
+
+[resource]
+Button/colors/font_color = Color(0.662745, 0.662745, 0.662745, 1)
+Button/colors/font_disabled_color = Color(1, 1, 1, 0.392157)
+Button/colors/font_focus_color = Color(0, 0, 0, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0, 0, 0, 1)
+Button/constants/h_separation = 5
+Button/font_sizes/font_size = 20
+Button/fonts/font = ExtResource("1_xm8de")
+Button/styles/disabled = ExtResource("2_viukt")
+Button/styles/focus = ExtResource("3_v1smj")
+Button/styles/hover = ExtResource("4_gjorn")
+Button/styles/normal = ExtResource("5_ns4m4")
+Button/styles/pressed = ExtResource("6_f8bcw")
+CheckBox/styles/disabled = ExtResource("2_viukt")
+CheckBox/styles/focus = ExtResource("3_v1smj")
+CheckBox/styles/hover = ExtResource("4_gjorn")
+CheckBox/styles/hover_pressed = ExtResource("4_gjorn")
+CheckBox/styles/normal = ExtResource("5_ns4m4")
+CheckBox/styles/pressed = ExtResource("6_f8bcw")
+CheckButton/icons/checked = ExtResource("7_etb6o")
+CheckButton/icons/checked_disabled = ExtResource("8_8tn0o")
+CheckButton/icons/checked_disabled_mirrored = ExtResource("9_xfv81")
+CheckButton/icons/checked_mirrored = ExtResource("10_y4ucb")
+CheckButton/icons/unchecked = ExtResource("11_oi03s")
+CheckButton/icons/unchecked_disabled = ExtResource("12_s8jq3")
+CheckButton/icons/unchecked_disabled_mirrored = ExtResource("13_6pxx0")
+CheckButton/icons/unchecked_mirrored = ExtResource("14_flujm")
+CheckButton/styles/disabled = ExtResource("2_viukt")
+CheckButton/styles/focus = ExtResource("3_v1smj")
+CheckButton/styles/hover = ExtResource("4_gjorn")
+CheckButton/styles/hover_pressed = ExtResource("4_gjorn")
+CheckButton/styles/normal = ExtResource("5_ns4m4")
+CheckButton/styles/pressed = ExtResource("6_f8bcw")
+HScrollBar/styles/grabber = ExtResource("15_myxbb")
+HScrollBar/styles/grabber_highlight = ExtResource("16_au5q8")
+HScrollBar/styles/grabber_pressed = ExtResource("17_vi6rq")
+HScrollBar/styles/scroll = ExtResource("18_vuqf7")
+HScrollBar/styles/scroll_focus = null
+HSlider/styles/grabber_area = ExtResource("15_myxbb")
+HSlider/styles/grabber_area_highlight = ExtResource("16_au5q8")
+HSlider/styles/slider = ExtResource("18_vuqf7")
+Label/font_sizes/font_size = 20
+Label/fonts/font = ExtResource("1_xm8de")
+LineEdit/font_sizes/font_size = 25
+LineEdit/fonts/font = ExtResource("19_iv08d")
+LineEdit/styles/focus = ExtResource("3_v1smj")
+LineEdit/styles/normal = ExtResource("5_ns4m4")
+LineEdit/styles/read_only = ExtResource("2_viukt")
+OptionButton/styles/disabled = ExtResource("2_viukt")
+OptionButton/styles/disabled_mirrored = ExtResource("2_viukt")
+OptionButton/styles/focus = ExtResource("3_v1smj")
+OptionButton/styles/hover = ExtResource("4_gjorn")
+OptionButton/styles/hover_mirrored = ExtResource("4_gjorn")
+OptionButton/styles/normal = ExtResource("5_ns4m4")
+OptionButton/styles/normal_mirrored = ExtResource("5_ns4m4")
+OptionButton/styles/pressed = ExtResource("6_f8bcw")
+OptionButton/styles/pressed_mirrored = ExtResource("6_f8bcw")
+ProgressBar/font_sizes/font_size = 20
+ProgressBar/fonts/font = ExtResource("1_xm8de")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_mcjia")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_ut6c1")
+TabBar/font_sizes/font_size = 20
+TabBar/fonts/font = ExtResource("1_xm8de")
+TabBar/styles/button_highlight = ExtResource("3_v1smj")
+TabBar/styles/button_pressed = ExtResource("6_f8bcw")
+TabBar/styles/tab_disabled = null
+TabBar/styles/tab_hovered = null
+TabBar/styles/tab_selected = null
+TabBar/styles/tab_unselected = null
+TextEdit/font_sizes/font_size = 25
+TextEdit/fonts/font = ExtResource("19_iv08d")
+TextEdit/styles/focus = ExtResource("3_v1smj")
+TextEdit/styles/normal = ExtResource("5_ns4m4")
+TextEdit/styles/read_only = ExtResource("2_viukt")
+Tree/styles/button_pressed = null
+Tree/styles/cursor = null
+Tree/styles/cursor_unfocused = null
+Tree/styles/custom_button = null
+Tree/styles/custom_button_hover = null
+Tree/styles/custom_button_pressed = null
+Tree/styles/focus = null
+VScrollBar/styles/grabber = ExtResource("15_myxbb")
+VScrollBar/styles/grabber_highlight = ExtResource("16_au5q8")
+VScrollBar/styles/grabber_pressed = ExtResource("17_vi6rq")
+VScrollBar/styles/scroll = ExtResource("18_vuqf7")
+VSlider/styles/grabber_area = ExtResource("5_ns4m4")
+VSlider/styles/grabber_area_highlight = ExtResource("4_gjorn")
+VSlider/styles/slider = ExtResource("18_vuqf7")

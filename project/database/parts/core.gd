@@ -17,6 +17,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var has_right_shoulder := false 
 @export var weight:= 300.0
 @export var tags :Array[String] = ["core"]
+@export var item_size := [4,6]
 
 var part_id
 

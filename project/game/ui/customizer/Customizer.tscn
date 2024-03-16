@@ -100,6 +100,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = SubResource("14")
 color = Color(0, 0, 0, 1)
+metadata/_edit_use_anchors_ = true
 
 [node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
 motion_mirroring = Vector2(4000, 4000)
@@ -110,6 +111,7 @@ offset_top = -721.705
 offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("6")
+metadata/_edit_use_anchors_ = true
 
 [node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
 modulate = Color(1, 1, 1, 0.14902)
@@ -122,6 +124,7 @@ offset_top = -794.667
 offset_right = 3336.0
 offset_bottom = 3205.34
 texture = ExtResource("6")
+metadata/_edit_use_anchors_ = true
 
 [node name="BackgroundElements" type="Control" parent="."]
 anchors_preset = 0
@@ -227,6 +230,7 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="Hardware" type="GridContainer" parent="PartCategories"]
+visible = false
 layout_mode = 0
 offset_left = 40.0
 offset_top = 325.0
@@ -309,7 +313,6 @@ alignment = 0
 icon_alignment = 2
 
 [node name="Equipment" type="GridContainer" parent="PartCategories"]
-visible = false
 layout_mode = 0
 offset_left = 40.0
 offset_top = 325.0
@@ -590,6 +593,7 @@ offset_bottom = 40.0
 scale = Vector2(0.9, 0.9)
 
 [node name="Armor" parent="TopBar" instance=ExtResource("13")]
+layout_mode = 1
 offset_left = 46.9076
 offset_top = 247.091
 offset_right = 219.908
@@ -598,6 +602,7 @@ stat_name = "health"
 stat_label = "ARM"
 
 [node name="Shield" parent="TopBar" instance=ExtResource("13")]
+layout_mode = 1
 offset_left = 46.9076
 offset_top = 291.824
 offset_right = 219.908
@@ -606,6 +611,7 @@ stat_name = "shield"
 stat_label = "SHD"
 
 [node name="HeatCap" parent="TopBar" instance=ExtResource("13")]
+layout_mode = 1
 offset_left = 240.36
 offset_top = 244.094
 offset_right = 413.36
@@ -614,6 +620,7 @@ stat_name = "heat_capacity"
 stat_label = "H"
 
 [node name="HeatCap2" parent="TopBar" instance=ExtResource("13")]
+layout_mode = 1
 offset_left = 266.165
 offset_top = 299.719
 offset_right = 439.165
@@ -623,6 +630,7 @@ stat_name = "heat_dispersion"
 stat_label = "H/S"
 
 [node name="Walkspeed" parent="TopBar" instance=ExtResource("13")]
+layout_mode = 1
 offset_left = 443.588
 offset_top = 255.139
 offset_right = 616.588

@@ -12,7 +12,7 @@ blend_mode = 1
 collision_layer = 2
 script = ExtResource("1_hk11o")
 light_energy = 0.35
-muzzle_speed = 5000
+muzzle_speed = 15000
 life_time = 0.4
 life_time_var = 0.02
 impact_effect = ExtResource("2_abadl")
@@ -24,7 +24,8 @@ dropoff_modifier = 0.95
 heat_damage = 8.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(1.4375, 4.52)
+position = Vector2(0, 69.58)
+scale = Vector2(1.4375, 8.61294)
 texture = ExtResource("3_8pqrn")
 
 [node name="LightEffect" type="Sprite2D" parent="Sprite2D"]

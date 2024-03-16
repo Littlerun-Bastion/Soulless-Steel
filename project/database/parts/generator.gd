@@ -21,6 +21,7 @@ extends Resource
 @export var power_output := 1.0
 @export var weight := 10.0
 @export var tags :Array[String] = ["generator"]
+@export var item_size := [3,3]
 
 var part_id
 

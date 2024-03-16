@@ -78,6 +78,8 @@ layout_mode = 2
 [node name="Button" type="Button" parent="MainButtons/NewGameContainer"]
 layout_mode = 2
 theme = ExtResource("12")
+theme_override_constants/h_separation = 0
+theme_override_constants/icon_max_width = 100
 text = "Arena Mode"
 alignment = 0
 

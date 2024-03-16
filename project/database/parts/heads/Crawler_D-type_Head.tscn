@@ -10,10 +10,10 @@
 
 [node name="Part" type="Node2D"]
 script = ExtResource("1_mg7rs")
-part_name = "Crawler C-type Head"
+part_name = "Crawler D-type Head"
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
-tagline = "Test"
+tagline = "CWDH"
 description = "Quite heavy head model with a unique visual sensor layout that grants 225 degrees of full-complement sight. Incredibly well protected and equipped with a best-in-class sensor suite and stabilization. Comes at a hefty price tag."
 image = ExtResource("2_iprcr")
 heatmap = ExtResource("3_2kame")

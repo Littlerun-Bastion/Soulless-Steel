@@ -29,6 +29,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var stability := 1.0
 @export var hover_particles := false
 @export var tags :Array[String] = ["chassis"]
+@export var item_size := [5,6]
 
 var part_id
 

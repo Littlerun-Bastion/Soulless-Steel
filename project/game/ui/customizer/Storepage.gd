@@ -287,6 +287,8 @@ func _on_Category_pressed(type,group,side = false):
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
 		for part_key in parts.keys(): #Parsing through a dictionary using super.values()
+			if part_key == "Null":
+				continue
 			var item = ITEMFRAME.instantiate()
 			PartList.add_child(item)
 			item.setup(part_key, type, true,false)

@@ -71,6 +71,7 @@ var inventory = {
 	"MA-L127": 2,
 }
 
+
 func get_locale_idx(locale):
 	var idx = 0
 	for lang in LANGUAGES:
@@ -211,6 +212,8 @@ func add_to_inventory(part_name):
 
 
 func remove_from_inventory(part_name):
+	if part_name == "Null":
+		return
 	assert(inventory.has(part_name), "Inventory doesn't have this item to remove: " + str(part_name))
 	if inventory[part_name] > 0:
 		inventory[part_name] -= 1

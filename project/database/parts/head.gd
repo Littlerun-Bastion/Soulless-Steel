@@ -15,6 +15,7 @@ extends Node2D
 @export var health := 1500
 @export var weight := 1.0 
 @export var tags :Array[String] = ["head"]
+@export var item_size := [3,3]
 
 var part_id
 

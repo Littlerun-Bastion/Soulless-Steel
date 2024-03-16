@@ -13,7 +13,7 @@ collision_layer = 2
 script = ExtResource("1_ynw62")
 projectile_size = 0.75
 light_energy = 0.15
-muzzle_speed = 3800
+muzzle_speed = 12750
 impact_effect = ExtResource("2_tctpp")
 base_damage = 210
 shield_mult = 0.5
@@ -21,6 +21,8 @@ dropoff_modifier = 0.85
 heat_damage = 7.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, 20.5)
+scale = Vector2(1, 1.82)
 texture = ExtResource("3_hcoae")
 
 [node name="LightEffect" type="Sprite2D" parent="Sprite2D"]

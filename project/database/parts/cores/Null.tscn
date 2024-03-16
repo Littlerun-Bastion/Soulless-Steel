@@ -1,0 +1,120 @@
+[gd_scene load_steps=14 format=3 uid="uid://ca8khafqxh8e"]
+
+[ext_resource type="Script" path="res://database/parts/core.gd" id="1_8iid2"]
+[ext_resource type="Texture2D" uid="uid://d20amb724cayr" path="res://assets/images/mechas/cores/Skeleton/Skeleton_core_pv.png" id="2_qal8j"]
+[ext_resource type="Texture2D" uid="uid://bjaftgx1ldlk1" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" id="3_wtm2b"]
+[ext_resource type="Texture2D" uid="uid://boyvxsjn08acl" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" id="4_qa7kp"]
+[ext_resource type="Texture2D" uid="uid://jiqpsq2g84m8" path="res://assets/images/mechas/cores/head_slot_rusty.png" id="5_yia7t"]
+[ext_resource type="Texture2D" uid="uid://dsdlvd313oany" path="res://assets/images/mechas/cores/Skeleton/Skeleton_core_sub.png" id="6_6tq76"]
+[ext_resource type="Texture2D" uid="uid://oef5uyfnsb73" path="res://assets/images/mechas/cores/Skeleton/Skeleton_core_main.png" id="7_c03dj"]
+[ext_resource type="Texture2D" uid="uid://cutkmylnrww65" path="res://assets/images/mechas/cores/Skeleton/Skeleton_core_glow.png" id="8_mqtrx"]
+[ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="9_uxx4p"]
+[ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="10_t2i38"]
+[ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="11_udeb0"]
+[ext_resource type="Texture2D" uid="uid://bgdyu4xpb3h0k" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" id="12_rtn5s"]
+[ext_resource type="Texture2D" uid="uid://c3f0ehehtubij" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" id="13_asy4y"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_8iid2")
+part_name = "Null"
+tagline = "NULL"
+description = "The base skeleton of an SAV."
+image = ExtResource("2_qal8j")
+health = 0.0
+shield = 0.0
+stability = 0.0
+rotation_range = 28.0
+weight = 5.0
+
+[node name="LeftChassisOffset" type="Marker2D" parent="."]
+position = Vector2(-30, 50)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
+visible = false
+texture = ExtResource("3_wtm2b")
+
+[node name="RightChassisOffset" type="Marker2D" parent="."]
+position = Vector2(30, 50)
+
+[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
+visible = false
+texture = ExtResource("4_qa7kp")
+
+[node name="HeadPort" type="Sprite2D" parent="."]
+texture = ExtResource("5_yia7t")
+
+[node name="CoreSub" type="Sprite2D" parent="."]
+texture = ExtResource("6_6tq76")
+
+[node name="Core" type="Sprite2D" parent="."]
+texture = ExtResource("7_c03dj")
+
+[node name="CoreGlow" type="Sprite2D" parent="."]
+texture = ExtResource("8_mqtrx")
+
+[node name="OverheatOffset1" type="Marker2D" parent="."]
+position = Vector2(-23, -23)
+
+[node name="OverheatOffset2" type="Marker2D" parent="."]
+position = Vector2(28, 7)
+
+[node name="OverheatOffset3" type="Marker2D" parent="."]
+position = Vector2(-27, 24)
+
+[node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(-40, 18)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
+visible = false
+texture = ExtResource("9_uxx4p")
+offset = Vector2(4, -36)
+
+[node name="RightArmWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(40, 18)
+
+[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
+visible = false
+scale = Vector2(-1, 1)
+texture = ExtResource("9_uxx4p")
+offset = Vector2(4, -36)
+
+[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(-30, 17)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
+visible = false
+texture = ExtResource("10_t2i38")
+offset = Vector2(-9, -23)
+
+[node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
+position = Vector2(30, 17)
+
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
+visible = false
+scale = Vector2(-1, 1)
+texture = ExtResource("10_t2i38")
+offset = Vector2(-9, -23)
+
+[node name="HeadOffset" type="Marker2D" parent="."]
+
+[node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
+visible = false
+texture = ExtResource("11_udeb0")
+
+[node name="LeftShoulderOffset" type="Marker2D" parent="."]
+position = Vector2(-30, 8)
+
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
+visible = false
+texture = ExtResource("12_rtn5s")
+
+[node name="RightShoulderOffset" type="Marker2D" parent="."]
+position = Vector2(30, 8)
+
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
+visible = false
+texture = ExtResource("13_asy4y")
+
+[node name="Collision" type="Polygon2D" parent="."]
+color = Color(1, 0, 0, 0.176471)
+polygon = PackedVector2Array(-35, -31, -17, -36, 17, -36, 35, -31, 38, 12, 27, 51, 15, 60, -15, 60, -27, 51, -37, 10)

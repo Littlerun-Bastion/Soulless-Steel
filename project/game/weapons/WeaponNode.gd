@@ -27,6 +27,7 @@ var offset = Vector2()
 var cur_shooting_pos
 var side
 var burst_count = 0
+var do_burst = false
 
 
 func _process(dt):
@@ -148,11 +149,14 @@ func shoot(amount := 1):
 	if data.shoot_single_sfx:
 		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)
+	if burst_count >= data.burst_size:
+		burst_cooldown()
 
 
 func burst_cooldown():
 	add_time(data.fire_rate + data.burst_fire_rate)
 	burst_count = 0
+	do_burst = false
 
 
 func shoot_battery():

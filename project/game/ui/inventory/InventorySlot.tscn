@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://bfwoxbcro8wst"]
+
+[ext_resource type="Script" path="res://game/ui/inventory/InventorySlot.gd" id="1_401ju"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vcp31"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_bottom = 1
+border_blend = true
+corner_detail = 1
+
+[node name="InventorySlot" type="Panel"]
+custom_minimum_size = Vector2(50, 50)
+theme_override_styles/panel = SubResource("StyleBoxFlat_vcp31")
+script = ExtResource("1_401ju")
+
+[node name="SlotFilter" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0.0784314)

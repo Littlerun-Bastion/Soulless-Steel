@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dhe7ye14h61px"]
+
+[ext_resource type="Texture2D" uid="uid://da0eh3thjm72b" path="res://assets/images/mechas/arm_weapons/Carnwen-02A/Carnwen-02A_PV.png" id="1_8pt7o"]
+[ext_resource type="Script" path="res://game/ui/inventory/Item.gd" id="2_owjri"]
+
+[resource]
+script = ExtResource("2_owjri")
+item_name = "Carnwen-02A"
+item_description = "Based on the venerated Excalibur-model laser cannon, the Carnwen features a rapid q-switch to distribute the otherwise massive power of the Excalibur's condenser cavity into a rapid-fire weapon analogous to a chaingun in stopping power - making the weapon pass civilian-grade safety standards."
+tagline = "CW2A"
+is_part = false
+item_size = [3, 2]
+icon = ExtResource("1_8pt7o")
+is_horizontal = true

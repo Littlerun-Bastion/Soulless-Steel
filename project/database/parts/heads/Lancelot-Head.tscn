@@ -12,7 +12,7 @@
 script = ExtResource("4")
 part_name = "Lancelot-Head"
 manufacturer_name = "Claymore International"
-manufacturer_name_short = "Claymore"
+manufacturer_name_short = "LNCH"
 tagline = "Test"
 description = "With a homogenous titanium skeleton, aluminium plating and completely exposed internals, the Lancelot-Head weighs next-to-nothing and has no speakable capabilities. Revered by the SAV racing community for its striking aesthetic and its incredibly light weight."
 image = ExtResource("6")

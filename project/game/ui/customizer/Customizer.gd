@@ -238,6 +238,8 @@ func _on_Category_pressed(type, group, side = false):
 		for part_key in inventory.keys(): #Parsing through a dictionary using super.values()
 			if parts.has(part_key):
 				var part = parts[part_key]
+				if part.part_id == "Null":
+					continue
 				var item = ITEMFRAME.instantiate()
 				PartList.add_child(item)
 				item.setup(part.part_id, type, false, inventory[part_key])

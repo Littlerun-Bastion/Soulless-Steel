@@ -10,6 +10,8 @@ extends Node
 @export var weight := 1.0
 @export var description : String
 @export var image : Texture2D
+@export var item_size := [3,2]
+@export var is_indirect_fire := false
 
 @export_category("Muzzle Flash")
 @export var muzzle_flash : PackedScene

@@ -5,7 +5,7 @@ extends Control
 
 var compared_part = false
 
-func _ready():
+func _ready	():
 	$TitleLabel.text = stat_label
 
 func reset_comparison(mecha):
@@ -14,6 +14,11 @@ func reset_comparison(mecha):
 	$IncreaseIndicator.visible = false
 	if stat_name:
 		var stat_value = mecha.get_stat(stat_name)
+		if stat_name.contains("speed"):
+			stat_value = round(stat_value / 15)
+			$ms.visible = true
+		else:
+			$ms.visible = false
 		$StatLabelMain.text = str(stat_value)
 		
 
@@ -23,6 +28,12 @@ func set_comparing_part(mecha, diff_mecha):
 	if stat_name:
 		var diff_stat_value = diff_mecha.get_stat(stat_name)
 		var stat_value = mecha.get_stat(stat_name)
+		if stat_name.contains("speed"):
+			stat_value = round(stat_value / 15)
+			diff_stat_value - round(diff_stat_value / 15)
+			$ms.visible = true
+		else:
+			$ms.visible = false
 		var stat_difference
 		if mecha.get_stat(stat_name) and mecha.get_stat(stat_name) != diff_stat_value:
 			$IncreaseIndicator.visible = true
@@ -34,7 +45,7 @@ func set_comparing_part(mecha, diff_mecha):
 				stat_difference = stat_value - diff_stat_value
 				brackets(stat_value, stat_difference, false)
 				$StatLabelMain.text = str(str(diff_stat_value) + "*")
-			if stat_name == "max_speed":
+			if stat_name == "max_speed" or stat_name == "thrust_max_speed":
 				if diff_mecha.is_overweight():
 					$StatLabelMain.text = $StatLabelMain.text + "!"
 		else:

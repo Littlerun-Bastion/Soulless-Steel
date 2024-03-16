@@ -70,7 +70,17 @@ func _process(dt):
 	if dying:
 		return
 	lifetime += dt
-	position += dir*speed*dt
+	
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt))
+	query.exclude = [self]
+	var result = space_state.intersect_ray(query)
+	if result and result.collider:
+		position = result.position
+		speed = 0
+	else:
+		position += dir*speed*dt
+		
 	distance += speed*dt
 	speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, min_speed)
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
@@ -138,6 +148,7 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 					original_mecha_info.body = body
 					original_mecha_info.name = body.mecha_name
 					shield_hit = true
+					speed = muzzle_speed
 					emit_signal("bullet_impact", self, impact_effect, false, body)
 				elif not body.is_shielding:
 					emit_signal("bullet_impact", self, impact_effect, false, body)

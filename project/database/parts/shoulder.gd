@@ -18,6 +18,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var rotation_acc := 5
 @export var rotation_range := 10.0
 @export var tags :Array[String] = ["shoulder"]
+@export var item_size := [4,4]
 
 var part_id
 

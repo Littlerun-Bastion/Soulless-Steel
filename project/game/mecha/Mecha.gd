@@ -914,7 +914,7 @@ func set_weapon_sfx_nodes(sfx_node, part_data):
 
 func set_core(part_name):
 	if not part_name:
-		return
+		part_name = "Null"
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
@@ -1123,9 +1123,11 @@ func get_stat(stat_name):
 	for part in build.values():
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
-	if stat_name == "max_speed" and is_overweight():
+	if stat_name.contains("max_speed") and is_overweight():
 		total_stat /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
 		total_stat = round(total_stat)
+	if stat_name == "thrust_max_speed":
+		total_stat += get_stat("max_speed")
 	return float(total_stat)
 
 
@@ -1298,7 +1300,7 @@ func apply_movement(dt, direction):
 	var target_speed = direction.normalized() * (max_speed * throttle)
 	var mult = 1.0
 	if build.thruster:
-		var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
+		var _thrust_max_speed = get_stat("thrust_max_speed")
 		if is_sprinting and not has_status("freezing") and direction != Vector2(0,0):
 			mult = apply_movement_modifiers(build.thruster.thrust_speed_multiplier)
 			increase_heat(build.thruster.sprinting_heat*dt)
@@ -1307,7 +1309,7 @@ func apply_movement(dt, direction):
 			ChassisSprintGlow.visible = true
 			Particle.grind[1].emitting = true
 			if movement_type != "tank":
-				target_speed.y = min(target_speed.y * mult, target_speed.y + thrust_max_speed)
+				target_speed.y = min(target_speed.y * mult, target_speed.y + _thrust_max_speed)
 				target_move_acc *= clamp(target_move_acc*SPRINTING_ACC_MOD, 0, 1)
 		elif direction == Vector2(0,0):
 			for node in Particle.chassis_sprint:
@@ -1375,9 +1377,9 @@ func apply_movement(dt, direction):
 				moving = true
 				target_speed = tank_move_target.rotated(deg_to_rad(270)) * max_speed * mult/1.5 * WHEELS_SPEED_FACTOR
 			if build.thruster:
-				var thrust_max_speed = max_speed + build.thruster.thrust_max_speed
-				if target_speed.length() > (target_speed.normalized() * thrust_max_speed).length():
-					target_speed = target_speed.normalized() * thrust_max_speed * WHEELS_SPEED_FACTOR
+				var _thrust_max_speed = get_stat("thrust_max_speed")
+				if target_speed.length() > (target_speed.normalized() * _thrust_max_speed).length():
+					target_speed = target_speed.normalized() * _thrust_max_speed * WHEELS_SPEED_FACTOR
 			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
 			if direction.y == 0:
 				target_rotation_acc *= 2

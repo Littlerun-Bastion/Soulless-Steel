@@ -85,6 +85,10 @@ func is_valid_part(type, part_name):
 
 
 func get_part(type, part_name):
+	if "arm_weapon" in type:
+		type = "arm_weapon"
+	elif "shoulder_weapon" in type:
+		type = "shoulder_weapon"	
 	var table = get_parts(type)
 	assert(table.has(part_name),"Not a existent part: " + str(part_name) + " for part type: " + str(type))
 	return table[part_name]

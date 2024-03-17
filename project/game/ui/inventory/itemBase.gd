@@ -16,6 +16,7 @@ var grid_anchor = null
 var item_id
 var quantity = 1
 var part_type
+var weapon_side
 
 func _ready():
 	Icon.texture = icon
@@ -39,9 +40,12 @@ func setup_item(_item_name, _part_type):
 		return
 	var data
 	if _part_type:
-		if _part_type.contains("arm_weapon"):
+		
+		if "arm_weapon" in _part_type:
+			weapon_side = _part_type
 			part_type = "arm_weapon"
-		if _part_type.contains("shoulder_weapon"):
+		elif "shoulder_weapon" in _part_type:
+			weapon_side = _part_type
 			part_type = "shoulder_weapon"
 		else:
 			part_type = _part_type

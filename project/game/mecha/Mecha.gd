@@ -1117,6 +1117,14 @@ func reset_offsets():
 func get_max_hp():
 	return max_hp
 
+func get_cargo_space():
+	var total_cargo_space = [0,0]
+	for part in build.values():
+		if part and part.get("cargo_space"):
+			var _cg = part.get("cargo_space")
+			total_cargo_space[0] += _cg[0]
+			total_cargo_space[1] += _cg[1]
+	return total_cargo_space
 
 func get_stat(stat_name):
 	var total_stat = 0.0

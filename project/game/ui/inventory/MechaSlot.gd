@@ -1,7 +1,13 @@
 extends Button
+
+enum SIDE {LEFT, RIGHT, SINGLE}
+
 @export var type : String
 @export var subtype : String
+@export var slot_type = "mecha_slot"
+@export var side: SIDE
 @onready var Tagline = $Tagline
+
 
 
 signal mecha_slot_pressed

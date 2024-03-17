@@ -269,7 +269,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "head"
 subtype = "Hardware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head"]
 layout_mode = 1
@@ -314,7 +313,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "core"
 subtype = "Hardware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core"]
 layout_mode = 1
@@ -359,7 +357,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "shoulders"
 subtype = "Hardware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders"]
 layout_mode = 1
@@ -404,7 +401,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "chassis"
 subtype = "Hardware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis"]
 layout_mode = 1
@@ -450,7 +446,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "generator"
 subtype = "Wetware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator"]
 layout_mode = 1
@@ -496,7 +491,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "chipset"
 subtype = "Wetware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset"]
 layout_mode = 1
@@ -542,7 +536,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "thruster"
 subtype = "Wetware"
-side = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster"]
 layout_mode = 1
@@ -588,7 +581,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "arm_weapon_right"
 subtype = "Weapons"
-side = 1
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm"]
 layout_mode = 1
@@ -679,7 +671,6 @@ expand_icon = true
 script = ExtResource("7_afptm")
 type = "shoulder_weapon_right"
 subtype = "Weapons"
-side = 1
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder"]
 layout_mode = 1
@@ -859,7 +850,7 @@ theme = ExtResource("6_8ouoq")
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_ma3cy")
-text = " Cargo"
+text = "Cargo"
 vertical_alignment = 2
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/head"]

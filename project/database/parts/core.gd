@@ -18,6 +18,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var weight:= 300.0
 @export var tags :Array[String] = ["core"]
 @export var item_size := [4,6]
+@export var cargo_space := [6,8]
 
 var part_id
 

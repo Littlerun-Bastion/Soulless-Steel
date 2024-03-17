@@ -10,6 +10,7 @@ var is_mouse_hovering := false
 enum States {DEFAULT, FILLED, EMPTY}
 var state = States.DEFAULT
 var item_stored = null
+var slot_type = "inventory_slot"
 
 func set_color(state = States.DEFAULT):
 	match state:

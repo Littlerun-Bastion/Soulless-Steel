@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://b0bdmnqi743go"]
+[gd_scene load_steps=25 format=3 uid="uid://b0bdmnqi743go"]
 
 [ext_resource type="Script" path="res://game/ui/inventory/Warehouse.gd" id="1_2klmd"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2_jkpe7"]
@@ -8,6 +8,7 @@
 [ext_resource type="Theme" uid="uid://bsq5ybsckbso5" path="res://game/ui/MainTheme.tres" id="6_8ouoq"]
 [ext_resource type="PackedScene" uid="uid://bd01lmrhwe4vs" path="res://game/ui/customizer/HangarStatbox.tscn" id="7_0qjyj"]
 [ext_resource type="Script" path="res://game/ui/inventory/MechaSlot.gd" id="7_afptm"]
+[ext_resource type="PackedScene" uid="uid://l686inufsiya" path="res://game/ui/inventory/InventoryGrid.tscn" id="9_eaakq"]
 
 [sub_resource type="Theme" id="Theme_xn2ab"]
 
@@ -881,14 +882,8 @@ custom_minimum_size = Vector2(350, 750)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/ScrollContainer"]
-custom_minimum_size = Vector2(50, 50)
+[node name="GridContainer" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("9_eaakq")]
 layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 6
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 4
 
 [node name="Storage" type="PanelContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
@@ -938,13 +933,8 @@ custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="GridContainer" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("9_eaakq")]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 12
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -986,4 +976,4 @@ text = "Spawn Test Part"
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_exited"]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_pressed"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/Button" to="." method="_on_test_spawn_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/Button" to="." method="_on_button_pressed"]

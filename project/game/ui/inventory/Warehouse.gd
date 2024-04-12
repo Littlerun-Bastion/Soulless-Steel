@@ -30,9 +30,6 @@ func _ready():
 		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
 		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 		for slot in MechaSlots.get_children():
-			#slot.mecha_slot_pressed.connect(_on_mecha_slot_pressed)
-			slot.mecha_slot_mouse_entered.connect(_on_mecha_slot_mouse_entered)
-			slot.mecha_slot_mouse_exited.connect(_on_mecha_slot_mouse_exited)
 			if DisplayMecha.build[slot.type]:
 				slot.change_part(DisplayMecha.build[slot.type].part_id)
 			else:
@@ -40,8 +37,9 @@ func _ready():
 	else:
 		push_error("Couldn't find a current mecha")
 	
-	#for i in range(num_slots):
-	#	create_slot()
+	for child in MechaSlots.get_children():
+		child.reset_comparison.connect(_reset_comparison)
+		child.equip_part.connect(equip_part)
 	
 	grid_container.setup(ItemManager.warehouse_size)
 	cargo_grid_container.setup([5,8])
@@ -120,6 +118,7 @@ func place_item(_slot):
 	item_held = null
 	
 func pick_up_item():
+	print("Beep")
 	if hovered_slot and hovered_slot.slot_type == "inventory_slot" and hovered_slot.item_stored:
 		item_held = hovered_slot.item_stored
 		item_held.selected = true
@@ -175,27 +174,29 @@ func unequip_part(_type):
 	update_weight()
 
 func equip_part(_type,_part):
-	if not item_held:
-		return
-	if _type.contains("right"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [_part,1])
-		ComparisonMecha.callv("set_" + str(_type), [_part,1])
-	elif _type.contains("left"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [_part,0])
-		ComparisonMecha.callv("set_" + str(_type), [_part,0])
+	var _typecheck = _type
+	if _part[1]:
+		if _part[1] == 1:
+			_typecheck = str(_typecheck + "_left")
+		elif _part[1] == 0:
+			_typecheck = str(_typecheck + "_right")
+		elif _part[1] == 2:
+			_part.remove_at(1)
+	if DisplayMecha.build[_typecheck]:
+		var unequipped_item = ItemManager.item_base.instantiate()
+		unequipped_item.setup_item(DisplayMecha.build[_type].part_id, _type)
+		add_child(unequipped_item)
+		unequipped_item.global_position = get_global_mouse_position()
+		if ItemManager.item_held:
+			print("Beep")
+			ItemManager.switch_item(unequipped_item)
+		else:
+			ItemManager.item_held = unequipped_item
 	else:
-		DisplayMecha.callv("set_" + str(_type), [_part])
-		ComparisonMecha.callv("set_" + str(_type), [_part])
-	for child in BasicStats.get_children():
-		child.reset_comparison(DisplayMecha)
+		if ItemManager.item_held:
+			ItemManager.destroy_item() 
+	DisplayMecha.callv("set_" + str(_type), _part)
+	ComparisonMecha.callv("set_" + str(_type), _part)
 
 func shoulder_weapon_check():
 	if not DisplayMecha.build.core:
@@ -204,15 +205,6 @@ func shoulder_weapon_check():
 
 func update_weight():
 	pass
-
-func _on_mecha_slot_mouse_entered(_slot):
-	hovered_slot = _slot
-	if item_held and item_held.part_type == hovered_slot.type:
-		can_place = true
-	
-func _on_mecha_slot_mouse_exited(_slot):
-	hovered_slot = null
-	can_place = false
 
 func bounce_back():
 	pass
@@ -228,12 +220,14 @@ func _on_tab_pressed(subtype):
 			child.button_pressed = false
 	$MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/TabLabel.text = subtype
 	
+func _reset_comparison():
+	for child in BasicStats.get_children():
+		child.reset_comparison(DisplayMecha)
 
-
-func _on_button_pressed():
-	var unequipped_item = ItemManager.item_base.instantiate()
-	unequipped_item.setup_item("TestItem", null)
-	ItemManager.item_held = unequipped_item
-	ItemManager.item_held.selected = true
-	add_child(ItemManager.item_held)
-	ItemManager.item_held.global_position = get_global_mouse_position()
+#func _on_button_pressed():
+#	var unequipped_item = ItemManager.item_base.instantiate()
+#	unequipped_item.setup_item("TestItem", null)
+#	ItemManager.item_held = unequipped_item
+#	ItemManager.item_held.selected = true
+	#add_child(ItemManager.item_held)
+	#ItemManager.item_held.global_position = get_global_mouse_position()

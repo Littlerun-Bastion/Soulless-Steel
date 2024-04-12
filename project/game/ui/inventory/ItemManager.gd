@@ -57,3 +57,15 @@ func player_inventory_remove_item(slot_id):
 func debug_player_inventory_check():
 	for child in player_inventory:
 		print(str(child) + ": " + str(player_inventory[child].item_name) + ", Quantity: " + str(player_inventory[child].quantity) + " Part Type: " + str(player_inventory[child].part_type))
+
+func destroy_item():
+	var destroying_item = item_held
+	item_held = null
+	destroying_item.get_parent().remove_child(destroying_item)
+	destroying_item.queue_free()
+
+func switch_item(_item):
+	var destroying_item = item_held
+	item_held = _item
+	destroying_item.get_parent().remove_child(destroying_item)
+	destroying_item.queue_free()

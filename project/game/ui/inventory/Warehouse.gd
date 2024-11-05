@@ -26,13 +26,11 @@ var cargo_y = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	ShaderEffects.reset_shader_effect("main_menu")
 	if Profile.stats.current_mecha:
 		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
 		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
 		for slot in MechaSlots.get_children():
-			#slot.mecha_slot_pressed.connect(_on_mecha_slot_pressed)
-			slot.mecha_slot_mouse_entered.connect(_on_mecha_slot_mouse_entered)
-			slot.mecha_slot_mouse_exited.connect(_on_mecha_slot_mouse_exited)
 			if DisplayMecha.build[slot.type]:
 				slot.change_part(DisplayMecha.build[slot.type].part_id)
 			else:
@@ -40,10 +38,13 @@ func _ready():
 	else:
 		push_error("Couldn't find a current mecha")
 	
-	for i in range(num_slots):
-		create_slot()
+	for child in MechaSlots.get_children():
+		child.reset_comparison.connect(_reset_comparison)
+		child.equip_part.connect(equip_part)
 	
-	setup_cargo()
+	grid_container.setup(ItemManager.warehouse_size)
+	cargo_grid_container.setup([5,8])
+	#setup_cargo()
 	
 	ComparisonMecha.global_rotation = 0
 	for child in BasicStats.get_children():
@@ -53,24 +54,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if item_held:
-		if Input.is_action_just_released("left_click"):
-			if can_place:
-				place_item(hovered_slot)
-			else:
-				bounce_back()
-	else:
-		if Input.is_action_just_pressed("left_click"):
-			pick_up_item()
-			
-
-func create_slot():
-	var new_slot = inventory_slot.instantiate()
-	new_slot.slot_id = grid_array.size()
-	grid_container.add_child(new_slot)
-	grid_array.append(new_slot)
-	new_slot.inventory_slot_entered.connect(_on_slot_mouse_entered)
-	new_slot.inventory_slot_exited.connect(_on_slot_mouse_exited)
+	pass
 	
 func create_cargo_slot():
 	var new_slot = inventory_slot.instantiate()
@@ -95,9 +79,6 @@ func _on_slot_mouse_entered(slot):
 		ComparisonMecha.callv("set_" + str(hovered_slot.item_stored.part_type), [hovered_slot.item_stored.item_id])
 		for child in BasicStats.get_children():
 			child.set_comparing_part(DisplayMecha,ComparisonMecha)
-	if item_held:
-		check_space(hovered_slot)
-		set_grids.call_deferred(hovered_slot)
 	
 func _on_slot_mouse_exited(slot):
 	if slot.item_stored and slot.item_stored.part_type and not slot.item_stored.part_type.contains("weapon"):
@@ -106,157 +87,32 @@ func _on_slot_mouse_exited(slot):
 			child.reset_comparison(DisplayMecha)
 	if not item_held and not scroll_container.get_global_rect().has_point(get_global_mouse_position()):
 		hovered_slot = null
-	clear_grid()	
-
-func check_space(slot):
-	for row in item_held.item_size[1]:
-		for space in item_held.item_size[0]:
-			var slot_id_to_check = slot.slot_id + space + (row * y_count)
-			var wrap_check = slot.slot_id % y_count + space
-			if wrap_check < 0 or wrap_check >= y_count:
-				can_place = false
-				return
-			if slot_id_to_check < 0 or slot_id_to_check >= grid_array.size():
-				can_place = false
-				return
-			if grid_array[slot_id_to_check].state == grid_array[slot_id_to_check].States.FILLED:
-				can_place = false
-				return
-	can_place = true
-
-func set_grids(slot):
-	for row in item_held.item_size[1]:
-		for space in item_held.item_size[0]:
-			var slot_id_to_check = slot.slot_id + space + (row * y_count)
-			var wrap_check = slot.slot_id % y_count + space
-			if slot_id_to_check < 0 or slot_id_to_check >= grid_array.size():
-				continue
-			if wrap_check < 0 or wrap_check >= y_count:
-				continue
-			if can_place:
-				grid_array[slot_id_to_check].set_color(grid_array[slot_id_to_check].States.EMPTY)
-			else:
-				grid_array[slot_id_to_check].set_color(grid_array[slot_id_to_check].States.FILLED)
-
-func clear_grid():
-	for slot in grid_array:
-		if not slot.item_stored:
-			slot.set_color(slot.States.DEFAULT)
-		else:
-			slot.set_color(slot.States.EMPTY)
-
-
-func place_item(_slot):
-	var adjusted_position = _slot.global_position
-	adjusted_position.x += 25
-	adjusted_position.y += 25
-	if not _slot:
-		bounce_back()
-	if _slot.slot_type == "mecha_slot" and item_held.part_type:
-		var _type = _slot.type
-		if not item_held.part_type in _type:
-			bounce_back()
-		if PartManager.get_part(_type, item_held.item_id):
-			equip_part(_type, item_held.item_id)
-		_slot.change_part(DisplayMecha.build[_slot.type].part_id)
-		item_held.queue_free()
-		original_slot = null
-	elif _slot.slot_type == "inventory_slot":
-		item_held.snap_to(adjusted_position)
-		item_held.get_parent().remove_child(item_held)
-		grid_container.add_child(item_held)
-		item_held.global_position = get_global_mouse_position()
-		item_held.grid_anchor = _slot.slot_id
-		for row in item_held.item_size[1]:
-			for space in item_held.item_size[0]:
-				var slot_id_to_check = _slot.slot_id + space + (row * y_count)
-				grid_array[slot_id_to_check].state = grid_array[slot_id_to_check].States.FILLED
-				grid_array[slot_id_to_check].item_stored = item_held
-		ItemManager.player_inventory_add_item(item_held.item_name, _slot.slot_id, item_held.quantity, item_held.part_type)
-		original_slot = null
-	item_held = null
-	clear_grid()
-	
-func pick_up_item():
-	if hovered_slot and hovered_slot.slot_type == "inventory_slot" and hovered_slot.item_stored:
-		item_held = hovered_slot.item_stored
-		item_held.selected = true
-		item_held.get_parent().remove_child(item_held)
-		add_child(item_held)
-		item_held.global_position = get_global_mouse_position()
-		ItemManager.player_inventory_remove_item(item_held.grid_anchor)
-		for row in item_held.item_size[1]:
-			for space in item_held.item_size[0]:
-				var slot_id_to_check = item_held.grid_anchor + space + (row * y_count)
-				grid_array[slot_id_to_check].state = grid_array[slot_id_to_check].States.EMPTY
-				grid_array[slot_id_to_check].item_stored = null
-			
-		check_space(hovered_slot)
-		set_grids.call_deferred(hovered_slot)
-		original_slot = hovered_slot
-	elif hovered_slot and hovered_slot.slot_type == "mecha_slot":
-		if not DisplayMecha.build[hovered_slot.type] and not item_held:
-			return
-		if DisplayMecha.build[hovered_slot.type].part_id == "Null" and not item_held:
-			return
-		var unequipped_item = item_base.instantiate()
-		unequipped_item.setup_item(DisplayMecha.build[hovered_slot.type].part_id, hovered_slot.type)
-		add_child(unequipped_item)
-
-		if not item_held:
-			hovered_slot.change_part(null)
-			unequip_part(hovered_slot.type)
-		item_held = unequipped_item	
-		item_held.selected = true
-		item_held.global_position = get_global_mouse_position()
-		original_slot = hovered_slot
-
-func unequip_part(_type):
-	if _type.contains("right"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [null,1])
-		ComparisonMecha.callv("set_" + str(_type), [null,1])
-	elif _type.contains("left"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [null,0])
-		ComparisonMecha.callv("set_" + str(_type), [null,0])
-	else:
-		DisplayMecha.callv("set_" + str(_type), [null])
-		ComparisonMecha.callv("set_" + str(_type), [null])
-	Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-	for child in BasicStats.get_children():
-		child.reset_comparison(DisplayMecha)
-	shoulder_weapon_check()
-	update_weight()
 
 func equip_part(_type,_part):
-	if not item_held:
-		return
-	if _type.contains("right"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [_part,1])
-		ComparisonMecha.callv("set_" + str(_type), [_part,1])
-	elif _type.contains("left"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		DisplayMecha.callv("set_" + str(_type), [_part,0])
-		ComparisonMecha.callv("set_" + str(_type), [_part,0])
+	var _typecheck = _type
+	if _part[1] == 1:
+		_typecheck = str(_typecheck + "_right")
+	if _part[1] == 0:
+		_typecheck = str(_typecheck + "_left")
+	if _part[1] == 2:
+		_part.remove_at(1)
+	print(_typecheck)
+	if DisplayMecha.build[_typecheck] and DisplayMecha.build[_typecheck].part_id != "Null":
+		var unequipped_item = ItemManager.item_base.instantiate()
+		unequipped_item.setup_item(DisplayMecha.build[_typecheck].part_id, _type)
+		add_child(unequipped_item)
+		unequipped_item.global_position = get_global_mouse_position()
+		if ItemManager.item_held:
+			ItemManager.switch_item(unequipped_item)
+			ItemManager.item_held.selected = true
+		else:
+			ItemManager.item_held = unequipped_item
+			ItemManager.item_held.selected = true
 	else:
-		DisplayMecha.callv("set_" + str(_type), [_part])
-		ComparisonMecha.callv("set_" + str(_type), [_part])
-	for child in BasicStats.get_children():
-		child.reset_comparison(DisplayMecha)
+		if ItemManager.item_held:
+			ItemManager.destroy_item() 
+	DisplayMecha.callv("set_" + str(_type), _part)
+	ComparisonMecha.callv("set_" + str(_type), _part)
 
 func shoulder_weapon_check():
 	if not DisplayMecha.build.core:
@@ -266,17 +122,8 @@ func shoulder_weapon_check():
 func update_weight():
 	pass
 
-func _on_mecha_slot_mouse_entered(_slot):
-	hovered_slot = _slot
-	if item_held and item_held.part_type == hovered_slot.type:
-		can_place = true
-	
-func _on_mecha_slot_mouse_exited(_slot):
-	hovered_slot = null
-	can_place = false
-
 func bounce_back():
-	place_item(original_slot)
+	pass
 
 func _on_tab_pressed(subtype):
 	for child in MechaSlots.get_children():
@@ -289,3 +136,14 @@ func _on_tab_pressed(subtype):
 			child.button_pressed = false
 	$MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/TabLabel.text = subtype
 	
+func _reset_comparison():
+	for child in BasicStats.get_children():
+		child.reset_comparison(DisplayMecha)
+
+#func _on_button_pressed():
+#	var unequipped_item = ItemManager.item_base.instantiate()
+#	unequipped_item.setup_item("TestItem", null)
+#	ItemManager.item_held = unequipped_item
+#	ItemManager.item_held.selected = true
+	#add_child(ItemManager.item_held)
+	#ItemManager.item_held.global_position = get_global_mouse_position()

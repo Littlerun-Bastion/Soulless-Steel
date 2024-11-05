@@ -848,7 +848,7 @@ func set_arm_weapon(part_name, side):
 	else:
 		push_error("Not a valid side: " + str(side))
 
-	if typeof(part_name) != TYPE_STRING:
+	if typeof(part_name) != TYPE_STRING or part_name == null:
 		if side == SIDE.LEFT:
 			build.arm_weapon_left = null
 		else:
@@ -858,9 +858,11 @@ func set_arm_weapon(part_name, side):
 
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
+		print("Equipping left arm weapon")
 		build.arm_weapon_left = part_data
 		node.rotation_degrees = -ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 	else:
+		print("Equipping right arm weapon")
 		build.arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 

@@ -33,7 +33,6 @@ func _ready():
 		Quantity.visible = false
 	else:
 		Quantity.visible = true
-	
 
 func setup_item(_item_name, _part_type):
 	if not _item_name or _item_name == "Null":
@@ -78,11 +77,11 @@ func setup_item(_item_name, _part_type):
 				icon = data.icon
 			item_size = data.item_size
 			item_id = data.item_id
-		
+	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if selected:
+	if ItemManager.item_held and selected:
 		global_position = lerp(global_position, get_global_mouse_position(), 25 * delta)
 
 func snap_to(snap_point:Vector2):

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://b0bdmnqi743go"]
+[gd_scene load_steps=25 format=3 uid="uid://b0bdmnqi743go"]
 
 [ext_resource type="Script" path="res://game/ui/inventory/Warehouse.gd" id="1_2klmd"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2_jkpe7"]
@@ -8,6 +8,7 @@
 [ext_resource type="Theme" uid="uid://bsq5ybsckbso5" path="res://game/ui/MainTheme.tres" id="6_8ouoq"]
 [ext_resource type="PackedScene" uid="uid://bd01lmrhwe4vs" path="res://game/ui/customizer/HangarStatbox.tscn" id="7_0qjyj"]
 [ext_resource type="Script" path="res://game/ui/inventory/MechaSlot.gd" id="7_afptm"]
+[ext_resource type="PackedScene" uid="uid://l686inufsiya" path="res://game/ui/inventory/InventoryGrid.tscn" id="9_eaakq"]
 
 [sub_resource type="Theme" id="Theme_xn2ab"]
 
@@ -153,7 +154,697 @@ theme_override_constants/margin_bottom = 10
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 
+[node name="Store" type="PanelContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("6_8ouoq")
+theme_override_styles/panel = SubResource("StyleBoxFlat_eama7")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Store"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer"]
+layout_mode = 2
+
+[node name="head" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_8kjiv")
+text = "STORE"
+vertical_alignment = 2
+
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/head"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+alignment = 0
+icon_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+
+[node name="Hardware" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("6_8ouoq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ga514")
+toggle_mode = true
+button_pressed = true
+text = "Hardware"
+
+[node name="Wetware" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("6_8ouoq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ga514")
+toggle_mode = true
+text = "Wetware"
+
+[node name="Weapons" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("6_8ouoq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ga514")
+toggle_mode = true
+text = "Weapons"
+
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_tf6lq")
+
+[node name="TabLabel" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 40
+text = "Hardware"
+
+[node name="MechaSlotsContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="Head" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Head"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Core" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "CORE"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Shoulders" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Shoulders"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Chassis" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Chassis"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Generator" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Generator"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Chipset" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Chipset"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Thruster" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Thruster"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Right Arm" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Right Arm Weapon"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Left Arm" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Left Arm Weapon"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Right Shoulder" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Right Shoulder Weapon"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Left Arm2" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+focus_mode = 0
+theme_override_constants/icon_max_width = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_xqggf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j3e6o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3bhx2")
+theme_override_styles/focus = SubResource("StyleBoxFlat_xqggf")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2"]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 2.0
+offset_right = 150.0
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_qw53x")
+text = "Left Shoulder Weapon"
+vertical_alignment = 2
+
+[node name="Tagline" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -25.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3v0m0")
+text = "TEST"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_ragt6")
+
+[node name="BasicStats" type="PanelContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.4
+theme_override_styles/panel = SubResource("StyleBoxFlat_jdrbt")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats"]
+layout_mode = 2
+theme_override_constants/margin_left = 2
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("6_8ouoq")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ihh53")
+text = "Basic Statistics"
+vertical_alignment = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="Statbox" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "health"
+stat_label = "ARM"
+
+[node name="Statbox2" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "shield"
+stat_label = "SHD"
+
+[node name="Statbox3" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "heat_capacity"
+stat_label = "H"
+
+[node name="Statbox4" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "heat_dispersion"
+stat_label = "H/S"
+
+[node name="Statbox5" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "max_speed"
+stat_label = "WLK"
+
+[node name="Statbox6" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer/GridContainer" instance=ExtResource("7_0qjyj")]
+layout_mode = 2
+stat_name = "thrust_max_speed"
+stat_label = "THR"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_bottom = -5
+
+[node name="Cargo" type="PanelContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_stretch_ratio = 0.5
+theme = ExtResource("2_jkpe7")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer"]
+layout_mode = 2
+
+[node name="head" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("6_8ouoq")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_ma3cy")
+text = " Cargo"
+vertical_alignment = 2
+
+[node name="Button" type="Button" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/head"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("6_8ouoq")
+theme_override_font_sizes/font_size = 20
+alignment = 0
+icon_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(350, 750)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridContainer" parent="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("9_eaakq")]
+layout_mode = 2
+
 [node name="Hangar" type="PanelContainer" parent="MarginContainer/HBoxContainer"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("6_8ouoq")
@@ -881,14 +1572,8 @@ custom_minimum_size = Vector2(350, 750)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/ScrollContainer"]
-custom_minimum_size = Vector2(50, 50)
+[node name="GridContainer" parent="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/BasicStats/MarginContainer/VBoxContainer2/MarginContainer2/Cargo/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("9_eaakq")]
 layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 6
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 4
 
 [node name="Storage" type="PanelContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
@@ -938,52 +1623,61 @@ custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="GridContainer" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/ScrollContainer" instance=ExtResource("9_eaakq")]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 12
 
 [node name="Button" type="Button" parent="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Spawn Test Part"
 
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Hardware" to="." method="_on_tab_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Wetware" to="." method="_on_tab_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Weapons" to="." method="_on_tab_pressed"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" method="_on_mouse_exited"]
+[connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Store/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_exited"]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Hardware" to="." method="_on_tab_pressed" binds= ["Hardware"]]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Wetware" to="." method="_on_tab_pressed" binds= ["Wetware"]]
 [connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/Weapons" to="." method="_on_tab_pressed" binds= ["Weapons"]]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Head" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Core" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Shoulders" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chassis" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Generator" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Chipset" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Thruster" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Arm" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Right Shoulder" method="_on_pressed"]
 [connection signal="mouse_entered" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_mouse_exited"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" to="MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/MechaSlotsContainer/Left Arm2" method="_on_pressed"]
-[connection signal="pressed" from="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/Button" to="." method="_on_test_spawn_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Storage/MarginContainer/VBoxContainer/Button" to="." method="_on_button_pressed"]

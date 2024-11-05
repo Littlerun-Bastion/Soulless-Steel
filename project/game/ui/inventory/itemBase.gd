@@ -81,7 +81,7 @@ func setup_item(_item_name, _part_type):
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if ItemManager.item_held:
+	if selected:
 		global_position = lerp(global_position, get_global_mouse_position(), 25 * delta)
 
 func snap_to(snap_point:Vector2):

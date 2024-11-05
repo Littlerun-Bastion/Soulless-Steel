@@ -10,8 +10,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 
 
-signal reset_comparison
-signal equip_part
+signal mecha_slot_pressed
 signal mecha_slot_mouse_entered
 signal mecha_slot_mouse_exited
 
@@ -50,65 +49,20 @@ func change_part(part):
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if not Input.is_action_pressed("left_click") and get_global_rect().has_point(get_global_mouse_position()) and visible and ItemManager.item_held:
-		equip_item(true)
+	pass
 
-func _input(event):
-	if Input.is_action_just_pressed("left_click") and get_global_rect().has_point(get_global_mouse_position()) and part_data and part_data.part_id != "Null" and visible:
-		equip_item(false)
-	if Input.is_action_just_released("left_click") and get_global_rect().has_point(get_global_mouse_position()) and visible:
-		equip_item(true)
+
+
+func _on_pressed():
+	emit_signal("mecha_slot_pressed", self)
+	pass # Replace with function body.
+
 
 func _on_mouse_entered():
-	ItemManager.hovered_slot = self
-	if ItemManager.item_held and ItemManager.item_held.part_type == type:
-		ItemManager.can_place = true
+	emit_signal("mecha_slot_mouse_entered", self)
+	pass # Replace with function body.
 
 
 func _on_mouse_exited():
-	ItemManager.hovered_slot = null
-	ItemManager.can_place = false
-
-func equip_item(equipping):
-	var _item
-	var _type = type
-	if equipping and ItemManager.item_held:	
-		_item = ItemManager.item_held.item_id
-	elif not equipping:
-		unequip_item(_type)
-		return
-	if _type.contains("right"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		emit_signal("equip_part", _type, [_item,1])
-	elif _type.contains("left"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		emit_signal("equip_part", _type, [_item,0])
-	else:
-		emit_signal("equip_part", _type, [_item,2])
-	change_part(_item)
-	emit_signal("reset_comparison")
-
-func unequip_item(_type):
-	if _type.contains("right"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		emit_signal("equip_part", _type, [null,1])
-	elif _type.contains("left"):
-		if "arm_weapon" in _type:
-			_type = "arm_weapon"
-		elif "shoulder_weapon" in _type:
-			_type = "shoulder_weapon"
-		emit_signal("equip_part", _type, [null,0])
-	else:
-		emit_signal("equip_part", _type, [null,2])
-	change_part(null)
-	emit_signal("reset_comparison")
-	
+	emit_signal("mecha_slot_mouse_exited", self)
+	pass # Replace with function body.

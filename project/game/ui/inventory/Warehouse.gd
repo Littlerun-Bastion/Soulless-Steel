@@ -88,7 +88,6 @@ func _on_slot_mouse_exited(slot):
 		hovered_slot = null
 
 func place_item(_slot):
-	#DEPRECIATED
 	var adjusted_position = _slot.global_position
 	adjusted_position.x += 25
 	adjusted_position.y += 25
@@ -119,6 +118,7 @@ func place_item(_slot):
 	item_held = null
 	
 func pick_up_item():
+	print("Beep")
 	if hovered_slot and hovered_slot.slot_type == "inventory_slot" and hovered_slot.item_stored:
 		item_held = hovered_slot.item_stored
 		item_held.selected = true
@@ -175,19 +175,20 @@ func unequip_part(_type):
 
 func equip_part(_type,_part):
 	var _typecheck = _type
-	if _part[1] :
+	if _part[1]:
 		if _part[1] == 1:
 			_typecheck = str(_typecheck + "_left")
 		elif _part[1] == 0:
 			_typecheck = str(_typecheck + "_right")
 		elif _part[1] == 2:
 			_part.remove_at(1)
-	if DisplayMecha.build[_typecheck] and DisplayMecha.build[_type].part_id != "Null":
+	if DisplayMecha.build[_typecheck]:
 		var unequipped_item = ItemManager.item_base.instantiate()
 		unequipped_item.setup_item(DisplayMecha.build[_type].part_id, _type)
 		add_child(unequipped_item)
 		unequipped_item.global_position = get_global_mouse_position()
 		if ItemManager.item_held:
+			print("Beep")
 			ItemManager.switch_item(unequipped_item)
 		else:
 			ItemManager.item_held = unequipped_item

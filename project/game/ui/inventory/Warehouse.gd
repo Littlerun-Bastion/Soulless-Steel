@@ -40,12 +40,10 @@ func _ready():
 	else:
 		push_error("Couldn't find a current mecha")
 	
-	#for i in range(num_slots):
-	#	create_slot()
+	for i in range(num_slots):
+		create_slot()
 	
-	grid_container.setup(ItemManager.warehouse_size)
-	cargo_grid_container.setup([5,8])
-	#setup_cargo()
+	setup_cargo()
 	
 	ComparisonMecha.global_rotation = 0
 	for child in BasicStats.get_children():
@@ -55,7 +53,24 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	if item_held:
+		if Input.is_action_just_released("left_click"):
+			if can_place:
+				place_item(hovered_slot)
+			else:
+				bounce_back()
+	else:
+		if Input.is_action_just_pressed("left_click"):
+			pick_up_item()
+			
+
+func create_slot():
+	var new_slot = inventory_slot.instantiate()
+	new_slot.slot_id = grid_array.size()
+	grid_container.add_child(new_slot)
+	grid_array.append(new_slot)
+	new_slot.inventory_slot_entered.connect(_on_slot_mouse_entered)
+	new_slot.inventory_slot_exited.connect(_on_slot_mouse_exited)
 	
 func create_cargo_slot():
 	var new_slot = inventory_slot.instantiate()
@@ -80,6 +95,9 @@ func _on_slot_mouse_entered(slot):
 		ComparisonMecha.callv("set_" + str(hovered_slot.item_stored.part_type), [hovered_slot.item_stored.item_id])
 		for child in BasicStats.get_children():
 			child.set_comparing_part(DisplayMecha,ComparisonMecha)
+	if item_held:
+		check_space(hovered_slot)
+		set_grids.call_deferred(hovered_slot)
 	
 func _on_slot_mouse_exited(slot):
 	if slot.item_stored and slot.item_stored.part_type and not slot.item_stored.part_type.contains("weapon"):
@@ -88,6 +106,45 @@ func _on_slot_mouse_exited(slot):
 			child.reset_comparison(DisplayMecha)
 	if not item_held and not scroll_container.get_global_rect().has_point(get_global_mouse_position()):
 		hovered_slot = null
+	clear_grid()	
+
+func check_space(slot):
+	for row in item_held.item_size[1]:
+		for space in item_held.item_size[0]:
+			var slot_id_to_check = slot.slot_id + space + (row * y_count)
+			var wrap_check = slot.slot_id % y_count + space
+			if wrap_check < 0 or wrap_check >= y_count:
+				can_place = false
+				return
+			if slot_id_to_check < 0 or slot_id_to_check >= grid_array.size():
+				can_place = false
+				return
+			if grid_array[slot_id_to_check].state == grid_array[slot_id_to_check].States.FILLED:
+				can_place = false
+				return
+	can_place = true
+
+func set_grids(slot):
+	for row in item_held.item_size[1]:
+		for space in item_held.item_size[0]:
+			var slot_id_to_check = slot.slot_id + space + (row * y_count)
+			var wrap_check = slot.slot_id % y_count + space
+			if slot_id_to_check < 0 or slot_id_to_check >= grid_array.size():
+				continue
+			if wrap_check < 0 or wrap_check >= y_count:
+				continue
+			if can_place:
+				grid_array[slot_id_to_check].set_color(grid_array[slot_id_to_check].States.EMPTY)
+			else:
+				grid_array[slot_id_to_check].set_color(grid_array[slot_id_to_check].States.FILLED)
+
+func clear_grid():
+	for slot in grid_array:
+		if not slot.item_stored:
+			slot.set_color(slot.States.DEFAULT)
+		else:
+			slot.set_color(slot.States.EMPTY)
+
 
 func place_item(_slot):
 	var adjusted_position = _slot.global_position
@@ -118,6 +175,7 @@ func place_item(_slot):
 		ItemManager.player_inventory_add_item(item_held.item_name, _slot.slot_id, item_held.quantity, item_held.part_type)
 		original_slot = null
 	item_held = null
+	clear_grid()
 	
 func pick_up_item():
 	if hovered_slot and hovered_slot.slot_type == "inventory_slot" and hovered_slot.item_stored:
@@ -132,6 +190,9 @@ func pick_up_item():
 				var slot_id_to_check = item_held.grid_anchor + space + (row * y_count)
 				grid_array[slot_id_to_check].state = grid_array[slot_id_to_check].States.EMPTY
 				grid_array[slot_id_to_check].item_stored = null
+			
+		check_space(hovered_slot)
+		set_grids.call_deferred(hovered_slot)
 		original_slot = hovered_slot
 	elif hovered_slot and hovered_slot.slot_type == "mecha_slot":
 		if not DisplayMecha.build[hovered_slot.type] and not item_held:
@@ -215,7 +276,7 @@ func _on_mecha_slot_mouse_exited(_slot):
 	can_place = false
 
 func bounce_back():
-	pass
+	place_item(original_slot)
 
 func _on_tab_pressed(subtype):
 	for child in MechaSlots.get_children():
@@ -228,12 +289,3 @@ func _on_tab_pressed(subtype):
 			child.button_pressed = false
 	$MarginContainer/HBoxContainer/Hangar/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/PanelContainer/TabLabel.text = subtype
 	
-
-
-func _on_button_pressed():
-	var unequipped_item = ItemManager.item_base.instantiate()
-	unequipped_item.setup_item("TestItem", null)
-	ItemManager.item_held = unequipped_item
-	ItemManager.item_held.selected = true
-	add_child(ItemManager.item_held)
-	ItemManager.item_held.global_position = get_global_mouse_position()

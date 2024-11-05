@@ -3,17 +3,12 @@ extends Node
 const DATA_PATH = "res://database/items/"
 
 @onready var ITEMS = {}
-@onready var item_base = preload("res://game/ui/inventory/ItemBase.tscn")
-@onready var inventory_slot = preload("res://game/ui/inventory/InventorySlot.tscn")
 
 var player_inventory = {} #DEPRECIATE THIS ASAP YOU STUPID FUCK
 var player_cargo = {}
 var player_warehouse = {}
-var item_held = null
+
 var hovered_slot = null
-var original_slot = null
-var can_place := false
-var warehouse_size = [6,10]
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

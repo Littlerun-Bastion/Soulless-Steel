@@ -129,5 +129,3 @@ func _on_RegularProjectile_body_shape_entered(_body_id, body, body_shape_id, _lo
 
 func _on_LifeTimer_timeout():
 	queue_free()
-
-

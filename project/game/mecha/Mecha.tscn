@@ -60,15 +60,13 @@ gradient = SubResource("Gradient_ngeoh")
 
 [sub_resource type="ParticleProcessMaterial" id="90"]
 lifetime_randomness = 0.36
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 50.0
-particle_flag_disable_z = true
-spread = 180.0
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+spread = 180.0
+gravity = Vector3(0, 0, 0)
 color_ramp = SubResource("GradientTexture1D_1wnec")
 anim_offset_max = 1.0
 
@@ -81,15 +79,13 @@ gradient = SubResource("Gradient_hem4l")
 
 [sub_resource type="ParticleProcessMaterial" id="91"]
 lifetime_randomness = 0.36
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 50.0
-particle_flag_disable_z = true
-spread = 180.0
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+spread = 180.0
+gravity = Vector3(0, 0, 0)
 scale_max = 3.5
 color_ramp = SubResource("GradientTexture1D_ag6rt")
 anim_offset_max = 1.0
@@ -110,23 +106,21 @@ point_count = 2
 curve = SubResource("80")
 
 [sub_resource type="ParticleProcessMaterial" id="79"]
+particle_flag_disable_z = true
 emission_shape = 6
 emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 1.0
 emission_ring_radius = 60.0
 emission_ring_inner_radius = 40.0
-particle_flag_disable_z = true
-direction = Vector3(0, 1, 0)
-spread = 180.0
-gravity = Vector3(0, 0, 0)
-initial_velocity_min = 25.0
-initial_velocity_max = 25.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
-linear_accel_min = -20.0
-linear_accel_max = -20.0
 angle_min = -720.0
 angle_max = 720.0
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 25.0
+initial_velocity_max = 25.0
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -20.0
+linear_accel_max = -20.0
 scale_max = 3.0
 scale_curve = SubResource("81")
 color_ramp = SubResource("GradientTexture1D_3lhbs")
@@ -139,19 +133,17 @@ colors = PackedColorArray(1, 1, 1, 1, 0.313726, 0.313726, 0.313726, 1, 0.313726,
 gradient = SubResource("Gradient_8qln4")
 
 [sub_resource type="ParticleProcessMaterial" id="63"]
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 63.06
-particle_flag_disable_z = true
-spread = 180.0
-gravity = Vector3(0, 0, 0)
-initial_velocity_max = 10.0
-angular_velocity_max = 50.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
-linear_accel_min = -0.5
-linear_accel_max = -0.5
 angle_min = -720.0
 angle_max = 720.0
+spread = 180.0
+initial_velocity_max = 10.0
+angular_velocity_max = 50.0
+gravity = Vector3(0, 0, 0)
+linear_accel_min = -0.5
+linear_accel_max = -0.5
 scale_min = 0.0
 scale_max = 0.5
 color_ramp = SubResource("GradientTexture1D_ysx1o")
@@ -183,18 +175,16 @@ curve = SubResource("110")
 [sub_resource type="ParticleProcessMaterial" id="112"]
 particle_flag_align_y = true
 particle_flag_disable_z = true
+angle_min = -720.0
+angle_max = 720.0
 direction = Vector3(0, 0, 0)
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 400.0
 initial_velocity_max = 500.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 80.0
 damping_max = 100.0
 damping_curve = SubResource("109")
-angle_min = -720.0
-angle_max = 720.0
 scale_min = 0.2
 scale_curve = SubResource("111")
 color_ramp = SubResource("GradientTexture1D_r4son")
@@ -217,11 +207,9 @@ curve = SubResource("114")
 particle_flag_align_y = true
 particle_flag_disable_z = true
 spread = 180.0
-gravity = Vector3(0, 98, 0)
 initial_velocity_min = 400.0
 initial_velocity_max = 500.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 98, 0)
 damping_max = 1.5
 damping_curve = SubResource("109")
 scale_min = 0.8
@@ -313,17 +301,15 @@ colors = PackedColorArray(1, 1, 1, 0.607843, 1, 1, 1, 0.745098, 1, 1, 1, 0.60784
 gradient = SubResource("Gradient_ge4eh")
 
 [sub_resource type="ParticleProcessMaterial" id="72"]
-emission_shape = 1
-emission_sphere_radius = 20.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 20.0
 direction = Vector3(0, 1, 0)
 spread = 15.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 150.0
 initial_velocity_max = 150.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = -50.0
 scale_min = 0.0
 scale_max = 1.5
@@ -337,17 +323,15 @@ colors = PackedColorArray(1, 1, 1, 0.611765, 1, 1, 1, 0.745098, 0.56, 0.56, 0.56
 gradient = SubResource("Gradient_wl1sl")
 
 [sub_resource type="ParticleProcessMaterial" id="73"]
-emission_shape = 1
-emission_sphere_radius = 30.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 30.0
 direction = Vector3(0, 1, 0)
 spread = 20.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 150.0
 initial_velocity_max = 150.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 50.0
 damping_max = 50.0
 scale_min = 0.5
@@ -362,17 +346,15 @@ colors = PackedColorArray(1, 1, 1, 0.615686, 1, 1, 1, 0.745098, 1, 1, 1, 0.25490
 gradient = SubResource("Gradient_gfxac")
 
 [sub_resource type="ParticleProcessMaterial" id="75"]
-emission_shape = 1
-emission_sphere_radius = 30.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 30.0
 direction = Vector3(0, 1, 0)
 spread = 20.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 150.0
 initial_velocity_max = 150.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 50.0
 damping_max = 50.0
 scale_min = 0.25
@@ -397,17 +379,15 @@ point_count = 2
 curve = SubResource("85")
 
 [sub_resource type="ParticleProcessMaterial" id="84"]
-emission_shape = 1
-emission_sphere_radius = 80.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 80.0
 direction = Vector3(0, 1, 0)
 spread = 30.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 400.0
 initial_velocity_max = 700.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = 0.8
 linear_accel_max = 1.0
 linear_accel_curve = SubResource("86")
@@ -421,17 +401,15 @@ color_ramp = SubResource("GradientTexture1D_y6d3k")
 gradient = SubResource("Gradient_ce535")
 
 [sub_resource type="ParticleProcessMaterial" id="76"]
-emission_shape = 1
-emission_sphere_radius = 20.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 20.0
 direction = Vector3(0, 1, 0)
 spread = 15.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 150.0
 initial_velocity_max = 150.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.5
 scale_max = 1.5
 color_ramp = SubResource("GradientTexture1D_0ylvt")
@@ -445,33 +423,29 @@ colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 gradient = SubResource("Gradient_yu5fs")
 
 [sub_resource type="ParticleProcessMaterial" id="104"]
-emission_shape = 1
-emission_sphere_radius = 10.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 10.0
 direction = Vector3(0, 1, 0)
 spread = 15.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 100.0
 initial_velocity_max = 100.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.2
 scale_max = 2.0
 color_ramp = SubResource("GradientTexture1D_8w2nm")
 
 [sub_resource type="ParticleProcessMaterial" id="105"]
-emission_shape = 1
-emission_sphere_radius = 30.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 30.0
 direction = Vector3(0, 1, 0)
 spread = 20.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 150.0
 initial_velocity_max = 150.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 50.0
 damping_max = 50.0
 scale_min = 0.5
@@ -690,15 +664,13 @@ curve = SubResource("56")
 
 [sub_resource type="ParticleProcessMaterial" id="58"]
 lifetime_randomness = 0.3
-emission_shape = 1
-emission_sphere_radius = 50.0
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 50.0
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_max = 50.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 2.0
 damping_max = 2.0
 scale_min = 0.75
@@ -712,23 +684,21 @@ colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.45098, 0, 0, 0, 0.360784, 0, 0,
 gradient = SubResource("Gradient_qpo88")
 
 [sub_resource type="ParticleProcessMaterial" id="52"]
+particle_flag_disable_z = true
 emission_shape = 6
 emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 1.0
 emission_ring_radius = 120.0
 emission_ring_inner_radius = 60.0
-particle_flag_disable_z = true
+angle_min = -720.0
+angle_max = 720.0
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_max = 50.0
 angular_velocity_min = 1.0
 angular_velocity_max = 50.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 1.0
 damping_max = 5.0
-angle_min = -720.0
-angle_max = 720.0
 scale_min = 0.2
 color_ramp = SubResource("GradientTexture1D_o2xtd")
 
@@ -740,15 +710,13 @@ colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 gradient = SubResource("Gradient_rs4jb")
 
 [sub_resource type="ParticleProcessMaterial" id="55"]
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 125.0
-particle_flag_disable_z = true
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 angular_velocity_min = 120.0
 angular_velocity_max = 240.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.1
 color_ramp = SubResource("GradientTexture1D_k52hc")
 
@@ -766,15 +734,13 @@ colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 gradient = SubResource("Gradient_y7jf4")
 
 [sub_resource type="ParticleProcessMaterial" id="47"]
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 27.16
-particle_flag_disable_z = true
-spread = 180.0
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+spread = 180.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.5
 scale_max = 2.0
 color_ramp = SubResource("GradientTexture1D_0yqna")
@@ -808,16 +774,14 @@ point_count = 3
 curve = SubResource("69")
 
 [sub_resource type="ParticleProcessMaterial" id="66"]
-emission_shape = 1
-emission_sphere_radius = 43.66
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 43.66
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 15.0
 initial_velocity_max = 15.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 damping_min = 3.0
 damping_max = 3.0
 scale_min = 0.5
@@ -840,49 +804,45 @@ point_count = 2
 curve = SubResource("42")
 
 [sub_resource type="ParticleProcessMaterial" id="44"]
+particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 54.92
-particle_flag_disable_z = true
+angle_min = -720.0
+angle_max = 720.0
 spread = 180.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_max = 100.0
 angular_velocity_min = 10.0
 angular_velocity_max = 60.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
-angle_min = -720.0
-angle_max = 720.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.5
 scale_max = 3.0
 scale_curve = SubResource("43")
 color_ramp = SubResource("GradientTexture1D_w307h")
 
 [sub_resource type="ParticleProcessMaterial" id="83"]
-emission_shape = 1
-emission_sphere_radius = 70.81
 particle_flag_align_y = true
 particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 70.81
 spread = 180.0
-gravity = Vector3(0, 5, 0)
 initial_velocity_min = 100.0
 initial_velocity_max = 200.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 5, 0)
 damping_min = 20.0
 damping_max = 20.0
 scale_min = 0.1
 color_ramp = SubResource("GradientTexture1D_w307h")
 
 [sub_resource type="ParticleProcessMaterial" id="82"]
+angle_min = -720.0
+angle_max = 720.0
 spread = 180.0
-gravity = Vector3(0, 5, 0)
 initial_velocity_max = 40.0
 angular_velocity_min = 10.0
 angular_velocity_max = 60.0
+gravity = Vector3(0, 5, 0)
 damping_min = 50.0
 damping_max = 100.0
-angle_min = -720.0
-angle_max = 720.0
 scale_min = 0.5
 scale_max = 3.0
 scale_curve = SubResource("43")
@@ -898,11 +858,9 @@ gradient = SubResource("Gradient_5dyvt")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ilqcl"]
 lifetime_randomness = 0.5
 particle_flag_disable_z = true
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.97
 scale_max = 1.03
 color_ramp = SubResource("GradientTexture1D_fa2ur")
@@ -927,11 +885,9 @@ curve = SubResource("Curve_xbn5v")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ntxfy"]
 lifetime_randomness = 0.3
 particle_flag_disable_z = true
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+gravity = Vector3(0, 0, 0)
 scale_min = 0.97
 scale_max = 1.03
 scale_curve = SubResource("CurveTexture_yiw7h")
@@ -956,11 +912,9 @@ curve = SubResource("Curve_e4qgg")
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3kfan"]
 lifetime_randomness = 0.6
 particle_flag_disable_z = true
-gravity = Vector3(0, 0, 0)
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
 angle_min = -720.0
 angle_max = 720.0
+gravity = Vector3(0, 0, 0)
 scale_min = 1.24
 scale_max = 1.26
 scale_curve = SubResource("CurveTexture_f6va2")
@@ -1672,10 +1626,10 @@ wait_time = 5.0
 one_shot = true
 
 [node name="MovementAnimation" type="AnimationPlayer" parent="."]
-autoplay = "RESET"
 libraries = {
 "": SubResource("AnimationLibrary_roks7")
 }
+autoplay = "RESET"
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
 path_desired_distance = 200.0

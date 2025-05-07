@@ -10,6 +10,7 @@ blend_mode = 1
 
 [node name="Projectile" type="Area2D" groups=["projectile"]]
 collision_layer = 2
+collision_mask = 3
 script = ExtResource("1_ynw62")
 projectile_size = 0.75
 light_energy = 0.15

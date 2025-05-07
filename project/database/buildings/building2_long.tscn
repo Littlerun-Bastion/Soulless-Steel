@@ -21,6 +21,14 @@ monitorable = false
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea"]
 polygon = PackedVector2Array(-527, 177, 527, 177, 527, -177, -527, -177)
 
+[node name="BuildingArea2" type="StaticBody2D" parent="." groups=["building_area"]]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea2"]
+build_mode = 1
+polygon = PackedVector2Array(-527, 177, 527, 177, 527, -177, -527, -177)
+
 [node name="Perimeter" type="Area2D" parent="." groups=["building_perimeter"]]
 monitorable = false
 

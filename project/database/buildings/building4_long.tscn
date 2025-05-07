@@ -1,42 +1,50 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://v88p01n4av7i"]
 
-[ext_resource path="res://game/arena/Building.gd" type="Script" id=1]
-[ext_resource path="res://assets/images/buildings/building_long2_bottom.png" type="Texture2D" id=2]
-[ext_resource path="res://assets/images/buildings/building_long2_top.png" type="Texture2D" id=3]
-[ext_resource path="res://assets/images/white_pixel.png" type="Texture2D" id=4]
+[ext_resource type="Script" path="res://game/arena/Building.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dkvqgn5hij7db" path="res://assets/images/buildings/building_long2_bottom.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cqonpni8os5ro" path="res://assets/images/buildings/building_long2_top.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://vretek2t6x6b" path="res://assets/images/white_pixel.png" id="4"]
 
 [node name="Building" type="Node2D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="Background" type="Sprite2D" parent="."]
-texture = ExtResource( 2 )
+texture = ExtResource("2")
 
 [node name="Foreground" type="Sprite2D" parent="."]
 z_index = 1
-texture = ExtResource( 3 )
+texture = ExtResource("3")
 
 [node name="BuildingArea" type="Area2D" parent="." groups=["building_area"]]
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea"]
-polygon = PackedVector2Array( -477, 177, 477, 177, 477, -177, -477, -177 )
+polygon = PackedVector2Array(-477, 177, 477, 177, 477, -177, -477, -177)
+
+[node name="BuildingArea2" type="StaticBody2D" parent="." groups=["building_area"]]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="BuildingArea2"]
+build_mode = 1
+polygon = PackedVector2Array(-477, 177, 477, 177, 477, -177, -477, -177)
 
 [node name="Perimeter" type="Area2D" parent="." groups=["building_perimeter"]]
 monitorable = false
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Perimeter"]
 build_mode = 1
-polygon = PackedVector2Array( -497, 197, 497, 197, 497, -197, -497, -197 )
+polygon = PackedVector2Array(-497, 197, 497, 197, 497, -197, -497, -197)
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
 light_mask = 0
-scale = Vector2( 1000, 400 )
+scale = Vector2(1000, 400)
 enabled = false
-texture = ExtResource( 4 )
 energy = 0.0
-mode = 3
+blend_mode = 3
 range_layer_max = 2
 range_item_cull_mask = 16
+texture = ExtResource("4")
 
 [connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]
 [connection signal="body_exited" from="BuildingArea" to="." method="_on_BuildingArea_body_exited"]

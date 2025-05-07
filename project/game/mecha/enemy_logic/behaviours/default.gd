@@ -8,11 +8,11 @@ var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in
 var initial_state = "roam"
 
 #Custom variables
-var engage_distance = 2000
+var engage_distance = 1800
 var min_kite_distance = 1500
 var max_kite_distance = 1700
 var cqb_distance = 1200
-var max_shooting_distance = 3500
+var max_shooting_distance = 2000
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
 var cooldown_time = 6.0
@@ -399,7 +399,7 @@ func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		if enemy.is_shielding:
 			enemy.shield_down()
-		if reaction_timer >= reaction_speed:
+		if reaction_timer >= reaction_speed and enemy.global_position.distance_to(enemy.current_target.global_position) < max_shooting_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
 			enemy.shoot_weapons(enemy.current_target)
 		else:
 			reaction_timer += dt

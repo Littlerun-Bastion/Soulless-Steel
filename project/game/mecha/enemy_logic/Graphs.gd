@@ -33,4 +33,3 @@ func set_state(state):
 
 func get_current_state():
 	return current_state
-

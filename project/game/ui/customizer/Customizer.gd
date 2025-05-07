@@ -332,5 +332,3 @@ func _LoadScreen_on_load_pressed(design):
 
 func _on_category_mouse_entered():
 	AudioManager.play_sfx("keystroke")
-
-

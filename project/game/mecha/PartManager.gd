@@ -124,4 +124,3 @@ func get_parts_by_tags(type, search_tags):
 		if valid:
 			final_list.append(part)
 	return final_list
-

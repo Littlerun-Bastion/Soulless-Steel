@@ -110,5 +110,3 @@ func get_stat(stat_name):
 	return stat
 
 	
-
-

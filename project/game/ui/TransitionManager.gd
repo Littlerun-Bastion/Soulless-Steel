@@ -80,4 +80,3 @@ func set_blur_value(value: float):
 
 func set_noise_value(value: float):
 	VCREffect.material.set_shader_parameter("noiseQuality", value);
-

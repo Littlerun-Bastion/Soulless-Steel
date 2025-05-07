@@ -39,5 +39,3 @@ func get_valid_connections(arguments):
 		if behaviour.callv(func_name, [arguments]):
 			valid_connections[connection] = true
 	return valid_connections
-
-

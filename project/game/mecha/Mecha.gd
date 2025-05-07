@@ -1962,4 +1962,3 @@ func _on_MeleeHitboxes_create_hitbox(data, side):
 	data.owner = self
 	hitbox.setup(data)
 	node.add_child(hitbox)
-

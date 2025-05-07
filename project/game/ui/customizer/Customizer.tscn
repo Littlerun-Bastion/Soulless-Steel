@@ -17,8 +17,6 @@
 
 [sub_resource type="Theme" id="14"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b5s5m"]
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vd7ux"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_bottom = 2
@@ -26,19 +24,21 @@ border_color = Color(1, 1, 1, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_414lh"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rot1g"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b5s5m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bgaso"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_bottom = 2
 border_color = Color(1, 1, 1, 1)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_axi2k"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rot1g"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3nyvn"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_bottom = 2
 border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_axi2k"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uy8tw"]
 bg_color = Color(0, 0, 0, 1)
@@ -401,9 +401,9 @@ offset_right = 357.0
 offset_bottom = 199.0
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
-theme_override_styles/normal = SubResource("StyleBoxEmpty_b5s5m")
 theme_override_styles/hover = SubResource("StyleBoxFlat_vd7ux")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b5s5m")
 text = "Hardware"
 icon_alignment = 1
 
@@ -415,9 +415,9 @@ offset_right = 681.0
 offset_bottom = 199.0
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
-theme_override_styles/normal = SubResource("StyleBoxEmpty_rot1g")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bgaso")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_rot1g")
 text = "Wetware"
 icon_alignment = 1
 
@@ -429,9 +429,9 @@ offset_right = 1003.0
 offset_bottom = 199.0
 theme = ExtResource("8")
 theme_override_font_sizes/font_size = 60
-theme_override_styles/normal = SubResource("StyleBoxTexture_axi2k")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3nyvn")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_414lh")
+theme_override_styles/normal = SubResource("StyleBoxTexture_axi2k")
 text = "weapons"
 icon_alignment = 1
 

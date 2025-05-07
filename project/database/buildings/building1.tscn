@@ -1,14 +1,19 @@
-[gd_scene load_steps=5 format=3 uid="uid://b2835dkuuks7e"]
+[gd_scene load_steps=6 format=3 uid="uid://b2835dkuuks7e"]
 
 [ext_resource type="Script" path="res://game/arena/Building.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://btea0dsdlbair" path="res://assets/images/buildings/building_square_top2.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://cpnnb4hcr752q" path="res://assets/images/buildings/building_square_interior1.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://vretek2t6x6b" path="res://assets/images/white_pixel.png" id="4"]
 
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_e3qu1"]
+closed = false
+polygon = PackedVector2Array(-480, -477, 477, -477, 478, 478, -479, 478)
+
 [node name="Building" type="Node2D"]
 script = ExtResource("1")
 
 [node name="Background" type="Sprite2D" parent="."]
+light_mask = 3
 texture = ExtResource("3")
 
 [node name="Foreground" type="Sprite2D" parent="."]
@@ -45,6 +50,9 @@ blend_mode = 3
 range_layer_max = 2
 range_item_cull_mask = 16
 texture = ExtResource("4")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_e3qu1")
 
 [connection signal="body_entered" from="BuildingArea" to="." method="_on_BuildingArea_body_entered"]
 [connection signal="body_exited" from="BuildingArea" to="." method="_on_BuildingArea_body_exited"]

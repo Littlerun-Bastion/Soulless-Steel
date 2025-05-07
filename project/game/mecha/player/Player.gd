@@ -218,6 +218,7 @@ func check_weapon_input(weapon_name):
 func setup(arena_ref):
 	arena = arena_ref
 	mecha_name = "Player"
+	$MechaShadowGen.enabled = true
 	if PlayerStatManager.NumberofExtracts != 0:
 		hp = PlayerStatManager.PlayerHP
 		emit_signal("lost_health")

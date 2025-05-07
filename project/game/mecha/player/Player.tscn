@@ -48,6 +48,9 @@ position = Vector2(-49.7729, 16)
 [node name="RightShoulder" parent="." index="13"]
 position = Vector2(51.6457, 16)
 
+[node name="MechaShadowGen" parent="." index="25"]
+enabled = false
+
 [node name="Sight" type="PointLight2D" parent="." index="26"]
 light_mask = 2
 rotation = -1.5708

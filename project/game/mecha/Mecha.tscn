@@ -1,4 +1,4 @@
-[gd_scene load_steps=175 format=3 uid="uid://cbjnlqrdalvrn"]
+[gd_scene load_steps=176 format=3 uid="uid://cbjnlqrdalvrn"]
 
 [ext_resource type="Script" path="res://game/mecha/Mecha.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ctouokk3ybmhs" path="res://assets/images/mechas/arm_weapons/Type2Sh_Sub.png" id="2"]
@@ -44,6 +44,7 @@
 [ext_resource type="Texture2D" uid="uid://eio7nh8alera" path="res://assets/images/fx/spark_long.png" id="43"]
 [ext_resource type="Texture2D" uid="uid://de4alci5yhgo1" path="res://assets/images/fx/shield_ring_1.png" id="43_gm66f"]
 [ext_resource type="Texture2D" uid="uid://civftnx3kxt4x" path="res://assets/images/fx/blood_drip_sheet.png" id="44"]
+[ext_resource type="Texture2D" uid="uid://cpf232ltrufel" path="res://assets/images/light_sources/aimed_glow.png" id="44_7fvep"]
 
 [sub_resource type="CanvasItemMaterial" id="87"]
 particles_animation = true
@@ -1608,12 +1609,29 @@ energy = 1.2
 texture = ExtResource("41")
 texture_scale = 4.0
 
-[node name="MechaLight" type="PointLight2D" parent="."]
+[node name="MechaShadowGen" type="PointLight2D" parent="."]
+color = Color(0, 0, 0, 0.611765)
+energy = 2.0
+blend_mode = 2
+range_layer_max = 2
 range_item_cull_mask = 2
-shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.611765)
 shadow_filter = 1
 shadow_filter_smooth = 4.4
 texture = ExtResource("9")
+texture_scale = 10.0
+
+[node name="MechaLight" type="PointLight2D" parent="."]
+energy = 4.0
+blend_mode = 2
+range_layer_max = 2
+range_item_cull_mask = 2
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.611765)
+shadow_filter = 1
+shadow_filter_smooth = 4.4
+texture = ExtResource("44_7fvep")
+texture_scale = 5.0
 
 [node name="StunTimer" type="Timer" parent="."]
 one_shot = true

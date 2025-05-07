@@ -9,6 +9,7 @@
 script = ExtResource("1")
 
 [node name="Background" type="Sprite2D" parent="."]
+light_mask = 3
 texture = ExtResource("2")
 
 [node name="Foreground" type="Sprite2D" parent="."]
@@ -22,6 +23,7 @@ monitorable = false
 polygon = PackedVector2Array(-527.982, 427.176, 527.145, 426.945, 526.152, -427.072, 476.164, -427.074, 476.046, -443.972, -26.0953, -444.921, -25.9961, -425.872, -528.151, -427.118)
 
 [node name="BuildingArea2" type="StaticBody2D" parent="." groups=["building_area"]]
+light_mask = 2
 collision_layer = 2
 collision_mask = 2
 

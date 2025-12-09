@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3 uid="uid://7hhseaxopa1d"]
+
+[ext_resource type="Texture2D" uid="uid://ca7bwvb5vjued" path="res://assets/images/mechas/arm_weapons/MA-H250/MA-H200_PV.png" id="1_1rlv1"]
+[ext_resource type="Script" path="res://database/parts/item_data.gd" id="1_pkxvl"]
+
+[resource]
+script = ExtResource("1_pkxvl")
+id = "TestItem"
+display_name = "MA-H250 TEST"
+description = "This is a test item!"
+icon = ExtResource("1_1rlv1")
+weight = 5.0
+price = 5
+tags = Array[String]([])
+item_size = [1, 3]
+max_stack = 1

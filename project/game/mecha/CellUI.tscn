@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://driwwmdrnw183"]
+
+[ext_resource type="Script" path="res://game/mecha/CellUI.gd" id="1_388xl"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bemsw"]
+bg_color = Color(0, 0, 0, 1)
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+corner_detail = 1
+
+[node name="CellUi" type="Panel"]
+theme_override_styles/panel = SubResource("StyleBoxFlat_bemsw")
+script = ExtResource("1_388xl")

@@ -1,7 +1,8 @@
-[gd_scene load_steps=37 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=38 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
+[ext_resource type="PackedScene" uid="uid://bndcq0u53dtrh" path="res://game/mecha/InventoryUI.tscn" id="2_74msw"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
 [ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
@@ -130,10 +131,10 @@ _data = {
 bg_color = Color(1, 1, 1, 1)
 
 [sub_resource type="FontFile" id="12"]
+fallbacks = Array[Font]([ExtResource("3")])
 subpixel_positioning = 0
 msdf_pixel_range = 14
 msdf_size = 128
-fallbacks = Array[Font]([ExtResource("3")])
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
@@ -924,6 +925,7 @@ shader_parameter/noise = SubResource("27")
 [node name="PlayerHUD" type="CanvasLayer"]
 layer = 2
 script = ExtResource("1")
+InventoryUIScene = ExtResource("2_74msw")
 
 [node name="Fog" type="TextureRect" parent="."]
 light_mask = 4
@@ -977,10 +979,10 @@ vertical_alignment = 1
 [node name="LockingSprite" type="Sprite2D" parent="SubViewportContainer/SubViewport"]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="SubViewportContainer/SubViewport/LockingSprite"]
-autoplay = "RESET"
 libraries = {
 "": SubResource("AnimationLibrary_2wm0k")
 }
+autoplay = "RESET"
 
 [node name="ExposedLabels" type="Control" parent="SubViewportContainer/SubViewport"]
 visible = false

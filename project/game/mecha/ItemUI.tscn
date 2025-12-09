@@ -1,0 +1,47 @@
+[gd_scene load_steps=4 format=3 uid="uid://d1rk7iwyjnc4g"]
+
+[ext_resource type="Script" path="res://game/mecha/ItemUI.gd" id="1_qy32l"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2_2hk0l"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ii40"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_detail = 1
+
+[node name="ItemUi" type="Panel"]
+custom_minimum_size = Vector2(50, 50)
+offset_right = 50.0
+offset_bottom = 50.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_8ii40")
+script = ExtResource("1_qy32l")
+
+[node name="Icon" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+stretch_mode = 5
+
+[node name="Quantity" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = -26.0
+offset_right = 40.0
+grow_vertical = 0
+theme = ExtResource("2_2hk0l")
+theme_override_font_sizes/font_size = 20
+text = "1"
+vertical_alignment = 2

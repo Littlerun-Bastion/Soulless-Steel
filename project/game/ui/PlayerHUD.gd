@@ -50,6 +50,10 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 
+@export var InventoryUIScene: PackedScene
+var inventory_ui: InventoryUI
+
+
 var use_fog = false
 var player = false
 var mechas
@@ -57,10 +61,53 @@ var blink_timer = 0.66
 var building_effect_active = false
 var exposed_blink_timer = 0.0
 
+const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
+
+
 
 func _ready():
 	Fog.visible = use_fog
 	BuildingEffect.modulate.a = 0
+
+func _unhandled_input(event):
+	if event.is_action_pressed("toggle_inventory"):
+		toggle_inventory()
+		
+	if not player or not player.mech_inventory:
+		return
+
+	if event.is_action_pressed("debug_6"):
+		var inv = player.mech_inventory
+
+		# Try to add 1 copy of the test item
+		var ok = inv.add_item(TEST_ITEM_DATA, 1)
+
+		if ok:
+			print("Debug: spawned test item into mech inventory.")
+		else:
+			print("Debug: inventory full, could not add test item.")
+
+		# If the inventory UI is open, refresh so we see the new item
+		if inventory_ui and inventory_ui.visible:
+			inventory_ui.refresh()
+
+		get_viewport().set_input_as_handled()
+
+func toggle_inventory():
+	if inventory_ui.visible:
+		inventory_ui.hide()
+		MouseManager.hide_cursor()
+		Cursor.visible = true
+		player.controls_locked = false
+	else:
+		inventory_ui.refresh()
+		inventory_ui.show()
+		MouseManager.show_cursor()
+		Cursor.visible = false
+		player.controls_locked = true
+		
+		
+	
 
 
 func _process(dt):
@@ -176,6 +223,11 @@ func setup(player_ref, mechas_ref):
 	ShieldBar.get_node("Label").text = str(player.shield)
 	for bullethole in Bulletholes.get_children():
 		bullethole.modulate.a = 0
+		
+	call_deferred("_finish_setup")
+
+func _finish_setup():
+	spawn_inventory_ui()
 
 
 func set_pause(value):
@@ -296,3 +348,10 @@ func _on_LifeBar_value_changed(value):
 
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
+
+func spawn_inventory_ui():
+	inventory_ui = InventoryUIScene.instantiate()
+	add_child(inventory_ui)
+	inventory_ui.inventory = player.mech_inventory
+	inventory_ui.refresh()
+	inventory_ui.hide()

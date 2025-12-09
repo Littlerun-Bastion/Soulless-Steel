@@ -97,6 +97,8 @@ signal made_sound
 @onready var RightChassisSub = $Chassis/Right/Sub
 @onready var RightChassisGlow = $Chassis/Right/Glow
 @onready var ChassisSprintGlow = $Chassis/SprintGlow
+
+@onready var mech_inventory: inventory
 #Particles
 @onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
@@ -161,6 +163,7 @@ signal made_sound
 
 var mecha_name = "Mecha Name"
 var paused = false
+var controls_locked = false
 var is_dead = false
 var cur_mode = MODES.NEUTRAL
 var arena = false
@@ -307,7 +310,9 @@ func _ready():
 				SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
 		node.material = CoreGlow.material.duplicate(true)
 	global_rotation_degrees = randf_range(0, 360)
-
+	
+	if mech_inventory == null:
+		mech_inventory = inventory.new()
 
 func _physics_process(dt):
 	if paused:
@@ -584,10 +589,9 @@ func update_max_shield_from_parts():
 func set_max_heat():
 	max_heat = get_stat("heat_capacity")
 
-
 func is_overweight():
-	weight = get_stat("weight")
 	weight_capacity = get_stat("weight_capacity")
+	weight = get_total_weight()
 	return weight > weight_capacity
 
 
@@ -709,7 +713,9 @@ func take_status_damage(dt):
 
 func apply_movement_modifiers(speed):
 	if is_overweight():
-		speed /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
+		var total_weight = get_total_weight()
+		if weight_capacity > 0.0:
+			speed /= (total_weight / weight_capacity) * OVERWEIGHT_SPEED_MOD
 	if has_status("freezing"):
 		speed *= FREEZING_SPEED_MOD
 	if is_entering_building:
@@ -947,6 +953,10 @@ func set_core(part_name):
 	stability = get_stat("stability")
 	reset_offsets()
 	set_max_heat()
+	if mech_inventory == null:
+		mech_inventory = inventory.new()
+	var cargo = build.core.cargo_space  # [x, y]
+	mech_inventory.initialize_grid(cargo[0], cargo[1])
 
 
 func set_generator(part_name):
@@ -1133,12 +1143,28 @@ func get_stat(stat_name):
 	for part in build.values():
 		if part and part.get(stat_name):
 			total_stat += part[stat_name]
+
 	if stat_name.contains("max_speed") and is_overweight():
-		total_stat /= ((get_stat("weight"))/weight_capacity) * OVERWEIGHT_SPEED_MOD
-		total_stat = round(total_stat)
+		var total_weight = get_total_weight()
+		if weight_capacity > 0.0:
+			total_stat /= (total_weight / weight_capacity) * OVERWEIGHT_SPEED_MOD
+			total_stat = round(total_stat)
+		
 	if stat_name == "thrust_max_speed":
 		total_stat += get_stat("max_speed")
 	return float(total_stat)
+
+func get_inventory_weight() -> float:
+	if inventory:
+		return mech_inventory.get_current_weight()
+	return 0.0
+
+
+func get_total_weight() -> float:
+	# Parts weight (from build) + cargo weight (inventory)
+	var parts_weight = get_stat("weight")
+	return parts_weight + get_inventory_weight()
+
 
 
 func get_weapon_part(part_name):
@@ -1693,7 +1719,8 @@ func stop_shooting(weapon_type):
 
 
 func apply_recoil(type, node, recoil):
-	var target_rotation = recoil*300/get_stat("weight")
+	var total_weight = max(get_total_weight(), 1.0)
+	var target_rotation = recoil * 300 / total_weight
 	if "left" in type:
 		target_rotation *= -1
 	rotation_degrees += target_rotation
@@ -1962,3 +1989,17 @@ func _on_MeleeHitboxes_create_hitbox(data, side):
 	data.owner = self
 	hitbox.setup(data)
 	node.add_child(hitbox)
+	
+func update_inventory_space():
+	var space = get_cargo_space()
+	var w = space[0]
+	var h = space[1]
+
+	if mech_inventory == null:
+		mech_inventory = inventory.new()
+		mech_inventory.initialize_grid(w, h)
+	else:
+		mech_inventory.resize_and_migrate(w, h)
+		
+func pickup(item: item_data):
+	mech_inventory.add_item(item, 1)

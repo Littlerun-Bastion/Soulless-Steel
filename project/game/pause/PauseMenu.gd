@@ -56,4 +56,3 @@ func _on_Quit_pressed():
 func _on_Resume_pressed():
 	AudioManager.play_sfx("confirm")
 	toggle_pause()
-

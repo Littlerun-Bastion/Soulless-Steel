@@ -27,6 +27,7 @@ stability = 90.0
 has_left_shoulder = true
 has_right_shoulder = true
 weight = 32.0
+cargo_space = [8, 10]
 
 [node name="LeftChassisOffset" type="Marker2D" parent="."]
 position = Vector2(-38, 36)

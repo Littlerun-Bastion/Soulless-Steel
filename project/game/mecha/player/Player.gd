@@ -45,9 +45,8 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	check_input()
-	
-	
+	if not controls_locked:
+		check_input()	
 	apply_movement(dt, get_input())
 	
 	#Update sprinting timer
@@ -67,7 +66,7 @@ func _physics_process(dt):
 
 
 func _input(event):
-	if paused or is_stunned():
+	if paused or is_stunned() or controls_locked:
 		return
 	
 	if event.is_action_pressed("interact"):

@@ -51,6 +51,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Columns" type="HBoxContainer" parent="MainFrame"]
 layout_mode = 2
@@ -153,9 +154,99 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="ExternalColumn" type="VBoxContainer" parent="MainFrame/Columns"]
+[node name="OtherInventoryColumn" type="VBoxContainer" parent="MainFrame/Columns"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ExternalPanel" type="Panel" parent="MainFrame/Columns/ExternalColumn"]
+[node name="InventoryPanel" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn"]
 layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 58.0
+grow_horizontal = 2
+theme = ExtResource("3_q84jc")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_p06n0")
+text = "Inventory"
+
+[node name="GridFrame" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.01
+anchor_top = 0.06
+anchor_right = 0.99
+anchor_bottom = 0.993
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xoql5")
+
+[node name="Scroll" type="ScrollContainer" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 3.42004
+offset_bottom = 0.360046
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_74ebd")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_lybm8")
+vertical_scroll_mode = 2
+
+[node name="GridContent" type="Control" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+
+[node name="GridBorder" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_veayo")
+
+[node name="CellGrid" type="GridContainer" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 6
+
+[node name="ItemsLayer" type="Control" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DragLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

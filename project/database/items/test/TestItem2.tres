@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3 uid="uid://07b8h1ek7vk6"]
+
+[ext_resource type="Texture2D" uid="uid://mpr6fc63fmr2" path="res://assets/images/mechas/heads/Crawler C-type/Crawler_C-type_head_pv.png" id="1_wvjnu"]
+[ext_resource type="Script" path="res://database/parts/item_data.gd" id="2_v4ube"]
+
+[resource]
+script = ExtResource("2_v4ube")
+id = "TestItem2"
+display_name = "C-Type Head TEST"
+description = "This is a test item!"
+icon = ExtResource("1_wvjnu")
+weight = 5.0
+price = 5
+tags = Array[String]([])
+item_size = [2, 2]
+max_stack = 1

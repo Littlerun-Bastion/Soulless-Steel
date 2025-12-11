@@ -119,6 +119,8 @@ func _input(event):
 		increase_throttle(false, THROTTLE_STEP)
 	elif event.is_action_pressed("throttle_down"):
 		decrease_throttle(false, THROTTLE_STEP)
+	elif event.is_action_pressed("debug_7"):
+		_spawn_debug_target_inventory()
 
 
 func get_camera_3d():
@@ -324,3 +326,25 @@ func _on_reloading(reload_time, side):
 func player_extracting():
 	print(str("Player is Extracting"))
 	
+func _spawn_debug_target_inventory():
+	# If we already have a target inventory, just reuse it
+	print("TEST!")
+	if target_inventory == null:
+		target_inventory = inventory.new()
+		target_inventory.initialize_grid(6, 8)  # test size
+
+		# Load some test items – adjust paths to real ones in your project
+		var test_item_1: item_data = load("res://database/items/test/TestItem.tres")
+		var test_item_2: item_data = load("res://database/items/test/TestItem2.tres")
+
+		if test_item_1:
+			target_inventory.add_item(test_item_1, 1)
+		if test_item_2:
+			target_inventory.add_item(test_item_2, 1)
+
+	# Now tell the HUD's InventoryUI to use this as the right-hand inventory
+	if arena and arena.PlayerHUD:   # or however you get the HUD reference
+		var hud = arena.PlayerHUD
+		if hud.inventory_ui:
+			hud.inventory_ui.other_inventory = target_inventory
+			hud.inventory_ui.refresh()

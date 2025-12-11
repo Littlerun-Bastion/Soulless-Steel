@@ -99,6 +99,7 @@ signal made_sound
 @onready var ChassisSprintGlow = $Chassis/SprintGlow
 
 @onready var mech_inventory: inventory
+var target_inventory: inventory = null
 #Particles
 @onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
@@ -2003,3 +2004,6 @@ func update_inventory_space():
 		
 func pickup(item: item_data):
 	mech_inventory.add_item(item, 1)
+
+func open_container(container):
+	target_inventory = container.inventory

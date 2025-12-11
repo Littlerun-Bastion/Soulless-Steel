@@ -238,6 +238,16 @@ cache/0/35/0/kerning_overrides/8/0 = Vector2(0, 0)
 cache/0/35/0/kerning_overrides/9/0 = Vector2(0, 0)
 cache/0/35/0/kerning_overrides/10/0 = Vector2(0, 0)
 cache/0/35/0/kerning_overrides/35/0 = Vector2(0, 0)
+cache/0/50/0/ascent = 0.0
+cache/0/50/0/descent = 0.0
+cache/0/50/0/underline_position = 0.0
+cache/0/50/0/underline_thickness = 0.0
+cache/0/50/0/scale = 1.0
+cache/0/20/0/ascent = 0.0
+cache/0/20/0/descent = 0.0
+cache/0/20/0/underline_position = 0.0
+cache/0/20/0/underline_thickness = 0.0
+cache/0/20/0/scale = 1.0
 
 [resource]
 default_font = SubResource("14")

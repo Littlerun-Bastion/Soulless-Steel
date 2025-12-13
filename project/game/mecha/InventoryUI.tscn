@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://bndcq0u53dtrh"]
+[gd_scene load_steps=11 format=3 uid="uid://bndcq0u53dtrh"]
 
 [ext_resource type="Script" path="res://game/mecha/InventoryUI.gd" id="1_ayro0"]
 [ext_resource type="PackedScene" uid="uid://driwwmdrnw183" path="res://game/mecha/CellUI.tscn" id="2_cecmr"]
 [ext_resource type="PackedScene" uid="uid://d1rk7iwyjnc4g" path="res://game/mecha/ItemUI.tscn" id="3_cd421"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="3_q84jc"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="4_74ebd"]
+[ext_resource type="PackedScene" uid="uid://b6qi1vt25horg" path="res://game/mecha/ItemTooltip.tscn" id="6_yddqx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p06n0"]
 content_margin_left = 5.0
@@ -250,3 +251,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ItemTooltip" parent="." instance=ExtResource("6_yddqx")]
+layout_mode = 0

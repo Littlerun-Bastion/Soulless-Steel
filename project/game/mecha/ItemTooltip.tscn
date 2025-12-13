@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6qi1vt25horg"]
+
+[ext_resource type="Script" path="res://game/mecha/ItemTooltip.gd" id="1_wfsmv"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2_5kr7k"]
+
+[node name="ItemTooltip" type="Panel"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_wfsmv")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_5kr7k")
+
+[node name="TypeLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_5kr7k")
+
+[node name="StatsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_5kr7k")
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_5kr7k")

@@ -18,6 +18,7 @@ offset_right = 50.0
 offset_bottom = 50.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
+mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_8ii40")
 script = ExtResource("1_qy32l")
 

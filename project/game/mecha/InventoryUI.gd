@@ -18,6 +18,8 @@ var sep_x: int = 0                          # horizontal separation between cell
 var sep_y: int = 0                          # vertical separation between cells
 
 @onready var drag_layer: Control = $DragLayer
+@onready var tooltip: ItemTooltip = $ItemTooltip
+var hover_stack: item_stack = null
 
 # Mech inventory (middle column)
 @onready var inventory_panel: Panel      = $MainFrame/Columns/InventoryColumn/InventoryPanel
@@ -59,7 +61,10 @@ func _ready() -> void:
 	sep_x = cell_grid.get_theme_constant("h_separation")
 	sep_y = cell_grid.get_theme_constant("v_separation")
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_process(true)
 
+func _process(_delta: float) -> void:
+	_update_hover_tooltip()
 
 
 func refresh() -> void:
@@ -195,6 +200,8 @@ func _draw_items_for(inv: inventory, layer: Control) -> void:
 
 			layer.add_child(ui)
 			ui.set_stack(stack)
+			# Hover tooltip 
+
 
 
 func _notification(what: int) -> void:
@@ -317,6 +324,9 @@ func _start_drag() -> void:
 	drag_origin_x = origin_x
 	drag_origin_y = origin_y
 	drag_source_inventory = inv
+
+	if tooltip != null:
+		tooltip.hide()
 
 	# Remove from source inventory and redraw grids
 	inv.remove_item_stack(stack)
@@ -549,3 +559,67 @@ func _update_drag_visual_position() -> void:
 		drag_preview.visible = true
 		drag_preview.size = dragging_ui.size
 		drag_preview.position = mouse_local_drag - drag_preview.size * 0.5
+
+func _update_hover_tooltip() -> void:
+	if tooltip == null:
+		return
+
+	# Don’t show tooltip while dragging, or when UI is hidden
+	if not visible or dragging_stack != null:
+		if hover_stack != null:
+			hover_stack = null
+			tooltip.hide()
+		return
+
+	var info := _get_inventory_under_mouse()
+	if info.is_empty():
+		if hover_stack != null:
+			hover_stack = null
+			tooltip.hide()
+		return
+
+	var inv: inventory = info["inventory"]
+	var layer: Control = info["layer"]
+	if inv == null:
+		if hover_stack != null:
+			hover_stack = null
+			tooltip.hide()
+		return
+
+	var local: Vector2 = layer.get_local_mouse_position()
+	var col_width := float(cell_size + sep_x)
+	var row_height := float(cell_size + sep_y)
+
+	var cell_x := int(floor(local.x / col_width))
+	var cell_y := int(floor(local.y / row_height))
+
+	if cell_x < 0 or cell_y < 0 or cell_x >= inv.grid_width or cell_y >= inv.grid_height:
+		if hover_stack != null:
+			hover_stack = null
+			tooltip.hide()
+		return
+
+	var cell_dict = inv.grid[cell_y][cell_x]
+	var stack: item_stack = cell_dict["stack"]
+	if stack == null:
+		if hover_stack != null:
+			hover_stack = null
+			tooltip.hide()
+		return
+
+	# If we clicked on a non-origin cell, resolve to the origin so tooltip
+	# info is consistent across the whole footprint.
+	var origin_x = cell_dict["origin_x"]
+	var origin_y = cell_dict["origin_y"]
+	if origin_x >= 0 and origin_y >= 0:
+		var origin_cell = inv.grid[origin_y][origin_x]
+		var origin_stack: item_stack = origin_cell["stack"]
+		if origin_stack != null:
+			stack = origin_stack
+
+	# If we're still on the same stack, do nothing
+	if stack == hover_stack:
+		return
+
+	hover_stack = stack
+	tooltip.show_item(stack)

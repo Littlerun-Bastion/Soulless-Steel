@@ -20,6 +20,8 @@ const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png"
 @onready var DebugNavigation = $DebugNavigation
 @onready var IntroAnimation = $Intro/IntroAnimation
 @onready var Heatmap = $HeatmapEffects
+@onready var InventoryLayer = $InventoryLayer
+
 
 var player
 var all_mechas = []
@@ -31,7 +33,7 @@ var trigger_data
 # Debug vars
 var allow_debug_cam = false
 var target_arena_zoom
-
+var inventory_ui: InventoryUI = null
 
 func _ready():
 	randomize()
@@ -78,6 +80,7 @@ func _ready():
 		IntroAnimation.stop_animation()
 	if Debug.get_setting("use_debug_cam"):
 		activate_debug_cam()
+	setup_inventory_layer(player)
 
 
 func _input(event):
@@ -144,6 +147,22 @@ func setup_arena():
 	
 	$NavigationPolygon.navpoly = arena_data.get_navigation_polygon()
 
+func setup_inventory_layer(_player) -> void:
+	# Get the Control node that actually has the InventoryUI.gd script
+	inventory_ui = InventoryLayer.get_node("SubViewportContainer/SubViewport/InventoryUI") as InventoryUI
+
+	# Wire up data refs
+	inventory_ui.inventory = player.mech_inventory
+	inventory_ui.other_inventory = player.target_inventory  # or null if none yet
+	inventory_ui.mecha_ref = player
+
+	# Start hidden if you want
+	InventoryLayer.visible = false
+	inventory_ui.setup_for_mecha(player, null)
+
+	inventory_ui.refresh()
+	if not player.is_connected("inventory_toggled", Callable(self, "_on_player_inventory_toggled")):
+		player.connect("inventory_toggled", Callable(self, "_on_player_inventory_toggled"))
 
 func update_arena_cam(dt):
 	var speed = 4600*(ArenaCam.zoom.x/10.0)
@@ -340,6 +359,7 @@ func _on_PauseMenu_pause_toggle(paused):
 	if player:
 		player.set_pause(paused)
 		PlayerHUD.set_pause(paused)
+	InventoryLayer.visible = false
 
 
 func _on_player_lost_health():
@@ -498,6 +518,11 @@ func _on_player_mech_extracted(playerMech):
 			ArenaManager.last_match_unread = true
 		elif ArenaManager.mode == "Tutorial":
 			TransitionManager.transition_to("res://StartMenu.tscn", "Downloading Data...")
+
+func _on_player_inventory_toggled() -> void:
+	if InventoryLayer == null:
+		return
+	InventoryLayer.visible = not InventoryLayer.visible
 
 
 func _on_WindsTimer_timeout():

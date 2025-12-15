@@ -1,8 +1,7 @@
-[gd_scene load_steps=38 format=3 uid="uid://coobdqvll7004"]
+[gd_scene load_steps=37 format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" path="res://game/ui/PlayerHUD.gd" id="1"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2"]
-[ext_resource type="PackedScene" uid="uid://bndcq0u53dtrh" path="res://game/mecha/InventoryUI.tscn" id="2_74msw"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="3"]
 [ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
 [ext_resource type="Texture2D" uid="uid://bk8c85x6axws2" path="res://assets/images/ui/player_ui/healthbar2_back.png" id="4"]
@@ -925,7 +924,6 @@ shader_parameter/noise = SubResource("27")
 [node name="PlayerHUD" type="CanvasLayer"]
 layer = 2
 script = ExtResource("1")
-InventoryUIScene = ExtResource("2_74msw")
 
 [node name="Fog" type="TextureRect" parent="."]
 light_mask = 4
@@ -939,6 +937,7 @@ material = ExtResource("11")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 transparent_bg = true
@@ -992,6 +991,7 @@ offset_left = 1372.0
 offset_top = 965.0
 offset_right = 1412.0
 offset_bottom = 1005.0
+mouse_filter = 2
 
 [node name="ExposedLabel2" type="Label" parent="SubViewportContainer/SubViewport/ExposedLabels"]
 visible = false
@@ -1291,6 +1291,7 @@ flip_h = true
 [node name="MechaCursorCrosshair" parent="SubViewportContainer/SubViewport" instance=ExtResource("13")]
 offset_right = 0.0
 offset_bottom = 0.0
+mouse_filter = 2
 
 [node name="PlayerRadar" parent="SubViewportContainer/SubViewport" instance=ExtResource("14")]
 offset_left = 443.492
@@ -1298,6 +1299,7 @@ offset_top = 253.244
 offset_right = 443.492
 offset_bottom = 253.244
 scale = Vector2(0.3, 0.3)
+mouse_filter = 2
 
 [node name="ExtractingLabel" type="Label" parent="SubViewportContainer/SubViewport"]
 anchors_preset = 7
@@ -1322,6 +1324,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Bh0" type="TextureRect" parent="SubViewportContainer/SubViewport/Bulletholes"]
 layout_mode = 0
@@ -1503,6 +1506,7 @@ pitch_scale = 1.51
 bus = &"SFX"
 
 [node name="DashCooldown" parent="SubViewportContainer/SubViewport" instance=ExtResource("18_hvc7y")]
+mouse_filter = 2
 
 [node name="BuildingEffectCanvas" type="CanvasLayer" parent="."]
 visible = false
@@ -1513,6 +1517,7 @@ light_mask = 16
 material = SubResource("25")
 offset_right = 1920.0
 offset_bottom = 1080.0
+mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [connection signal="value_changed" from="SubViewportContainer/SubViewport/LifeBar" to="." method="_on_LifeBar_value_changed"]

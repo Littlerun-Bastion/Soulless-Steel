@@ -50,8 +50,8 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 
-@export var InventoryUIScene: PackedScene
-var inventory_ui: InventoryUI
+#@export var InventoryUIScene: PackedScene
+#var inventory_ui: InventoryUI
 
 
 var use_fog = false
@@ -70,9 +70,6 @@ func _ready():
 	BuildingEffect.modulate.a = 0
 
 func _unhandled_input(event):
-	if event.is_action_pressed("toggle_inventory"):
-		toggle_inventory()
-		
 	if not player or not player.mech_inventory:
 		return
 
@@ -87,25 +84,14 @@ func _unhandled_input(event):
 		else:
 			print("Debug: inventory full, could not add test item.")
 
-		# If the inventory UI is open, refresh so we see the new item
-		if inventory_ui and inventory_ui.visible:
-			inventory_ui.refresh()
+		# DEPRECIATED
+		#if inventory_ui and inventory_ui.visible:
+		#	inventory_ui.refresh()
 
 		get_viewport().set_input_as_handled()
 
 func toggle_inventory():
-	if inventory_ui.visible:
-		inventory_ui.hide()
-		MouseManager.hide_cursor()
-		Cursor.visible = true
-		player.controls_locked = false
-	else:
-		inventory_ui.refresh()
-		inventory_ui.show()
-		MouseManager.show_cursor()
-		Cursor.visible = false
-		player.controls_locked = true
-		
+	pass
 		
 	
 
@@ -226,10 +212,6 @@ func setup(player_ref, mechas_ref):
 		
 	call_deferred("_finish_setup")
 
-func _finish_setup():
-	spawn_inventory_ui()
-
-
 func set_pause(value):
 	Cursor.visible = not value
 
@@ -349,9 +331,11 @@ func _on_LifeBar_value_changed(value):
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
 
-func spawn_inventory_ui():
-	inventory_ui = InventoryUIScene.instantiate()
-	add_child(inventory_ui)
-	inventory_ui.inventory = player.mech_inventory
-	inventory_ui.refresh()
-	inventory_ui.hide()
+#func spawn_inventory_ui():
+	#inventory_ui = InventoryUIScene.instantiate()
+	#add_child(inventory_ui)
+	#inventory_ui.inventory = player.mech_inventory
+	#inventory_ui.refresh()
+	#inventory_ui.hide()
+	#inventory_ui.setup_for_mecha(player, player.target_inventory) # or null for now
+# DEPRECIATED

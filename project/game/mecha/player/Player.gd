@@ -6,6 +6,7 @@ signal update_building_status
 signal reloading
 signal finished_reloading
 signal lost_health
+signal inventory_toggled
 
 const INSIDE_BUILDING_ZOOM_MUL = 1.4
 const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
@@ -121,6 +122,8 @@ func _input(event):
 		decrease_throttle(false, THROTTLE_STEP)
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
+	elif event.is_action_pressed("toggle_inventory"):
+		emit_signal("inventory_toggled")
 
 
 func get_camera_3d():

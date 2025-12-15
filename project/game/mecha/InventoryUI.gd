@@ -1,6 +1,7 @@
 extends Control
 class_name InventoryUI
 
+enum SIDE {LEFT, RIGHT, SINGLE}
 
 # --- Data references ---
 
@@ -47,7 +48,7 @@ var hover_stack: item_stack = null
 @onready var other_items_layer: Control        = $MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder/ItemsLayer
 @onready var other_grid_border: Panel          = $MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder
 
-
+@onready var tab_buttons_container: Control = $MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer
 # --- State: panning / drag & drop ---
 
 var is_panning: bool = false                # right-mouse panning flag
@@ -65,8 +66,28 @@ var drag_hover_y: int = -1                  # predicted origin cell Y while drag
 var drag_preview: Panel = null              # transparent footprint outline
 
 
+
+func setup_for_mecha(mecha: Mecha, target_inv: inventory = null) -> void:
+	mecha_ref = mecha
+
+	# Hook the inventories
+	inventory = mecha.mech_inventory          # your main cargo
+	other_inventory = target_inv              # stash / container / null
+
+	# Discover all PartSlots under the EquipmentColumn
+	part_slots.clear()
+	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
+	_collect_part_slots_recursive(equip_column)
+
+	# Build grids + items
+	refresh()
+
+	# Sync the slots with currently equipped parts
+	refresh_part_slots_from_mecha()
+
 func _ready() -> void:
 	# Separation is defined via theme on GridContainer
+	drag_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sep_x = cell_grid.get_theme_constant("h_separation")
 	sep_y = cell_grid.get_theme_constant("v_separation")
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -237,39 +258,45 @@ func _input(event: InputEvent) -> void:
 		if dragging_stack != null:
 			_rotate_dragged_item()
 			get_viewport().set_input_as_handled()
-			return
+		return
 
 	if event is InputEventMouseButton:
-		# Right mouse: panning in primary (mech) inventory
+		var over_inv := _is_mouse_over_inventory()
+
+		# Right mouse: panning in primary/other inventory
 		if event.button_index == MOUSE_BUTTON_RIGHT:
-			if event.pressed:
+			if event.pressed and over_inv:
 				is_panning = true
-			else:
+				get_viewport().set_input_as_handled()
+			elif not event.pressed and is_panning:
 				is_panning = false
-			get_viewport().set_input_as_handled()
+				get_viewport().set_input_as_handled()
 			return
 
-		# Scroll wheel scrolls primary inventory
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+		# Scroll wheel only scrolls when mouse over inventory
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed and over_inv:
 			scroll.scroll_vertical -= cell_size
 			get_viewport().set_input_as_handled()
 			return
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed and over_inv:
 			scroll.scroll_vertical += cell_size
 			get_viewport().set_input_as_handled()
 			return
 
-		# Left mouse: start / finish drag
+		# Left mouse: start drag only if over inventory AND we actually started a drag
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_start_drag()
-			get_viewport().set_input_as_handled()
+			if over_inv and _start_drag():
+				get_viewport().set_input_as_handled()
+			# Even if we didn't start a drag, we still return here,
+			# but we did NOT mark the event handled, so buttons can be clicked.
 			return
 
+		# Left mouse release: finish drag if one is in progress
 		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 			if dragging_stack != null:
 				_finish_drag()
 				get_viewport().set_input_as_handled()
-				return
+			return
 
 	elif event is InputEventMouseMotion:
 		# Panning
@@ -287,22 +314,30 @@ func _input(event: InputEvent) -> void:
 			return
 
 
+func _is_tab_button(node: Node) -> bool:
+	var current := node
+	while current:
+		if current == tab_buttons_container:
+			return true
+		current = current.get_parent()
+	return false
+
 # ---------------------------------------------------------------------------
 # Drag & Drop – from inventory grids
 # ---------------------------------------------------------------------------
 
-func _start_drag() -> void:
+func _start_drag() -> bool:
 	# Begin dragging an item from whichever inventory is under the mouse.
-	# Removes the stack from its inventory and spawns a floating ItemUI
-	# on `drag_layer`.
+	# Returns true if we actually started a drag, false otherwise.
+
 	var info := _get_inventory_under_mouse()
 	if info.is_empty():
-		return
+		return false
 
 	var inv: inventory = info["inventory"]
 	var layer: Control = info["layer"]
 	if inv == null:
-		return
+		return false
 
 	# Mouse in that inventory layer's local space
 	var local: Vector2 = layer.get_local_mouse_position()
@@ -313,12 +348,12 @@ func _start_drag() -> void:
 	var cell_y := int(floor(local.y / row_height))
 
 	if cell_x < 0 or cell_y < 0 or cell_x >= inv.grid_width or cell_y >= inv.grid_height:
-		return
+		return false
 
 	var cell_dict = inv.grid[cell_y][cell_x]
 	var stack: item_stack = cell_dict["stack"]
 	if stack == null:
-		return
+		return false
 
 	# Resolve origin cell so that clicking any covered cell works
 	var origin_x = cell_dict["origin_x"]
@@ -331,14 +366,13 @@ func _start_drag() -> void:
 	var origin_cell = inv.grid[origin_y][origin_x]
 	stack = origin_cell["stack"]
 	if stack == null:
-		return
+		return false
 
-	# Drag state
+	# --- Drag state ---
 	dragging_stack = stack
 	drag_origin_x = origin_x
 	drag_origin_y = origin_y
 	drag_source_inventory = inv
-	drag_source_slot = null   # this drag comes from a grid, not a slot
 
 	if tooltip != null:
 		tooltip.hide()
@@ -349,6 +383,7 @@ func _start_drag() -> void:
 
 	# Floating UI in drag_layer (art ghost, snapped to grid when over an inventory)
 	dragging_ui = item_scene.instantiate() as ItemUI
+	dragging_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE  # make sure it doesn't eat clicks
 	dragging_ui.cell_size = cell_size
 
 	var w := stack.width_cells()
@@ -367,8 +402,8 @@ func _start_drag() -> void:
 	drag_preview = Panel.new()
 	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(1, 1, 1, 0.0)      # fully transparent fill
-	style.border_color = Color(1, 1, 1, 0.9)  # bright border
+	style.bg_color = Color(1, 1, 1, 0.0)
+	style.border_color = Color(1, 1, 1, 0.9)
 	style.border_width_left = 2
 	style.border_width_top = 2
 	style.border_width_right = 2
@@ -377,8 +412,9 @@ func _start_drag() -> void:
 	drag_layer.add_child(drag_preview)
 	drag_preview.z_index = dragging_ui.z_index + 1
 
-	# Initial placement of ghost + preview
 	_update_drag_visual_position()
+	return true
+
 
 
 # Drag that starts from a part slot (unequip → drag)
@@ -460,7 +496,7 @@ func _finish_drag() -> void:
 		_end_drag_and_refresh()
 		return
 
-	# --- 2) Otherwise, treat it as a grid drop (existing behaviour) ---
+	# --- 2) Otherwise, treat it as a grid drop  ---
 	var info := _get_inventory_under_mouse()
 
 	dragging_ui.queue_free()
@@ -565,6 +601,88 @@ func _get_part_slot_under_mouse() -> Node:
 				return slot
 	return null
 
+func _collect_part_slots_recursive(node: Node) -> void:
+	if node is PartSlot:
+		part_slots.append(node)
+	for c in node.get_children():
+		_collect_part_slots_recursive(c)
+
+func refresh_part_slots_from_mecha() -> void:
+	if mecha_ref == null:
+		return
+
+	for slot in part_slots:
+		if slot == null:
+			continue
+		var part_res = _get_mecha_part_for_slot(slot)
+		slot.set_current_part(part_res)
+
+func _get_mecha_part_for_slot(slot: PartSlot):
+	# We assume mecha_ref is a Mecha / Player that has a `build` struct.
+	if mecha_ref == null:
+		return null
+
+	var b = mecha_ref.build  # Player extends Mecha, so `build` should exist.
+
+	var p_type: String = slot.part_type
+	var side: int = slot.part_side
+
+	match p_type:
+		"head":
+			return b.head
+		"core":
+			return b.core
+		"chassis":
+			return b.chassis
+		"shoulders":
+			return b.shoulders
+		"chipset":
+			return b.chipset
+		"generator":
+			return b.generator
+		"thruster":
+			return b.thruster
+
+		"arm_weapon":
+			if side == PartSlot.SIDE.LEFT:
+				return b.arm_weapon_left
+			elif side == PartSlot.SIDE.RIGHT:
+				return b.arm_weapon_right
+
+		"shoulder_weapon":
+			if side == PartSlot.SIDE.LEFT:
+				return b.shoulder_weapon_left
+			elif side == PartSlot.SIDE.RIGHT:
+				return b.shoulder_weapon_right
+
+		_:
+			return null
+
+func _on_hardware_button_pressed() -> void:
+	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
+	for child in equip_column.get_children():
+		if child.part_type == "head" or child.part_type == "core" or child.part_type == "shoulders" or child.part_type == "chassis":
+			child.visible = true
+		else:
+			child.visible = false
+	
+
+func _on_wetware_button_pressed() -> void:
+	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
+	for child in equip_column.get_children():
+		if child.part_type == "chipset" or child.part_type == "thruster" or child.part_type == "generator":
+			child.visible = true
+		else:
+			child.visible = false
+
+
+func _on_weapons_button_pressed() -> void:
+	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
+	for child in equip_column.get_children():
+		if child.part_type == "arm_weapon" or child.part_type == "shoulder_weapon":
+			child.visible = true
+		else:
+			child.visible = false
 
 # ---------------------------------------------------------------------------
 # Utility helpers
@@ -744,6 +862,15 @@ func _update_hover_tooltip() -> void:
 
 	hover_stack = stack
 	tooltip.show_item(stack)
+
+func _is_mouse_over_inventory() -> bool:
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+
+	if grid_frame.get_global_rect().has_point(mouse_pos) and inventory != null:
+		return true
+	if other_inventory != null and other_grid_frame.get_global_rect().has_point(mouse_pos):
+		return true
+	return false
 
 
 # ---------------------------------------------------------------------------

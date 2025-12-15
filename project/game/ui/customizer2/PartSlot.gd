@@ -4,12 +4,12 @@ class_name PartSlot
 enum SIDE {LEFT, RIGHT, SINGLE}
 
 
-@onready var PartName = $MarginContainer/VBoxContainer/PartCategory
+@onready var PartName = $MarginContainer/VBoxContainer/PartName
 @onready var PartCategory = $MarginContainer/VBoxContainer/PartCategory
 
 @export var part_type: String = "head"
 @export var display_name: String = "HEAD"
-@export var part_side = SIDE.SINGLE
+@export var part_side: int = SIDE.SINGLE
 
 var current_part_id: String = "" 
 var current_item: item_data = null
@@ -20,6 +20,11 @@ func _ready() -> void:
 
 func setup():
 	pass
+
+func set_current_part(part):
+	PartCategory.text = display_name
+	if part:
+		PartName.text = part.part_name
 
 func set_equipped_part(part_id: String, item: item_data) -> void:
 	current_part_id = part_id

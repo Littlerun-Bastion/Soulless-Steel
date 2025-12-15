@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c8gxcy6vmelau"]
+[gd_scene load_steps=13 format=3 uid="uid://c8gxcy6vmelau"]
 
 [ext_resource type="Script" path="res://game/arena/Arena.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6"]
 [ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7"]
 [ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8"]
+[ext_resource type="PackedScene" uid="uid://5oibvmwm1wk4" path="res://game/ui/InventoryLayer.tscn" id="9_r2ufb"]
 [ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="49"]
 [ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="58"]
 
@@ -82,6 +83,10 @@ drag_vertical_enabled = false
 [node name="PlayerHUD" parent="." instance=ExtResource("2")]
 
 [node name="GameOver" parent="." instance=ExtResource("58")]
+
+[node name="InventoryLayer" parent="." instance=ExtResource("9_r2ufb")]
+layer = 3
+visible = false
 
 [node name="PauseMenu" parent="." instance=ExtResource("49")]
 

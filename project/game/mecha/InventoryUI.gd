@@ -10,10 +10,14 @@ var other_inventory: inventory = null       # secondary inventory (stash/contain
 @export var cell_scene: PackedScene         # scene for individual grid cells
 @export var item_scene: PackedScene         # scene for item UI panel
 
-@export var can_customize: bool = false     #
-var mecha_ref: Mecha = null                 #
+@export var can_customize: bool = false     # if true, equipment slots are interactive
+var mecha_ref: Mecha = null                 # you can use this inside equip_part/unequip_part
 
-# --- Customizer Slot refs ---
+
+# --- Equipment / Part slots ---
+
+var part_slots: Array = []                  # all PartSlot buttons (Head, Core, etc)
+
 
 # --- Layout / UI node refs ---
 
@@ -53,6 +57,7 @@ var dragging_ui: ItemUI = null              # floating UI for dragged stack (art
 var drag_origin_x: int = -1                 # original origin cell (x) in source inventory
 var drag_origin_y: int = -1                 # original origin cell (y)
 var drag_source_inventory: inventory = null # which inventory the drag started from
+var drag_source_slot: Node = null           # which part slot the drag started from (if any)
 
 var drag_hover_x: int = -1                  # predicted origin cell X while dragging
 var drag_hover_y: int = -1                  # predicted origin cell Y while dragging
@@ -66,6 +71,14 @@ func _ready() -> void:
 	sep_y = cell_grid.get_theme_constant("v_separation")
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	set_process(true)
+
+	# Gather all part slots via group "part_slots"
+	# (Add your Head/Core/etc PartSlot nodes to this group in the editor.)
+	for node in get_tree().get_nodes_in_group("part_slots"):
+		if node is Button:
+			part_slots.append(node)
+			(node as Button).pressed.connect(_on_part_slot_pressed.bind(node))
+
 
 func _process(_delta: float) -> void:
 	_update_hover_tooltip()
@@ -96,7 +109,6 @@ func refresh() -> void:
 	else:
 		other_inventory_panel.visible = false
 		
-
 
 # ---------------------------------------------------------------------------
 # Layout helpers
@@ -204,8 +216,6 @@ func _draw_items_for(inv: inventory, layer: Control) -> void:
 
 			layer.add_child(ui)
 			ui.set_stack(stack)
-			# Hover tooltip 
-
 
 
 func _notification(what: int) -> void:
@@ -278,7 +288,7 @@ func _input(event: InputEvent) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Drag & Drop
+# Drag & Drop – from inventory grids
 # ---------------------------------------------------------------------------
 
 func _start_drag() -> void:
@@ -328,6 +338,7 @@ func _start_drag() -> void:
 	drag_origin_x = origin_x
 	drag_origin_y = origin_y
 	drag_source_inventory = inv
+	drag_source_slot = null   # this drag comes from a grid, not a slot
 
 	if tooltip != null:
 		tooltip.hide()
@@ -370,45 +381,117 @@ func _start_drag() -> void:
 	_update_drag_visual_position()
 
 
+# Drag that starts from a part slot (unequip → drag)
+func _start_drag_from_stack(stack: item_stack, slot: Node) -> void:
+	dragging_stack = stack
+	drag_source_inventory = null
+	drag_source_slot = slot
+	drag_origin_x = -1
+	drag_origin_y = -1
+
+	if tooltip != null:
+		tooltip.hide()
+
+	# No grid removal needed; the stack came from equipment, not from an inventory grid.
+	# Just spawn the drag ghost + preview as usual.
+	dragging_ui = item_scene.instantiate() as ItemUI
+	dragging_ui.cell_size = cell_size
+
+	var w := stack.width_cells()
+	var h := stack.height_cells()
+	var size_x := w * cell_size + (w - 1) * sep_x
+	var size_y := h * cell_size + (h - 1) * sep_y
+	dragging_ui.custom_minimum_size = Vector2(size_x, size_y)
+	dragging_ui.size = dragging_ui.custom_minimum_size
+
+	drag_layer.add_child(dragging_ui)
+	dragging_ui.set_stack(stack)
+	dragging_ui.z_index = 1
+	dragging_ui.move_to_front()
+
+	drag_preview = Panel.new()
+	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 0.0)
+	style.border_color = Color(1, 1, 1, 0.9)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	drag_preview.add_theme_stylebox_override("panel", style)
+	drag_layer.add_child(drag_preview)
+	drag_preview.z_index = dragging_ui.z_index + 1
+
+	_update_drag_visual_position()
+
+
 func _finish_drag() -> void:
-	# End a drag operation. Decide which inventory we dropped over, then
-	# try to place the item there. If that fails or we dropped nowhere,
-	# revert to original inventory + cell.
+	# End a drag operation. Decide where we dropped:
+	# 1) On an equipment slot  -> equip_part()
+	# 2) On an inventory grid  -> place_item()
+	# 3) Nowhere               -> revert
 	if dragging_stack == null or dragging_ui == null:
 		return
 
-	# Make sure hover info is up to date (handles click-release without moving)
+	# Make sure hover info is up to date
 	_update_drag_visual_position()
 
-	# Decide which inventory we're over
+	# --- 1) Check equipment slots (left column) first ---
+	var slot := _get_part_slot_under_mouse()
+	if slot != null and can_customize:
+		dragging_ui.queue_free()
+		dragging_ui = null
+
+		if drag_preview != null:
+			drag_preview.queue_free()
+			drag_preview = null
+
+		# Let your game logic handle compatibility, mech wiring, old-part return, etc.
+		var ok := equip_part(slot, dragging_stack, drag_source_inventory, drag_origin_x, drag_origin_y)
+
+		if not ok:
+			# Equip failed -> revert
+			if drag_source_inventory != null and drag_origin_x >= 0 and drag_origin_y >= 0:
+				drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+			elif drag_source_slot != null:
+				# Drag started from a slot: re-equip to the original slot
+				equip_part(drag_source_slot, dragging_stack, null, -1, -1)
+
+		_end_drag_and_refresh()
+		return
+
+	# --- 2) Otherwise, treat it as a grid drop (existing behaviour) ---
 	var info := _get_inventory_under_mouse()
 
-	# Remove drag ghost
 	dragging_ui.queue_free()
 	dragging_ui = null
 
-	# Remove footprint preview
 	if drag_preview != null:
 		drag_preview.queue_free()
 		drag_preview = null
 
 	if info.is_empty() or drag_hover_x < 0 or drag_hover_y < 0:
-		# Not over any inventory – revert to source
-		drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+		# Not over any inventory – revert
+		if drag_source_inventory != null and drag_origin_x >= 0 and drag_origin_y >= 0:
+			drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+		elif drag_source_slot != null:
+			# Came from slot: re-equip
+			equip_part(drag_source_slot, dragging_stack, null, -1, -1)
 		_end_drag_and_refresh()
 		return
 
 	var target_inv: inventory = info["inventory"]
-
 	var target_origin_x := drag_hover_x
 	var target_origin_y := drag_hover_y
 
-	# Try to place in target inventory
 	if target_inv.place_item(dragging_stack, target_origin_x, target_origin_y):
 		_end_drag_and_refresh()
 	else:
-		# Failed -> revert to original inventory + cell
-		drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+		# Failed -> revert to original source
+		if drag_source_inventory != null and drag_origin_x >= 0 and drag_origin_y >= 0:
+			drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+		elif drag_source_slot != null:
+			equip_part(drag_source_slot, dragging_stack, null, -1, -1)
 		_end_drag_and_refresh()
 
 
@@ -442,12 +525,45 @@ func _end_drag_and_refresh() -> void:
 	drag_hover_x = -1
 	drag_hover_y = -1
 	drag_source_inventory = null
+	drag_source_slot = null
 
 	if drag_preview != null:
 		drag_preview.queue_free()
 		drag_preview = null
 
 	refresh()
+
+
+# ---------------------------------------------------------------------------
+# Equipment slot helpers
+# ---------------------------------------------------------------------------
+
+# Called when a PartSlot button is pressed (wired in _ready via group "part_slots")
+func _on_part_slot_pressed(slot: Node) -> void:
+	# If we're already dragging something, ignore the click.
+	if dragging_stack != null:
+		return
+	if not can_customize:
+		return
+
+	# Ask your game logic to unequip this slot and return an item_stack for it.
+	var stack: item_stack = unequip_part(slot)
+	if stack == null:
+		return
+
+	# Start a drag originating from this equipment slot
+	_start_drag_from_stack(stack, slot)
+
+
+# Find which slot (if any) is under mouse
+func _get_part_slot_under_mouse() -> Node:
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+	for slot in part_slots:
+		if slot is Control:
+			var c := slot as Control
+			if c.get_global_rect().has_point(mouse_pos):
+				return slot
+	return null
 
 
 # ---------------------------------------------------------------------------
@@ -463,6 +579,7 @@ func _get_inventory_under_mouse() -> Dictionary:
 	#   "layer":     Control used for that inventory's items,
 	#   "type":      "mech" or "other"
 	# }
+
 	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 
 	# Check mech column
@@ -527,7 +644,7 @@ func _update_drag_visual_position() -> void:
 	var cell_x := int(floor(local.x / col_width))
 	var cell_y := int(floor(local.y / row_height))
 
-	# Offset so the *center* of the item lines up with the hovered cell
+	# Offset so the center of the item lines up with the hovered cell
 	# For odd sizes (e.g. 1x3), this makes the middle cell sit under the cursor.
 	# For even sizes (e.g. 2x2), we approximate to the closest top-left.
 	var center_offset_x := int(floor(w / 2.0))
@@ -563,6 +680,7 @@ func _update_drag_visual_position() -> void:
 		drag_preview.visible = true
 		drag_preview.size = dragging_ui.size
 		drag_preview.position = mouse_local_drag - drag_preview.size * 0.5
+
 
 func _update_hover_tooltip() -> void:
 	if tooltip == null:
@@ -611,8 +729,7 @@ func _update_hover_tooltip() -> void:
 			tooltip.hide()
 		return
 
-	# If we clicked on a non-origin cell, resolve to the origin so tooltip
-	# info is consistent across the whole footprint.
+	# Resolve to origin cell for consistent tooltip per footprint
 	var origin_x = cell_dict["origin_x"]
 	var origin_y = cell_dict["origin_y"]
 	if origin_x >= 0 and origin_y >= 0:
@@ -627,3 +744,28 @@ func _update_hover_tooltip() -> void:
 
 	hover_stack = stack
 	tooltip.show_item(stack)
+
+
+# ---------------------------------------------------------------------------
+# Mech Equip/Unequip
+# ---------------------------------------------------------------------------
+
+# Called when an item is dropped on a part slot.
+# slot: the PartSlot Button you dropped on
+# stack: the item_stack being dropped
+# source_inventory: which inventory it came from (or null if from a slot)
+# origin_x/origin_y: where in that inventory it came from (or -1 if from a slot)
+# Return true if equip succeeded, false to revert the drag.
+func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
+	push_warning("equip_part() not implemented yet")
+	return false
+
+
+# Called when a part slot is clicked with no item being dragged.
+# Should:
+#   - unequip that slot from the mech
+#   - return a new item_stack representing the unequipped part
+# Return null if nothing is equipped or unequip failed.
+func unequip_part(slot: Node) -> item_stack:
+	push_warning("unequip_part() not implemented yet")
+	return null

@@ -10,6 +10,10 @@ var other_inventory: inventory = null       # secondary inventory (stash/contain
 @export var cell_scene: PackedScene         # scene for individual grid cells
 @export var item_scene: PackedScene         # scene for item UI panel
 
+@export var can_customize: bool = false     #
+var mecha_ref: Mecha = null                 #
+
+# --- Customizer Slot refs ---
 
 # --- Layout / UI node refs ---
 

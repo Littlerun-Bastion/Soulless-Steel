@@ -4,12 +4,6 @@
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="2_643w7"]
 [ext_resource type="Texture2D" uid="uid://byx48lfnweskh" path="res://assets/images/mechas/legs/Percival/percival_leg.png" id="3"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_621qk"]
-bg_color = Color(0, 0, 0, 1)
-border_width_left = 2
-border_width_right = 2
-border_color = Color(1, 1, 1, 1)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ab8rc"]
 bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 border_width_left = 2
@@ -24,6 +18,12 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_621qk"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 2
+border_width_right = 2
 border_color = Color(1, 1, 1, 1)
 
 [node name="ItemFrame" type="Control"]
@@ -41,9 +41,9 @@ script = ExtResource("2")
 layout_mode = 0
 offset_right = 475.0
 offset_bottom = 120.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_621qk")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ab8rc")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_d4dn1")
+theme_override_styles/normal = SubResource("StyleBoxFlat_621qk")
 
 [node name="PartLabel" type="Label" parent="."]
 layout_mode = 0

@@ -1,0 +1,49 @@
+[gd_scene load_steps=4 format=3 uid="uid://cxfw8gnr63yah"]
+
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="1_3fa5e"]
+[ext_resource type="Script" path="res://game/ui/customizer2/PartSlot.gd" id="2_ehruo"]
+[ext_resource type="FontFile" uid="uid://b31lkain7iil5" path="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf" id="2_qy8s0"]
+
+[node name="PartSlot" type="Button"]
+custom_minimum_size = Vector2(396, 80)
+theme = ExtResource("1_3fa5e")
+script = ExtResource("2_ehruo")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = -5
+
+[node name="PartCategory" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+theme = ExtResource("1_3fa5e")
+theme_override_font_sizes/font_size = 30
+text = "Head"
+vertical_alignment = 2
+
+[node name="PartName" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_qy8s0")
+theme_override_font_sizes/font_size = 20
+text = "Test item"
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

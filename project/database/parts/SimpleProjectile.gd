@@ -174,7 +174,6 @@ func get_collision():
 	return $CollisionShape3D.polygon
 
 func die(body):
-	print(body)
 	if dying:
 		return
 	dying = true

@@ -5,14 +5,14 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 # --- Data references ---
 
-@export var inventory: inventory            # primary inventory (mech)
+@export var main_inventory: inventory            # primary inventory (mech)
 var other_inventory: inventory = null       # secondary inventory (stash/container/target)
 
 @export var cell_scene: PackedScene         # scene for individual grid cells
 @export var item_scene: PackedScene         # scene for item UI panel
 
-@export var can_customize: bool = false     # if true, equipment slots are interactive
-var mecha_ref: Mecha = null                 # you can use this inside equip_part/unequip_part
+@export var can_customize: bool = true     # if true, equipment slots are interactive
+var mecha_ref: Mecha = null                 # use this inside equip_part/unequip_part
 
 
 # --- Equipment / Part slots ---
@@ -65,19 +65,22 @@ var drag_hover_y: int = -1                  # predicted origin cell Y while drag
 
 var drag_preview: Panel = null              # transparent footprint outline
 
+var pan_scroll: ScrollContainer = null  # which scroll we're currently panning
 
 
 func setup_for_mecha(mecha: Mecha, target_inv: inventory = null) -> void:
 	mecha_ref = mecha
 
 	# Hook the inventories
-	inventory = mecha.mech_inventory          # your main cargo
+	main_inventory = mecha.mech_inventory          # main cargo
 	other_inventory = target_inv              # stash / container / null
 
 	# Discover all PartSlots under the EquipmentColumn
 	part_slots.clear()
 	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
 	_collect_part_slots_recursive(equip_column)
+	for slot in part_slots:
+		slot.inventory_ui = self
 
 	# Build grids + items
 	refresh()
@@ -94,7 +97,6 @@ func _ready() -> void:
 	set_process(true)
 
 	# Gather all part slots via group "part_slots"
-	# (Add your Head/Core/etc PartSlot nodes to this group in the editor.)
 	for node in get_tree().get_nodes_in_group("part_slots"):
 		if node is Button:
 			part_slots.append(node)
@@ -107,18 +109,18 @@ func _process(_delta: float) -> void:
 
 func refresh() -> void:
 	# Rebuilds both inventory grids + their item UIs from the current
-	# state of `inventory` and `other_inventory`.
-	if inventory == null:
+	# state of `main_inventory` and `other_inventory`.
+	if main_inventory == null:
 		return
 
 	sep_x = cell_grid.get_theme_constant("h_separation")
 	sep_y = cell_grid.get_theme_constant("v_separation")
 
 	# Primary inventory (mech)
-	_update_grid_content_size_for(inventory, grid_content)
-	_build_cells_for(inventory, cell_grid)
-	_draw_items_for(inventory, items_layer)
-	_layout_grid_border_for(inventory, grid_content, grid_border)
+	_update_grid_content_size_for(main_inventory, grid_content)
+	_build_cells_for(main_inventory, cell_grid)
+	_draw_items_for(main_inventory, items_layer)
+	_layout_grid_border_for(main_inventory, grid_content, grid_border)
 
 	# Secondary inventory (target/stash) if present
 	if other_inventory != null:
@@ -129,6 +131,7 @@ func refresh() -> void:
 		other_inventory_panel.visible = true
 	else:
 		other_inventory_panel.visible = false
+	
 		
 
 # ---------------------------------------------------------------------------
@@ -241,14 +244,13 @@ func _draw_items_for(inv: inventory, layer: Control) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
-		if inventory != null:
+		if main_inventory != null:
 			refresh()
 
 
 # ---------------------------------------------------------------------------
 # Input handling (rotate, pan, drag & drop)
 # ---------------------------------------------------------------------------
-
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
@@ -261,37 +263,37 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton:
-		var over_inv := _is_mouse_over_inventory()
+		var target_scroll := _get_scroll_under_mouse()
+		var over_inv := target_scroll != null
 
-		# Right mouse: panning in primary/other inventory
+		# --- Right mouse: panning in whichever inventory is under the mouse ---
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			if event.pressed and over_inv:
 				is_panning = true
+				pan_scroll = target_scroll
 				get_viewport().set_input_as_handled()
 			elif not event.pressed and is_panning:
 				is_panning = false
+				pan_scroll = null
 				get_viewport().set_input_as_handled()
 			return
 
-		# Scroll wheel only scrolls when mouse over inventory
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed and over_inv:
-			scroll.scroll_vertical -= cell_size
+		# --- Scroll wheel: scroll the inventory under the mouse ---
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed and target_scroll != null:
+			target_scroll.scroll_vertical -= cell_size
 			get_viewport().set_input_as_handled()
 			return
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed and over_inv:
-			scroll.scroll_vertical += cell_size
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed and target_scroll != null:
+			target_scroll.scroll_vertical += cell_size
 			get_viewport().set_input_as_handled()
 			return
 
-		# Left mouse: start drag only if over inventory AND we actually started a drag
+		# --- Left mouse: start / finish drag (only if over inventory) ---
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			if over_inv and _start_drag():
+			if _is_mouse_over_inventory() and _start_drag():
 				get_viewport().set_input_as_handled()
-			# Even if we didn't start a drag, we still return here,
-			# but we did NOT mark the event handled, so buttons can be clicked.
 			return
 
-		# Left mouse release: finish drag if one is in progress
 		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 			if dragging_stack != null:
 				_finish_drag()
@@ -299,15 +301,15 @@ func _input(event: InputEvent) -> void:
 			return
 
 	elif event is InputEventMouseMotion:
-		# Panning
-		if is_panning:
+		# --- Panning with right mouse ---
+		if is_panning and pan_scroll != null:
 			var delta: Vector2 = event.relative
-			scroll.scroll_vertical -= int(delta.y)
-			scroll.scroll_horizontal -= int(delta.x)
+			pan_scroll.scroll_vertical -= int(delta.y)
+			pan_scroll.scroll_horizontal -= int(delta.x)
 			get_viewport().set_input_as_handled()
 			return
 
-		# Move floating drag UI + update footprint preview
+		# --- Move floating drag UI + update footprint preview ---
 		elif dragging_stack != null and dragging_ui != null:
 			_update_drag_visual_position()
 			get_viewport().set_input_as_handled()
@@ -482,7 +484,7 @@ func _finish_drag() -> void:
 			drag_preview.queue_free()
 			drag_preview = null
 
-		# Let your game logic handle compatibility, mech wiring, old-part return, etc.
+		# Let  game logic handle compatibility, mech wiring, old-part return, etc.
 		var ok := equip_part(slot, dragging_stack, drag_source_inventory, drag_origin_x, drag_origin_y)
 
 		if not ok:
@@ -582,7 +584,7 @@ func _on_part_slot_pressed(slot: Node) -> void:
 	if not can_customize:
 		return
 
-	# Ask your game logic to unequip this slot and return an item_stack for it.
+	# Ask game logic to unequip this slot and return an item_stack for it.
 	var stack: item_stack = unequip_part(slot)
 	if stack == null:
 		return
@@ -658,6 +660,39 @@ func _get_mecha_part_for_slot(slot: PartSlot):
 		_:
 			return null
 
+func _set_mecha_part_for_slot(slot: PartSlot, value) -> void:
+	if mecha_ref == null:
+		return
+
+	match slot.part_type:
+		"head":
+			mecha_ref.set_head(value)
+		"core":
+			mecha_ref.set_core(value)
+		"chassis":
+			mecha_ref.set_chassis(value)
+		"chipset":
+			mecha_ref.set_chipset(value)
+		"generator":
+			mecha_ref.set_generator(value)
+		"thruster":
+			mecha_ref.set_thruster(value)
+		"shoulders":
+			mecha_ref.set_shoulders(value)
+		"arm_weapon":
+			match slot.part_side:
+				PartSlot.SIDE.LEFT:
+					mecha_ref.set_arm_weapon(value, SIDE.LEFT)
+				PartSlot.SIDE.RIGHT:
+					mecha_ref.set_arm_weapon(value, SIDE.RIGHT)
+		"shoulder_weapon":
+			match slot.part_side:
+				PartSlot.SIDE.LEFT:
+					mecha_ref.set_shoulder_weapon(value, SIDE.LEFT)
+				PartSlot.SIDE.RIGHT:
+					mecha_ref.set_shoulder_weapon(value, SIDE.RIGHT)
+
+
 func _on_hardware_button_pressed() -> void:
 	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
 	for child in equip_column.get_children():
@@ -689,21 +724,14 @@ func _on_weapons_button_pressed() -> void:
 # ---------------------------------------------------------------------------
 
 func _get_inventory_under_mouse() -> Dictionary:
-	# Return a small dict describing which inventory (if any) is under
-	# the mouse right now:
-	#
-	# {
-	#   "inventory": inventory resource,
-	#   "layer":     Control used for that inventory's items,
-	#   "type":      "mech" or "other"
-	# }
+	# Return a small dict describing which inventory (if any) is under the mouse 
 
 	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 
 	# Check mech column
-	if grid_frame.get_global_rect().has_point(mouse_pos) and inventory != null:
+	if grid_frame.get_global_rect().has_point(mouse_pos) and main_inventory != null:
 		return {
-			"inventory": inventory,
+			"inventory": main_inventory,
 			"layer": items_layer,
 			"type": "mech"
 		}
@@ -717,6 +745,19 @@ func _get_inventory_under_mouse() -> Dictionary:
 		}
 
 	return {}  # nothing under mouse
+
+func _get_scroll_under_mouse() -> ScrollContainer:
+	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
+
+	# Mech inventory scroll
+	if grid_frame.get_global_rect().has_point(mouse_pos):
+		return scroll
+
+	# Other / target inventory scroll
+	if other_inventory != null and other_grid_frame.get_global_rect().has_point(mouse_pos):
+		return other_scroll
+
+	return null
 
 
 func _get_mouse_pos_in(control: Control) -> Vector2:
@@ -866,7 +907,7 @@ func _update_hover_tooltip() -> void:
 func _is_mouse_over_inventory() -> bool:
 	var mouse_pos: Vector2 = get_viewport().get_mouse_position()
 
-	if grid_frame.get_global_rect().has_point(mouse_pos) and inventory != null:
+	if grid_frame.get_global_rect().has_point(mouse_pos) and main_inventory != null:
 		return true
 	if other_inventory != null and other_grid_frame.get_global_rect().has_point(mouse_pos):
 		return true
@@ -884,7 +925,7 @@ func _is_mouse_over_inventory() -> bool:
 # origin_x/origin_y: where in that inventory it came from (or -1 if from a slot)
 # Return true if equip succeeded, false to revert the drag.
 func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
-	push_warning("equip_part() not implemented yet")
+	print(slot, " -> ", stack.part_scene)
 	return false
 
 
@@ -893,6 +934,42 @@ func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, orig
 #   - unequip that slot from the mech
 #   - return a new item_stack representing the unequipped part
 # Return null if nothing is equipped or unequip failed.
-func unequip_part(slot: Node) -> item_stack:
-	push_warning("unequip_part() not implemented yet")
-	return null
+func unequip_part(slot: PartSlot):
+	print("Here!")
+	# Only allowed in hangar / customization context
+	if not can_customize:
+		return
+	if mecha_ref == null:
+		return
+	if main_inventory == null:
+		return
+
+	# 1) Find which part is currently equipped in this slot
+	var part = _get_mecha_part_for_slot(slot)
+	if part == null:
+		return
+	# 2) Build an item_stack for that part
+	var stack := make_part_stack(slot.part_type, slot.current_part_id)
+	if stack == null:
+		push_error("InventoryUI: _stack_from_part() returned null for part: %s" % [str(part)])
+		return
+
+	# 3) Try to add it to the mech inventory
+	if not main_inventory.add_stack_to_first_available_slot(stack):
+		# No space: optionally re-equip the part or just bail
+		push_warning("InventoryUI: No space in inventory to unequip part.")
+		return
+
+	# 4) Actually unequip from the mecha
+	_set_mecha_part_for_slot(slot, null)
+
+	# 5) Refresh UI so the new item appears
+	refresh()
+
+func make_part_stack(part_type: String, part_id: String, qty: int = 1) -> item_stack:
+	var s := item_stack.new()
+	s.kind = item_stack.ItemKind.PART
+	s.part_type = part_type      # must be one of the PartManager keys: "head", "core", "arm_weapon", etc.
+	s.part_name = part_id        # e.g. "Lancelot-Core"
+	s.quantity = qty
+	return s

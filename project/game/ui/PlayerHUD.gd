@@ -61,7 +61,6 @@ var blink_timer = 0.66
 var building_effect_active = false
 var exposed_blink_timer = 0.0
 
-const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
 
 
@@ -69,26 +68,6 @@ func _ready():
 	Fog.visible = use_fog
 	BuildingEffect.modulate.a = 0
 
-func _unhandled_input(event):
-	if not player or not player.mech_inventory:
-		return
-
-	if event.is_action_pressed("debug_6"):
-		var inv = player.mech_inventory
-
-		# Try to add 1 copy of the test item
-		var ok = inv.add_item(TEST_ITEM_DATA, 1)
-
-		if ok:
-			print("Debug: spawned test item into mech inventory.")
-		else:
-			print("Debug: inventory full, could not add test item.")
-
-		# DEPRECIATED
-		#if inventory_ui and inventory_ui.visible:
-		#	inventory_ui.refresh()
-
-		get_viewport().set_input_as_handled()
 
 func toggle_inventory():
 	pass

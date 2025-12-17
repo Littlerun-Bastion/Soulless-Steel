@@ -60,17 +60,9 @@ var leaderboards = {
 	],
 }
 
-var inventory = {
-	"MSV-L3J-H": 1,
-	"MSV-L3J-C": 1,
-	"MSV-L3J-SG": 1,
-	"type_1_gen": 1,
-	"type_2_chip": 1,
-	"MSV-L3J-L": 1,
-	"type_1_thruster": 1,
-	"MA-L127": 2,
-}
 
+var stash_inventory: inventory = null
+var mech_inventory: inventory = null
 
 func get_locale_idx(locale):
 	var idx = 0
@@ -94,7 +86,6 @@ func get_save_data():
 		"stats": stats,
 		"leaderboards": leaderboards,
 		"debug": Debug.debug_settings,
-		"inventory": inventory,
 	}
 	
 	return data
@@ -105,8 +96,8 @@ func set_save_data(data):
 		#Handle version diff here.
 		push_warning("Different save version for profile. Its version: " + str(data.version) + " Current version: " + str(Profile.VERSION)) 
 		push_warning("Properly updating to new save version")
-		if data.version == "v0.0.2dev":
-			data.inventory = inventory 
+		#if data.version == "v0.0.2dev":
+		#	data.inventory = inventory 
 		push_warning("Profile updated!")
 	
 	set_data(data, "options", options)
@@ -114,8 +105,6 @@ func set_save_data(data):
 	set_data(data, "stats", stats)
 	set_data(data, "leaderboards", leaderboards)
 	set_data(data, "debug", Debug.debug_settings)
-	
-	inventory = data.inventory
 	
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
@@ -194,30 +183,52 @@ func set_stat(type, value):
 	FileManager.save_profile()
 
 
-func get_inventory():
-	return inventory
+
+#DEPRECIATED
+#func get_inventory_amount(part_name):
+#	assert(inventory.has(part_name), "Inventory doesn't have this item to get amount: " + str(part_name))
+#	return inventory[part_name]
+
+#func add_to_inventory(part_name):
+#	if inventory.has(part_name):
+#		inventory[part_name] += 1
+#	else:
+#		inventory[part_name] = 1
+#	FileManager.save_profile()
 
 
-func get_inventory_amount(part_name):
-	assert(inventory.has(part_name), "Inventory doesn't have this item to get amount: " + str(part_name))
-	return inventory[part_name]
+#func get_inventory():
+#	return inventory
+
+#func remove_from_inventory(part_name):
+#	if part_name == "Null":
+#		return
+#	assert(inventory.has(part_name), "Inventory doesn't have this item to remove: " + str(part_name))
+#	if inventory[part_name] > 0:
+#		inventory[part_name] -= 1
+#	else:
+#		push_warning("Inventory doesn't have enough of item to remove: " + str(part_name))
+#	
+#	FileManager.save_profile()
+
+func get_stash_inventory() -> inventory:
+	if stash_inventory == null:
+		# If no stash exists, create one
+		stash_inventory = inventory.new()
+		stash_inventory.grid_width = 8
+		stash_inventory.grid_height = 20
+		stash_inventory.initialize_grid(stash_inventory.grid_width, stash_inventory.grid_height)
+	return stash_inventory
+
+func set_stash_inventory(inv: inventory) -> void:
+	stash_inventory = inv
+
+func get_mech_inventory() -> inventory:
+	if mech_inventory == null:
+		# If no mech inventory exists, create one
+		mech_inventory = inventory.new()
+	return mech_inventory
 
 
-func add_to_inventory(part_name):
-	if inventory.has(part_name):
-		inventory[part_name] += 1
-	else:
-		inventory[part_name] = 1
-	FileManager.save_profile()
-
-
-func remove_from_inventory(part_name):
-	if part_name == "Null":
-		return
-	assert(inventory.has(part_name), "Inventory doesn't have this item to remove: " + str(part_name))
-	if inventory[part_name] > 0:
-		inventory[part_name] -= 1
-	else:
-		push_warning("Inventory doesn't have enough of item to remove: " + str(part_name))
-	
-	FileManager.save_profile()
+func set_mech_inventory(inv: inventory) -> void:
+	mech_inventory = inv

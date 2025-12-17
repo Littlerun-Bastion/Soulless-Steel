@@ -3,7 +3,6 @@ class_name inventory
 
 @export var grid_width: int = 0
 @export var grid_height: int = 0
-@export var max_slots: int = 30  # Not strictly needed for grid, but you had it
 
 # Each cell is a Dictionary:
 # {

@@ -1,0 +1,406 @@
+[gd_scene load_steps=17 format=3 uid="uid://bysc0hpr1nxaj"]
+
+[ext_resource type="Script" path="res://game/mecha/InventoryUI.gd" id="1_jpxfg"]
+[ext_resource type="PackedScene" uid="uid://driwwmdrnw183" path="res://game/mecha/CellUI.tscn" id="2_qm5bv"]
+[ext_resource type="PackedScene" uid="uid://d1rk7iwyjnc4g" path="res://game/mecha/ItemUI.tscn" id="3_xetek"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="4_r8ixq"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="5_t6yqu"]
+[ext_resource type="PackedScene" uid="uid://cxfw8gnr63yah" path="res://game/ui/customizer2/PartSlot.tscn" id="6_4tja3"]
+[ext_resource type="PackedScene" uid="uid://b6qi1vt25horg" path="res://game/mecha/ItemTooltip.tscn" id="7_sq468"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w7ea1"]
+bg_color = Color(0, 0, 0, 0.4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p06n0"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i1jwb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kx0pq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4xi5s"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xoql5"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lybm8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_veayo"]
+bg_color = Color(0.277528, 0.277528, 0.277528, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.752582, 0.752582, 0.752582, 1)
+expand_margin_left = 1.0
+expand_margin_top = 1.0
+expand_margin_right = 1.0
+expand_margin_bottom = 1.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oi6jo"]
+
+[node name="InventoryUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jpxfg")
+cell_scene = ExtResource("2_qm5bv")
+item_scene = ExtResource("3_xetek")
+
+[node name="MainFrame" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="MainFrame"]
+layout_mode = 2
+theme = ExtResource("5_t6yqu")
+theme_override_styles/panel = SubResource("StyleBoxFlat_w7ea1")
+
+[node name="Columns" type="HBoxContainer" parent="MainFrame"]
+layout_mode = 2
+
+[node name="EquipmentColumn" type="VBoxContainer" parent="MainFrame/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.26
+
+[node name="Title" type="Label" parent="MainFrame/Columns/EquipmentColumn"]
+layout_mode = 2
+theme = ExtResource("4_r8ixq")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_p06n0")
+text = "Equipment"
+
+[node name="MarginContainer" type="MarginContainer" parent="MainFrame/Columns/EquipmentColumn"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainFrame/Columns/EquipmentColumn/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HardwareButton" type="Button" parent="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer"]
+z_index = 4096
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("5_t6yqu")
+theme_override_font_sizes/font_size = 30
+text = "Hardware"
+alignment = 0
+
+[node name="WetwareButton" type="Button" parent="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer"]
+z_index = 4096
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("5_t6yqu")
+theme_override_font_sizes/font_size = 30
+text = "Wetware"
+alignment = 0
+
+[node name="WeaponsButton" type="Button" parent="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer"]
+z_index = 4096
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("5_t6yqu")
+theme_override_font_sizes/font_size = 30
+text = "Weapons"
+alignment = 0
+
+[node name="EquipmentPanel" type="Panel" parent="MainFrame/Columns/EquipmentColumn"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_i1jwb")
+
+[node name="EquipmentMargin" type="MarginContainer" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.25
+theme_override_constants/separation = 15
+
+[node name="Head" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+layout_mode = 2
+
+[node name="Core" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+layout_mode = 2
+part_type = "core"
+display_name = "CORE"
+
+[node name="Shoulder" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+layout_mode = 2
+part_type = "shoulders"
+display_name = "SHOULDERS"
+
+[node name="Chassis" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+layout_mode = 2
+part_type = "chassis"
+display_name = "CHASSIS"
+
+[node name="Chipset" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "chipset"
+display_name = "CHIPSET"
+
+[node name="Thruster" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "thruster"
+display_name = "THRUSTER"
+
+[node name="Generator" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "generator"
+display_name = "GENERATOR"
+
+[node name="RightArm" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "arm_weapon"
+display_name = "RIGHT ARM"
+part_side = 1
+
+[node name="LeftArm" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "arm_weapon"
+display_name = "LEFT ARM"
+part_side = 0
+
+[node name="RightShoulder" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "shoulder_weapon"
+display_name = "RIGHT SHOULDER"
+part_side = 1
+
+[node name="LeftShoulder" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer" instance=ExtResource("6_4tja3")]
+visible = false
+layout_mode = 2
+part_type = "shoulder_weapon"
+display_name = "LEFT SHOULDER"
+part_side = 0
+
+[node name="Panel" type="Panel" parent="MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_kx0pq")
+
+[node name="InventoryColumn" type="VBoxContainer" parent="MainFrame/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MainFrame/Columns/InventoryColumn"]
+layout_mode = 2
+theme = ExtResource("4_r8ixq")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_p06n0")
+text = "Inventory"
+
+[node name="InventoryPanel" type="Panel" parent="MainFrame/Columns/InventoryColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_4xi5s")
+
+[node name="GridFrame" type="Panel" parent="MainFrame/Columns/InventoryColumn/InventoryPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.01
+anchor_top = 0.06
+anchor_right = 0.99
+anchor_bottom = 0.993
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xoql5")
+
+[node name="Scroll" type="ScrollContainer" parent="MainFrame/Columns/InventoryColumn/InventoryPanel/GridFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 3.42004
+offset_bottom = 0.360046
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5_t6yqu")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_lybm8")
+
+[node name="GridContent" type="Control" parent="MainFrame/Columns/InventoryColumn/InventoryPanel/GridFrame/Scroll"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+
+[node name="GridBorder" type="Panel" parent="MainFrame/Columns/InventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_veayo")
+
+[node name="CellGrid" type="GridContainer" parent="MainFrame/Columns/InventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 6
+
+[node name="ItemsLayer" type="Control" parent="MainFrame/Columns/InventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="OtherInventoryColumn" type="VBoxContainer" parent="MainFrame/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MainFrame/Columns/OtherInventoryColumn"]
+layout_mode = 2
+theme = ExtResource("4_r8ixq")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_p06n0")
+text = "Inventory"
+
+[node name="InventoryPanel" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_oi6jo")
+
+[node name="GridFrame" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.01
+anchor_top = 0.06
+anchor_right = 0.99
+anchor_bottom = 0.993
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xoql5")
+
+[node name="Scroll" type="ScrollContainer" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 3.42004
+offset_bottom = 0.360046
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5_t6yqu")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_lybm8")
+
+[node name="GridContent" type="Control" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+
+[node name="GridBorder" type="Panel" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_veayo")
+
+[node name="CellGrid" type="GridContainer" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 6
+
+[node name="ItemsLayer" type="Control" parent="MainFrame/Columns/OtherInventoryColumn/InventoryPanel/GridFrame/Scroll/GridContent/GridBorder"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DragLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ItemTooltip" parent="." instance=ExtResource("7_sq468")]
+layout_mode = 0
+mouse_filter = 2
+
+[connection signal="pressed" from="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer/HardwareButton" to="." method="_on_hardware_button_pressed"]
+[connection signal="pressed" from="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer/WetwareButton" to="." method="_on_wetware_button_pressed"]
+[connection signal="pressed" from="MainFrame/Columns/EquipmentColumn/MarginContainer/HBoxContainer/WeaponsButton" to="." method="_on_weapons_button_pressed"]

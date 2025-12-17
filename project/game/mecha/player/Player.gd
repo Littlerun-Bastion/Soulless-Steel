@@ -346,7 +346,7 @@ func _spawn_debug_target_inventory():
 			target_inventory.add_item(test_item_2, 1)
 
 	# Now tell the HUD's InventoryUI to use this as the right-hand inventory
-	if arena and arena.PlayerHUD:   # or however you get the HUD reference
+	if arena and arena.PlayerHUD: 
 		var hud = arena.PlayerHUD
 		if hud.inventory_ui:
 			hud.inventory_ui.other_inventory = target_inventory

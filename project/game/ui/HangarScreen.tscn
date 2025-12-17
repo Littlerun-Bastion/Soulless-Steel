@@ -1,0 +1,101 @@
+[gd_scene load_steps=8 format=3 uid="uid://c1bupwppgtkov"]
+
+[ext_resource type="Script" path="res://game/ui/HangarScreen.gd" id="1_6y6oh"]
+[ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="1_p705l"]
+[ext_resource type="PackedScene" uid="uid://bysc0hpr1nxaj" path="res://game/ui/InventoryUI.tscn" id="2_3j6od"]
+[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="4_ki33h"]
+[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="4_pe3m2"]
+[ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="5_ojaxq"]
+
+[sub_resource type="Theme" id="Theme_yeody"]
+
+[node name="HangarScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6y6oh")
+
+[node name="Mecha" parent="." instance=ExtResource("1_p705l")]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InventoryUI" parent="MarginContainer/VBoxContainer/MarginContainer" instance=ExtResource("2_3j6od")]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.03
+theme = ExtResource("4_ki33h")
+theme_override_font_sizes/font_size = 30
+text = "ESC"
+alignment = 0
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+scale = Vector2(0.75, 0.75)
+transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
+scroll_base_scale = Vector2(3, 1)
+script = ExtResource("4_pe3m2")
+
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+show_behind_parent = true
+offset_left = -605.0
+offset_top = -726.0
+offset_right = 7395.0
+offset_bottom = 7274.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource("Theme_yeody")
+color = Color(0, 0, 0, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+offset_left = -602.776
+offset_top = -721.705
+offset_right = 3397.22
+offset_bottom = 3278.3
+texture = ExtResource("5_ojaxq")
+metadata/_edit_use_anchors_ = true
+
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+modulate = Color(1, 1, 1, 0.14902)
+motion_scale = Vector2(-0.5, 1)
+motion_mirroring = Vector2(4000, 4000)
+
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+offset_left = -664.0
+offset_top = -794.667
+offset_right = 3336.0
+offset_bottom = 3205.34
+texture = ExtResource("5_ojaxq")
+metadata/_edit_use_anchors_ = true
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Button" to="." method="_on_BackButton_pressed"]

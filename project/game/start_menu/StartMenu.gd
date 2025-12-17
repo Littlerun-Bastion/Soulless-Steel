@@ -78,7 +78,7 @@ func _on_ExitButton_pressed():
 
 func _on_Hangar_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/customizer/Customizer.tscn", "Loading Visualizer...")
+	TransitionManager.transition_to("res://game/ui/HangarScreen.tscn", "Loading Visualizer...")
 
 
 func _on_Arena_pressed():

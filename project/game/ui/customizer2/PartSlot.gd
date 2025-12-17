@@ -12,8 +12,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var part_side: int = SIDE.SINGLE
 
 var current_part_id: String = "" 
-var current_item: item_data = null
 var player_mecha: Mecha = null
+var inventory_ui: InventoryUI = null
 
 func _ready() -> void:
 	PartCategory.text = display_name
@@ -23,19 +23,26 @@ func setup():
 
 func set_current_part(part):
 	PartCategory.text = display_name
+	current_part_id = part.part_id
 	if part:
-		PartName.text = part.part_name
+		var part_ref = PartManager.get_part(part_type, current_part_id)
+		if part_ref:
+			PartName.text = part_ref.part_name
+		else:
+			PartName.text = "UNKNOWN"
+	
 
 func set_equipped_part(part_id: String, item: item_data) -> void:
+	print("set_equipped_part")
 	current_part_id = part_id
-	current_item = item
-	if current_item.part_scene:
-		PartName.text = current_item.part_scene.part_name
-	else:
-		PartName.text = "Error: no part scene. Tell the devs." 
 
 func clear_equipped_part() -> void:
 	current_part_id = ""
-	current_item = null
 	PartName.text = "Empty"
 	# icon = null
+
+func _on_slot_pressed() -> void:
+	if inventory_ui == null:
+		return
+	inventory_ui.unequip_part(self)
+		

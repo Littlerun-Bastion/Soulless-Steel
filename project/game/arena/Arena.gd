@@ -156,7 +156,6 @@ func setup_inventory_layer(_player) -> void:
 	inventory_ui.other_inventory = player.target_inventory  # or null if none yet
 	inventory_ui.mecha_ref = player
 
-	# Start hidden if you want
 	InventoryLayer.visible = false
 	inventory_ui.setup_for_mecha(player, null)
 
@@ -522,6 +521,7 @@ func _on_player_mech_extracted(playerMech):
 func _on_player_inventory_toggled() -> void:
 	if InventoryLayer == null:
 		return
+	inventory_ui.refresh()
 	InventoryLayer.visible = not InventoryLayer.visible
 
 

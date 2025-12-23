@@ -13,8 +13,8 @@ config_version=5
 config/name="Soulless Steel"
 run/main_scene="res://game/start_menu/Intro.tscn"
 config/features=PackedStringArray("4.3")
-boot_splash/image="res://assets/images/splash.png"
 config/icon="res://assets/images/icons/ladder_icon.png"
+boot_splash/image="res://assets/images/splash.png"
 
 [autoload]
 

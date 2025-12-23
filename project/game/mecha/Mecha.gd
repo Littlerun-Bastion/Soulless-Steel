@@ -1,6 +1,8 @@
 extends CharacterBody2D
 class_name Mecha
 
+# hi this edit comes from my tablet!
+
 enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}

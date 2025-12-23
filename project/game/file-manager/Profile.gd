@@ -86,6 +86,8 @@ func get_save_data():
 		"stats": stats,
 		"leaderboards": leaderboards,
 		"debug": Debug.debug_settings,
+		"stash_inventory": _inventory_to_dict(stash_inventory),
+		"mech_inventory": _inventory_to_dict(mech_inventory),
 	}
 	
 	return data
@@ -106,13 +108,28 @@ func set_save_data(data):
 	set_data(data, "leaderboards", leaderboards)
 	set_data(data, "debug", Debug.debug_settings)
 	
+	
+	if data.has("stash_inventory"):
+		stash_inventory = _inventory_from_dict(data["stash_inventory"])
+	else:
+		stash_inventory = null
+	
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
 	AudioManager.set_bus_volume(AudioManager.SFX_BUS, options.sfx_volume)
 	
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
+		
+	if data.has("stash_inventory"):
+		stash_inventory = _inventory_from_dict(data["stash_inventory"])
+	else:
+		stash_inventory = null
 
+	if data.has("mech_inventory"):
+		mech_inventory = _inventory_from_dict(data["mech_inventory"])
+	else:
+		mech_inventory = null
 
 func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):
@@ -232,3 +249,95 @@ func get_mech_inventory() -> inventory:
 
 func set_mech_inventory(inv: inventory) -> void:
 	mech_inventory = inv
+func _inventory_to_dict(inv: inventory) -> Dictionary:
+	if inv == null:
+		return {}  # represent "no inventory" as empty dict
+
+	var data: Dictionary = {}
+	data["grid_width"] = inv.grid_width
+	data["grid_height"] = inv.grid_height
+
+	var items: Array = []
+
+	for y in range(inv.grid_height):
+		for x in range(inv.grid_width):
+			var cell = inv.grid[y][x]
+			var stack: item_stack = cell["stack"]
+			if stack == null:
+				continue
+
+			# Only serialize origin cells
+			if cell["origin_x"] != x or cell["origin_y"] != y:
+				continue
+
+			var entry: Dictionary = {}
+			entry["x"] = x
+			entry["y"] = y
+			entry["quantity"] = stack.quantity
+			entry["rotated"] = stack.rotated
+			entry["kind"] = stack.kind  # just store the enum integer
+
+			if stack.kind == item_stack.ItemKind.PART:
+				entry["part_type"] = stack.part_type
+				entry["part_name"] = stack.part_name
+			else:
+				var path := ""
+				if stack.item != null and stack.item.resource_path != "":
+					path = stack.item.resource_path
+				entry["item_path"] = path
+
+			items.append(entry)
+
+	data["items"] = items
+	return data
+
+
+func _inventory_from_dict(data) -> inventory:
+	# Be defensive: old saves might have wrong types here.
+	if data == null:
+		return null
+	if typeof(data) != TYPE_DICTIONARY:
+		return null
+	if data.is_empty():
+		return null
+
+	var inv := inventory.new()
+
+	var w: int = int(data.get("grid_width", 0))
+	var h: int = int(data.get("grid_height", 0))
+	if w <= 0 or h <= 0:
+		# No valid size, just return the empty inventory
+		return inv
+
+	inv.initialize_grid(w, h)
+
+	var items: Array = data.get("items", [])
+	for entry in items:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+
+		var stack := item_stack.new()
+		stack.quantity = int(entry.get("quantity", 1))
+		stack.rotated = bool(entry.get("rotated", false))
+
+		# Do NOT assume an ItemKind.ITEM constant exists
+		var kind_val := 0
+		if entry.has("kind"):
+			kind_val = int(entry["kind"])
+		stack.kind = kind_val
+
+		if stack.kind == item_stack.ItemKind.PART:
+			stack.part_type = str(entry.get("part_type", ""))
+			stack.part_name = str(entry.get("part_name", ""))
+		else:
+			var item_path: String = entry.get("item_path", "")
+			if item_path != "":
+				var res = load(item_path)
+				if res != null:
+					stack.item = res
+
+		var x: int = int(entry.get("x", 0))
+		var y: int = int(entry.get("y", 0))
+		inv.place_item(stack, x, y)
+
+	return inv

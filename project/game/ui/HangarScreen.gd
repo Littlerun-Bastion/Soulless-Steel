@@ -8,20 +8,16 @@ var stash_inventory: inventory = null  # player’s stash / hangar inventory
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
 func _ready() -> void:
-	# 1) Load stash
 	stash_inventory = Profile.get_stash_inventory()
 
-	# 2) Rebuild the mech design (parts)
 	var design = Profile.stats.current_mecha
 	if design != null:
 		player_mecha.set_parts_from_design(design)
 	else:
 		push_warning("Hangar: Profile.stats.current_mecha is null, using default Mecha scene setup.")
 
-	# 3) Decide mech inventory size based on the currently equipped core
 	var core_size := _get_core_inventory_size()
 
-	# 4) Get persistent mech inventory from Profile and sync its size
 	var mech_inv: inventory = Profile.get_mech_inventory()
 
 	if mech_inv.grid_width == 0 or mech_inv.grid_height == 0 or mech_inv.grid.is_empty():
@@ -59,11 +55,13 @@ func _get_core_inventory_size() -> Array:
 
 func _on_BackButton_pressed() -> void:
 	var design = player_mecha.get_design_data()
-	Profile.set_stat("current_mecha", design)
 
 	Profile.set_stash_inventory(stash_inventory)
 	Profile.set_mech_inventory(player_mecha.mech_inventory)
 
+	Profile.set_stat("current_mecha", design)
+	
+	FileManager.save_profile()
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",
 		"Leaving Hangar..."

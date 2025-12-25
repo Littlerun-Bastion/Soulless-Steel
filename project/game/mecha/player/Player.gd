@@ -234,6 +234,8 @@ func setup(arena_ref):
 	else:
 		push_warning("No design setted for player, using the same as the debug loadout")
 		set_debug_loadout()
+	
+	
 
 
 func set_debug_loadout():

@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://bg1jf1stkgny3"]
+
+[ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_55gxm"]
+[ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="2_tvemy"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="3_jl12x"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[node name="Projectile" type="Area2D" groups=["projectile"]]
+collision_layer = 2
+script = ExtResource("1_55gxm")
+projectile_size = 0.3
+muzzle_speed = 500
+stage_max_speed = Array[int]([200])
+stage_acceleration = Array[float]([-100.0])
+stage_wiggle_amount = Array[float]([5.0])
+stage_wiggle_freq = Array[float]([5.0])
+stage_seeker_angle = Array[float]([360.0])
+fuse_timer = 10.0
+fuse_detection_type = "IR"
+fuse_angle = 20.0
+payload_explosion_damage = 1e+08
+payload_explosion_force = 2000.0
+payload_explosion_radius = 500.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tvemy")
+
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+material = SubResource("1")
+scale = Vector2(5, 5)
+texture = ExtResource("3_jl12x")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835)
+
+[node name="Fuse" type="Area2D" parent="."]
+
+[node name="FuseSensor" type="CollisionShape2D" parent="Fuse"]
+
+[node name="Explosion" type="Area2D" parent="."]
+
+[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion"]
+
+[node name="LifeTimer" type="Timer" parent="."]
+
+[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
+[connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]
+[connection signal="body_entered" from="Explosion" to="." method="_on_explosion_body_entered"]
+[connection signal="body_exited" from="Explosion" to="." method="_on_explosion_body_exited"]
+[connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

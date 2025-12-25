@@ -8,6 +8,19 @@ var Collision
 signal bullet_impact
 signal create_trail
 
+#ITEM ATTRIBUTES
+@export var part_name : String
+@export var manufacturer_name : String
+@export var manufacturer_name_short : String
+@export var tagline : String
+@export var tags :Array[String] = ["arm_weapon"]
+@export var price := 0.0
+@export var weight := 1.0
+@export var description : String
+@export var image : Texture2D
+@export var item_size := [3,2]
+
+#PROJECTILE ATTRIBUTES
 @export var projectile_size := 1.0
 @export var projectile_size_scaling := 0.0
 @export var projectile_size_scaling_var := 0.0

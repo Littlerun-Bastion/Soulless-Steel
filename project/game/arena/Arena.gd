@@ -152,7 +152,8 @@ func setup_inventory_layer(_player) -> void:
 	inventory_ui = InventoryLayer.get_node("SubViewportContainer/SubViewport/InventoryUI") as InventoryUI
 
 	# Wire up data refs
-	inventory_ui.inventory = player.mech_inventory
+	player.mech_inventory = Profile.get_mech_inventory()
+	inventory_ui.main_inventory = player.mech_inventory
 	inventory_ui.other_inventory = player.target_inventory  # or null if none yet
 	inventory_ui.mecha_ref = player
 

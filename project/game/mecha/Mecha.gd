@@ -2009,3 +2009,32 @@ func pickup(item: item_data):
 
 func open_container(container):
 	target_inventory = container.inventory
+
+# Helper to map shape index to part name
+func get_part_name_from_shape(shape_index: int) -> String:
+	# shape_find_owner gives you the owner_id
+	var owner_id = shape_find_owner(shape_index)
+	if owner_id == -1:
+		return "core"  # Default fallback
+	
+	# shape_owner_get_owner gives you the actual node
+	var collision_node = shape_owner_get_owner(owner_id)
+	
+	# Map collision nodes to part names using if-elif
+	if collision_node == $CoreCollision:
+		return "core"
+	elif collision_node == $HeadCollision:
+		return "head"
+	elif collision_node == $LeftShoulderCollision:
+		return "left_shoulder"
+	elif collision_node == $RightShoulderCollision:
+		return "right_shoulder"
+	elif collision_node == $ChassisSingleCollision:
+		return "chassis"
+	elif collision_node == $ChassisLeftCollision:
+		return "chassis"
+	elif collision_node == $ChassisRightCollision:
+		return "chassis"
+	else:
+		push_error("Unknown collision node: " + str(collision_node))
+		return "core"  # Fallback

@@ -255,7 +255,28 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 			else:
 				collision_point = global_position
 			
+			#Raycast to see which is the best possible part to hit.
 			var size = Vector2(40,40)
+			var space_state = get_world_2d().direct_space_state
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = collision_point
+			query.collide_with_bodies = true
+			query.collision_mask = self.collision_mask
+			
+			var results = space_state.intersect_point(query, 10)		
+			var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
+			var best_part = "core"
+			var best_priority = 999
+			
+			for result in results:
+				if result.collider == body:
+					var part_name = body.get_part_name_from_shape(result.shape)
+					var priority = priority_order.find(part_name)
+					if priority != -1 and priority < best_priority:
+						best_priority = priority
+						best_part = part_name
+			
+			print(best_part)
 			if not has_impacted:
 				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
 									status_damage, status_type, hitstop, original_mecha_info, part_id)
@@ -468,14 +489,53 @@ func explosion():
 		ray = ray.normalized()
 		var explosion_angle = dir.angle_to(ray)
 		if abs(explosion_angle) < deg_to_rad(payload_explosion_angle):
-			var query = PhysicsRayQueryParameters2D.create(position,body.position)
+			var query = PhysicsRayQueryParameters2D.create(position, body.position)
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
 			if result and result.collider and result.collider.is_in_group("mecha"):
-				result.collider.take_damage(payload_explosion_damage, payload_explosion_shield_mult, payload_explosion_health_mult, payload_explosion_heat_damage,\
+				var hit_mecha = result.collider
+				var explosion_center = result.position
+				
+				# Find all parts within explosion radius
+				var parts_hit = get_explosion_parts(hit_mecha, explosion_center, payload_explosion_radius)
+				
+				# Damage each part hit by the explosion
+				# Note: Explosions can hit multiple parts at once
+				for part_name in parts_hit:
+					hit_mecha.take_damage(payload_explosion_damage, payload_explosion_shield_mult, payload_explosion_health_mult, payload_explosion_heat_damage,\
 									payload_explosion_status_damage, payload_explosion_status_type, payload_explosion_hitstop, original_mecha_info, part_id)
-				result.collider.knockback(payload_explosion_force, ray, true)
+					print(part_name)
+				hit_mecha.knockback(payload_explosion_force, ray, true)
 	die(false)
+
+# Helper function to find all parts within explosion radius
+func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: float) -> Array:
+	var parts_hit = []
+	
+	# Query all shapes within the explosion radius
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsShapeQueryParameters2D.new()
+	
+	# Create a circle shape for the explosion area
+	var circle = CircleShape2D.new()
+	circle.radius = explosion_radius
+	query.shape = circle
+	query.transform = Transform2D(0, explosion_center)
+	query.collide_with_bodies = true
+	query.collision_mask = self.collision_mask
+	
+	var results = space_state.intersect_shape(query, 10)
+	
+	var parts_found = {}  # Track unique parts hit
+	
+	for result in results:
+		if result.collider == mecha:
+			var part_name = mecha.get_part_name_from_shape(result.shape)
+			if not parts_found.has(part_name):
+				parts_found[part_name] = true
+				parts_hit.append(part_name)
+	
+	return parts_hit
 	
 func _on_explosion_body_entered(body):
 	if not body.is_in_group("mecha"):

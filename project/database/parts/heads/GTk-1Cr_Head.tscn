@@ -30,3 +30,7 @@ texture = ExtResource("5_kab6o")
 [node name="Glow" type="Sprite2D" parent="."]
 material = ExtResource("6_0aonm")
 texture = ExtResource("7_r87ri")
+
+[node name="Collision" type="Polygon2D" parent="."]
+
+[node name="Collision2" type="Polygon2D" parent="."]

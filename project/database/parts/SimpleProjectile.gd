@@ -142,8 +142,26 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 			else:
 				collision_point = global_position
 				
-			
+			#Raycast to see which is the best possible part to hit.
 			var size = Vector2(40,40)
+			var space_state = get_world_2d().direct_space_state
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = collision_point
+			query.collide_with_bodies = true
+			query.collision_mask = self.collision_mask
+			
+			var results = space_state.intersect_point(query, 10)		
+			var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
+			var best_part = "core"
+			var best_priority = 999
+			
+			for result in results:
+				if result.collider == body:
+					var part_name = body.get_part_name_from_shape(result.shape)
+					var priority = priority_order.find(part_name)
+					if priority != -1 and priority < best_priority:
+						best_priority = priority
+						best_part = part_name			
 			if not has_impacted:
 				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
 									status_damage, status_type, hitstop, original_mecha_info, part_id)

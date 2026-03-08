@@ -22,14 +22,14 @@ func setup():
 	pass
 
 func set_current_part(part):
-	PartCategory.text = display_name
-	current_part_id = part.part_id
 	if part:
+		PartCategory.text = display_name
+		current_part_id = part.part_id
 		var part_ref = PartManager.get_part(part_type, current_part_id)
 		if part_ref:
 			PartName.text = part_ref.part_name
-		else:
-			PartName.text = "UNKNOWN"
+	else:
+		PartName.text = "UNKNOWN"
 	
 
 func set_equipped_part(part_id: String, item: item_data) -> void:

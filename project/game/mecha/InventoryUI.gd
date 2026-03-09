@@ -691,32 +691,20 @@ func _set_mecha_part_for_slot(slot: PartSlot, value) -> void:
 				PartSlot.SIDE.RIGHT:
 					mecha_ref.set_shoulder_weapon(value, SIDE.RIGHT)
 
+func _filter_equipment_slots(visible_types: Array) -> void:
+	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
+	for child in equip_column.get_children():
+		child.visible = child.part_type in visible_types
 
 func _on_hardware_button_pressed() -> void:
-	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
-	for child in equip_column.get_children():
-		if child.part_type == "head" or child.part_type == "core" or child.part_type == "shoulders" or child.part_type == "chassis":
-			child.visible = true
-		else:
-			child.visible = false
-	
+	_filter_equipment_slots(["head", "core", "shoulders", "chassis"])
 
 func _on_wetware_button_pressed() -> void:
-	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
-	for child in equip_column.get_children():
-		if child.part_type == "chipset" or child.part_type == "thruster" or child.part_type == "generator":
-			child.visible = true
-		else:
-			child.visible = false
-
+	_filter_equipment_slots(["chipset", "thruster", "generator"])
 
 func _on_weapons_button_pressed() -> void:
-	var equip_column = $MainFrame/Columns/EquipmentColumn/EquipmentPanel/EquipmentMargin/HBoxContainer/VBoxContainer
-	for child in equip_column.get_children():
-		if child.part_type == "arm_weapon" or child.part_type == "shoulder_weapon":
-			child.visible = true
-		else:
-			child.visible = false
+	_filter_equipment_slots(["arm_weapon", "shoulder_weapon"])
+
 
 # ---------------------------------------------------------------------------
 # Utility helpers
@@ -953,17 +941,6 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 	refresh()
 	return true
 
-	# 3) Remove the stack from the source inventory
-	if not source_inventory.remove_stack_at(origin_x, origin_y):
-		push_error("InventoryUI: Failed to remove stack from source inventory at (%d, %d)" % [origin_x, origin_y])
-		return false
-	
-	# 4) Equip the new part on the mecha
-	_set_mecha_part_for_slot(slot, stack.part_scene)
-
-	# 5) Refresh UI
-	refresh()
-	return true
 
 #stack.part_type exists and matches slot.part_type — adjust the type check if your field names differ
 #source_inventory.remove_stack_at(origin_x, origin_y) — swap for whatever your removal method is called
@@ -1005,6 +982,7 @@ func unequip_part(slot: PartSlot):
 
 	# 5) Refresh UI so the new item appears
 	refresh()
+	return stack
 
 func make_part_stack(part_type: String, part_id: String, qty: int = 1) -> item_stack:
 	var s := item_stack.new()

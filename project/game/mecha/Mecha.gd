@@ -1005,11 +1005,14 @@ func set_thruster(part_name):
 
 
 func set_chassis(part_name):
-	if typeof(part_name) != TYPE_STRING:
+	if part_name == null or not (part_name is String or part_name is StringName):
 		remove_chassis("single")
 		remove_chassis("pair")
 		movement_type = "free"
 		return
+		if PartManager == null:
+			push_error("PartManager is null!")
+			return
 	build.chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = build.chassis.weight_capacity
 	ChassisAmbientSFX.stream = build.chassis.ambient_sfx

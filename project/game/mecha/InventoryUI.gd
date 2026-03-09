@@ -663,7 +663,6 @@ func _get_mecha_part_for_slot(slot: PartSlot):
 func _set_mecha_part_for_slot(slot: PartSlot, value) -> void:
 	if mecha_ref == null:
 		return
-
 	match slot.part_type:
 		"head":
 			mecha_ref.set_head(value)
@@ -924,10 +923,51 @@ func _is_mouse_over_inventory() -> bool:
 # source_inventory: which inventory it came from (or null if from a slot)
 # origin_x/origin_y: where in that inventory it came from (or -1 if from a slot)
 # Return true if equip succeeded, false to revert the drag.
-func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
-	print(slot, " -> ", stack.part_scene)
-	return false
+#func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
+#	print(slot, " -> ", stack.part_scene)
+#	return false
+	
+func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
+	if not can_customize or mecha_ref == null or main_inventory == null:
+		return false
+	if stack == null or stack.part_type != slot.part_type:
+		return false
 
+	# 1) If something is already equipped, try to return it to inventory first
+	var existing_part = _get_mecha_part_for_slot(slot)
+	if existing_part != null:
+		var existing_stack := make_part_stack(slot.part_type, slot.current_part_id)
+		if existing_stack == null:
+			push_error("InventoryUI: make_part_stack() returned null for slot: %s" % str(slot))
+			return false
+		if not main_inventory.add_stack_to_first_available_slot(existing_stack):
+			return false
+
+	# 2) Remove from source inventory (only if drag came from a grid, not a slot)
+	if source_inventory != null and origin_x >= 0 and origin_y >= 0:
+		source_inventory.remove_item_stack(stack)
+
+	# 3) Equip the new part
+	_set_mecha_part_for_slot(slot, stack.part_name)
+	refresh_part_slots_from_mecha()
+	refresh()
+	return true
+
+	# 3) Remove the stack from the source inventory
+	if not source_inventory.remove_stack_at(origin_x, origin_y):
+		push_error("InventoryUI: Failed to remove stack from source inventory at (%d, %d)" % [origin_x, origin_y])
+		return false
+	
+	# 4) Equip the new part on the mecha
+	_set_mecha_part_for_slot(slot, stack.part_scene)
+
+	# 5) Refresh UI
+	refresh()
+	return true
+
+#stack.part_type exists and matches slot.part_type — adjust the type check if your field names differ
+#source_inventory.remove_stack_at(origin_x, origin_y) — swap for whatever your removal method is called
+#_set_mecha_part_for_slot(slot, stack.part_scene) — same signature as in unequip_part but passing the scene instead of null
 
 # Called when a part slot is clicked with no item being dragged.
 # Should:

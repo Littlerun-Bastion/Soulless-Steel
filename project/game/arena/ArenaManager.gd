@@ -24,19 +24,21 @@ func _ready():
 	setup_maps()
 
 
-func setup_maps():
+func setup_maps() -> void:
 	var dir = DirAccess.open(MAPS_PATH)
-	if dir:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
-		var file_name = dir.get_next()
-		while file_name != "":
-			if file_name != "." and file_name != "..":
-				#Found map file, creating data on memory
-				MAPS[file_name.replace(".tscn", "").replace(".remap", "")] = load(MAPS_PATH + file_name.replace(".remap", ""))
-				
-			file_name = dir.get_next()
-	else:
-		push_error("An error occurred when trying to access maps path: " + str(DirAccess.get_open_error()))
+	if not dir:
+		push_error("Failed to access maps path: " + str(DirAccess.get_open_error()))
+		return
+	
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if file_name.ends_with(".tscn") or file_name.ends_with(".tscn.remap"):
+			var key = file_name.replace(".tscn.remap", "").replace(".tscn", "")
+			if not MAPS.has(key):
+				MAPS[key] = load(MAPS_PATH + file_name.replace(".remap", ""))
+		file_name = dir.get_next()
+	dir.list_dir_end()
 
 
 func set_map_to_load(map_name):

@@ -1665,13 +1665,18 @@ func shoot(type, is_auto_fire = false):
 
 		#Create projectile
 		if not weapon_ref.is_melee:
-			var max_angle = weapon_ref.max_bloom_angle/build.head.accuracy_modifier
+			
+			var head_accuracy = build.head.accuracy_modifier if build.head else 0.1
+			var chipset_accuracy = build.chipset.accuracy_modifier if build.chipset else 0.1
+			
+			var max_angle = weapon_ref.max_bloom_angle/head_accuracy
 			if type == "arm_weapon_left" or type == "arm_weapon_right":
+				var arm_acc = arm_accuracy_mod if arm_accuracy_mod > 0.0 else 1.0
 				max_angle = max_angle/arm_accuracy_mod
 				bloom /= arm_accuracy_mod
 			if locked_to:
-				max_angle = max_angle/build.chipset.accuracy_modifier
-			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/build.head.accuracy_modifier
+				max_angle = max_angle/chipset_accuracy
+			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head_accuracy
 			var current_accuracy = randf_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				var fire_dir = node.get_direction(weapon_ref.bullet_spread, current_accuracy)

@@ -952,7 +952,6 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 #   - return a new item_stack representing the unequipped part
 # Return null if nothing is equipped or unequip failed.
 func unequip_part(slot: PartSlot):
-	print("Here!")
 	# Only allowed in hangar / customization context
 	if not can_customize:
 		return

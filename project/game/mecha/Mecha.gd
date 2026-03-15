@@ -1009,6 +1009,7 @@ func set_chassis(part_name):
 		remove_chassis("single")
 		remove_chassis("pair")
 		movement_type = "free"
+		build.chassis = null
 		return
 		if PartManager == null:
 			push_error("PartManager is null!")

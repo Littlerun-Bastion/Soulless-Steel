@@ -600,7 +600,8 @@ func _get_part_slot_under_mouse() -> Node:
 		if slot is Control:
 			var c := slot as Control
 			if c.get_global_rect().has_point(mouse_pos):
-				return slot
+				if dragging_stack == null or slot.part_type == dragging_stack.part_type:
+					return slot
 	return null
 
 func _collect_part_slots_recursive(node: Node) -> void:
@@ -923,18 +924,19 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 
 	# 1) If something is already equipped, try to return it to inventory first
 	var existing_part = _get_mecha_part_for_slot(slot)
-	if existing_part != null:
-		var existing_stack := make_part_stack(slot.part_type, slot.current_part_id)
+	print("existing_part: %s | slot.current_part_id: '%s'" % [existing_part, slot.current_part_id])
+	if existing_part:
+		var existing_id = existing_part.part_id
+		var existing_stack := make_part_stack(slot.part_type, existing_id)
 		if existing_stack == null:
 			push_error("InventoryUI: make_part_stack() returned null for slot: %s" % str(slot))
-			return false
+		return false
 		if not main_inventory.add_stack_to_first_available_slot(existing_stack):
 			return false
 
 	# 2) Remove from source inventory (only if drag came from a grid, not a slot)
 	if source_inventory != null and origin_x >= 0 and origin_y >= 0:
 		source_inventory.remove_item_stack(stack)
-
 	# 3) Equip the new part
 	_set_mecha_part_for_slot(slot, stack.part_name)
 	refresh_part_slots_from_mecha()
@@ -979,9 +981,9 @@ func unequip_part(slot: PartSlot):
 	# 4) Actually unequip from the mecha
 	_set_mecha_part_for_slot(slot, null)
 	
-	slot.clear_equipped_part()
-	
+
 	# 5) Refresh UI so the new item appears
+	refresh_part_slots_from_mecha()
 	refresh()
 	return stack
 

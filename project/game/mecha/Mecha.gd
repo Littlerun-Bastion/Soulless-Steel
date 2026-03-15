@@ -978,7 +978,7 @@ func set_generator(part_name):
 			if GeneratorAmbientSFX.stream:
 				GeneratorAmbientSFX.play()
 	else:
-		build.generator = false
+		build.generator = null
 	update_max_shield_from_parts()
 	set_max_heat()
 
@@ -993,7 +993,7 @@ func set_chipset(part_name):
 		lock_strength = build.chipset.lock_on_strength
 		lock_on_duration = build.chipset.lock_on_duration
 	else:
-		build.chipset = false
+		build.chipset = null
 
 
 func set_thruster(part_name):
@@ -1001,7 +1001,7 @@ func set_thruster(part_name):
 		var part_data = PartManager.get_part("thruster", part_name)
 		build.thruster = part_data
 	else:
-		build.thruster = false
+		build.thruster = null
 
 
 func set_chassis(part_name):

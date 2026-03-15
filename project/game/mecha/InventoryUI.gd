@@ -924,7 +924,6 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 
 	# 1) If something is already equipped, try to return it to inventory first
 	var existing_part = _get_mecha_part_for_slot(slot)
-	print("existing_part: %s | slot.current_part_id: '%s'" % [existing_part, slot.current_part_id])
 	if existing_part:
 		var existing_id = existing_part.part_id
 		var existing_stack := make_part_stack(slot.part_type, existing_id)

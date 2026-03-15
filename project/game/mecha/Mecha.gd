@@ -817,11 +817,11 @@ func update_heat(dt):
 			reduce_heat(freezing_status_heat(build.generator.heat_dispersion * (mecha_heat/float(max_heat)))*dt)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
 			weapon.update_heat(build.generator.heat_dispersion,mecha_heat_visible,dt)
-	if build.generator:
-		if mecha_heat >= max_heat:
-			set_status("overheating", 5.0)
 	if not has_status("overheating"):
-		mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(build.generator.heat_dispersion)*dt*4, mecha_heat)
+		if build.generator:
+			mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(build.generator.heat_dispersion)*dt*4, mecha_heat)
+		else:
+			mecha_heat_visible = max(mecha_heat_visible - dt*4, mecha_heat)
 	else:
 		mecha_heat_visible = 300
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\

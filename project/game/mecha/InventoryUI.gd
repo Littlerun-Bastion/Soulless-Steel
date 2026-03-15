@@ -978,7 +978,9 @@ func unequip_part(slot: PartSlot):
 
 	# 4) Actually unequip from the mecha
 	_set_mecha_part_for_slot(slot, null)
-
+	
+	slot.clear_equipped_part()
+	
 	# 5) Refresh UI so the new item appears
 	refresh()
 	return stack

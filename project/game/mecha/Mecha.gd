@@ -1665,7 +1665,7 @@ func shoot(type, is_auto_fire = false):
 
 		#Create projectile
 		if not weapon_ref.is_melee:
-			
+			##check if we can get accuracy modifier, if not set to 0.1, mecha works without head
 			var head_accuracy = build.head.accuracy_modifier if build.head else 0.1
 			var chipset_accuracy = build.chipset.accuracy_modifier if build.chipset else 0.1
 			

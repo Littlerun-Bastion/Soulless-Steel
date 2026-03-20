@@ -275,8 +275,7 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 					if priority != -1 and priority < best_priority:
 						best_priority = priority
 						best_part = part_name
-			
-			print(best_part)
+						
 			if not has_impacted:
 				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
 									status_damage, status_type, hitstop, original_mecha_info, part_id)

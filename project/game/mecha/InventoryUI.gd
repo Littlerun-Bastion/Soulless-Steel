@@ -929,7 +929,7 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 		var existing_stack := make_part_stack(slot.part_type, existing_id)
 		if existing_stack == null:
 			push_error("InventoryUI: make_part_stack() returned null for slot: %s" % str(slot))
-		return false
+			return false
 		if not main_inventory.add_stack_to_first_available_slot(existing_stack):
 			return false
 

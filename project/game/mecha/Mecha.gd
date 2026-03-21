@@ -924,8 +924,14 @@ func set_weapon_sfx_nodes(sfx_node, part_data):
 
 
 func set_core(part_name):
+	# CHANGED: handle null/false instead of falling back to "Null"
 	if not part_name:
-		part_name = "Null"
+		build.core = null
+		Core.texture = null
+		CoreSub.texture = null  # NEW
+		CoreGlow.texture = null  # NEW
+		# NEW: do NOT touch mech_inventory here
+		return
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
 	$CoreCollision.polygon = part_data.get_collision()
@@ -956,10 +962,14 @@ func set_core(part_name):
 	stability = get_stat("stability")
 	reset_offsets()
 	set_max_heat()
+	# CHANGED: replaced initialize_grid with resize_and_migrate to preserve items
 	if mech_inventory == null:
 		mech_inventory = inventory.new()
-	var cargo = build.core.cargo_space  # [x, y]
-	mech_inventory.initialize_grid(cargo[0], cargo[1])
+		var cargo = build.core.cargo_space  # MOVED: cargo declaration inside if block
+		mech_inventory.initialize_grid(cargo[0], cargo[1])
+	else:
+		var cargo = build.core.cargo_space  # NEW
+		mech_inventory.resize_and_migrate(cargo[0], cargo[1])  # NEW
 
 
 func set_generator(part_name):

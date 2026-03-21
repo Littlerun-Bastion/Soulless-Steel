@@ -613,7 +613,6 @@ func _collect_part_slots_recursive(node: Node) -> void:
 func refresh_part_slots_from_mecha() -> void:
 	if mecha_ref == null:
 		return
-
 	for slot in part_slots:
 		if slot == null:
 			continue
@@ -922,7 +921,7 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 	if stack == null or stack.part_type != slot.part_type:
 		return false
 
-	# 1) If something is already equipped, try to return it to inventory first
+	# 1) If something is already equipped, return it to stash if available, otherwise mech inventory
 	var existing_part = _get_mecha_part_for_slot(slot)
 	if existing_part:
 		var existing_id = existing_part.part_id
@@ -930,7 +929,9 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, 
 		if existing_stack == null:
 			push_error("InventoryUI: make_part_stack() returned null for slot: %s" % str(slot))
 			return false
-		if not main_inventory.add_stack_to_first_available_slot(existing_stack):
+		var return_inv = other_inventory if other_inventory != null else main_inventory
+		if not return_inv.add_stack_to_first_available_slot(existing_stack):
+			push_warning("InventoryUI: No space to return existing part.")
 			return false
 
 	# 2) Remove from source inventory (only if drag came from a grid, not a slot)
@@ -966,7 +967,7 @@ func unequip_part(slot: PartSlot):
 	if part == null:
 		return
 	# 2) Build an item_stack for that part
-	var stack := make_part_stack(slot.part_type, slot.current_part_id)
+	var stack := make_part_stack(slot.part_type, part.part_id)
 	if stack == null:
 		push_error("InventoryUI: _stack_from_part() returned null for part: %s" % [str(part)])
 		return

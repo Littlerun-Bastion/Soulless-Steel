@@ -17,7 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://cmcm7jhratyj2" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_glow.png" id="15"]
 [ext_resource type="Texture2D" uid="uid://bqv4rwq8adfx5" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_glow.png" id="16"]
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="17"]
-[ext_resource type="Material" path="res://assets/shaders/HeatShader.tres" id="18"]
+[ext_resource type="Material" uid="uid://r0uhhhxr2xn8" path="res://assets/shaders/HeatShader.tres" id="18"]
 [ext_resource type="Texture2D" uid="uid://dr8o0wrmi8121" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_sub.png" id="19"]
 [ext_resource type="Script" path="res://game/mecha/MeleeHitboxes.gd" id="20"]
 [ext_resource type="Texture2D" uid="uid://coia7ob4vltjn" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_sub.png" id="21"]

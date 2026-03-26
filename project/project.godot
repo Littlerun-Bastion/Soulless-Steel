@@ -31,6 +31,7 @@ ShaderEffects="*res://game/ui/ShaderEffects.tscn"
 MouseManager="*res://game/ui/MouseManager.gd"
 NPCManager="*res://game/mecha/NPCManager.gd"
 TransitionManager="*res://game/ui/TransitionManager.tscn"
+MissionManager="*res://database/Missions/MissionManager.gd"
 
 [display]
 

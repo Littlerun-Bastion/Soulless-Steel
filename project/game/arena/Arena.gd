@@ -81,6 +81,7 @@ func _ready():
 	if Debug.get_setting("use_debug_cam"):
 		activate_debug_cam()
 	setup_inventory_layer(player)
+	_setup_mission()
 
 
 func _input(event):
@@ -424,6 +425,7 @@ func _on_mecha_died(mecha):
 	else:
 		if mecha.last_damage_source.name == "Player":
 			player_kills.append(mecha.mecha_name)
+			MissionManager.report_kill()
 			print(player_kills)
 		mecha.queue_free()
 
@@ -455,6 +457,7 @@ func _on_player_trigger_entered(trigger):
 		call(trigger)
 
 func _on_player_mech_extracted(playerMech):
+	MissionManager.report_extraction()
 	if is_tutorial:
 		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 	else:
@@ -537,3 +540,10 @@ func _on_IntroAnimation_animation_ending():
 func tutorial1():
 	var tutorial_text = PlayerHUD.get_node("SubViewportContainer/SubViewport/Tutorial")
 	tutorial_text.play("t1")
+	
+func _setup_mission() -> void:
+	var mission = MissionData.new()
+	mission.mission_name = "Survive and Extract"
+	mission.add_objective("kill", "Eliminate enemies", 3)
+	mission.add_objective("extract", "Extract from the arena", 1)
+	MissionManager.start_mission(mission)

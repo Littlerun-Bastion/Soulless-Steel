@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://vcg8kxal1y2i"]
+
+[node name="MessengerUI" type="Node2D"]
+
+[node name="Sidebar" type="Panel" parent="."]
+anchors_preset = -1
+anchor_right = 0.25
+anchor_bottom = 1.0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ConversationPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.25
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 40.0
+offset_bottom = 40.0

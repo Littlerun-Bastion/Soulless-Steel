@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://vcg8kxal1y2i"]
+[gd_scene load_steps=2 format=3 uid="uid://vcg8kxal1y2i"]
+
+[ext_resource type="Script" path="res://game/MessengerUI/messenger_ui.gd" id="1_guqmh"]
 
 [node name="MessengerUI" type="Node2D"]
+script = ExtResource("1_guqmh")
 
 [node name="Sidebar" type="Panel" parent="."]
 anchors_preset = -1
@@ -9,10 +12,56 @@ anchor_bottom = 1.0
 offset_right = 40.0
 offset_bottom = 40.0
 
+[node name="SidebarLayout" type="VBoxContainer" parent="Sidebar"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="AppTitle" type="Label" parent="Sidebar/SidebarLayout"]
+layout_mode = 2
+text = "\"MESSAGES\""
+
+[node name="ContactScroll" type="ScrollContainer" parent="Sidebar/SidebarLayout"]
+layout_mode = 2
+
+[node name="ContactList" type="VBoxContainer" parent="Sidebar/SidebarLayout/ContactScroll"]
+layout_mode = 2
+
 [node name="ConversationPanel" type="Panel" parent="."]
 anchors_preset = -1
 anchor_left = 0.25
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ConversationLayout" type="VBoxContainer" parent="ConversationPanel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ContactHeader" type="Panel" parent="ConversationPanel/ConversationLayout"]
+layout_mode = 2
+
+[node name="ContactName" type="Label" parent="ConversationPanel/ConversationLayout/ContactHeader"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "\"Select a contact\"
+
+
+"
+
+[node name="MessageScroll" type="ScrollContainer" parent="ConversationPanel/ConversationLayout"]
+layout_mode = 2
+
+[node name="MessageContainer" type="VBoxContainer" parent="ConversationPanel/ConversationLayout/MessageScroll"]
+layout_mode = 2
+
+[node name="ReplyPanel" type="Panel" parent="ConversationPanel/ConversationLayout"]
+layout_mode = 2
+
+[node name="ReplyOptions" type="VBoxContainer" parent="ConversationPanel/ConversationLayout/ReplyPanel"]
+layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0

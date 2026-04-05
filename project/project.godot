@@ -8,11 +8,15 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Soulless Steel"
 run/main_scene="res://game/start_menu/Intro.tscn"
-config/features=PackedStringArray("4.3")
+config/features=PackedStringArray("4.6")
 boot_splash/image="res://assets/images/splash.png"
 config/icon="res://assets/images/icons/ladder_icon.png"
 

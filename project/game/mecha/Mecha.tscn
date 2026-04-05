@@ -1566,8 +1566,13 @@ fixed_fps = 120
 local_coords = true
 
 [node name="CoreCollision" type="CollisionPolygon2D" parent="."]
+process_priority = -1
 visible = false
 polygon = PackedVector2Array(56.9801, -88.6696, 22.9802, -89.1696, 8.48015, -75.1696, -12.0198, -74.6696, -26.5198, -90.1696, -61.5199, -89.6696, -78.5199, -72.6696, -82.0199, -43.6697, -85.0199, 41.3303, -58.5199, 76.3304, -37.5199, 77.8304, -36.5199, 71.3304, -26.0198, 59.8303, 21.4802, 60.3303, 31.4802, 71.3304, 32.4801, 77.8304, 54.9801, 78.3304, 79.9801, 39.8303, 80.9801, 26.8303, 77.4801, -45.1697, 72.4801, -74.6696)
+
+[node name="HeadCollision" type="CollisionPolygon2D" parent="."]
+visible = false
+polygon = PackedVector2Array(-16.6674, -23, 16.3326, -23, 16.3326, 37, -16.6674, 37)
 
 [node name="ChassisSingleCollision" type="CollisionPolygon2D" parent="."]
 visible = false

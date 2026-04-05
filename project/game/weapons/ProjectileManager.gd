@@ -2,9 +2,9 @@ extends Node
 
 enum TYPE {INSTANT, REGULAR, COMPLEX}
 
-const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
-const COMPLEX = preload("res://game/weapons/ComplexProjectile.tscn")
-const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
+#const REGULAR = preload("res://game/weapons/RegularProjectile.tscn")
+#const COMPLEX = preload("res://game/weapons/ComplexProjectile.tscn")
+#const INSTANT = preload("res://game/weapons/InstantProjectile.tscn")
 const NUM_SIDES = 30
 
 func create(mecha, args, weapon):

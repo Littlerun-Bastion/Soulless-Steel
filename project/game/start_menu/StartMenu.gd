@@ -25,7 +25,8 @@ func _ready():
 	if Debug.get_setting("go_to_mode"):
 		await get_tree().process_frame
 		start_game(Debug.get_setting("go_to_mode"))
-
+		
+	_setup_test_contact()
 
 func _input(event):
 	if event is InputEventMouseMotion:
@@ -94,3 +95,20 @@ func _on_TestMode_pressed():
 func _on_Store_pressed():
 	AudioManager.play_sfx("confirm")
 	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
+
+func _setup_test_contact() -> void:
+	print("setting up test contact")
+	var contact = ContactData.new()
+	contact.name = "Lady Volk"
+	contact.add_message("Hey. I have a job for you.")
+	contact.add_message("Three targets. Extract alive.")
+	
+	var mission = MissionData.new()
+	mission.mission_name = "Lady Volk Contract"
+	mission.add_objective("kill", "Eliminate 3 targets", 3)
+	mission.add_objective("extract", "Extract from arena", 1)
+	
+	contact.add_reply_option("I'm in.", [], mission)
+	contact.add_reply_option("Not interested.")
+	print("contact added: ", contact.name)
+	MessengerUI.add_contact(contact)

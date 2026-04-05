@@ -9,12 +9,18 @@ var current_contact = null
 var contacts = []
 
 func _ready() -> void:
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	await get_tree().process_frame
+	size = get_viewport().get_visible_rect().size
 	hide()
+	await get_tree().process_frame
 
+	
 func toggle() -> void:
 	visible = not visible
 
 func add_contact(contact_data) -> void:
+	print("add_contact called: ", contact_data.name)
 	contacts.append(contact_data)
 	_build_contact_list()
 
@@ -64,3 +70,8 @@ func _on_reply_pressed(reply) -> void:
 	if reply.has("mission"):
 		MissionManager.start_mission(reply.mission)
 	_build_messages()
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_messenger"):
+		toggle()
+		get_viewport().set_input_as_handled()

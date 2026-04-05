@@ -2035,8 +2035,6 @@ func get_part_name_from_shape(shape_index: int) -> String:
 		return "chassis"
 	elif collision_node == $ChassisRightCollision:
 		return "chassis"
-	elif collision_node == $ShieldCollision:
-		return "shield"
 	else:
 		push_error("Unknown collision node: " + str(collision_node))
 		return "core"  # Fallback

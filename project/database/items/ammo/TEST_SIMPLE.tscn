@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://bgriqbbvaq7gm"]
 
-[ext_resource type="Script" path="res://database/parts/simple_projectile.gd" id="1_ildtu"]
+[ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_ildtu"]
 [ext_resource type="PackedScene" uid="uid://cpgbpt3ahxc7v" path="res://game/weapons/BallisticImpactMini.tscn" id="2_r5va5"]
 [ext_resource type="Texture2D" uid="uid://stgxl8nglmsh" path="res://assets/images/mechas/projectiles/bullet_small.png" id="3_5o1cd"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_2c7vc"]

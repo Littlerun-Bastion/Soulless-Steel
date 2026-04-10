@@ -1,35 +1,60 @@
-extends Control
+extends CanvasLayer
 
-@onready var contact_list: VBoxContainer = $Sidebar/SidebarLayout/ContactScroll/ContactList
-@onready var contact_name: Label = $ConversationPanel/ConversationLayout/ContactHeader/ContactName
-@onready var message_container: VBoxContainer = $ConversationPanel/ConversationLayout/MessageScroll/MessageContainer
-@onready var reply_options: VBoxContainer = $ConversationPanel/ConversationLayout/ReplyPanel/ReplyOptions
+@onready var contact_list: VBoxContainer = $Root/Sidebar/SidebarLayout/ContactScroll/ContactList
+@onready var contact_name: Label = $Root/ConversationPanel/ConversationLayout/ContactHeader/ContactName
+@onready var message_container: VBoxContainer = $Root/ConversationPanel/ConversationLayout/MessageScroll/MessageContainer
+@onready var reply_options: VBoxContainer = $Root/ConversationPanel/ConversationLayout/ReplyPanel/ReplyOptions
 
 var current_contact = null
 var contacts = []
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
 	await get_tree().process_frame
-	size = get_viewport().get_visible_rect().size
+	
+	var root = $Root
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.size = get_viewport().get_visible_rect().size
+	
+	var sidebar = $Root/Sidebar
+	var conversation = $Root/ConversationPanel
+	
+	# Sidebar takes left 25% of screen
+	sidebar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sidebar.anchor_right = 0.25
+	
+	# Conversation takes remaining 75%
+	conversation.set_anchors_preset(Control.PRESET_FULL_RECT)
+	conversation.anchor_left = 0.25
+	
+	var sidebar_style = StyleBoxFlat.new()
+	sidebar_style.bg_color = Color(0.1, 0.1, 0.1, 1.0)
+	sidebar.add_theme_stylebox_override("panel", sidebar_style)
+	
+	var conversation_style = StyleBoxFlat.new()
+	conversation_style.bg_color = Color(0.15, 0.15, 0.15, 1.0)
+	conversation.add_theme_stylebox_override("panel", conversation_style)
+	
 	hide()
 	await get_tree().process_frame
 
-	
 func toggle() -> void:
 	visible = not visible
 
-func add_contact(contact_data) -> void:
-	print("add_contact called: ", contact_data.name)
-	contacts.append(contact_data)
-	_build_contact_list()
+func add_contact(contact) -> void:
+	print("add_contact called: ", contact.name)
+	contacts.append(contact)
+	call_deferred("_build_contact_list")
 
 func _build_contact_list() -> void:
+	print("_build_contact_list called | contacts: ", contacts.size())
 	for child in contact_list.get_children():
 		child.queue_free()
 	for contact in contacts:
+		print("creating button for: ", contact.name)
 		var btn = Button.new()
 		btn.text = contact.name
+		btn.custom_minimum_size = Vector2(200, 50)
+		btn.add_theme_color_override("font_color", Color.WHITE)
 		btn.pressed.connect(_on_contact_pressed.bind(contact))
 		contact_list.add_child(btn)
 

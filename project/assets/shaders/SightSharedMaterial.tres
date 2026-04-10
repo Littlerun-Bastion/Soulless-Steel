@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://5om27vep062v"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://5om27vep062v"]
 
-[ext_resource type="Shader" path="res://assets/shaders/SightDistortion.gdshader" id="1_vivdb"]
+[ext_resource type="Shader" uid="uid://btcoqgbmf38fy" path="res://assets/shaders/SightDistortion.gdshader" id="1_vivdb"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_pqw0p"]
 noise_type = 0

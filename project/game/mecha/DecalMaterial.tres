@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dtahodx5h7l33"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dtahodx5h7l33"]
 
 [sub_resource type="Shader" id="1"]
 code = "shader_type canvas_item;
@@ -27,6 +27,6 @@ void fragment() {
 
 [resource]
 shader = SubResource("1")
-shader_parameter/offset = null
-shader_parameter/size = null
-shader_parameter/mask_size = null
+shader_parameter/offset = Vector2(0, 0)
+shader_parameter/size = Vector2(0, 0)
+shader_parameter/mask_size = Vector2(0, 0)

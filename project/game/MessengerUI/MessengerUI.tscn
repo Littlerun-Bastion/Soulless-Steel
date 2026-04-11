@@ -2,45 +2,43 @@
 
 [ext_resource type="Script" uid="uid://0cbc46h3rlcm" path="res://game/MessengerUI/messenger_ui.gd" id="1_guqmh"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fto"]
-bg_color = Color(0.360384, 0.692737, 0.287005, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_84gkw"]
-bg_color = Color(0.360784, 0.694118, 0.286275, 1)
-
 [node name="MessengerUI" type="CanvasLayer" unique_id=1110350460]
 layer = 100
 script = ExtResource("1_guqmh")
 
 [node name="Root" type="Control" parent="." unique_id=247382714]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Sidebar" type="Panel" parent="Root" unique_id=1239731008]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 0.25
 anchor_bottom = 1.0
-offset_right = 40.0
-offset_bottom = 40.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_u1fto")
 
 [node name="SidebarLayout" type="VBoxContainer" parent="Root/Sidebar" unique_id=1898971762]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="AppTitle" type="Label" parent="Root/Sidebar/SidebarLayout" unique_id=1319403955]
 layout_mode = 2
-text = "\"MESSAGES\""
+text = "CONTACTS"
 
 [node name="ContactScroll" type="ScrollContainer" parent="Root/Sidebar/SidebarLayout" unique_id=416486270]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="ContactList" type="VBoxContainer" parent="Root/Sidebar/SidebarLayout/ContactScroll" unique_id=1696779327]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ConversationPanel" type="Panel" parent="Root" unique_id=1032098065]
 layout_mode = 1
@@ -48,38 +46,44 @@ anchors_preset = -1
 anchor_left = 0.25
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 470.0
-offset_right = 510.0
-offset_bottom = 40.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_84gkw")
 
 [node name="ConversationLayout" type="VBoxContainer" parent="Root/ConversationPanel" unique_id=1051773250]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="ContactHeader" type="Panel" parent="Root/ConversationPanel/ConversationLayout" unique_id=1272357891]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="ContactName" type="Label" parent="Root/ConversationPanel/ConversationLayout/ContactHeader" unique_id=875232441]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "\"Select a contact\"
-
-
-"
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Messages"
 
 [node name="MessageScroll" type="ScrollContainer" parent="Root/ConversationPanel/ConversationLayout" unique_id=2038509073]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="MessageContainer" type="VBoxContainer" parent="Root/ConversationPanel/ConversationLayout/MessageScroll" unique_id=1237915499]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ReplyPanel" type="Panel" parent="Root/ConversationPanel/ConversationLayout" unique_id=34474439]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 
 [node name="ReplyOptions" type="VBoxContainer" parent="Root/ConversationPanel/ConversationLayout/ReplyPanel" unique_id=581336493]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

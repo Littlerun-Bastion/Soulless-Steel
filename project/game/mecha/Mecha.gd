@@ -100,8 +100,8 @@ signal made_sound
 @onready var RightChassisGlow = $Chassis/Right/Glow
 @onready var ChassisSprintGlow = $Chassis/SprintGlow
 
-@onready var mech_inventory: inventory
-var target_inventory: inventory = null
+@onready var mech_inventory: Inventory
+var target_inventory: Inventory = null
 #Particles
 @onready var Particle = {
 	"blood": [$ParticlesLayer1/Blood1, $ParticlesLayer1/Blood2, $ParticlesLayer1/Blood3],
@@ -315,7 +315,7 @@ func _ready():
 	global_rotation_degrees = randf_range(0, 360)
 	
 	if mech_inventory == null:
-		mech_inventory = inventory.new()
+		mech_inventory = Inventory.new()
 
 func _physics_process(dt):
 	if paused:
@@ -964,7 +964,7 @@ func set_core(part_name):
 	set_max_heat()
 	# CHANGED: replaced initialize_grid with resize_and_migrate to preserve items
 	if mech_inventory == null:
-		mech_inventory = inventory.new()
+		mech_inventory = Inventory.new()
 		var cargo = build.core.cargo_space  # MOVED: cargo declaration inside if block
 		mech_inventory.initialize_grid(cargo[0], cargo[1])
 	else:
@@ -1021,9 +1021,6 @@ func set_chassis(part_name):
 		movement_type = "free"
 		build.chassis = null
 		return
-		if PartManager == null:
-			push_error("PartManager is null!")
-			return
 	build.chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = build.chassis.weight_capacity
 	ChassisAmbientSFX.stream = build.chassis.ambient_sfx
@@ -2018,7 +2015,7 @@ func update_inventory_space():
 	var h = space[1]
 
 	if mech_inventory == null:
-		mech_inventory = inventory.new()
+		mech_inventory = Inventory.new()
 		mech_inventory.initialize_grid(w, h)
 	else:
 		mech_inventory.resize_and_migrate(w, h)

@@ -76,6 +76,9 @@ func _ready() -> void:
 	conversation_style.bg_color = Color(0.15, 0.15, 0.15, 1.0)
 	conversation.add_theme_stylebox_override("panel", conversation_style)
 
+	# Root should not block input when hidden
+	$Root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	# Rebuild contact list now that layout is correct
 	_build_contact_list()
 
@@ -83,6 +86,7 @@ func _ready() -> void:
 
 func toggle() -> void:
 	visible = not visible
+	$Root.mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
 
 func add_contact(contact) -> void:
 	print("add_contact called: ", contact.name)

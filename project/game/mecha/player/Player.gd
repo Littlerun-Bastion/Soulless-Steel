@@ -335,7 +335,7 @@ func _spawn_debug_target_inventory():
 	# If we already have a target inventory, just reuse it
 	print("TEST!")
 	if target_inventory == null:
-		target_inventory = Inventory.new()
+		target_inventory = inventory.new()
 		target_inventory.initialize_grid(6, 8)  # test size
 
 		# Load some test items – adjust paths to real ones in your project

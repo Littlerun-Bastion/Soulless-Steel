@@ -1,5 +1,5 @@
 extends Resource
-class_name Inventory
+class_name inventory
 
 @export var grid_width: int = 0
 @export var grid_height: int = 0

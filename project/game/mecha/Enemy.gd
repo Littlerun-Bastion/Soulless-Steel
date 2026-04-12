@@ -312,7 +312,6 @@ func set_danger():
 		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
-		queue_redraw()
 
 		if result:
 			var distance = self.global_position.distance_to(result.position)

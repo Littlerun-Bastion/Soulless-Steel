@@ -11,7 +11,7 @@ const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png"
 @onready var Trails = $Trails
 @onready var Smoke = $Smoke
 @onready var Flashes = $Flashes
-@onready var Explosions = $Trails
+@onready var Explosions = $Explosions
 @onready var ScrapParts = $ScrapParts
 @onready var PlayerHUD = $PlayerHUD
 @onready var GameOver = $GameOver
@@ -300,11 +300,6 @@ func player_ammo_set():
 
 func random_wind_sound():
 	pass
-#	var x = randf_range(-10000.00,10000.00)
-#	var y = randf_range(-10000.00,10000.00)
-#	var sound_pos = Vector2(x,y)
-	#var rand_wind = "small_shield_impact" + str((randi()%3) + 1)
-	#AudioManager.play_sfx(rand_wind, sound_pos, null, null, 2.5, 3000)
 
 
 func set_mechas_block_status(status):

@@ -44,7 +44,10 @@ func _get_stack_texture() -> Texture2D:
 
 	# 2) Mech part: resolve via PartManager
 	elif stack.kind == item_stack.ItemKind.PART:
-		res = stack.get_resource()
+		if stack.item != null:
+			res = stack.item
+		elif stack.item_type != "" and stack.item_id != "":
+			res = PartManager.get_part(stack.item_type, stack.item_id)
 
 	if res == null:
 		return null

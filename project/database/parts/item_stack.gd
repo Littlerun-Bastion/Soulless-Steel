@@ -35,13 +35,17 @@ func height_cells() -> int:
 
 
 func _get_size_from_item() -> Vector2i:
-	if item == null or not item.has_method("get"):
+	var source = item
+	# Parts are Node2Ds, not Resources — resolve via PartManager when item is null
+	if source == null and kind == ItemKind.PART and item_type != "" and item_id != "":
+		source = PartManager.get_part(item_type, item_id)
+	if source == null or not source.has_method("get"):
 		return Vector2i(1, 1)
 
 	# Prefer cargo_size if present, fall back to item_size
-	var v = item.get("cargo_size")
+	var v = source.get("cargo_size")
 	if v == null:
-		v = item.get("item_size")
+		v = source.get("item_size")
 
 	if typeof(v) == TYPE_VECTOR2I:
 		return v
@@ -52,11 +56,11 @@ func _get_size_from_item() -> Vector2i:
 	var w := 1
 	var h := 1
 
-	var w_prop = item.get("item_width")
+	var w_prop = source.get("item_width")
 	if typeof(w_prop) == TYPE_FLOAT or typeof(w_prop) == TYPE_INT:
 		w = int(w_prop)
 
-	var h_prop = item.get("item_height")
+	var h_prop = source.get("item_height")
 	if typeof(h_prop) == TYPE_FLOAT or typeof(h_prop) == TYPE_INT:
 		h = int(h_prop)
 

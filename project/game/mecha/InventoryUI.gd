@@ -600,7 +600,7 @@ func _get_part_slot_under_mouse() -> Node:
 		if slot is Control:
 			var c := slot as Control
 			if c.get_global_rect().has_point(mouse_pos):
-				if dragging_stack == null or slot.part_type == dragging_stack.part_type:
+				if dragging_stack == null or slot.part_type == dragging_stack.item_type:
 					return slot
 	return null
 
@@ -918,7 +918,7 @@ func _is_mouse_over_inventory() -> bool:
 func equip_part(slot: PartSlot, stack: item_stack, source_inventory: Inventory, origin_x: int, origin_y: int) -> bool:
 	if not can_customize or mecha_ref == null or main_inventory == null:
 		return false
-	if stack == null or stack.part_type != slot.part_type:
+	if stack == null or stack.item_type != slot.part_type:
 		return false
 
 	# 1) If something is already equipped, return it to stash if available, otherwise mech inventory
@@ -938,7 +938,7 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: Inventory, 
 	if source_inventory != null and origin_x >= 0 and origin_y >= 0:
 		source_inventory.remove_item_stack(stack)
 	# 3) Equip the new part
-	_set_mecha_part_for_slot(slot, stack.part_name)
+	_set_mecha_part_for_slot(slot, stack.item_id)
 	refresh_part_slots_from_mecha()
 	refresh()
 	return true
@@ -990,7 +990,8 @@ func unequip_part(slot: PartSlot):
 func make_part_stack(part_type: String, part_id: String, qty: int = 1) -> item_stack:
 	var s := item_stack.new()
 	s.kind = item_stack.ItemKind.PART
-	s.part_type = part_type      # must be one of the PartManager keys: "head", "core", "arm_weapon", etc.
-	s.part_name = part_id        # e.g. "Lancelot-Core"
+	s.item_category = "part"
+	s.item_type = part_type      # must be one of the PartManager keys: "head", "core", "arm_weapon", etc.
+	s.item_id = part_id          # e.g. "Lancelot-Core"
 	s.quantity = qty
 	return s

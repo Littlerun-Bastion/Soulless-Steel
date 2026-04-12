@@ -31,12 +31,12 @@ func _ready():
 
 
 func setup_nodes():
-	for node in MAX_SFX_NODES:
+	for node in range(MAX_SFX_NODES):
 		var player = AudioStreamPlayer.new()
 		player.stream = AudioStreamRandomizer.new()
 		player.bus = "SFX"
 		$SFXS.add_child(player)
-	for node in MAX_POS_SFX_NODES:
+	for node in range(MAX_POS_SFX_NODES):
 		var player = AudioStreamPlayer2D.new()
 		player.stream = AudioStreamRandomizer.new()
 		player.bus = "SFX"
@@ -171,7 +171,7 @@ func play_sfx(sfx_name: String, pos = false, override_pitch = false, override_db
 func get_sfx_duration(sfx_name: String):
 	if not SFXS.has(sfx_name):
 		push_error("Not a valid sfx name: " + sfx_name)
-	return SFXS[name].asset.get_length()
+	return SFXS[sfx_name].asset.get_length()
 
 
 func get_sfx_player(positional = false):

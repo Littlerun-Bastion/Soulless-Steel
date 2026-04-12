@@ -61,8 +61,8 @@ var leaderboards = {
 }
 
 
-var stash_inventory: inventory = null
-var mech_inventory: inventory = null
+var stash_inventory: Inventory = null
+var mech_inventory: Inventory = null
 
 func get_locale_idx(locale):
 	var idx = 0
@@ -120,11 +120,6 @@ func set_save_data(data):
 	
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
-		
-	if data.has("stash_inventory"):
-		stash_inventory = _inventory_from_dict(data["stash_inventory"])
-	else:
-		stash_inventory = null
 
 	if data.has("mech_inventory"):
 		mech_inventory = _inventory_from_dict(data["mech_inventory"])
@@ -228,28 +223,28 @@ func set_stat(type, value):
 #	
 #	FileManager.save_profile()
 
-func get_stash_inventory() -> inventory:
+func get_stash_inventory() -> Inventory:
 	if stash_inventory == null:
 		# If no stash exists, create one
-		stash_inventory = inventory.new()
+		stash_inventory = Inventory.new()
 		stash_inventory.grid_width = 8
 		stash_inventory.grid_height = 20
 		stash_inventory.initialize_grid(stash_inventory.grid_width, stash_inventory.grid_height)
 	return stash_inventory
 
-func set_stash_inventory(inv: inventory) -> void:
+func set_stash_inventory(inv: Inventory) -> void:
 	stash_inventory = inv
 
-func get_mech_inventory() -> inventory:
+func get_mech_inventory() -> Inventory:
 	if mech_inventory == null:
 		# If no mech inventory exists, create one
-		mech_inventory = inventory.new()
+		mech_inventory = Inventory.new()
 	return mech_inventory
 
 
-func set_mech_inventory(inv: inventory) -> void:
+func set_mech_inventory(inv: Inventory) -> void:
 	mech_inventory = inv
-func _inventory_to_dict(inv: inventory) -> Dictionary:
+func _inventory_to_dict(inv: Inventory) -> Dictionary:
 	if inv == null:
 		return {}  # represent "no inventory" as empty dict
 
@@ -292,7 +287,7 @@ func _inventory_to_dict(inv: inventory) -> Dictionary:
 	return data
 
 
-func _inventory_from_dict(data) -> inventory:
+func _inventory_from_dict(data) -> Inventory:
 	# Be defensive: old saves might have wrong types here.
 	if data == null:
 		return null
@@ -301,7 +296,7 @@ func _inventory_from_dict(data) -> inventory:
 	if data.is_empty():
 		return null
 
-	var inv := inventory.new()
+	var inv := Inventory.new()
 
 	var w: int = int(data.get("grid_width", 0))
 	var h: int = int(data.get("grid_height", 0))

@@ -259,7 +259,7 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
-		if current_target and is_instance_valid(current_target) and can_see_target(current_target):
+		if valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
@@ -312,7 +312,6 @@ func set_danger():
 		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
-		queue_redraw()
 
 		if result:
 			var distance = self.global_position.distance_to(result.position)

@@ -5,8 +5,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 
 # --- Data references ---
 
-@export var main_inventory: inventory            # primary inventory (mech)
-var other_inventory: inventory = null       # secondary inventory (stash/container/target)
+@export var main_inventory: Inventory            # primary inventory (mech)
+var other_inventory: Inventory = null       # secondary inventory (stash/container/target)
 
 @export var cell_scene: PackedScene         # scene for individual grid cells
 @export var item_scene: PackedScene         # scene for item UI panel
@@ -57,7 +57,7 @@ var dragging_stack: item_stack = null       # stack currently being dragged (dat
 var dragging_ui: ItemUI = null              # floating UI for dragged stack (art ghost)
 var drag_origin_x: int = -1                 # original origin cell (x) in source inventory
 var drag_origin_y: int = -1                 # original origin cell (y)
-var drag_source_inventory: inventory = null # which inventory the drag started from
+var drag_source_inventory: Inventory = null # which inventory the drag started from
 var drag_source_slot: Node = null           # which part slot the drag started from (if any)
 
 var drag_hover_x: int = -1                  # predicted origin cell X while dragging
@@ -68,7 +68,7 @@ var drag_preview: Panel = null              # transparent footprint outline
 var pan_scroll: ScrollContainer = null  # which scroll we're currently panning
 
 
-func setup_for_mecha(mecha: Mecha, target_inv: inventory = null) -> void:
+func setup_for_mecha(mecha: Mecha, target_inv: Inventory = null) -> void:
 	mecha_ref = mecha
 
 	# Hook the inventories
@@ -138,7 +138,7 @@ func refresh() -> void:
 # Layout helpers
 # ---------------------------------------------------------------------------
 
-func _update_grid_content_size_for(inv: inventory, content: Control) -> void:
+func _update_grid_content_size_for(inv: Inventory, content: Control) -> void:
 	if cell_size <= 0 or inv == null:
 		return
 	content.custom_minimum_size = Vector2(
@@ -147,7 +147,7 @@ func _update_grid_content_size_for(inv: inventory, content: Control) -> void:
 	)
 
 
-func _build_cells_for(inv: inventory, grid: GridContainer) -> void:
+func _build_cells_for(inv: Inventory, grid: GridContainer) -> void:
 	if inv == null:
 		return
 
@@ -165,7 +165,7 @@ func _build_cells_for(inv: inventory, grid: GridContainer) -> void:
 			grid.add_child(cell)
 
 
-func _layout_grid_border_for(inv: inventory, content: Control, border: Panel) -> void:
+func _layout_grid_border_for(inv: Inventory, content: Control, border: Panel) -> void:
 	"""
 	Size & center the border panel so it tightly wraps the active grid,
 	with a 1px gap between cells to visually form a grid.
@@ -193,7 +193,7 @@ func _layout_grid_border_for(inv: inventory, content: Control, border: Panel) ->
 	border.position = origin
 
 
-func _draw_items_for(inv: inventory, layer: Control) -> void:
+func _draw_items_for(inv: Inventory, layer: Control) -> void:
 	"""
 	Instantiate an ItemUI for each *origin* cell in `inv`, skipping
 	secondary cells and the stack currently being dragged.
@@ -336,7 +336,7 @@ func _start_drag() -> bool:
 	if info.is_empty():
 		return false
 
-	var inv: inventory = info["inventory"]
+	var inv: Inventory = info["inventory"]
 	var layer: Control = info["layer"]
 	if inv == null:
 		return false
@@ -518,7 +518,7 @@ func _finish_drag() -> void:
 		_end_drag_and_refresh()
 		return
 
-	var target_inv: inventory = info["inventory"]
+	var target_inv: Inventory = info["inventory"]
 	var target_origin_x := drag_hover_x
 	var target_origin_y := drag_hover_y
 
@@ -775,7 +775,7 @@ func _update_drag_visual_position() -> void:
 
 		return
 
-	var inv: inventory = info["inventory"]
+	var inv: Inventory = info["inventory"]
 	var layer: Control = info["layer"]
 
 	var local: Vector2 = layer.get_local_mouse_position()
@@ -846,7 +846,7 @@ func _update_hover_tooltip() -> void:
 			tooltip.hide()
 		return
 
-	var inv: inventory = info["inventory"]
+	var inv: Inventory = info["inventory"]
 	var layer: Control = info["layer"]
 	if inv == null:
 		if hover_stack != null:
@@ -911,11 +911,11 @@ func _is_mouse_over_inventory() -> bool:
 # source_inventory: which inventory it came from (or null if from a slot)
 # origin_x/origin_y: where in that inventory it came from (or -1 if from a slot)
 # Return true if equip succeeded, false to revert the drag.
-#func equip_part(slot: Node, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
+#func equip_part(slot: Node, stack: item_stack, source_inventory: Inventory, origin_x: int, origin_y: int) -> bool:
 #	print(slot, " -> ", stack.part_scene)
 #	return false
 	
-func equip_part(slot: PartSlot, stack: item_stack, source_inventory: inventory, origin_x: int, origin_y: int) -> bool:
+func equip_part(slot: PartSlot, stack: item_stack, source_inventory: Inventory, origin_x: int, origin_y: int) -> bool:
 	if not can_customize or mecha_ref == null or main_inventory == null:
 		return false
 	if stack == null or stack.part_type != slot.part_type:

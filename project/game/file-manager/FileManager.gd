@@ -32,6 +32,7 @@ func load_profile():
 			profile_file = FileAccess.open("user://profile.backup", FileAccess.READ)
 			if not profile_file:
 				push_error("Error trying to open debug profile whilst fixing errors:" + str(FileAccess.get_open_error()))
+				return
 			while profile_file.get_position() < profile_file.get_length():
 				# Get the saved dictionary from the next line in the save file
 				var test_json_conv = JSON.new()
@@ -43,6 +44,7 @@ func load_profile():
 				profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
 				if not profile_file:
 					push_error("Error trying to open original profile whilst fixing errors:" + str(FileAccess.get_open_error()))
+					return
 				while profile_file.get_position() < profile_file.get_length():
 					# Get the saved dictionary from the next line in the save file
 					var test_json_conv = JSON.new()
@@ -76,7 +78,7 @@ func load_profile():
 	profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
 	if not profile_file:
 		push_error("Error trying to open profile whilst loading:" + str(FileAccess.get_open_error()))
-		
+		return
 	while profile_file.get_position() < profile_file.get_length():
 		# Get the saved dictionary from the next line in the save file
 		var test_json_conv = JSON.new()
@@ -96,6 +98,7 @@ func save_profile():
 	backup_file = FileAccess.open("user://profile.backup", FileAccess.WRITE)
 	if not backup_file:
 		push_error("Error trying to open backup profile whilst saving:" + str(FileAccess.get_open_error()))
+		return
 	backup_file.store_line(JSON.stringify(profile_data))
 	backup_file.close()
 	
@@ -104,6 +107,7 @@ func save_profile():
 	profile_file = FileAccess.open("user://profile.save", FileAccess.WRITE)
 	if not profile_file:
 		push_error("Error trying to open profile whilst saving:" + str(FileAccess.get_open_error()))
+		return
 	profile_file.store_line(JSON.stringify(profile_data))
 	profile_file.close()
 	
@@ -131,7 +135,7 @@ func save_mecha_design(mecha, design_name):
 	design_file = FileAccess.open("user://mecha_designs/"+design_name+".design", FileAccess.WRITE)
 	if not design_file:
 		push_error("Error trying to create design file whilst saving: " + str(FileAccess.get_open_error()))
-	
+		return
 	var data = mecha.get_design_data()
 	design_file.store_line(JSON.stringify(data))
 	design_file.close()
@@ -146,7 +150,7 @@ func load_mecha_design(design_name):
 	design_file = FileAccess.open("user://mecha_designs/"+design_name+".design", FileAccess.READ)
 	if not design_file:
 		push_error("Error trying to load mecha design file: " + str(FileAccess.get_open_error()))
-	
+		return false
 	var data = false
 	while design_file.get_position() < design_file.get_length():
 		var test_json_conv = JSON.new()

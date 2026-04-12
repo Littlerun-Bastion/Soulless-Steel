@@ -3,7 +3,7 @@ extends Control
 @onready var player_mecha: Mecha = $Mecha
 @onready var inventory_ui: InventoryUI = $MarginContainer/VBoxContainer/MarginContainer/InventoryUI
 
-var stash_inventory: Inventory = null  # player’s stash / hangar inventory
+var stash_inventory: inventory = null  # player’s stash / hangar inventory
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
@@ -18,7 +18,7 @@ func _ready() -> void:
 
 	var core_size := _get_core_inventory_size()
 
-	var mech_inv: Inventory = Profile.get_mech_inventory()
+	var mech_inv: inventory = Profile.get_mech_inventory()
 
 	if mech_inv.grid_width == 0 or mech_inv.grid_height == 0 or mech_inv.grid.is_empty():
 		# First-time setup
@@ -79,6 +79,6 @@ func _unhandled_input(event):
 		if ok:
 			print("Debug: spawned test item into mech inventory.")
 		else:
-			print("Debug: Inventory full, could not add test item.")
+			print("Debug: inventory full, could not add test item.")
 		inventory_ui.refresh()
 		get_viewport().set_input_as_handled()

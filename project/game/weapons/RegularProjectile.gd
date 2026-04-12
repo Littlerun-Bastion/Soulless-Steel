@@ -38,6 +38,10 @@ func _process(dt):
 	lifetime += dt
 	speed *= decaying_speed_ratio
 	position += dir*speed*dt
+	# --- keeping this as an option because it's cool, but honestly i want a better missile tracking script that more accurately reflects missile trajectory
+	
+	
+	
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, $LifeTimer.time_left)
 

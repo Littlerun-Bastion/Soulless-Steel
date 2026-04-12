@@ -944,10 +944,6 @@ func equip_part(slot: PartSlot, stack: item_stack, source_inventory: Inventory, 
 	return true
 
 
-#stack.part_type exists and matches slot.part_type — adjust the type check if your field names differ
-#source_inventory.remove_stack_at(origin_x, origin_y) — swap for whatever your removal method is called
-#_set_mecha_part_for_slot(slot, stack.part_scene) — same signature as in unequip_part but passing the scene instead of null
-
 # Called when a part slot is clicked with no item being dragged.
 # Should:
 #   - unequip that slot from the mech

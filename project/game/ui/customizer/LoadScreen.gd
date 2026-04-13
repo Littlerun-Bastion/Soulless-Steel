@@ -9,7 +9,7 @@ extends Control
 @onready var ChipsetName = $PanelContainer3/ScrollContainer/VBoxContainer/ChipsetName
 @onready var ThrusterName = $PanelContainer3/ScrollContainer/VBoxContainer/ThrusterName
 @onready var RightArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
-@onready var LeftArmName = $PanelContainer3/ScrollContainer/VBoxContainer/RightArmName
+@onready var LeftArmName = $PanelContainer3/ScrollContainer/VBoxContainer/LeftArmName
 @onready var RightShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/RightShoulderName
 @onready var LeftShoulderName = $PanelContainer3/ScrollContainer/VBoxContainer/LeftShoulderName
 

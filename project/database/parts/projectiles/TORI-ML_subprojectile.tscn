@@ -1,6 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://bgw617u1kxuks"]
+[gd_scene format=3 uid="uid://bgw617u1kxuks"]
 
-[ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_aa3uh"]
+[ext_resource type="Script" uid="uid://cefle3ia86hev" path="res://database/parts/complex_projectile.gd" id="1_aa3uh"]
 [ext_resource type="PackedScene" uid="uid://bdbpomvxlpkr1" path="res://game/weapons/ShapedChargeImpact.tscn" id="2_d673h"]
 [ext_resource type="Texture2D" uid="uid://b6ymcg8kxavpl" path="res://assets/images/mechas/projectiles/TORI-ML_subprojectile.png" id="2_kxg8j"]
 [ext_resource type="PackedScene" uid="uid://cxuvx8yooiwc2" path="res://database/parts/projectiles/TORI-ML_subsubprojectile.tscn" id="3_bhwa3"]
@@ -10,7 +10,7 @@
 [sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1
 
-[node name="Projectile" type="Area2D" groups=["projectile"]]
+[node name="Projectile" type="Area2D" unique_id=729765372 groups=["projectile"]]
 collision_layer = 2
 script = ExtResource("1_aa3uh")
 type = 2
@@ -22,6 +22,7 @@ release_aligned = false
 inherit_velocity = true
 impact_effect = ExtResource("2_d673h")
 trail = ExtResource("3_i84w3")
+base_damage = 1
 stage_max_speed = Array[int]([4450])
 stage_min_speed = Array[int]([400])
 stage_acceleration = Array[float]([400.0])
@@ -41,27 +42,27 @@ payload_subprojectile = ExtResource("3_bhwa3")
 payload_subprojectile_count = 4
 payload_subprojectile_spread = 10.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=153492]
 texture = ExtResource("2_kxg8j")
 
-[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D" unique_id=1915918311]
 material = SubResource("1")
 position = Vector2(0, 9)
 scale = Vector2(5, 5)
 texture = ExtResource("3_oqupc")
 
-[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="." unique_id=482739456]
 polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835)
 
-[node name="Fuse" type="Area2D" parent="."]
+[node name="Fuse" type="Area2D" parent="." unique_id=1819588641]
 
-[node name="FuseSensor" type="CollisionShape2D" parent="Fuse"]
+[node name="FuseSensor" type="CollisionShape2D" parent="Fuse" unique_id=1480241309]
 
-[node name="Explosion" type="Area2D" parent="."]
+[node name="Explosion" type="Area2D" parent="." unique_id=1296266956]
 
-[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion"]
+[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion" unique_id=2007560256]
 
-[node name="LifeTimer" type="Timer" parent="."]
+[node name="LifeTimer" type="Timer" parent="." unique_id=1443843055]
 
 [connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
 [connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]

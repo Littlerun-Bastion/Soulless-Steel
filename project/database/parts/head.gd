@@ -16,6 +16,10 @@ extends Node2D
 @export var weight := 1.0 
 @export var tags :Array[String] = ["head"]
 @export var item_size := [3,3]
+@export var front_armor := 1
+@export var side_armor := 1
+@export var rear_armor := 1
+
 
 var part_id
 

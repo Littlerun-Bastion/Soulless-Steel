@@ -57,4 +57,5 @@ func get_map(map_name):
 	return MAPS[map_name].instantiate()
 	
 func refresh_exhibition():
-	exhibitioner_count = randi_range(2, 5)
+	pass #disabled rn due to testing
+	#exhibitioner_count = randi_range(2, 5)

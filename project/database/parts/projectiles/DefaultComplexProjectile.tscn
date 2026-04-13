@@ -1,13 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://c2dreacxcacj6"]
+[gd_scene format=3 uid="uid://c2dreacxcacj6"]
 
-[ext_resource type="Script" path="res://database/parts/complex_projectile.gd" id="1_smont"]
+[ext_resource type="Script" uid="uid://cefle3ia86hev" path="res://database/parts/complex_projectile.gd" id="1_smont"]
 [ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="3_w0rh8"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_157bv"]
 
 [sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1
 
-[node name="Projectile" type="Area2D" groups=["projectile"]]
+[node name="Projectile" type="Area2D" unique_id=1320964958 groups=["projectile"]]
 collision_layer = 2
 script = ExtResource("1_smont")
 projectile_size = 0.3
@@ -20,30 +20,30 @@ stage_seeker_angle = Array[float]([360.0])
 fuse_timer = 10.0
 fuse_detection_type = "IR"
 fuse_angle = 20.0
-payload_explosion_damage = 1e+08
+payload_explosion_damage = 100000000.0
 payload_explosion_force = 2000.0
 payload_explosion_radius = 500.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=385501998]
 texture = ExtResource("3_w0rh8")
 
-[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D" unique_id=1342782957]
 material = SubResource("1")
 scale = Vector2(5, 5)
 texture = ExtResource("4_157bv")
 
-[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="." unique_id=1718310205]
 polygon = PackedVector2Array(-4.32346, -47.4287, 4.496, -46.7987, 6.75, -22, 2.29095, 34.5872, -2.5, 34.5, -7.87352, -22.5835)
 
-[node name="Fuse" type="Area2D" parent="."]
+[node name="Fuse" type="Area2D" parent="." unique_id=969966652]
 
-[node name="FuseSensor" type="CollisionShape2D" parent="Fuse"]
+[node name="FuseSensor" type="CollisionShape2D" parent="Fuse" unique_id=1116609209]
 
-[node name="Explosion" type="Area2D" parent="."]
+[node name="Explosion" type="Area2D" parent="." unique_id=308168948]
 
-[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion"]
+[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion" unique_id=913371235]
 
-[node name="LifeTimer" type="Timer" parent="."]
+[node name="LifeTimer" type="Timer" parent="." unique_id=654754352]
 
 [connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
 [connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]

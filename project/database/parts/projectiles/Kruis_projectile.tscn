@@ -1,6 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://ch1amgk1txlw0"]
+[gd_scene format=3 uid="uid://ch1amgk1txlw0"]
 
-[ext_resource type="Script" path="res://database/parts/SimpleProjectile.gd" id="1_plrux"]
+[ext_resource type="Script" uid="uid://bf08i7brg6xnh" path="res://database/parts/SimpleProjectile.gd" id="1_plrux"]
 [ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_6srrv"]
 [ext_resource type="Texture2D" uid="uid://bujemkm1hns71" path="res://assets/images/mechas/projectiles/bullet_large.png" id="3_xx18n"]
 [ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="4_e1fqv"]
@@ -8,7 +8,7 @@
 [sub_resource type="CanvasItemMaterial" id="1"]
 blend_mode = 1
 
-[node name="Projectile" type="Area2D" groups=["projectile"]]
+[node name="Projectile" type="Area2D" unique_id=1281245762 groups=["projectile"]]
 collision_layer = 2
 script = ExtResource("1_plrux")
 projectile_size = 1.2
@@ -16,26 +16,26 @@ light_energy = 0.1
 muzzle_speed = 22350
 impact_effect = ExtResource("2_6srrv")
 hitstop = true
-base_damage = 4100
+base_damage = 2
 shield_mult = 0.5
 dropoff_modifier = 0.9
 heat_damage = 0.0
 impact_force = 8.0
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1799669135]
 position = Vector2(0, 47.5)
 scale = Vector2(1, 1.89623)
 texture = ExtResource("3_xx18n")
 
-[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D" unique_id=273799659]
 material = SubResource("1")
 scale = Vector2(5, 5)
 texture = ExtResource("4_e1fqv")
 
-[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="." unique_id=2108022506]
 polygon = PackedVector2Array(-6, -37, 4, -37, 4, 15, -5, 15)
 
-[node name="LifeTimer" type="Timer" parent="."]
+[node name="LifeTimer" type="Timer" parent="." unique_id=609601044]
 
 [connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
 [connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

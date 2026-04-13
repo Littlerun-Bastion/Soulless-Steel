@@ -1,11 +1,11 @@
-[gd_scene load_steps=14 format=3 uid="uid://bust0c0ifrdf8"]
+[gd_scene format=3 uid="uid://bust0c0ifrdf8"]
 
 [ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://jiqpsq2g84m8" path="res://assets/images/mechas/cores/head_slot_rusty.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://boyvxsjn08acl" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_rleg_main.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://bjaftgx1ldlk1" path="res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png" id="5"]
-[ext_resource type="Script" path="res://database/parts/core.gd" id="6"]
+[ext_resource type="Script" uid="uid://bcaqcgxt35lmw" path="res://database/parts/core.gd" id="6"]
 [ext_resource type="Texture2D" uid="uid://duyw7tgkibmtg" path="res://assets/images/mechas/shoulders/Percival/percival_rshoulder_main.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://bwk68n8asmj8e" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_main.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="9"]
@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://coovjnchgwjnp" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" id="12"]
 [ext_resource type="Texture2D" uid="uid://bekdvtn4rrh6v" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" id="13"]
 
-[node name="Part" type="Node"]
+[node name="Part" type="Node" unique_id=1822267096]
 script = ExtResource("6")
 part_name = "Crawler C-type"
 manufacturer_name = "Nomhoyi Superheavy"
@@ -30,99 +30,99 @@ has_left_shoulder = true
 has_right_shoulder = true
 weight = 38.2
 
-[node name="LeftChassisOffset" type="Marker2D" parent="."]
+[node name="LeftChassisOffset" type="Marker2D" parent="." unique_id=1347084067]
 position = Vector2(-30, 50)
 
-[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftChassisOffset" unique_id=453990097]
 texture = ExtResource("5")
 
-[node name="RightChassisOffset" type="Marker2D" parent="."]
+[node name="RightChassisOffset" type="Marker2D" parent="." unique_id=957843021]
 position = Vector2(30, 50)
 
-[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightChassisOffset" unique_id=676005031]
 texture = ExtResource("4")
 
-[node name="HeadPort" type="Sprite2D" parent="."]
+[node name="HeadPort" type="Sprite2D" parent="." unique_id=190355752]
 position = Vector2(0.5, -32)
 texture = ExtResource("3")
 
-[node name="CoreSub" type="Sprite2D" parent="."]
+[node name="CoreSub" type="Sprite2D" parent="." unique_id=971690107]
 texture = ExtResource("10")
 
-[node name="Core" type="Sprite2D" parent="."]
+[node name="Core" type="Sprite2D" parent="." unique_id=1533231376]
 texture = ExtResource("8")
 
-[node name="CoreGlow" type="Sprite2D" parent="."]
+[node name="CoreGlow" type="Sprite2D" parent="." unique_id=654554774]
 modulate = Color(1, 1, 1, 0.556863)
 texture = ExtResource("12")
 
-[node name="OverheatOffset1" type="Marker2D" parent="."]
+[node name="OverheatOffset1" type="Marker2D" parent="." unique_id=992439398]
 position = Vector2(-13, 27)
 
-[node name="OverheatOffset2" type="Marker2D" parent="."]
+[node name="OverheatOffset2" type="Marker2D" parent="." unique_id=216932800]
 position = Vector2(13, 27)
 
-[node name="OverheatOffset3" type="Marker2D" parent="."]
+[node name="OverheatOffset3" type="Marker2D" parent="." unique_id=835449979]
 position = Vector2(-13, 47)
 
-[node name="OverheatOffset4" type="Marker2D" parent="."]
+[node name="OverheatOffset4" type="Marker2D" parent="." unique_id=2026738084]
 position = Vector2(13, 47)
 
-[node name="LeftArmWeaponOffset" type="Marker2D" parent="."]
+[node name="LeftArmWeaponOffset" type="Marker2D" parent="." unique_id=786287115]
 position = Vector2(-50, -23)
 
-[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftArmWeaponOffset" unique_id=104340907]
 visible = false
 texture = ExtResource("9")
 offset = Vector2(4, -36)
 
-[node name="RightArmWeaponOffset" type="Marker2D" parent="."]
+[node name="RightArmWeaponOffset" type="Marker2D" parent="." unique_id=1713480327]
 position = Vector2(50, -23)
 
-[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightArmWeaponOffset" unique_id=2068996917]
 visible = false
 scale = Vector2(-1, 1)
 texture = ExtResource("9")
 offset = Vector2(4, -36)
 
-[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="."]
+[node name="LeftShoulderWeaponOffset" type="Marker2D" parent="." unique_id=952250264]
 visible = false
 position = Vector2(-30, 17)
 
-[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderWeaponOffset" unique_id=980014981]
 texture = ExtResource("1")
 offset = Vector2(-9, -23)
 
-[node name="RightShoulderWeaponOffset" type="Marker2D" parent="."]
+[node name="RightShoulderWeaponOffset" type="Marker2D" parent="." unique_id=1419138292]
 visible = false
 position = Vector2(30, 17)
 
-[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderWeaponOffset" unique_id=1568333656]
 scale = Vector2(-1, 1)
 texture = ExtResource("1")
 offset = Vector2(-9, -23)
 
-[node name="HeadOffset" type="Marker2D" parent="."]
+[node name="HeadOffset" type="Marker2D" parent="." unique_id=1558798656]
 position = Vector2(0, -31)
 
-[node name="RefCounted" type="Sprite2D" parent="HeadOffset"]
+[node name="RefCounted" type="Sprite2D" parent="HeadOffset" unique_id=1610543708]
 visible = false
 texture = ExtResource("2")
 
-[node name="LeftShoulderOffset" type="Marker2D" parent="."]
+[node name="LeftShoulderOffset" type="Marker2D" parent="." unique_id=541530534]
 position = Vector2(-52, -20)
 
-[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="LeftShoulderOffset" unique_id=1031327063]
 visible = false
 texture = ExtResource("11")
 
-[node name="RightShoulderOffset" type="Marker2D" parent="."]
+[node name="RightShoulderOffset" type="Marker2D" parent="." unique_id=1828978201]
 position = Vector2(52, -20)
 
-[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset"]
+[node name="RefCounted" type="Sprite2D" parent="RightShoulderOffset" unique_id=1289387804]
 visible = false
 texture = ExtResource("7")
 
-[node name="Collision" type="Polygon2D" parent="."]
+[node name="Collision" type="Polygon2D" parent="." unique_id=1096496692]
 color = Color(1, 0, 0, 0.176471)
 polygon = PackedVector2Array(-12.4567, -93.1351, 13.5143, -92.9845, 38.2378, -80.3799, 55.0961, -50.4451, 54.288, 4.0407, 26.7734, 32.7394, 24.6869, 79.4633, 12.5548, 93.8849, -10.75, 94.0625, -22.8839, 81.3138, -25.0608, 32.8339, -54.1881, 3.78829, -53.4519, -49.6244, -36.4007, -81.1214)

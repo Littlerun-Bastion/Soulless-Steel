@@ -1,12 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://tyhqvnk4uq6f"]
+[gd_scene format=3 uid="uid://tyhqvnk4uq6f"]
 
-[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1"]
+[ext_resource type="Script" uid="uid://bxaywic386yj8" path="res://database/parts/chassis.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cc3bh2j2ui212" path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_glow.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://dmfbxyx36xaqo" path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_main.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://dq4kurgdfb0ut" path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_sub.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://boxxlmlvo8lut" path="res://assets/images/mechas/legs/Crawler C-type/Crawler_C-type_chassis_pv.png" id="5"]
 
-[node name="Part" type="Node"]
+[node name="Part" type="Node" unique_id=592039817]
 script = ExtResource("1")
 part_name = "Crawler C-type Chassis"
 manufacturer_name = "Nomhoyi Superheavy"
@@ -26,23 +26,24 @@ move_heat = 44
 weight = 31.0
 weight_capacity = 152.5
 stability = 100.0
+subcomponents = Array[Dictionary]([{}])
 
-[node name="SingleSide" type="Node2D" parent="."]
+[node name="SingleSide" type="Node2D" parent="." unique_id=1131957177]
 
-[node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
+[node name="ChassisSub" type="Sprite2D" parent="SingleSide" unique_id=1617639942]
 texture = ExtResource("4")
 
-[node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="SingleSide" unique_id=1265412820]
 texture = ExtResource("2")
 
-[node name="Chassis" type="Sprite2D" parent="SingleSide"]
+[node name="Chassis" type="Sprite2D" parent="SingleSide" unique_id=1149655942]
 texture = ExtResource("3")
 
-[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide" unique_id=147583529]
 polygon = PackedVector2Array(-69.2272, -97.7903, 69.3075, -98.6812, 69.4336, 86.5356, 32.1506, 87.9514, 22.2399, 99.2779, -22.1222, 99.2779, -32.5048, 87.4795, -70.2598, 87.4795)
 
-[node name="RightSide" type="Node2D" parent="."]
+[node name="RightSide" type="Node2D" parent="." unique_id=324629986]
 position = Vector2(46, 0)
 
-[node name="LeftSide" type="Node2D" parent="."]
+[node name="LeftSide" type="Node2D" parent="." unique_id=1475497632]
 position = Vector2(-16, 0)

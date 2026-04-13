@@ -20,6 +20,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var tags :Array[String] = ["shoulder"]
 @export var item_size := [4,4]
 
+@export var front_armor := 1
+@export var side_armor := 1
+@export var rear_armor := 1
+
 var part_id
 
 func get_image(side):

@@ -1,8 +1,7 @@
-[gd_resource type="ParticleProcessMaterial" load_steps=7 format=3 uid="uid://cx2ecgkt0ia6a"]
+[gd_resource type="ParticleProcessMaterial" format=3 uid="uid://cx2ecgkt0ia6a"]
 
 [sub_resource type="Curve" id="7"]
-min_value = -87.0
-max_value = 0.0
+_limits = [-87.0, 0.0, 0.0, 1.0]
 _data = [Vector2(0, -86.8023), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
 point_count = 2
 
@@ -31,6 +30,7 @@ emission_ring_axis = Vector3(0, 0, 1)
 emission_ring_height = 10.0
 emission_ring_radius = 10.0
 emission_ring_inner_radius = 0.0
+emission_ring_cone_angle = 90.0
 angle_min = -720.0
 angle_max = 720.0
 spread = 180.0

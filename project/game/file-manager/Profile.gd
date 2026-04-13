@@ -273,8 +273,8 @@ func _inventory_to_dict(inv: Inventory) -> Dictionary:
 			entry["kind"] = stack.kind  # just store the enum integer
 
 			if stack.kind == item_stack.ItemKind.PART:
-				entry["part_type"] = stack.part_type
-				entry["part_name"] = stack.part_name
+				entry["part_type"] = stack.item_type
+				entry["part_name"] = stack.item_id
 			else:
 				var path := ""
 				if stack.item != null and stack.item.resource_path != "":

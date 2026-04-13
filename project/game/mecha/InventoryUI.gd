@@ -234,11 +234,10 @@ func _draw_items_for(inv: Inventory, layer: Control) -> void:
 			var size_x := w * slot_w + (w - 1) * sep_x
 			var size_y := h * slot_h + (h - 1) * sep_y
 
+			layer.add_child(ui)
 			ui.position = Vector2(pos_x, pos_y)
 			ui.custom_minimum_size = Vector2(size_x, size_y)
-			ui.size = ui.custom_minimum_size
-
-			layer.add_child(ui)
+			ui.size = Vector2(size_x, size_y)
 			ui.set_stack(stack)
 
 

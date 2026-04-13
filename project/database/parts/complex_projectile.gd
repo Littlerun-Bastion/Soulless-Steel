@@ -35,8 +35,8 @@ signal create_trail
 @export var texture_variations = []
 @export var light_energy:= 0.5
 @export var muzzle_speed:= 400
-@export var life_time = -1.0 #-1 means it won't disappear
-@export var life_time_var = 0.0 #How much to vary from base life_time
+@export var life_time = -1.0
+@export var life_time_var = 0.0
 @export var random_rotation := false
 @export var release_aligned := true
 @export var momentum_corrected := false
@@ -50,9 +50,10 @@ signal create_trail
 #---TRAILS AND IMPACTS---#
 @export var smoke_density = 500
 @export var smoke_lifetime = 10.0
-#---DAMAGE---#
 
-@export var 	base_damage := 100
+#---DAMAGE---#
+@export var base_damage := 1
+@export var armor_pen := 1
 @export var health_mult := 1.0
 @export var shield_mult := 1.0
 @export var dropoff_modifier := 0.8 
@@ -60,59 +61,51 @@ signal create_trail
 @export var status_damage := 0.0
 @export var status_type : String
 @export var impact_force := 0.0
+@export var damage_tags :Array[String] = []
 
 #----COMPLEX PROJECTILE BEHAVIOURS----#
 
 #---PROPULSION---#
 @export var stages := 1
-@export var stage_max_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_min_speed :Array[int] = [0] ##Max Speed: Maximum possible speed the projectile can accelerate to.
-@export var stage_acceleration :Array[float] = [0] ##Acceleration: Amount speed is increased by per second..
-@export var stage_deceleration :Array[float] = [0] ##Acceleration: Amount speed is increased by per second.
-@export var stage_thrust_delay :Array[float] = [0.0] ##Thrust Delay: Number of seconds before Acceleration is applied.
-@export var stage_turn_rate :Array[float] = [0.0] ##Turn Rate: Number of degrees per second a projectile can turn by if it is tracking a target.
-@export var stage_wiggle_amount :Array[float] = [0.0] ##Wiggle Amount: Maximum number of degrees a projectile can turn off its course.
-@export var stage_wiggle_freq :Array[float] = [0.0] ##Wiggle Freq: Number of wiggles per second (based on cosine).
-@export var stage_wiggle_err :Array[float] = [0.0] ##Wiggle Err: Randomness of wiggles by percentage.
-@export var stage_seeker_type :Array[String] = ["IR"] ##Seeker Type: Detection method the projectile will use to see if it is allowed to track a target./
-	## (IR: based on mecha_heat, RCS: based on mecha rcs (not implemented), Laser: based on the endpoint of a raycast from player's mech to the direction of the target (not implemented))
-@export var stage_seeker_delay :Array[float] = [0.0] ##Seeker Delay: Time in seconds before the stage of that seeker kicks in.
-@export var stage_seeker_angle :Array[float] = [0.0] ##Seeker Angle: Angle beyond which the seeker will not chase the target.
-
+@export var stage_max_speed :Array[int] = [0]
+@export var stage_min_speed :Array[int] = [0]
+@export var stage_acceleration :Array[float] = [0]
+@export var stage_deceleration :Array[float] = [0]
+@export var stage_thrust_delay :Array[float] = [0.0]
+@export var stage_turn_rate :Array[float] = [0.0]
+@export var stage_wiggle_amount :Array[float] = [0.0]
+@export var stage_wiggle_freq :Array[float] = [0.0]
+@export var stage_wiggle_err :Array[float] = [0.0]
+@export var stage_seeker_type :Array[String] = ["IR"]
+@export var stage_seeker_delay :Array[float] = [0.0]
+@export var stage_seeker_angle :Array[float] = [0.0]
 
 #---FUSE---#
-@export var fuse_arm_time := 0.0 ##Time in seconds before the projectile can impact an object or deploy its 'payload'
-@export var fuse_timer := 3.0 ##Time in seconds (after fuse arm time) until the projectile deploys its 'payload'
-@export var fuse_proximity_distance := 0.0 ##Distance at which the projectile detects an enemy.
-@export var fuse_detection_type : String ##Detection method the projectile uses to see if it is allowed to deploy its 'payload'.
-@export var fuse_angle := 360.0 ##Angle beyond which the projectile no longer detects enemies to trigger the fuse.
-@export var fuse_is_contact_enabled := true ##Whether or not the projectile can directly hit a mecha. If false, projectile will fly past a mecha.
+@export var fuse_arm_time := 0.0
+@export var fuse_timer := 3.0
+@export var fuse_proximity_distance := 0.0
+@export var fuse_detection_type : String
+@export var fuse_angle := 360.0
+@export var fuse_is_contact_enabled := true
 
 #---PAYLOAD---#
-@export var payload_explosion : Resource ##Visual effect for the explosion.
-@export var payload_explosion_damage := 0.0 ##Total damage of the explosion.
-@export var payload_explosion_shield_mult := 1.0 ##Shield damage multiplier of explosion.
-@export var payload_explosion_health_mult := 1.0 ##Health damage multiplier of explosion.
-@export var payload_explosion_heat_damage := 0.0 ##Heat damage of explosion.
-@export var payload_explosion_status_damage := 0.0 ##Amount of status explosion inflicts.
-@export var payload_explosion_status_type : String ##Explosion status type.
-@export var payload_explosion_force := 0.0 ##Amount of knockback explosion performs against a target.
-@export var payload_explosion_radius := 0.0 ##Distance from impact center an explosion hits a target.
-@export var payload_explosion_angle := 360.0 ##Angle from center an explosion hits.
-@export var payload_explosion_hitstop := false ##Hitstop of explosion in seconds.
-@export var payload_subprojectile : PackedScene ##What subprojectile the payload spawns.
-@export var payload_subprojectile_count := 0 ##How many subprojectiles the payload spawns.
-@export var payload_subprojectile_spread := 0.0 #In degrees
-@export var payload_subprojectile_rate := 0.0 #Time taken to release each subprojectile
-
-
+@export var payload_explosion : Resource
+@export var payload_explosion_damage := 0.0
+@export var payload_explosion_shield_mult := 1.0
+@export var payload_explosion_health_mult := 1.0
+@export var payload_explosion_heat_damage := 0.0
+@export var payload_explosion_status_damage := 0.0
+@export var payload_explosion_status_type : String
+@export var payload_explosion_force := 0.0
+@export var payload_explosion_radius := 0.0
+@export var payload_explosion_angle := 360.0
+@export var payload_explosion_hitstop := false
+@export var payload_subprojectile : PackedScene
+@export var payload_subprojectile_count := 0
+@export var payload_subprojectile_spread := 0.0
+@export var payload_subprojectile_rate := 0.0
 
 var args
-#weapon_data - reference to the weapon
-#projectile - the projectile packed scene
-#pos - global position of the bullet at time of firing
-#dir - direction of the weapon's aim point
-#seeker_target - locked target
 var original_mecha_info
 var part_id	
 var seeker_target
@@ -169,12 +162,24 @@ func _physics_process(dt):
 		wiggle_error_lifetime = 0
 		cur_wiggle_err = randf_range(-wiggle_amount * wiggle_err,wiggle_amount * wiggle_err)
 	
+	# Raycast movement - but ONLY for terrain, not mechas
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(position, position + (velocity*dt))
 	query.exclude = [self]
 	var result = space_state.intersect_ray(query)
+	
 	if result and result.collider:
-		position = result.position
+		var is_mecha = result.collider.is_in_group("mecha")
+		
+		# Always pass through mechas - let body_shape_entered handle them
+		if is_mecha:
+			position += velocity*dt
+		else:
+			# Stop for non-mecha obstacles (walls, terrain) and die
+			position = result.position
+			speed = 0
+			die(result.collider)
+			return
 	else:
 		position += velocity*dt
 	
@@ -197,7 +202,6 @@ func _physics_process(dt):
 			else:
 				fuse(null, body, null, null)
 				
-
 func setup(mecha, _args, _weapon):
 	if random_rotation:
 		$Image.rotation_degrees = randf_range(0,360)
@@ -234,81 +238,145 @@ func setup(mecha, _args, _weapon):
 	
 	instance_trail()
 
+# Handle mecha hits detected by raycast
+func handle_mecha_raycast_hit(body, collision_point: Vector2):
+	# Find which part was hit
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = collision_point
+	query.collide_with_bodies = true
+	query.collision_mask = self.collision_mask
+	
+	var results = space_state.intersect_point(query, 10)
+	var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
+	var best_part = "core"
+	var best_priority = 999
+	
+	for result in results:
+		if result.collider == body:
+			var part_name = body.get_part_name_from_shape(result.shape)
+			var priority = priority_order.find(part_name)
+			if priority != -1 and priority < best_priority:
+				best_priority = priority
+				best_part = part_name
+	
+	# Armor check (no deflection for complex projectiles)
+	var pen_result = body.armor_check(
+		best_part,
+		collision_point,
+		dir,
+		armor_pen,
+		base_damage
+	)
+	
+	# Complex projectiles always penetrate or stop - no deflection
+	if pen_result.penetrated:
+		body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+	
+	# Always impact and die regardless of penetration
+	body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
+	emit_signal("bullet_impact", self, impact_effect, false, body)
+	
+	if not is_overtime and impact_force > 0.0:
+		body.knockback(impact_force, dir, true)
+	
+	speed = 0
+	has_impacted = true
+	die(body)
+
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if body.is_in_group("mecha"):
 		if body.is_shape_id_chassis(body_shape_id) or not fuse_is_contact_enabled:
 			return
 		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
-			var shape = body.get_shape_from_id(body_shape_id)
-			var shape_polygon
-			if shape is CollisionShape2D:
-				shape_polygon = ProjectileManager.generate_circle_polygon(shape.shape.radius, shape.global_position)
-			else:
-				shape_polygon = shape.polygon
-			var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
-																	shape_polygon, shape.global_transform)
-			
-			var collision_point
-			if points.size() > 0:
-				collision_point = points[0]
-			else:
-				collision_point = global_position
-			
-			#Raycast to see which is the best possible part to hit.
-			var size = Vector2(40,40)
-			var space_state = get_world_2d().direct_space_state
-			var query = PhysicsPointQueryParameters2D.new()
-			query.position = collision_point
-			query.collide_with_bodies = true
-			query.collision_mask = self.collision_mask
-			
-			var results = space_state.intersect_point(query, 10)		
-			var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
-			var best_part = "core"
-			var best_priority = 999
-			
-			for result in results:
-				if result.collider == body:
-					var part_name = body.get_part_name_from_shape(result.shape)
-					var priority = priority_order.find(part_name)
-					if priority != -1 and priority < best_priority:
-						best_priority = priority
-						best_part = part_name
-			
-			print(best_part)
-			if not has_impacted:
-				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
-									status_damage, status_type, hitstop, original_mecha_info, part_id)
+			# Shield parry
 			if body.is_parrying and not is_overtime:
 				dir = -dir
 				rotation_degrees = rad_to_deg(dir.angle()) + 90
 				original_mecha_info.body = body
 				original_mecha_info.name = body.mecha_name
 				shield_hit = true
-			else:
-				body.add_decal(body_shape_id, collision_point, decal_type, size)
-				if body.is_shielding and not has_impacted and not fuse_is_contact_enabled:
-					var reflect_vector = global_position.direction_to(body.global_position)
-					dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
-					rotation_degrees = rad_to_deg(dir.angle()) + 90
-					original_mecha_info.body = body
-					original_mecha_info.name = body.mecha_name
-					shield_hit = true
-					emit_signal("bullet_impact", self, impact_effect, false, body)
-				elif not body.is_shielding:
-					emit_signal("bullet_impact", self, impact_effect, false, body)
-				has_impacted = true
-			if not is_overtime and impact_force > 0.0:
-				body.knockback(impact_force, dir, true)
-			mech_hit = true
+				return
 			
+			# Shield reflect
+			if body.is_shielding and not has_impacted and not fuse_is_contact_enabled:
+				var reflect_vector = global_position.direction_to(body.global_position)
+				dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
+				rotation_degrees = rad_to_deg(dir.angle()) + 90
+				original_mecha_info.body = body
+				original_mecha_info.name = body.mecha_name
+				shield_hit = true
+				emit_signal("bullet_impact", self, impact_effect, false, body)
+				return
+			
+			# NEW: Full armor check on body_shape_entered
+			if not has_impacted:
+				var shape = body.get_shape_from_id(body_shape_id)
+				var shape_polygon
+				if shape is CollisionShape2D:
+					shape_polygon = ProjectileManager.generate_circle_polygon(shape.shape.radius, shape.global_position)
+				else:
+					shape_polygon = shape.polygon
+				var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
+																		shape_polygon, shape.global_transform)
+				
+				var collision_point
+				if points.size() > 0:
+					collision_point = points[0]
+				else:
+					collision_point = global_position
+				
+				# Find which part was hit
+				var space_state = get_world_2d().direct_space_state
+				var query = PhysicsPointQueryParameters2D.new()
+				query.position = collision_point
+				query.collide_with_bodies = true
+				query.collision_mask = self.collision_mask
+				
+				var results = space_state.intersect_point(query, 10)
+				var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
+				var best_part = "core"
+				var best_priority = 999
+				
+				for result in results:
+					if result.collider == body:
+						var part_name = body.get_part_name_from_shape(result.shape)
+						var priority = priority_order.find(part_name)
+						if priority != -1 and priority < best_priority:
+							best_priority = priority
+							best_part = part_name
+				
+				# Armor check
+				var pen_result = body.armor_check(
+					best_part,
+					collision_point,
+					dir,
+					armor_pen,
+					base_damage
+				)
+				
+				# Complex projectiles always penetrate or stop - no deflection
+				if pen_result.penetrated:
+					body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+				
+				# Always impact and die
+				body.add_decal(body_shape_id, collision_point, decal_type, Vector2(40, 40))
+				emit_signal("bullet_impact", self, impact_effect, false, body)
+				
+				if not is_overtime and impact_force > 0.0:
+					body.knockback(impact_force, dir, true)
+				
+				has_impacted = true
+				mech_hit = true
+	
+	# Hit non-mecha
 	if not body.is_in_group("mecha") or\
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		die(body)
-	
+
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
 		return $Image.texture
@@ -325,16 +393,12 @@ func die(body):
 	dying = true
 	if not is_overtime:
 		emit_signal("bullet_impact", self, impact_effect, true, body)
-
 	queue_free()
 
-
-#Workaround since RigidBody3D can't have its scale changed
 func change_scaling(sc):
 	var vec = Vector2(sc,sc)
 	$Sprite2D.scale = vec
 	$CollisionShape2D.scale = vec
-
 
 func get_propulsion_stage():
 	var cur_stage = 0
@@ -346,14 +410,11 @@ func get_propulsion_stage():
 		cur_stage += 1
 	return cur_stage
 
-
 func get_propulsion_var(var_name, stage):
 	var var_data = get("stage_"+var_name)
 	if var_data.size() >= stage:
 		return var_data[stage - 1]
-	#Return last position if cur stage doesn't exist
 	return var_data.back()
-
 
 func propulsion(dt):
 	var cur_stage = get_propulsion_stage()
@@ -382,7 +443,6 @@ func propulsion(dt):
 	elif cur_stage == 0:
 		speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, muzzle_min_speed)
 		velocity = (speed * true_dir) + inherited_velocity
-		
 
 func guidance(dt):
 	var cur_stage = get_propulsion_stage()
@@ -405,17 +465,14 @@ func guidance(dt):
 					is_seeking = true
 				else:
 					is_seeking = false
-	
 		"RCS":
 			rotation_degrees = rad_to_deg(dir.angle()) + 90
 			if seeker_target and is_instance_valid(seeker_target):
 				pass
-	
 		"Laser":
 			rotation_degrees = rad_to_deg(dir.angle()) + 90
 			if seeker_target and is_instance_valid(seeker_target):
 				pass
-	
 		_:
 			is_seeking = false
 	
@@ -449,11 +506,9 @@ func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
 					if result.collider.mecha_heat / result.collider.max_heat > 0.1:
 						payload()
 						return
-				
 				elif fuse_detection_type == "RCS":
 					payload()
 					return
-					
 				elif fuse_detection_type == "Magnetic":
 					payload()
 					return
@@ -500,23 +555,29 @@ func explosion():
 				var parts_hit = get_explosion_parts(hit_mecha, explosion_center, payload_explosion_radius)
 				
 				# Damage each part hit by the explosion
-				# Note: Explosions can hit multiple parts at once
 				for part_name in parts_hit:
-					hit_mecha.take_damage(payload_explosion_damage, payload_explosion_shield_mult, payload_explosion_health_mult, payload_explosion_heat_damage,\
-									payload_explosion_status_damage, payload_explosion_status_type, payload_explosion_hitstop, original_mecha_info, part_id)
-					print(part_name)
+					# Armor check for each part (explosions are AOE)
+					var pen_result = hit_mecha.armor_check(
+						part_name,
+						explosion_center,
+						ray,
+						armor_pen,
+						base_damage
+					)
+					
+					# AOE hits are external-only unless armor is stripped
+					if pen_result.penetrated:
+						hit_mecha.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+				
 				hit_mecha.knockback(payload_explosion_force, ray, true)
 	die(false)
 
-# Helper function to find all parts within explosion radius
 func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: float) -> Array:
 	var parts_hit = []
 	
-	# Query all shapes within the explosion radius
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsShapeQueryParameters2D.new()
 	
-	# Create a circle shape for the explosion area
 	var circle = CircleShape2D.new()
 	circle.radius = explosion_radius
 	query.shape = circle
@@ -526,7 +587,7 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 	
 	var results = space_state.intersect_shape(query, 10)
 	
-	var parts_found = {}  # Track unique parts hit
+	var parts_found = {}
 	
 	for result in results:
 		if result.collider == mecha:
@@ -543,13 +604,11 @@ func _on_explosion_body_entered(body):
 	if not explosion_targets.has(body):
 		explosion_targets.append(body)
 
-
 func _on_explosion_body_exited(body):
 	if not body.is_in_group("mecha"):
 		return
 	if explosion_targets.has(body):
 		explosion_targets.erase(body)
-
 
 func _on_fuse_body_shape_exited(_body_rid, body, _body_shape_index, _local_shape_index):
 	var in_range = $Fuse.get_overlapping_bodies()

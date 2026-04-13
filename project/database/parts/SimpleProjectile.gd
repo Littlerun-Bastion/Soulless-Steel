@@ -32,8 +32,8 @@ signal create_trail
 @export var texture_variations = []
 @export var light_energy:= 0.5
 @export var muzzle_speed:= 400
-@export var life_time = -1.0 #-1 means it won't disappear
-@export var life_time_var = 0.0 #How much to vary from base life_time
+@export var life_time = -1.0
+@export var life_time_var = 0.0
 @export var random_rotation := false
 
 @export var impact_effect : PackedScene
@@ -44,9 +44,10 @@ signal create_trail
 #---TRAILS AND IMPACTS---#
 @export var smoke_density = 200
 @export var smoke_lifetime = 10.0
-#---DAMAGE---#
 
-@export var base_damage := 100
+#---DAMAGE---#
+@export var base_damage := 1
+@export var armor_pen := 1
 @export var health_mult := 1.0
 @export var shield_mult := 1.0
 @export var dropoff_modifier := 0.8 
@@ -54,14 +55,9 @@ signal create_trail
 @export var status_damage := 0.0
 @export var status_type : String
 @export var impact_force := 0.0
-
+@export var damage_tags :Array[String] = []
 
 var args
-#weapon_data - reference to the weapon
-#projectile - the projectile packed scene
-#pos - global position of the bullet at time of firing
-#dir - direction of the weapon's aim point
-#seeker_target - locked target
 var original_mecha_info
 var part_id	
 var seeker_target
@@ -74,23 +70,52 @@ var shield_hit
 var final_damage = 0.0
 var distance = 0.0
 var has_impacted = false
+var deflection_cooldown = 0.0
+var deflected_from_body = null
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
 	Collision = get_node("CollisionShape2D")
 
-func _process(dt):
+func _physics_process(dt):
 	if dying:
 		return
 	lifetime += dt
 	
+	# Reduce deflection cooldown
+	if deflection_cooldown > 0:
+		deflection_cooldown -= dt
+		if deflection_cooldown <= 0:
+			deflected_from_body = null
+	
+	# Raycast movement to catch high-speed collisions
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt))
 	query.exclude = [self]
+	
 	var result = space_state.intersect_ray(query)
+	
 	if result and result.collider:
-		position = result.position
-		speed = 0
+		var is_mecha = result.collider.is_in_group("mecha")
+		var distance_to_hit = result.position.distance_to(position)
+		
+		# Ignore hits that are too close (self-collision)
+		if distance_to_hit < 15:
+			position += dir*speed*dt
+		# If we hit a mecha, manually trigger armor check
+		elif is_mecha and not has_impacted and deflection_cooldown <= 0:
+			position = result.position
+			if original_mecha_info and original_mecha_info.has("body") and result.collider != original_mecha_info.body:
+				handle_mecha_raycast_hit(result.collider, result.position)
+		# During cooldown, pass through mechas
+		elif is_mecha and deflection_cooldown > 0:
+			position += dir*speed*dt
+		else:
+			# Stop for non-mecha obstacles (walls, terrain) and die
+			position = result.position
+			speed = 0
+			die(result.collider)  # NEW: Die when hitting terrain
+			return  # NEW: Exit immediately
 	else:
 		position += dir*speed*dt
 		
@@ -99,7 +124,7 @@ func _process(dt):
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, ($LifeTimer.time_left/(life_time/4)))
-
+		
 func setup(mecha, _args, _weapon):
 	if random_rotation:
 		$Image.rotation_degrees = randf_range(0,360)
@@ -122,78 +147,146 @@ func setup(mecha, _args, _weapon):
 		$LifeTimer.autostart = true
 	
 	instance_trail()
+
+# Handle mecha hits detected by raycast
+func handle_mecha_raycast_hit(body, collision_point: Vector2):
+	# Find which part was hit
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = collision_point
+	query.collide_with_bodies = true
+	query.collision_mask = self.collision_mask
+	
+	var results = space_state.intersect_point(query, 10)
+	var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
+	var best_part = "core"
+	var best_priority = 999
+	
+	for result in results:
+		if result.collider == body:
+			var part_name = body.get_part_name_from_shape(result.shape)
+			var priority = priority_order.find(part_name)
+			if priority != -1 and priority < best_priority:
+				best_priority = priority
+				best_part = part_name
+	
+	# Armor check
+	var pen_result = body.armor_check(
+		best_part,
+		collision_point,
+		dir,
+		armor_pen,
+		base_damage
+	)
+	
+	# Handle deflection
+	if pen_result.has("deflection_type") and pen_result.deflection_type != "":
+		handle_deflection(body, collision_point, pen_result.deflection_type, best_part)
+		deflection_cooldown = 0.2
+		deflected_from_body = body
 		
+		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
+		emit_signal("bullet_impact", self, impact_effect, false, body)
+		
+		# Die after 0.5 seconds
+		var kill_timer = Timer.new()
+		add_child(kill_timer)
+		kill_timer.wait_time = 0.5
+		kill_timer.one_shot = true
+		kill_timer.timeout.connect(func(): die(body))
+		kill_timer.start()
+		return
+	
+	# If penetrated, damage and die
+	if pen_result.penetrated:
+		body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
+		emit_signal("bullet_impact", self, impact_effect, false, body)
+		
+		if not is_overtime and impact_force > 0.0:
+			body.knockback(impact_force, dir, true)
+		
+		speed = 0
+		has_impacted = true
+		die(body)
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
+	# This now only handles shields and parries, armor system uses raycast
 	if body.is_in_group("mecha"):
+		if deflection_cooldown > 0:
+			return
 		if body.is_shape_id_chassis(body_shape_id):
 			return
 		
 		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
-			var shape = body.get_shape_from_id(body_shape_id)
-			var collision_point
-			if shape is CollisionPolygon2D:
-				var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
-																		shape.polygon, shape.global_transform)
-				if points.size() > 0:
-					collision_point = points[0]
-				else:
-					collision_point = global_position
-			else:
-				collision_point = global_position
-				
-			#Raycast to see which is the best possible part to hit.
-			var size = Vector2(40,40)
-			var space_state = get_world_2d().direct_space_state
-			var query = PhysicsPointQueryParameters2D.new()
-			query.position = collision_point
-			query.collide_with_bodies = true
-			query.collision_mask = self.collision_mask
-			
-			var results = space_state.intersect_point(query, 10)		
-			var priority_order = ["head", "left_shoulder", "right_shoulder", "chassis", "core"]
-			var best_part = "core"
-			var best_priority = 999
-			
-			for result in results:
-				if result.collider == body:
-					var part_name = body.get_part_name_from_shape(result.shape)
-					var priority = priority_order.find(part_name)
-					if priority != -1 and priority < best_priority:
-						best_priority = priority
-						best_part = part_name			
-			if not has_impacted:
-				body.take_damage(final_damage, shield_mult, health_mult, heat_damage,\
-									status_damage, status_type, hitstop, original_mecha_info, part_id)
+			# Shield parry
 			if body.is_parrying and not is_overtime:
 				dir = -dir
 				rotation_degrees = rad_to_deg(dir.angle()) + 90
 				original_mecha_info.body = body
 				original_mecha_info.name = body.mecha_name
-			else:
-				body.add_decal(body_shape_id, collision_point, decal_type, size)
-				if body.is_shielding and not has_impacted:
-					var reflect_vector = global_position.direction_to(body.global_position)
-					dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
-					rotation_degrees = rad_to_deg(dir.angle()) + 90
-					original_mecha_info.body = body
-					original_mecha_info.name = body.mecha_name
-					shield_hit = true
-					speed = muzzle_speed
-					emit_signal("bullet_impact", self, impact_effect, false, body)
-				elif not body.is_shielding:
-					emit_signal("bullet_impact", self, impact_effect, false, body)
-				has_impacted = true
-			if not is_overtime and impact_force > 0.0:
-				body.knockback(impact_force, dir, true)
-			mech_hit = true
+				return
 			
+			# Shield reflect
+			if body.is_shielding and not has_impacted:
+				var reflect_vector = global_position.direction_to(body.global_position)
+				dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
+				rotation_degrees = rad_to_deg(dir.angle()) + 90
+				original_mecha_info.body = body
+				original_mecha_info.name = body.mecha_name
+				shield_hit = true
+				speed = muzzle_speed
+				emit_signal("bullet_impact", self, impact_effect, false, body)
+				return
+	
+	# Hit non-mecha
 	if not body.is_in_group("mecha") or\
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 		die(body)
-	
+
+func handle_deflection(body, collision_point: Vector2, deflection_type: String, hit_part: String):
+	match deflection_type:
+		"bounce":
+			var surface_normal = get_deflection_normal(body, collision_point, hit_part)
+			var base_reflect = dir.reflect(surface_normal)
+			var random_angle = randf_range(-45, 45)
+			dir = base_reflect.rotated(deg_to_rad(random_angle)).normalized()
+			rotation_degrees = rad_to_deg(dir.angle()) + 90
+			
+			# Restore speed if it was zeroed
+			if speed < muzzle_speed * 0.6:
+				speed = muzzle_speed * 0.6
+			else:
+				speed *= 0.6
+			
+			position += surface_normal * 50
+			has_impacted = false
+			
+		"glancing":
+			var surface_normal = get_deflection_normal(body, collision_point, hit_part)
+			var base_reflect = dir.reflect(surface_normal)
+			var random_angle = randf_range(-15, 15)
+			dir = base_reflect.rotated(deg_to_rad(random_angle)).normalized()
+			rotation_degrees = rad_to_deg(dir.angle()) + 90
+			
+			# Restore speed if it was zeroed
+			if speed < muzzle_speed * 0.85:
+				speed = muzzle_speed * 0.85
+			else:
+				speed *= 0.85
+			
+			position += surface_normal * 50
+			has_impacted = false
+
+func get_deflection_normal(body, collision_point: Vector2, hit_part: String) -> Vector2:
+	var collision_shape = body.get_collision_shape_for_part(hit_part)
+	if collision_shape:
+		return body.get_surface_normal_at_point(collision_point, collision_shape)
+	else:
+		return (collision_point - body.global_position).normalized()
+
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
 		return $Image.texture
@@ -210,14 +303,11 @@ func die(body):
 	dying = true
 	if not is_overtime:
 		emit_signal("bullet_impact", self, impact_effect, true, body)
-
 	queue_free()
 
 func _on_LifeTimer_timeout():
 	queue_free()
-	
 
-#Workaround since RigidBody3D can't have its scale changed
 func change_scaling(sc):
 	var vec = Vector2(sc,sc)
 	$Sprite2D.scale *= vec

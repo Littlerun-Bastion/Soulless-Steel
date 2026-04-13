@@ -30,6 +30,11 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var hover_particles := false
 @export var tags :Array[String] = ["chassis"]
 @export var item_size := [5,6]
+@export var subcomponents :Array[Dictionary]
+
+@export var front_armor := 1
+@export var side_armor := 1
+@export var rear_armor := 1
 
 var part_id
 

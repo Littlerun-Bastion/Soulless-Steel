@@ -287,6 +287,33 @@ var dash_cooldown = {
 	"right": 0.0,
 }
 
+var armor = {
+	"core": {
+		"front": {"level": 3, "pips": 3},
+		"side": {"level": 2, "pips": 3},
+		"rear": {"level": 1, "pips": 3}
+	},
+	"head": {
+		"front": {"level": 2, "pips": 3},
+		"side": {"level": 1, "pips": 3},
+		"rear": {"level": 1, "pips": 3}
+	},
+	"chassis": {
+		"front": {"level": 2, "pips": 3},
+		"side": {"level": 2, "pips": 3},
+		"rear": {"level": 1, "pips": 3}
+	},
+	"left_shoulder": {
+		"front": {"level": 2, "pips": 3},
+		"side": {"level": 1, "pips": 3},
+		"rear": {"level": 1, "pips": 3}
+	},
+	"right_shoulder": {
+		"front": {"level": 2, "pips": 3},
+		"side": {"level": 1, "pips": 3},
+		"rear": {"level": 1, "pips": 3}
+	},
+}
 
 var thruster_cooldown = 0.0
 
@@ -962,6 +989,11 @@ func set_core(part_name):
 	stability = get_stat("stability")
 	reset_offsets()
 	set_max_heat()
+	armor.core = {
+		"front": {"level": part_data.front_armor, "pips": 3},
+		"side": {"level": part_data.side_armor, "pips": 3},
+		"rear": {"level": part_data.rear_armor, "pips": 3}
+	}
 	# CHANGED: replaced initialize_grid with resize_and_migrate to preserve items
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
@@ -1020,6 +1052,11 @@ func set_chassis(part_name):
 		remove_chassis("pair")
 		movement_type = "free"
 		build.chassis = null
+		armor.chassis = {
+			"front": {"level": 0, "pips": 0},
+			"side": {"level": 0, "pips": 0},
+			"rear": {"level": 0, "pips": 0}
+		}
 		return
 	build.chassis = PartManager.get_part("chassis", part_name)
 	weight_capacity = build.chassis.weight_capacity
@@ -1027,6 +1064,13 @@ func set_chassis(part_name):
 	ChassisAmbientSFX.max_distance = build.chassis.ambient_sfx_max_distance
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.play()
+
+	armor.chassis = {
+		"front": {"level": 0, "pips": 0},
+		"side": {"level": 0, "pips": 0},
+		"rear": {"level": 0, "pips": 0}
+	}
+	
 	set_chassis_parts()
 	set_max_heat()
 
@@ -1088,11 +1132,21 @@ func set_head(part_name):
 		build.head = part_data
 		if build.core:
 			Head.position = build.core.get_head_offset()
+		armor.head = {
+			"front": {"level": part_data.front_armor, "pips": 3},
+			"side": {"level": part_data.side_armor, "pips": 3},
+			"rear": {"level": part_data.rear_armor, "pips": 3}
+		}
 	else:
 		Head.texture = null
 		HeadSub.texture = null
 		HeadGlow.texture = null
 		build.head = null
+		armor.head = {
+			"front": {"level": 0, "pips": 0},
+			"side": {"level": 0, "pips": 0},
+			"rear": {"level": 0, "pips": 0}
+		}
 	update_max_life_from_parts()
 	set_max_heat()
 
@@ -1101,6 +1155,16 @@ func set_shoulders(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("shoulders", part_name)
 		build.shoulders = part_data
+		armor.left_shoulder = {
+			"front": {"level": part_data.front_armor, "pips": 3},
+			"side": {"level": part_data.side_armor, "pips": 3},
+			"rear": {"level": part_data.rear_armor, "pips": 3}
+		}
+		armor.right_shoulder = {
+			"front": {"level": part_data.front_armor, "pips": 3},
+			"side": {"level": part_data.side_armor, "pips": 3},
+			"rear": {"level": part_data.rear_armor, "pips": 3}
+		}
 		if build.core:
 			$LeftShoulder.position = build.core.get_shoulder_offset(SIDE.LEFT)
 			$LeftShoulderCollision.position = build.core.get_shoulder_offset(SIDE.LEFT)
@@ -1116,6 +1180,16 @@ func set_shoulders(part_name):
 		build.shoulders = null
 		$LeftShoulder.texture = null
 		$RightShoulder.texture = null
+		armor.left_shoulder = {
+			"front": {"level": 0, "pips": 0},
+			"side": {"level": 0, "pips": 0},
+			"rear": {"level": 0, "pips": 0}
+		}
+		armor.right_shoulder = {
+			"front": {"level": 0, "pips": 0},
+			"side": {"level": 0, "pips": 0},
+			"rear": {"level": 0, "pips": 0}
+		}
 	update_max_shield_from_parts()
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
@@ -2056,3 +2130,163 @@ func get_part_name_from_shape(shape_index: int) -> String:
 	else:
 		push_error("Unknown collision node: " + str(collision_node))
 		return "core"  # Fallback
+
+func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir: Vector2, pen_level: int, damage_pips: int) -> Dictionary:
+	# Returns: {penetrated: bool, part_name: String, component_name: String, facing: String}
+	
+	# 1. Get global facing (front/side/rear of mech)
+	var facing = get_global_facing_from_angle(impact_position)
+	
+	# 2. Get armor for this part and facing
+	if not armor.has(hit_part_name):
+		push_error("Unknown part for armor: " + hit_part_name)
+		return {"penetrated": false, "part_name": "", "component_name": "", "facing": ""}
+	
+	var part_armor = armor[hit_part_name][facing]
+	var armor_level = part_armor.level
+	var armor_pips = part_armor.pips
+	
+	# 3. Get impact angle modifier
+	var collision_shape = get_collision_shape_for_part(hit_part_name)
+	var impact_angle = get_impact_angle(projectile_dir, impact_position, collision_shape)
+	
+	# 4. Calculate effective armor based on angle
+	var effective_armor = armor_level
+	if impact_angle > 60:
+		effective_armor += 1  # Glancing hit, harder to penetrate
+	elif impact_angle > 30:
+		# Angled hit, slight penalty
+		effective_armor += 0  # No change for medium angles
+	# else: perpendicular hit (<30°), use base armor
+	
+	# 5. Calculate penetration delta
+	var delta = pen_level - effective_armor
+	
+	# 6. Resolve armor vs penetration
+	var penetrated = false
+	var armor_pip_damage = 0
+	var deflection_type = "" 
+	
+	if delta <= -2:
+		# Heavily overmatched - bounce
+		penetrated = false
+		armor_pip_damage = 0
+		if randf() < 0.66:
+			deflection_type = "bounce"
+		print("BOUNCE! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
+	elif delta >= -1 and delta <= 0:
+		# Marginal/glancing
+		penetrated = false
+		if randf() < 0.33:
+			deflection_type = "glancing"
+		if randf() < (damage_pips / 3.0):
+			armor_pip_damage = 1
+		print("GLANCING! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
+	else:  # delta >= 1
+		# Penetration!
+		penetrated = true
+		armor_pip_damage = damage_pips
+		deflection_type = "" #No deflection on penetration, left empty
+		print("PENETRATED! Pen:", pen_level, " vs Armor:", effective_armor, " | Removed ", armor_pip_damage, " pips", " (angle:", impact_angle, "°)")
+	
+	# 7. Apply armor damage
+	armor[hit_part_name][facing].pips = max(armor_pips - armor_pip_damage, 0)
+	var facing_exposed = armor[hit_part_name][facing].pips == 0
+	
+	if facing_exposed:
+		print("ARMOR STRIPPED! ", hit_part_name, " ", facing, " facing exposed!")
+	
+	# 8. Select component to damage (if penetrated or exposed)
+	var selected_component = ""
+	if penetrated or facing_exposed:
+		var eligible = get_eligible_components(hit_part_name, facing, penetrated, false)
+		if eligible.size() > 0:
+			selected_component = select_component_by_weight(hit_part_name, eligible)
+			print("Component hit: ", selected_component)
+	
+	return {
+		"penetrated": penetrated or facing_exposed,
+		"part_name": hit_part_name,
+		"component_name": selected_component,
+		"facing": facing,
+		"deflection_type": deflection_type,
+	}
+	
+func get_global_facing_from_angle(impact_position: Vector2) -> String:
+	var to_impact = (impact_position - global_position).normalized()
+	var forward = Vector2(0, -1).rotated(global_rotation)
+	var angle = forward.angle_to(to_impact)
+	var deg = rad_to_deg(angle)
+	
+	if abs(deg) <= 45:
+		return "front"
+	elif abs(deg) >= 135:
+		return "rear"
+	else:
+		return "side"	
+	
+func get_collision_shape_for_part(part_name: String) -> CollisionPolygon2D:
+	match part_name:
+		"core":
+			return $CoreCollision
+		"head":
+			return $HeadCollision
+		"left_shoulder":
+			return $LeftShoulderCollision
+		"right_shoulder":
+			return $RightShoulderCollision
+		"chassis":
+			if $ChassisSingleCollision.polygon.size() > 0:
+				return $ChassisSingleCollision
+			else:
+				return $ChassisLeftCollision
+		_:
+			return $CoreCollision
+			
+func get_impact_angle(projectile_dir: Vector2, impact_position: Vector2, collision_shape: CollisionPolygon2D) -> float:
+	var surface_normal = get_surface_normal_at_point(impact_position, collision_shape)
+	var impact_angle = abs(rad_to_deg(projectile_dir.angle_to(surface_normal)))
+	return impact_angle
+	
+func get_surface_normal_at_point(point: Vector2, collision_polygon: CollisionPolygon2D) -> Vector2:
+	var polygon = collision_polygon.polygon
+	var transform = collision_polygon.global_transform
+	
+	# Find closest edge
+	var closest_edge_idx = -1
+	var closest_dist = INF
+	
+	for i in range(polygon.size()):
+		var p1 = transform * polygon[i]
+		var p2 = transform * polygon[(i + 1) % polygon.size()]
+		var dist = Geometry2D.get_closest_point_to_segment(point, p1, p2).distance_to(point)
+		
+		if dist < closest_dist:
+			closest_dist = dist
+			closest_edge_idx = i
+	
+	# Get edge normal
+	var p1 = transform * polygon[closest_edge_idx]
+	var p2 = transform * polygon[(closest_edge_idx + 1) % polygon.size()]
+	var edge = (p2 - p1).normalized()
+	var normal = Vector2(-edge.y, edge.x)
+	
+	return normal
+	
+	
+# Temporary stub - will implement properly when doing component damage
+func get_eligible_components(part_name: String, facing: String, penetrated: bool, is_aoe: bool) -> Array:
+	# TODO: Implement when adding component system
+	return []
+
+# Temporary stub - will implement properly when doing component damage
+func select_component_by_weight(part_name: String, eligible_components: Array) -> String:
+	# TODO: Implement when adding component system
+	return ""
+
+func damage_component(part_name: String, component_name: String, damage_pips: int):
+	print("=== COMPONENT DAMAGE ===")
+	print("Part: ", part_name)
+	print("Component: ", component_name)
+	print("Damage Pips: ", damage_pips)
+	print("========================")

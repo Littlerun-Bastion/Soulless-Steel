@@ -19,6 +19,9 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var tags :Array[String] = ["core"]
 @export var item_size := [4,6]
 @export var cargo_space := [6,8]
+@export var front_armor := 1
+@export var side_armor := 1
+@export var rear_armor := 1
 
 var part_id
 

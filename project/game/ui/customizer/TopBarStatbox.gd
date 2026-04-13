@@ -30,7 +30,7 @@ func set_comparing_part(mecha, diff_mecha):
 		var stat_value = mecha.get_stat(stat_name)
 		if stat_name.contains("speed"):
 			stat_value = round(stat_value / 15)
-			diff_stat_value - round(diff_stat_value / 15)
+			diff_stat_value = round(diff_stat_value / 15)
 			$ms.visible = true
 		else:
 			$ms.visible = false

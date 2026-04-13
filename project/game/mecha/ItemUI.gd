@@ -9,7 +9,7 @@ var cell_size: int = 48
 
 
 func _ready():
-	set_anchors_preset(Control.PRESET_TOP_LEFT)
+	set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	_setup_quantity_label_layout()
 

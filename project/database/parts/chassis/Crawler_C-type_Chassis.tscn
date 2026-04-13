@@ -26,7 +26,6 @@ move_heat = 44
 weight = 31.0
 weight_capacity = 152.5
 stability = 100.0
-subcomponents = Array[Dictionary]([{}])
 
 [node name="SingleSide" type="Node2D" parent="." unique_id=1131957177]
 

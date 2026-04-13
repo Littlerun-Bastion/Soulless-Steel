@@ -12,6 +12,22 @@ extends Node
 @export var image : Texture2D
 @export var item_size := [3,2]
 @export var is_indirect_fire := false
+@export var additional_components: Array[Dictionary] = [
+	#{ EXAMPLE OF ADDITIONAL COMPONENTS (do not delete)
+	#	"name": "core_shell",   OVERRIDE default
+	#	"hp": 3,               Heavier armor than default (3)
+	#	"max_hp": 3,
+	#	"tags": ["internal"],
+	#	"weight": 3.0          Bigger, easier to hit
+	#},
+	#{
+	#	"name": "shield_emitter",   NEW component
+	#	"hp": 2,
+	#	"max_hp": 2,
+	#	"tags": ["internal", "shield"],
+	#	"weight": 1.0
+	#}
+]
 
 @export_category("Muzzle Flash")
 @export var muzzle_flash : PackedScene

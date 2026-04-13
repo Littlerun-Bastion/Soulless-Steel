@@ -315,6 +315,26 @@ var armor = {
 	},
 }
 
+var components = {
+	"core": {},
+	"head": {},
+	"chassis": {},
+	"left_shoulder": {},
+	"right_shoulder": {},
+}
+
+# Track which systems are affected by destroyed components
+var disabled_systems = {
+	"left_arm_weapon": false,
+	"right_arm_weapon": false,
+	"left_shoulder_weapon": false,
+	"right_shoulder_weapon": false,
+	"mobility": 1.0,  # Multiplier, 1.0 = full, 0.0 = immobile
+	"sensors": 1.0,   # Affects lock-on and radar
+	"heat_dispersion": 1.0,  # Multiplier for generator heat dispersion
+	"shield_regen": 1.0,
+}
+
 var thruster_cooldown = 0.0
 
 var ecm_attempt_cooldown = 0.0
@@ -563,7 +583,9 @@ func set_parts_from_design(data):
 			callv("set_" + type, [data[part_name], side])
 		else:
 			callv("set_" + type, [data[part_name]])
-
+	
+	refresh_dynamic_components()
+	debug_print_components()
 
 func generate_passive_sounds(dt):
 	passive_sounds_timer = max(passive_sounds_timer - dt, 0.0)
@@ -940,7 +962,6 @@ func set_shoulder_weapon(part_name, side):
 	set_weapon_sfx_nodes(sfx_node, part_data)
 	set_max_heat()
 
-
 func set_weapon_sfx_nodes(sfx_node, part_data):
 	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
 	sfx_node.shoot_loop.max_distance = part_data.sound_max_range
@@ -989,11 +1010,40 @@ func set_core(part_name):
 	stability = get_stat("stability")
 	reset_offsets()
 	set_max_heat()
+	
+	# Initialize armor# In set_core(), replace the armor initialization:
 	armor.core = {
-		"front": {"level": part_data.front_armor, "pips": 3},
-		"side": {"level": part_data.side_armor, "pips": 3},
-		"rear": {"level": part_data.rear_armor, "pips": 3}
-	}
+		"front": {"level": part_data.front_armor if "front_armor" in part_data else 3, "pips": 3},
+		"side": {"level": part_data.side_armor if "side_armor" in part_data else 2, "pips": 3},
+		"rear": {"level": part_data.rear_armor if "rear_armor" in part_data else 1, "pips": 3}
+		}
+	
+	# Initialize components from defaults + part data
+	components.core = initialize_components("core", part_data)
+	
+	# Add wetware components (generator, chipset, thruster) if equipped
+	if build.generator:
+		components.core["generator"] = {
+			"hp": 3, "max_hp": 3,
+			"tags": ["internal"],
+			"weight": 1.0,
+			"disabled": false
+		}
+	if build.chipset:
+		components.core["chipset"] = {
+			"hp": 2, "max_hp": 2,
+			"tags": ["internal"],
+			"weight": 1.0,
+			"disabled": false
+		}
+	if build.thruster:
+		components.core["thruster"] = {
+			"hp": 3, "max_hp": 3,
+			"tags": ["internal"],
+			"weight": 1.0,
+			"disabled": false
+		}
+	
 	# CHANGED: replaced initialize_grid with resize_and_migrate to preserve items
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
@@ -1056,20 +1106,48 @@ func set_chassis(part_name):
 			"front": {"level": 0, "pips": 0},
 			"side": {"level": 0, "pips": 0},
 			"rear": {"level": 0, "pips": 0}
-		}
+		}	
 		return
-	build.chassis = PartManager.get_part("chassis", part_name)
+	var part_data = PartManager.get_part("chassis", part_name)
+	build.chassis = part_data
 	weight_capacity = build.chassis.weight_capacity
 	ChassisAmbientSFX.stream = build.chassis.ambient_sfx
 	ChassisAmbientSFX.max_distance = build.chassis.ambient_sfx_max_distance
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.play()
-
+		
+	# Initialize armor
 	armor.chassis = {
-		"front": {"level": 0, "pips": 0},
-		"side": {"level": 0, "pips": 0},
-		"rear": {"level": 0, "pips": 0}
+		"front": {"level": part_data.front_armor if "front_armor" in part_data else 3, "pips": 3},
+		"side": {"level": part_data.side_armor if "side_armor" in part_data else 2, "pips": 3},
+		"rear": {"level": part_data.rear_armor if "rear_armor" in part_data else 2, "pips": 3}
 	}
+	
+	# Initialize components
+	components.chassis = initialize_components("chassis", part_data)
+	
+	# Add movement-type specific components
+	match part_data.movement_type:
+		"legs":
+			components.chassis["left_leg_actuator"] = {
+				"hp": 2, "max_hp": 2,
+				"tags": ["internal", "mobility"],
+				"weight": 1.5,
+				"disabled": false
+			}
+			components.chassis["right_leg_actuator"] = {
+				"hp": 2, "max_hp": 2,
+				"tags": ["internal", "mobility"],
+				"weight": 1.5,
+				"disabled": false
+			}
+		"wheels", "tank":
+			components.chassis["tracks"] = {
+				"hp": 3, "max_hp": 3,
+				"tags": ["external", "mobility"],
+				"weight": 2.0,
+				"disabled": false
+			}
 	
 	set_chassis_parts()
 	set_max_heat()
@@ -1137,6 +1215,8 @@ func set_head(part_name):
 			"side": {"level": part_data.side_armor, "pips": 3},
 			"rear": {"level": part_data.rear_armor, "pips": 3}
 		}
+		# Initialize components
+		components.head = initialize_components("head", part_data)
 	else:
 		Head.texture = null
 		HeadSub.texture = null
@@ -1155,16 +1235,24 @@ func set_shoulders(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("shoulders", part_name)
 		build.shoulders = part_data
+		
+		# Initialize armor for both shoulders
 		armor.left_shoulder = {
-			"front": {"level": part_data.front_armor, "pips": 3},
-			"side": {"level": part_data.side_armor, "pips": 3},
-			"rear": {"level": part_data.rear_armor, "pips": 3}
+			"front": {"level": part_data.front_armor if "front_armor" in part_data else 2, "pips": 3},
+			"side": {"level": part_data.side_armor if "side_armor" in part_data else 1, "pips": 3},
+			"rear": {"level": part_data.rear_armor if "rear_armor" in part_data else 1, "pips": 3}
 		}
 		armor.right_shoulder = {
-			"front": {"level": part_data.front_armor, "pips": 3},
-			"side": {"level": part_data.side_armor, "pips": 3},
-			"rear": {"level": part_data.rear_armor, "pips": 3}
+			"front": {"level": part_data.front_armor if "front_armor" in part_data else 2, "pips": 3},
+			"side": {"level": part_data.side_armor if "side_armor" in part_data else 1, "pips": 3},
+			"rear": {"level": part_data.rear_armor if "rear_armor" in part_data else 1, "pips": 3}
 		}
+		
+		# Initialize components for both shoulders
+		components.left_shoulder = initialize_components("shoulders", part_data)
+		components.right_shoulder = initialize_components("shoulders", part_data)
+		
+
 		if build.core:
 			$LeftShoulder.position = build.core.get_shoulder_offset(SIDE.LEFT)
 			$LeftShoulderCollision.position = build.core.get_shoulder_offset(SIDE.LEFT)
@@ -2284,9 +2372,268 @@ func select_component_by_weight(part_name: String, eligible_components: Array) -
 	# TODO: Implement when adding component system
 	return ""
 
+# Returns default components for a given part type
+func get_default_components(part_type: String) -> Dictionary:
+	match part_type:
+		"core":
+			return {
+				"core_shell": {
+					"hp": 3, "max_hp": 3,
+					"tags": ["internal"],
+					"weight": 2.0,
+					"disabled": false
+				},
+				"radiator": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["external"],
+					"weight": 1.5,
+					"disabled": false
+				},
+				"cockpit": {
+					"hp": 1, "max_hp": 1,
+					"tags": ["internal"],
+					"weight": 0.5,
+					"disabled": false
+				},
+			}
+		
+		"head":
+			return {
+				"head_shell": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["internal"],
+					"weight": 1.5,
+					"disabled": false
+				},
+				"optics": {
+					"hp": 1, "max_hp": 1,
+					"tags": ["external"],
+					"weight": 2.0,
+					"disabled": false
+				},
+				"backup_optics": {
+					"hp": 1, "max_hp": 1,
+					"tags": ["external"],
+					"weight": 1.0,
+					"disabled": false
+				},
+				"comms_antenna": {
+					"hp": 1, "max_hp": 1,
+					"tags": ["external"],
+					"weight": 1.5,
+					"disabled": false
+				},
+			}
+		
+		"chassis":
+			return {
+				"chassis_shell": {
+					"hp": 3, "max_hp": 3,
+					"tags": ["internal"],
+					"weight": 2.0,
+					"disabled": false
+				},
+				"suspension": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["internal"],
+					"weight": 1.5,
+					"disabled": false
+				},
+				"thruster_nozzles": {
+					"hp": 1, "max_hp": 1,
+					"tags": ["external"],
+					"weight": 1.5,
+					"disabled": false
+				},
+			}
+		
+		"shoulders":
+			return {
+				"shoulder_shell": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["internal"],
+					"weight": 1.5,
+					"disabled": false
+				},
+				"arm_actuator": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["internal"],
+					"weight": 1.5,
+					"disabled": false
+				},
+			}
+		
+		_:
+			return {}
+
+func initialize_components(part_type: String, part_data) -> Dictionary:
+	# Start with defaults
+	var result = get_default_components(part_type)
+	
+	if "additional_components" in part_data:
+		var additional = part_data.additional_components
+		if additional != null and additional is Array:
+			for comp_data in additional:
+				result[comp_data.name] = {
+					"hp": comp_data.hp,
+					"max_hp": comp_data.max_hp,
+					"tags": comp_data.tags.duplicate(),
+					"weight": comp_data.weight,
+					"disabled": false
+				}
+	
+	return result
+
 func damage_component(part_name: String, component_name: String, damage_pips: int):
 	print("=== COMPONENT DAMAGE ===")
 	print("Part: ", part_name)
 	print("Component: ", component_name)
 	print("Damage Pips: ", damage_pips)
 	print("========================")
+	
+func refresh_dynamic_components():
+	# Refresh wetware components in core
+	if build.core:
+		# Remove old wetware if present
+		if components.core.has("generator"):
+			components.core.erase("generator")
+		if components.core.has("chipset"):
+			components.core.erase("chipset")
+		if components.core.has("thruster"):
+			components.core.erase("thruster")
+		
+		# Add current wetware
+		if build.generator:
+			components.core["generator"] = {
+				"hp": 3, "max_hp": 3,
+				"tags": ["internal"],
+				"weight": 1.0,
+				"disabled": false
+			}
+		if build.chipset:
+			components.core["chipset"] = {
+				"hp": 2, "max_hp": 2,
+				"tags": ["internal"],
+				"weight": 1.0,
+				"disabled": false
+			}
+		if build.thruster:
+			components.core["thruster"] = {
+				"hp": 3, "max_hp": 3,
+				"tags": ["internal"],
+				"weight": 1.0,
+				"disabled": false
+			}
+		
+		# NEW: Add shoulder weapon components to core
+		for weapon in [build.shoulder_weapon_left, build.shoulder_weapon_right]:
+			if weapon and "additional_components" in weapon:
+				for comp_data in weapon.additional_components:
+					components.core[comp_data.name] = {
+						"hp": comp_data.hp,
+						"max_hp": comp_data.max_hp,
+						"tags": comp_data.tags.duplicate(),
+						"weight": comp_data.weight,
+						"disabled": false
+					}
+	
+	# Refresh weapon feeds and arm weapon components in shoulders
+	if build.shoulders:
+		# Left shoulder
+		# First, remove all weapon-related components
+		var left_to_remove = []
+		for comp_name in components.left_shoulder:
+			var comp = components.left_shoulder[comp_name]
+			if "weapon" in comp.tags:
+				left_to_remove.append(comp_name)
+		for comp_name in left_to_remove:
+			components.left_shoulder.erase(comp_name)
+		
+		# Add weapon feed if arm weapon equipped
+		if build.arm_weapon_left:
+			components.left_shoulder["weapon_feed"] = {
+				"hp": 1, "max_hp": 1,
+				"tags": ["external", "weapon"],
+				"weight": 1.0,
+				"disabled": false
+			}
+			# NEW: Add arm weapon's additional components
+			if "additional_components" in build.arm_weapon_left:
+				for comp_data in build.arm_weapon_left.additional_components:
+					components.left_shoulder[comp_data.name] = {
+						"hp": comp_data.hp,
+						"max_hp": comp_data.max_hp,
+						"tags": comp_data.tags.duplicate(),
+						"weight": comp_data.weight,
+						"disabled": false
+					}
+		
+		# Right shoulder
+		var right_to_remove = []
+		for comp_name in components.right_shoulder:
+			var comp = components.right_shoulder[comp_name]
+			if "weapon" in comp.tags:
+				right_to_remove.append(comp_name)
+		for comp_name in right_to_remove:
+			components.right_shoulder.erase(comp_name)
+		
+		# Add weapon feed if arm weapon equipped
+		if build.arm_weapon_right:
+			components.right_shoulder["weapon_feed"] = {
+				"hp": 1, "max_hp": 1,
+				"tags": ["external", "weapon"],
+				"weight": 1.0,
+				"disabled": false
+			}
+			# NEW: Add arm weapon's additional components
+			if "additional_components" in build.arm_weapon_right:
+				for comp_data in build.arm_weapon_right.additional_components:
+					components.right_shoulder[comp_data.name] = {
+						"hp": comp_data.hp,
+						"max_hp": comp_data.max_hp,
+						"tags": comp_data.tags.duplicate(),
+						"weight": comp_data.weight,
+						"disabled": false
+					}
+
+func debug_print_components():
+	print("\n=== MECHA COMPONENT DEBUG ===")
+	print("Mecha: ", mecha_name)
+	print("\n--- ARMOR VALUES ---")
+	for part_name in armor.keys():
+		if armor[part_name].has("front"):  # Check if this part has armor
+			print(part_name.to_upper(), ":")
+			for facing in ["front", "side", "rear"]:
+				var armor_data = armor[part_name][facing]
+				print("  ", facing, ": Level ", armor_data.level, " | Pips ", armor_data.pips)
+	
+	print("\n--- COMPONENTS ---")
+	for part_name in components.keys():
+		if components[part_name].size() > 0:
+			print(part_name.to_upper(), ":")
+			var total_weight = 0.0
+			for comp_name in components[part_name]:
+				var comp = components[part_name][comp_name]
+				total_weight += comp.weight
+				var tags_str = ", ".join(comp.tags)
+				print("  ", comp_name, ": HP ", comp.hp, "/", comp.max_hp, 
+					  " | Weight ", comp.weight, " | Tags [", tags_str, "]", 
+					  " | Disabled: ", comp.disabled)
+			print("  TOTAL WEIGHT: ", total_weight)
+			
+			# Show probability percentages
+			print("  HIT CHANCES:")
+			for comp_name in components[part_name]:
+				var comp = components[part_name][comp_name]
+				var chance = (comp.weight / total_weight) * 100.0
+				print("    ", comp_name, ": ", "%.1f" % chance, "%")
+	
+	print("\n--- DISABLED SYSTEMS ---")
+	for system_name in disabled_systems.keys():
+		var value = disabled_systems[system_name]
+		if typeof(value) == TYPE_BOOL:
+			print(system_name, ": ", "OFFLINE" if value else "ONLINE")
+		else:  # Float multiplier
+			print(system_name, ": ", "%.1f" % (value * 100.0), "%")
+	
+	print("=============================\n")

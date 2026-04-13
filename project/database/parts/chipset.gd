@@ -23,6 +23,23 @@ extends Resource
 @export var weight := 1.0
 @export var tags :Array[String] = ["chipset"]
 @export var item_size := [2,2]
+@export var additional_components: Array[Dictionary] = [
+	#{ EXAMPLE OF ADDITIONAL COMPONENTS (do not delete)
+	#	"name": "core_shell",   OVERRIDE default
+	#	"hp": 3,               Heavier armor than default (3)
+	#	"max_hp": 3,
+	#	"tags": ["internal"],
+	#	"weight": 3.0          Bigger, easier to hit
+	#},
+	#{
+	#	"name": "shield_emitter",   NEW component
+	#	"hp": 2,
+	#	"max_hp": 2,
+	#	"tags": ["internal", "shield"],
+	#	"weight": 1.0
+	#}
+]
+
 
 var part_id
 

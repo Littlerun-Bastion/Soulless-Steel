@@ -173,7 +173,7 @@ func setup(player_ref, mechas_ref):
 	player.connect("finished_reloading",Callable(self,"update_cursor"))
 	player.connect("update_building_status",Callable(self,"_on_player_update_building_status"))
 	player.connect("component_damaged",Callable(self,"_on_component_damaged"))
-	player.connect("component_destroyed",Callable(self,"_on_component_destroyed"))
+	player.connect("component_destroyed_alert",Callable(self,"_on_component_destroyed"))
 	player.connect("cockpit_exposed",Callable(self,"_on_cockpit_exposed"))
 	player.connect("core_shell_destroyed",Callable(self,"_on_core_shell_destroyed"))
 	player.connect("flagged",Callable(self,"_on_flagged"))

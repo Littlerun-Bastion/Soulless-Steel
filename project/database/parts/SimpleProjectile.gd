@@ -188,7 +188,6 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
 		emit_signal("bullet_impact", self, impact_effect, false, body)
 		
-		# Die after 0.5 seconds
 		var kill_timer = Timer.new()
 		add_child(kill_timer)
 		kill_timer.wait_time = 0.5
@@ -197,9 +196,12 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		kill_timer.start()
 		return
 	
-	# If penetrated, damage and die
+	# If penetrated, damage component (if one was selected)
 	if pen_result.penetrated:
-		body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+		# NEW: Only damage component if one was actually selected
+		if pen_result.component_name != "":
+			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+		
 		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
 		emit_signal("bullet_impact", self, impact_effect, false, body)
 		

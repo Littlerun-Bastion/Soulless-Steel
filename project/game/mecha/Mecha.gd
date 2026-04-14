@@ -2261,7 +2261,7 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 		armor_pip_damage = 0
 		if randf() < 0.66:
 			deflection_type = "bounce"
-		print("BOUNCE! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
+		#print("BOUNCE! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
 	elif delta >= -1 and delta <= 0:
 		# Marginal/glancing
 		penetrated = false
@@ -2269,20 +2269,20 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 			deflection_type = "glancing"
 		if randf() < (damage_pips / 3.0):
 			armor_pip_damage = 1
-		print("GLANCING! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
+		#print("GLANCING! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
 	else:  # delta >= 1
 		# Penetration!
 		penetrated = true
 		armor_pip_damage = damage_pips
 		deflection_type = "" #No deflection on penetration, left empty
-		print("PENETRATED! Pen:", pen_level, " vs Armor:", effective_armor, " | Removed ", armor_pip_damage, " pips", " (angle:", impact_angle, "°)")
+		#print("PENETRATED! Pen:", pen_level, " vs Armor:", effective_armor, " | Removed ", armor_pip_damage, " pips", " (angle:", impact_angle, "°)")
 	
 	# 7. Apply armor damage
 	armor[hit_part_name][facing].pips = max(armor_pips - armor_pip_damage, 0)
 	var facing_exposed = armor[hit_part_name][facing].pips == 0
 	
-	if facing_exposed:
-		print("ARMOR STRIPPED! ", hit_part_name, " ", facing, " facing exposed!")
+	#if facing_exposed:
+	#	print("ARMOR STRIPPED! ", hit_part_name, " ", facing, " facing exposed!")
 	
 	# 8. Select component to damage (if penetrated or exposed)
 	var selected_component = ""
@@ -2362,15 +2362,58 @@ func get_surface_normal_at_point(point: Vector2, collision_polygon: CollisionPol
 	return normal
 	
 	
-# Temporary stub - will implement properly when doing component damage
-func get_eligible_components(part_name: String, facing: String, penetrated: bool, is_aoe: bool) -> Array:
-	# TODO: Implement when adding component system
-	return []
+func get_eligible_components(part_name: String, facing: String, penetrated: bool, is_aoe: bool = false) -> Array:
+	var eligible = []
+	
+	if not components.has(part_name):
+		return eligible
+	
+	for comp_name in components[part_name]:
+		var comp = components[part_name][comp_name]
+		
+		# Skip if already destroyed
+		if comp.disabled:
+			continue
+		
+		# Determine eligibility based on penetration and tags
+		if penetrated:
+			# Full penetration - can hit both internal and external
+			eligible.append(comp_name)
+		else:
+			# Armor stripped but not penetrated - only external components exposed
+			if "external" in comp.tags:
+				eligible.append(comp_name)
+	
+	return eligible
 
-# Temporary stub - will implement properly when doing component damage
 func select_component_by_weight(part_name: String, eligible_components: Array) -> String:
-	# TODO: Implement when adding component system
-	return ""
+	if eligible_components.size() == 0:
+		return ""
+	
+	# Calculate total weight
+	var total_weight = 0.0
+	for comp_name in eligible_components:
+		total_weight += components[part_name][comp_name].weight
+	
+	
+	print("  ELIGIBLE COMPONENTS:")
+	for comp_name in eligible_components:
+		var comp = components[part_name][comp_name]
+		var chance = (comp.weight / total_weight) * 100.0
+		print("    ", comp_name, ": ", "%.1f" % chance, "% (", comp.tags, ")")
+	
+	# Weighted random selection
+	var roll = randf() * total_weight
+	var accumulated = 0.0
+	
+	for comp_name in eligible_components:
+		var comp = components[part_name][comp_name]
+		accumulated += comp.weight
+		if roll <= accumulated:
+			return comp_name
+	
+	# Fallback (shouldn't reach here)
+	return eligible_components[0]
 
 # Returns default components for a given part type
 func get_default_components(part_type: String) -> Dictionary:
@@ -2485,12 +2528,50 @@ func initialize_components(part_type: String, part_data) -> Dictionary:
 	return result
 
 func damage_component(part_name: String, component_name: String, damage_pips: int):
+	if not components.has(part_name) or not components[part_name].has(component_name):
+		push_error("Invalid component: " + part_name + "." + component_name)
+		return
+	
+	var comp = components[part_name][component_name]
+	
+	# Apply damage
+	comp.hp = max(comp.hp - damage_pips, 0)
+	
 	print("=== COMPONENT DAMAGE ===")
 	print("Part: ", part_name)
 	print("Component: ", component_name)
-	print("Damage Pips: ", damage_pips)
-	print("========================")
+	print("Damage: ", damage_pips, " pips")
+	print("HP: ", comp.hp, "/", comp.max_hp)
 	
+	# Check if destroyed
+	if comp.hp <= 0 and not comp.disabled:
+		comp.disabled = true
+		component_destroyed(part_name, component_name)
+		print(">>> COMPONENT DESTROYED <<<")
+	
+	print("========================")
+
+func component_destroyed(part_name: String, comp_name: String):
+	var comp = components[part_name][comp_name]
+	
+	print("!!! COMPONENT DESTROYED: ", part_name, ".", comp_name, " !!!")
+	
+	# TODO: Check tags and apply effects
+	# For now, just print what would happen
+	
+	if "mobility" in comp.tags:
+		print("  -> Would affect mobility")
+	
+	if "weapon" in comp.tags:
+		print("  -> Would affect weapon systems")
+	
+	# Critical components
+	if comp_name == "cockpit":
+		print("  -> COCKPIT DESTROYED - INSTANT KILL")
+	
+	if comp_name == "core_shell":
+		print("  -> CORE SHELL DESTROYED - FLAGGED STATE")
+
 func refresh_dynamic_components():
 	# Refresh wetware components in core
 	if build.core:

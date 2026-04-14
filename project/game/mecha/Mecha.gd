@@ -830,25 +830,27 @@ func get_shape_from_id(id):
 func add_decal(id, decal_position, type, size):
 	var shape = get_shape_from_id(id)
 	var decals_node
-	if is_instance_valid(decals_node):
-		if shape == $CoreCollision:
-			decals_node = CoreDecals
-		elif shape == $LeftShoulderCollision:
-			decals_node = LeftShoulderDecals
-		elif shape == $RightShoulderCollision:
-			decals_node = RightShoulderDecals
-		else:
-			push_error("Not a valid shape id: " + str(id))
-		var decal = DECAL.instantiate()
+	if shape == $CoreCollision:
+		decals_node = CoreDecals
+	elif shape == $LeftShoulderCollision:
+		decals_node = LeftShoulderDecals
+	elif shape == $RightShoulderCollision:
+		decals_node = RightShoulderDecals
+	else:
+		push_error("Not a valid shape id: " + str(id))
+		return
+	if not is_instance_valid(decals_node):
+		return
+	var decal = DECAL.instantiate()
 
-		#Transform3D global position into local position
-		var final_pos = decal_position-decals_node.global_position
-		var trans = decals_node.global_transform
-		final_pos = final_pos.rotated(-trans.get_rotation())
-		final_pos /= trans.get_scale()
-		final_pos *= randf_range(.6,.9) #Random depth for decal on mecha
-		decals_node.add_child(decal)
-		decal.setup(type, size, final_pos)
+	#Transform3D global position into local position
+	var final_pos = decal_position-decals_node.global_position
+	var trans = decals_node.global_transform
+	final_pos = final_pos.rotated(-trans.get_rotation())
+	final_pos /= trans.get_scale()
+	final_pos *= randf_range(.6,.9) #Random depth for decal on mecha
+	decals_node.add_child(decal)
+	decal.setup(type, size, final_pos)
 
 
 func increase_heat(amount):

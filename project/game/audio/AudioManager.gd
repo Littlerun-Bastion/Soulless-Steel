@@ -183,4 +183,3 @@ func get_sfx_player(positional = false):
 		player = $SFXS.get_child(cur_sfx_player)
 		cur_sfx_player = (cur_sfx_player+1)%$SFXS.get_child_count()
 	return player
-

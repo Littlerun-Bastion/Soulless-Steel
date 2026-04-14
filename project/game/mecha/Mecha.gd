@@ -43,6 +43,12 @@ signal mecha_extracted
 signal shield_ready
 signal parried
 signal made_sound
+signal component_damaged(part_name: String, component_name: String, hp: int, max_hp: int)
+signal component_destroyed_alert(part_name: String, component_name: String)
+signal cockpit_exposed(hp: int)
+signal core_shell_destroyed()
+signal system_degraded(system_name: String, severity: float)  # For mobility, sensors, etc.
+signal flagged()
 
 
 @export var speed_modifier = 1.0
@@ -858,14 +864,17 @@ func update_heat(dt):
 	if display_mode:
 		mecha_heat = 0
 		return
+		
 	#TODO remove freezing func and expand it here
+		
 	if build.generator and not has_status("fire"):
+		var effective_dispersion = build.generator.heat_dispersion * disabled_systems.heat_dispersion
 		if mecha_heat > max_heat*idle_threshold:
-			reduce_heat(freezing_status_heat(build.generator.heat_dispersion)*dt, max_heat*idle_threshold)
+			reduce_heat(freezing_status_heat(effective_dispersion)*dt, max_heat*idle_threshold)
 		else:
-			reduce_heat(freezing_status_heat(build.generator.heat_dispersion * (mecha_heat/float(max_heat)))*dt)
+			reduce_heat(freezing_status_heat(effective_dispersion * (mecha_heat/float(max_heat)))*dt)
 		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-			weapon.update_heat(build.generator.heat_dispersion,mecha_heat_visible,dt)
+			weapon.update_heat(effective_dispersion, mecha_heat_visible, dt)
 	if not has_status("overheating"):
 		if build.generator:
 			mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(build.generator.heat_dispersion)*dt*4, mecha_heat)
@@ -1767,6 +1776,10 @@ func shoot(type, is_auto_fire = false):
 		return
 	if is_shielding:
 		return
+	if disabled_systems.has(type) and disabled_systems[type] == true:
+		if is_player():
+			print("Weapon offline!")
+		return
 	
 	#Check for spool up
 	var sfx_node = WeaponSFXs[type]
@@ -2536,42 +2549,91 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	
 	# Apply damage
 	comp.hp = max(comp.hp - damage_pips, 0)
+	# Emit damage signal for UI updates
+	emit_signal("component_damaged", part_name, component_name, comp.hp, comp.max_hp)
 	
-	print("=== COMPONENT DAMAGE ===")
-	print("Part: ", part_name)
-	print("Component: ", component_name)
-	print("Damage: ", damage_pips, " pips")
-	print("HP: ", comp.hp, "/", comp.max_hp)
+	# NEW: Special warning if cockpit is damaged
+	if component_name == "cockpit" and comp.hp > 0:
+		emit_signal("cockpit_exposed", comp.hp)
 	
 	# Check if destroyed
 	if comp.hp <= 0 and not comp.disabled:
 		comp.disabled = true
 		component_destroyed(part_name, component_name)
-		print(">>> COMPONENT DESTROYED <<<")
-	
-	print("========================")
 
 func component_destroyed(part_name: String, comp_name: String):
 	var comp = components[part_name][comp_name]
 	
-	print("!!! COMPONENT DESTROYED: ", part_name, ".", comp_name, " !!!")
 	
-	# TODO: Check tags and apply effects
-	# For now, just print what would happen
+	# Emit destruction signal
+	emit_signal("component_destroyed_alert", part_name, comp_name)
 	
-	if "mobility" in comp.tags:
-		print("  -> Would affect mobility")
-	
-	if "weapon" in comp.tags:
-		print("  -> Would affect weapon systems")
-	
-	# Critical components
+	# CRITICAL COMPONENTS - Instant effects
 	if comp_name == "cockpit":
-		print("  -> COCKPIT DESTROYED - INSTANT KILL")
+		die(last_damage_source, last_damage_weapon)
+		return
 	
 	if comp_name == "core_shell":
-		print("  -> CORE SHELL DESTROYED - FLAGGED STATE")
-
+		emit_signal("core_shell_destroyed")
+		enter_flagged_state()  # Use the new function
+		return
+	
+	# MOBILITY COMPONENTS
+	if "mobility" in comp.tags:
+		# Count destroyed mobility components
+		var mobility_loss = 0.0
+		if comp_name == "left_leg_actuator" or comp_name == "right_leg_actuator":
+			mobility_loss = 0.25  # Lose 25% mobility per leg
+		elif comp_name == "tracks":
+			mobility_loss = 0.5  # Lose 50% mobility if tracks destroyed
+		elif comp_name == "suspension":
+			mobility_loss = 0.15  # Lose 15% mobility
+		
+		disabled_systems.mobility = max(disabled_systems.mobility - mobility_loss, 0.0)
+		emit_signal("system_degraded", "mobility", disabled_systems.mobility)
+		
+		# Update actual movement speed
+		if build.chassis:
+			var reduced_speed = build.chassis.max_speed * disabled_systems.mobility
+			update_speed(reduced_speed, build.chassis.move_acc, build.chassis.friction, build.chassis.rotation_acc)
+	
+	# WEAPON COMPONENTS
+	if "weapon" in comp.tags:
+		# Weapon feed destroyed = weapon offline
+		if comp_name == "weapon_feed":
+			if part_name == "left_shoulder":
+				disabled_systems.left_arm_weapon = true
+				emit_signal("system_degraded", "left_arm_weapon", 0.0)
+				print("    -> Left arm weapon OFFLINE")
+			elif part_name == "right_shoulder":
+				disabled_systems.right_arm_weapon = true
+				emit_signal("system_degraded", "right_arm_weapon", 0.0)
+				print("    -> Right arm weapon OFFLINE")
+	
+	# HEAT MANAGEMENT
+	if comp_name == "radiator":
+		disabled_systems.heat_dispersion = 0.5  # Lose 50% heat dispersion
+		emit_signal("system_degraded", "heat_dispersion", disabled_systems.heat_dispersion)
+	
+	# SENSORS
+	if comp_name == "optics":
+		disabled_systems.sensors = 0.5  # Reduced to backup optics
+		emit_signal("system_degraded", "sensors", disabled_systems.sensors)
+	elif comp_name == "backup_optics":
+		if components.head["optics"].disabled:
+			disabled_systems.sensors = 0.1  # Nearly blind
+			emit_signal("system_degraded", "sensors", disabled_systems.sensors)
+	
+	# GENERATOR
+	if comp_name == "generator":
+		disabled_systems.shield_regen = 0.0
+		emit_signal("system_degraded", "shield_regen", 0.0)
+	
+	# THRUSTER
+	if comp_name == "thruster":
+		pass
+		# Thruster already checked in dash() function via build.thruster
+		
 func refresh_dynamic_components():
 	# Refresh wetware components in core
 	if build.core:
@@ -2718,3 +2780,12 @@ func debug_print_components():
 			print(system_name, ": ", "%.1f" % (value * 100.0), "%")
 	
 	print("=============================\n")
+
+func enter_flagged_state():
+	if is_exposed:
+		return  # Already flagged
+	
+	is_exposed = true
+	emit_signal("flagged")
+	emit_signal("exposed", self)  # Keep old signal for compatibility
+	print("!!! MECH FLAGGED !!!")

@@ -61,6 +61,9 @@ var blink_timer = 0.66
 var building_effect_active = false
 var exposed_blink_timer = 0.0
 
+var cockpit_warning_active = false
+var cockpit_warning_timer = 0.0
+var flagged_warning_active = false
 
 
 
@@ -169,6 +172,12 @@ func setup(player_ref, mechas_ref):
 	player.connect("reloading",Callable(self,"_on_reloading"))
 	player.connect("finished_reloading",Callable(self,"update_cursor"))
 	player.connect("update_building_status",Callable(self,"_on_player_update_building_status"))
+	player.connect("component_damaged",Callable(self,"_on_component_damaged"))
+	player.connect("component_destroyed",Callable(self,"_on_component_destroyed"))
+	player.connect("cockpit_exposed",Callable(self,"_on_cockpit_exposed"))
+	player.connect("core_shell_destroyed",Callable(self,"_on_core_shell_destroyed"))
+	player.connect("flagged",Callable(self,"_on_flagged"))
+	player.connect("system_degraded",Callable(self,"_on_system_degraded"))
 	Cursor.connect("enter_lock_mode",Callable(player,"_on_enter_lock_mode"))
 	setup_lifebar()
 	setup_shieldbar()
@@ -309,6 +318,58 @@ func _on_LifeBar_value_changed(value):
 
 func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
+
+
+func _on_component_damaged(part_name: String, component_name: String, hp: int, max_hp: int):
+	print("HUD: ", component_name, " damaged: ", hp, "/", max_hp)
+	print("\n=== HUD: COMPONENT DAMAGED ===")
+	print("Part: ", part_name)
+	print("Component: ", component_name)
+	print("HP: ", hp, "/", max_hp)
+	print("==============================\n")
+	# TODO: Update component HP bars in UI
+
+func _on_component_destroyed(part_name: String, component_name: String):
+	print("\n!!! HUD: COMPONENT DESTROYED !!!")
+	print("Part: ", part_name)
+	print("Component: ", component_name)
+	print("================================\n")
+	# TODO: Show warning light/icon for destroyed component
+	
+
+func _on_cockpit_exposed(hp: int):
+	print("\n*** HUD: COCKPIT CRITICAL WARNING ***")
+	print("Cockpit HP remaining: ", hp)
+	print("Activating red warning flash!")
+	print("*************************************\n")
+	
+func _on_core_shell_destroyed():
+	print("\n*** HUD: CORE SHELL DESTROYED ***")
+	print("Deactivating cockpit warning")
+	print("Waiting for flagged signal...")
+	print("*********************************\n")
+
+func _on_flagged():
+	print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	print("!!! HUD: MECH FLAGGED - CRITICAL !!!")
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+
+func _on_system_degraded(system_name: String, severity: float):
+	print("\n=== HUD: SYSTEM DEGRADED ===")
+	print("System: ", system_name)
+	print("Performance: ", "%.1f" % (severity * 100.0), "%")
+	if severity <= 0.0:
+		print(">>> SYSTEM OFFLINE <<<")
+	elif severity <= 0.5:
+		print(">>> CRITICAL <<<")
+	elif severity <= 0.75:
+		print(">>> DAMAGED <<<")
+	print("============================\n")
+	# TODO: Update system status indicators
+	# - Mobility bar showing % remaining
+	# - Weapon offline icons
+	# - Heat dispersion warning
+
 
 #func spawn_inventory_ui():
 	#inventory_ui = InventoryUIScene.instantiate()

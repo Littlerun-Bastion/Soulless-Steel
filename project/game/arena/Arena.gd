@@ -404,9 +404,10 @@ func _on_create_trail(projectile, trail):
 		Trails.add_child(created_trail)
 
 func _on_mecha_exposed(mecha):
-	if mecha.last_damage_source.name == "Player":
+	if mecha.last_damage_source and mecha.last_damage_source.mecha_name == "Player":
 		player_downs.append(mecha.mecha_name)
 		print(player_downs)
+		#TODO this shit don't work, gotta make tracking kills again lmao
 
 func _on_mecha_died(mecha):
 	mecha.is_dead = true
@@ -419,7 +420,8 @@ func _on_mecha_died(mecha):
 	if mecha == player:
 		player_died()
 	else:
-		if mecha.last_damage_source.name == "Player":
+		if mecha.last_damage_source and mecha.last_damage_source.mecha_name == "Player": 
+			# TODO this shit don't work, idk why it was working before.
 			player_kills.append(mecha.mecha_name)
 			MissionManager.report_kill()
 			print(player_kills)

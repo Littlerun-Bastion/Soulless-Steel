@@ -9,6 +9,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const HITBOX = preload("res://game/mecha/Hitbox.tscn")
+const PART_DESTRUCTION_EXPLOSION = preload("res://game/weapons/PartDestructionExplosion.tscn")
 const ARM_WEAPON_INITIAL_ROT =  9
 const SPEED_MOD_CORRECTION = 8
 const WEAPON_RECOIL_MOD = .9
@@ -899,7 +900,7 @@ func update_heat(dt):
 		internal_temp = 0.0
 		external_temp = 0.0
 		pending_heat_kj = 0.0
-		mecha_heat_visible = 0
+		shader_heat_value = 0
 		return
 	
 	# --- Drain pending heat into thermal system ---
@@ -982,16 +983,16 @@ func update_heat(dt):
 		target_visible = 300
 	
 	# Smooth transition (keeps the old visual feel)
-	if target_visible > mecha_heat_visible:
-		mecha_heat_visible = min(mecha_heat_visible + 200 * dt, target_visible)
+	if target_visible > shader_heat_value:
+		shader_heat_value = min(shader_heat_value + 200 * dt, target_visible)
 	else:
-		mecha_heat_visible = max(mecha_heat_visible - 100 * dt, target_visible)
+		shader_heat_value = max(shader_heat_value - 100 * dt, target_visible)
 	for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-		weapon.update_heat(get_effective_cooling(), mecha_heat_visible, dt)
+		weapon.update_heat(get_effective_cooling(), shader_heat_value, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				RightChassis, RightChassisSub, RightChassisGlow]:
-		node.material.set_shader_parameter("heat", mecha_heat_visible)
+		node.material.set_shader_parameter("heat", shader_heat_value)
 
 # Returns a 0-1 normalized thermal signature for detection systems
 # 0.0 = at ambient (invisible), 1.0 = extremely hot
@@ -2690,6 +2691,7 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	
 	# Apply damage
 	comp.hp = max(comp.hp - damage_pips, 0)
+	spawn_component_damage_explosion(part_name, comp.hp <= 0)
 	# Emit damage signal for UI updates
 	emit_signal("component_damaged", part_name, component_name, comp.hp, comp.max_hp)
 	
@@ -2930,3 +2932,54 @@ func enter_flagged_state():
 	emit_signal("flagged")
 	emit_signal("exposed", self)  # Keep old signal for compatibility
 	print("!!! MECH FLAGGED !!!")
+
+# Add this function to Mecha.gd
+func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
+	var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()
+	get_parent().add_child(explosion)
+	
+	explosion.global_position = get_part_global_position(part_name)
+	
+	# Scale based on part size and damage severity
+	var base_scale = 1.0
+	match part_name:
+		"core":
+			base_scale = 1.2
+		"chassis":
+			base_scale = 1.3
+		"head":
+			base_scale = 0.8
+		"left_shoulder", "right_shoulder":
+			base_scale = 0.9
+	
+	if is_destroyed:
+		base_scale *= 1.5
+	
+	explosion.scale = Vector2(base_scale, base_scale)
+	
+	# Random offset
+	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
+	explosion.global_position += offset
+	
+# Add this helper function to Mecha.gd
+func get_part_global_position(part_name: String) -> Vector2:
+	match part_name:
+		"core":
+			return Core.global_position
+		"head":
+			return Head.global_position
+		"left_shoulder":
+			return LeftShoulder.global_position
+		"right_shoulder":
+			return RightShoulder.global_position
+		"chassis":
+			# Use the active chassis node
+			if SingleChassis.texture:
+				return SingleChassis.global_position
+			elif LeftChassis.texture:
+				# Return center between legs
+				return (LeftChassis.global_position + RightChassis.global_position) / 2.0
+			else:
+				return global_position
+		_:
+			return global_position  # Fallback to mech center

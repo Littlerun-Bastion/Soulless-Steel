@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://b1umjsv3a1r2e"]
+[gd_scene format=3 uid="uid://b1umjsv3a1r2e"]
 
 [ext_resource type="Texture2D" uid="uid://dpiv0b1f102su" path="res://assets/images/fx/explosion_flash_1.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://cqmps4x0jpay1" path="res://assets/images/fx/cloud_small.png" id="2"]
@@ -156,6 +156,7 @@ tracks/5/keys = {
 
 [sub_resource type="Animation" id="2"]
 resource_name = "impact1"
+step = 0.008333334
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -309,10 +310,10 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_rhj3j"]
 _data = {
-"RESET": SubResource("1"),
-"impact1": SubResource("2"),
-"impact2": SubResource("3"),
-"impact3": SubResource("4")
+&"RESET": SubResource("1"),
+&"impact1": SubResource("2"),
+&"impact2": SubResource("3"),
+&"impact3": SubResource("4")
 }
 
 [sub_resource type="Gradient" id="Gradient_8vwsm"]
@@ -323,8 +324,7 @@ colors = PackedColorArray(1, 1, 1, 0.447059, 0.61, 0.61, 0.61, 0)
 gradient = SubResource("Gradient_8vwsm")
 
 [sub_resource type="Curve" id="8"]
-min_value = -918.07
-max_value = 0.0
+_limits = [-918.07, 0.0, 0.0, 1.0]
 _data = [Vector2(0, 0), 0.0, -648.719, 0, 0, Vector2(0.62037, -348.449), -154.522, 0.0, 0, 0]
 point_count = 2
 
@@ -342,11 +342,9 @@ curve = SubResource("10")
 particle_flag_align_y = true
 particle_flag_disable_z = true
 direction = Vector3(0, -1, 0)
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 300.0
 initial_velocity_max = 500.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = -10.0
 linear_accel_curve = SubResource("9")
 scale_min = 0.7
@@ -361,8 +359,7 @@ turbulence_noise_speed = Vector3(1, 1, 1)
 gradient = SubResource("Gradient_8vwsm")
 
 [sub_resource type="Curve" id="15"]
-min_value = -10.0
-max_value = 0.0
+_limits = [-10.0, 0.0, 0.0, 1.0]
 _data = [Vector2(0, 0), 0.0, 2.48961, 0, 0, Vector2(1, -10), -10.6364, 0.0, 0, 0]
 point_count = 2
 
@@ -374,11 +371,9 @@ particle_flag_align_y = true
 particle_flag_disable_z = true
 direction = Vector3(0, -1, 0)
 spread = 60.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 30.0
 initial_velocity_max = 60.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = 8.0
 linear_accel_max = 8.0
 linear_accel_curve = SubResource("16")
@@ -392,11 +387,9 @@ particle_flag_align_y = true
 particle_flag_disable_z = true
 direction = Vector3(0, 1, 0)
 spread = 90.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 300.0
 initial_velocity_max = 500.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = -10.0
 linear_accel_curve = SubResource("9")
 scale_min = 0.7
@@ -412,11 +405,9 @@ particle_flag_align_y = true
 particle_flag_disable_z = true
 direction = Vector3(0, 1, 0)
 spread = 90.0
-gravity = Vector3(0, 0, 0)
 initial_velocity_min = 30.0
 initial_velocity_max = 60.0
-orbit_velocity_min = 0.0
-orbit_velocity_max = 0.0
+gravity = Vector3(0, 0, 0)
 linear_accel_min = 8.0
 linear_accel_max = 8.0
 linear_accel_curve = SubResource("16")
@@ -425,52 +416,49 @@ scale_max = 5.0
 scale_curve = SubResource("11")
 color_ramp = SubResource("GradientTexture1D_uvvwk")
 
-[node name="BallisticImpact" type="Node2D"]
+[node name="BallisticImpact" type="Node2D" unique_id=1181433223]
 script = SubResource("GDScript_orjvh")
 light_decay_rate = 2.0
 on_hit_sfxs = Array[String](["mech_impact_light1", "mech_impact_light2", "mech_impact_light3", "mech_impact_light4", "mech_impact_light5"])
 on_shield_sfxs = Array[String](["shield_impact_light1", "shield_impact_light2", "shield_impact_light3", "shield_impact_light4"])
 on_miss_sfxs = Array[String](["miss_impact_light1", "miss_impact_light2", "miss_impact_light3", "miss_impact_light4", "miss_impact_light5"])
 
-[node name="LightEffect" type="Sprite2D" parent="."]
+[node name="LightEffect" type="Sprite2D" parent="." unique_id=2114034750]
 material = SubResource("19")
 scale = Vector2(2, 2)
 texture = ExtResource("7")
 
-[node name="Sprite1" type="Sprite2D" parent="."]
+[node name="Sprite1" type="Sprite2D" parent="." unique_id=85815661]
 texture = ExtResource("1")
 
-[node name="Sprite2" type="Sprite2D" parent="."]
+[node name="Sprite2" type="Sprite2D" parent="." unique_id=1621770264]
 texture = ExtResource("4")
 
-[node name="Sprite3" type="Sprite2D" parent="."]
+[node name="Sprite3" type="Sprite2D" parent="." unique_id=225550288]
 texture = ExtResource("6")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_rhj3j")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=333273742]
+libraries/ = SubResource("AnimationLibrary_rhj3j")
 
-[node name="OnHit" type="Node2D" parent="."]
+[node name="OnHit" type="Node2D" parent="." unique_id=1722393731]
 
-[node name="sparks_mech" type="GPUParticles2D" parent="OnHit"]
+[node name="sparks_mech" type="GPUParticles2D" parent="OnHit" unique_id=238886809]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 7
-process_material = SubResource("12")
 texture = ExtResource("3")
 one_shot = true
 speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
+process_material = SubResource("12")
 
-[node name="hit_smoke" type="GPUParticles2D" parent="OnHit"]
+[node name="hit_smoke" type="GPUParticles2D" parent="OnHit" unique_id=14299043]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 12
-process_material = SubResource("ParticleProcessMaterial_ibqa7")
 texture = ExtResource("2")
 lifetime = 5.0
 one_shot = true
@@ -478,29 +466,29 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
 local_coords = true
+process_material = SubResource("ParticleProcessMaterial_ibqa7")
 
-[node name="OnShield" type="Node2D" parent="."]
+[node name="OnShield" type="Node2D" parent="." unique_id=2088417947]
 
-[node name="sparks_mech" type="GPUParticles2D" parent="OnShield"]
+[node name="sparks_mech" type="GPUParticles2D" parent="OnShield" unique_id=1147853685]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 7
-process_material = SubResource("12")
 texture = ExtResource("3")
 one_shot = true
 speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
+process_material = SubResource("12")
 
-[node name="hit_smoke" type="GPUParticles2D" parent="OnShield"]
+[node name="hit_smoke" type="GPUParticles2D" parent="OnShield" unique_id=1239561900]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 12
-process_material = SubResource("ParticleProcessMaterial_ibqa7")
 texture = ExtResource("2")
 lifetime = 5.0
 one_shot = true
@@ -508,29 +496,29 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
 local_coords = true
+process_material = SubResource("ParticleProcessMaterial_ibqa7")
 
-[node name="OnMiss" type="Node2D" parent="."]
+[node name="OnMiss" type="Node2D" parent="." unique_id=961290699]
 
-[node name="sparks_miss" type="GPUParticles2D" parent="OnMiss"]
+[node name="sparks_miss" type="GPUParticles2D" parent="OnMiss" unique_id=1183549894]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 5
+texture = ExtResource("3")
+one_shot = true
+speed_scale = 4.0
+explosiveness = 0.97
+randomness = 1.0
+fixed_fps = 60
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
 process_material = SubResource("ParticleProcessMaterial_u78f2")
-texture = ExtResource("3")
-one_shot = true
-speed_scale = 4.0
-explosiveness = 0.97
-randomness = 1.0
-fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
 
-[node name="miss_smoke" type="GPUParticles2D" parent="OnMiss"]
+[node name="miss_smoke" type="GPUParticles2D" parent="OnMiss" unique_id=1748157425]
 position = Vector2(-4.76221, 1.5874)
 emitting = false
 amount = 5
-process_material = SubResource("18")
 texture = ExtResource("2")
 lifetime = 5.0
 one_shot = true
@@ -538,4 +526,5 @@ speed_scale = 4.0
 explosiveness = 0.97
 randomness = 1.0
 fixed_fps = 60
-visibility_rect = Rect2(-5e+09, -5e+09, 1e+10, 1e+10)
+visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
+process_material = SubResource("18")

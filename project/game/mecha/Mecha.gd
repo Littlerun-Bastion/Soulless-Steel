@@ -20,8 +20,7 @@ const FREEZING_SPEED_MOD = .95
 const OVERWEIGHT_SPEED_MOD = 4
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
-const OVERHEAT_BUFFER = 1.1
-const FIRE_DAMAGE = 10.0
+const FIRE_DAMAGE = 10.0 #TODO convert to kJ in new heat system
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
@@ -34,6 +33,8 @@ const THROTTLE_STEP = 0.1
 const WHEELS_SPEED_FACTOR = 0.6 #Made to balance wheels with legs since they aren't equal speed due to the animation
 const AMBIENT_TEMP := -10.0 
 const HEAT_TRANSFER := 0.3
+const OVERHEAT_DAMAGE_TEMP := 200.0  # °C above ambient on external layer
+const OVERHEAT_DAMAGE_INTERVAL := 3.0 
 
 signal create_projectile
 signal create_casing
@@ -194,11 +195,7 @@ var shield_project_heat
 var max_energy = 100
 var energy = 100
 var total_kills = 0
-var mecha_heat = 0
-var mecha_heat_visible = 0
-var max_heat = 100
-var idle_threshold = 0.15
-var move_heat = 70
+var shader_heat_value = 0
 var battery = 0.0
 var battery_capacity = 0.0
 var battery_recharge_rate = 0.0
@@ -271,6 +268,7 @@ var internal_capacity := 40.0   # kJ/°C, derived from core coolant in set_core(
 var overheat_temp := 100.0      # °C above ambient, from CoolantType
 var external_capacity := 50.0   # kJ/°C, from generator
 var pending_heat_kj := 0.0     	# kJ waiting to enter the thermal system
+var overheat_damage_timer := 0.0
 
 var build = {
 	"arm_weapon_left": null,
@@ -536,6 +534,8 @@ func _physics_process(dt):
 	if battery < battery_capacity and not has_status("electrified"):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time.keys():
+		if status == "overheating":
+			continue  # Managed by thermal system, not timer
 		decrease_status(status, dt)
 	for status in ["fire", "electrified", "freezing", "corrosion", "overheating"]:
 		for node in Particle[status]:
@@ -658,9 +658,6 @@ func update_max_shield_from_parts():
 	set_max_shield(value)
 
 
-func set_max_heat():
-	pass #Depreciated!
-
 func is_overweight():
 	weight_capacity = get_stat("weight_capacity")
 	weight = get_total_weight()
@@ -760,11 +757,14 @@ func take_status_damage(dt):
 		return
 
 	if has_status("overheating"):
-		if hp <= 0:
-			is_exposed = true
-		else:
-			hp -= (max_hp * 0.02 * dt)
-			hp = round(hp)
+		overheat_damage_timer -= dt
+		if overheat_damage_timer <= 0.0:
+			overheat_damage_timer = OVERHEAT_DAMAGE_INTERVAL
+			overheat_damage_tick()
+			var heat_severity = clamp((external_temp - OVERHEAT_DAMAGE_TEMP) / 100.0, 0.0, 1.0)
+			overheat_damage_timer = lerp(OVERHEAT_DAMAGE_INTERVAL, 1.0, heat_severity)
+	else:
+		overheat_damage_timer = 0.0
 
 	if has_status("fire"):
 		increase_heat(FIRE_DAMAGE*dt)
@@ -782,6 +782,37 @@ func take_status_damage(dt):
 			hp = round(max(hp - (dt * (hp/100)), 1))
 		emit_signal("took_damage", self, true)
 
+func overheat_damage_tick():
+	# Gather all living components across all parts
+	var candidates = []
+	for part_name in components.keys():
+		for comp_name in components[part_name]:
+			var comp = components[part_name][comp_name]
+			if not comp.disabled and comp.hp > 0:
+				if comp_name == "cockpit" and disabled_systems.heat_dispersion >= 1.0:
+					comp_name = "radiator" #Targets the radiator instead of the cockpit while we still have heat dispersion up
+				candidates.append({
+					"part": part_name,
+					"comp": comp_name,
+					"weight": comp.weight
+				})
+	
+	if candidates.is_empty():
+		return
+	
+	# Weighted random selection across the entire mech
+	var total_weight = 0.0
+	for c in candidates:
+		total_weight += c.weight
+	
+	var roll = randf() * total_weight
+	var running = 0.0
+	for c in candidates:
+		running += c.weight
+		if roll <= running:
+			damage_component(c.part, c.comp, 1)
+			print("OVERHEAT damaged: ", c.comp, " on ", c.part)
+			return
 
 func apply_movement_modifiers(speed):
 	if is_overweight():
@@ -793,13 +824,6 @@ func apply_movement_modifiers(speed):
 	if is_entering_building:
 		speed *= ENTERING_BUILDING_SPEED_MOD
 	return speed
-
-
-func freezing_status_heat(heat_disp):
-	if has_status("freezing"):
-		heat_disp *= 2
-	return heat_disp
-
 
 func die(_source_info, _weapon_name):
 	if is_dead:
@@ -870,11 +894,6 @@ func add_decal(id, decal_position, type, size):
 func increase_heat(amount_kj: float):
 	pending_heat_kj += amount_kj
 
-func reduce_heat(amount, min_value := 0.0):
-	#mecha_heat = max(mecha_heat - amount, min_value)
-	pass #Depreciated!
-
-
 func update_heat(dt):
 	if display_mode:
 		internal_temp = 0.0
@@ -939,6 +958,16 @@ func update_heat(dt):
 		var external_shedding_kw = conductivity * external_temp
 		var external_shedding_kj = external_shedding_kw * dt
 		external_temp = max(external_temp - external_shedding_kj / external_capacity, 0.0)
+	
+# --- OVverheat Damage Trigger --- 	
+	if external_temp >= OVERHEAT_DAMAGE_TEMP:
+		if not has_status("overheating"):
+			set_status("overheating", 1.0)  # Activate with any positive value
+	else:
+		if has_status("overheating") and not has_status("fire"):
+			# Clear overheating once external cools below threshold
+			# (fire status can independently cause overheating, so don't clear if on fire)
+			set_status("overheating", 0.0)
 	
 	# --- Weapon Heat ---
 	# Pass external_temp as the visual glow reference for now
@@ -1029,7 +1058,6 @@ func set_arm_weapon(part_name, side):
 
 	node.setup(self, part_data, build.core, side)
 	set_weapon_sfx_nodes(sfx_node, part_data)
-	set_max_heat()
 
 
 func set_shoulder_weapon(part_name, side):
@@ -1063,7 +1091,6 @@ func set_shoulder_weapon(part_name, side):
 
 	node.setup(self, part_data, build.core, side)
 	set_weapon_sfx_nodes(sfx_node, part_data)
-	set_max_heat()
 
 func set_weapon_sfx_nodes(sfx_node, part_data):
 	sfx_node.shoot_loop.stream = part_data.shoot_loop_sfx
@@ -1112,7 +1139,6 @@ func set_core(part_name):
 	update_max_shield_from_parts()
 	stability = get_stat("stability")
 	reset_offsets()
-	set_max_heat()
 	
 	# Initialize armor# In set_core(), replace the armor initialization:
 	armor.core = {
@@ -1267,7 +1293,6 @@ func set_chassis(part_name):
 			}
 	
 	set_chassis_parts()
-	set_max_heat()
 
 
 func set_chassis_parts():
@@ -1296,7 +1321,6 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	glow.texture = chassis.get_glow(side)
 	collision.polygon = chassis.get_collision(side)
 	movement_type = chassis.movement_type
-	move_heat = chassis.move_heat
 	update_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
 
@@ -1345,7 +1369,6 @@ func set_head(part_name):
 			"rear": {"level": 0, "pips": 0}
 		}
 	update_max_life_from_parts()
-	set_max_heat()
 
 
 func set_shoulders(part_name):
@@ -1398,7 +1421,6 @@ func set_shoulders(part_name):
 	update_max_shield_from_parts()
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
-	set_max_heat()
 
 
 func reset_offsets():
@@ -1649,7 +1671,7 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt)
+			increase_heat(build.chassis.move_heat * throttle * dt)
 		else:
 			moving = false
 			velocity *= 1 - build.chassis.friction
@@ -1663,7 +1685,7 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt)
+			increase_heat(build.chassis.move_heat * throttle * dt)
 		else:
 			moving = false
 			moving_axis.x = false
@@ -1691,7 +1713,7 @@ func apply_movement(dt, direction):
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
 			target_speed *= WHEELS_SPEED_FACTOR
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt)
+			increase_heat(build.chassis.move_heat * throttle * dt)
 			move(apply_movement_modifiers(velocity))
 			velocity = apply_movement_modifiers(velocity)
 			move(velocity)
@@ -1722,7 +1744,7 @@ func apply_movement(dt, direction):
 				velocity *= 1 - build.chassis.friction
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(move_heat*throttle*dt)
+			increase_heat(build.chassis.move_heat * throttle * dt)
 		else:
 			if build.chassis:
 				velocity *= 1 - build.chassis.friction/2

@@ -128,9 +128,19 @@ func reload():
 func is_reloading():
 	return reloading
 
-
 func can_shoot(amount := 1):
-	return timer <= 0.0 and (clip_ammo is bool or clip_ammo >= amount) and not is_reloading()
+	if timer > 0.0 or (clip_ammo is not bool and clip_ammo < amount) or is_reloading():
+		return false
+	
+	# Jam check — only when mech is at internal overheat
+	if mecha_ref.internal_temp >= mecha_ref.overheat_temp:
+		# Jam chance scales with external temp (0% at 110°C ext, abt 30% at 200°C ext)
+		var jam_chance = clamp(mecha_ref.external_temp / 600.0, 0.0, 0.3)
+		if randf() < jam_chance:
+			add_time(data.fire_rate * 3.0)  # Jam delays next shot by 3x fire rate
+			return false
+	
+	return true
 
 
 func can_shoot_battery(drain, battery):

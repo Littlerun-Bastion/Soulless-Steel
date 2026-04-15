@@ -4,6 +4,7 @@ extends Resource
 @export var mecha_name := "Example"
 @export var combat_behaviour := "default"
 @export_range(0.0, 10.0, 0.1) var difficulty := 5.0
+@export var personality: Personality = null
 
 @export_category("Mecha Build")
 @export var head : Array[String] = ["MSV-L3J-H"]

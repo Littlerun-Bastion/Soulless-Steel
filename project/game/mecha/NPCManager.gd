@@ -50,7 +50,55 @@ func get_design_data(npc):
 		var abs_type = part_type.replace("_left", "").replace("_right", "")
 		var part = get_part(abs_type, npc[part_type])
 		data[part_type] = part.part_id if part else false
+
+	# Pass personality through to Enemy.setup()
+	if npc is Resource and npc.get("personality") is Personality:
+		data["personality"] = npc.personality
+	elif npc is Dictionary and npc.has("personality"):
+		data["personality"] = _personality_from_string(npc.personality)
+
 	return data
+
+
+static func _personality_from_string(type_name: String) -> Personality:
+	var p = Personality.new()
+	match type_name:
+		"scavenger":
+			p.type = Personality.Type.SCAVENGER
+			p.aggression = 0.2
+			p.courage = 0.2
+			p.greed = 0.9
+			p.loyalty = 0.0
+			p.treachery = 0.0
+		"guardian":
+			p.type = Personality.Type.GUARDIAN
+			p.aggression = 0.4
+			p.courage = 0.8
+			p.greed = 0.1
+			p.loyalty = 0.9
+			p.treachery = 0.0
+		"hunter":
+			p.type = Personality.Type.HUNTER
+			p.aggression = 0.9
+			p.courage = 0.8
+			p.greed = 0.2
+			p.loyalty = 0.0
+			p.treachery = 0.0
+		"rat":
+			p.type = Personality.Type.RAT
+			p.aggression = 0.6
+			p.courage = 0.3
+			p.greed = 0.5
+			p.loyalty = 0.0
+			p.treachery = 0.9
+		_: # "professional" or unknown
+			p.type = Personality.Type.PROFESSIONAL
+			p.aggression = 0.5
+			p.courage = 0.5
+			p.greed = 0.3
+			p.loyalty = 0.1
+			p.treachery = 0.0
+	return p
 
 #Given an npc and a part type, gets the correspondent part
 #which can be an specific part or a random part based on tags.

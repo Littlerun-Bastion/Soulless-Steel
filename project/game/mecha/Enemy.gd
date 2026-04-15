@@ -32,6 +32,7 @@ var is_locking = false
 var most_recent_attacker = false
 var last_attack_position = false
 var under_fire_timer = 0.0
+var personality: Personality = null
 
 
 func _ready():
@@ -99,8 +100,13 @@ func setup(arena_ref, design_data, _name):
 		mecha_name = _name
 	else:
 		mecha_name = "Mecha " + str(randi()%2000)
-		
+
 	set_parts_from_design(design_data)
+
+	if design_data.has("personality") and design_data["personality"] is Personality:
+		personality = design_data["personality"]
+	if personality == null:
+		personality = Personality.new()
 
 
 #AI METHODS

@@ -5,6 +5,7 @@ const NPCS = [
 		#Main Attributes
 		"combat_behaviour": "default",
 		"difficulty": 5.0,
+		"personality": "professional",
 		#Mecha build
 		"head": ["MSV-L3J-H"],
 		"core": ["MSV-L3J-C"],
@@ -22,6 +23,7 @@ const NPCS = [
 		#Main Attributes
 		"combat_behaviour": "idle",
 		"difficulty": 0.0,
+		"personality": "scavenger",
 		#Mecha Build
 		"head": ["MSV-M2-H"],
 		"core": ["MSV-M2-C"],

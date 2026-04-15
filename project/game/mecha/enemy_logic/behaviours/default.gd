@@ -393,7 +393,9 @@ func do_in_combat(_dt, enemy):
 		shield_check(enemy)
 		if not enemy.current_target:
 			enemy.valid_target = enemy.current_target
-		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
+		aggression = base_aggression + personality_mod
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
@@ -403,7 +405,9 @@ func do_attack(dt, enemy):
 			enemy.shoot_weapons(enemy.current_target)
 		else:
 			reaction_timer += dt
-		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
+		aggression = base_aggression + personality_mod
 		enemy.going_to_position = true
 		
 		if enemy.can_see_target(enemy.current_target):
@@ -447,7 +451,9 @@ func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
 		shield_check(enemy)
 		enemy.going_to_position = true
-		aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
+		aggression = base_aggression + personality_mod
 		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance:
 			enemy.increase_throttle(1, 0.01)

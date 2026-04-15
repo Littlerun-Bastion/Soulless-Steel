@@ -109,6 +109,26 @@ func setup(arena_ref, design_data, _name):
 		personality = Personality.new()
 
 
+func should_engage(target: Mecha) -> bool:
+	if not is_instance_valid(target):
+		return false
+
+	var my_threat = estimate_threat_level()
+	var their_threat = target.estimate_threat_level()
+	var difference = their_threat - my_threat  # positive = they're stronger
+
+	# Courage determines how much stronger the target can be before we bail
+	# courage 0.0 -> only fight if we're stronger (difference < 0)
+	# courage 0.5 -> fight if roughly even (difference < 0.25)
+	# courage 1.0 -> fight anyone (difference < 0.5)
+	var threshold = personality.courage * 0.5
+
+	# Aggression shifts the threshold further
+	threshold += personality.aggression * 0.2
+
+	return difference < threshold
+
+
 #AI METHODS
 
 func heard_sound(sound_data):

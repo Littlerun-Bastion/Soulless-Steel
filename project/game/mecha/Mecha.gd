@@ -2981,3 +2981,29 @@ func get_part_global_position(part_name: String) -> Vector2:
 				return global_position
 		_:
 			return global_position  # Fallback to mech center
+
+
+func estimate_threat_level() -> float:
+	# Returns 0.0 (helpless) to 1.0 (full strength)
+	var threat := 0.0
+
+	# HP contribution (50% of score)
+	if max_hp > 0:
+		threat += (hp / float(max_hp)) * 0.5
+
+	# Heat penalty (20% of score) - high heat means less capable
+	if overheat_temp > 0:
+		var heat_ratio = internal_temp / overheat_temp
+		threat += (1.0 - clampf(heat_ratio, 0.0, 1.0)) * 0.2
+	else:
+		threat += 0.2
+
+	# Flagged/exposed penalty (15% of score)
+	if not is_exposed:
+		threat += 0.15
+
+	# Status effect penalty (15% of score)
+	if not has_any_status():
+		threat += 0.15
+
+	return clampf(threat, 0.0, 1.0)

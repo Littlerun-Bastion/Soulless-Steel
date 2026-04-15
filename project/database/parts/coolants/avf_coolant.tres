@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CoolantType" format=3 uid="uid://mj1xoye36cq6"]
+
+[ext_resource type="Script" uid="uid://vinw15j5guph" path="res://database/parts/coolant_type.gd" id="1_s6xkx"]
+
+[resource]
+script = ExtResource("1_s6xkx")
+coolant_name = "Glycol"
+density = 1.08
+specific_heat = 3.3
+overheat_temp = 125.0
+metadata/_custom_type_script = "uid://vinw15j5guph"

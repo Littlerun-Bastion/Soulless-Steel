@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CoolantType" format=3 uid="uid://d1q61kvkn3qfb"]
+
+[ext_resource type="Script" uid="uid://vinw15j5guph" path="res://database/parts/coolant_type.gd" id="1_gmjpa"]
+
+[resource]
+script = ExtResource("1_gmjpa")
+coolant_name = "Liquid Metal"
+density = 2.4
+specific_heat = 0.8
+overheat_temp = 250.0
+metadata/_custom_type_script = "uid://vinw15j5guph"

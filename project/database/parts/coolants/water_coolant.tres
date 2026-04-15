@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CoolantType" format=3 uid="uid://desy5awnwa571"]
+
+[ext_resource type="Script" uid="uid://vinw15j5guph" path="res://database/parts/coolant_type.gd" id="1_dyvxv"]
+
+[resource]
+script = ExtResource("1_dyvxv")
+coolant_name = "Water"
+metadata/_custom_type_script = "uid://vinw15j5guph"

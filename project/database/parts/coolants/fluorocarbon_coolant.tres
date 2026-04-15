@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CoolantType" format=3 uid="uid://behtst2qq1hps"]
+
+[ext_resource type="Script" uid="uid://vinw15j5guph" path="res://database/parts/coolant_type.gd" id="1_b4fct"]
+
+[resource]
+script = ExtResource("1_b4fct")
+coolant_name = "Fluorocarbon"
+density = 1.8
+specific_heat = 1.05
+overheat_temp = 215.0
+metadata/_custom_type_script = "uid://vinw15j5guph"

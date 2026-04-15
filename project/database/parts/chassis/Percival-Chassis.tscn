@@ -1,12 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://75jp0t0vb8ww"]
+[gd_scene format=3 uid="uid://75jp0t0vb8ww"]
 
-[ext_resource type="Script" path="res://database/parts/chassis.gd" id="1"]
+[ext_resource type="Script" uid="uid://bxaywic386yj8" path="res://database/parts/chassis.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cm6n1dcl0w41h" path="res://assets/images/mechas/legs/Percival/percival_leg_main.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://7n08knbfhqhn" path="res://assets/images/mechas/legs/Percival/percival_leg_glow.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://d2eanl2cshwcf" path="res://assets/images/mechas/legs/Percival/percival_leg_sub.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://byx48lfnweskh" path="res://assets/images/mechas/legs/Percival/percival_leg.png" id="5"]
 
-[node name="Part" type="Node"]
+[node name="Part" type="Node" unique_id=1262009843]
 script = ExtResource("1")
 part_name = "Percival-Chassis"
 manufacturer_name = "Claymore International"
@@ -21,30 +21,30 @@ rotation_acc = 1.25
 trim_acc = 1.1
 rotation_range = 180.0
 health = 2400.0
-move_heat = 25
+move_heat = 650
 weight = 10.5
 weight_capacity = 60.0
 stability = 140.0
 
-[node name="SingleSide" type="Node2D" parent="."]
+[node name="SingleSide" type="Node2D" parent="." unique_id=1734614662]
 
-[node name="ChassisSub" type="Sprite2D" parent="SingleSide"]
+[node name="ChassisSub" type="Sprite2D" parent="SingleSide" unique_id=1333064841]
 visible = false
 texture = ExtResource("4")
 
-[node name="ChassisGlow" type="Sprite2D" parent="SingleSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="SingleSide" unique_id=1616021282]
 visible = false
 texture = ExtResource("3")
 
-[node name="Chassis" type="Sprite2D" parent="SingleSide"]
+[node name="Chassis" type="Sprite2D" parent="SingleSide" unique_id=889930539]
 texture = ExtResource("2")
 
-[node name="Collision" type="CollisionPolygon2D" parent="SingleSide"]
+[node name="Collision" type="CollisionPolygon2D" parent="SingleSide" unique_id=1417590789]
 visible = false
 polygon = PackedVector2Array(-81.3372, -101.046, -45.0032, -101.42, -45.0032, -115.654, 44.5206, -114.905, 44.5206, -101.795, 80.48, -101.046, 82.5, 112, -84, 112)
 
-[node name="RightSide" type="Node2D" parent="."]
+[node name="RightSide" type="Node2D" parent="." unique_id=1504969608]
 position = Vector2(46, 0)
 
-[node name="LeftSide" type="Node2D" parent="."]
+[node name="LeftSide" type="Node2D" parent="." unique_id=1717147484]
 position = Vector2(-16, 0)

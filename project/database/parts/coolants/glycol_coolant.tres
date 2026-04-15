@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CoolantType" format=3 uid="uid://qxogeem5quwm"]
+
+[ext_resource type="Script" uid="uid://vinw15j5guph" path="res://database/parts/coolant_type.gd" id="1_xwtki"]
+
+[resource]
+script = ExtResource("1_xwtki")
+coolant_name = "AVF"
+density = 0.85
+specific_heat = 6.5
+overheat_temp = 86.0
+metadata/_custom_type_script = "uid://vinw15j5guph"

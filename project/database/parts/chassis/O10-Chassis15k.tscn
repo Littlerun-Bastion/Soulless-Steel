@@ -1,15 +1,15 @@
-[gd_scene load_steps=9 format=3 uid="uid://b7eku43a5ls5w"]
+[gd_scene format=3 uid="uid://b7eku43a5ls5w"]
 
 [ext_resource type="Texture2D" uid="uid://8h1of4xn2sox" path="res://assets/images/mechas/legs/O10/O10-rleg_sub.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://cayyc48j3544a" path="res://assets/images/mechas/legs/O10/O10-rleg_main.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://cu1djt3k3uqjw" path="res://assets/images/mechas/legs/O10/O10-lleg_main.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://dnby33u7i6sc4" path="res://assets/images/mechas/legs/O10/O10-rleg_glow.png" id="4"]
-[ext_resource type="Script" path="res://database/parts/chassis.gd" id="5"]
+[ext_resource type="Script" uid="uid://bxaywic386yj8" path="res://database/parts/chassis.gd" id="5"]
 [ext_resource type="Texture2D" uid="uid://btte4r4erbfi" path="res://assets/images/mechas/legs/O10/O10-lleg_sub.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://icuuobs8y0di" path="res://assets/images/mechas/legs/O10/O10-lleg_glow.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://dedtu7aglu0yn" path="res://assets/images/mechas/legs/O10/O10-leg-pv.png" id="8"]
 
-[node name="Part3" type="Node"]
+[node name="Part3" type="Node" unique_id=353767681]
 script = ExtResource("5")
 part_name = "O10-Chassis15k"
 manufacturer_name = "Orontes Constructions"
@@ -25,39 +25,39 @@ friction = 0.4
 rotation_acc = 0.86
 rotation_range = 20.0
 health = 4800.0
-move_heat = 55
+move_heat = 450
 weight = 24.5
 weight_capacity = 124.5
 stability = 110.0
 
-[node name="SingleSide" type="Node2D" parent="."]
+[node name="SingleSide" type="Node2D" parent="." unique_id=706020644]
 
-[node name="RightSide" type="Node2D" parent="."]
+[node name="RightSide" type="Node2D" parent="." unique_id=1587733094]
 position = Vector2(61, 0)
 
-[node name="ChassisSub" type="Sprite2D" parent="RightSide"]
+[node name="ChassisSub" type="Sprite2D" parent="RightSide" unique_id=1290368119]
 texture = ExtResource("1")
 
-[node name="ChassisGlow" type="Sprite2D" parent="RightSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="RightSide" unique_id=1644498684]
 texture = ExtResource("4")
 
-[node name="Chassis" type="Sprite2D" parent="RightSide"]
+[node name="Chassis" type="Sprite2D" parent="RightSide" unique_id=889636508]
 texture = ExtResource("2")
 
-[node name="Collision" type="CollisionPolygon2D" parent="RightSide"]
+[node name="Collision" type="CollisionPolygon2D" parent="RightSide" unique_id=485704970]
 polygon = PackedVector2Array(4.51398, -49.7519, 20.3652, -49.4182, 20.3652, 32.1739, 14.1916, 38.1807, 13.8579, 47.3577, 1.51059, 47.1909, 1.51059, 40.3498, -3.49506, 37.0127, -3.3282, -37.5715, 4.51398, -44.9131)
 
-[node name="LeftSide" type="Node2D" parent="."]
+[node name="LeftSide" type="Node2D" parent="." unique_id=1719751292]
 position = Vector2(-16, 0)
 
-[node name="ChassisSub" type="Sprite2D" parent="LeftSide"]
+[node name="ChassisSub" type="Sprite2D" parent="LeftSide" unique_id=1667005018]
 texture = ExtResource("6")
 
-[node name="ChassisGlow" type="Sprite2D" parent="LeftSide"]
+[node name="ChassisGlow" type="Sprite2D" parent="LeftSide" unique_id=2147409492]
 texture = ExtResource("7")
 
-[node name="Chassis" type="Sprite2D" parent="LeftSide"]
+[node name="Chassis" type="Sprite2D" parent="LeftSide" unique_id=1697746552]
 texture = ExtResource("3")
 
-[node name="Collision" type="CollisionPolygon2D" parent="LeftSide"]
+[node name="Collision" type="CollisionPolygon2D" parent="LeftSide" unique_id=1011543146]
 polygon = PackedVector2Array(-20.9554, -49.4026, -20.2062, 32.4424, -14.7748, 37.6864, -14.213, 46.8636, -1.18341, 47.118, -1.03476, 40.2801, 3.27611, 37.3071, 3.72206, -37.3157, -4.89968, -44.8969, -4.60238, -49.2077)

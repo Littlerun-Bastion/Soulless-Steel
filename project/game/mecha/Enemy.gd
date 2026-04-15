@@ -141,6 +141,12 @@ func update_senses(dt):
 	#Check for nearby bodies
 	for target in arena.get_mechas():
 		var distance = position.distance_to(target.position)
+		var thermal_range_mult = 1.0
+		if target.has_method("get_thermal_signature"):
+			# Cold targets detected at 60% range, hot targets at 140%
+			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
+		
+		var effective_engage_distance = engage_distance * thermal_range_mult
 		if target != self and distance <= engage_distance:
 			var found = false
 			for data in senses.bodies:

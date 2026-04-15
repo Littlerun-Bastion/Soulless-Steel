@@ -1123,17 +1123,19 @@ theme_override_font_sizes/font_size = 25
 text = "00000"
 horizontal_alignment = 2
 
-[node name="HeatBar" type="ProgressBar" parent="SubViewportContainer/SubViewport" unique_id=40731233]
+[node name="HeatBarExternal" type="ProgressBar" parent="SubViewportContainer/SubViewport" unique_id=40731233]
 custom_minimum_size = Vector2(1014, 50)
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -84.6161
-offset_top = 216.608
-offset_right = 929.393
-offset_bottom = 266.608
+offset_left = -150.99988
+offset_top = 217.0
+offset_right = 863.0093
+offset_bottom = 267.0
+grow_horizontal = 0
+grow_vertical = 2
 rotation = -1.5708
 scale = Vector2(0.4, 0.4)
 pivot_offset = Vector2(0.0195313, 67.9788)
@@ -1141,7 +1143,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_f42yf")
 value = 100.0
 show_percentage = false
 
-[node name="TextureRect" type="TextureRect" parent="SubViewportContainer/SubViewport/HeatBar" unique_id=1387017885]
+[node name="TextureRect" type="TextureRect" parent="SubViewportContainer/SubViewport/HeatBarExternal" unique_id=1387017885]
 layout_mode = 0
 offset_left = -32.0
 offset_top = -15.0
@@ -1151,28 +1153,25 @@ scale = Vector2(3.069, 1.783)
 texture = ExtResource("4")
 flip_h = true
 
-[node name="TemperatureErrorLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar" unique_id=2001702017]
+[node name="TemperatureErrorLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBarExternal" unique_id=2001702017]
+visible = false
 layout_mode = 0
-offset_left = -50.0
-offset_top = -80.0
-offset_right = 50.0
-offset_bottom = -44.0
-grow_horizontal = 0
-grow_vertical = 0
+offset_left = -32.53317
+offset_top = -22.070559
+offset_right = 67.46683
+offset_bottom = 13.929441
 rotation = 1.5708
 scale = Vector2(2.2, 2.2)
 theme = ExtResource("2")
 theme_override_font_sizes/font_size = 25
 text = "ERROR"
 
-[node name="TemperatureLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBar" unique_id=554685812]
+[node name="TemperatureLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBarExternal" unique_id=554685812]
 layout_mode = 0
-offset_left = -50.0
-offset_top = -200.0
-offset_right = 50.0
-offset_bottom = -164.0
-grow_horizontal = 0
-grow_vertical = 0
+offset_left = -32.53265
+offset_top = -159.57056
+offset_right = 67.46735
+offset_bottom = -123.57056
 rotation = 1.5708
 scale = Vector2(2.2, 2.2)
 theme = ExtResource("2")
@@ -1180,7 +1179,7 @@ theme_override_font_sizes/font_size = 25
 text = "28"
 horizontal_alignment = 2
 
-[node name="DegreesSymbol" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel" unique_id=135872625]
+[node name="DegreesSymbol" type="Label" parent="SubViewportContainer/SubViewport/HeatBarExternal/TemperatureLabel" unique_id=135872625]
 layout_mode = 0
 offset_left = 103.0
 offset_top = -6.0
@@ -1192,7 +1191,75 @@ theme_override_font_sizes/font_size = 25
 text = "o"
 horizontal_alignment = 2
 
-[node name="Celsius" type="Label" parent="SubViewportContainer/SubViewport/HeatBar/TemperatureLabel" unique_id=954759554]
+[node name="Celsius" type="Label" parent="SubViewportContainer/SubViewport/HeatBarExternal/TemperatureLabel" unique_id=954759554]
+layout_mode = 0
+offset_left = 24.0
+offset_right = 124.0
+offset_bottom = 36.0
+theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
+text = "C"
+horizontal_alignment = 2
+
+[node name="HeatBarInternal" type="ProgressBar" parent="SubViewportContainer/SubViewport" unique_id=629947849]
+custom_minimum_size = Vector2(1014, 20)
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = 217.0
+offset_right = 894.0088
+offset_bottom = 237.0
+grow_horizontal = 0
+grow_vertical = 2
+rotation = -1.5708
+scale = Vector2(0.4, 0.4)
+pivot_offset = Vector2(0.0195313, 67.9788)
+theme_override_styles/fill = SubResource("StyleBoxFlat_f42yf")
+value = 100.0
+show_percentage = false
+
+[node name="TemperatureErrorLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBarInternal" unique_id=2088048660]
+visible = false
+layout_mode = 0
+offset_left = -80.03288
+offset_top = -99.57042
+offset_right = 19.967117
+offset_bottom = -63.57042
+rotation = 1.5708
+scale = Vector2(2.2, 2.2)
+theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
+text = "ERROR"
+
+[node name="TemperatureLabel" type="Label" parent="SubViewportContainer/SubViewport/HeatBarInternal" unique_id=617559305]
+layout_mode = 0
+offset_left = -80.032364
+offset_top = -237.07042
+offset_right = 19.967636
+offset_bottom = -201.07042
+rotation = 1.5708
+scale = Vector2(2.2, 2.2)
+theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
+text = "28"
+horizontal_alignment = 2
+
+[node name="DegreesSymbol" type="Label" parent="SubViewportContainer/SubViewport/HeatBarInternal/TemperatureLabel" unique_id=927549691]
+layout_mode = 0
+offset_left = 103.0
+offset_top = -6.0
+offset_right = 117.0
+offset_bottom = 23.0
+scale = Vector2(0.5, 0.5)
+theme = ExtResource("2")
+theme_override_font_sizes/font_size = 25
+text = "o"
+horizontal_alignment = 2
+
+[node name="Celsius" type="Label" parent="SubViewportContainer/SubViewport/HeatBarInternal/TemperatureLabel" unique_id=1183756960]
 layout_mode = 0
 offset_left = 24.0
 offset_right = 124.0
@@ -1203,9 +1270,9 @@ text = "C"
 horizontal_alignment = 2
 
 [node name="StatusContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport" unique_id=532355795]
-offset_left = 1680.0
+offset_left = 1609.0
 offset_top = 406.73
-offset_right = 1842.0
+offset_right = 1771.0
 offset_bottom = 827.73
 alignment = 2
 

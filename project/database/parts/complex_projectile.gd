@@ -511,9 +511,10 @@ func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
 			if result and result.collider and result.collider.is_in_group("mecha"):
 				# Check seeker requirements
 				if fuse_detection_type == "IR":
-					if result.collider.mecha_heat / result.collider.max_heat > 0.1:
-						payload()
-						return
+					if result.collider.has_method("get_thermal_signature"):
+						if result.collider.get_thermal_signature() > 0.1:
+							payload()
+							return
 				elif fuse_detection_type == "RCS":
 					payload()
 					return

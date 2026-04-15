@@ -6,6 +6,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 signal reloading_signal
 signal finished_reloading
 
+const WEAPON_HEAT_DECAY := 30.0
+
 @onready var Main = $Main
 @onready var Sub = $Sub
 @onready var Glow = $Glow
@@ -82,7 +84,7 @@ func set_offsets(off):
 
 
 func update_heat(heat_dispersion,mecha_heat, dt):
-	heat = max(heat - heat_dispersion*dt/4, 0)
+	heat = max(heat - WEAPON_HEAT_DECAY * dt, 0.0)
 	Main.material.set_shader_parameter("heat", mecha_heat) 
 	Sub.material.set_shader_parameter("heat", heat)
 	Glow.material.set_shader_parameter("heat", heat)
@@ -146,6 +148,8 @@ func shoot(amount := 1):
 	add_time(data.burst_fire_rate)
 	clip_ammo -= amount
 	heat = min(heat + data.muzzle_heat*4, 200)
+	mecha_ref.increase_heat(data.muzzle_heat)
+		
 	if data.shoot_single_sfx:
 		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)
@@ -163,6 +167,7 @@ func shoot_battery():
 	burst_count += 1
 	add_time(data.burst_fire_rate)
 	heat = min(heat + data.muzzle_heat*4, 200)
+	mecha_ref.increase_heat(data.muzzle_heat)
 	if data.shoot_single_sfx:
 		AudioManager.play_sfx(data.shoot_single_sfx, get_shoot_position().global_position, null, null, data.sound_att, data.sound_max_range)
 		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)

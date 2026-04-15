@@ -32,6 +32,8 @@ const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base we
 const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
 const THROTTLE_STEP = 0.1
 const WHEELS_SPEED_FACTOR = 0.6 #Made to balance wheels with legs since they aren't equal speed due to the animation
+const AMBIENT_TEMP := -10.0 
+const HEAT_TRANSFER := 0.3
 
 signal create_projectile
 signal create_casing
@@ -262,6 +264,13 @@ var is_shielding = false
 var is_parrying = false
 var shield_project_cooldown_timer = 0.0
 var shield_parry_timer = 0.0
+
+var internal_temp := 0.0        # °C above ambient (so 0.0 = at ambient)
+var external_temp := 0.0        # °C above ambient
+var internal_capacity := 40.0   # kJ/°C, derived from core coolant in set_core()
+var overheat_temp := 100.0      # °C above ambient, from CoolantType
+var external_capacity := 50.0   # kJ/°C, from generator
+var pending_heat_kj := 0.0     	# kJ waiting to enter the thermal system
 
 var build = {
 	"arm_weapon_left": null,
@@ -509,6 +518,11 @@ func _physics_process(dt):
 			MovementAnimation.stop()
 		if not MovementAnimation.is_playing():
 			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
+			
+	# --- Movement Heat ---
+	if build.thruster and moving and not is_dead:
+		if is_sprinting and not has_status("freezing"):
+			increase_heat(build.thruster.sprinting_heat * dt)
 
 	#Locking mechanic
 	if is_player():
@@ -645,7 +659,7 @@ func update_max_shield_from_parts():
 
 
 func set_max_heat():
-	max_heat = get_stat("heat_capacity")
+	pass #Depreciated!
 
 func is_overweight():
 	weight_capacity = get_stat("weight_capacity")
@@ -851,41 +865,119 @@ func add_decal(id, decal_position, type, size):
 		decal.setup(type, size, final_pos)
 
 
-func increase_heat(amount):
-	mecha_heat = min(mecha_heat + amount, max_heat * OVERHEAT_BUFFER)
-
+func increase_heat(amount_kj: float):
+	pending_heat_kj += amount_kj
 
 func reduce_heat(amount, min_value := 0.0):
-	mecha_heat = max(mecha_heat - amount, min_value)
+	#mecha_heat = max(mecha_heat - amount, min_value)
+	pass #Depreciated!
 
 
 func update_heat(dt):
-	#Main Mecha Heat
 	if display_mode:
-		mecha_heat = 0
+		internal_temp = 0.0
+		external_temp = 0.0
+		pending_heat_kj = 0.0
+		mecha_heat_visible = 0
 		return
+	
+	# --- Drain pending heat into thermal system ---
+	if pending_heat_kj > 0.0:
+		# Exponential drain: transfer a fraction per tick
+		var transfer_kj = pending_heat_kj * min(dt / HEAT_TRANSFER, 1.0)
+		pending_heat_kj -= transfer_kj
 		
-	#TODO remove freezing func and expand it here
-		
-	if build.generator and not has_status("fire"):
-		var effective_dispersion = build.generator.heat_dispersion * disabled_systems.heat_dispersion
-		if mecha_heat > max_heat*idle_threshold:
-			reduce_heat(freezing_status_heat(effective_dispersion)*dt, max_heat*idle_threshold)
-		else:
-			reduce_heat(freezing_status_heat(effective_dispersion * (mecha_heat/float(max_heat)))*dt)
-		for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-			weapon.update_heat(effective_dispersion, mecha_heat_visible, dt)
-	if not has_status("overheating"):
+		# Route through ventilation split (same logic as old increase_heat)
 		if build.generator:
-			mecha_heat_visible = max(mecha_heat_visible - freezing_status_heat(build.generator.heat_dispersion)*dt*4, mecha_heat)
+			var vent_ratio = build.generator.ventilation_ratio
+			var internal_kj = transfer_kj * vent_ratio
+			var external_kj = transfer_kj * (1.0 - vent_ratio)
+			
+			internal_temp += internal_kj / internal_capacity
+			
+			# Overflow check
+			if internal_temp > overheat_temp:
+				var overflow_degrees = internal_temp - overheat_temp
+				var overflow_kj = overflow_degrees * internal_capacity
+				internal_temp = overheat_temp
+				external_kj += overflow_kj
+			
+			external_temp += external_kj / external_capacity
 		else:
-			mecha_heat_visible = max(mecha_heat_visible - dt*4, mecha_heat)
+			external_temp += transfer_kj / external_capacity
+	
+	# --- Internal Cooling ---
+	# Fire status blocks all cooling (same as before)
+	if build.generator and not has_status("fire"):
+		var cooling_coeff = build.generator.cooling_power * disabled_systems.heat_dispersion
+		if has_status("freezing"):
+			cooling_coeff *= 2.0
+		
+		# Newton's law: cooling proportional to temp above ambient
+		# internal_temp is already "degrees above ambient", so just multiply
+		var internal_cooling_kw = cooling_coeff * internal_temp
+		var internal_cooling_kj = internal_cooling_kw * dt
+		internal_temp = max(internal_temp - internal_cooling_kj / internal_capacity, 0.0)
+	
+	# --- Internal Overflow Check ---
+	# If cooling couldn't keep up (or fire blocked it), overflow to external
+	if internal_temp > overheat_temp:
+		var overflow_degrees = internal_temp - overheat_temp
+		var overflow_kj = overflow_degrees * internal_capacity
+		internal_temp = overheat_temp
+		external_temp += overflow_kj / external_capacity
+	
+	# --- External Shedding ---
+	# Always sheds (even during fire — external surface still radiates)
+	if build.generator:
+		var conductivity = build.generator.thermal_conductivity
+		if has_status("freezing"):
+			conductivity *= 2.0
+		
+		var external_shedding_kw = conductivity * external_temp
+		var external_shedding_kj = external_shedding_kw * dt
+		external_temp = max(external_temp - external_shedding_kj / external_capacity, 0.0)
+	
+	# --- Weapon Heat ---
+	# Pass external_temp as the visual glow reference for now
+	for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
+		weapon.update_heat(get_effective_cooling(), external_temp, dt)
+	
+	# --- Shader Visuals ---
+	# Bridge to old shader system: map external_temp to the range shaders expect
+	# Old system used 0-300 range. Scale external_temp so ambient=0, hot combat~150-200
+	var target_visible = external_temp * 2.0  # Tuning scalar — adjust to taste
+	if has_status("overheating"):
+		target_visible = 300
+	
+	# Smooth transition (keeps the old visual feel)
+	if target_visible > mecha_heat_visible:
+		mecha_heat_visible = min(mecha_heat_visible + 200 * dt, target_visible)
 	else:
-		mecha_heat_visible = 300
+		mecha_heat_visible = max(mecha_heat_visible - 100 * dt, target_visible)
+	for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
+		weapon.update_heat(get_effective_cooling(), mecha_heat_visible, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				RightChassis, RightChassisSub, RightChassisGlow]:
 		node.material.set_shader_parameter("heat", mecha_heat_visible)
+
+# Returns a 0-1 normalized thermal signature for detection systems
+# 0.0 = at ambient (invisible), 1.0 = extremely hot
+func get_thermal_signature() -> float:
+	# Normalize against a reference "very hot" value
+	# 150°C above ambient is considered max detection signature
+	return clamp(external_temp / 150.0, 0.0, 1.0)
+
+# Returns absolute external temperature in °C (for display / fuse checks)
+func get_external_temp_absolute() -> float:
+	return AMBIENT_TEMP + external_temp
+
+func get_effective_cooling() -> float:
+	if not build.generator:
+		return 0.0
+	return build.generator.cooling_power * disabled_systems.heat_dispersion
+	
 
 
 func create_sound(volume_type, type, max_distance):
@@ -1060,14 +1152,29 @@ func set_core(part_name):
 		mech_inventory.initialize_grid(cargo[0], cargo[1])
 	else:
 		var cargo = build.core.cargo_space  # NEW
-		mech_inventory.resize_and_migrate(cargo[0], cargo[1])  # NEW
-
+		mech_inventory.resize_and_migrate(cargo[0], cargo[1])  
+		
+	# Derive internal thermal capacity from coolant
+	if build.core.coolant_type:
+		var ct: CoolantType = build.core.coolant_type
+		var mass_kg = build.core.coolant_volume * ct.density
+		internal_capacity = mass_kg * ct.specific_heat  # kJ/°C
+		overheat_temp = ct.overheat_temp - AMBIENT_TEMP  # Convert to delta above ambient
+	else:
+		# Fallback if no coolant assigned (shouldn't happen in production)
+		print("!!!!!!! MECH USING FALLBACK THERMALS !!!!!!!")
+		internal_capacity = 40.0
+		overheat_temp = 110.0
 
 func set_generator(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
 		build.generator = part_data
-		idle_threshold = build.generator.idle_threshold / 100
+		
+		# NEW: Read thermal management stats
+		external_capacity = build.generator.external_thermal_capacity
+		
+		# Battery / shield (unchanged)
 		battery_capacity = build.generator.battery_capacity
 		battery = build.generator.battery_capacity
 		battery_recharge_rate = build.generator.battery_recharge_rate
@@ -1081,7 +1188,6 @@ func set_generator(part_name):
 	else:
 		build.generator = null
 	update_max_shield_from_parts()
-	set_max_heat()
 
 
 func set_chipset(part_name):
@@ -1986,6 +2092,7 @@ func update_enemy_locking(dt, target):
 					if (percent < ecm_strength_difference):
 						locking_to.progress = 0
 					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
+			var thermal_lock_mult = get_target_thermal_lock_mult(locking_to.mecha)
 			if has_status("electrified"):
 				locking_to.progress = min(locking_to.progress + (dt*build.chipset.lock_on_speed * 0.5), 1.0)
 			else:
@@ -1998,6 +2105,16 @@ func update_enemy_locking(dt, target):
 				"mecha": target,
 			}
 	
+# How much faster/slower lock-on is based on target's thermal signature
+# Cold target (sig ~0): lock takes 2x as long
+# Neutral target (sig ~0.3): normal speed
+# Hot target (sig ~1.0): lock is ~1.5x faster
+func get_target_thermal_lock_mult(target: Node) -> float:
+	if not target.has_method("get_thermal_signature"):
+		return 1.0
+	var sig = target.get_thermal_signature()
+	# Lerp from 0.5 (cold) to 1.5 (hot), with 1.0 at sig=0.33
+	return lerp(0.5, 1.5, sig)
 
 func update_locking(dt):
 	if cur_mode == MODES.LOCK:

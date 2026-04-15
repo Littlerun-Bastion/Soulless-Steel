@@ -9,11 +9,10 @@ extends Resource
 @export var image : Texture2D
 @export var thrust_speed_multiplier := 3.0
 @export var thrust_max_speed := 400
-@export var sprinting_heat := 100
+@export var sprinting_heat := 2000
 @export var dash_strength := 2
 @export var dash_cooldown := 4
-@export var dash_heat := 100
-@export var walk_heat := 5
+@export var dash_heat := 650
 @export var weight := 1.0
 @export var tags :Array[String] = ["thruster"]
 @export var item_size := [2,2]

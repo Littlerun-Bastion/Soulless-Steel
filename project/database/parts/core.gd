@@ -19,6 +19,8 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var tags :Array[String] = ["core"]
 @export var item_size := [4,6]
 @export var cargo_space := [6,8]
+@export var coolant_volume: float = 50.0          # Litres, avg. 50
+@export var coolant_type: CoolantType = null  
 @export var front_armor := 1
 @export var side_armor := 1
 @export var rear_armor := 1

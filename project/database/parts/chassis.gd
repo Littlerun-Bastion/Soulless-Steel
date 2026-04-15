@@ -23,7 +23,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var trim_acc = 1.0
 @export var rotation_range = 10.0
 @export var health := 1000.0
-@export var move_heat = 35
+@export var move_heat = 500
 @export var weight := 300.0
 @export var weight_capacity := 1000.0
 @export var stability := 1.0

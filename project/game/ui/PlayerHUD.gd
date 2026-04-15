@@ -21,7 +21,8 @@ const BUILDING_SPEED = 1.5
 @onready var Fog = $Fog
 @onready var LifeBar = $SubViewportContainer/SubViewport/LifeBar
 @onready var ShieldBar = $SubViewportContainer/SubViewport/ShieldBar
-@onready var HeatBar = $SubViewportContainer/SubViewport/HeatBar
+@onready var HeatBarExternal = $SubViewportContainer/SubViewport/HeatBarExternal
+@onready var HeatBarInternal = $SubViewportContainer/SubViewport/HeatBarInternal
 @onready var WeaponSlots = $SubViewportContainer/SubViewport/WeaponSlots
 @onready var Cursor = $SubViewportContainer/SubViewport/MechaCursorCrosshair
 @onready var PlayerRadar = $SubViewportContainer/SubViewport/PlayerRadar
@@ -40,8 +41,10 @@ const BUILDING_SPEED = 1.5
 }
 @onready var StatusContainer = $SubViewportContainer/SubViewport/StatusContainer
 @onready var StatusChirpSFX = $SubViewportContainer/SubViewport/StatusChirpSFX
-@onready var TemperatureLabel = $SubViewportContainer/SubViewport/HeatBar/TemperatureLabel
-@onready var TemperatureErrorLabel = $SubViewportContainer/SubViewport/HeatBar/TemperatureErrorLabel
+@onready var ExternalTemperatureLabel = $SubViewportContainer/SubViewport/HeatBarExternal/TemperatureLabel
+@onready var ExternalTemperatureErrorLabel = $SubViewportContainer/SubViewport/HeatBarExternal/TemperatureErrorLabel
+@onready var InternalTemperatureLabel = $SubViewportContainer/SubViewport/HeatBarInternal/TemperatureLabel
+@onready var InternalTemperatureErrorLabel = $SubViewportContainer/SubViewport/HeatBarInternal/TemperatureErrorLabel
 @onready var ECMLabel = $SubViewportContainer/SubViewport/ECMLabel
 @onready var ECMFreqLabel = $SubViewportContainer/SubViewport/ECMLabel/ECMFreqLabel
 @onready var OverweightLabel = $SubViewportContainer/SubViewport/StatusContainer/OverweightLabel
@@ -82,15 +85,21 @@ func _process(dt):
 	if player:
 		update_cursor()
 		update_shieldbar(player.shield)
-		update_lifebar(player.hp)
-		update_heatbar(player.mecha_heat_visible)
-		if player.mecha_heat_visible > player.max_heat:
-			TemperatureLabel.visible = false
-			TemperatureErrorLabel.visible = true
+		update_lifebar(player.hp)        
+		update_heatbar_external(player.external_temp)
+		var ext_abs = round(player.AMBIENT_TEMP + player.external_temp)
+		ExternalTemperatureLabel.text = str(ext_abs)
+		
+		# Internal heat bar — coolant status
+		update_heatbar_internal(player.internal_temp)
+		if player.internal_temp >= player.overheat_temp:
+			InternalTemperatureLabel.visible = false
+			InternalTemperatureErrorLabel.visible = true
 		else:
-			TemperatureLabel.text = str(round(player.mecha_heat_visible) * 8)
-			TemperatureLabel.visible = true
-			TemperatureErrorLabel.visible = false
+			var int_abs = round(player.AMBIENT_TEMP + player.internal_temp)
+			InternalTemperatureLabel.text = str(int_abs)
+			InternalTemperatureLabel.visible = true
+			InternalTemperatureErrorLabel.visible = false
 		ShieldBar.get_node("Label").text = str(player.shield)
 		
 		for status in player.status_time:
@@ -213,10 +222,11 @@ func setup_shieldbar():
 	ShieldBar.max_value = player.max_shield
 	ShieldBar.value = player.shield
 
-
 func setup_heatbar():
-	HeatBar.max_value = player.max_heat
-	HeatBar.value = player.mecha_heat_visible
+	HeatBarExternal.max_value = 150.0 
+	HeatBarExternal.value = 0.0
+	HeatBarInternal.max_value = player.overheat_temp
+	HeatBarInternal.value = 0.0
 
 
 func setup_weapon_slots():
@@ -242,10 +252,11 @@ func update_lifebar(value):
 func update_shieldbar(value):
 	ShieldBar.value = value
 
+func update_heatbar_external(value):
+	HeatBarExternal.value = value
 
-func update_heatbar(value):
-	HeatBar.value = value
-
+func update_heatbar_internal(value):
+	HeatBarInternal.value = value
 
 func update_cursor():
 	Cursor.set_ammo("left", player.get_clip_ammo("arm_weapon_left"))

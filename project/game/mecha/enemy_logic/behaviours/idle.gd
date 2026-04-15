@@ -15,4 +15,4 @@ func get_nodes():
 
 func do_idle(_dt, enemy):
 	#Make the mecha visible
-	enemy.mecha_heat = 100
+	enemy.internal_temp = 100

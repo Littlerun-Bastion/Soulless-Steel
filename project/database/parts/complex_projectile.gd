@@ -456,7 +456,7 @@ func guidance(dt):
 			if seeker_target and is_instance_valid(seeker_target):
 				is_seeking = true
 				# Can only track if target is hot enough (>10% heat)
-				if seeker_target.mecha_heat / seeker_target.max_heat > 0.1:
+				if seeker_target.internal_temp / seeker_target.overheat_temp > 0.1:
 					is_seeking = true
 				else:
 					is_seeking = false

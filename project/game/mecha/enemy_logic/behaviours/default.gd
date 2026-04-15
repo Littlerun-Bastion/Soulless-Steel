@@ -401,7 +401,7 @@ func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		if enemy.is_shielding:
 			enemy.shield_down()
-		if reaction_timer >= reaction_speed and enemy.global_position.distance_to(enemy.current_target.global_position) < max_shooting_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
+		if reaction_timer >= reaction_speed and enemy.global_position.distance_to(enemy.current_target.global_position) < max_shooting_distance and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
 			enemy.shoot_weapons(enemy.current_target)
 		else:
 			reaction_timer += dt
@@ -471,7 +471,7 @@ func do_defend(dt, enemy):
 				aiming_at_enemy = false
 				reaction_timer = 0.0
 				
-		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance and enemy.mecha_heat/enemy.max_heat < weapon_heat_threshold:
+		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
 			if reaction_timer >= reaction_speed:
 				enemy.shoot_weapons(enemy.current_target)
 			else:
@@ -502,8 +502,8 @@ func health_diff(enemy):
 func heat_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
-			var heat_pc = enemy.mecha_heat/enemy.max_heat
-			var heat_target_pc = enemy.current_target.mecha_heat/enemy.current_target.max_heat
+			var heat_pc = enemy.internal_temp/enemy.overheat_temp
+			var heat_target_pc = enemy.current_target.internal_temp/enemy.current_target.overheat_temp
 			if heat_pc > weapon_heat_threshold:
 				if heat_pc > general_heat_threshold:
 					if health_diff(enemy) == 2:
@@ -548,7 +548,7 @@ func status_diff(enemy):
 func shield_check(enemy):
 	if is_instance_valid(enemy):
 		if enemy.under_fire_timer > 0.0:
-			if not enemy.is_shielding and enemy.mecha_heat < enemy.max_heat*general_heat_threshold:
+			if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp*general_heat_threshold:
 				enemy.shield_up()
 		else:
 			if enemy.is_shielding:

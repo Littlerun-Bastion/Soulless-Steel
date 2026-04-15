@@ -1107,9 +1107,9 @@ func set_core(part_name):
 	if not part_name:
 		build.core = null
 		Core.texture = null
-		CoreSub.texture = null  # NEW
-		CoreGlow.texture = null  # NEW
-		# NEW: do NOT touch mech_inventory here
+		CoreSub.texture = null 
+		CoreGlow.texture = null  
+		#do NOT touch mech_inventory here
 		return
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
@@ -1180,7 +1180,7 @@ func set_core(part_name):
 		var cargo = build.core.cargo_space  # MOVED: cargo declaration inside if block
 		mech_inventory.initialize_grid(cargo[0], cargo[1])
 	else:
-		var cargo = build.core.cargo_space  # NEW
+		var cargo = build.core.cargo_space  
 		mech_inventory.resize_and_migrate(cargo[0], cargo[1])  
 		
 	# Derive internal thermal capacity from coolant
@@ -1200,7 +1200,7 @@ func set_generator(part_name):
 		var part_data = PartManager.get_part("generator", part_name)
 		build.generator = part_data
 		
-		# NEW: Read thermal management stats
+		#Read thermal management stats
 		external_capacity = build.generator.external_thermal_capacity
 		
 		# Battery / shield (unchanged)
@@ -2695,7 +2695,7 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	# Emit damage signal for UI updates
 	emit_signal("component_damaged", part_name, component_name, comp.hp, comp.max_hp)
 	
-	# NEW: Special warning if cockpit is damaged
+	#Special warning if cockpit is damaged
 	if component_name == "cockpit" and comp.hp > 0:
 		emit_signal("cockpit_exposed", comp.hp)
 	
@@ -2811,7 +2811,7 @@ func refresh_dynamic_components():
 				"disabled": false
 			}
 		
-		# NEW: Add shoulder weapon components to core
+		#Add shoulder weapon components to core
 		for weapon in [build.shoulder_weapon_left, build.shoulder_weapon_right]:
 			if weapon and "additional_components" in weapon:
 				for comp_data in weapon.additional_components:
@@ -2843,7 +2843,7 @@ func refresh_dynamic_components():
 				"weight": 1.0,
 				"disabled": false
 			}
-			# NEW: Add arm weapon's additional components
+			#Add arm weapon's additional components
 			if "additional_components" in build.arm_weapon_left:
 				for comp_data in build.arm_weapon_left.additional_components:
 					components.left_shoulder[comp_data.name] = {
@@ -2871,7 +2871,7 @@ func refresh_dynamic_components():
 				"weight": 1.0,
 				"disabled": false
 			}
-			# NEW: Add arm weapon's additional components
+			#Add arm weapon's additional components
 			if "additional_components" in build.arm_weapon_right:
 				for comp_data in build.arm_weapon_right.additional_components:
 					components.right_shoulder[comp_data.name] = {
@@ -2933,7 +2933,6 @@ func enter_flagged_state():
 	emit_signal("exposed", self)  # Keep old signal for compatibility
 	print("!!! MECH FLAGGED !!!")
 
-# Add this function to Mecha.gd
 func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()
 	get_parent().add_child(explosion)
@@ -2944,13 +2943,13 @@ func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	var base_scale = 1.0
 	match part_name:
 		"core":
-			base_scale = 1.2
+			base_scale = 0.5
 		"chassis":
-			base_scale = 1.3
+			base_scale = 0.7
 		"head":
-			base_scale = 0.8
+			base_scale = 0.4
 		"left_shoulder", "right_shoulder":
-			base_scale = 0.9
+			base_scale = 0.5
 	
 	if is_destroyed:
 		base_scale *= 1.5
@@ -2961,7 +2960,6 @@ func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	explosion.global_position += offset
 	
-# Add this helper function to Mecha.gd
 func get_part_global_position(part_name: String) -> Vector2:
 	match part_name:
 		"core":

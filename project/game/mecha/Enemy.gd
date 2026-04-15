@@ -33,6 +33,8 @@ var most_recent_attacker = false
 var last_attack_position = false
 var under_fire_timer = 0.0
 var personality: Personality = null
+var preferred_combat_range: float = 2000.0
+var combat_style: String = "balanced"
 
 
 func _ready():
@@ -107,6 +109,40 @@ func setup(arena_ref, design_data, _name):
 		personality = design_data["personality"]
 	if personality == null:
 		personality = Personality.new()
+
+	_analyze_build()
+
+
+func _analyze_build():
+	var ranges := []
+	for weapon_key in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
+		var weapon = build[weapon_key]
+		if weapon == null:
+			continue
+		var r = weapon.get("ai_engage_range")
+		if r != null and r > 0:
+			ranges.append(r)
+
+	if ranges.size() > 0:
+		var total := 0.0
+		for r in ranges:
+			total += r
+		preferred_combat_range = total / ranges.size()
+
+	# Determine style from range
+	if preferred_combat_range >= 3000:
+		combat_style = "sniper"
+	elif preferred_combat_range <= 1300:
+		combat_style = "brawler"
+	else:
+		combat_style = "balanced"
+
+	# Override: if any weapon is indirect fire, go artillery
+	for weapon_key in ["shoulder_weapon_left", "shoulder_weapon_right"]:
+		var weapon = build[weapon_key]
+		if weapon and weapon.get("is_indirect_fire"):
+			combat_style = "artillery"
+			break
 
 
 func should_engage(target: Mecha) -> bool:

@@ -397,11 +397,37 @@ func do_in_combat(_dt, enemy):
 		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
 		aggression = base_aggression + personality_mod
 
+func _get_effective_distances(enemy) -> Dictionary:
+	var eff = {
+		"min_kite": min_kite_distance,
+		"max_kite": max_kite_distance,
+		"max_shoot": max_shooting_distance,
+		"cqb": cqb_distance,
+	}
+	match enemy.combat_style:
+		"sniper":
+			eff.max_shoot = enemy.preferred_combat_range
+			eff.min_kite = enemy.preferred_combat_range * 0.75
+			eff.max_kite = enemy.preferred_combat_range * 0.9
+			eff.cqb = enemy.preferred_combat_range * 0.5
+		"brawler":
+			eff.max_shoot = enemy.preferred_combat_range
+			eff.min_kite = 400
+			eff.max_kite = 700
+			eff.cqb = 500
+		"artillery":
+			eff.max_shoot = enemy.preferred_combat_range
+			eff.min_kite = enemy.preferred_combat_range * 0.8
+			eff.max_kite = enemy.preferred_combat_range
+			eff.cqb = enemy.preferred_combat_range * 0.6
+	return eff
+
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
+		var eff = _get_effective_distances(enemy)
 		if enemy.is_shielding:
 			enemy.shield_down()
-		if reaction_timer >= reaction_speed and enemy.global_position.distance_to(enemy.current_target.global_position) < max_shooting_distance and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
+		if reaction_timer >= reaction_speed and enemy.global_position.distance_to(enemy.current_target.global_position) < eff.max_shoot and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
 			enemy.shoot_weapons(enemy.current_target)
 		else:
 			reaction_timer += dt
@@ -409,27 +435,27 @@ func do_attack(dt, enemy):
 		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
 		aggression = base_aggression + personality_mod
 		enemy.going_to_position = true
-		
+
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 			aiming_at_enemy = true
 		else:
 			if aiming_at_enemy or not point_of_interest:
-				point_of_interest = enemy.get_random_point_on_radius(enemy.current_target.global_position, cqb_distance)
+				point_of_interest = enemy.get_random_point_on_radius(enemy.current_target.global_position, eff.cqb)
 				aiming_at_enemy = false
 				reaction_timer = 0.0
 		if enemy.get_locked_to() and aiming_at_enemy and reaction_timer >= reaction_speed:
-			if enemy.global_position.distance_to(enemy.current_target.global_position) < min_kite_distance:
+			if enemy.global_position.distance_to(enemy.current_target.global_position) < eff.min_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif enemy.global_position.distance_to(enemy.current_target.global_position) > max_kite_distance:
+			elif enemy.global_position.distance_to(enemy.current_target.global_position) > eff.max_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
 			else:
 				enemy.decrease_throttle(0, 0.05)
 				enemy.navigate_to_target(dt, 1.0, 0.8)
 		elif aiming_at_enemy and reaction_timer >= reaction_speed:
-			if enemy.global_position.distance_to(enemy.current_target.global_position) > cqb_distance:
+			if enemy.global_position.distance_to(enemy.current_target.global_position) > eff.cqb:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
 			else:
@@ -438,31 +464,32 @@ func do_attack(dt, enemy):
 		else:
 			enemy.increase_throttle(1, 0.01)
 			enemy.navigate_to_target(dt, 0.0, 0.65)
-			
+
 		if point_of_interest:
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
-			
+
 		if enemy.NavAgent.is_navigation_finished():
 			enemy.going_to_position = false
 			point_of_interest = false
 
 func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
+		var eff = _get_effective_distances(enemy)
 		shield_check(enemy)
 		enemy.going_to_position = true
 		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
 		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
 		aggression = base_aggression + personality_mod
 		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
-		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance:
+		if enemy.global_position.distance_to(point_of_interest) < eff.max_kite:
 			enemy.increase_throttle(1, 0.01)
 			enemy.navigate_to_target(dt, 0.0, 0.65)
 		else:
 			enemy.decrease_throttle(0, 0.05)
 			enemy.navigate_to_target(dt, 1.0, 0.8)
-			
-		
+
+
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 			aiming_at_enemy = true
@@ -470,8 +497,8 @@ func do_defend(dt, enemy):
 			if aiming_at_enemy or not point_of_interest:
 				aiming_at_enemy = false
 				reaction_timer = 0.0
-				
-		if enemy.global_position.distance_to(point_of_interest) < max_kite_distance and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
+
+		if enemy.global_position.distance_to(point_of_interest) < eff.max_kite and enemy.internal_temp/enemy.overheat_temp < weapon_heat_threshold:
 			if reaction_timer >= reaction_speed:
 				enemy.shoot_weapons(enemy.current_target)
 			else:

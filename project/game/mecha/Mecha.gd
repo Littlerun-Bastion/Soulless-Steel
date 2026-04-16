@@ -3021,7 +3021,7 @@ func estimate_threat_level() -> float:
 	for slot in weapon_slots:
 		if not disabled_systems[slot]:
 			working_weapons += 0.25
-	var sys_avg := (disabled_systems.mobility + disabled_systems.sensors + disabled_systems.heat_dispersion) / 3.0
+	var sys_avg = (disabled_systems.mobility + disabled_systems.sensors + disabled_systems.heat_dispersion) / 3.0
 	threat += (working_weapons * 0.5 + sys_avg * 0.5) * 0.15
 
 	# Heat state (15%) — worse of internal vs external temp

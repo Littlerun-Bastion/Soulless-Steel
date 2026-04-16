@@ -52,6 +52,7 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabel = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel
 @onready var ExposedLabel2 = $SubViewportContainer/SubViewport/ExposedLabels/ExposedLabel2
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
+@onready var wireframe_display: WireframeDisplay = $SubViewportContainer/SubViewport/WireframeDisplay
 
 #@export var InventoryUIScene: PackedScene
 #var inventory_ui: InventoryUI
@@ -193,6 +194,7 @@ func setup(player_ref, mechas_ref):
 	setup_heatbar()
 	setup_weapon_slots()
 	setup_cursor()
+	wireframe_display.setup(player)
 	if player.build.chipset.has_radar:
 		PlayerRadar.setup(mechas, player, player.build.chipset.radar_range, player.build.chipset.radar_refresh_rate)
 		PlayerRadar.show()

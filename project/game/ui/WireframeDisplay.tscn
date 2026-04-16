@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://drcrlsi0fjar4"]
+
+[ext_resource type="Script" uid="uid://bsf5t1pju7iq3" path="res://game/ui/WireframeDisplay.gd" id="1_l326r"]
+[ext_resource type="Texture2D" uid="uid://cmsjoai03q8ed" path="res://assets/images/ui/player_ui/ui_core_wireframe_0.png" id="2_4bjkk"]
+[ext_resource type="Texture2D" uid="uid://c1134ib1plvri" path="res://assets/images/ui/player_ui/ui_core_wireframe_1.png" id="3_k4mou"]
+[ext_resource type="Texture2D" uid="uid://bdfmfhr1260w7" path="res://assets/images/ui/player_ui/ui_core_wireframe_2.png" id="4_nq2rv"]
+[ext_resource type="Texture2D" uid="uid://cgdbs5csiyend" path="res://assets/images/ui/player_ui/ui_core_wireframe_3.png" id="5_rmmoq"]
+[ext_resource type="Texture2D" uid="uid://c53gdpcdaftc" path="res://assets/images/ui/player_ui/ui_head_wireframe_0.png" id="6_n0r3f"]
+[ext_resource type="Texture2D" uid="uid://dc24513ggajfm" path="res://assets/images/ui/player_ui/ui_head_wireframe_1.png" id="7_cuv1c"]
+[ext_resource type="Texture2D" uid="uid://blpwc6ra7sgtu" path="res://assets/images/ui/player_ui/ui_head_wireframe_2.png" id="8_5m0yr"]
+[ext_resource type="Texture2D" uid="uid://coajxifux26h" path="res://assets/images/ui/player_ui/ui_head_wireframe_3.png" id="9_btnoy"]
+[ext_resource type="Texture2D" uid="uid://mk2q82lk0u0j" path="res://assets/images/ui/player_ui/ui_shoulder_wireframe_0.png" id="10_btnoy"]
+[ext_resource type="Texture2D" uid="uid://cmd0t6g0kjd81" path="res://assets/images/ui/player_ui/ui_shoulder_wireframe_1.png" id="11_vty1r"]
+[ext_resource type="Texture2D" uid="uid://b2rhkwuvvs7lt" path="res://assets/images/ui/player_ui/ui_shoulder_wireframe_2.png" id="12_yfeul"]
+[ext_resource type="Texture2D" uid="uid://mj0lb7ws74ca" path="res://assets/images/ui/player_ui/ui_shoulder_wireframe_3.png" id="13_bnkl0"]
+[ext_resource type="Texture2D" uid="uid://bxjrd3p5ergy4" path="res://assets/images/ui/player_ui/ui_chassis_leg_wireframe_0.png" id="14_wwhtd"]
+[ext_resource type="Texture2D" uid="uid://o5fqwhkrhqid" path="res://assets/images/ui/player_ui/ui_chassis_leg_wireframe_1.png" id="15_po1du"]
+[ext_resource type="Texture2D" uid="uid://7807driw6v2b" path="res://assets/images/ui/player_ui/ui_chassis_leg_wireframe_2.png" id="16_3b4xb"]
+[ext_resource type="Texture2D" uid="uid://qyplvisstb6" path="res://assets/images/ui/player_ui/ui_chassis_leg_wireframe_3.png" id="17_38mwu"]
+[ext_resource type="Texture2D" uid="uid://dpyumhic4e0cc" path="res://assets/images/ui/player_ui/ui_weapon_wireframe_2.png" id="18_yfeul"]
+[ext_resource type="Texture2D" uid="uid://divj7lh5gnms4" path="res://assets/images/ui/player_ui/ui_chassis_single_wireframe_3.png" id="19_bnkl0"]
+[ext_resource type="Texture2D" uid="uid://yubadhwwvjpd" path="res://assets/images/ui/player_ui/ui_weapon_wireframe_1.png" id="19_wwhtd"]
+[ext_resource type="Texture2D" uid="uid://b3elklv2jdv4x" path="res://assets/images/ui/player_ui/ui_weapon_wireframe_0.png" id="20_po1du"]
+
+[node name="WireframeDisplay" type="Node2D" unique_id=354948329]
+script = ExtResource("1_l326r")
+core_sprites = Array[Texture2D]([ExtResource("2_4bjkk"), ExtResource("3_k4mou"), ExtResource("4_nq2rv"), ExtResource("5_rmmoq")])
+head_sprites = Array[Texture2D]([ExtResource("6_n0r3f"), ExtResource("7_cuv1c"), ExtResource("8_5m0yr"), ExtResource("9_btnoy")])
+left_shoulder_sprites = Array[Texture2D]([ExtResource("10_btnoy"), ExtResource("11_vty1r"), ExtResource("12_yfeul"), ExtResource("13_bnkl0")])
+chassis_left_sprites = Array[Texture2D]([ExtResource("14_wwhtd"), ExtResource("15_po1du"), ExtResource("16_3b4xb"), ExtResource("17_38mwu")])
+chassis_single_sprites = Array[Texture2D]([ExtResource("2_4bjkk"), ExtResource("3_k4mou"), ExtResource("4_nq2rv"), ExtResource("5_rmmoq")])
+weapon_sprites = Array[Texture2D]([ExtResource("18_yfeul"), ExtResource("19_wwhtd"), ExtResource("20_po1du")])
+
+[node name="WFNodeChassisSingle" type="Node2D" parent="." unique_id=1065590484]
+
+[node name="WFChassisSingle" type="Sprite2D" parent="WFNodeChassisSingle" unique_id=155715090]
+texture = ExtResource("19_bnkl0")
+
+[node name="WFCore" type="Sprite2D" parent="." unique_id=704884407]
+texture = ExtResource("5_rmmoq")
+
+[node name="WFNodeChassisLeft" type="Node2D" parent="." unique_id=331013958]
+position = Vector2(-73, 103)
+
+[node name="WFChassisLeft" type="Sprite2D" parent="WFNodeChassisLeft" unique_id=1472321012]
+position = Vector2(-10, 54)
+texture = ExtResource("17_38mwu")
+
+[node name="WFNodeChassisRight" type="Node2D" parent="." unique_id=1186689668]
+position = Vector2(73, 103)
+
+[node name="WFChassisRight" type="Sprite2D" parent="WFNodeChassisRight" unique_id=1637733877]
+position = Vector2(7, 53)
+texture = ExtResource("17_38mwu")
+flip_h = true
+
+[node name="WFNodeLeftShoulder" type="Node2D" parent="." unique_id=1208158629]
+position = Vector2(-73, 9)
+
+[node name="WFLeftShoulder" type="Sprite2D" parent="WFNodeLeftShoulder" unique_id=699256975]
+position = Vector2(-20, 0)
+texture = ExtResource("13_bnkl0")
+
+[node name="WFNodeRightShoulder" type="Node2D" parent="." unique_id=1430918781]
+position = Vector2(73, 9)
+
+[node name="WFRightShoulder" type="Sprite2D" parent="WFNodeRightShoulder" unique_id=934469739]
+position = Vector2(20, 0)
+texture = ExtResource("13_bnkl0")
+flip_h = true
+
+[node name="WFNodeLeftArm" type="Node2D" parent="." unique_id=907920318]
+position = Vector2(-97, 0)
+
+[node name="WFLeftArmWeapon" type="Sprite2D" parent="WFNodeLeftArm" unique_id=1829112433]
+position = Vector2(0, -67)
+texture = ExtResource("18_yfeul")
+
+[node name="WFNodeRightArm" type="Node2D" parent="." unique_id=1488222365]
+position = Vector2(97, 0)
+
+[node name="WFRightArmWeapon" type="Sprite2D" parent="WFNodeRightArm" unique_id=1099024120]
+position = Vector2(0, -67)
+texture = ExtResource("18_yfeul")
+
+[node name="WFNodeLeftShoulderWeapon" type="Node2D" parent="." unique_id=477563743]
+position = Vector2(-30, 82)
+
+[node name="WFLeftShoulderWeapon" type="Sprite2D" parent="WFNodeLeftShoulderWeapon" unique_id=386023799]
+position = Vector2(0, -26)
+texture = ExtResource("18_yfeul")
+
+[node name="WFNodeRightShoulderWeapon" type="Node2D" parent="." unique_id=1049796912]
+position = Vector2(27, 82)
+
+[node name="WFRightShoulderWeapon" type="Sprite2D" parent="WFNodeRightShoulderWeapon" unique_id=83874445]
+position = Vector2(0, -26)
+texture = ExtResource("18_yfeul")
+
+[node name="WFNodeHead" type="Node2D" parent="." unique_id=1431175171]
+
+[node name="WFHead" type="Sprite2D" parent="WFNodeHead" unique_id=123601898]
+texture = ExtResource("9_btnoy")

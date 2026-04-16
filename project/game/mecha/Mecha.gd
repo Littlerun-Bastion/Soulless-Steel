@@ -876,8 +876,7 @@ func add_decal(id, decal_position, type, size):
 	elif shape == $RightShoulderCollision:
 		decals_node = RightShoulderDecals
 	else:
-		push_error("Not a valid shape id: " + str(id))
-		return
+		return  # Head/chassis hits — no decal nodes for these parts
 	if not is_instance_valid(decals_node):
 		return
 	var decal = DECAL.instantiate()

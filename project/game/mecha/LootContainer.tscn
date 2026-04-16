@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://tv5db4m62wwu"]
+
+[ext_resource type="Script" uid="uid://di1x8ake2q702" path="res://game/mecha/LootContainer.gd" id="1_ggdw1"]
+[ext_resource type="Texture2D" uid="uid://1pj6bvgqycqy" path="res://assets/images/props/lootcontainers/shipping_container_1.png" id="2_qicxp"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_itgkw"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4etl5"]
+size = Vector2(200, 451)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ye1jk"]
+size = Vector2(256, 504)
+
+[node name="LootContainer" type="Node2D" unique_id=137975029]
+script = ExtResource("1_ggdw1")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1597686454]
+texture = ExtResource("2_qicxp")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=987657506]
+physics_material_override = SubResource("PhysicsMaterial_itgkw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1175440619]
+position = Vector2(0, -23.5)
+shape = SubResource("RectangleShape2D_4etl5")
+
+[node name="InteractArea" type="Area2D" parent="." unique_id=1723083477]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=431163533]
+position = Vector2(0, -20)
+shape = SubResource("RectangleShape2D_ye1jk")

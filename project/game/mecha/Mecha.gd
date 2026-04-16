@@ -2634,6 +2634,12 @@ func get_default_components(part_type: String) -> Dictionary:
 				"suspension": {
 					"hp": 2, "max_hp": 2,
 					"tags": ["internal"],
+					"weight": 1.0,
+					"disabled": false
+				},
+				"power unit": {
+					"hp": 2, "max_hp": 2,
+					"tags": ["internal"],
 					"weight": 1.5,
 					"disabled": false
 				},

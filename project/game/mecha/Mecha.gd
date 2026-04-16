@@ -2981,3 +2981,62 @@ func get_part_global_position(part_name: String) -> Vector2:
 				return global_position
 		_:
 			return global_position  # Fallback to mech center
+
+
+func estimate_threat_level() -> float:
+	# Returns 0.0 (helpless) to 1.0 (full strength)
+	var threat := 0.0
+
+	# Armor integrity (30%) — remaining pips across all parts/facings
+	var total_pips := 0
+	var max_pips := 0
+	for part_name in armor:
+		for facing in armor[part_name]:
+			var face = armor[part_name][facing]
+			if face.level > 0:  # only count equipped facings
+				total_pips += face.pips
+				max_pips += 3  # all facings start with 3 pips
+	if max_pips > 0:
+		threat += (float(total_pips) / float(max_pips)) * 0.3
+	else:
+		threat += 0.3
+
+	# Component health (25%) — average hp/max_hp across all components
+	var comp_total := 0.0
+	var comp_count := 0
+	for part_name in components:
+		for comp_name in components[part_name]:
+			var comp = components[part_name][comp_name]
+			if comp.max_hp > 0:
+				comp_total += float(comp.hp) / float(comp.max_hp)
+			comp_count += 1
+	if comp_count > 0:
+		threat += (comp_total / float(comp_count)) * 0.25
+	else:
+		threat += 0.25
+
+	# Systems functional (15%) — working weapons + system multipliers
+	var working_weapons := 0.0
+	var weapon_slots := ["left_arm_weapon", "right_arm_weapon", "left_shoulder_weapon", "right_shoulder_weapon"]
+	for slot in weapon_slots:
+		if not disabled_systems[slot]:
+			working_weapons += 0.25
+	var sys_avg := (disabled_systems.mobility + disabled_systems.sensors + disabled_systems.heat_dispersion) / 3.0
+	threat += (working_weapons * 0.5 + sys_avg * 0.5) * 0.15
+
+	# Heat state (15%) — worse of internal vs external temp
+	if overheat_temp > 0:
+		var heat_ratio = maxf(internal_temp, external_temp) / overheat_temp
+		threat += (1.0 - clampf(heat_ratio, 0.0, 1.0)) * 0.15
+	else:
+		threat += 0.15
+
+	# Flagged/status (15%)
+	if is_exposed:
+		pass  # 0.0 contribution
+	elif has_any_status():
+		threat += 0.075  # halved
+	else:
+		threat += 0.15
+
+	return clampf(threat, 0.0, 1.0)

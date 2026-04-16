@@ -32,6 +32,9 @@ var is_locking = false
 var most_recent_attacker = false
 var last_attack_position = false
 var under_fire_timer = 0.0
+var personality: Personality = null
+var preferred_combat_range: float = 2000.0
+var combat_style: String = "balanced"
 
 
 func _ready():
@@ -99,8 +102,67 @@ func setup(arena_ref, design_data, _name):
 		mecha_name = _name
 	else:
 		mecha_name = "Mecha " + str(randi()%2000)
-		
+
 	set_parts_from_design(design_data)
+
+	if design_data.has("personality") and design_data["personality"] is Personality:
+		personality = design_data["personality"]
+	if personality == null:
+		personality = Personality.new()
+
+	_analyze_build()
+
+
+func _analyze_build():
+	var ranges := []
+	for weapon_key in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
+		var weapon = build[weapon_key]
+		if weapon == null:
+			continue
+		var r = weapon.get("ai_engage_range")
+		if r != null and r > 0:
+			ranges.append(r)
+
+	if ranges.size() > 0:
+		var total := 0.0
+		for r in ranges:
+			total += r
+		preferred_combat_range = total / ranges.size()
+
+	# Determine style from range
+	if preferred_combat_range >= 3000:
+		combat_style = "sniper"
+	elif preferred_combat_range <= 1300:
+		combat_style = "brawler"
+	else:
+		combat_style = "balanced"
+
+	# Override: if any weapon is indirect fire, go artillery
+	for weapon_key in ["shoulder_weapon_left", "shoulder_weapon_right"]:
+		var weapon = build[weapon_key]
+		if weapon and weapon.get("is_indirect_fire"):
+			combat_style = "artillery"
+			break
+
+
+func should_engage(target: Mecha) -> bool:
+	if not is_instance_valid(target):
+		return false
+
+	var my_threat = estimate_threat_level()
+	var their_threat = target.estimate_threat_level()
+	var difference = their_threat - my_threat  # positive = they're stronger
+
+	# Courage determines how much stronger the target can be before we bail
+	# courage 0.0 -> only fight if we're stronger (difference < 0)
+	# courage 0.5 -> fight if roughly even (difference < 0.25)
+	# courage 1.0 -> fight anyone (difference < 0.5)
+	var threshold = personality.courage * 0.5
+
+	# Aggression shifts the threshold further
+	threshold += personality.aggression * 0.2
+
+	return difference < threshold
 
 
 #AI METHODS

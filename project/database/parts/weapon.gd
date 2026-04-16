@@ -11,6 +11,7 @@ extends Node
 @export var description : String
 @export var image : Texture2D
 @export var item_size := [3,2]
+@export var ai_engage_range := 2000
 @export var is_indirect_fire := false
 @export var additional_components: Array[Dictionary] = [
 	#{ EXAMPLE OF ADDITIONAL COMPONENTS (do not delete)

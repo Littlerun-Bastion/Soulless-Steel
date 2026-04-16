@@ -132,7 +132,6 @@ func can_shoot(amount := 1):
 	if timer > 0.0 or (clip_ammo is not bool and clip_ammo < amount) or is_reloading():
 		return false
 	
-	# Jam check — only when mech is at internal overheat
 	if mecha_ref.internal_temp >= mecha_ref.overheat_temp or mecha_ref.external_temp > 110.0:
 		# Jam chance scales with external temp (0% at 110°C ext, abt 30% at 200°C ext)
 		var jam_chance = clamp(mecha_ref.external_temp / 600.0, 0.0, 0.3)

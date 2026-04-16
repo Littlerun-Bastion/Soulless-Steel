@@ -86,8 +86,7 @@ func _process(_delta: float) -> void:
 		node_chassis_right.rotation = player.get_node("Chassis/Right").global_rotation - player.rotation
 	else:
 		node_chassis_single.rotation = player.get_node("Chassis/Single").global_rotation - player.rotation
-	
-	print(player.get_node("LeftShoulder").global_rotation, " vs mech: ", player.rotation)
+
 	
 func _connect_signals() -> void:
 	player.component_damaged.connect(_on_component_damaged)

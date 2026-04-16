@@ -16,6 +16,7 @@
 [ext_resource type="Material" uid="uid://d0kmtsqqmt5ec" path="res://assets/shaders/ScreenWarp.tres" id="11"]
 [ext_resource type="AudioStream" uid="uid://c2a4p5e1ojcxg" path="res://assets/audio/sfx/status_effect_chirp.ogg" id="12"]
 [ext_resource type="PackedScene" uid="uid://d0kc3mk5xv2t" path="res://game/ui/MechaCursorCrosshair.tscn" id="13"]
+[ext_resource type="PackedScene" uid="uid://drcrlsi0fjar4" path="res://game/ui/WireframeDisplay.tscn" id="13_4d0cs"]
 [ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
 [ext_resource type="PackedScene" uid="uid://bvtw2rmyhtr0p" path="res://game/ui/DashCooldown.tscn" id="18_hvc7y"]
 
@@ -992,9 +993,9 @@ autoplay = &"RESET"
 visible = false
 layout_mode = 3
 anchors_preset = 0
-offset_left = 1372.0
+offset_left = 802.0
 offset_top = 965.0
-offset_right = 1412.0
+offset_right = 842.0
 offset_bottom = 1005.0
 mouse_filter = 2
 
@@ -1021,6 +1022,7 @@ Exposed"
 horizontal_alignment = 2
 
 [node name="LifeBar" type="ProgressBar" parent="SubViewportContainer/SubViewport" unique_id=1199173933]
+visible = false
 custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
 anchor_left = 1.0
@@ -1037,6 +1039,7 @@ value = 100.0
 show_percentage = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/LifeBar" unique_id=1691672948]
+visible = false
 texture_filter = 1
 layout_mode = 0
 offset_left = -9.0
@@ -1048,6 +1051,7 @@ texture = ExtResource("4")
 flip_h = true
 
 [node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/LifeBar" unique_id=2139475605]
+visible = false
 layout_mode = 0
 offset_left = -11.0425
 offset_top = 12.1623
@@ -1059,6 +1063,7 @@ theme_override_font_sizes/font_size = 25
 text = "ARM"
 
 [node name="Label" type="Label" parent="SubViewportContainer/SubViewport/LifeBar" unique_id=400484502]
+visible = false
 layout_mode = 0
 offset_left = 193.651
 offset_top = 11.8262
@@ -1073,6 +1078,7 @@ text = "00000"
 horizontal_alignment = 2
 
 [node name="ShieldBar" type="ProgressBar" parent="SubViewportContainer/SubViewport" unique_id=954722619]
+visible = false
 custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
 anchor_left = 1.0
@@ -1089,6 +1095,7 @@ value = 100.0
 show_percentage = false
 
 [node name="bar_back" type="TextureRect" parent="SubViewportContainer/SubViewport/ShieldBar" unique_id=1885717615]
+visible = false
 layout_mode = 0
 offset_left = -9.0
 offset_top = -9.0
@@ -1099,6 +1106,7 @@ texture = ExtResource("4")
 flip_h = true
 
 [node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/ShieldBar" unique_id=1877682280]
+visible = false
 layout_mode = 0
 offset_left = -11.0425
 offset_top = 11.7883
@@ -1110,6 +1118,7 @@ theme_override_font_sizes/font_size = 25
 text = "SHD"
 
 [node name="Label" type="Label" parent="SubViewportContainer/SubViewport/ShieldBar" unique_id=946262977]
+visible = false
 layout_mode = 0
 offset_left = 193.063
 offset_top = 12.4233
@@ -1131,9 +1140,9 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -150.99988
-offset_top = 217.0
+offset_top = 313.26996
 offset_right = 863.0093
-offset_bottom = 267.0
+offset_bottom = 363.26996
 grow_horizontal = 0
 grow_vertical = 2
 rotation = -1.5708
@@ -1209,9 +1218,9 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -120.0
-offset_top = 217.0
+offset_top = 313.26996
 offset_right = 894.0088
-offset_bottom = 237.0
+offset_bottom = 333.26996
 grow_horizontal = 0
 grow_vertical = 2
 rotation = -1.5708
@@ -1271,9 +1280,9 @@ horizontal_alignment = 2
 
 [node name="StatusContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport" unique_id=532355795]
 offset_left = 1609.0
-offset_top = 406.73
+offset_top = 503.0
 offset_right = 1771.0
-offset_bottom = 827.73
+offset_bottom = 924.0
 alignment = 2
 
 [node name="FreezingLabel" type="Label" parent="SubViewportContainer/SubViewport/StatusContainer" unique_id=655781109]
@@ -1316,20 +1325,21 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -48.6128
-offset_top = -198.232
-offset_right = 195.387
-offset_bottom = 170.768
+offset_left = -591.0
+offset_top = -405.0
+offset_right = -347.00024
+offset_bottom = -35.999756
+grow_horizontal = 0
+grow_vertical = 0
 scale = Vector2(0.6, 0.6)
 pivot_offset = Vector2(244.234, 379.71)
 alignment = 2
 
 [node name="ECMLabel" type="Label" parent="SubViewportContainer/SubViewport" unique_id=959053203]
 offset_left = 1600.0
-offset_top = 880.0
+offset_top = 976.27
 offset_right = 1842.0
-offset_bottom = 916.0
-grow_horizontal = 0
+offset_bottom = 1012.27
 theme = ExtResource("2")
 text = "WRN ECM -5.55%"
 horizontal_alignment = 2
@@ -1372,6 +1382,10 @@ offset_right = 443.492
 offset_bottom = 253.244
 scale = Vector2(0.3, 0.3)
 mouse_filter = 2
+
+[node name="WireframeDisplay" parent="SubViewportContainer/SubViewport" unique_id=354948329 instance=ExtResource("13_4d0cs")]
+position = Vector2(960, 954)
+scale = Vector2(0.33, 0.33)
 
 [node name="ExtractingLabel" type="Label" parent="SubViewportContainer/SubViewport" unique_id=93313100]
 anchors_preset = 7

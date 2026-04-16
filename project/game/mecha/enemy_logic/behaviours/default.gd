@@ -676,6 +676,8 @@ func health_diff(enemy):
 func heat_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
+			if enemy.overheat_temp <= 0 or enemy.current_target.overheat_temp <= 0:
+				return 0
 			var heat_pc = enemy.internal_temp/enemy.overheat_temp
 			var heat_target_pc = enemy.current_target.internal_temp/enemy.current_target.overheat_temp
 			if heat_pc > weapon_heat_threshold:

@@ -208,8 +208,6 @@ func setup(player_ref, mechas_ref):
 	ShieldBar.get_node("Label").text = str(player.shield)
 	for bullethole in Bulletholes.get_children():
 		bullethole.modulate.a = 0
-		
-	call_deferred("_finish_setup")
 
 func set_pause(value):
 	Cursor.visible = not value

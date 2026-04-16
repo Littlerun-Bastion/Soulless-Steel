@@ -617,13 +617,48 @@ func do_defend(dt, enemy):
 			else:
 				reaction_timer += dt
 
+func _structural_health(mecha) -> float:
+	# Armor + component health only — no heat/status/weapons to avoid double-counting
+	var score := 0.0
+
+	# Armor integrity (0.0 to 1.0)
+	var total_pips := 0
+	var max_pips := 0
+	for part_name in mecha.armor:
+		for facing in mecha.armor[part_name]:
+			var face = mecha.armor[part_name][facing]
+			if face.level > 0:
+				total_pips += face.pips
+				max_pips += 3
+	if max_pips > 0:
+		score += (float(total_pips) / float(max_pips)) * 0.55
+	else:
+		score += 0.55
+
+	# Component health (0.0 to 1.0)
+	var comp_total := 0.0
+	var comp_count := 0
+	for part_name in mecha.components:
+		for comp_name in mecha.components[part_name]:
+			var comp = mecha.components[part_name][comp_name]
+			if comp.max_hp > 0:
+				comp_total += float(comp.hp) / float(comp.max_hp)
+			comp_count += 1
+	if comp_count > 0:
+		score += (comp_total / float(comp_count)) * 0.45
+	else:
+		score += 0.45
+
+	return clampf(score, 0.0, 1.0)
+
+
 func health_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
-			var my_threat = enemy.estimate_threat_level()
-			var their_threat = enemy.current_target.estimate_threat_level()
-			var diff = my_threat - their_threat  # positive = I'm healthier
-			if their_threat <= 0.25:
+			var my_health = _structural_health(enemy)
+			var their_health = _structural_health(enemy.current_target)
+			var diff = my_health - their_health  # positive = I'm healthier
+			if their_health <= 0.25:
 				return 2  # target is crippled, press the attack
 			if diff >= 0.2:
 				return 2  # significantly healthier

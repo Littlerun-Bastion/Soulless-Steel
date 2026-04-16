@@ -460,7 +460,7 @@ func _get_self_state(enemy) -> Dictionary:
 			state.weapons_working += 1
 			var max_ammo = enemy.get_max_ammo(weapon_slots[i])
 			var total_ammo = enemy.get_total_ammo(weapon_slots[i])
-			if max_ammo and total_ammo != false:
+			if typeof(max_ammo) != TYPE_BOOL and typeof(total_ammo) != TYPE_BOOL:
 				if total_ammo > 0:
 					any_has_ammo = true
 				if max_ammo > 0 and float(total_ammo) / float(max_ammo) < 0.25:

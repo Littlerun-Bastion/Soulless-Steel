@@ -61,3 +61,6 @@ func _on_body_exited(body: Node) -> void:
 	if body.is_in_group("mecha") and body.is_player():
 		body.remove_interactable(self)
 		emit_signal("player_exited_range", self)
+		if is_open:
+			close()
+			body.current_open_container = null

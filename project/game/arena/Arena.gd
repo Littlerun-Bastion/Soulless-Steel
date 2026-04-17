@@ -525,6 +525,7 @@ func _on_player_mech_extracted(playerMech):
 func _on_player_inventory_toggled() -> void:
 	if InventoryLayer == null:
 		return
+	inventory_ui.reset_inventory_screen()
 	inventory_ui.refresh()
 	InventoryLayer.visible = not InventoryLayer.visible
 

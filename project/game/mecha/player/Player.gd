@@ -127,7 +127,11 @@ func _input(event):
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
 	elif event.is_action_pressed("toggle_inventory"):
-		emit_signal("inventory_toggled")
+		if current_open_container != null:
+			current_open_container.close()
+			current_open_container = null
+		else:
+			emit_signal("inventory_toggled")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):

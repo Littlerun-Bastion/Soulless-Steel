@@ -570,6 +570,30 @@ func _end_drag_and_refresh() -> void:
 
 	refresh()
 
+func _cancel_drag() -> void:
+	if dragging_stack == null:
+		return
+	
+	# Return item to where it came from
+	if drag_source_inventory != null and drag_origin_x >= 0 and drag_origin_y >= 0:
+		drag_source_inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
+	elif drag_source_slot != null:
+		_set_mecha_part_for_slot(drag_source_slot, dragging_stack.item_id)
+		refresh_part_slots_from_mecha()
+	
+	# Clean up drag visuals
+	if dragging_ui != null:
+		dragging_ui.queue_free()
+		dragging_ui = null
+	if drag_preview != null:
+		drag_preview.queue_free()
+		drag_preview = null
+	
+	dragging_stack = null
+	drag_source_inventory = null
+	drag_source_slot = null
+	drag_origin_x = -1
+	drag_origin_y = -1
 
 # ---------------------------------------------------------------------------
 # Equipment slot helpers
@@ -990,3 +1014,22 @@ func make_part_stack(part_type: String, part_id: String, qty: int = 1) -> item_s
 	s.item_id = part_id          # e.g. "Lancelot-Core"
 	s.quantity = qty
 	return s
+
+func reset_inventory_screen() -> void:
+	# Cancel any in-progress drag
+	if dragging_stack != null:
+		_cancel_drag()
+	
+	# Clear the secondary inventory pane
+	other_inventory = null
+	
+	# Restore default state
+	can_customize = true
+	
+	# Hide tooltip
+	if tooltip != null:
+		tooltip.hide()
+	hover_stack = null
+	
+	# Rebuild grids (will hide other_inventory_panel since it's now null)
+	refresh()

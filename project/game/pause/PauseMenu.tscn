@@ -1,12 +1,12 @@
-[gd_scene load_steps=12 format=3 uid="uid://d3krjr1dqbv7c"]
+[gd_scene format=3 uid="uid://d3krjr1dqbv7c"]
 
-[ext_resource type="Script" path="res://game/pause/PauseMenu.gd" id="1"]
+[ext_resource type="Script" uid="uid://lyf3vo3ohghn" path="res://game/pause/PauseMenu.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dr0bfwtqvloo" path="res://assets/images/ui/pause_menu/self_destruct_button.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://dptx3mq7l7mua" path="res://assets/images/ui/pause_menu/resume_button.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://c3sqxceaogggy" path="res://assets/images/ui/pause_menu/resume_button_highlight.png" id="4"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="4_teyo3"]
 [ext_resource type="Texture2D" uid="uid://dlfxbqecqq746" path="res://assets/images/ui/pause_menu/self_destruct_button_highlight.png" id="5"]
-[ext_resource type="Script" path="res://game/pause/PauseMenuParallax.gd" id="6"]
+[ext_resource type="Script" uid="uid://cee6iryon1uu7" path="res://game/pause/PauseMenuParallax.gd" id="6"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="8"]
 
 [sub_resource type="Theme" id="13"]
@@ -35,21 +35,21 @@ void fragment()
 shader = SubResource("20")
 shader_parameter/warpAmount = 0.15
 
-[node name="PauseMenu" type="CanvasLayer"]
+[node name="PauseMenu" type="CanvasLayer" unique_id=1560610659]
 process_mode = 3
 layer = 3
 script = ExtResource("1")
 
-[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=896924934]
 layer = 2
 scroll_base_scale = Vector2(3, 1)
 scroll_ignore_camera_zoom = true
 script = ExtResource("6")
 
-[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground" unique_id=1754104313]
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer" unique_id=1039486937]
 show_behind_parent = true
 offset_left = -605.0
 offset_top = -726.0
@@ -60,25 +60,25 @@ size_flags_vertical = 3
 theme = SubResource("13")
 color = Color(0, 0, 0, 0)
 
-[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground" unique_id=1994682976]
 visible = false
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer" unique_id=1174639887]
 offset_left = -602.776
 offset_top = -721.705
 offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("8")
 
-[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground" unique_id=988386788]
 visible = false
 modulate = Color(1, 1, 1, 0.14902)
 scale = Vector2(0.5, 0.5)
 motion_scale = Vector2(-0.5, -0.5)
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2" unique_id=1973828919]
 visible = false
 offset_left = -602.776
 offset_top = -721.705
@@ -86,26 +86,26 @@ offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("8")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=598680427]
 material = SubResource("21")
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer" unique_id=2094036394]
 transparent_bg = true
 handle_input_locally = false
 gui_snap_controls_to_pixels = false
 size = Vector2i(1920, 1080)
 render_target_update_mode = 4
 
-[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport"]
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport" unique_id=740522767]
 modulate = Color(0, 0, 0, 0.286275)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Control" type="Control" parent="SubViewportContainer/SubViewport"]
+[node name="Control" type="Control" parent="SubViewportContainer/SubViewport" unique_id=1533299604]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -113,7 +113,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+[node name="Label" type="Label" parent="SubViewportContainer/SubViewport/Control" unique_id=1928494140]
 layout_mode = 0
 offset_left = 40.6972
 offset_top = 16.1432
@@ -122,7 +122,7 @@ offset_bottom = 167.143
 theme = ExtResource("4_teyo3")
 text = "Runtime Functions"
 
-[node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+[node name="Label2" type="Label" parent="SubViewportContainer/SubViewport/Control" unique_id=1880683353]
 layout_mode = 0
 offset_left = 40.6972
 offset_top = 117.591
@@ -132,7 +132,7 @@ theme = ExtResource("4_teyo3")
 theme_override_font_sizes/font_size = 35
 text = "User advisory: This Interface does not halt the remote program runtime."
 
-[node name="MarginContainer" type="MarginContainer" parent="SubViewportContainer/SubViewport/Control"]
+[node name="MarginContainer" type="MarginContainer" parent="SubViewportContainer/SubViewport/Control" unique_id=1494930370]
 layout_mode = 0
 offset_left = 40.3501
 offset_top = 168.686
@@ -140,20 +140,20 @@ offset_right = 790.35
 offset_bottom = 412.686
 scale = Vector2(0.66, 0.66)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport/Control/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="SubViewportContainer/SubViewport/Control/MarginContainer" unique_id=1220455387]
 layout_mode = 2
 
-[node name="Resume" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer"]
+[node name="Resume" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer" unique_id=876720814]
 layout_mode = 2
 texture_normal = ExtResource("3")
 texture_hover = ExtResource("4")
 
-[node name="Quit" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer"]
+[node name="Quit" type="TextureButton" parent="SubViewportContainer/SubViewport/Control/MarginContainer/VBoxContainer" unique_id=2015954559]
 layout_mode = 2
 texture_normal = ExtResource("2")
 texture_hover = ExtResource("5")
 
-[node name="ColorRect2" type="ColorRect" parent="SubViewportContainer/SubViewport/Control"]
+[node name="ColorRect2" type="ColorRect" parent="SubViewportContainer/SubViewport/Control" unique_id=1880568734]
 layout_mode = 0
 anchor_left = 0.007
 anchor_right = 0.012
@@ -163,7 +163,7 @@ offset_top = 0.396851
 offset_right = 5.5559
 offset_bottom = 0.396851
 
-[node name="ColorRect3" type="ColorRect" parent="SubViewportContainer/SubViewport/Control"]
+[node name="ColorRect3" type="ColorRect" parent="SubViewportContainer/SubViewport/Control" unique_id=1297605168]
 layout_mode = 0
 anchor_left = 0.005
 anchor_right = 0.007

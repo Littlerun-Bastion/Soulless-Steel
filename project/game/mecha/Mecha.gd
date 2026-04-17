@@ -3045,3 +3045,27 @@ func estimate_threat_level() -> float:
 		threat += 0.15
 
 	return clampf(threat, 0.0, 1.0)
+	
+
+var interactables_in_range: Array = []
+
+func add_interactable(thing) -> void:
+	if thing not in interactables_in_range:
+		interactables_in_range.append(thing)
+
+func remove_interactable(thing) -> void:
+	interactables_in_range.erase(thing)
+
+func get_closest_interactable():
+	if interactables_in_range.is_empty():
+		return null
+	var closest = null
+	var closest_dist := INF
+	for thing in interactables_in_range:
+		if not is_instance_valid(thing):
+			continue
+		var d := global_position.distance_squared_to(thing.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest = thing
+	return closest

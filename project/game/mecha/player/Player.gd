@@ -25,6 +25,7 @@ var invert_controls = {
 	"x": false,
 	"y": false,
 }
+var current_open_container: LootContainer = null
 
 func _ready():
 	super()
@@ -70,8 +71,11 @@ func _input(event):
 	if paused or is_stunned() or controls_locked:
 		return
 	
-	if event.is_action_pressed("interact"):
-		pass
+	if event.is_action_pressed("interact") and current_open_container != null:
+		current_open_container.close()
+		current_open_container = null
+		get_viewport().set_input_as_handled()
+
 	elif event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
@@ -125,6 +129,14 @@ func _input(event):
 	elif event.is_action_pressed("toggle_inventory"):
 		emit_signal("inventory_toggled")
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("interact"):
+		var thing = get_closest_interactable()
+		if thing != null and thing.has_method("interact"):
+			thing.interact(self)
+			if thing is LootContainer:
+				current_open_container = thing
+			get_viewport().set_input_as_handled()	
 
 func get_camera_3d():
 	return Cam
@@ -304,6 +316,12 @@ func get_input():
 
 func get_cam():
 	return Cam
+
+func close_container() -> void:
+	print("hi!")
+	if current_open_container != null:
+		current_open_container.close()
+		current_open_container = null
 
 
 # BUILDING METHODS

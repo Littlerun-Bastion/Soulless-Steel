@@ -21,6 +21,7 @@ var is_open: bool = false
 func _ready() -> void:
 	_init_inventory()
 	add_to_group("interactable")
+	add_to_group("loot_container")
 	interact_area.body_entered.connect(_on_body_entered)
 	interact_area.body_exited.connect(_on_body_exited)
 
@@ -52,9 +53,11 @@ func close() -> void:
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("mecha") and body.is_player():
+		body.add_interactable(self)
 		emit_signal("player_entered_range", self)
 
 
 func _on_body_exited(body: Node) -> void:
 	if body.is_in_group("mecha") and body.is_player():
+		body.remove_interactable(self)
 		emit_signal("player_exited_range", self)

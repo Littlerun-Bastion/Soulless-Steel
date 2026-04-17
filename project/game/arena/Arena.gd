@@ -82,6 +82,7 @@ func _ready():
 		activate_debug_cam()
 	setup_inventory_layer(player)
 	_setup_mission()
+	setup_containers()
 
 
 func _input(event):
@@ -96,6 +97,7 @@ func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("escape") and player:
+		player.close_container()
 		PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
 		activate_debug_cam()
@@ -164,6 +166,7 @@ func setup_inventory_layer(_player) -> void:
 	inventory_ui.refresh()
 	if not player.is_connected("inventory_toggled", Callable(self, "_on_player_inventory_toggled")):
 		player.connect("inventory_toggled", Callable(self, "_on_player_inventory_toggled"))
+
 
 func update_arena_cam(dt):
 	var speed = 4600*(ArenaCam.zoom.x/10.0)
@@ -545,3 +548,24 @@ func _setup_mission() -> void:
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
 	MissionManager.start_mission(mission)
+
+
+func setup_containers() -> void:
+	for container in get_tree().get_nodes_in_group("loot_container"):
+		if not container.opened.is_connected(_on_container_opened):
+			container.opened.connect(_on_container_opened)
+		if not container.closed.is_connected(_on_container_closed):
+			container.closed.connect(_on_container_closed)
+
+func _on_container_opened(container) -> void:
+	if inventory_ui == null:
+		return
+	# Use the same pattern as the existing inventory toggle
+	inventory_ui.setup_for_mecha(player, container.inventory)
+	inventory_ui.can_customize = false  # no equipping from a loot container
+	InventoryLayer.visible = true
+	
+func _on_container_closed(container) -> void:
+	InventoryLayer.visible = false
+	if inventory_ui != null:
+		inventory_ui.can_customize = true 

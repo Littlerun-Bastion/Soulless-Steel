@@ -160,3 +160,29 @@ func remove_item_stack(stack: item_stack) -> void:
 			grid[y][x]["stack"] = null
 			grid[y][x]["origin_x"] = -1
 			grid[y][x]["origin_y"] = -1
+			
+			
+# Takes an array of item_stacks, places as many as possible, returns an array of stacks that didn't fit.
+func add_stacks_bulk(stacks: Array) -> Array:
+	var overflow: Array = []
+	for stack in stacks:
+		if stack == null:
+			continue
+		if not add_stack_to_first_available_slot(stack):
+			overflow.append(stack)
+	return overflow
+	
+# Convenience version that takes item_data + quantity pairs
+# Each entry: { "item": item_data, "quantity": int }
+func add_items_bulk(entries: Array) -> Array:
+	var stacks: Array = []
+	for entry in entries:
+		var item = entry.get("item")
+		var qty: int = int(entry.get("quantity", 1))
+		if item == null:
+			continue
+		var stack := item_stack.new()
+		stack.item = item
+		stack.quantity = qty
+		stacks.append(stack)
+	return add_stacks_bulk(stacks)

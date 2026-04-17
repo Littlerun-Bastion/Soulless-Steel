@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://tv5db4m62wwu"]
 
 [ext_resource type="Script" uid="uid://di1x8ake2q702" path="res://game/mecha/LootContainer.gd" id="1_ggdw1"]
+[ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="2_itgkw"]
 [ext_resource type="Texture2D" uid="uid://1pj6bvgqycqy" path="res://assets/images/props/lootcontainers/shipping_container_1.png" id="2_qicxp"]
+[ext_resource type="Resource" uid="uid://coshyiwvfrj5r" path="res://database/loot-tables/test_table.tres" id="3_4etl5"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_itgkw"]
 
@@ -13,6 +15,7 @@ size = Vector2(256, 504)
 
 [node name="LootContainer" type="Node2D" unique_id=137975029]
 script = ExtResource("1_ggdw1")
+default_contents = Array[ExtResource("2_itgkw")]([ExtResource("3_4etl5")])
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1597686454]
 texture = ExtResource("2_qicxp")

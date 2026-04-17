@@ -10,7 +10,7 @@ signal closed(container)
 @export var grid_height: int = 4
 @export var persistent: bool = true
 @export var container_id: String = ""  # for save/load later
-@export var default_contents: Array[Dictionary] = []
+@export var default_contents: Array[LootEntry] = []
 
 var inventory: Inventory = null
 var is_open: bool = false
@@ -30,11 +30,8 @@ func _init_inventory() -> void:
 	inventory = Inventory.new()
 	inventory.initialize_grid(grid_width, grid_height)
 
-	for entry in default_contents:
-		if entry.has("item") and entry["item"] != null:
-			var qty: int = int(entry.get("quantity", 1))
-			inventory.add_item(entry["item"], qty)
-
+	if not default_contents.is_empty():
+		populate(default_contents)
 
 # Called by the player when they press the interact key
 func interact(player: Node) -> void:
@@ -64,3 +61,22 @@ func _on_body_exited(body: Node) -> void:
 		if is_open:
 			close()
 			body.current_open_container = null
+
+func populate(entries: Array) -> void:
+	var stacks: Array = []
+	for entry in entries:
+		if entry is LootEntry and entry.item != null:
+			var stack := item_stack.new()
+			stack.item = entry.item
+			stack.quantity = entry.quantity
+			stacks.append(stack)
+	var overflow := inventory.add_stacks_bulk(stacks)
+	if not overflow.is_empty():
+		push_warning("LootContainer '%s': %d items didn't fit." % [container_id, overflow.size()])
+		#TODO: spawn as loose items on the ground when full
+		_handle_overflow(overflow)
+
+func _handle_overflow(overflow: Array) -> void:
+	# TODO: spawn LooseItem nodes at this position. for now, items are lost
+	for stack in overflow:
+		push_warning("  Discarded: %s x%d" % [str(stack.item), stack.quantity])

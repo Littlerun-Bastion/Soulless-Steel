@@ -188,6 +188,8 @@ func should_attack(target) -> bool:
 				return false  # respect flags
 			Personality.Type.PROFESSIONAL:
 				return rel.hostility > 0.5  # only if clearly hostile
+			_:
+				return false  # unknown type — respect flag by default
 
 	# Not flagged — normal engagement rules
 	return should_engage(target)
@@ -455,7 +457,8 @@ func choose_direction():
 
 
 func _on_nearby_projectile_area_entered(area):
-	if area.original_mecha_info.name != mecha_name and\
+	if area.original_mecha_info and \
+	   area.original_mecha_info.name != mecha_name and\
 	   is_instance_valid(area.original_mecha_info.body):
 		var attacker = area.original_mecha_info.body
 		under_fire_timer = 0.5

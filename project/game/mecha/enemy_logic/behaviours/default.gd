@@ -79,6 +79,13 @@ func alert_roam_to_alert(enemy):
 		priority = 3
 	return priority
 
+func ambush_to_roam(enemy):
+	var priority = 0
+	# De-escalate if no sounds remain
+	if not enemy.get_most_recent_loud_noise() and not enemy.get_most_recent_quiet_noise():
+		priority = 1
+	return priority
+
 func ambush_to_ambush_lock(enemy):
 	var priority = 0
 	if enemy.valid_target and enemy.under_fire_timer <= 0:
@@ -287,24 +294,29 @@ func do_alert(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-			
+
 		if point_of_interest:
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
-			
+
 		if enemy.NavAgent.is_navigation_finished():
 			enemy.going_to_position = false
 			point_of_interest = false
-	
+
 		enemy.navigate_to_target(dt, 0, 0, false)
-	
+
 
 func do_alert_roam(dt, enemy):
 	if is_instance_valid(enemy):
@@ -322,14 +334,19 @@ func do_alert_roam(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-		
+
 		if enemy.is_shielding:
 			enemy.shield_down()
 		
@@ -368,18 +385,23 @@ func do_ambush(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-			
-		if point_of_interest:		
+
+		if point_of_interest:
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
-		
+
 		enemy.navigate_to_target(dt, 0, 0)
 		
 		if enemy.NavAgent.is_navigation_finished():
@@ -603,6 +625,8 @@ func _find_loot_target(enemy):
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
+		if not is_instance_valid(enemy.current_target):
+			return
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		if enemy.is_shielding:
@@ -670,6 +694,8 @@ func do_attack(dt, enemy):
 
 func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
+		if not is_instance_valid(enemy.current_target):
+			return
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		shield_check(enemy)

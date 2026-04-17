@@ -26,6 +26,7 @@ var invert_controls = {
 	"y": false,
 }
 var current_open_container: LootContainer = null
+var inventory_open: bool = false
 
 func _ready():
 	super()
@@ -47,7 +48,7 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	if not controls_locked:
+	if not controls_locked and not inventory_open:
 		check_input()	
 	apply_movement(dt, get_input())
 	
@@ -57,7 +58,7 @@ func _physics_process(dt):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
-	if not get_locked_to():# and movement_type != "tank":
+	if not get_locked_to() and not inventory_open:# and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(dt, target_pos, Input.is_action_pressed("strafe"))
@@ -71,10 +72,18 @@ func _input(event):
 	if paused or is_stunned() or controls_locked:
 		return
 	
+	if event.is_action_pressed("toggle_inventory"):
+		if current_open_container != null:
+			close_container()
+		else:
+			emit_signal("inventory_toggled")
 	if event.is_action_pressed("interact") and current_open_container != null:
 		current_open_container.close()
 		current_open_container = null
 		get_viewport().set_input_as_handled()
+	
+	if inventory_open:
+		return
 
 	elif event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
@@ -126,12 +135,6 @@ func _input(event):
 		decrease_throttle(false, THROTTLE_STEP)
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
-	elif event.is_action_pressed("toggle_inventory"):
-		if current_open_container != null:
-			current_open_container.close()
-			current_open_container = null
-		else:
-			emit_signal("inventory_toggled")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
@@ -140,6 +143,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			thing.interact(self)
 			if thing is LootContainer:
 				current_open_container = thing
+				inventory_open = true
 			get_viewport().set_input_as_handled()	
 
 func get_camera_3d():
@@ -322,10 +326,10 @@ func get_cam():
 	return Cam
 
 func close_container() -> void:
-	print("hi!")
 	if current_open_container != null:
 		current_open_container.close()
 		current_open_container = null
+		inventory_open = false
 
 
 # BUILDING METHODS

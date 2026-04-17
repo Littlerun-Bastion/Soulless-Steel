@@ -528,6 +528,10 @@ func _on_player_inventory_toggled() -> void:
 	inventory_ui.reset_inventory_screen()
 	inventory_ui.refresh()
 	InventoryLayer.visible = not InventoryLayer.visible
+	if InventoryLayer.visible:
+		player.inventory_open = true
+	else:
+		player.inventory_open = false
 
 
 func _on_WindsTimer_timeout():

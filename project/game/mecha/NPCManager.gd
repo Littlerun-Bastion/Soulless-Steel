@@ -45,7 +45,7 @@ func get_random_npc():
 func get_design_data(npc):
 	var data = {}
 	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
-					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					"thruster", "arm_weapon_left", "arm_weapon_right", \
 					"shoulder_weapon_left", "shoulder_weapon_right"]:
 		var abs_type = part_type.replace("_left", "").replace("_right", "")
 		var part = get_part(abs_type, npc[part_type])

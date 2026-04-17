@@ -257,7 +257,7 @@ func update_senses(dt):
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 		
 		var effective_engage_distance = engage_distance * thermal_range_mult
-		if target != self and distance <= engage_distance:
+		if target != self and distance <= effective_engage_distance:
 			var found = false
 			for data in senses.bodies:
 				if data.body == target:
@@ -376,7 +376,7 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
-		if valid_target and is_instance_valid(current_target) and can_see_target(current_target):
+		if valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)

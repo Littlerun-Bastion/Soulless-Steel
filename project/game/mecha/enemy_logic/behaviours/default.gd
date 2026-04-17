@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat", "attack", "defend", "flee", "loot"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot"]
 var initial_state = "roam"
 
 #Custom variables
@@ -439,7 +439,7 @@ func do_in_combat(_dt, enemy):
 	if is_instance_valid(enemy):
 		shield_check(enemy)
 		if not enemy.current_target:
-			enemy.valid_target = enemy.current_target
+			enemy.current_target = enemy.valid_target
 		var state = _get_self_state(enemy)
 		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
 		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
@@ -687,10 +687,10 @@ func do_defend(dt, enemy):
 
 		if enemy.global_position.distance_to(point_of_interest) < eff.max_kite * retreat_mult:
 			enemy.increase_throttle(1, 0.01)
-			enemy.navigate_to_target(dt, 0.0, 0.65)
+			enemy.navigate_to_target(dt, 1.0, 0.65)  # retreat when too close
 		else:
 			enemy.decrease_throttle(0, 0.05)
-			enemy.navigate_to_target(dt, 1.0, 0.8)
+			enemy.navigate_to_target(dt, 0.0, 0.8)  # approach to kite range
 
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position

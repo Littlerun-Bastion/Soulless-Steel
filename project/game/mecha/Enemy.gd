@@ -35,6 +35,7 @@ var under_fire_timer = 0.0
 var personality: Personality = null
 var preferred_combat_range: float = 2000.0
 var combat_style: String = "balanced"
+var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
 
 
 func _ready():
@@ -145,6 +146,53 @@ func _analyze_build():
 			break
 
 
+func get_relationship(target) -> Dictionary:
+	if relationships.has(target):
+		return relationships[target]
+	return { "hostility": 0.0, "is_traitor": false }
+
+
+func add_hostility(target, amount: float):
+	if not relationships.has(target):
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+	relationships[target].hostility = clampf(relationships[target].hostility + amount, 0.0, 1.0)
+
+
+func mark_traitor(target):
+	if not relationships.has(target):
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+	relationships[target].hostility = 1.0
+	relationships[target].is_traitor = true
+
+
+func should_attack(target) -> bool:
+	if not is_instance_valid(target):
+		return false
+
+	var rel = get_relationship(target)
+
+	# Always attack traitors — they flagged then shot us
+	if rel.is_traitor:
+		return true
+
+	# Target is flagged/exposed — personality decides
+	if target.is_exposed:
+		match personality.type:
+			Personality.Type.RAT:
+				return true  # easy kill
+			Personality.Type.HUNTER:
+				return rel.hostility > 0.3  # only if provoked
+			Personality.Type.SCAVENGER:
+				return false  # avoid combat
+			Personality.Type.GUARDIAN:
+				return false  # respect flags
+			Personality.Type.PROFESSIONAL:
+				return rel.hostility > 0.5  # only if clearly hostile
+
+	# Not flagged — normal engagement rules
+	return should_engage(target)
+
+
 func should_engage(target: Mecha) -> bool:
 	if not is_instance_valid(target):
 		return false
@@ -253,15 +301,16 @@ func check_for_targets(eng_distance, max_shooting_distance):
 			valid_target = false
 	else:
 		valid_target = false
-	
-	#Find new target
+
+	#Find new target — filtered by should_attack
 	if not valid_target:
 		var min_distance = 99999999
 		for target in arena.get_mechas():
 			var distance = position.distance_to(target.position)
 			if target != self and distance <= eng_distance and distance < min_distance:
-				valid_target = target
-				min_distance = distance
+				if should_attack(target):
+					valid_target = target
+					min_distance = distance
 
 
 func shoot_weapons(target):
@@ -408,6 +457,14 @@ func choose_direction():
 func _on_nearby_projectile_area_entered(area):
 	if area.original_mecha_info.name != mecha_name and\
 	   is_instance_valid(area.original_mecha_info.body):
+		var attacker = area.original_mecha_info.body
 		under_fire_timer = 0.5
-		most_recent_attacker = area.original_mecha_info.body
-		last_attack_position = area.original_mecha_info.body.global_position
+		most_recent_attacker = attacker
+		last_attack_position = attacker.global_position
+
+		# Build hostility — 4 shots = max hostility
+		add_hostility(attacker, 0.25)
+
+		# Betrayal: if we're flagged and they shoot us, mark them traitor
+		if is_exposed and not get_relationship(attacker).is_traitor:
+			mark_traitor(attacker)

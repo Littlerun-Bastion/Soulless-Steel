@@ -64,7 +64,7 @@ func get_current_weight() -> float:
 		for x in range(grid_width):
 			var cell = grid[y][x]
 			var stack: item_stack = cell["stack"]
-			if stack and stack.item:
+			if stack and stack.item and cell["origin_x"] == x and cell["origin_y"] == y:
 				total += stack.item.weight * stack.quantity
 	return total
 

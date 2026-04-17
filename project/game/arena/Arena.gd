@@ -573,4 +573,7 @@ func _on_container_opened(container) -> void:
 func _on_container_closed(container) -> void:
 	InventoryLayer.visible = false
 	if inventory_ui != null:
-		inventory_ui.can_customize = true 
+		inventory_ui.can_customize = true
+	if player and is_instance_valid(player):
+		player.inventory_open = false
+		player.current_open_container = null

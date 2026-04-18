@@ -57,6 +57,12 @@ func get_design_data(npc):
 	elif npc is Dictionary and npc.has("personality"):
 		data["personality"] = _personality_from_string(npc.personality)
 
+	# Pass combat_behaviour through to Enemy.setup() (used for AI state machine)
+	if npc is Resource and npc.get("combat_behaviour"):
+		data["combat_behaviour"] = npc.combat_behaviour
+	elif npc is Dictionary and npc.has("combat_behaviour"):
+		data["combat_behaviour"] = npc["combat_behaviour"]
+
 	return data
 
 

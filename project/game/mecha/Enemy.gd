@@ -35,6 +35,7 @@ var under_fire_timer = 0.0
 var personality: Personality = null
 var preferred_combat_range: float = 2000.0
 var combat_style: String = "balanced"
+var combat_behaviour: String = "default"
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
 
 
@@ -47,7 +48,7 @@ func _ready():
 	if Debug.get_setting("ai_behaviour"):
 		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
-		logic.setup("default")
+		logic.setup(combat_behaviour)
 		
 	if Debug.get_setting("draw_debug_lines"):
 		$NavigationAgent2D.debug_enabled = true
@@ -110,6 +111,14 @@ func setup(arena_ref, design_data, _name):
 		personality = design_data["personality"]
 	if personality == null:
 		personality = Personality.new()
+
+	if design_data.has("combat_behaviour") and typeof(design_data["combat_behaviour"]) == TYPE_STRING:
+		combat_behaviour = design_data["combat_behaviour"]
+		# Re-init AI logic with the behaviour from NPC data.
+		# _ready() already ran with the fallback since add_child() fires before setup().
+		# Debug override still takes precedence.
+		if not Debug.get_setting("ai_behaviour"):
+			logic.setup(combat_behaviour)
 
 	_analyze_build()
 
@@ -177,19 +186,28 @@ func should_attack(target) -> bool:
 
 	# Target is flagged/exposed — personality decides
 	if target.is_exposed:
+		# Betrayal tendency: high treachery + low loyalty = more willing to break the code.
+		# Range 0.0 (never betray) to 1.0 (always betray).
+		var betrayal = clampf(personality.treachery - personality.loyalty, 0.0, 1.0)
+
 		match personality.type:
 			Personality.Type.RAT:
-				return true  # easy kill
+				return true  # identity trait — always opportunistic
 			Personality.Type.HUNTER:
-				return rel.hostility > 0.3  # only if provoked
+				# Normally needs provocation; betrayal lowers the bar.
+				return rel.hostility > (0.3 - betrayal * 0.3)
 			Personality.Type.SCAVENGER:
-				return false  # avoid combat
+				# Normally avoids; only a very treacherous scavenger betrays.
+				return betrayal > 0.7
 			Personality.Type.GUARDIAN:
-				return false  # respect flags
+				# Respects flags by default; loyalty holds them back.
+				# A disloyal guardian (low loyalty, some treachery) can break the code.
+				return betrayal > 0.8
 			Personality.Type.PROFESSIONAL:
-				return rel.hostility > 0.5  # only if clearly hostile
+				# Normally needs clear hostility; betrayal makes them more opportunistic.
+				return rel.hostility > (0.5 - betrayal * 0.4)
 			_:
-				return false  # unknown type — respect flag by default
+				return betrayal > 0.8  # unknown type — respect flag unless very treacherous
 
 	# Not flagged — normal engagement rules
 	return should_engage(target)
@@ -211,6 +229,12 @@ func should_engage(target: Mecha) -> bool:
 
 	# Aggression shifts the threshold further
 	threshold += personality.aggression * 0.2
+
+	# Greed: a weakened target looks like an easy kill / easy loot.
+	# Weakness 0.0 (full hp) contributes nothing; weakness 1.0 (near dead) gives full greed bonus.
+	if target.max_hp > 0:
+		var weakness = clampf(1.0 - (float(target.hp) / float(target.max_hp)), 0.0, 1.0)
+		threshold += personality.greed * weakness * 0.3
 
 	return difference < threshold
 

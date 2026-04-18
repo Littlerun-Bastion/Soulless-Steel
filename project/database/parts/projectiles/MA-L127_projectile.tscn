@@ -16,6 +16,7 @@ projectile_size = 0.75
 light_energy = 0.15
 muzzle_speed = 12750
 impact_effect = ExtResource("2_tctpp")
+armor_pen = 2
 shield_mult = 0.5
 dropoff_modifier = 0.85
 heat_damage = 7.0

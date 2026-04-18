@@ -8,7 +8,7 @@ const MARKER = preload("res://game/debug/Marker.tscn")
 var debug_settings = {
 	"window": false,
 	"navigation": false,
-	"enemy_state": false,
+	"enemy_state": true,
 	"debug_loadout": false,
 	"player_zoom": false,
 	"ai_behaviour": false,

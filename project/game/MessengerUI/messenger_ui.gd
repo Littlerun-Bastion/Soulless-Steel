@@ -89,7 +89,6 @@ func toggle() -> void:
 	$Root.mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
 
 func add_contact(contact) -> void:
-	print("add_contact called: ", contact.name)
 	contacts.append(contact)
 	call_deferred("_build_contact_list")
 

@@ -97,7 +97,6 @@ func _on_Store_pressed():
 	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
 
 func _setup_test_contact() -> void:
-	print("setting up test contact")
 	var contact = ContactData.new()
 	contact.name = "Lady Volk"
 	contact.add_message("Hey. I have a job for you.")
@@ -110,5 +109,4 @@ func _setup_test_contact() -> void:
 	
 	contact.add_reply_option("I'm in.", [], mission)
 	contact.add_reply_option("Not interested.")
-	print("contact added: ", contact.name)
 	MessengerUI.add_contact(contact)

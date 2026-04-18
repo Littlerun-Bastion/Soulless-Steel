@@ -80,9 +80,11 @@ func _physics_process(dt):
 		update_enemy_locking(dt, valid_target)
 		
 	if Debug.get_setting("enemy_state"):
-		$Debug/StateLabel.text = logic.get_current_state()
+		var state = logic.get_current_state()
+		$Debug/StateLabel.text = str(state) if state else "?"
+		$Debug/StateLabel.visible = true
 	else:
-		$Debug/StateLabel.text = ""
+		$Debug/StateLabel.visible = false
 	
 	under_fire_timer = max(under_fire_timer - dt, 0)
 

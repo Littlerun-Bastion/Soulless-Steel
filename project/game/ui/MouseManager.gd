@@ -13,6 +13,7 @@ func _ready() -> void:
 	
 	cursor_sprite = Sprite2D.new()
 	cursor_sprite.texture = preload("res://assets/images/ui/menu/cursor_none.png")  # your cursor image
+	cursor_sprite.centered = false  # anchor top-left to mouse pos so the click lands where the tip points
 	cursor_layer.add_child(cursor_sprite)
 	
 	# Always hide the hardware cursor — software cursor replaces it

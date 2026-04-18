@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://bhhfpeexxaqjn"]
+
+[ext_resource type="Script" uid="uid://di6hvhwjjk7g7" path="res://game/ui/mech_os/MechWindow.gd" id="1_vjsfk"]
+[ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="2_iop3p"]
+[ext_resource type="StyleBox" uid="uid://bvo3504jpvbpb" path="res://game/ui/mech_os/window_titlebar_unfocused.tres" id="3_21ald"]
+[ext_resource type="FontFile" uid="uid://1byivu11abn8" path="res://assets/fonts/data/SpaceMono/SpaceMono-Regular.ttf" id="4_xugai"]
+[ext_resource type="StyleBox" uid="uid://hmwgcd86cj0c" path="res://game/ui/mech_os/window_content.tres" id="5_21ald"]
+
+[node name="MechWindow" type="Panel" unique_id=1016719863]
+clip_contents = true
+offset_right = 400.0
+offset_bottom = 400.0
+script = ExtResource("1_vjsfk")
+
+[node name="TitleBar" type="Panel" parent="." unique_id=1209429272]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 1
+theme = ExtResource("2_iop3p")
+theme_override_styles/panel = ExtResource("3_21ald")
+
+[node name="HBox" type="HBoxContainer" parent="TitleBar" unique_id=1371026566]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.5
+offset_bottom = 1.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="TitleBar/HBox" unique_id=538204946]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_xugai")
+uppercase = true
+
+[node name="CloseButton" type="Button" parent="TitleBar/HBox" unique_id=1100989631]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+text = "✕"
+flat = true
+
+[node name="Content" type="PanelContainer" parent="." unique_id=1619727558]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_iop3p")
+theme_override_styles/panel = ExtResource("5_21ald")

@@ -49,6 +49,7 @@ func _ready():
 		logic.setup("default")
 		
 	if Debug.get_setting("draw_debug_lines"):
+		print("here!")
 		$NavigationAgent2D.debug_enabled = true
 	else:
 		$NavigationAgent2D.debug_enabled = false

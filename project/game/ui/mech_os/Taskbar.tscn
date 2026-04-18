@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://bwmysvynd6a83"]
+
+[ext_resource type="Script" uid="uid://b7tu5lqphnfd6" path="res://game/ui/mech_os/Taskbar.gd" id="1_5m4b7"]
+[ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="1_yq6il"]
+
+[node name="Taskbar" type="Panel" unique_id=1665287486]
+custom_minimum_size = Vector2(48, 0)
+anchors_preset = -1
+anchor_bottom = 1.0
+offset_left = 15.0
+grow_vertical = 2
+theme = ExtResource("1_yq6il")
+script = ExtResource("1_5m4b7")
+
+[node name="ButtonList" type="VBoxContainer" parent="." unique_id=1697402563]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8

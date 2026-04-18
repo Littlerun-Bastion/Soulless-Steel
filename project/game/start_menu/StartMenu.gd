@@ -39,6 +39,9 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
+	
+	if event.is_action_pressed("debug_4"):
+		MechOS.toggle_app("test")
 
 
 func start_game(mode):

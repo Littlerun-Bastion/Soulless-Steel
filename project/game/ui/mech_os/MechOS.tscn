@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://ylc8a0xjpom3"]
+
+[ext_resource type="Script" uid="uid://f3hhmetnorwr" path="res://game/ui/mech_os/MechOS.gd" id="1_akknu"]
+[ext_resource type="PackedScene" uid="uid://bwmysvynd6a83" path="res://game/ui/mech_os/Taskbar.tscn" id="2_a2lo0"]
+
+[node name="MechOS" type="CanvasLayer" unique_id=643791676]
+layer = 10
+script = ExtResource("1_akknu")
+
+[node name="Taskbar" parent="." unique_id=1665287486 instance=ExtResource("2_a2lo0")]
+offset_top = 30.0
+offset_bottom = -15.0
+
+[node name="WindowLayer" type="Control" parent="." unique_id=1467058872]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1393088163]
+anchors_preset = -1
+anchor_right = 1.0
+offset_bottom = 30.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="." unique_id=529537281]
+anchors_preset = -1
+anchor_bottom = 1.0
+offset_right = 15.0
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ColorRect4" type="ColorRect" parent="." unique_id=2022252233]
+anchors_preset = -1
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -15.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="." unique_id=1254829270]
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0, 0, 0, 1)

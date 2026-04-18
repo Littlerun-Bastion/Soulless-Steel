@@ -1,10 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://cu8mflewlkvsd"]
+[gd_scene format=3 uid="uid://cu8mflewlkvsd"]
 
-[ext_resource type="Script" path="res://game/debug/Debug.gd" id="1"]
+[ext_resource type="Script" uid="uid://unb8bqvjxxi4" path="res://game/debug/Debug.gd" id="1"]
 
-[node name="Debug" type="CanvasLayer"]
+[node name="Debug" type="CanvasLayer" unique_id=1407134672]
 layer = 2
 follow_viewport_enabled = true
 script = ExtResource("1")
 
-[node name="Markers" type="Node2D" parent="."]
+[node name="Markers" type="Node2D" parent="." unique_id=2061673199]

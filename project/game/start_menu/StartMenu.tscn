@@ -1,8 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://b2qq2eltnoung"]
+[gd_scene format=3 uid="uid://b2qq2eltnoung"]
 
-[ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
+[ext_resource type="Script" uid="uid://c4xe3wgl37nv3" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="2"]
 [ext_resource type="FontFile" path="res://assets/fonts/general_font.tres" id="2_q5sq0"]
-[ext_resource type="Script" path="res://game/start_menu/StartMenu.gd" id="4"]
+[ext_resource type="Script" uid="uid://dfkutnthvqjpn" path="res://game/start_menu/StartMenu.gd" id="4"]
 [ext_resource type="FontFile" uid="uid://blbssisrebbh6" path="res://assets/fonts/UI_smalltextfont.tres" id="5"]
 [ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="5_4l8ve"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="8_fdr4d"]
@@ -20,11 +20,11 @@ length = 15.0
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_hc8e2"]
 _data = {
-"RESET": SubResource("14"),
-"Typewrite": SubResource("15")
+&"RESET": SubResource("14"),
+&"Typewrite": SubResource("15")
 }
 
-[node name="StartMenu" type="Control"]
+[node name="StartMenu" type="Control" unique_id=820597136]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,7 +33,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4")
 
-[node name="Title" type="VBoxContainer" parent="."]
+[node name="Title" type="VBoxContainer" parent="." unique_id=1886666840]
 layout_mode = 0
 offset_left = 31.0
 offset_top = 895.0
@@ -41,26 +41,26 @@ offset_right = 637.0
 offset_bottom = 1066.0
 alignment = 2
 
-[node name="Demo" type="Label" parent="Title"]
+[node name="Demo" type="Label" parent="Title" unique_id=853648784]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_q5sq0")
 theme_override_font_sizes/font_size = 25
 text = "DEMO"
 
-[node name="CompanyName" type="Label" parent="Title"]
+[node name="CompanyName" type="Label" parent="Title" unique_id=1600058715]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_q5sq0")
 theme_override_font_sizes/font_size = 33
 text = "Littlerun Bastion"
 
-[node name="MainTitle" type="Label" parent="Title"]
+[node name="MainTitle" type="Label" parent="Title" unique_id=1366617676]
 layout_mode = 2
 theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("2_q5sq0")
 theme_override_font_sizes/font_size = 80
 text = "Soulless Steel"
 
-[node name="MainButtons" type="VBoxContainer" parent="."]
+[node name="MainButtons" type="VBoxContainer" parent="." unique_id=1379877446]
 custom_minimum_size = Vector2(750, 0)
 layout_mode = 0
 anchor_top = 0.5
@@ -72,10 +72,10 @@ offset_bottom = 1268.0
 scale = Vector2(0.36, 0.36)
 theme_override_constants/separation = 100
 
-[node name="NewGameContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="NewGameContainer" type="VBoxContainer" parent="MainButtons" unique_id=1609014192]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/NewGameContainer"]
+[node name="Button" type="Button" parent="MainButtons/NewGameContainer" unique_id=1050419236]
 layout_mode = 2
 theme = ExtResource("12")
 theme_override_constants/h_separation = 0
@@ -83,89 +83,89 @@ theme_override_constants/icon_max_width = 100
 text = "Arena Mode"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/NewGameContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/NewGameContainer" unique_id=730109486]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "SAV BOOT SEQUENCE"
 
-[node name="TestModeContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="TestModeContainer" type="VBoxContainer" parent="MainButtons" unique_id=988913429]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/TestModeContainer"]
+[node name="Button" type="Button" parent="MainButtons/TestModeContainer" unique_id=305244712]
 layout_mode = 2
 theme = ExtResource("12")
 text = "TEST MODE"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/TestModeContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/TestModeContainer" unique_id=1620044347]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "New user system simulation"
 
-[node name="HangarContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="HangarContainer" type="VBoxContainer" parent="MainButtons" unique_id=1181428585]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/HangarContainer"]
+[node name="Button" type="Button" parent="MainButtons/HangarContainer" unique_id=1436654814]
 layout_mode = 2
 theme = ExtResource("12")
 text = "Hangar"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/HangarContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/HangarContainer" unique_id=860734750]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "sav configuration "
 
-[node name="StoreContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="StoreContainer" type="VBoxContainer" parent="MainButtons" unique_id=1330450339]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/StoreContainer"]
+[node name="Button" type="Button" parent="MainButtons/StoreContainer" unique_id=1010296232]
 layout_mode = 2
 theme = ExtResource("12")
 text = "Store"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/StoreContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/StoreContainer" unique_id=1037083121]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "Market and trade interface"
 
-[node name="SettingsContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="SettingsContainer" type="VBoxContainer" parent="MainButtons" unique_id=595676744]
 visible = false
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/SettingsContainer"]
+[node name="Button" type="Button" parent="MainButtons/SettingsContainer" unique_id=846562541]
 layout_mode = 2
 theme = ExtResource("12")
 text = "Settings"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/SettingsContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/SettingsContainer" unique_id=616150744]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "system runtime parameters"
 
-[node name="ExitContainer" type="VBoxContainer" parent="MainButtons"]
+[node name="ExitContainer" type="VBoxContainer" parent="MainButtons" unique_id=1414975917]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/ExitContainer"]
+[node name="Button" type="Button" parent="MainButtons/ExitContainer" unique_id=1035132337]
 layout_mode = 2
 theme = ExtResource("12")
 text = "Exit Program"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/ExitContainer"]
+[node name="Descriptor" type="Label" parent="MainButtons/ExitContainer" unique_id=1451997123]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "terminate program runtime"
 
-[node name="MainSystemContainer" type="VBoxContainer" parent="."]
+[node name="MainSystemContainer" type="VBoxContainer" parent="." unique_id=1119478310]
 layout_mode = 0
 offset_left = 32.0
 offset_top = 47.0
@@ -173,20 +173,20 @@ offset_right = 459.0
 offset_bottom = 152.0
 theme_override_constants/separation = -5
 
-[node name="Label" type="Label" parent="MainSystemContainer"]
+[node name="Label" type="Label" parent="MainSystemContainer" unique_id=1723047929]
 layout_mode = 2
 theme = ExtResource("5_4l8ve")
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 25
 text = "MAIN SYSTEM"
 
-[node name="Label2" type="Label" parent="MainSystemContainer"]
+[node name="Label2" type="Label" parent="MainSystemContainer" unique_id=1629681451]
 layout_mode = 2
 theme = ExtResource("5_4l8ve")
 theme_override_font_sizes/font_size = 25
 text = "SAV_hUNTERos.EXE -Duelist"
 
-[node name="UpperBar" type="ColorRect" parent="."]
+[node name="UpperBar" type="ColorRect" parent="." unique_id=1597204087]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 1
 anchors_preset = 10
@@ -196,21 +196,21 @@ offset_bottom = 40.0
 grow_horizontal = 2
 color = Color(0, 0, 0, 1)
 
-[node name="SideBar1" type="ColorRect" parent="."]
+[node name="SideBar1" type="ColorRect" parent="." unique_id=1765306974]
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 0
 anchor_bottom = 1.0
 offset_left = 12.0
 offset_right = 14.0
 
-[node name="SideBar2" type="ColorRect" parent="."]
+[node name="SideBar2" type="ColorRect" parent="." unique_id=2124326445]
 custom_minimum_size = Vector2(7, 0)
 layout_mode = 0
 anchor_bottom = 1.0
 offset_left = 17.2305
 offset_right = 24.2305
 
-[node name="LowerBar" type="ColorRect" parent="."]
+[node name="LowerBar" type="ColorRect" parent="." unique_id=1637576635]
 custom_minimum_size = Vector2(0, 15)
 layout_mode = 0
 anchor_top = 0.986111
@@ -219,16 +219,16 @@ anchor_bottom = 1.0
 pivot_offset = Vector2(0.0615444, 39.8171)
 color = Color(0, 0, 0, 1)
 
-[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=1174604632]
 scale = Vector2(0.75, 0.75)
 transform = Transform2D(0.75, 0, 0, 0.75, 0, 0)
 scroll_base_scale = Vector2(3, 1)
 script = ExtResource("2")
 
-[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="BackLayer" type="ParallaxLayer" parent="ParallaxBackground" unique_id=2042434923]
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer"]
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/BackLayer" unique_id=398460774]
 show_behind_parent = true
 offset_left = -605.0
 offset_top = -726.0
@@ -239,41 +239,39 @@ size_flags_vertical = 3
 theme = SubResource("1")
 color = Color(0, 0, 0, 1)
 
-[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="GridLayer" type="ParallaxLayer" parent="ParallaxBackground" unique_id=944082871]
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer"]
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer" unique_id=136408685]
 offset_left = -602.776
 offset_top = -721.705
 offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("14")
 
-[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="GridLayer2" type="ParallaxLayer" parent="ParallaxBackground" unique_id=1706794186]
 modulate = Color(1, 1, 1, 0.14902)
 motion_scale = Vector2(-0.5, 1)
 motion_mirroring = Vector2(4000, 4000)
 
-[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+[node name="Grid" type="TextureRect" parent="ParallaxBackground/GridLayer2" unique_id=530737438]
 offset_left = -602.776
 offset_top = -721.705
 offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("14")
 
-[node name="Grid2" type="TextureRect" parent="ParallaxBackground/GridLayer2"]
+[node name="Grid2" type="TextureRect" parent="ParallaxBackground/GridLayer2" unique_id=785359354]
 offset_left = -602.776
 offset_top = -721.705
 offset_right = 3397.22
 offset_bottom = 3278.3
 texture = ExtResource("14")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_hc8e2")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=471539513]
+libraries/ = SubResource("AnimationLibrary_hc8e2")
 
-[node name="VersionLabel" type="Label" parent="."]
+[node name="VersionLabel" type="Label" parent="." unique_id=996018647]
 layout_mode = 0
 offset_left = 1675.0
 offset_top = 1017.0

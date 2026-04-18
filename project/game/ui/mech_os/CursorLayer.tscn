@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://cxgyj2oabdb2m"]
+
+[sub_resource type="GDScript" id="GDScript_nlr82"]
+script/source = "extends CanvasLayer
+
+var cursor_sprite: Sprite2D
+
+func _ready() -> void:
+	layer = 98
+	cursor_sprite = Sprite2D.new()
+	cursor_sprite.texture = preload(\"res://assets/images/ui/menu/cursor_none.png\")
+	add_child(cursor_sprite)
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+
+func _process(_delta: float) -> void:
+	cursor_sprite.global_position = get_viewport().get_mouse_position()
+"
+
+[node name="CursorLayer" type="CanvasLayer" unique_id=1141936787]
+layer = 98
+script = SubResource("GDScript_nlr82")

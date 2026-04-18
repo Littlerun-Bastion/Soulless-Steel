@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://h7n33uuonb0c"]
+[gd_scene format=3 uid="uid://h7n33uuonb0c"]
 
-[ext_resource type="Script" path="res://game/ui/ShaderEffects.gd" id="2"]
+[ext_resource type="Script" uid="uid://dloxmlmsykd3f" path="res://game/ui/ShaderEffects.gd" id="2"]
 
 [sub_resource type="Shader" id="Shader_8ofia"]
 code = "shader_type canvas_item;
@@ -87,11 +87,11 @@ shader_parameter/greenMultiplier = 0.002
 shader_parameter/greenIntensity = 0.13
 shader_parameter/warpAmount = 0.15
 
-[node name="ShaderEffects" type="CanvasLayer"]
-layer = 2
+[node name="ShaderEffects" type="CanvasLayer" unique_id=1324605501]
+layer = 99
 script = ExtResource("2")
 
-[node name="VCREffect" type="ColorRect" parent="."]
+[node name="VCREffect" type="ColorRect" parent="." unique_id=1873037450]
 material = SubResource("4")
 anchors_preset = 15
 anchor_right = 1.0

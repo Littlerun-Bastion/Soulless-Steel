@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "in_combat", "attack", "defend"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot"]
 var initial_state = "roam"
 
 #Custom variables
@@ -27,6 +27,7 @@ var lock_timer = 0.0
 var aggression = 0
 var aiming_at_enemy = false
 var reaction_timer = 0.0
+var target_container = null
 
 func get_nodes():
 	return nodes
@@ -76,6 +77,13 @@ func alert_roam_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
 		priority = 3
+	return priority
+
+func ambush_to_roam(enemy):
+	var priority = 0
+	# De-escalate if no sounds remain
+	if not enemy.get_most_recent_loud_noise() and not enemy.get_most_recent_quiet_noise():
+		priority = 1
 	return priority
 
 func ambush_to_ambush_lock(enemy):
@@ -170,6 +178,52 @@ func defend_to_roam(enemy):
 	if not enemy.valid_target:
 		priority = 8
 	return priority
+
+func attack_to_flee(enemy):
+	var priority = 0
+	if _should_flee(enemy):
+		priority = 9
+	return priority
+
+func defend_to_flee(enemy):
+	var priority = 0
+	if _should_flee(enemy):
+		priority = 9
+	return priority
+
+func in_combat_to_flee(enemy):
+	var priority = 0
+	if _should_flee(enemy):
+		priority = 9
+	return priority
+
+func flee_to_roam(enemy):
+	var priority = 0
+	if not enemy.valid_target and not enemy.under_fire_timer:
+		priority = 2
+	return priority
+
+func roam_to_loot(enemy):
+	var priority = 0
+	var container = _find_loot_target(enemy)
+	if container:
+		target_container = container
+		priority = 2
+	return priority
+
+func loot_to_roam(_enemy):
+	var priority = 0
+	if target_container == null or not is_instance_valid(target_container):
+		priority = 2
+	return priority
+
+func loot_to_alert(enemy):
+	var priority = 0
+	if enemy.under_fire_timer:
+		target_container = null
+		priority = 3
+	return priority
+
 ## STATE METHODS ##
 
 func do_roam(dt, enemy):
@@ -240,24 +294,29 @@ func do_alert(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-			
+
 		if point_of_interest:
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
-			
+
 		if enemy.NavAgent.is_navigation_finished():
 			enemy.going_to_position = false
 			point_of_interest = false
-	
+
 		enemy.navigate_to_target(dt, 0, 0, false)
-	
+
 
 func do_alert_roam(dt, enemy):
 	if is_instance_valid(enemy):
@@ -275,14 +334,19 @@ func do_alert_roam(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-		
+
 		if enemy.is_shielding:
 			enemy.shield_down()
 		
@@ -321,18 +385,23 @@ func do_ambush(dt, enemy):
 				point_of_interest = enemy.get_most_recent_quiet_noise().position
 				enemy.going_to_position = true
 			else:
+				var to_erase = []
+				var recent = enemy.get_most_recent_quiet_noise()
 				for sound in enemy.senses.sounds:
 					if sound.source and\
-					   sound.volume_type == "quiet" and sound.source == enemy.get_most_recent_quiet_noise().source:
-						enemy.senses.sounds.erase(sound)
-				enemy.senses.sounds.erase(enemy.get_most_recent_quiet_noise())
+					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
+						to_erase.append(sound)
+				if recent:
+					to_erase.append(recent)
+				for sound in to_erase:
+					enemy.senses.sounds.erase(sound)
 				enemy.going_to_position = false
 				point_of_interest = false
-			
-		if point_of_interest:		
+
+		if point_of_interest:
 			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
 				enemy.NavAgent.target_position = point_of_interest
-		
+
 		enemy.navigate_to_target(dt, 0, 0)
 		
 		if enemy.NavAgent.is_navigation_finished():
@@ -392,7 +461,7 @@ func do_in_combat(_dt, enemy):
 	if is_instance_valid(enemy):
 		shield_check(enemy)
 		if not enemy.current_target:
-			enemy.valid_target = enemy.current_target
+			enemy.current_target = enemy.valid_target
 		var state = _get_self_state(enemy)
 		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
 		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
@@ -506,8 +575,58 @@ func _effective_engage_distance(enemy) -> float:
 	return engage_distance * enemy.disabled_systems.sensors
 
 
+func _should_flee(enemy) -> bool:
+	var state = _get_self_state(enemy)
+
+	# No working weapons — can't fight
+	if state.weapons_working == 0:
+		return true
+
+	# Out of ammo on all weapons
+	if state.no_ammo:
+		return true
+
+	# Structural health very low — courage determines threshold
+	# courage 0.0 -> flee at 40% health
+	# courage 0.5 -> flee at 25% health
+	# courage 1.0 -> flee at 10% health
+	var flee_threshold = lerpf(0.4, 0.1, enemy.personality.courage)
+	var health = _structural_health(enemy)
+	if health < flee_threshold:
+		return true
+
+	return false
+
+
+func _find_loot_target(enemy):
+	var containers = enemy.get_tree().get_nodes_in_group("loot_container")
+	var best = null
+	var best_dist = INF
+
+	# Scavengers search wider, greedy NPCs moderate, others only loot if very close
+	var search_range = 800.0
+	if enemy.personality.type == Personality.Type.SCAVENGER:
+		search_range = 3000.0
+	elif enemy.personality.greed > 0.5:
+		search_range = 1500.0
+
+	for container in containers:
+		if not is_instance_valid(container):
+			continue
+		if container.is_open:
+			continue
+		var dist = enemy.global_position.distance_to(container.global_position)
+		if dist < search_range and dist < best_dist:
+			best = container
+			best_dist = dist
+
+	return best
+
+
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
+		if not is_instance_valid(enemy.current_target):
+			return
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		if enemy.is_shielding:
@@ -575,6 +694,8 @@ func do_attack(dt, enemy):
 
 func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
+		if not is_instance_valid(enemy.current_target):
+			return
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		shield_check(enemy)
@@ -592,10 +713,10 @@ func do_defend(dt, enemy):
 
 		if enemy.global_position.distance_to(point_of_interest) < eff.max_kite * retreat_mult:
 			enemy.increase_throttle(1, 0.01)
-			enemy.navigate_to_target(dt, 0.0, 0.65)
+			enemy.navigate_to_target(dt, 1.0, 0.65)  # retreat when too close
 		else:
 			enemy.decrease_throttle(0, 0.05)
-			enemy.navigate_to_target(dt, 1.0, 0.8)
+			enemy.navigate_to_target(dt, 0.0, 0.8)  # approach to kite range
 
 		if enemy.can_see_target(enemy.current_target):
 			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
@@ -616,6 +737,80 @@ func do_defend(dt, enemy):
 				enemy.shoot_weapons(enemy.current_target)
 			else:
 				reaction_timer += dt
+
+
+func do_flee(dt, enemy):
+	if is_instance_valid(enemy):
+		# Run away from the most recent attacker or last known threat
+		var flee_from = null
+		if enemy.most_recent_attacker and is_instance_valid(enemy.most_recent_attacker):
+			flee_from = enemy.most_recent_attacker.global_position
+		elif enemy.last_attack_position:
+			flee_from = enemy.last_attack_position
+
+		# Shield up while fleeing
+		if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
+			enemy.shield_up()
+
+		enemy.increase_throttle(1, 0.01)
+
+		if flee_from:
+			var away_dir = (enemy.global_position - flee_from).normalized()
+			var flee_target = enemy.global_position + away_dir * 2000
+			if not enemy.going_to_position or enemy.global_position.distance_to(point_of_interest) < POSITIONAL_ACCURACY:
+				point_of_interest = flee_target
+				enemy.going_to_position = true
+				enemy.NavAgent.target_position = flee_target
+			enemy.navigate_to_target(dt, 0.0, 0.3, true)
+		else:
+			if not enemy.going_to_position:
+				point_of_interest = enemy.arena.get_random_position()
+				enemy.going_to_position = true
+				enemy.NavAgent.target_position = point_of_interest
+			enemy.navigate_to_target(dt, 0.0, 0.3, true)
+
+		if enemy.NavAgent.is_navigation_finished():
+			enemy.going_to_position = false
+			point_of_interest = false
+
+		# Drop combat targets
+		enemy.valid_target = false
+		enemy.current_target = false
+		enemy.is_locking = false
+
+
+func do_loot(dt, enemy):
+	if is_instance_valid(enemy):
+		if target_container == null or not is_instance_valid(target_container):
+			target_container = null
+			return
+
+		# If container got opened by someone else, give up
+		if target_container.is_open:
+			target_container = null
+			return
+
+		var dist = enemy.global_position.distance_to(target_container.global_position)
+
+		if dist > POSITIONAL_ACCURACY:
+			# Path toward the container
+			enemy.going_to_position = true
+			enemy.NavAgent.target_position = target_container.global_position
+			point_of_interest = target_container.global_position
+			if enemy.throttle < 1.0:
+				enemy.increase_throttle(false, dt / THROTTLE_CHANGE_TIME)
+			enemy.navigate_to_target(dt, 0.0, 0.0, false)
+		else:
+			# Close enough — interact
+			if target_container.has_method("interact"):
+				target_container.interact(enemy)
+			target_container = null
+			enemy.going_to_position = false
+			point_of_interest = false
+
+		if enemy.NavAgent.is_navigation_finished():
+			enemy.going_to_position = false
+
 
 func _structural_health(mecha) -> float:
 	# Armor + component health only — no heat/status/weapons to avoid double-counting

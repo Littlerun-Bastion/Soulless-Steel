@@ -61,6 +61,7 @@ func _on_body_exited(body: Node) -> void:
 		if is_open:
 			close()
 			body.current_open_container = null
+			body.inventory_open = false
 
 func populate(entries: Array) -> void:
 	var stacks: Array = []

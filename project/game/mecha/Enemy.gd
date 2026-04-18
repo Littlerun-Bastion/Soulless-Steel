@@ -35,6 +35,8 @@ var under_fire_timer = 0.0
 var personality: Personality = null
 var preferred_combat_range: float = 2000.0
 var combat_style: String = "balanced"
+var combat_behaviour: String = "default"
+var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
 
 
 func _ready():
@@ -46,7 +48,7 @@ func _ready():
 	if Debug.get_setting("ai_behaviour"):
 		logic.setup(Debug.get_setting("ai_behaviour"))
 	else:
-		logic.setup("default")
+		logic.setup(combat_behaviour)
 		
 	if Debug.get_setting("draw_debug_lines"):
 		print("here!")
@@ -79,9 +81,11 @@ func _physics_process(dt):
 		update_enemy_locking(dt, valid_target)
 		
 	if Debug.get_setting("enemy_state"):
-		$Debug/StateLabel.text = logic.get_current_state()
+		var state = logic.get_current_state()
+		$Debug/StateLabel.text = str(state) if state else "?"
+		$Debug/StateLabel.visible = true
 	else:
-		$Debug/StateLabel.text = ""
+		$Debug/StateLabel.visible = false
 	
 	under_fire_timer = max(under_fire_timer - dt, 0)
 
@@ -110,6 +114,14 @@ func setup(arena_ref, design_data, _name):
 		personality = design_data["personality"]
 	if personality == null:
 		personality = Personality.new()
+
+	if design_data.has("combat_behaviour") and typeof(design_data["combat_behaviour"]) == TYPE_STRING:
+		combat_behaviour = design_data["combat_behaviour"]
+		# Re-init AI logic with the behaviour from NPC data.
+		# _ready() already ran with the fallback since add_child() fires before setup().
+		# Debug override still takes precedence.
+		if not Debug.get_setting("ai_behaviour"):
+			logic.setup(combat_behaviour)
 
 	_analyze_build()
 
@@ -146,6 +158,64 @@ func _analyze_build():
 			break
 
 
+func get_relationship(target) -> Dictionary:
+	if relationships.has(target):
+		return relationships[target]
+	return { "hostility": 0.0, "is_traitor": false }
+
+
+func add_hostility(target, amount: float):
+	if not relationships.has(target):
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+	relationships[target].hostility = clampf(relationships[target].hostility + amount, 0.0, 1.0)
+
+
+func mark_traitor(target):
+	if not relationships.has(target):
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+	relationships[target].hostility = 1.0
+	relationships[target].is_traitor = true
+
+
+func should_attack(target) -> bool:
+	if not is_instance_valid(target):
+		return false
+
+	var rel = get_relationship(target)
+
+	# Always attack traitors — they flagged then shot us
+	if rel.is_traitor:
+		return true
+
+	# Target is flagged/exposed — personality decides
+	if target.is_exposed:
+		# Betrayal tendency: high treachery + low loyalty = more willing to break the code.
+		# Range 0.0 (never betray) to 1.0 (always betray).
+		var betrayal = clampf(personality.treachery - personality.loyalty, 0.0, 1.0)
+
+		match personality.type:
+			Personality.Type.RAT:
+				return true  # identity trait — always opportunistic
+			Personality.Type.HUNTER:
+				# Normally needs provocation; betrayal lowers the bar.
+				return rel.hostility > (0.3 - betrayal * 0.3)
+			Personality.Type.SCAVENGER:
+				# Normally avoids; only a very treacherous scavenger betrays.
+				return betrayal > 0.7
+			Personality.Type.GUARDIAN:
+				# Respects flags by default; loyalty holds them back.
+				# A disloyal guardian (low loyalty, some treachery) can break the code.
+				return betrayal > 0.8
+			Personality.Type.PROFESSIONAL:
+				# Normally needs clear hostility; betrayal makes them more opportunistic.
+				return rel.hostility > (0.5 - betrayal * 0.4)
+			_:
+				return betrayal > 0.8  # unknown type — respect flag unless very treacherous
+
+	# Not flagged — normal engagement rules
+	return should_engage(target)
+
+
 func should_engage(target: Mecha) -> bool:
 	if not is_instance_valid(target):
 		return false
@@ -162,6 +232,12 @@ func should_engage(target: Mecha) -> bool:
 
 	# Aggression shifts the threshold further
 	threshold += personality.aggression * 0.2
+
+	# Greed: a weakened target looks like an easy kill / easy loot.
+	# Weakness 0.0 (full hp) contributes nothing; weakness 1.0 (near dead) gives full greed bonus.
+	if target.max_hp > 0:
+		var weakness = clampf(1.0 - (float(target.hp) / float(target.max_hp)), 0.0, 1.0)
+		threshold += personality.greed * weakness * 0.3
 
 	return difference < threshold
 
@@ -210,7 +286,7 @@ func update_senses(dt):
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 		
 		var effective_engage_distance = engage_distance * thermal_range_mult
-		if target != self and distance <= engage_distance:
+		if target != self and distance <= effective_engage_distance:
 			var found = false
 			for data in senses.bodies:
 				if data.body == target:
@@ -254,15 +330,16 @@ func check_for_targets(eng_distance, max_shooting_distance):
 			valid_target = false
 	else:
 		valid_target = false
-	
-	#Find new target
+
+	#Find new target — filtered by should_attack
 	if not valid_target:
 		var min_distance = 99999999
 		for target in arena.get_mechas():
 			var distance = position.distance_to(target.position)
 			if target != self and distance <= eng_distance and distance < min_distance:
-				valid_target = target
-				min_distance = distance
+				if should_attack(target):
+					valid_target = target
+					min_distance = distance
 
 
 func shoot_weapons(target):
@@ -328,7 +405,7 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
-		if valid_target and is_instance_valid(current_target) and can_see_target(current_target):
+		if valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)
@@ -407,8 +484,17 @@ func choose_direction():
 
 
 func _on_nearby_projectile_area_entered(area):
-	if area.original_mecha_info.name != mecha_name and\
+	if area.original_mecha_info and \
+	   area.original_mecha_info.name != mecha_name and\
 	   is_instance_valid(area.original_mecha_info.body):
+		var attacker = area.original_mecha_info.body
 		under_fire_timer = 0.5
-		most_recent_attacker = area.original_mecha_info.body
-		last_attack_position = area.original_mecha_info.body.global_position
+		most_recent_attacker = attacker
+		last_attack_position = attacker.global_position
+
+		# Build hostility — 4 shots = max hostility
+		add_hostility(attacker, 0.25)
+
+		# Betrayal: if we're flagged and they shoot us, mark them traitor
+		if is_exposed and not get_relationship(attacker).is_traitor:
+			mark_traitor(attacker)

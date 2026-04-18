@@ -45,7 +45,7 @@ func get_random_npc():
 func get_design_data(npc):
 	var data = {}
 	for part_type in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
-					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
+					"thruster", "arm_weapon_left", "arm_weapon_right", \
 					"shoulder_weapon_left", "shoulder_weapon_right"]:
 		var abs_type = part_type.replace("_left", "").replace("_right", "")
 		var part = get_part(abs_type, npc[part_type])
@@ -56,6 +56,12 @@ func get_design_data(npc):
 		data["personality"] = npc.personality
 	elif npc is Dictionary and npc.has("personality"):
 		data["personality"] = _personality_from_string(npc.personality)
+
+	# Pass combat_behaviour through to Enemy.setup() (used for AI state machine)
+	if npc is Resource and npc.get("combat_behaviour"):
+		data["combat_behaviour"] = npc.combat_behaviour
+	elif npc is Dictionary and npc.has("combat_behaviour"):
+		data["combat_behaviour"] = npc["combat_behaviour"]
 
 	return data
 

@@ -106,7 +106,9 @@ func set_save_data(data):
 	set_data(data, "controls", controls)
 	set_data(data, "stats", stats)
 	set_data(data, "leaderboards", leaderboards)
-	set_data(data, "debug", Debug.debug_settings)
+	# Debug settings are dev-only; don't load them from profile so code defaults
+	# in Debug.gd always win. (Still saved in get_save_data for inspection.)
+	#set_data(data, "debug", Debug.debug_settings)
 	
 	
 	if data.has("stash_inventory"):

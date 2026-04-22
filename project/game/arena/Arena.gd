@@ -82,7 +82,7 @@ func _ready():
 		activate_debug_cam()
 	setup_inventory_layer(player)
 	_setup_mission()
-	setup_containers()
+#	setup_containers()
 
 
 func _input(event):
@@ -98,6 +98,7 @@ func _input(event):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("escape") and player:
 		player.close_container()
+		MechOS.close_all()
 		PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
 		activate_debug_cam()
@@ -522,16 +523,16 @@ func _on_player_mech_extracted(playerMech):
 		elif ArenaManager.mode == "Tutorial":
 			TransitionManager.transition_to("res://StartMenu.tscn", "Downloading Data...")
 
-func _on_player_inventory_toggled() -> void:
-	if InventoryLayer == null:
-		return
-	inventory_ui.reset_inventory_screen()
-	inventory_ui.refresh()
-	InventoryLayer.visible = not InventoryLayer.visible
-	if InventoryLayer.visible:
-		player.inventory_open = true
-	else:
-		player.inventory_open = false
+#func _on_player_inventory_toggled() -> void:
+#	if InventoryLayer == null:
+#		return
+#	inventory_ui.reset_inventory_screen()
+#	inventory_ui.refresh()
+#	InventoryLayer.visible = not InventoryLayer.visible
+#	if InventoryLayer.visible:
+#		player.inventory_open = true
+#	else:
+#		player.inventory_open = false
 
 
 func _on_WindsTimer_timeout():
@@ -555,25 +556,26 @@ func _setup_mission() -> void:
 	MissionManager.start_mission(mission)
 
 
-func setup_containers() -> void:
-	for container in get_tree().get_nodes_in_group("loot_container"):
-		if not container.opened.is_connected(_on_container_opened):
-			container.opened.connect(_on_container_opened)
-		if not container.closed.is_connected(_on_container_closed):
-			container.closed.connect(_on_container_closed)
+#func setup_containers() -> void:
+#	for container in get_tree().get_nodes_in_group("loot_container"):
+#		if not container.opened.is_connected(_on_container_opened):
+#			container.opened.connect(_on_container_opened)
+#		if not container.closed.is_connected(_on_container_closed):
+#			container.closed.connect(_on_container_closed)
 
-func _on_container_opened(container) -> void:
-	if inventory_ui == null:
-		return
-	# Use the same pattern as the existing inventory toggle
-	inventory_ui.setup_for_mecha(player, container.inventory)
-	inventory_ui.can_customize = false  # no equipping from a loot container
-	InventoryLayer.visible = true
+#func _on_container_opened(container) -> void:
+#	if inventory_ui == null:
+#		return
+#	# Use the same pattern as the existing inventory toggle
+#	inventory_ui.setup_for_mecha(player, container.inventory)
+#	inventory_ui.can_customize = false  # no equipping from a loot container
+#	InventoryLayer.visible = true
 	
-func _on_container_closed(container) -> void:
-	InventoryLayer.visible = false
-	if inventory_ui != null:
-		inventory_ui.can_customize = true
-	if player and is_instance_valid(player):
-		player.inventory_open = false
-		player.current_open_container = null
+#func _on_container_closed(container) -> void:
+#	InventoryLayer.visible = false
+#	if inventory_ui != null:
+#		inventory_ui.can_customize = true
+#	if player and is_instance_valid(player):
+#		player.inventory_open = false
+#		player.current_open_container = null
+#

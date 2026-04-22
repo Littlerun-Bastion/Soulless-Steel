@@ -1,8 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://b84s4spch2si0"]
+[gd_scene format=3 uid="uid://b84s4spch2si0"]
 
-[ext_resource type="Script" path="res://game/ui/TransitionManager.gd" id="1_0nrmn"]
+[ext_resource type="Script" uid="uid://djq6rt1wed6aq" path="res://game/ui/TransitionManager.gd" id="1_0nrmn"]
 [ext_resource type="PackedScene" uid="uid://fy4bi7jm7ag0" path="res://game/ui/CommandLine.tscn" id="2_8jay6"]
-[ext_resource type="Shader" path="res://assets/shaders/BlurShader.gdshader" id="3_31r00"]
+[ext_resource type="Shader" uid="uid://cr6krxcq3d8uu" path="res://assets/shaders/BlurShader.gdshader" id="3_31r00"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8a1ln"]
 shader = ExtResource("3_31r00")
@@ -178,11 +178,11 @@ shader_parameter/greenMultiplier = 0.002
 shader_parameter/greenIntensity = 0.13
 shader_parameter/warpAmount = 0.15
 
-[node name="TransitionManager" type="CanvasLayer"]
+[node name="TransitionManager" type="CanvasLayer" unique_id=1448360177]
 layer = 4
 script = ExtResource("1_0nrmn")
 
-[node name="BlockScreen" type="ColorRect" parent="."]
+[node name="BlockScreen" type="ColorRect" parent="." unique_id=1871493173]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -190,14 +190,14 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="CommandLine" parent="." instance=ExtResource("2_8jay6")]
+[node name="CommandLine" parent="." unique_id=1442218643 instance=ExtResource("2_8jay6")]
 offset_left = 42.0
 offset_top = 1004.0
 offset_right = 1197.0
 offset_bottom = 1040.0
 lifespan = 0.5
 
-[node name="BlurScreen" type="ColorRect" parent="."]
+[node name="BlurScreen" type="ColorRect" parent="." unique_id=2114560478]
 material = SubResource("ShaderMaterial_8a1ln")
 anchors_preset = 15
 anchor_right = 1.0
@@ -206,14 +206,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
-[node name="VCREffect" type="ColorRect" parent="."]
+[node name="VCREffect" type="ColorRect" parent="." unique_id=412428899]
 material = SubResource("ShaderMaterial_2tkoy")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="VCREffect2" type="ColorRect" parent="."]
+[node name="VCREffect2" type="ColorRect" parent="." unique_id=1869052895]
 material = SubResource("ShaderMaterial_c2plq")
 anchors_preset = 15
 anchor_right = 1.0

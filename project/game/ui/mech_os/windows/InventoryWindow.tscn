@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://cwyu5prlwiv2i"]
+
+[ext_resource type="PackedScene" uid="uid://bhhfpeexxaqjn" path="res://game/ui/mech_os/MechWindow.tscn" id="1_ct8pc"]
+[ext_resource type="Script" uid="uid://dgrd76ex1qbqf" path="res://game/ui/mech_os/windows/InventoryWindow.gd" id="2_hfnvq"]
+[ext_resource type="PackedScene" uid="uid://c1ba8po2eln1g" path="res://game/ui/mech_os/inventory/InventoryGrid.tscn" id="2_kabhi"]
+[ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="3_hfnvq"]
+[ext_resource type="PackedScene" uid="uid://driwwmdrnw183" path="res://game/mecha/CellUI.tscn" id="4_7q0l4"]
+[ext_resource type="PackedScene" uid="uid://d1rk7iwyjnc4g" path="res://game/mecha/ItemUI.tscn" id="5_cf851"]
+
+[node name="MechWindow" unique_id=1016719863 instance=ExtResource("1_ct8pc")]
+script = ExtResource("2_hfnvq")
+window_title = "Inventory"
+min_size = Vector2(500, 400)
+
+[node name="VBox" type="VBoxContainer" parent="Content" parent_id_path=PackedInt32Array(1619727558) index="0" unique_id=1560610741]
+layout_mode = 2
+
+[node name="InventoryGrid" parent="Content/VBox" index="0" unique_id=1134061762 instance=ExtResource("2_kabhi")]
+layout_mode = 2
+size_flags_vertical = 3
+cell_scene = ExtResource("4_7q0l4")
+item_scene = ExtResource("5_cf851")
+
+[node name="InfoBar" type="HBoxContainer" parent="Content/VBox" index="1" unique_id=903659198]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ItemCountLabel" type="Label" parent="Content/VBox/InfoBar" index="0" unique_id=724741124]
+layout_mode = 2
+theme = ExtResource("3_hfnvq")
+text = "Items: 0"
+
+[node name="WeightLabel" type="Label" parent="Content/VBox/InfoBar" index="1" unique_id=1811552581]
+layout_mode = 2
+theme = ExtResource("3_hfnvq")
+text = "Weight: 0.0"

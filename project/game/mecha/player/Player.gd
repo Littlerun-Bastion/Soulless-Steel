@@ -72,20 +72,38 @@ func _input(event):
 	if paused or is_stunned() or controls_locked:
 		return
 	
+	# --- Inventory toggle (MechOS) ---
 	if event.is_action_pressed("toggle_inventory"):
 		if current_open_container != null:
-			close_container()
+			MechOS.close_app("container")
+			MechOS.close_app("mech_cargo")
+			current_open_container.close()
+			current_open_container = null
+			inventory_open = false
 		else:
-			emit_signal("inventory_toggled")
+			if MechOS.is_app_open("mech_cargo"):
+				MechOS.close_app("mech_cargo")
+				inventory_open = false
+			else:
+				MechOS.open_inventory("mech_cargo", mech_inventory, "MECH CARGO")
+				inventory_open = true
+		get_viewport().set_input_as_handled()
+		return
+	
+	# --- Close container via interact key ---
 	if event.is_action_pressed("interact") and current_open_container != null:
+		MechOS.close_app("container")
+		MechOS.close_app("mech_cargo")
 		current_open_container.close()
 		current_open_container = null
+		inventory_open = false
 		get_viewport().set_input_as_handled()
+		return
 	
 	if inventory_open:
 		return
 
-	elif event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
+	if event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponLeft.reloading:
@@ -136,6 +154,7 @@ func _input(event):
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		var thing = get_closest_interactable()
@@ -143,8 +162,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			thing.interact(self)
 			if thing is LootContainer:
 				current_open_container = thing
+				var screen_size := get_viewport().get_visible_rect().size
+				
+				if not MechOS.is_app_open("mech_cargo"):
+					var mech_win = MechOS.open_inventory("mech_cargo", mech_inventory, "MECH CARGO")
+					if mech_win != null:
+						mech_win.position = Vector2(80, (screen_size.y - mech_win.size.y) * 0.5)
+				
+				var container_win = MechOS.open_inventory("container", thing.inventory, "CONTAINER")
+				if container_win != null:
+					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
+				
 				inventory_open = true
-			get_viewport().set_input_as_handled()	
+			get_viewport().set_input_as_handled()
 
 func get_camera_3d():
 	return Cam

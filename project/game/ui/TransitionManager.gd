@@ -34,6 +34,7 @@ func transition_to(scene_path: String, command_line_text: String):
 		return
 	active = true
 	
+	MechOS.close_all()
 	BlockScreen.show()
 	BlockScreen.color = Color.BLACK
 	BlockScreen.color.a = 0.0

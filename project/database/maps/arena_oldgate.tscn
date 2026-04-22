@@ -42,7 +42,7 @@ texture = ExtResource("2_aidiy")
 scale = Vector2(2, 2)
 
 [node name="LootContainer" parent="Props" unique_id=137975029 instance=ExtResource("20_cpaje")]
-position = Vector2(22.5, 730)
+position = Vector2(178, 768.5)
 scale = Vector2(0.5, 0.5)
 
 [node name="Walls" type="Node2D" parent="." unique_id=1249505052]

@@ -1,4 +1,5 @@
 extends MechWindow
+class_name EquipmentWindow
 
 var mecha_ref: Mecha = null
 var can_customize: bool = false

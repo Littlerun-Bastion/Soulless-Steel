@@ -15,6 +15,7 @@ var open_windows: Dictionary = {}
 var is_active: bool = true
 var drag_manager: DragManager = null
 var mouse_over_window: bool = false
+var player_ref: Node = null
 
 
 func _ready() -> void:
@@ -61,14 +62,11 @@ func register_app(app_id: String, scene: PackedScene, label: String = "") -> voi
 	if label != "":
 		taskbar.add_app_button(app_id, label)
 
-
 func open_app(app_id: String) -> MechWindow:
-	# If already open, just focus it
 	if open_windows.has(app_id):
 		focus_window(open_windows[app_id])
 		return open_windows[app_id]
 	
-	# Check registry
 	if not app_registry.has(app_id):
 		push_error("MechOS: Unknown app_id '%s'" % app_id)
 		return null
@@ -79,13 +77,18 @@ func open_app(app_id: String) -> MechWindow:
 	
 	window_layer.add_child(window)
 	window.size = window.min_size
+	
 	open_windows[app_id] = window
 	
-	# Connect signals
 	window.closed.connect(_on_window_closed)
 	window.focused.connect(_on_window_focused)
 	
-	# Center it on screen
+	# Auto-setup for windows that need the player reference
+	if window.has_method("setup") and player_ref != null:
+		if window is EquipmentWindow:
+			window.setup(player_ref)
+			window.set_customize(true)  # TODO: hangar zone controls this later
+	
 	_center_window(window)
 	focus_window(window)
 	
@@ -197,3 +200,6 @@ func open_equipment(mecha: Mecha) -> MechWindow:
 		window.setup(mecha)
 		window.set_customize(true)  # TODO: remove once hangar zone controls this
 	return window
+	
+func set_player(player: Node) -> void:
+	player_ref = player

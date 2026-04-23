@@ -149,7 +149,7 @@ func _input(event):
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
 	elif event.is_action_pressed("debug_6"):
-		MechOS.open_equipment(self)
+		MechOS.toggle_app("equipment")
 
 
 func _unhandled_input(event: InputEvent) -> void:

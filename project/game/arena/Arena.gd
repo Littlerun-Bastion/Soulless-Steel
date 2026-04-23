@@ -229,6 +229,7 @@ func add_player():
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
 	player_ammo_set()
+	MechOS.set_player(player)
 
 
 func add_enemy(design_data, enemy_name):

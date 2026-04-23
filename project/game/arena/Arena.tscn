@@ -1,14 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://c8gxcy6vmelau"]
+[gd_scene format=3 uid="uid://c8gxcy6vmelau"]
 
-[ext_resource type="Script" path="res://game/arena/Arena.gd" id="1"]
+[ext_resource type="Script" uid="uid://c78ov7xuugx2j" path="res://game/arena/Arena.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="3"]
 [ext_resource type="Texture2D" uid="uid://npmjhn3pox42" path="res://assets/images/map/floor/TestArenaBox.png" id="4"]
 [ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="5"]
-[ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6"]
+[ext_resource type="Script" uid="uid://dc3siq22u0mj4" path="res://game/arena/CasingsQueue.gd" id="6"]
 [ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7"]
 [ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8"]
-[ext_resource type="PackedScene" uid="uid://5oibvmwm1wk4" path="res://game/ui/InventoryLayer.tscn" id="9_r2ufb"]
 [ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="49"]
 [ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="58"]
 
@@ -17,87 +16,83 @@ vertices = PackedVector2Array(-441, -785, 61, -836, 537, -804, 835, -201, 835, 2
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-657, -563, -879, -214, -790, 326, -574, 707, -111, 790, 518, 758, 835, 212, 835, -201, 537, -804, 61, -836, -441, -785)])
 
-[node name="Arena" type="Node2D"]
+[node name="Arena" type="Node2D" unique_id=911294956]
 script = ExtResource("1")
 
-[node name="BG" type="Sprite2D" parent="."]
+[node name="BG" type="Sprite2D" parent="." unique_id=1775138231]
 light_mask = 2
 z_index = -5
 texture = ExtResource("4")
 
-[node name="Bushes" type="Node2D" parent="."]
+[node name="Bushes" type="Node2D" parent="." unique_id=1965088952]
 z_index = 3
 scale = Vector2(2, 2)
 
-[node name="Props" type="Node2D" parent="."]
+[node name="Props" type="Node2D" parent="." unique_id=1537098260]
 scale = Vector2(2, 2)
 
-[node name="Walls" type="Node2D" parent="."]
+[node name="Walls" type="Node2D" parent="." unique_id=884949762]
 
-[node name="StartPositions" type="Node2D" parent="."]
+[node name="StartPositions" type="Node2D" parent="." unique_id=700544184]
 
-[node name="Exits" type="Node2D" parent="."]
+[node name="Exits" type="Node2D" parent="." unique_id=707908506]
 rotation = -0.000512852
 
-[node name="Buildings" type="Node2D" parent="."]
+[node name="Buildings" type="Node2D" parent="." unique_id=596772907]
 
-[node name="Casings" type="Node2D" parent="."]
+[node name="Casings" type="Node2D" parent="." unique_id=1452124271]
 script = ExtResource("6")
 casing = ExtResource("7")
 casings_count = 2000
 
-[node name="Mechas" type="Node2D" parent="."]
+[node name="Mechas" type="Node2D" parent="." unique_id=1419139033]
 
-[node name="ScrapParts" type="Node2D" parent="."]
+[node name="ScrapParts" type="Node2D" parent="." unique_id=891819514]
 
-[node name="Projectiles" type="Node2D" parent="."]
+[node name="Projectiles" type="Node2D" parent="." unique_id=1266500882]
 
-[node name="Trails" type="Node2D" parent="."]
+[node name="Trails" type="Node2D" parent="." unique_id=1643335864]
 
-[node name="Flashes" type="Node2D" parent="."]
+[node name="Flashes" type="Node2D" parent="." unique_id=348480055]
 
-[node name="Smoke" type="Node2D" parent="."]
+[node name="Smoke" type="Node2D" parent="." unique_id=317635511]
 
-[node name="Explosions" type="Node2D" parent="."]
+[node name="Explosions" type="Node2D" parent="." unique_id=1154339577]
 
-[node name="Trees" type="Node2D" parent="."]
+[node name="Trees" type="Node2D" parent="." unique_id=1006271482]
 
-[node name="Triggers" type="Node2D" parent="."]
+[node name="Triggers" type="Node2D" parent="." unique_id=1864536905]
 
-[node name="DebugNavigation" type="Node2D" parent="."]
+[node name="DebugNavigation" type="Node2D" parent="." unique_id=2086894102]
 
-[node name="Texts" type="Node2D" parent="."]
+[node name="Texts" type="Node2D" parent="." unique_id=66418596]
 
-[node name="NavigationPolygon" type="NavigationRegion2D" parent="."]
+[node name="NavigationPolygon" type="NavigationRegion2D" parent="." unique_id=966224643]
 navigation_polygon = SubResource("1")
 
-[node name="ArenaCamera" parent="." instance=ExtResource("5")]
+[node name="ArenaCamera" parent="." unique_id=210703413 instance=ExtResource("5")]
 enabled = false
 zoom = Vector2(0.1, 0.1)
 position_smoothing_speed = 10.0
 drag_horizontal_enabled = false
 drag_vertical_enabled = false
 
-[node name="HeatmapEffects" parent="." instance=ExtResource("8")]
+[node name="HeatmapEffects" parent="." unique_id=1598753346 instance=ExtResource("8")]
 
-[node name="PlayerHUD" parent="." instance=ExtResource("2")]
+[node name="PlayerHUD" parent="." unique_id=1214406653 instance=ExtResource("2")]
 
-[node name="GameOver" parent="." instance=ExtResource("58")]
+[node name="GameOver" parent="." unique_id=805647275 instance=ExtResource("58")]
 
-[node name="InventoryLayer" parent="." instance=ExtResource("9_r2ufb")]
-layer = 3
-visible = false
+[node name="PauseMenu" parent="." unique_id=1513700743 instance=ExtResource("49")]
 
-[node name="PauseMenu" parent="." instance=ExtResource("49")]
-
-[node name="WindsTimer" type="Timer" parent="."]
+[node name="WindsTimer" type="Timer" parent="." unique_id=2140168476]
 wait_time = 20.0
 autostart = true
 
-[node name="Intro" type="CanvasLayer" parent="."]
+[node name="Intro" type="CanvasLayer" parent="." unique_id=1634899955]
 layer = 2
 
-[node name="IntroAnimation" parent="Intro" instance=ExtResource("3")]
+[node name="IntroAnimation" parent="Intro" unique_id=2015137798 instance=ExtResource("3")]
 
 [connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
 [connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

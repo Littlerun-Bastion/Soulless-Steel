@@ -60,8 +60,9 @@ func _on_body_exited(body: Node) -> void:
 		emit_signal("player_exited_range", self)
 		if is_open:
 			close()
+			MechOS.close_app("container")
+			MechOS.close_app("mech_cargo")
 			body.current_open_container = null
-			body.inventory_open = false
 
 func populate(entries: Array) -> void:
 	var stacks: Array = []

@@ -6,7 +6,6 @@ signal update_building_status
 signal reloading
 signal finished_reloading
 signal lost_health
-signal inventory_toggled
 
 const INSIDE_BUILDING_ZOOM_MUL = 1.4
 const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
@@ -146,8 +145,6 @@ func _input(event):
 		increase_throttle(false, THROTTLE_STEP)
 	elif event.is_action_pressed("throttle_down"):
 		decrease_throttle(false, THROTTLE_STEP)
-	elif event.is_action_pressed("debug_7"):
-		_spawn_debug_target_inventory()
 	elif event.is_action_pressed("debug_6"):
 		MechOS.toggle_app("equipment")
 
@@ -351,11 +348,6 @@ func get_input():
 func get_cam():
 	return Cam
 
-func close_container() -> void:
-	if current_open_container != null:
-		current_open_container.close()
-		current_open_container = null
-
 
 # BUILDING METHODS
 
@@ -381,22 +373,6 @@ func _on_reloading(reload_time, side):
 
 func player_extracting():
 	print(str("Player is Extracting"))
-	
-func _spawn_debug_target_inventory():
-	# If we already have a target inventory, just reuse it
-	print("TEST!")
-	if target_inventory == null:
-		target_inventory = Inventory.new()
-		target_inventory.initialize_grid(6, 8)  # test size
-
-		# Load some test items – adjust paths to real ones in your project
-		var test_item_1: item_data = load("res://database/items/test/TestItem.tres")
-		var test_item_2: item_data = load("res://database/items/test/TestItem2.tres")
-
-		if test_item_1:
-			target_inventory.add_item(test_item_1, 1)
-		if test_item_2:
-			target_inventory.add_item(test_item_2, 1)
 
 	# Now tell the HUD's InventoryUI to use this as the right-hand inventory
 	if arena and arena.PlayerHUD: 

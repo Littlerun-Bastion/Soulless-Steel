@@ -20,7 +20,6 @@ const TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png"
 @onready var DebugNavigation = $DebugNavigation
 @onready var IntroAnimation = $Intro/IntroAnimation
 @onready var Heatmap = $HeatmapEffects
-@onready var InventoryLayer = $InventoryLayer
 
 
 var player
@@ -33,7 +32,6 @@ var trigger_data
 # Debug vars
 var allow_debug_cam = false
 var target_arena_zoom
-var inventory_ui: InventoryUI = null
 
 func _ready():
 	randomize()
@@ -97,7 +95,6 @@ func _input(event):
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("escape") and player:
-		player.close_container()
 		MechOS.close_all()
 		PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
@@ -153,21 +150,8 @@ func setup_arena():
 
 func setup_inventory_layer(_player) -> void:
 	# Get the Control node that actually has the InventoryUI.gd script
-	inventory_ui = InventoryLayer.get_node("SubViewportContainer/SubViewport/InventoryUI") as InventoryUI
-
 	# Wire up data refs
 	player.mech_inventory = Profile.get_mech_inventory()
-	inventory_ui.main_inventory = player.mech_inventory
-	inventory_ui.other_inventory = player.target_inventory  # or null if none yet
-	inventory_ui.mecha_ref = player
-
-	InventoryLayer.visible = false
-	inventory_ui.setup_for_mecha(player, null)
-
-	inventory_ui.refresh()
-	if not player.is_connected("inventory_toggled", Callable(self, "_on_player_inventory_toggled")):
-		player.connect("inventory_toggled", Callable(self, "_on_player_inventory_toggled"))
-
 
 func update_arena_cam(dt):
 	var speed = 4600*(ArenaCam.zoom.x/10.0)
@@ -360,7 +344,6 @@ func _on_PauseMenu_pause_toggle(paused):
 	if player:
 		player.set_pause(paused)
 		PlayerHUD.set_pause(paused)
-	InventoryLayer.visible = false
 
 
 func _on_player_lost_health():
@@ -524,17 +507,6 @@ func _on_player_mech_extracted(playerMech):
 		elif ArenaManager.mode == "Tutorial":
 			TransitionManager.transition_to("res://StartMenu.tscn", "Downloading Data...")
 
-#func _on_player_inventory_toggled() -> void:
-#	if InventoryLayer == null:
-#		return
-#	inventory_ui.reset_inventory_screen()
-#	inventory_ui.refresh()
-#	InventoryLayer.visible = not InventoryLayer.visible
-#	if InventoryLayer.visible:
-#		player.inventory_open = true
-#	else:
-#		player.inventory_open = false
-
 
 func _on_WindsTimer_timeout():
 	random_wind_sound()
@@ -555,28 +527,3 @@ func _setup_mission() -> void:
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
 	MissionManager.start_mission(mission)
-
-
-#func setup_containers() -> void:
-#	for container in get_tree().get_nodes_in_group("loot_container"):
-#		if not container.opened.is_connected(_on_container_opened):
-#			container.opened.connect(_on_container_opened)
-#		if not container.closed.is_connected(_on_container_closed):
-#			container.closed.connect(_on_container_closed)
-
-#func _on_container_opened(container) -> void:
-#	if inventory_ui == null:
-#		return
-#	# Use the same pattern as the existing inventory toggle
-#	inventory_ui.setup_for_mecha(player, container.inventory)
-#	inventory_ui.can_customize = false  # no equipping from a loot container
-#	InventoryLayer.visible = true
-	
-#func _on_container_closed(container) -> void:
-#	InventoryLayer.visible = false
-#	if inventory_ui != null:
-#		inventory_ui.can_customize = true
-#	if player and is_instance_valid(player):
-#		player.inventory_open = false
-#		player.current_open_container = null
-#

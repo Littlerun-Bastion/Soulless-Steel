@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://byfiv5souaslq"]
+
+[ext_resource type="PackedScene" uid="uid://bhhfpeexxaqjn" path="res://game/ui/mech_os/MechWindow.tscn" id="1_m700m"]
+[ext_resource type="PackedScene" uid="uid://cxfw8gnr63yah" path="res://game/ui/customizer2/PartSlot.tscn" id="2_3bphn"]
+[ext_resource type="Script" uid="uid://d12y7xnfoqg03" path="res://game/ui/mech_os/windows/EquipmentWindow.gd" id="2_r52rp"]
+
+[node name="EquipmentWindow" unique_id=1016719863 instance=ExtResource("1_m700m")]
+offset_right = 420.0
+offset_bottom = 500.0
+script = ExtResource("2_r52rp")
+min_size = Vector2(420, 500)
+
+[node name="VBox" type="VBoxContainer" parent="Content" parent_id_path=PackedInt32Array(1619727558) index="0" unique_id=1857127572]
+layout_mode = 2
+
+[node name="TabBar" type="HBoxContainer" parent="Content/VBox" index="0" unique_id=26580673]
+layout_mode = 2
+
+[node name="HardwareButton" type="Button" parent="Content/VBox/TabBar" index="0" unique_id=458843812]
+layout_mode = 2
+text = "HARDWARE"
+
+[node name="WetwareButton" type="Button" parent="Content/VBox/TabBar" index="1" unique_id=1091387683]
+layout_mode = 2
+text = "WETWARE"
+
+[node name="WeaponsButton" type="Button" parent="Content/VBox/TabBar" index="2" unique_id=423153811]
+layout_mode = 2
+text = "WEAPONS"
+
+[node name="SlotContainer" type="VBoxContainer" parent="Content/VBox" index="1" unique_id=478437290]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="Head" parent="Content/VBox/SlotContainer" index="0" unique_id=2127432020 instance=ExtResource("2_3bphn")]
+layout_mode = 2
+
+[node name="Core" parent="Content/VBox/SlotContainer" index="1" unique_id=1876131245 instance=ExtResource("2_3bphn")]
+layout_mode = 2
+part_type = "core"
+display_name = "CORE"
+
+[node name="Shoulder" parent="Content/VBox/SlotContainer" index="2" unique_id=62688169 instance=ExtResource("2_3bphn")]
+layout_mode = 2
+part_type = "shoulders"
+display_name = "SHOULDER"
+
+[node name="Chassis" parent="Content/VBox/SlotContainer" index="3" unique_id=1866790773 instance=ExtResource("2_3bphn")]
+layout_mode = 2
+part_type = "chassis"
+display_name = "CHASSIS"
+
+[node name="Chipset" parent="Content/VBox/SlotContainer" index="4" unique_id=1100525402 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "chipset"
+display_name = "CHIPSET"
+
+[node name="Thruster" parent="Content/VBox/SlotContainer" index="5" unique_id=1063301596 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "thruster"
+display_name = "THRUSTER"
+
+[node name="Generator" parent="Content/VBox/SlotContainer" index="6" unique_id=453541108 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "generator"
+display_name = "GENERATOR"
+
+[node name="RightArm" parent="Content/VBox/SlotContainer" index="7" unique_id=976968813 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "arm_weapon"
+display_name = "RIGHT ARM"
+part_side = 1
+
+[node name="LeftArm" parent="Content/VBox/SlotContainer" index="8" unique_id=1229508992 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "arm_weapon"
+display_name = "LEFT ARM"
+part_side = 0
+
+[node name="RightShoulder" parent="Content/VBox/SlotContainer" index="9" unique_id=2146332895 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "shoulder_weapon"
+display_name = "RIGHT SHOULDER"
+part_side = 1
+
+[node name="LeftShoulder" parent="Content/VBox/SlotContainer" index="10" unique_id=1379065308 instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "shoulder_weapon"
+display_name = "LEFT SHOULDER"
+part_side = 0

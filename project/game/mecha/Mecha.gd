@@ -36,6 +36,10 @@ const AMBIENT_TEMP := -10.0
 const HEAT_TRANSFER := 0.3
 const OVERHEAT_DAMAGE_TEMP := 200.0  # °C above ambient on external layer
 const OVERHEAT_DAMAGE_INTERVAL := 3.0 
+const FALLBACK_FRICTION := 0.01
+const FALLBACK_MOVE_HEAT := 0.0
+const FALLBACK_ROTATION_ACC := 5.0
+const FALLBACK_TRIM_ACC := 5.0
 
 signal create_projectile
 signal create_casing
@@ -908,7 +912,7 @@ func update_heat(dt):
 		var transfer_kj = pending_heat_kj * min(dt / HEAT_TRANSFER, 1.0)
 		pending_heat_kj -= transfer_kj
 		
-		# Route through ventilation split (same logic as old increase_heat)
+		# Route through ventilation split 
 		if build.generator:
 			var vent_ratio = build.generator.ventilation_ratio
 			var internal_kj = transfer_kj * vent_ratio
@@ -1611,6 +1615,8 @@ func get_dir_name(dir):
 func dash(dash_dir):
 	if dash_dir == Vector2():
 		return
+	if not build.thruster:
+		return
 	var dir = get_dir_name(dash_dir.normalized())
 	if typeof(dir) != TYPE_STRING:
 		#Not a valid direction, should be a diagonal
@@ -1671,10 +1677,10 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(build.chassis.move_heat * throttle * dt)
+			increase_heat(get_chassis_move_heat() * throttle * dt)
 		else:
 			moving = false
-			velocity *= 1 - build.chassis.friction
+			velocity *= 1 - get_chassis_friction()
 		var mod = 1.0 if is_sprinting else speed_modifier
 		velocity = apply_movement_modifiers(velocity*mod)
 		move(velocity)
@@ -1685,19 +1691,19 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(build.chassis.move_heat * throttle * dt)
+			increase_heat(get_chassis_move_heat() * throttle * dt)
 		else:
 			moving = false
 			moving_axis.x = false
 			moving_axis.y = false
-			velocity *= 1 - build.chassis.friction
+			velocity *= 1 - get_chassis_friction()
 		var mod = 1.0 if is_sprinting else speed_modifier
 		velocity = apply_movement_modifiers(velocity*mod)
 		move(velocity)
 	elif movement_type == "tank" and not is_player():
 		if direction.length() > 0:
 			moving = true
-			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
+			var target_rotation_acc = apply_movement_modifiers(get_chassis_rotation_acc() * 50)
 			var rotated_tank_move_target = tank_move_target.rotated(deg_to_rad(270))
 			#Compare direction we want to go to the way the Chassis is facing.
 			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
@@ -1713,7 +1719,7 @@ func apply_movement(dt, direction):
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
 			target_speed *= WHEELS_SPEED_FACTOR
 			velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(build.chassis.move_heat * throttle * dt)
+			increase_heat(get_chassis_move_heat() * throttle * dt)
 			move(apply_movement_modifiers(velocity))
 			velocity = apply_movement_modifiers(velocity)
 			move(velocity)
@@ -1731,7 +1737,7 @@ func apply_movement(dt, direction):
 				var _thrust_max_speed = get_stat("thrust_max_speed")
 				if target_speed.length() > (target_speed.normalized() * _thrust_max_speed).length():
 					target_speed = target_speed.normalized() * _thrust_max_speed * WHEELS_SPEED_FACTOR
-			var target_rotation_acc = apply_movement_modifiers(build.chassis.rotation_acc * 50)
+			var target_rotation_acc = apply_movement_modifiers(get_chassis_rotation_acc() * 50)
 			if direction.y == 0:
 				target_rotation_acc *= 2
 			if direction.x > 0:
@@ -1741,13 +1747,13 @@ func apply_movement(dt, direction):
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			if not moving:
-				velocity *= 1 - build.chassis.friction
+				velocity *= 1 - get_chassis_friction()
 			else:
 				velocity = lerp(velocity, target_speed, target_move_acc)
-			increase_heat(build.chassis.move_heat * throttle * dt)
+			increase_heat(get_chassis_move_heat() * throttle * dt)
 		else:
 			if build.chassis:
-				velocity *= 1 - build.chassis.friction/2
+				velocity *= 1 - get_chassis_friction()/2
 		move(apply_movement_modifiers(velocity))
 	else:
 		push_error("Not a valid movement type: " + str(movement_type))
@@ -1770,7 +1776,7 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 	#Rotate Body
 	var rot_acc = rotation_acc
 	if movement_type == "tank" and build.chassis:
-		rot_acc = build.chassis.trim_acc
+		rot_acc = get_chassis_trim_acc()
 	if is_sprinting == true and movement_type != "tank":
 		rot_acc = rotation_acc/2
 	if not stand_still:
@@ -2743,7 +2749,7 @@ func component_destroyed(part_name: String, comp_name: String):
 		# Update actual movement speed
 		if build.chassis:
 			var reduced_speed = build.chassis.max_speed * disabled_systems.mobility
-			update_speed(reduced_speed, build.chassis.move_acc, build.chassis.friction, build.chassis.rotation_acc)
+			update_speed(reduced_speed, build.chassis.move_acc, get_chassis_friction(), get_chassis_rotation_acc())
 	
 	# WEAPON COMPONENTS
 	if "weapon" in comp.tags:
@@ -3069,3 +3075,24 @@ func get_closest_interactable():
 			closest_dist = d
 			closest = thing
 	return closest
+
+
+func get_chassis_friction() -> float:
+	if build.chassis:
+		return build.chassis.friction
+	return FALLBACK_FRICTION
+
+func get_chassis_move_heat() -> float:
+	if build.chassis:
+		return build.chassis.move_heat
+	return FALLBACK_MOVE_HEAT
+
+func get_chassis_rotation_acc() -> float:
+	if build.chassis:
+		return build.chassis.rotation_acc
+	return FALLBACK_ROTATION_ACC
+
+func get_chassis_trim_acc() -> float:
+	if build.chassis:
+		return build.chassis.trim_acc
+	return FALLBACK_TRIM_ACC

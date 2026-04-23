@@ -52,7 +52,7 @@ func _register_apps() -> void:
 	# register_app("hangar", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"))
 	
 	register_app("test", preload("res://game/ui/mech_os/windows/TestWindow.tscn"), "TST")
-	
+	register_app("equipment", preload("res://game/ui/mech_os/windows/EquipmentWindow.tscn"), "EQP")
 	pass
 
 
@@ -190,3 +190,10 @@ func open_inventory(app_id: String, inv: Inventory, title: String) -> MechWindow
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		close_all()
+#
+func open_equipment(mecha: Mecha) -> MechWindow:
+	var window = open_app("equipment")
+	if window != null and window.has_method("setup"):
+		window.setup(mecha)
+		window.set_customize(true)  # TODO: remove once hangar zone controls this
+	return window

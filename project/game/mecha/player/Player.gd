@@ -26,7 +26,6 @@ var invert_controls = {
 	"y": false,
 }
 var current_open_container: LootContainer = null
-var inventory_open: bool = false
 
 func _ready():
 	super()
@@ -48,7 +47,7 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	if not controls_locked and not inventory_open:
+	if not controls_locked and not is_inventory_open():
 		check_input()	
 	apply_movement(dt, get_input())
 	
@@ -58,7 +57,7 @@ func _physics_process(dt):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
-	if not get_locked_to() and not inventory_open:# and movement_type != "tank":
+	if not get_locked_to() and not is_inventory_open():# and movement_type != "tank":
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
 			apply_rotation_by_point(dt, target_pos, Input.is_action_pressed("strafe"))
@@ -79,14 +78,11 @@ func _input(event):
 			MechOS.close_app("mech_cargo")
 			current_open_container.close()
 			current_open_container = null
-			inventory_open = false
 		else:
 			if MechOS.is_app_open("mech_cargo"):
 				MechOS.close_app("mech_cargo")
-				inventory_open = false
 			else:
 				MechOS.open_inventory("mech_cargo", mech_inventory, "MECH CARGO")
-				inventory_open = true
 		get_viewport().set_input_as_handled()
 		return
 	
@@ -96,11 +92,10 @@ func _input(event):
 		MechOS.close_app("mech_cargo")
 		current_open_container.close()
 		current_open_container = null
-		inventory_open = false
 		get_viewport().set_input_as_handled()
 		return
 	
-	if inventory_open:
+	if is_inventory_open():
 		return
 
 	if event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
@@ -153,6 +148,8 @@ func _input(event):
 		decrease_throttle(false, THROTTLE_STEP)
 	elif event.is_action_pressed("debug_7"):
 		_spawn_debug_target_inventory()
+	elif event.is_action_pressed("debug_6"):
+		MechOS.open_equipment(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -173,7 +170,6 @@ func _unhandled_input(event: InputEvent) -> void:
 				if container_win != null:
 					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
 				
-				inventory_open = true
 			get_viewport().set_input_as_handled()
 
 func get_camera_3d():
@@ -359,7 +355,6 @@ func close_container() -> void:
 	if current_open_container != null:
 		current_open_container.close()
 		current_open_container = null
-		inventory_open = false
 
 
 # BUILDING METHODS
@@ -409,3 +404,6 @@ func _spawn_debug_target_inventory():
 		if hud.inventory_ui:
 			hud.inventory_ui.other_inventory = target_inventory
 			hud.inventory_ui.refresh()
+			
+func is_inventory_open() -> bool:
+	return not MechOS.open_windows.is_empty()

@@ -1,4 +1,5 @@
 extends MechWindow
+class_name InventoryWindow
 
 var inventory_grid: InventoryGrid = null
 var target_inventory: Inventory = null

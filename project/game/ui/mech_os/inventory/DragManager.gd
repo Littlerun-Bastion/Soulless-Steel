@@ -209,14 +209,22 @@ func _update_drag_visual() -> void:
 			drag_preview.position = mouse_local - drag_preview.size * 0.5
 
 
-# Finish drag
 func _finish_drag() -> void:
 	if dragging_stack == null:
 		return
 	
 	var mouse_pos := get_viewport().get_mouse_position()
 	
-	# Check each grid for a valid drop
+	#Check equipment window first
+	if equipment_window != null and equipment_window.visible and equipment_window.can_customize:
+		var slot: PartSlot = equipment_window.get_slot_under_mouse()
+		if slot != null:
+			if equipment_window.try_equip(slot, dragging_stack):
+				_clear_drag()
+				_refresh_all_grids()
+				return
+	
+	#Check inventory grids
 	for entry in grid_participants:
 		var grid: InventoryGrid = entry["grid"]
 		var window: MechWindow = entry["window"]
@@ -228,21 +236,12 @@ func _finish_drag() -> void:
 			continue
 		
 		if info.valid:
-			# Place the item
 			grid.inventory.place_item(dragging_stack, info.x, info.y)
 			_clear_drag()
 			_refresh_all_grids()
 			return
 	
-	# TODO: Check equipment window (Step 4)
-	
-	# No valid drop — revert
-	_revert_drag()
-
-
-func _cancel_drag() -> void:
-	if dragging_stack == null:
-		return
+	#No valid drop revert 
 	_revert_drag()
 
 
@@ -250,12 +249,10 @@ func _revert_drag() -> void:
 	if dragging_stack == null:
 		return
 	
-	# Return to source
 	if drag_source_grid != null and drag_origin_x >= 0 and drag_origin_y >= 0:
 		drag_source_grid.inventory.place_item(dragging_stack, drag_origin_x, drag_origin_y)
-	elif drag_source_slot != null:
-		# Equipment revert — will be handled in Step 4
-		pass
+	elif drag_source_slot != null and equipment_window != null:
+		equipment_window.revert_equip(drag_source_slot, dragging_stack)
 	
 	_clear_drag()
 	_refresh_all_grids()
@@ -304,3 +301,20 @@ func _rotate_dragged_item() -> void:
 		dragging_ui.set_stack(dragging_stack)
 	
 	_update_drag_visual()
+
+# Add this method for starting drags from equipment slots:
+
+func start_drag_from_equipment(stack: item_stack, slot: PartSlot, equip_window) -> void:
+	dragging_stack = stack
+	drag_source_grid = null
+	drag_source_slot = slot
+	drag_origin_x = -1
+	drag_origin_y = -1
+	
+	_create_drag_visuals(stack)
+	_update_drag_visual()
+
+func _cancel_drag() -> void:
+	if dragging_stack == null:
+		return
+	_revert_drag()

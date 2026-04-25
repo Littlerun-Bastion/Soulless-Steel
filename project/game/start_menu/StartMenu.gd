@@ -92,7 +92,10 @@ func _on_Arena_pressed():
 
 func _on_TestMode_pressed():
 	AudioManager.play_sfx("confirm")
-	start_game("tutorial")
+	# Old test mode (tutorial) kept here for reference, currently disconnected:
+	#start_game("tutorial")
+	AudioManager.stop_bgm()
+	TransitionManager.transition_to("res://game/test/LivingWorldTest.tscn", "Booting Test Sandbox...")
 
 
 func _on_Store_pressed():

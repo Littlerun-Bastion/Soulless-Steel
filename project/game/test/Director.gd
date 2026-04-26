@@ -7,8 +7,8 @@ class_name Director
 #
 # This is a SKELETON — start small, add interventions as we validate each layer.
 
-@export var min_initial_enemies: int = 4
-@export var max_initial_enemies: int = 6
+@export var min_initial_enemies: int = 8
+@export var max_initial_enemies: int = 12
 @export var metrics_print_interval: float = 5.0
 
 var arena                                   # Ref to LivingWorldTest (acts as arena)

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/test/LivingWorldTest.gd" id="1_root"]
 [ext_resource type="Script" path="res://game/test/Director.gd" id="2_director"]
-[ext_resource type="PackedScene" uid="uid://csi4ms710403g" path="res://database/maps/test_buildings.tscn" id="3_map"]
+[ext_resource type="PackedScene" uid="uid://brny0mhtvyx57" path="res://database/maps/arena_oldgate.tscn" id="3_map"]
 [ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="4_exit"]
 
 [node name="LivingWorldTest" type="Node2D"]
@@ -27,13 +27,13 @@ position = Vector2(0, 1500)
 [node name="Exits" type="Node2D" parent="."]
 
 [node name="Exit1" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(-2000, -1500)
+position = Vector2(-500, -8500)
 
 [node name="Exit2" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(2000, -1500)
+position = Vector2(5000, -7500)
 
 [node name="Exit3" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(0, 2000)
+position = Vector2(2000, 4000)
 
 [node name="Mechas" type="Node2D" parent="."]
 

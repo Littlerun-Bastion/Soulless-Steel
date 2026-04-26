@@ -28,8 +28,19 @@ var PlayerHUD = null  # Player.gd guards on `if arena.PlayerHUD` so null is OK
 
 func _ready() -> void:
 	randomize()
+	_setup_exits()
 	_add_player()
 	Director.start(self)
+
+
+func _setup_exits() -> void:
+	# Wire all ExitPoint instances (in this scene OR in the Map child) so any
+	# mecha entering an exit area starts the extract timer, and leaving cancels.
+	for exit in get_tree().get_nodes_in_group("exit_point"):
+		if not exit.is_connected("mecha_extracting", Callable(self, "_on_exit_mecha_extracting")):
+			exit.connect("mecha_extracting", Callable(self, "_on_exit_mecha_extracting"))
+		if not exit.is_connected("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled")):
+			exit.connect("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled"))
 
 
 # ---- Spawning ----
@@ -43,6 +54,7 @@ func _add_player() -> void:
 	player.connect("died", Callable(self, "_on_mecha_died"))
 	player.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
 	player.connect("lost_health", Callable(self, "_on_player_lost_health"))
+	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
 	all_mechas.append(player)
 	# Player.tscn has its own Camera2D — no extra setup needed
 
@@ -167,3 +179,25 @@ func _on_mecha_made_sound(sound_data) -> void:
 
 func _on_player_lost_health() -> void:
 	Director.notify_player_damaged()
+
+
+func _on_player_extracted(_mecha) -> void:
+	# Test scene end-of-match handling — just print for now.
+	# Could route to a scoreboard or back to the main menu later.
+	print("[LivingWorldTest] Player extracted — match end")
+
+
+# ---- Exit handling (mirrors Arena's ExitPoint signal flow) ----
+
+func _on_exit_mecha_extracting(extracting_mech) -> void:
+	if not is_instance_valid(extracting_mech):
+		return
+	if extracting_mech.has_method("extracting"):
+		extracting_mech.extracting()
+
+
+func _on_exit_extracting_cancelled(extracting_mech) -> void:
+	if not is_instance_valid(extracting_mech):
+		return
+	if extracting_mech.has_method("cancel_extract"):
+		extracting_mech.cancel_extract()

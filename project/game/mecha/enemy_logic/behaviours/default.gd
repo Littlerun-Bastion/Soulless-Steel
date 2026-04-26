@@ -4,7 +4,7 @@ const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
 
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot"]
+var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot", "extract"]
 var initial_state = "roam"
 
 #Custom variables
@@ -28,6 +28,9 @@ var aggression = 0
 var aiming_at_enemy = false
 var reaction_timer = 0.0
 var target_container = null
+var target_exit = null
+var times_looted = 0
+var _start_tick_msec = 0  # lazy-initialized; tracks behaviour lifetime
 
 func get_nodes():
 	return nodes
@@ -222,6 +225,53 @@ func loot_to_alert(enemy):
 	if enemy.under_fire_timer:
 		target_container = null
 		priority = 3
+	return priority
+
+
+# Greedy NPCs cash out after a successful loot. Probability scales with greed:
+# greed 0.0 -> never; greed 1.0 -> always (provided an exit exists).
+func loot_to_extract(enemy):
+	var priority = 0
+	if times_looted >= 1 and target_container == null:
+		if randf() < enemy.personality.greed:
+			if _find_nearest_exit(enemy):
+				priority = 4
+	return priority
+
+
+# After fleeing, if we're no longer under fire and an exit is reasonably close,
+# leave the arena entirely instead of looping back to roam.
+func flee_to_extract(enemy):
+	var priority = 0
+	if not enemy.under_fire_timer:
+		var exit = _find_nearest_exit(enemy)
+		if exit:
+			# Only commit to extract if we're already within escape range.
+			if enemy.global_position.distance_to(exit.global_position) < 3000.0:
+				priority = 3
+	return priority
+
+
+# "Shift over" — long-alive NPCs eventually wander toward an exit. Threshold
+# scales with courage: brave NPCs stay way longer than cowards.
+func roam_to_extract(enemy):
+	var priority = 0
+	# Min 30s, max 300s alive before this even starts firing.
+	var shift_duration = lerpf(300.0, 30.0, 1.0 - enemy.personality.courage)
+	if _time_alive_seconds() > shift_duration:
+		# Per-frame chance — small, biased by greed.
+		if randf() < (0.001 + enemy.personality.greed * 0.002):
+			if _find_nearest_exit(enemy):
+				priority = 1
+	return priority
+
+
+# Bail out if our chosen exit became invalid and there are no others.
+func extract_to_roam(enemy):
+	var priority = 0
+	if target_exit == null or not is_instance_valid(target_exit):
+		if _find_nearest_exit(enemy) == null:
+			priority = 1
 	return priority
 
 ## STATE METHODS ##
@@ -804,12 +854,74 @@ func do_loot(dt, enemy):
 			# Close enough — interact
 			if target_container.has_method("interact"):
 				target_container.interact(enemy)
+				times_looted += 1
 			target_container = null
 			enemy.going_to_position = false
 			point_of_interest = false
 
 		if enemy.NavAgent.is_navigation_finished():
 			enemy.going_to_position = false
+
+
+func do_extract(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+
+	# Pick (or re-pick) an exit if needed
+	if target_exit == null or not is_instance_valid(target_exit):
+		target_exit = _find_nearest_exit(enemy)
+		if target_exit == null:
+			# No exits available — extract_to_roam transition will catch this next tick.
+			return
+
+	# Drop combat — we're leaving, not fighting.
+	enemy.valid_target = false
+	enemy.current_target = false
+	enemy.is_locking = false
+	aiming_at_enemy = false
+
+	if enemy.throttle < 1.0:
+		enemy.increase_throttle(false, dt / THROTTLE_CHANGE_TIME)
+
+	var dist = enemy.global_position.distance_to(target_exit.global_position)
+	if dist > POSITIONAL_ACCURACY:
+		# Path toward the exit. Once the body enters the ExitPoint's Area2D,
+		# the host scene's signal handler will call enemy.extracting() → 5s timer
+		# → "died" signal → mecha despawned by the host.
+		enemy.going_to_position = true
+		enemy.NavAgent.target_position = target_exit.global_position
+		point_of_interest = target_exit.global_position
+		enemy.navigate_to_target(dt, 0.0, 0.2, true)
+	else:
+		# Walking into the exit area is what triggers extraction; just keep moving.
+		enemy.navigate_to_target(dt, 0.0, 0.0, false)
+
+	if enemy.NavAgent.is_navigation_finished():
+		enemy.going_to_position = false
+
+
+# Looks up the closest ExitPoint (group "exit_point" — see ExitPoint.tscn).
+func _find_nearest_exit(enemy):
+	var exits = enemy.get_tree().get_nodes_in_group("exit_point")
+	if exits.is_empty():
+		return null
+	var best = null
+	var best_dist = INF
+	for exit in exits:
+		if not is_instance_valid(exit):
+			continue
+		var d = enemy.global_position.distance_to(exit.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = exit
+	return best
+
+
+# Lazily initialized timestamp; first call sets it, subsequent calls measure from then.
+func _time_alive_seconds() -> float:
+	if _start_tick_msec == 0:
+		_start_tick_msec = Time.get_ticks_msec()
+	return float(Time.get_ticks_msec() - _start_tick_msec) / 1000.0
 
 
 func _structural_health(mecha) -> float:

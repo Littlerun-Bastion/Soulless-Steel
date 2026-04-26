@@ -177,6 +177,67 @@ func mark_traitor(target):
 	relationships[target].is_traitor = true
 
 
+# Seeds an initial-sight relationship with personality-driven baseline hostility,
+# so NPC factions naturally clash without being provoked first. No-op if the
+# relationship already exists (preserves combat history).
+func _seed_relationship(target):
+	if relationships.has(target):
+		return
+	if not is_instance_valid(target) or target == self:
+		return
+	# Player gets no seeded hostility — they earn it by shooting first.
+	if target.has_method("is_player") and target.is_player():
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+		return
+	# NPC-to-NPC: target needs a personality for the matrix lookup.
+	if not (target.get("personality") is Personality):
+		relationships[target] = { "hostility": 0.0, "is_traitor": false }
+		return
+
+	var base = _initial_hostility_toward(target.personality)
+	# Small randf jitter so identical matchups don't all play out the same.
+	var seeded = clampf(base + randf_range(-0.1, 0.1), 0.0, 1.0)
+	relationships[target] = { "hostility": seeded, "is_traitor": false }
+
+
+# Personality matchup matrix (self → other) for first-sight hostility.
+# Asymmetric on purpose: a Hunter wants to hunt a Scavenger, but the Scavenger
+# doesn't necessarily want to fight back. Same-type pairs are 0 (kin).
+func _initial_hostility_toward(other_personality: Personality) -> float:
+	var self_t = personality.type
+	var other_t = other_personality.type
+	if self_t == other_t:
+		return 0.0  # kin recognition
+
+	var T = Personality.Type
+	match self_t:
+		T.SCAVENGER:
+			return 0.0  # passive — never picks fights
+		T.GUARDIAN:
+			match other_t:
+				T.HUNTER: return 0.2  # wild and unpredictable
+				T.RAT: return 0.5     # cleanse the vermin
+				_: return 0.0
+		T.PROFESSIONAL:
+			match other_t:
+				T.RAT: return 0.1     # mild distaste
+				_: return 0.0
+		T.HUNTER:
+			match other_t:
+				T.SCAVENGER: return 0.3  # easy prey
+				T.GUARDIAN: return 0.2
+				T.PROFESSIONAL: return 0.2
+				T.RAT: return 0.4
+				_: return 0.0
+		T.RAT:
+			match other_t:
+				T.SCAVENGER: return 0.4  # easy prey
+				T.PROFESSIONAL: return 0.1
+				_: return 0.0
+		_:
+			return 0.0
+
+
 func should_attack(target) -> bool:
 	if not is_instance_valid(target):
 		return false
@@ -238,6 +299,11 @@ func should_engage(target: Mecha) -> bool:
 	if target.max_hp > 0:
 		var weakness = clampf(1.0 - (float(target.hp) / float(target.max_hp)), 0.0, 1.0)
 		threshold += personality.greed * weakness * 0.3
+
+	# Hostility: seeded personality grudges + accumulated provocations push us
+	# toward engaging. 0.0 = no influence; 1.0 (provoked/traitor) = +0.3 threshold.
+	var rel = get_relationship(target)
+	threshold += rel.hostility * 0.3
 
 	return difference < threshold
 
@@ -301,6 +367,9 @@ func update_senses(dt):
 					"is_seen": true,
 					"lifetime": BODY_LIFETIME,
 				})
+				# First-time sight: seed personality-based hostility so factions
+				# clash naturally instead of waiting to be provoked.
+				_seed_relationship(target)
 	
 
 func get_most_recent_loud_noise():

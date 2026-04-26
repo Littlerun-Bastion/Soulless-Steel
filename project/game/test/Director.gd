@@ -15,6 +15,8 @@ var arena                                   # Ref to LivingWorldTest (acts as ar
 var initial_population_done: bool = false
 var time_since_last_player_damage: float = 0.0
 var print_timer: float = 0.0
+var npc_vs_npc_kills: int = 0
+var player_kills: int = 0
 
 
 func start(arena_ref) -> void:
@@ -61,7 +63,9 @@ func _print_metrics() -> void:
 	var nearest = _nearest_enemy_distance()
 	print("[Director] npcs=", npc_count,
 		"  nearest_enemy_dist=", int(nearest),
-		"  time_since_player_damage=", int(time_since_last_player_damage), "s")
+		"  quiet_for=", int(time_since_last_player_damage), "s",
+		"  npc_kills=", npc_vs_npc_kills,
+		"  player_kills=", player_kills)
 
 
 func _nearest_enemy_distance() -> float:
@@ -81,3 +85,24 @@ func _nearest_enemy_distance() -> float:
 # Called by arena when the player takes damage — resets the quiet timer
 func notify_player_damaged() -> void:
 	time_since_last_player_damage = 0.0
+
+
+# Called by arena when any mecha dies — categorize so we can tell the difference
+# between player kills and emergent NPC-vs-NPC violence.
+# `last_damage_source` is a dict {body, name} populated by projectile impacts.
+func notify_mecha_died(mecha) -> void:
+	if not is_instance_valid(arena):
+		return
+	var src = mecha.last_damage_source if "last_damage_source" in mecha else null
+	# No clear attacker (extracted, fall damage, despawn, etc.)
+	if src == null or typeof(src) != TYPE_DICTIONARY or not src.has("body"):
+		return
+	var killer = src.body
+	if not is_instance_valid(killer) or killer == mecha:
+		return
+	if killer == arena.player:
+		player_kills += 1
+		print("[Director] player killed ", mecha.mecha_name)
+	else:
+		npc_vs_npc_kills += 1
+		print("[Director] npc-vs-npc: ", killer.mecha_name, " killed ", mecha.mecha_name)

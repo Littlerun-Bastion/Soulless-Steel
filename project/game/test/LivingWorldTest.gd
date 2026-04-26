@@ -158,6 +158,9 @@ func _on_mecha_create_projectile(mecha, args, weapon) -> void:
 
 func _on_mecha_died(mecha) -> void:
 	mecha.is_dead = true
+	# Tell Director before removal so it can attribute the kill
+	if Director:
+		Director.notify_mecha_died(mecha)
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove_at(idx)

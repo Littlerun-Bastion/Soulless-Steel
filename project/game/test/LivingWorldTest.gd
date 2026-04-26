@@ -6,13 +6,17 @@ extends Node2D
 # exhibition coupling. Iterate the Director here freely.
 #
 # Required scene children (added in the .tscn):
-#   - Mechas (Node2D)         container for player + NPCs
-#   - Projectiles (Node2D)    bullets, missiles, etc. land here
-#   - PlayerStart (Marker2D)  where the player spawns
-#   - POIs (Node2D)           Marker2D children — points of interest for NPCs
-#   - SpawnZones (Node2D)     Marker2D children — Director uses these for soft spawns
-#   - Director (Node)         the Director.gd manager
-#   - PlayerCamera (Camera2D) follows the player
+#   - Map (instance of database/maps/*.tscn)  provides BG, Walls, NavigationRegion2D,
+#                                             StartPositions; player spawns at the
+#                                             Map's first start position
+#   - Mechas (Node2D)        container for player + NPCs
+#   - Projectiles (Node2D)   bullets, missiles, etc. land here
+#   - SpawnZones (Node2D)    Marker2D children — fallback spawn points for the
+#                            Director when the Map runs out of start positions
+#   - Exits (Node2D)         ExitPoint instances (also auto-discovered via
+#                            the "exit_point" group, even if inside Map)
+#   - Director (Node)        the Director.gd manager
+# Player.tscn has its own Camera2D — no scene-level camera required.
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")

@@ -17,6 +17,7 @@ var time_since_last_player_damage: float = 0.0
 var print_timer: float = 0.0
 var npc_vs_npc_kills: int = 0
 var player_kills: int = 0
+var player_deaths: int = 0
 
 
 func start(arena_ref) -> void:
@@ -65,7 +66,8 @@ func _print_metrics() -> void:
 		"  nearest_enemy_dist=", int(nearest),
 		"  quiet_for=", int(time_since_last_player_damage), "s",
 		"  npc_kills=", npc_vs_npc_kills,
-		"  player_kills=", player_kills)
+		"  player_kills=", player_kills,
+		"  player_deaths=", player_deaths)
 
 
 func _nearest_enemy_distance() -> float:
@@ -100,7 +102,11 @@ func notify_mecha_died(mecha) -> void:
 	var killer = src.body
 	if not is_instance_valid(killer) or killer == mecha:
 		return
-	if killer == arena.player:
+	# Player getting killed is its own category — not a player kill, not NPC-vs-NPC.
+	if mecha == arena.player:
+		player_deaths += 1
+		print("[Director] player killed by ", killer.mecha_name)
+	elif killer == arena.player:
 		player_kills += 1
 		print("[Director] player killed ", mecha.mecha_name)
 	else:

@@ -21,6 +21,15 @@ class_name Director
 @export var min_spawn_distance_from_player: float = 3000.0  # don't pop in next to the player
 @export var soft_spawn_check_interval: float = 5.0       # how often to evaluate
 
+# Redirect tunables — pull a distant NPC toward the player when nothing happens.
+# Throttled by redirect_cooldown so the player isn't constantly being chased.
+@export_group("Redirect")
+@export var quiet_threshold: float = 60.0                # quiet seconds before intervening
+@export var redirect_cooldown: float = 45.0              # seconds between redirects (the safety knob)
+@export var min_redirect_distance: float = 4000.0        # NPC must be at least this far away
+@export var redirect_destination_jitter: float = 800.0   # how far from exact player position
+@export var redirect_check_interval: float = 5.0         # how often to evaluate
+
 var arena                                   # Ref to LivingWorldTest (acts as arena)
 var initial_population_done: bool = false
 var time_since_last_player_damage: float = 0.0
@@ -33,6 +42,11 @@ var player_deaths: int = 0
 var total_soft_spawns: int = 0
 var time_since_last_spawn: float = 0.0
 var soft_spawn_check_timer: float = 0.0
+
+# Redirect state
+var total_redirects: int = 0
+var time_since_last_redirect: float = 999.0  # large initial = ready as soon as quiet trips
+var redirect_check_timer: float = 0.0
 
 
 func start(arena_ref) -> void:
@@ -59,6 +73,7 @@ func _process(dt: float) -> void:
 
 	time_since_last_player_damage += dt
 	time_since_last_spawn += dt
+	time_since_last_redirect += dt
 
 	print_timer -= dt
 	if print_timer <= 0.0:
@@ -70,8 +85,12 @@ func _process(dt: float) -> void:
 		soft_spawn_check_timer = soft_spawn_check_interval
 		_try_soft_spawn()
 
+	redirect_check_timer -= dt
+	if redirect_check_timer <= 0.0:
+		redirect_check_timer = redirect_check_interval
+		_try_redirect()
+
 	# TODO interventions:
-	# - Redirect a distant NPC toward the player when quiet
 	# - Trigger ambient events (gunfire/sound at POI)
 	# - Seed NPC-vs-NPC fights when player is far
 
@@ -89,7 +108,8 @@ func _print_metrics() -> void:
 		"  npc_kills=", npc_vs_npc_kills,
 		"  player_kills=", player_kills,
 		"  player_deaths=", player_deaths,
-		"  soft_spawns=", total_soft_spawns)
+		"  soft_spawns=", total_soft_spawns,
+		"  redirects=", total_redirects)
 
 
 func _nearest_enemy_distance() -> float:
@@ -218,3 +238,86 @@ func _pick_offscreen_spawn_position():
 	var pick = candidates.pick_random()
 	var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 	return pick.global_position + jitter
+
+
+# ---- Redirect ----
+
+# When the player has been quiet for too long, gently nudge a distant idle NPC
+# toward them by injecting a synthetic "loud noise" into the NPC's senses. The
+# AI's existing roam → seek → alert flow handles the rest, so this never bypasses
+# normal behaviour — it just feeds it new sensory data.
+func _try_redirect() -> void:
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+
+	# Quiet check: only intervene during a real lull.
+	if time_since_last_player_damage < quiet_threshold:
+		return
+
+	# Cooldown check: the central knob — never redirect more often than this.
+	if time_since_last_redirect < redirect_cooldown:
+		return
+
+	var candidate = _find_distant_idle_npc()
+	if candidate == null:
+		return
+
+	# Synthesize a "loud" noise event near the player. The NPC will path toward
+	# it via roam_to_seek / alert transitions and pick up real targets when close.
+	var dest = arena.player.global_position + Vector2(
+		randf_range(-redirect_destination_jitter, redirect_destination_jitter),
+		randf_range(-redirect_destination_jitter, redirect_destination_jitter)
+	)
+	candidate.heard_sound({
+		"volume_type": "loud",
+		"type": "gunshot",
+		"position": dest,
+		"source": null,  # synthetic — no source body
+	})
+
+	total_redirects += 1
+	time_since_last_redirect = 0.0
+	var dist_was = int(arena.player.global_position.distance_to(candidate.global_position))
+	print("[Director] redirected ", candidate.mecha_name,
+		" toward player area (was ", dist_was, " away)")
+
+
+# Picks a random NPC that:
+#   - is alive
+#   - is far enough from the player to need pulling
+#   - isn't already engaged with anyone
+#   - isn't extracting (committed to leaving the world)
+# Returns null if none qualify.
+func _find_distant_idle_npc():
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return null
+
+	var player_pos = arena.player.global_position
+	var candidates: Array = []
+	for m in arena.all_mechas:
+		if not is_instance_valid(m):
+			continue
+		if m == arena.player:
+			continue
+		if "is_dead" in m and m.is_dead:
+			continue
+		# Skip NPCs already in a fight — pulling them out would be jarring.
+		if "valid_target" in m and m.valid_target:
+			continue
+		# Skip NPCs that are extracting (committed to leaving).
+		if m.has_method("get") and m.get("logic") != null:
+			var state = m.logic.get_current_state()
+			if typeof(state) == TYPE_STRING and state == "extract":
+				continue
+		# Heard_sound is on Enemy.gd — skip mechas that don't have it (e.g., player).
+		if not m.has_method("heard_sound"):
+			continue
+
+		var d = player_pos.distance_to(m.global_position)
+		if d >= min_redirect_distance:
+			candidates.append(m)
+
+	if candidates.is_empty():
+		return null
+
+	return candidates.pick_random()

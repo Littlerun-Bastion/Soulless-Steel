@@ -382,11 +382,3 @@ func _on_system_degraded(system_name: String, severity: float):
 	# - Heat dispersion warning
 
 
-#func spawn_inventory_ui():
-	#inventory_ui = InventoryUIScene.instantiate()
-	#add_child(inventory_ui)
-	#inventory_ui.inventory = player.mech_inventory
-	#inventory_ui.refresh()
-	#inventory_ui.hide()
-	#inventory_ui.setup_for_mecha(player, player.target_inventory) # or null for now
-# DEPRECIATED

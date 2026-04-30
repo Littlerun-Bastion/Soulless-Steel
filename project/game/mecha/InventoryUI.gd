@@ -934,10 +934,6 @@ func _is_mouse_over_inventory() -> bool:
 # source_inventory: which inventory it came from (or null if from a slot)
 # origin_x/origin_y: where in that inventory it came from (or -1 if from a slot)
 # Return true if equip succeeded, false to revert the drag.
-#func equip_part(slot: Node, stack: item_stack, source_inventory: Inventory, origin_x: int, origin_y: int) -> bool:
-#	print(slot, " -> ", stack.part_scene)
-#	return false
-	
 func equip_part(slot: PartSlot, stack: item_stack, source_inventory: Inventory, origin_x: int, origin_y: int) -> bool:
 	if not can_customize or mecha_ref == null or main_inventory == null:
 		return false

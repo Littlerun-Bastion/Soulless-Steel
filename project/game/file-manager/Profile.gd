@@ -198,33 +198,6 @@ func set_stat(type, value):
 
 
 
-#DEPRECIATED
-#func get_inventory_amount(part_name):
-#	assert(inventory.has(part_name), "Inventory doesn't have this item to get amount: " + str(part_name))
-#	return inventory[part_name]
-
-#func add_to_inventory(part_name):
-#	if inventory.has(part_name):
-#		inventory[part_name] += 1
-#	else:
-#		inventory[part_name] = 1
-#	FileManager.save_profile()
-
-
-#func get_inventory():
-#	return inventory
-
-#func remove_from_inventory(part_name):
-#	if part_name == "Null":
-#		return
-#	assert(inventory.has(part_name), "Inventory doesn't have this item to remove: " + str(part_name))
-#	if inventory[part_name] > 0:
-#		inventory[part_name] -= 1
-#	else:
-#		push_warning("Inventory doesn't have enough of item to remove: " + str(part_name))
-#	
-#	FileManager.save_profile()
-
 func get_stash_inventory() -> Inventory:
 	if stash_inventory == null:
 		# If no stash exists, create one

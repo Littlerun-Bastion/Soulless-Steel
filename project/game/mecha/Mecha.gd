@@ -2421,7 +2421,6 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 		armor_pip_damage = 0
 		if randf() < 0.66:
 			deflection_type = "bounce"
-		#print("BOUNCE! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
 	elif delta >= -1 and delta <= 0:
 		# Marginal/glancing
 		penetrated = false
@@ -2429,20 +2428,15 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 			deflection_type = "glancing"
 		if randf() < (damage_pips / 3.0):
 			armor_pip_damage = 1
-		#print("GLANCING! Pen:", pen_level, " vs Armor:", effective_armor, " (angle:", impact_angle, "°)")
 	else:  # delta >= 1
 		# Penetration!
 		penetrated = true
 		armor_pip_damage = damage_pips
 		deflection_type = "" #No deflection on penetration, left empty
-		#print("PENETRATED! Pen:", pen_level, " vs Armor:", effective_armor, " | Removed ", armor_pip_damage, " pips", " (angle:", impact_angle, "°)")
-	
+
 	# 7. Apply armor damage
 	armor[hit_part_name][facing].pips = max(armor_pips - armor_pip_damage, 0)
 	var facing_exposed = armor[hit_part_name][facing].pips == 0
-	
-	#if facing_exposed:
-	#	print("ARMOR STRIPPED! ", hit_part_name, " ", facing, " facing exposed!")
 	
 	# 8. Select component to damage (if penetrated or exposed)
 	var selected_component = ""

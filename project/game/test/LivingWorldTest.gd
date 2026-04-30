@@ -63,10 +63,15 @@ func _add_player() -> void:
 	# Player.tscn has its own Camera2D — no extra setup needed
 
 
-func add_enemy(design_data, enemy_name: String) -> Mecha:
+func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	var enemy = ENEMY.instantiate()
 	Mechas.add_child(enemy)
-	enemy.position = _random_spawn_position()
+	# Caller can pass an explicit position (used by Director soft-spawns);
+	# otherwise pick from Map start positions / SpawnZones via the helper.
+	if spawn_position is Vector2:
+		enemy.position = spawn_position
+	else:
+		enemy.position = _random_spawn_position()
 	enemy.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 	enemy.connect("died", Callable(self, "_on_mecha_died"))
 	enemy.connect("made_sound", Callable(self, "_on_mecha_made_sound"))

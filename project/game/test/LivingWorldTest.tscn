@@ -12,17 +12,23 @@ script = ExtResource("1_root")
 
 [node name="SpawnZones" type="Node2D" parent="."]
 
-[node name="Spawn1" type="Marker2D" parent="SpawnZones"]
-position = Vector2(-1500, 0)
+[node name="Spawn_N" type="Marker2D" parent="SpawnZones"]
+position = Vector2(2000, -8500)
 
-[node name="Spawn2" type="Marker2D" parent="SpawnZones"]
-position = Vector2(1500, 0)
+[node name="Spawn_S" type="Marker2D" parent="SpawnZones"]
+position = Vector2(1500, 4000)
 
-[node name="Spawn3" type="Marker2D" parent="SpawnZones"]
-position = Vector2(0, -1500)
+[node name="Spawn_W" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-700, -4000)
 
-[node name="Spawn4" type="Marker2D" parent="SpawnZones"]
-position = Vector2(0, 1500)
+[node name="Spawn_E" type="Marker2D" parent="SpawnZones"]
+position = Vector2(5000, -4000)
+
+[node name="Spawn_NE" type="Marker2D" parent="SpawnZones"]
+position = Vector2(4500, -7500)
+
+[node name="Spawn_NW" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-700, -7500)
 
 [node name="Exits" type="Node2D" parent="."]
 

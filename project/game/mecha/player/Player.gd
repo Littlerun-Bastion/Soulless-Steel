@@ -275,7 +275,7 @@ func setup(arena_ref):
 	elif Profile.stats.current_mecha:
 		set_parts_from_design(Profile.stats.current_mecha)
 	else:
-		push_warning("No design setted for player, using the same as the debug loadout")
+		push_warning("No design set for player, using the same as the debug loadout")
 		set_debug_loadout()
 	
 	

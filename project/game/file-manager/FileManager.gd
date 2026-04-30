@@ -54,19 +54,19 @@ func load_profile():
 				if profile_data.has("time"):
 					if Debug.compare_datetimes(backup_data.time, profile_data.time):
 						push_warning("Backup data is more recent... using backup")
-						arquive_file("user://profile.save")
+						archive_file("user://profile.save")
 						DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
 					else:
 						push_warning("Original profile data is more recent... arquiving backup")
-						arquive_file("user://profile.backup")
+						archive_file("user://profile.backup")
 						DirAccess.remove_absolute("user://profile.backup")
 				else:
 					push_warning("Profile data has no time information... using backup")
-					arquive_file("user://profile.save")
+					archive_file("user://profile.save")
 					DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
 			else:
-				push_warning("Backup data has no time information... this shouldn't happen aaaah")
-				arquive_file("user://profile.backup")
+				push_warning("Backup data has no time information; using backup as fallback")
+				archive_file("user://profile.backup")
 				
 		push_warning("Fixed it!")
 
@@ -129,7 +129,7 @@ func has_mecha_design(design_name):
 
 func save_mecha_design(mecha, design_name):
 	if has_mecha_design(design_name):
-		push_warning("Overwritting previous mecha design named: " + str(design_name))
+		push_warning("Overwriting previous mecha design named: " + str(design_name))
 	
 	var design_file
 	design_file = FileAccess.open("user://mecha_designs/"+design_name+".design", FileAccess.WRITE)
@@ -186,7 +186,7 @@ func get_all_mecha_design_names():
 	return designs
 
 
-func arquive_file(path, use_warning := true):
+func archive_file(path, use_warning := true):
 	if not DirAccess.dir_exists_absolute("user://archived_files"):
 		push_warning("Making archived files directory")
 		DirAccess.make_dir_absolute("user://archived_files")

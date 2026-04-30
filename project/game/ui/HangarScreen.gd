@@ -44,7 +44,7 @@ func _get_core_inventory_size() -> Array:
 
 	var core = player_mecha.build.core
 	if core == null:
-		print("defaulting to default cargo space.")
+		print("Using default cargo space.")
 		return default_size
 
 	if core.cargo_space:

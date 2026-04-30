@@ -371,15 +371,5 @@ func _on_finished_reloading():
 func _on_reloading(reload_time, side):
 	emit_signal("reloading", reload_time, side)
 
-func player_extracting():
-	print(str("Player is Extracting"))
-
-	# Now tell the HUD's InventoryUI to use this as the right-hand inventory
-	if arena and arena.PlayerHUD: 
-		var hud = arena.PlayerHUD
-		if hud.inventory_ui:
-			hud.inventory_ui.other_inventory = target_inventory
-			hud.inventory_ui.refresh()
-			
 func is_inventory_open() -> bool:
 	return not MechOS.open_windows.is_empty()

@@ -57,7 +57,7 @@ func load_profile():
 						archive_file("user://profile.save")
 						DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
 					else:
-						push_warning("Original profile data is more recent... arquiving backup")
+						push_warning("Original profile data is more recent... archiving backup")
 						archive_file("user://profile.backup")
 						DirAccess.remove_absolute("user://profile.backup")
 				else:
@@ -68,11 +68,11 @@ func load_profile():
 				push_warning("Backup data has no time information; using backup as fallback")
 				archive_file("user://profile.backup")
 				
-		push_warning("Fixed it!")
+		print("[FileManager] Profile recovery complete")
 
 
 	if not FileAccess.file_exists("user://profile.save"):
-		push_warning("Profile file not found. Starting a new profile file.")
+		print("[FileManager] No profile found, starting new")
 		save_profile()
 		
 	profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
@@ -119,7 +119,7 @@ func save_profile():
 
 func has_mecha_design(design_name):
 	if not DirAccess.dir_exists_absolute("user://mecha_designs"):
-		push_warning("Making mecha designs directory")
+		print("[FileManager] Creating designs directory")
 		var err = DirAccess.make_dir_absolute("user://mecha_designs")
 		if err != OK:
 			push_error("Error trying to create design directory: " + str(err))
@@ -164,7 +164,7 @@ func load_mecha_design(design_name):
 
 func get_all_mecha_design_names():
 	if not DirAccess.dir_exists_absolute("user://mecha_designs"):
-		push_warning("Making mecha designs directory")
+		print("[FileManager] Creating designs directory")
 		var err = DirAccess.make_dir_absolute("user://mecha_designs")
 		if err != OK:
 			push_error("Error trying to create design directory: " + str(err))
@@ -188,7 +188,7 @@ func get_all_mecha_design_names():
 
 func archive_file(path, use_warning := true):
 	if not DirAccess.dir_exists_absolute("user://archived_files"):
-		push_warning("Making archived files directory")
+		print("[FileManager] Creating archive directory")
 		DirAccess.make_dir_absolute("user://archived_files")
 	var date = Time.get_datetime_dict_from_system()
 	var archive_filename = str(date.year) + "y_" + str(date.month) + "mo_" + str(date.day) + "d_" +\
@@ -199,6 +199,6 @@ func archive_file(path, use_warning := true):
 		push_error("Error trying to duplicate file whilst archiving:" + str(err))
 	
 	if use_warning:
-		push_warning("Archived file: " + str(archive_filename))
+		print("[FileManager] Archived: ", archive_filename)
 	else:
 		print("Archived file: " + str(archive_filename))

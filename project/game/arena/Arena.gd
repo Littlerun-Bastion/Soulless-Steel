@@ -425,9 +425,9 @@ func _on_mecha_made_sound(sound_data):
 
 
 func _on_ExitPos_mecha_extracting(extractingMech):
-	print(str(extractingMech.name) + str(" is extracting"))
 	extractingMech.extracting()
 	if extractingMech.name == "Player":
+		print("[Arena] Player is extracting")
 		$PlayerHUD/SubViewportContainer/SubViewport/ExtractingLabel.visible = true
 
 

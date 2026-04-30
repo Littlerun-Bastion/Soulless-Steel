@@ -51,7 +51,6 @@ func _ready():
 		logic.setup(combat_behaviour)
 		
 	if Debug.get_setting("draw_debug_lines"):
-		print("here!")
 		$NavigationAgent2D.debug_enabled = true
 	else:
 		$NavigationAgent2D.debug_enabled = false

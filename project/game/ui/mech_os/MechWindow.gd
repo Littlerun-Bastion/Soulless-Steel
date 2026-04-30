@@ -34,7 +34,6 @@ func _ready() -> void:
 
 
 func _on_close_pressed() -> void:
-	print("here!")
 	emit_signal("closed", self)
 
 

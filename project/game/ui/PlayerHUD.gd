@@ -331,54 +331,32 @@ func _on_ShieldBar_value_changed(value):
 	ShieldBar.get_node("Label").text = str(value)
 
 
-func _on_component_damaged(part_name: String, component_name: String, hp: int, max_hp: int):
-	print("HUD: ", component_name, " damaged: ", hp, "/", max_hp)
-	print("\n=== HUD: COMPONENT DAMAGED ===")
-	print("Part: ", part_name)
-	print("Component: ", component_name)
-	print("HP: ", hp, "/", max_hp)
-	print("==============================\n")
+func _on_component_damaged(_part_name: String, _component_name: String, _hp: int, _max_hp: int):
 	# TODO: Update component HP bars in UI
+	pass
 
-func _on_component_destroyed(part_name: String, component_name: String):
-	print("\n!!! HUD: COMPONENT DESTROYED !!!")
-	print("Part: ", part_name)
-	print("Component: ", component_name)
-	print("================================\n")
+func _on_component_destroyed(_part_name: String, _component_name: String):
 	# TODO: Show warning light/icon for destroyed component
-	
+	pass
 
-func _on_cockpit_exposed(hp: int):
-	print("\n*** HUD: COCKPIT CRITICAL WARNING ***")
-	print("Cockpit HP remaining: ", hp)
-	print("Activating red warning flash!")
-	print("*************************************\n")
-	
+
+func _on_cockpit_exposed(_hp: int):
+	# TODO: Activate red warning flash for cockpit critical
+	pass
+
 func _on_core_shell_destroyed():
-	print("\n*** HUD: CORE SHELL DESTROYED ***")
-	print("Deactivating cockpit warning")
-	print("Waiting for flagged signal...")
-	print("*********************************\n")
+	# TODO: Deactivate cockpit warning, wait for flagged signal
+	pass
 
 func _on_flagged():
-	print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!! HUD: MECH FLAGGED - CRITICAL !!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+	# TODO: Show critical "mech flagged" UI
+	pass
 
-func _on_system_degraded(system_name: String, severity: float):
-	print("\n=== HUD: SYSTEM DEGRADED ===")
-	print("System: ", system_name)
-	print("Performance: ", "%.1f" % (severity * 100.0), "%")
-	if severity <= 0.0:
-		print(">>> SYSTEM OFFLINE <<<")
-	elif severity <= 0.5:
-		print(">>> CRITICAL <<<")
-	elif severity <= 0.75:
-		print(">>> DAMAGED <<<")
-	print("============================\n")
+func _on_system_degraded(_system_name: String, _severity: float):
 	# TODO: Update system status indicators
 	# - Mobility bar showing % remaining
 	# - Weapon offline icons
 	# - Heat dispersion warning
+	pass
 
 

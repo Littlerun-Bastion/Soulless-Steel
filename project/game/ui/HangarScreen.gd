@@ -74,11 +74,6 @@ func _unhandled_input(event):
 
 	if event.is_action_pressed("debug_6"):
 		var inv = player_mecha.mech_inventory
-		var ok = inv.add_item(TEST_ITEM_DATA, 1)
-
-		if ok:
-			print("Debug: spawned test item into mech inventory.")
-		else:
-			print("Debug: Inventory full, could not add test item.")
+		inv.add_item(TEST_ITEM_DATA, 1)
 		inventory_ui.refresh()
 		get_viewport().set_input_as_handled()

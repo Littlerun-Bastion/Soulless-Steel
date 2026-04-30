@@ -108,7 +108,6 @@ func _build_contact_list() -> void:
 		btn.pressed.connect(_on_contact_pressed.bind(contact))
 
 func _on_contact_pressed(contact) -> void:
-	print("contact pressed: ", contact.name)
 	current_contact = contact
 	contact_name.text = contact.name
 	_build_messages()

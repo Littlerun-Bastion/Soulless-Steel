@@ -32,8 +32,7 @@ func set_current_part(part):
 		PartName.text = "UNKNOWN"
 	
 
-func set_equipped_part(part_id: String, item: item_data) -> void:
-	print("set_equipped_part")
+func set_equipped_part(part_id: String, _item: item_data) -> void:
 	current_part_id = part_id
 
 func clear_equipped_part() -> void:

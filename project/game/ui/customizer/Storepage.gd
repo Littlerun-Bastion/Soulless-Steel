@@ -148,7 +148,7 @@ func is_build_valid():
 			build_valid = false
 			missing_parts = missing_parts + "WARN: " + part + " "
 	if not build_valid:
-		print(missing_parts)
+		push_warning("Storepage: incomplete build — " + missing_parts)
 	return build_valid
 
 

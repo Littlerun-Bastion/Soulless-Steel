@@ -610,7 +610,6 @@ func set_parts_from_design(data):
 			callv("set_" + type, [data[part_name]])
 	
 	refresh_dynamic_components()
-	debug_print_components()
 
 func generate_passive_sounds(dt):
 	passive_sounds_timer = max(passive_sounds_timer - dt, 0.0)
@@ -816,7 +815,6 @@ func overheat_damage_tick():
 		running += c.weight
 		if roll <= running:
 			damage_component(c.part, c.comp, 1)
-			print("OVERHEAT damaged: ", c.comp, " on ", c.part)
 			return
 
 func apply_movement_modifiers(speed):
@@ -1052,11 +1050,9 @@ func set_arm_weapon(part_name, side):
 
 	var part_data = PartManager.get_part("arm_weapon", part_name)
 	if side == SIDE.LEFT:
-		print("Equipping left arm weapon")
 		build.arm_weapon_left = part_data
 		node.rotation_degrees = -ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 	else:
-		print("Equipping right arm weapon")
 		build.arm_weapon_right = part_data
 		node.rotation_degrees = ARM_WEAPON_INITIAL_ROT if not part_data.is_melee else 0
 
@@ -1194,7 +1190,7 @@ func set_core(part_name):
 		overheat_temp = ct.overheat_temp - AMBIENT_TEMP  # Convert to delta above ambient
 	else:
 		# Fallback if no coolant assigned (shouldn't happen in production)
-		print("!!!!!!! MECH USING FALLBACK THERMALS !!!!!!!")
+		push_warning("Mecha using fallback thermals (no coolant assigned)")
 		internal_capacity = 40.0
 		overheat_temp = 110.0
 
@@ -1913,8 +1909,6 @@ func shoot(type, is_auto_fire = false):
 	if is_shielding:
 		return
 	if disabled_systems.has(type) and disabled_systems[type] == true:
-		if is_player():
-			print("Weapon offline!")
 		return
 	
 	#Check for spool up
@@ -2444,7 +2438,6 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 		var eligible = get_eligible_components(hit_part_name, facing, penetrated, false)
 		if eligible.size() > 0:
 			selected_component = select_component_by_weight(hit_part_name, eligible)
-			print("Component hit: ", selected_component)
 	
 	return {
 		"penetrated": penetrated or facing_exposed,
@@ -2548,14 +2541,7 @@ func select_component_by_weight(part_name: String, eligible_components: Array) -
 	var total_weight = 0.0
 	for comp_name in eligible_components:
 		total_weight += components[part_name][comp_name].weight
-	
-	
-	print("  ELIGIBLE COMPONENTS:")
-	for comp_name in eligible_components:
-		var comp = components[part_name][comp_name]
-		var chance = (comp.weight / total_weight) * 100.0
-		print("    ", comp_name, ": ", "%.1f" % chance, "% (", comp.tags, ")")
-	
+
 	# Weighted random selection
 	var roll = randf() * total_weight
 	var accumulated = 0.0
@@ -2752,11 +2738,9 @@ func component_destroyed(part_name: String, comp_name: String):
 			if part_name == "left_shoulder":
 				disabled_systems.left_arm_weapon = true
 				emit_signal("system_degraded", "left_arm_weapon", 0.0)
-				print("    -> Left arm weapon OFFLINE")
 			elif part_name == "right_shoulder":
 				disabled_systems.right_arm_weapon = true
 				emit_signal("system_degraded", "right_arm_weapon", 0.0)
-				print("    -> Right arm weapon OFFLINE")
 	
 	# HEAT MANAGEMENT
 	if comp_name == "radiator":
@@ -2936,7 +2920,6 @@ func enter_flagged_state():
 	is_exposed = true
 	emit_signal("flagged")
 	emit_signal("exposed", self)  # Keep old signal for compatibility
-	print("!!! MECH FLAGGED !!!")
 
 func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()

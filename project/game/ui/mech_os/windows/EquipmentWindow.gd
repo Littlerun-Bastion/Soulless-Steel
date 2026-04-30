@@ -14,12 +14,7 @@ var part_slots: Array = []
 
 func _ready() -> void:
 	super()
-	print("slot_container: ", slot_container)
-	print("hardware_btn: ", hardware_btn)
-	print("wetware_btn: ", wetware_btn)
-	print("weapons_btn: ", weapons_btn)
 	_collect_part_slots()
-	print("part_slots found: ", part_slots.size())
 	super()
 	_collect_part_slots()
 	hardware_btn.pressed.connect(_on_hardware_pressed)
@@ -35,8 +30,6 @@ func _ready() -> void:
 
 
 func setup(mecha: Mecha) -> void:
-	print("EquipmentWindow.setup called, mecha: ", mecha)
-	print("can_customize: ", can_customize)
 	mecha_ref = mecha
 	refresh_slots()
 	MechOS.drag_manager.equipment_window = self

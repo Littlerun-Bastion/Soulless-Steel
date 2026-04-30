@@ -255,12 +255,3 @@ func _layout_grid_border() -> void:
 	grid_border.custom_minimum_size = grid_size
 	grid_border.size = grid_size
 	grid_border.position = origin
-	print("--- Grid Debug ---")
-	print("inventory: %dx%d" % [cols, rows])
-	print("grid_size: ", grid_size)
-	print("area_size: ", area_size)
-	print("grid_border.size: ", grid_border.size)
-	print("grid_border.position: ", grid_border.position)
-	print("cell_grid children: ", cell_grid.get_child_count())
-	if cell_grid.get_child_count() > 0:
-		print("first cell size: ", cell_grid.get_child(0).size)

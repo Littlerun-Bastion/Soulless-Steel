@@ -534,19 +534,33 @@ func set_danger():
 			danger[i] = 0.0
 
 func choose_direction():
-	# Eliminate interest in slots with danger
+	# Eliminate interest in slots with danger.
+	# Clamp to >= 0 — negative interest used to pull chosen_dir backwards and,
+	# when surrounded by walls (corners), every ray contributed a negative
+	# vector that cancelled out, leaving chosen_dir near zero (NPC frozen).
 	for i in num_rays:
-		if danger[i] > 0.0:
-			interest[i] -= danger[i]
-	# Choose direction based on remaining interest
+		interest[i] = max(0.0, interest[i] - danger[i])
+
+	# Sum the surviving interest into the chosen direction
 	chosen_dir = Vector2.ZERO
 	debug_lines = []
 	for i in num_rays:
 		var cur_ray = ray_directions[i] * interest[i]
 		debug_lines.append(cur_ray)
-		chosen_dir += ray_directions[i] * interest[i]
-		#if cur_ray.length() > chosen_dir.length():
-			#chosen_dir = cur_ray
+		chosen_dir += cur_ray
+
+	# Corner-escape fallback: if every direction was blocked, head toward the
+	# ray with the LEAST danger so we at least try to wiggle out instead of
+	# freezing in place. Threshold is tiny — only triggers when truly stuck.
+	if chosen_dir.length_squared() < 0.0001:
+		var safest_idx := 0
+		var lowest_danger: float = INF
+		for i in num_rays:
+			if danger[i] < lowest_danger:
+				lowest_danger = danger[i]
+				safest_idx = i
+		chosen_dir = ray_directions[safest_idx]
+
 	chosen_dir = chosen_dir.normalized()
 	queue_redraw()
 

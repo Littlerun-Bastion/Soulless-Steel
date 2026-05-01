@@ -110,7 +110,7 @@ func is_clip_empty():
 func reload():
 	if can_reload() != "yes" or reloading:
 		return
-	
+
 	reloading = true
 	emit_signal("reloading_signal", data.reload_speed)
 	var temp_timer = Timer.new()

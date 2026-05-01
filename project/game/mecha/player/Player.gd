@@ -114,11 +114,15 @@ func _input(event):
 	cur_mode == MODES.NEUTRAL:
 		shoot("shoulder_weapon_right")
 	elif event.is_action_pressed("reload_mode"):
-		cur_mode = MODES.RELOAD
-		emit_signal("update_reload_mode", true)
-	elif event.is_action_released("reload_mode"):
-		cur_mode = MODES.NEUTRAL
-		emit_signal("update_reload_mode", false)
+		# Tap R to toggle reload mode — press once to enter, press again to exit.
+		# While in mode, click any arm weapon to reload it. Lock mode also exits
+		# reload as a courtesy if the player switches intent.
+		if cur_mode == MODES.RELOAD:
+			cur_mode = MODES.NEUTRAL
+			emit_signal("update_reload_mode", false)
+		else:
+			cur_mode = MODES.RELOAD
+			emit_signal("update_reload_mode", true)
 	elif event.is_action_pressed("lock_mode") and build.chipset.can_lock:
 		cur_mode = MODES.ACTIVATING_LOCK
 		emit_signal("update_lock_mode", true)

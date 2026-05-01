@@ -71,10 +71,15 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	Mechas.add_child(enemy)
 	# Caller can pass an explicit position (used by Director soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
+	var pos: Vector2
 	if spawn_position is Vector2:
-		enemy.position = spawn_position
+		pos = spawn_position
 	else:
-		enemy.position = _random_spawn_position()
+		pos = _random_spawn_position()
+	# Snap to a position inside the nav polygon. Spawning outside leaves the
+	# NPC unable to path (NavAgent has no anchor) and they'd sit forever.
+	pos = _ensure_position_on_nav(pos)
+	enemy.position = pos
 	enemy.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 	enemy.connect("died", Callable(self, "_on_mecha_died"))
 	enemy.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
@@ -128,6 +133,65 @@ func _get_navpoly_bounds(navpoly: NavigationPolygon) -> Rect2:
 	for p in outline:
 		rect = rect.expand(p)
 	return rect
+
+
+# Returns the Map's NavigationPolygon if available, else null.
+func _get_map_nav_polygon():
+	if has_node("Map") and $Map.has_method("get_navigation_polygon"):
+		return $Map.get_navigation_polygon()
+	return null
+
+
+# A position is "on the navmesh" if it's inside outline[0] (the outer
+# boundary) AND not inside any other outline (those are holes — buildings,
+# walls, etc.). Important for arena_oldgate which has many building footprints.
+func _is_position_on_nav(pos: Vector2, navpoly) -> bool:
+	if navpoly == null:
+		return false
+	var n = navpoly.get_outline_count()
+	if n == 0:
+		return false
+	if not Geometry2D.is_point_in_polygon(pos, navpoly.get_outline(0)):
+		return false
+	# Reject if inside any hole
+	for i in range(1, n):
+		if Geometry2D.is_point_in_polygon(pos, navpoly.get_outline(i)):
+			return false
+	return true
+
+
+# Walks an out-of-nav position toward the navmesh center until it lands inside
+# the polygon (and outside any hole). Falls back to a Map StartPosition
+# (guaranteed valid) and finally the bounds center as a last resort.
+func _ensure_position_on_nav(pos: Vector2) -> Vector2:
+	var navpoly = _get_map_nav_polygon()
+	if navpoly == null:
+		return pos  # no nav data — caller takes its chances
+	if _is_position_on_nav(pos, navpoly):
+		return pos
+
+	# Walk toward the nav center and test at increasing fractions
+	var center = _get_navpoly_bounds(navpoly).get_center()
+	for t in [0.2, 0.4, 0.6, 0.8, 0.95]:
+		var test = pos.lerp(center, t)
+		if _is_position_on_nav(test, navpoly):
+			return test
+
+	# Fallback: a Map StartPosition is guaranteed valid
+	return get_safe_position()
+
+
+# Returns a position guaranteed to be reachable — used as a last-resort
+# relocate target for NPCs that get stuck outside the navmesh somehow.
+func get_safe_position() -> Vector2:
+	if has_node("Map") and $Map.has_method("get_start_positions"):
+		var spots = $Map.get_start_positions()
+		if spots.size() > 0:
+			return spots.pick_random().global_position
+	var navpoly = _get_map_nav_polygon()
+	if navpoly:
+		return _get_navpoly_bounds(navpoly).get_center()
+	return Vector2.ZERO
 
 
 # ---- Internal helpers ----

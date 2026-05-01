@@ -7,6 +7,17 @@ const BODY_LIFETIME = 35
 @export var look_ahead_range = 1500
 @export var num_rays = 32
 
+# Stuck-detector tunables. Two-tier:
+#  1. Soft reset (STUCK_RESET_TIME): clear going_to_position so the behaviour
+#     picks a fresh target on the next tick.
+#  2. Hard relocate (STUCK_RELOCATE_TIME): if STILL not moving, ask the host
+#     scene for a guaranteed-safe position and teleport there. Catches NPCs
+#     that ended up outside the navmesh (where NavAgent can't path at all).
+const STUCK_VELOCITY_THRESHOLD := 50.0
+const STUCK_RESET_TIME := 5.0
+const STUCK_RELOCATE_TIME := 12.0
+var stuck_timer: float = 0.0
+
 var ray_directions = []
 var interest = []
 var danger = []
@@ -75,7 +86,26 @@ func _physics_process(dt):
 	if not wait_for_map_sync and not is_dead:
 		logic.update(self)
 		logic.run(self, dt)
-	
+
+	# Stuck watchdog. Tracks immobility regardless of going_to_position, so an
+	# NPC stranded outside the navmesh (NavAgent can't path) still gets help.
+	if velocity.length() < STUCK_VELOCITY_THRESHOLD:
+		stuck_timer += dt
+		# Tier 1: soft reset — clear going_to_position so behaviour re-targets
+		if going_to_position and stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
+			going_to_position = false
+		# Tier 2: hard relocate — teleport to a guaranteed-safe position
+		elif stuck_timer >= STUCK_RELOCATE_TIME:
+			if arena and arena.has_method("get_safe_position"):
+				global_position = arena.get_safe_position()
+				if has_node("NavigationAgent2D"):
+					$NavigationAgent2D.target_position = global_position
+			going_to_position = false
+			valid_target = false
+			stuck_timer = 0.0
+	else:
+		stuck_timer = 0.0
+
 	if is_locking:
 		update_enemy_locking(dt, valid_target)
 		

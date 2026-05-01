@@ -21,7 +21,7 @@ const NPCS = [
 	},
 	{
 		#Main Attributes
-		"combat_behaviour": "idle",
+		"combat_behaviour": "default",
 		"difficulty": 0.0,
 		"personality": "scavenger",
 		#Mecha Build

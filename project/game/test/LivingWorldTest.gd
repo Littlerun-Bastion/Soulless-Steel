@@ -24,10 +24,10 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
 @onready var Director = $Director
+@onready var PlayerHUD = $PlayerHUD
 
 var player
 var all_mechas: Array = []
-var PlayerHUD = null  # Player.gd guards on `if arena.PlayerHUD` so null is OK
 
 
 func _ready() -> void:
@@ -61,6 +61,9 @@ func _add_player() -> void:
 	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
 	all_mechas.append(player)
 	# Player.tscn has its own Camera2D — no extra setup needed
+
+	# Wire up the HUD (reload progress circle, lock-on, lifebar, etc.)
+	PlayerHUD.setup(player, all_mechas)
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:

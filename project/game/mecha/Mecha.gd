@@ -2375,10 +2375,16 @@ func get_part_name_from_shape(shape_index: int) -> String:
 
 func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir: Vector2, pen_level: int, damage_pips: int) -> Dictionary:
 	# Returns: {penetrated: bool, part_name: String, component_name: String, facing: String}
-	
+
+	# The shield collision isn't a real armor part — it's a separate
+	# damage-absorption layer handled by take_damage. Explosion area queries
+	# can pick it up; treat as "not penetrated" instead of erroring.
+	if hit_part_name == "shield":
+		return {"penetrated": false, "part_name": "", "component_name": "", "facing": ""}
+
 	# 1. Get global facing (front/side/rear of mech)
 	var facing = get_global_facing_from_angle(impact_position)
-	
+
 	# 2. Get armor for this part and facing
 	if not armor.has(hit_part_name):
 		push_error("Unknown part for armor: " + hit_part_name)

@@ -615,10 +615,13 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 	for result in results:
 		if result.collider == mecha:
 			var part_name = mecha.get_part_name_from_shape(result.shape)
+			# Shields aren't a real armor part — skip; take_damage handles them
+			if part_name == "shield":
+				continue
 			if not parts_found.has(part_name):
 				parts_found[part_name] = true
 				parts_hit.append(part_name)
-	
+
 	return parts_hit
 
 # Track mechas entering explosion radius

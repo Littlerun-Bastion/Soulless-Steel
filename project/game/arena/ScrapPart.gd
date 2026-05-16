@@ -1,9 +1,9 @@
 extends RigidBody2D
 
-const LIFETIME_MIN = 5
-const LIFETIME_MAX = 5.5
-const FADEOUT_MIN = .4
-const FADEOUT_MAX = .8
+const LIFETIME_MIN = 2.5
+const LIFETIME_MAX = 3.0
+const FADEOUT_MIN = .3
+const FADEOUT_MAX = .5
 
 
 func _ready():

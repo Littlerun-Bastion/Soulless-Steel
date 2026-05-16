@@ -32,6 +32,9 @@ const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 @onready var Heatmap = $HeatmapEffects
 @onready var Director = $Director
 @onready var PlayerHUD = $PlayerHUD
+@onready var PauseMenu = $PauseMenu
+@onready var GameOver = $GameOver
+@onready var IntroAnimation = $Intro/IntroAnimation
 
 var player
 var all_mechas: Array = []
@@ -47,12 +50,26 @@ func _ready() -> void:
 	# Heatmap depends on the player's head part; configure after spawn.
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
-	AudioManager.play_bgm("ambience", true, 40)
+
+	# Freeze AI until the entrance animation finishes.
+	set_mechas_block_status(true)
+	IntroAnimation.play("Entrance")
+	if Debug.get_setting("skip_intro"):
+		await get_tree().create_timer(.01).timeout
+		IntroAnimation.stop_animation()
 
 
 func _process(_dt: float) -> void:
-	if player:
+	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_fullscreen"):
+		Global.toggle_fullscreen()
+	elif event.is_action_pressed("escape") and player:
+		MechOS.close_all()
+		PauseMenu.toggle_pause()
 
 
 func _setup_exits() -> void:
@@ -84,6 +101,8 @@ func _add_player() -> void:
 
 	# Wire up the HUD (reload progress circle, lock-on, lifebar, etc.)
 	PlayerHUD.setup(player, all_mechas)
+	# Let MechOS know about the player so its windows can operate on the mech.
+	MechOS.set_player(player)
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
@@ -248,6 +267,27 @@ func _random_spawn_position() -> Vector2:
 
 # ---- Signal handlers ----
 
+# Visual-effect container caps. Once the budget is hit, the OLDEST child is
+# queue_freed before the new one is added. Pure graceful degradation —
+# gameplay (projectiles) is never capped, only the eye-candy layers.
+const MAX_ACTIVE_TRAILS := 40
+const MAX_ACTIVE_EXPLOSIONS := 20
+const MAX_ACTIVE_FLASHES := 12
+
+
+func _evict_oldest_if_full(container: Node, limit: int) -> void:
+	# queue_free is deferred — the child stays in the tree until end of frame.
+	# So a while loop on get_child_count() would spin forever within the
+	# same frame, freezing the game. Use remove_child to immediately detach,
+	# then queue_free for cleanup, and only evict ONE (cap is enforced per
+	# call to this helper, called right before each new effect is added).
+	if container.get_child_count() >= limit:
+		var oldest = container.get_child(0)
+		if is_instance_valid(oldest):
+			container.remove_child(oldest)
+			oldest.queue_free()
+
+
 func _on_mecha_create_projectile(mecha, args, weapon) -> void:
 	# Handle bullet-spread delay before spawning (some weapons have spread shots)
 	if args.bullet_spread_delay > 0:
@@ -267,6 +307,7 @@ func _on_mecha_create_projectile(mecha, args, weapon) -> void:
 			data.node.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 		# Muzzle flash at the firing point
 		if args.muzzle_flash != null and args.pos_reference != null and is_instance_valid(args.node_reference):
+			_evict_oldest_if_full(Flashes, MAX_ACTIVE_FLASHES)
 			var flash = ProjectileManager.create_muzzle_flash(args.node_reference, args.muzzle_flash, args.pos_reference, args.dir)
 			Flashes.add_child(flash)
 
@@ -281,6 +322,7 @@ func _on_mecha_create_casing(args) -> void:
 
 func _on_bullet_impact(projectile, effect, clear, body) -> void:
 	if effect:
+		_evict_oldest_if_full(Explosions, MAX_ACTIVE_EXPLOSIONS)
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
 		var mecha_hit = false
 		if body and body.is_in_group("mecha"):
@@ -293,6 +335,7 @@ func _on_bullet_impact(projectile, effect, clear, body) -> void:
 
 func _on_create_trail(projectile, trail) -> void:
 	if trail:
+		_evict_oldest_if_full(Trails, MAX_ACTIVE_TRAILS)
 		var created_trail = ProjectileManager.create_trail(projectile, trail)
 		Trails.add_child(created_trail)
 
@@ -312,15 +355,58 @@ func _on_mecha_died(mecha) -> void:
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove_at(idx)
-	if mecha != player:
-		mecha.queue_free()
+	if mecha == player:
+		player_died()
 	else:
-		print("[LivingWorldTest] Player died")
+		mecha.queue_free()
+
+
+# Match-end on player death: tear down HUD/pause, fade out, show GameOver.
+func player_died() -> void:
+	if not is_instance_valid(player):
+		return
+	player.queue_free()
+	player = null
+	PlayerHUD.player_died()
+	if PauseMenu.is_paused():
+		PauseMenu.toggle_pause()
+	var dur := 4.0
+	ShaderEffects.play_transition(5000.0, 0.0, dur)
+	await get_tree().create_timer(dur).timeout
+	PlayerHUD.queue_free()
+	PauseMenu.queue_free()
+	GameOver.killed()
+
+
+# Pauses or unpauses all mechas in the scene. Used during the intro animation
+# and could be reused for cutscenes. When unblocking AFTER the intro, kick off
+# ambient BGM (matches Arena's flow).
+func set_mechas_block_status(status: bool) -> void:
+	for mecha in Mechas.get_children():
+		if mecha.has_method("set_pause"):
+			mecha.set_pause(status)
+	if not status:
+		AudioManager.play_bgm("ambience", true, 40)
 
 
 # Spawns debris particles from a dead mecha — visual feedback for kills.
+# Two protections against cascade overload:
+#   1. Skipped entirely for offscreen kills (>3000 from player)
+#   2. Hard cap on total active scraps: when reached, this death contributes
+#      NO new scraps (we'd rather lose visual fidelity than tank FPS)
+const OFFSCREEN_SCRAP_DISTANCE := 3000.0
+const MAX_ACTIVE_SCRAPS := 16
+
 func create_mecha_scraps(mecha) -> void:
 	if not mecha.has_method("get_scrapable_parts"):
+		return
+	# Skip if the death happened well offscreen — invisible to the player.
+	if is_instance_valid(player) and mecha != player:
+		if player.global_position.distance_to(mecha.global_position) > OFFSCREEN_SCRAP_DISTANCE:
+			return
+	# Skip if we're already at the scrap-body budget — protects FPS during
+	# multi-NPC death cascades (faction wars from personality hostility seed).
+	if ScrapParts.get_child_count() >= MAX_ACTIVE_SCRAPS:
 		return
 	for part in mecha.get_scrapable_parts():
 		var scrap = SCRAP_PART.instantiate()
@@ -360,6 +446,43 @@ func _on_player_extracted(_mecha) -> void:
 	# Test scene end-of-match handling — just print for now.
 	# Could route to a scoreboard or back to the main menu later.
 	print("[LivingWorldTest] Player extracted — match end")
+
+
+# ---- Game-flow signal handlers ----
+
+func _on_PauseMenu_pause_toggle(paused: bool) -> void:
+	# Coming out of pause: re-fade the world in.
+	if not paused:
+		ShaderEffects.play_transition(0.0, 5000.0, 2.0)
+	if player:
+		player.set_pause(paused)
+		PlayerHUD.set_pause(paused)
+
+
+func _on_IntroAnimation_animation_ending() -> void:
+	# Intro finished — unblock AI and start ambient BGM.
+	set_mechas_block_status(false)
+	# Tear down the Intro entirely. Two reasons:
+	#   1. VCREffect / VCREffect2 are full-screen canvas-item shaders
+	#      (noise + scanlines, noiseQuality up to 5000) that keep rendering
+	#      every frame as long as they're in the tree.
+	#   2. Even hidden, the AnimationPlayer keeps ticking track
+	#      interpolations and pushing shader-uniform values.
+	# Stop the player explicitly, hide for the rest of this frame's tweens,
+	# then queue_free a beat later so any in-flight fade tweens can finish.
+	if has_node("Intro"):
+		if has_node("Intro/IntroAnimation/AnimationPlayer"):
+			$Intro/IntroAnimation/AnimationPlayer.stop()
+		$Intro.visible = false
+		await get_tree().create_timer(1.5).timeout
+		if is_instance_valid(self) and has_node("Intro"):
+			$Intro.queue_free()
+
+
+func _on_WindsTimer_timeout() -> void:
+	# Stub — Arena had this hooked to random_wind_sound() which was empty.
+	# Kept for future ambient layer.
+	pass
 
 
 # ---- Exit handling (mirrors Arena's ExitPoint signal flow) ----

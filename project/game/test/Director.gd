@@ -1,5 +1,4 @@
 extends Node
-class_name Director
 
 # Director is the "living world" manager. It populates the test scene with NPCs
 # at start, monitors the player's experience, and intervenes (redirect, spawn,
@@ -7,8 +6,8 @@ class_name Director
 #
 # This is a SKELETON — start small, add interventions as we validate each layer.
 
-@export var min_initial_enemies: int = 10
-@export var max_initial_enemies: int = 20
+@export var min_initial_enemies: int = 6
+@export var max_initial_enemies: int = 10
 @export var metrics_print_interval: float = 5.0
 
 # Soft-spawn tunables — the world replenishes itself as NPCs die or extract.
@@ -122,7 +121,9 @@ func _print_metrics() -> void:
 
 	var npc_count = _alive_npc_count()
 	var nearest = _nearest_enemy_distance()
-	print("[Director] npcs=", npc_count,
+	print("[Director] fps=", Engine.get_frames_per_second(),
+		"  frame_ms=", "%.1f" % (1000.0 / max(Engine.get_frames_per_second(), 1)),
+		"  npcs=", npc_count,
 		"  nearest_enemy_dist=", int(nearest),
 		"  quiet_for=", int(time_since_last_player_damage), "s",
 		"  npc_kills=", npc_vs_npc_kills,

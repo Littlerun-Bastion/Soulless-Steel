@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://rb322e1okgbo"]
+[gd_scene load_steps=12 format=3 uid="uid://rb322e1okgbo"]
 
 [ext_resource type="Script" path="res://game/test/LivingWorldTest.gd" id="1_root"]
 [ext_resource type="Script" path="res://game/test/Director.gd" id="2_director"]
@@ -8,6 +8,9 @@
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
 [ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]
 [ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8_heatmap"]
+[ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="9_pause"]
+[ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="10_gameover"]
+[ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="11_intro"]
 
 [node name="LivingWorldTest" type="Node2D"]
 script = ExtResource("1_root")
@@ -61,7 +64,7 @@ position = Vector2(-9500, 0)
 [node name="Casings" type="Node2D" parent="."]
 script = ExtResource("6_casings_script")
 casing = ExtResource("7_casing")
-casings_count = 2000
+casings_count = 500
 
 [node name="Mechas" type="Node2D" parent="."]
 
@@ -81,5 +84,25 @@ casings_count = 2000
 
 [node name="PlayerHUD" parent="." instance=ExtResource("5_hud")]
 
+[node name="GameOver" parent="." instance=ExtResource("10_gameover")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_pause")]
+
+; Periodic ambient wind sound timer (currently a stub).
+[node name="WindsTimer" type="Timer" parent="."]
+wait_time = 20.0
+autostart = true
+
+; Entrance animation. AI mechas stay paused until this animation_ending signal
+; fires (see _on_IntroAnimation_animation_ending in script).
+[node name="Intro" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="IntroAnimation" parent="Intro" instance=ExtResource("11_intro")]
+
 [node name="Director" type="Node" parent="."]
 script = ExtResource("2_director")
+
+[connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
+[connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]
+[connection signal="animation_ending" from="Intro/IntroAnimation" to="." method="_on_IntroAnimation_animation_ending"]

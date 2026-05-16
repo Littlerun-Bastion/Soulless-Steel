@@ -20,9 +20,16 @@ extends Node2D
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
+const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
+@onready var Trails = $Trails
+@onready var Flashes = $Flashes
+@onready var Smoke = $Smoke
+@onready var Explosions = $Explosions
+@onready var ScrapParts = $ScrapParts
+@onready var Heatmap = $HeatmapEffects
 @onready var Director = $Director
 @onready var PlayerHUD = $PlayerHUD
 
@@ -32,9 +39,20 @@ var all_mechas: Array = []
 
 func _ready() -> void:
 	randomize()
+	ShaderEffects.reset_shader_effect("arena")
+	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	_setup_exits()
 	_add_player()
 	Director.start(self)
+	# Heatmap depends on the player's head part; configure after spawn.
+	if player and player.build.head and player.build.head.heatmap:
+		Heatmap.change_heatmap(player.build.head.heatmap)
+	AudioManager.play_bgm("ambience", true, 40)
+
+
+func _process(_dt: float) -> void:
+	if player:
+		ShaderEffects.update_shader_effect(player)
 
 
 func _setup_exits() -> void:
@@ -55,7 +73,9 @@ func _add_player() -> void:
 	player.setup(self)
 	player.position = _player_start_position()
 	player.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
+	player.connect("create_casing", Callable(self, "_on_mecha_create_casing"))
 	player.connect("died", Callable(self, "_on_mecha_died"))
+	player.connect("exposed", Callable(self, "_on_mecha_exposed"))
 	player.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
 	player.connect("lost_health", Callable(self, "_on_player_lost_health"))
 	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
@@ -81,7 +101,9 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	pos = _ensure_position_on_nav(pos)
 	enemy.position = pos
 	enemy.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
+	enemy.connect("create_casing", Callable(self, "_on_mecha_create_casing"))
 	enemy.connect("died", Callable(self, "_on_mecha_died"))
+	enemy.connect("exposed", Callable(self, "_on_mecha_exposed"))
 	enemy.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
 	all_mechas.append(enemy)
 	enemy.setup(self, design_data, enemy_name)
@@ -227,9 +249,58 @@ func _random_spawn_position() -> Vector2:
 # ---- Signal handlers ----
 
 func _on_mecha_create_projectile(mecha, args, weapon) -> void:
+	# Handle bullet-spread delay before spawning (some weapons have spread shots)
+	if args.bullet_spread_delay > 0:
+		var delay = randf_range(0, args.bullet_spread_delay)
+		if delay > 0:
+			await get_tree().create_timer(delay).timeout
+
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
+		# Wire downstream FX signals so impacts spawn explosions and trails
+		if data.node.has_signal("bullet_impact"):
+			data.node.connect("bullet_impact", Callable(self, "_on_bullet_impact"))
+		if data.node.has_signal("create_trail"):
+			data.node.connect("create_trail", Callable(self, "_on_create_trail"))
+		if data.node.has_signal("create_projectile"):
+			data.node.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
+		# Muzzle flash at the firing point
+		if args.muzzle_flash != null and args.pos_reference != null and is_instance_valid(args.node_reference):
+			var flash = ProjectileManager.create_muzzle_flash(args.node_reference, args.muzzle_flash, args.pos_reference, args.dir)
+			Flashes.add_child(flash)
+
+
+func _on_mecha_create_casing(args) -> void:
+	# Ejects a spent bullet casing from the CasingsQueue particle pool.
+	var next_casing = $Casings.get_next_particle()
+	next_casing.global_position = args.casing_ejector_pos
+	next_casing.rotation_degrees = args.casing_eject_angle
+	$Casings.trigger(args.casing_size)
+
+
+func _on_bullet_impact(projectile, effect, clear, body) -> void:
+	if effect:
+		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
+		var mecha_hit = false
+		if body and body.is_in_group("mecha"):
+			mecha_hit = true
+		impact_effect.setup(projectile.impact_size, projectile.global_rotation, mecha_hit, projectile.shield_hit)
+		Explosions.add_child(impact_effect)
+	if clear:
+		projectile.queue_free()
+
+
+func _on_create_trail(projectile, trail) -> void:
+	if trail:
+		var created_trail = ProjectileManager.create_trail(projectile, trail)
+		Trails.add_child(created_trail)
+
+
+func _on_mecha_exposed(_mecha) -> void:
+	# Hook point — Director already tracks downs via notify_mecha_died, so
+	# nothing to do here yet. Kept for future "first-blood" / "exposed" UI.
+	pass
 
 
 func _on_mecha_died(mecha) -> void:
@@ -237,6 +308,7 @@ func _on_mecha_died(mecha) -> void:
 	# Tell Director before removal so it can attribute the kill
 	if Director:
 		Director.notify_mecha_died(mecha)
+	create_mecha_scraps(mecha)
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove_at(idx)
@@ -244,6 +316,29 @@ func _on_mecha_died(mecha) -> void:
 		mecha.queue_free()
 	else:
 		print("[LivingWorldTest] Player died")
+
+
+# Spawns debris particles from a dead mecha — visual feedback for kills.
+func create_mecha_scraps(mecha) -> void:
+	if not mecha.has_method("get_scrapable_parts"):
+		return
+	for part in mecha.get_scrapable_parts():
+		var scrap = SCRAP_PART.instantiate()
+		scrap.setup(part.texture)
+		scrap.position = mecha.position
+		scrap.update_scale(mecha.scale)
+		var mat = part.material
+		if mat:
+			scrap.set_heat_parameters(mat.get_shader_parameter("heat"), mat.get_shader_parameter("min_darkness"))
+
+		var impulse_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		var impulse_force = randf_range(400, 700)
+		var impulse_torque = randf_range(10, 20)
+		if randf() > 0.5:
+			impulse_torque = -impulse_torque
+		scrap.apply_impulse(impulse_dir * impulse_force, Vector2())
+		scrap.apply_torque_impulse(impulse_torque)
+		ScrapParts.call_deferred("add_child", scrap)
 
 
 func _on_mecha_made_sound(sound_data) -> void:
@@ -257,6 +352,7 @@ func _on_mecha_made_sound(sound_data) -> void:
 
 
 func _on_player_lost_health() -> void:
+	ShaderEffects.damage_burst_effect()
 	Director.notify_player_damaged()
 
 

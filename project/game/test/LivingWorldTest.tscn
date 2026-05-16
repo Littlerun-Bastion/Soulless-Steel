@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://rb322e1okgbo"]
+[gd_scene load_steps=9 format=3 uid="uid://rb322e1okgbo"]
 
 [ext_resource type="Script" path="res://game/test/LivingWorldTest.gd" id="1_root"]
 [ext_resource type="Script" path="res://game/test/Director.gd" id="2_director"]
 [ext_resource type="PackedScene" uid="uid://btestbigmap00001" path="res://database/maps/big_map.tscn" id="3_map"]
 [ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="4_exit"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
+[ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]
+[ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8_heatmap"]
 
 [node name="LivingWorldTest" type="Node2D"]
 script = ExtResource("1_root")
@@ -53,9 +56,28 @@ position = Vector2(9500, 0)
 [node name="Exit_W" parent="Exits" instance=ExtResource("4_exit")]
 position = Vector2(-9500, 0)
 
+; In-match visual feedback containers (mirrors Arena's structure).
+; Particles and one-shot effects get spawned under these at runtime.
+[node name="Casings" type="Node2D" parent="."]
+script = ExtResource("6_casings_script")
+casing = ExtResource("7_casing")
+casings_count = 2000
+
 [node name="Mechas" type="Node2D" parent="."]
 
+[node name="ScrapParts" type="Node2D" parent="."]
+
 [node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Trails" type="Node2D" parent="."]
+
+[node name="Flashes" type="Node2D" parent="."]
+
+[node name="Smoke" type="Node2D" parent="."]
+
+[node name="Explosions" type="Node2D" parent="."]
+
+[node name="HeatmapEffects" parent="." instance=ExtResource("8_heatmap")]
 
 [node name="PlayerHUD" parent="." instance=ExtResource("5_hud")]
 

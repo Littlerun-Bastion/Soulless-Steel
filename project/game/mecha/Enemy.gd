@@ -87,16 +87,22 @@ func _physics_process(dt):
 		logic.update(self)
 		logic.run(self, dt)
 
-	# Stuck watchdog. Tracks immobility regardless of going_to_position, so an
-	# NPC stranded outside the navmesh (NavAgent can't path) still gets help.
-	if velocity.length() < STUCK_VELOCITY_THRESHOLD:
+	# Stuck watchdog. Only fires when the NPC is actively trying to reach a
+	# position (going_to_position == true) but velocity stays near zero. This
+	# protects NPCs that are intentionally still (alert/ambush/observing) from
+	# being mistakenly reset or teleported.
+	if going_to_position and velocity.length() < STUCK_VELOCITY_THRESHOLD:
 		stuck_timer += dt
-		# Tier 1: soft reset — clear going_to_position so behaviour re-targets
-		if going_to_position and stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
+		# Tier 1: soft reset — clear going_to_position so behaviour re-targets.
+		# If the behaviour re-sets it next tick and we still don't move, the
+		# timer keeps climbing toward Tier 2.
+		if stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
 			going_to_position = false
-		# Tier 2: hard relocate — teleport to a guaranteed-safe position
+		# Tier 2: hard relocate — last-resort teleport to a guaranteed-safe
+		# position. Catches NPCs stranded outside the navmesh entirely.
 		elif stuck_timer >= STUCK_RELOCATE_TIME:
 			if arena and arena.has_method("get_safe_position"):
+				push_warning("[Enemy] " + mecha_name + " hard-relocated after being stuck for " + str(STUCK_RELOCATE_TIME) + "s")
 				global_position = arena.get_safe_position()
 				if has_node("NavigationAgent2D"):
 					$NavigationAgent2D.target_position = global_position

@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://btestregiontile001"]
+
+; Empty 4k×4k region tile template — duplicate this scene and reskin it for
+; each region the artist produces (industrial, canyon, outpost, etc.).
+; Drop a 4096×4096 sprite into BG, place walls under Walls, props under Props.
+; The parent BigMap composes 5×5 instances of these in a grid.
+
+[node name="RegionTile" type="Node2D"]
+
+[node name="BG" type="Sprite2D" parent="."]
+; Drop the 4k tile texture here.
+; Recommended import: VRAM Compressed for runtime memory.
+
+[node name="Walls" type="Node2D" parent="."]
+; StaticBody2D children for collision walls.
+
+[node name="Props" type="Node2D" parent="."]
+; Decorative or non-collision props.

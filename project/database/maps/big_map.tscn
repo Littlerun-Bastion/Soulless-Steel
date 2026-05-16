@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3 uid="uid://btestbigmap00001"]
+
+[ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="2_start"]
+
+[sub_resource type="NavigationPolygon" id="NavPoly_BigMap"]
+vertices = PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)])
+
+[node name="BigMap" type="Node2D"]
+script = ExtResource("1_map")
+
+; Background container. When art lands, drop 5x5 region_tile.tscn instances here,
+; positioned on a 4000-unit grid centered at origin (corners at ±10000).
+[node name="BG" type="Node2D" parent="."]
+
+; Mirrors arena_oldgate's structure so Map.gd's getters all work.
+[node name="Bushes" type="Node2D" parent="."]
+[node name="Props" type="Node2D" parent="."]
+[node name="Walls" type="Node2D" parent="."]
+[node name="Trees" type="Node2D" parent="."]
+[node name="Buildings" type="Node2D" parent="."]
+[node name="Texts" type="Node2D" parent="."]
+[node name="Triggers" type="Node2D" parent="."]
+[node name="Exits" type="Node2D" parent="."]
+
+; 9 start positions spread across the 20k area. The first is used as the
+; player spawn; the rest are used by Director for initial NPC placement.
+[node name="StartPositions" type="Node2D" parent="."]
+
+[node name="Pos1" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(0, 0)
+
+[node name="Pos2" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(5000, 0)
+
+[node name="Pos3" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(-5000, 0)
+
+[node name="Pos4" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(0, 5000)
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(0, -5000)
+
+[node name="Pos6" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(7000, -7000)
+
+[node name="Pos7" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(-7000, -7000)
+
+[node name="Pos8" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(7000, 7000)
+
+[node name="Pos9" parent="StartPositions" instance=ExtResource("2_start")]
+position = Vector2(-7000, 7000)
+
+; 20k×20k unified nav polygon. Single outline = no cross-region pathfinding bugs.
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavPoly_BigMap")

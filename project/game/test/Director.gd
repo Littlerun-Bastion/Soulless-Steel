@@ -7,8 +7,8 @@ class_name Director
 #
 # This is a SKELETON — start small, add interventions as we validate each layer.
 
-@export var min_initial_enemies: int = 8
-@export var max_initial_enemies: int = 12
+@export var min_initial_enemies: int = 10
+@export var max_initial_enemies: int = 16
 @export var metrics_print_interval: float = 5.0
 
 # Soft-spawn tunables — the world replenishes itself as NPCs die or extract.

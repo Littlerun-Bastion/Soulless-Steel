@@ -30,6 +30,17 @@ class_name Director
 @export var redirect_destination_jitter: float = 800.0   # how far from exact player position
 @export var redirect_check_interval: float = 5.0         # how often to evaluate
 
+# Ambient event tunables — periodically synthesize a "gunfire" sound at a
+# distant point on the map. NPCs in earshot investigate, creating emergent
+# action at the spot. Adds life to the world even when nothing's converging
+# on the player directly.
+@export_group("Ambient Events")
+@export var ambient_event_min_interval: float = 25.0     # min seconds between events
+@export var ambient_event_max_interval: float = 60.0     # max seconds between events
+@export var ambient_event_min_distance: float = 2000.0   # event must be at least this far from player
+@export var ambient_event_max_distance: float = 8000.0   # but not so far it's pointless
+@export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
+
 var arena                                   # Ref to LivingWorldTest (acts as arena)
 var initial_population_done: bool = false
 var time_since_last_player_damage: float = 0.0
@@ -47,6 +58,10 @@ var soft_spawn_check_timer: float = 0.0
 var total_redirects: int = 0
 var time_since_last_redirect: float = 999.0  # large initial = ready as soon as quiet trips
 var redirect_check_timer: float = 0.0
+
+# Ambient event state
+var total_ambient_events: int = 0
+var ambient_event_timer: float = 10.0  # short initial delay before the first event
 
 
 func start(arena_ref) -> void:
@@ -90,8 +105,13 @@ func _process(dt: float) -> void:
 		redirect_check_timer = redirect_check_interval
 		_try_redirect()
 
-	# TODO interventions:
-	# - Trigger ambient events (gunfire/sound at POI)
+	ambient_event_timer -= dt
+	if ambient_event_timer <= 0.0:
+		_try_ambient_event()
+		# Randomized next interval so events feel unpredictable, not metronomic
+		ambient_event_timer = randf_range(ambient_event_min_interval, ambient_event_max_interval)
+
+	# TODO future interventions:
 	# - Seed NPC-vs-NPC fights when player is far
 
 
@@ -109,7 +129,8 @@ func _print_metrics() -> void:
 		"  player_kills=", player_kills,
 		"  player_deaths=", player_deaths,
 		"  soft_spawns=", total_soft_spawns,
-		"  redirects=", total_redirects)
+		"  redirects=", total_redirects,
+		"  ambient=", total_ambient_events)
 
 
 func _nearest_enemy_distance() -> float:
@@ -280,6 +301,64 @@ func _try_redirect() -> void:
 	var dist_was = int(arena.player.global_position.distance_to(candidate.global_position))
 	print("[Director] redirected ", candidate.mecha_name,
 		" toward player area (was ", dist_was, " away)")
+
+
+# ---- Ambient events ----
+
+# Fakes a "loud gunshot" sound at a distant point on the map. NPCs within
+# ambient_event_sound_radius investigate via their normal roam → seek transition,
+# creating emergent action at the spot. The player perceives this as "something
+# happening over there" — life happening independent of them.
+func _try_ambient_event() -> void:
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+
+	var pos = _pick_ambient_event_position()
+	if pos == null:
+		return
+
+	# Broadcast a synthetic sound through the host's normal sound dispatcher
+	# so distance gating, valid-listener filtering, etc. all work uniformly.
+	var sound_data := {
+		"volume_type": "loud",
+		"type": "gunshot",
+		"position": pos,
+		"source": null,  # synthetic — no source body
+		"max_distance": ambient_event_sound_radius,
+	}
+	if arena.has_method("_on_mecha_made_sound"):
+		arena._on_mecha_made_sound(sound_data)
+
+	total_ambient_events += 1
+	var dist_from_player = int(arena.player.global_position.distance_to(pos))
+	print("[Director] ambient gunfire at ", pos,
+		"  (", dist_from_player, " from player)")
+
+
+# Picks a random valid point ambient_event_min_distance..max_distance from the
+# player. Validates the candidate is on the navmesh so NPCs can actually reach
+# the noise source. Returns null if no valid spot found in a few tries.
+func _pick_ambient_event_position():
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return null
+
+	var player_pos = arena.player.global_position
+	var navpoly = null
+	if arena.has_method("_get_map_nav_polygon"):
+		navpoly = arena._get_map_nav_polygon()
+
+	for _i in 10:
+		var angle = randf() * TAU
+		var dist = randf_range(ambient_event_min_distance, ambient_event_max_distance)
+		var candidate = player_pos + Vector2(cos(angle), sin(angle)) * dist
+		# If we have nav data, ensure the candidate is reachable
+		if navpoly != null and arena.has_method("_is_position_on_nav"):
+			if arena._is_position_on_nav(candidate, navpoly):
+				return candidate
+		else:
+			# No nav data available — trust the random pick
+			return candidate
+	return null  # gave up after 10 tries
 
 
 # Picks a random NPC that:

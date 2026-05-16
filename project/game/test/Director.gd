@@ -8,25 +8,25 @@ class_name Director
 # This is a SKELETON — start small, add interventions as we validate each layer.
 
 @export var min_initial_enemies: int = 10
-@export var max_initial_enemies: int = 16
+@export var max_initial_enemies: int = 20
 @export var metrics_print_interval: float = 5.0
 
 # Soft-spawn tunables — the world replenishes itself as NPCs die or extract.
 @export_group("Soft Spawns")
-@export var target_population: int = 8                   # below this, soft-spawn engages
+@export var target_population: int = 12                  # below this, soft-spawn engages
 @export var critical_population: int = 3                 # below this, use the shorter cooldown
 @export var soft_spawn_cooldown: float = 30.0            # seconds between spawns when above critical
 @export var soft_spawn_critical_cooldown: float = 10.0   # seconds between spawns when at/below critical
 @export var max_total_soft_spawns: int = 30              # hard cap (safety net)
-@export var min_spawn_distance_from_player: float = 3000.0  # don't pop in next to the player
+@export var min_spawn_distance_from_player: float = 5000.0  # don't pop in next to the player
 @export var soft_spawn_check_interval: float = 5.0       # how often to evaluate
 
 # Redirect tunables — pull a distant NPC toward the player when nothing happens.
 # Throttled by redirect_cooldown so the player isn't constantly being chased.
 @export_group("Redirect")
-@export var quiet_threshold: float = 60.0                # quiet seconds before intervening
+@export var quiet_threshold: float = 90.0                # quiet seconds before intervening
 @export var redirect_cooldown: float = 45.0              # seconds between redirects (the safety knob)
-@export var min_redirect_distance: float = 4000.0        # NPC must be at least this far away
+@export var min_redirect_distance: float = 6000.0        # NPC must be at least this far away
 @export var redirect_destination_jitter: float = 800.0   # how far from exact player position
 @export var redirect_check_interval: float = 5.0         # how often to evaluate
 

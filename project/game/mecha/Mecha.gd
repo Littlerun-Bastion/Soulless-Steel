@@ -1984,8 +1984,9 @@ func shoot(type, is_auto_fire = false):
 			
 			var max_angle = weapon_ref.max_bloom_angle/head_accuracy
 			if type == "arm_weapon_left" or type == "arm_weapon_right":
+				# Guard against divide-by-zero when arm_accuracy_mod is 0
 				var arm_acc = arm_accuracy_mod if arm_accuracy_mod > 0.0 else 1.0
-				max_angle = max_angle/arm_accuracy_mod
+				max_angle = max_angle / arm_acc
 				bloom /= arm_accuracy_mod
 			if locked_to:
 				max_angle = max_angle/chipset_accuracy
@@ -2116,11 +2117,12 @@ func update_enemy_locking(dt, target):
 					if (percent < ecm_strength_difference):
 						locking_to.progress = 0
 					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
+			# Cold targets lock slower (0.5×), hot targets faster (1.5×).
 			var thermal_lock_mult = get_target_thermal_lock_mult(locking_to.mecha)
 			if has_status("electrified"):
-				locking_to.progress = min(locking_to.progress + (dt*build.chipset.lock_on_speed * 0.5), 1.0)
+				locking_to.progress = min(locking_to.progress + (dt * build.chipset.lock_on_speed * 0.5 * thermal_lock_mult), 1.0)
 			else:
-				locking_to.progress = min(locking_to.progress + dt*build.chipset.lock_on_speed, 1.0)
+				locking_to.progress = min(locking_to.progress + dt * build.chipset.lock_on_speed * thermal_lock_mult, 1.0)
 			if locking_to.progress >= 1.0:
 				locked_to = locking_to.mecha
 		else:
@@ -2491,31 +2493,31 @@ func get_impact_angle(projectile_dir: Vector2, impact_position: Vector2, collisi
 	
 func get_surface_normal_at_point(point: Vector2, collision_polygon: CollisionPolygon2D) -> Vector2:
 	var polygon = collision_polygon.polygon
-	var transform = collision_polygon.global_transform
-	
+	var poly_xform = collision_polygon.global_transform
+
 	# Find closest edge
 	var closest_edge_idx = -1
 	var closest_dist = INF
-	
+
 	for i in range(polygon.size()):
-		var p1 = transform * polygon[i]
-		var p2 = transform * polygon[(i + 1) % polygon.size()]
-		var dist = Geometry2D.get_closest_point_to_segment(point, p1, p2).distance_to(point)
-		
+		var pa = poly_xform * polygon[i]
+		var pb = poly_xform * polygon[(i + 1) % polygon.size()]
+		var dist = Geometry2D.get_closest_point_to_segment(point, pa, pb).distance_to(point)
+
 		if dist < closest_dist:
 			closest_dist = dist
 			closest_edge_idx = i
-	
+
 	# Get edge normal
-	var p1 = transform * polygon[closest_edge_idx]
-	var p2 = transform * polygon[(closest_edge_idx + 1) % polygon.size()]
-	var edge = (p2 - p1).normalized()
+	var closest_p1 = poly_xform * polygon[closest_edge_idx]
+	var closest_p2 = poly_xform * polygon[(closest_edge_idx + 1) % polygon.size()]
+	var edge = (closest_p2 - closest_p1).normalized()
 	var normal = Vector2(-edge.y, edge.x)
-	
+
 	return normal
 	
 	
-func get_eligible_components(part_name: String, facing: String, penetrated: bool, is_aoe: bool = false) -> Array:
+func get_eligible_components(part_name: String, _facing: String, penetrated: bool, _is_aoe: bool = false) -> Array:
 	var eligible = []
 	
 	if not components.has(part_name):

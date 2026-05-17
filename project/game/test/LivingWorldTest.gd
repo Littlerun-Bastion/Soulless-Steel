@@ -21,6 +21,7 @@ extends Node2D
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
 const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
+const NAV_TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png")
 
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
@@ -35,6 +36,12 @@ const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 @onready var PauseMenu = $PauseMenu
 @onready var GameOver = $GameOver
 @onready var IntroAnimation = $Intro/IntroAnimation
+@onready var ArenaCam = $ArenaCamera
+@onready var DebugNavigation = $DebugNavigation
+
+# Debug free-cam state. Only used when activated via debug_1 input.
+var allow_debug_cam: bool = false
+var target_arena_zoom: Vector2 = Vector2(0.1, 0.1)
 
 var player
 var all_mechas: Array = []
@@ -64,17 +71,33 @@ func _ready() -> void:
 	_setup_mission()
 
 
-func _process(_dt: float) -> void:
+func _process(dt: float) -> void:
 	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
 
+	# Debug overlays (cheap when disabled — single Debug.get_setting check)
+	if allow_debug_cam and ArenaCam.enabled:
+		_update_arena_cam(dt)
+	if Debug.get_setting("navigation"):
+		_update_enemies_debug_navigation()
+
 
 func _input(event: InputEvent) -> void:
+	# Mouse-wheel zoom for the debug free-cam
+	if event is InputEventMouseButton and allow_debug_cam and ArenaCam.enabled:
+		var amount := Vector2(.8, .8)
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			target_arena_zoom -= amount
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			target_arena_zoom += amount
+
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("escape") and player:
 		MechOS.close_all()
 		PauseMenu.toggle_pause()
+	elif event.is_action_pressed("debug_1"):
+		_activate_debug_cam()
 
 
 func _setup_exits() -> void:
@@ -514,6 +537,69 @@ func _setup_mission() -> void:
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
 	MissionManager.start_mission(mission)
+
+
+# ---- Debug tools (Tier 4) ----
+
+# Switch to the spectator free-cam. Triggered by debug_1 input.
+# After activation: wheel zooms, mouse near a screen edge pans.
+func _activate_debug_cam() -> void:
+	ArenaCam.enabled = true
+	allow_debug_cam = true
+	# Seed the target zoom from the cam's current value so the first wheel
+	# tick doesn't snap dramatically.
+	target_arena_zoom = ArenaCam.zoom
+
+
+# Mouse-edge panning + smooth zoom interp. Called from _process each frame
+# while the free-cam is active.
+func _update_arena_cam(dt: float) -> void:
+	var speed: float = 4600 * (ArenaCam.zoom.x / 10.0)
+	var margin: int = 55
+	var mpos: Vector2 = get_viewport().get_mouse_position()
+	var move_vec := Vector2()
+	if mpos.x <= margin:
+		move_vec.x -= 1
+	elif mpos.x >= get_viewport_rect().size.x - margin:
+		move_vec.x += 1
+	if mpos.y <= margin:
+		move_vec.y -= 1
+	elif mpos.y >= get_viewport_rect().size.y - margin:
+		move_vec.y += 1
+
+	ArenaCam.position += speed * dt * move_vec.normalized()
+	ArenaCam.zoom = lerp(ArenaCam.zoom, target_arena_zoom, 10 * dt)
+
+
+# Draws each NPC's NavAgent path as a magenta Line2D plus a target sprite
+# at the destination. Only runs when Debug.navigation = true. Children are
+# freed and rebuilt each frame.
+func _update_enemies_debug_navigation() -> void:
+	for path in DebugNavigation.get_children():
+		path.queue_free()
+	for mecha in Mechas.get_children():
+		if not mecha.has_method("is_player") or mecha.is_player():
+			continue
+		# Path line
+		if mecha.has_method("get_navigation_path"):
+			var path_points = mecha.get_navigation_path()
+			if path_points:
+				var line = Line2D.new()
+				line.width = 20
+				line.default_color = Color(0.89, 0, 1.0, 1.0)
+				var pts = []
+				for point in path_points:
+					pts.append(point)
+				line.points = pts
+				DebugNavigation.add_child(line)
+		# Target marker
+		if mecha.has_method("get_target_navigation_pos"):
+			var target_pos = mecha.get_target_navigation_pos()
+			if target_pos:
+				var target = Sprite2D.new()
+				target.texture = NAV_TARGET_SPRITE
+				target.global_position = target_pos
+				DebugNavigation.add_child(target)
 
 
 # ---- Exit handling (mirrors Arena's ExitPoint signal flow) ----

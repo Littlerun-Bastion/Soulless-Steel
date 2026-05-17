@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=15 format=3 uid="uid://bm52jhh6dg0b2"]
+[gd_scene load_steps=15 format=3 uid="uid://bm52jhh6dg0b2"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://43ytg7e1hhbu" path="res://assets/images/mechas/cores/Lancelot/Lancelot-Core_main.png" id="2"]

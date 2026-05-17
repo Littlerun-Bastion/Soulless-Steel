@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=15 format=3 uid="uid://2jdm7oivf5dn"]
+[gd_scene load_steps=15 format=3 uid="uid://2jdm7oivf5dn"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dgwf1gtc44duw" path="res://assets/images/mechas/cores/Percival/percival_core_glow.png" id="2"]

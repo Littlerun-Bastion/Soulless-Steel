@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=15 format=3 uid="uid://60nmjjxfx353"]
+[gd_scene load_steps=15 format=3 uid="uid://60nmjjxfx353"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1_lwa1r"]
 [ext_resource type="Texture2D" uid="uid://b7ke85o8hgnlv" path="res://assets/images/mechas/cores/GTk-2Cr/GTk-2Cr-Core_pv.png" id="2_2sq4b"]

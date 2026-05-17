@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=15 format=3 uid="uid://dodyvu3lwneqx"]
+[gd_scene load_steps=15 format=3 uid="uid://dodyvu3lwneqx"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1_yxj72"]
 [ext_resource type="Texture2D" uid="uid://bvyblec7mahi8" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_pv.png" id="2_8ltop"]

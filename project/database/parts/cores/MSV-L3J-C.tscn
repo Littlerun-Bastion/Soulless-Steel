@@ -1,4 +1,4 @@
-﻿[gd_scene load_steps=15 format=3 uid="uid://bvd4lge53ejho"]
+[gd_scene load_steps=15 format=3 uid="uid://bvd4lge53ejho"]
 
 [ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://bqv4rwq8adfx5" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_glow.png" id="2"]

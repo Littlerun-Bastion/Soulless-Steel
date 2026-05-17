@@ -14,6 +14,7 @@ enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 const DECAL = preload("res://game/mecha/Decal.tscn")
 const HITBOX = preload("res://game/mecha/Hitbox.tscn")
 const PART_DESTRUCTION_EXPLOSION = preload("res://game/weapons/PartDestructionExplosion.tscn")
+const COMPONENT_EXPLOSION_THROTTLE_MS := 100
 const ARM_WEAPON_INITIAL_ROT =  9
 const SPEED_MOD_CORRECTION = 8
 const WEAPON_RECOIL_MOD = .9
@@ -191,6 +192,7 @@ var arena = false
 var is_inside_building = false
 var is_entering_building = false
 var is_exposed = false
+var _last_component_explosion_ms := {}  # part_name -> Time.get_ticks_msec() of last spawn; throttles VFX spam
 var passive_sounds_timer = 0.0
 var throttle :float = 1.0
 
@@ -2938,9 +2940,6 @@ func enter_flagged_state():
 	is_exposed = true
 	emit_signal("flagged")
 	emit_signal("exposed", self)  # Keep old signal for compatibility
-
-const COMPONENT_EXPLOSION_THROTTLE_MS := 100
-var _last_component_explosion_ms := {}
 
 func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	# Throttle rapid same-part hits to avoid spawn storms during cascading damage.

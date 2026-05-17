@@ -113,9 +113,20 @@ func reload():
 
 	reloading = true
 	emit_signal("reloading_signal", data.reload_speed)
+	# Spawn a one-shot Timer as a child so it gets cleaned up automatically
+	# if the weapon (and so the parent mecha) dies mid-reload. Explicitly
+	# queue_free after the timeout to prevent in-tree accumulation — over a
+	# long session, dozens of expired reload timers would otherwise pile up
+	# on each weapon node.
 	var temp_timer = Timer.new()
 	add_child(temp_timer)
 	temp_timer.start(data.reload_speed); await temp_timer.timeout
+	temp_timer.queue_free()
+	# Guard against the weapon being freed during the await — properties on a
+	# freed object are still readable (returning defaults) but emitting a
+	# signal would assert. Just bail.
+	if not is_instance_valid(self):
+		return
 	var ammo = min(data.clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo

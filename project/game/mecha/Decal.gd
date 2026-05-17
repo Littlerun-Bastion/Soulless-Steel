@@ -28,4 +28,8 @@ func start_fade_out():
 	var tween = create_tween()
 	modulate.a = 1.0
 	tween.tween_property(self, "modulate:a", 0.0, 1)
-	tween.tween_callback(self.queue_free)
+	# Replaces tween.tween_callback(self.queue_free) — the callback pattern
+	# races with external frees and emits "Lambda capture freed" warnings.
+	await tween.finished
+	if is_instance_valid(self):
+		queue_free()

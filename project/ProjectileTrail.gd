@@ -16,7 +16,12 @@ func _ready():
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "modulate:a", 0.0, randf_range((lifetime - min((lifetime*lifetime_range), lifetime)), (lifetime+(lifetime*lifetime_range))))
-	tween.tween_callback(self.queue_free)
+	# await + queue_free instead of tween_callback(self.queue_free) to avoid
+	# "Lambda capture freed" errors when the trail is freed externally before
+	# the fade tween completes.
+	await tween.finished
+	if is_instance_valid(self):
+		queue_free()
 
 func setup(data, projectile):
 	lifetime = data.trail_lifetime

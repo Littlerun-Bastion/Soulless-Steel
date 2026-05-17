@@ -90,4 +90,10 @@ func die():
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(self, "modulate:a", 0.0, 1.0)
-	tween.tween_callback(self.queue_free)
+	# Replaces tween.tween_callback(self.queue_free) — the callback pattern
+	# races with external frees (e.g., LRU eviction in LivingWorldTest) and
+	# produces "Lambda capture at index 0 was freed" errors when the bound
+	# target is freed before the tween finishes.
+	await tween.finished
+	if is_instance_valid(self):
+		queue_free()

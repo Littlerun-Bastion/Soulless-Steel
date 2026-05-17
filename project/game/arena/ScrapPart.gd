@@ -34,10 +34,18 @@ func start_death():
 	add_child(timer)
 	timer.start()
 	await timer.timeout
+	if not is_instance_valid(self):
+		return
+	timer.queue_free()
 
-	#Start fading out
+	#Start fading out — await + explicit queue_free instead of
+	# tween.tween_callback(self.queue_free). The callback pattern races
+	# with external frees (LRU eviction, scene change) and produces the
+	# "Lambda capture at index 0 was freed" console error.
 	dur = randf_range(FADEOUT_MIN, FADEOUT_MAX)
 	var tween = create_tween()
 	modulate.a = 1.0
 	tween.tween_property(self, "modulate:a", 0.0, dur)
-	tween.tween_callback(self.queue_free)
+	await tween.finished
+	if is_instance_valid(self):
+		queue_free()

@@ -16,7 +16,7 @@ script/source = "extends Node2D
 @export var on_shield_sfxs : Array[String] = []
 @export var on_miss_sfxs : Array[String] = []
 
-var lifetime := 10.0
+var lifetime := 5.0
 var is_mecha = false
 var is_shield = false
 
@@ -40,15 +40,15 @@ func setup(size, rot, mecha, shield):
 	
 	if is_mecha and is_shield:
 		for child in get_node(\"OnShield\").get_children():
-			child.amount = child.amount * size
+			# .amount left at scene-default — runtime writes reallocate GPU buffers
 			child.emitting = true
 	elif is_mecha:
 		for child in get_node(\"OnHit\").get_children():
-			child.amount = child.amount * size
+			# .amount left at scene-default — runtime writes reallocate GPU buffers
 			child.emitting = true
 	else:
 		for child in get_node(\"OnMiss\").get_children():
-			child.amount = child.amount * size
+			# .amount left at scene-default — runtime writes reallocate GPU buffers
 			child.emitting = true
 	
 	scale = Vector2(size,size)

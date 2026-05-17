@@ -23,6 +23,20 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 const NAV_TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png")
 
+# Impact / explosion VFX pre-warmed at level start. First-time render of each
+# scene's GPUParticles2D triggers shader pipeline compilation on the render
+# thread, which shows up as a frame-spike on the first weapon shot / first
+# impact of a given type. We instantiate one of each off-screen during the
+# intro so the compile happens then instead of during combat.
+const FX_TO_PREWARM := [
+	preload("res://game/weapons/BallisticImpact.tscn"),
+	preload("res://game/weapons/BallisticImpactMini.tscn"),
+	preload("res://game/weapons/ShapedChargeImpact.tscn"),
+	preload("res://game/weapons/OMRivetImpact.tscn"),
+	preload("res://game/weapons/MissileDirectedImpact.tscn"),
+	preload("res://game/weapons/PartDestructionExplosion.tscn"),
+]
+
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
 @onready var Trails = $Trails
@@ -69,6 +83,10 @@ func _ready() -> void:
 	# Director still tracks its own kills for tuning; this adds player-facing
 	# objectives on top.
 	_setup_mission()
+
+	# Compile impact-effect shaders during the intro so the first shot/impact
+	# of a weapon type doesn't hitch. ~2 frames of work, invisible to the user.
+	await _prewarm_fx()
 
 
 func _process(dt: float) -> void:
@@ -537,6 +555,37 @@ func _setup_mission() -> void:
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
 	MissionManager.start_mission(mission)
+
+
+# Pre-compile impact-effect shaders by rendering each FX scene off-screen
+# for one frame. Mutes the master bus briefly so the user doesn't hear a
+# burst of impact sfx during the intro.
+func _prewarm_fx() -> void:
+	var master_idx := AudioServer.get_bus_index("Master")
+	var prev_db := AudioServer.get_bus_volume_db(master_idx)
+	AudioServer.set_bus_volume_db(master_idx, -80.0)
+
+	var holder := Node2D.new()
+	holder.position = Vector2(-100000, -100000)  # off-screen
+	add_child(holder)
+
+	for scene in FX_TO_PREWARM:
+		# Warm all three branches (OnHit / OnShield / OnMiss) where applicable;
+		# scenes without a setup() method (e.g. PartDestructionExplosion) emit
+		# in _ready and don't care about these args.
+		for branch in [[true, false], [true, true], [false, false]]:
+			var inst = scene.instantiate()
+			holder.add_child(inst)
+			if inst.has_method("setup"):
+				inst.setup(1.0, 0.0, branch[0], branch[1])
+
+	# Two frames: first queues the draw + kicks off pipeline compile, second
+	# is the safety margin so we tear down only after the shader is cached.
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	holder.queue_free()
+	AudioServer.set_bus_volume_db(master_idx, prev_db)
 
 
 # ---- Debug tools (Tier 4) ----

@@ -121,12 +121,12 @@ func reload():
 	var temp_timer = Timer.new()
 	add_child(temp_timer)
 	temp_timer.start(data.reload_speed); await temp_timer.timeout
-	temp_timer.queue_free()
-	# Guard against the weapon being freed during the await — properties on a
-	# freed object are still readable (returning defaults) but emitting a
-	# signal would assert. Just bail.
+	# Guard against the weapon being freed during the await before touching
+	# temp_timer — temp_timer is a child of self, so if self was freed the
+	# timer is gone too and calling queue_free on it would error.
 	if not is_instance_valid(self):
 		return
+	temp_timer.queue_free()
 	var ammo = min(data.clip_size - clip_ammo, total_ammo)
 	total_ammo -= ammo
 	clip_ammo += ammo

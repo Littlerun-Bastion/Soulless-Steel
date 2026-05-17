@@ -1,4 +1,9 @@
-extends Node
+extends RefCounted
+
+# This whole AI logic chain (EnemyLogic → Graphs → Node → behaviour) used to
+# extend Node but never gets added to the scene tree, so on NPC death the
+# sub-objects orphaned (~16 nodes per NPC accumulated forever).
+# RefCounted auto-frees when the holder (Enemy.gd) drops its reference.
 
 const GRAPH = preload("res://game/mecha/enemy_logic/Graphs.gd")
 const BEHAVIOUR_PATH = "res://game/mecha/enemy_logic/behaviours/"

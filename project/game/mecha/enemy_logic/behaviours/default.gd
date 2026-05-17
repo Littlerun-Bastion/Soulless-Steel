@@ -1,4 +1,8 @@
-extends Node
+extends RefCounted
+
+# AI behaviour script. Pure data + state-machine methods. Held by EnemyLogic
+# (RefCounted), never in the scene tree — RefCounted so the whole AI chain
+# auto-frees with the NPC.
 
 const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0

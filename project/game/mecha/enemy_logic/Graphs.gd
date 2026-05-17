@@ -1,12 +1,12 @@
-extends Node
+extends RefCounted
+
+# State-machine graph for an NPC's AI. Pure data — held by EnemyLogic which
+# isn't in the scene tree. RefCounted so it auto-frees with the holder.
 
 const NODE = preload("res://game/mecha/enemy_logic/Node.gd")
 
 var graph = []
 var current_state = false
-
-func _ready():
-	pass
 
 
 func add_a_node(id):

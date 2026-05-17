@@ -1,4 +1,4 @@
-extends Node
+extends RefCounted
 
 const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0

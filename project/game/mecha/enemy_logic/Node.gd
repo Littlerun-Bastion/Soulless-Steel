@@ -1,10 +1,11 @@
-extends Node
+extends RefCounted
+
+# One node in the AI state-machine graph. Stores outgoing transitions and
+# their condition callables. Held by Graphs (also RefCounted), never in
+# the scene tree.
 
 var connections = {}
 var id
-
-func _ready():
-	pass
 
 
 func add_connection(final, condition):

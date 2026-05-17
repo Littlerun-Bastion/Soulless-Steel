@@ -3,6 +3,10 @@ class_name Mecha
 
 # hi this edit comes from my tablet!
 
+# Tracks which core part_names have already triggered the missing-coolant
+# warning, so set_core() doesn't spam push_warning every time a mech respawns.
+static var _warned_missing_coolant: Dictionary = {}
+
 enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
@@ -783,7 +787,7 @@ func take_status_damage(dt):
 		if hp <= 0:
 			is_exposed = true
 		else:
-			hp = round(max(hp - (dt * (hp/100)), 1))
+			hp = round(max(hp - (dt * (hp/100.0)), 1))
 		emit_signal("took_damage", self, true)
 
 func overheat_damage_tick():
@@ -1189,8 +1193,12 @@ func set_core(part_name):
 		internal_capacity = mass_kg * ct.specific_heat  # kJ/°C
 		overheat_temp = ct.overheat_temp - AMBIENT_TEMP  # Convert to delta above ambient
 	else:
-		# Fallback if no coolant assigned (shouldn't happen in production)
-		push_warning("Mecha using fallback thermals (no coolant assigned)")
+		# Fallback if no coolant assigned (shouldn't happen in production).
+		# Warn once per core part so repeated mech spawns don't spam.
+		var core_id: String = str(part_name)
+		if not _warned_missing_coolant.has(core_id):
+			_warned_missing_coolant[core_id] = true
+			push_warning("Mecha core '%s' has no coolant_type — using fallback thermals" % core_id)
 		internal_capacity = 40.0
 		overheat_temp = 110.0
 

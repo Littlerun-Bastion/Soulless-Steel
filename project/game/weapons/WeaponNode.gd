@@ -83,7 +83,7 @@ func set_offsets(off):
 	offset = off
 
 
-func update_heat(heat_dispersion,mecha_heat, dt):
+func update_heat(_heat_dispersion, mecha_heat, dt):
 	heat = max(heat - WEAPON_HEAT_DECAY * dt, 0.0)
 	Main.material.set_shader_parameter("heat", mecha_heat) 
 	Sub.material.set_shader_parameter("heat", heat)

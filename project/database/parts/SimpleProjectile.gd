@@ -164,11 +164,11 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 	
 	for result in results:
 		if result.collider == body:
-			var part_name = body.get_part_name_from_shape(result.shape)
-			var priority = priority_order.find(part_name)
+			var hit_name = body.get_part_name_from_shape(result.shape)
+			var priority = priority_order.find(hit_name)
 			if priority != -1 and priority < best_priority:
 				best_priority = priority
-				best_part = part_name
+				best_part = hit_name
 	
 	# Armor check
 	var pen_result = body.armor_check(

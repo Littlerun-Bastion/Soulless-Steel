@@ -294,7 +294,7 @@ func _inventory_from_dict(data) -> Inventory:
 		var kind_val := 0
 		if entry.has("kind"):
 			kind_val = int(entry["kind"])
-		stack.kind = kind_val
+		stack.kind = kind_val as item_stack.ItemKind
 
 		if stack.kind == item_stack.ItemKind.PART:
 			stack.part_type = str(entry.get("part_type", ""))

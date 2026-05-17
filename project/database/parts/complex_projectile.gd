@@ -316,11 +316,11 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 				# Select highest priority part (head > shoulders > chassis > core)
 				for result in results:
 					if result.collider == body:
-						var part_name = body.get_part_name_from_shape(result.shape)
-						var priority = priority_order.find(part_name)
+						var hit_name = body.get_part_name_from_shape(result.shape)
+						var priority = priority_order.find(hit_name)
 						if priority != -1 and priority < best_priority:
 							best_priority = priority
-							best_part = part_name
+							best_part = hit_name
 				
 				# Run armor check - ComplexProjectiles never deflect
 				var pen_result = body.armor_check(
@@ -575,9 +575,9 @@ func explosion():
 				
 				# Run armor check for EACH part hit by explosion
 				# Explosions can damage multiple parts simultaneously
-				for part_name in parts_hit:
+				for hit_name in parts_hit:
 					var pen_result = hit_mecha.armor_check(
-						part_name,
+						hit_name,
 						explosion_center,
 						ray,
 						armor_pen,
@@ -614,13 +614,13 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 	# Collect unique parts
 	for result in results:
 		if result.collider == mecha:
-			var part_name = mecha.get_part_name_from_shape(result.shape)
+			var hit_name = mecha.get_part_name_from_shape(result.shape)
 			# Shields aren't a real armor part — skip; take_damage handles them
-			if part_name == "shield":
+			if hit_name == "shield":
 				continue
-			if not parts_found.has(part_name):
-				parts_found[part_name] = true
-				parts_hit.append(part_name)
+			if not parts_found.has(hit_name):
+				parts_found[hit_name] = true
+				parts_hit.append(hit_name)
 
 	return parts_hit
 

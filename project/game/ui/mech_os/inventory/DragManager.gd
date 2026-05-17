@@ -304,7 +304,7 @@ func _rotate_dragged_item() -> void:
 
 # Add this method for starting drags from equipment slots:
 
-func start_drag_from_equipment(stack: item_stack, slot: PartSlot, equip_window) -> void:
+func start_drag_from_equipment(stack: item_stack, slot: PartSlot, _equip_window) -> void:
 	dragging_stack = stack
 	drag_source_grid = null
 	drag_source_slot = slot

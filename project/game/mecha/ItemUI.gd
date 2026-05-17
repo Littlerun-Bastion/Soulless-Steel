@@ -103,10 +103,10 @@ func _update_icon_layout() -> void:
 	if max_w <= 0.0 or max_h <= 0.0:
 		return
 
-	var scale = min(max_w / logical_w, max_h / logical_h)
+	var fit_scale = min(max_w / logical_w, max_h / logical_h)
 
-	var final_w = logical_w * scale
-	var final_h = logical_h * scale
+	var final_w = logical_w * fit_scale
+	var final_h = logical_h * fit_scale
 
 	# Swap back for the actual TextureRect rect if rotated
 	var rect_w = final_w

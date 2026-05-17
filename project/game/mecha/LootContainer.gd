@@ -34,7 +34,7 @@ func _init_inventory() -> void:
 		populate(default_contents)
 
 # Called by the player when they press the interact key
-func interact(player: Node) -> void:
+func interact(_player: Node) -> void:
 	if is_open:
 		return
 	is_open = true

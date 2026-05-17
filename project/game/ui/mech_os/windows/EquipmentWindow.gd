@@ -117,8 +117,8 @@ func revert_equip(slot: PartSlot, stack: item_stack) -> void:
 
 func _return_stack_to_inventory(stack: item_stack) -> bool:
 	# Try to place the stack in any open inventory window
-	for app_id in MechOS.open_windows:
-		var window = MechOS.open_windows[app_id]
+	for win_app_id in MechOS.open_windows:
+		var window = MechOS.open_windows[win_app_id]
 		if window is InventoryWindow and window.inventory_grid != null:
 			var inv: Inventory = window.inventory_grid.get_inventory()
 			if inv != null and inv.add_stack_to_first_available_slot(stack):

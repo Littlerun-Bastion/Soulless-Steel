@@ -193,6 +193,7 @@ var is_inside_building = false
 var is_entering_building = false
 var is_exposed = false
 var _last_component_explosion_ms := {}  # part_name -> Time.get_ticks_msec() of last spawn; throttles VFX spam
+var _last_shield_particle_amount: int = -1  # Caches the previous shield particle amount so we only reassign on change — writing GPUParticles2D.amount reallocates GPU buffers and causes a micro-stutter.
 var passive_sounds_timer = 0.0
 var throttle :float = 1.0
 
@@ -474,8 +475,12 @@ func _physics_process(dt):
 			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
 			shield = round(shield)
 			emit_signal("took_damage", self, true)
-	$ParticlesLayer3/ShieldRing.amount = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield/max_shield))))
-	$ParticlesLayer3/ShieldStartup.amount = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield/max_shield))))
+	# Only reassign on change — see _last_shield_particle_amount declaration.
+	var new_shield_particle_amount: int = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield / max_shield))))
+	if new_shield_particle_amount != _last_shield_particle_amount:
+		_last_shield_particle_amount = new_shield_particle_amount
+		$ParticlesLayer3/ShieldRing.amount = new_shield_particle_amount
+		$ParticlesLayer3/ShieldStartup.amount = new_shield_particle_amount
 
 	#Handle sprinting momentum
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)

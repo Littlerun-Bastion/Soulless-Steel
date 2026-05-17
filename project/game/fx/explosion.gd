@@ -6,7 +6,7 @@ extends Node2D
 @export var on_shield_sfxs : Array[String] = []
 @export var on_miss_sfxs : Array[String] = []
 
-var lifetime := 10.0
+var lifetime := 5.0
 var is_mecha = false
 var is_shield = false
 

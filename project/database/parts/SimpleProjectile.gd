@@ -192,7 +192,17 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		add_child(kill_timer)
 		kill_timer.wait_time = 0.5
 		kill_timer.one_shot = true
-		kill_timer.timeout.connect(func(): die(body))
+		kill_timer.timeout.connect(func():
+			# Guard captures: body (mecha) may be freed if it dies during the 0.5s delay,
+			# and self (projectile) may be freed by other paths. Avoid passing a freed
+			# ref into die()'s bullet_impact signal.
+			if not is_instance_valid(self):
+				return
+			if is_instance_valid(body):
+				die(body)
+			else:
+				queue_free()
+		)
 		kill_timer.start()
 		return
 	

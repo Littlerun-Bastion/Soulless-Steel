@@ -6,7 +6,7 @@ extends Node2D
 @onready var hitsmoke = $hit_smoke
 @export var light_decay_rate := 1.0
 
-var lifetime := 10.0
+var lifetime := 5.0
 var is_mecha = false
 var is_shield = false
 

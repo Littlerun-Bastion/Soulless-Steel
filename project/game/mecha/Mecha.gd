@@ -844,6 +844,8 @@ func die(_source_info, _weapon_name):
 		GeneratorAmbientSFX.stop()
 	
 	await get_tree().create_timer(3.0).timeout
+	if not is_instance_valid(self):
+		return
 	#TickerManager.new_message({
 	#	"type": "mecha_died",
 	#	"source": source_info.name,
@@ -2937,7 +2939,19 @@ func enter_flagged_state():
 	emit_signal("flagged")
 	emit_signal("exposed", self)  # Keep old signal for compatibility
 
+const COMPONENT_EXPLOSION_THROTTLE_MS := 100
+var _last_component_explosion_ms := {}
+
 func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
+	# Throttle rapid same-part hits to avoid spawn storms during cascading damage.
+	# Destruction always plays — it's the dramatic final pop.
+	if not is_destroyed:
+		var now_ms := Time.get_ticks_msec()
+		var last_ms: int = _last_component_explosion_ms.get(part_name, -COMPONENT_EXPLOSION_THROTTLE_MS)
+		if now_ms - last_ms < COMPONENT_EXPLOSION_THROTTLE_MS:
+			return
+		_last_component_explosion_ms[part_name] = now_ms
+
 	var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()
 	get_parent().add_child(explosion)
 	

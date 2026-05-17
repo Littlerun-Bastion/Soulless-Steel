@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://60nmjjxfx353"]
+﻿[gd_scene load_steps=15 format=3 uid="uid://60nmjjxfx353"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1_lwa1r"]
 [ext_resource type="Texture2D" uid="uid://b7ke85o8hgnlv" path="res://assets/images/mechas/cores/GTk-2Cr/GTk-2Cr-Core_pv.png" id="2_2sq4b"]
@@ -13,9 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="11_v70ic"]
 [ext_resource type="Texture2D" uid="uid://bgdyu4xpb3h0k" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" id="12_4qamd"]
 [ext_resource type="Texture2D" uid="uid://c3f0ehehtubij" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" id="13_ttb8e"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1_lwa1r")
+coolant_type = ExtResource("coolant_default")
 part_name = "'Rangda' GTk-2Cr Core"
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"

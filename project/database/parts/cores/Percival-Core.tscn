@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://2jdm7oivf5dn"]
+﻿[gd_scene load_steps=15 format=3 uid="uid://2jdm7oivf5dn"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dgwf1gtc44duw" path="res://assets/images/mechas/cores/Percival/percival_core_glow.png" id="2"]
@@ -13,9 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="11"]
 [ext_resource type="Texture2D" uid="uid://c64uw7n1o0ntl" path="res://assets/images/mechas/arm_weapons/TT1_CN_Main.png" id="12"]
 [ext_resource type="Texture2D" uid="uid://bpk36yqghycgq" path="res://assets/images/mechas/cores/Percival/percival_core_PV.png" id="13"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1")
+coolant_type = ExtResource("coolant_default")
 part_name = "Percival-Core"
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://ca8khafqxh8e"]
+﻿[gd_scene load_steps=15 format=3 uid="uid://ca8khafqxh8e"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1_8iid2"]
 [ext_resource type="Texture2D" uid="uid://d20amb724cayr" path="res://assets/images/mechas/cores/Skeleton/Skeleton_core_pv.png" id="2_qal8j"]
@@ -13,9 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="11_udeb0"]
 [ext_resource type="Texture2D" uid="uid://bgdyu4xpb3h0k" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_lshoulder_main.png" id="12_rtn5s"]
 [ext_resource type="Texture2D" uid="uid://c3f0ehehtubij" path="res://assets/images/mechas/shoulders/MSV-L3J/msv-l3j_rshoulder_main.png" id="13_asy4y"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1_8iid2")
+coolant_type = ExtResource("coolant_default")
 part_name = "Null"
 tagline = "NULL"
 description = "The base skeleton of an SAV."

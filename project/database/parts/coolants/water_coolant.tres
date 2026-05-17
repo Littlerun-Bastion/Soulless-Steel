@@ -5,4 +5,7 @@
 [resource]
 script = ExtResource("1_dyvxv")
 coolant_name = "Water"
+density = 1.0
+specific_heat = 4.18
+overheat_temp = 100.0
 metadata/_custom_type_script = "uid://vinw15j5guph"

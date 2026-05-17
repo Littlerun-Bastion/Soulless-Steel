@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bust0c0ifrdf8"]
+﻿[gd_scene format=3 uid="uid://bust0c0ifrdf8"]
 
 [ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="1"]
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="2"]
@@ -13,9 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://ddlesqla1d82o" path="res://assets/images/mechas/shoulders/Percival/percival_lshoulder_main.png" id="11"]
 [ext_resource type="Texture2D" uid="uid://coovjnchgwjnp" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_glow.png" id="12"]
 [ext_resource type="Texture2D" uid="uid://bekdvtn4rrh6v" path="res://assets/images/mechas/cores/Crawler C-type/Crawler_C-type_core_pv.png" id="13"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node" unique_id=1822267096]
 script = ExtResource("6")
+coolant_type = ExtResource("coolant_default")
 part_name = "Crawler C-type"
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"

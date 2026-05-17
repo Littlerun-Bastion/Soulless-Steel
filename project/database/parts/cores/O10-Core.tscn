@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dajmw7nd4lc5i"]
+﻿[gd_scene load_steps=16 format=3 uid="uid://dajmw7nd4lc5i"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1"]
 [ext_resource type="Material" path="res://database/parts/part_glow_canvas.tres" id="2"]
@@ -14,9 +14,11 @@
 [ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="12"]
 [ext_resource type="Texture2D" uid="uid://cws10kfm0i7fq" path="res://assets/images/mechas/cores/O10/O10-Core_main.png" id="13"]
 [ext_resource type="Texture2D" uid="uid://db4c40hajqbl2" path="res://assets/images/mechas/cores/O10/O10-Core_pv.png" id="14"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1")
+coolant_type = ExtResource("coolant_default")
 part_name = "O10-Core"
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"

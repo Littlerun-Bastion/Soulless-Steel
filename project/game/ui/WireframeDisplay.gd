@@ -121,7 +121,7 @@ func _get_part_state(part_name: String) -> int:
 	if total > 0 and destroyed == total:
 		return -1
 
-	if destroyed > total / 2:
+	if destroyed * 2 > total:
 		return 0
 
 	# HP ratio baseline

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dodyvu3lwneqx"]
+﻿[gd_scene load_steps=15 format=3 uid="uid://dodyvu3lwneqx"]
 
 [ext_resource type="Script" path="res://database/parts/core.gd" id="1_yxj72"]
 [ext_resource type="Texture2D" uid="uid://bvyblec7mahi8" path="res://assets/images/mechas/cores/MSV-L3J/msv-l3j_core_pv.png" id="2_8ltop"]
@@ -13,9 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://bmo3j1d7dcws1" path="res://assets/images/mechas/heads/MSV-L3J/msv-l3j_head_main.png" id="11_y1eoa"]
 [ext_resource type="Texture2D" uid="uid://ceatqoom26jwv" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-lshoulder_main.png" id="12_niyg5"]
 [ext_resource type="Texture2D" uid="uid://cg78j6u76eo8q" path="res://assets/images/mechas/shoulders/SAMURAI/SAMURAI-rshoulder_main.png" id="13_w00p0"]
+[ext_resource type="Resource" uid="uid://desy5awnwa571" path="res://database/parts/coolants/water_coolant.tres" id="coolant_default"]
 
 [node name="Part" type="Node"]
 script = ExtResource("1_yxj72")
+coolant_type = ExtResource("coolant_default")
 part_name = "SAMURAI-03C"
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Yamaguchi"

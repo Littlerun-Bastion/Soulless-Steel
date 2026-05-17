@@ -58,6 +58,11 @@ func _ready() -> void:
 		await get_tree().create_timer(.01).timeout
 		IntroAnimation.stop_animation()
 
+	# Tier 3: surface a clear goal via the standard mission system.
+	# Director still tracks its own kills for tuning; this adds player-facing
+	# objectives on top.
+	_setup_mission()
+
 
 func _process(_dt: float) -> void:
 	if player and not PauseMenu.is_paused():
@@ -87,7 +92,11 @@ func _setup_exits() -> void:
 func _add_player() -> void:
 	player = PLAYER.instantiate()
 	Mechas.add_child(player)
+	# Player.setup() already restores Profile.stats.current_mecha as the
+	# loadout (or falls back to the debug loadout). We additionally restore
+	# the saved mech inventory so cargo carries over from the hangar.
 	player.setup(self)
+	player.mech_inventory = Profile.get_mech_inventory()
 	player.position = _player_start_position()
 	player.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 	player.connect("create_casing", Callable(self, "_on_mecha_create_casing"))
@@ -358,6 +367,11 @@ func _on_mecha_died(mecha) -> void:
 	if mecha == player:
 		player_died()
 	else:
+		# Mission system: count player kills toward objectives.
+		if mecha.last_damage_source \
+				and typeof(mecha.last_damage_source) == TYPE_DICTIONARY \
+				and mecha.last_damage_source.get("name") == "Player":
+			MissionManager.report_kill()
 		mecha.queue_free()
 
 
@@ -443,9 +457,14 @@ func _on_player_lost_health() -> void:
 
 
 func _on_player_extracted(_mecha) -> void:
-	# Test scene end-of-match handling — just print for now.
-	# Could route to a scoreboard or back to the main menu later.
-	print("[LivingWorldTest] Player extracted — match end")
+	# Mission objective: extraction. Transition back to the main menu so the
+	# player can re-enter the test, customize their mech, etc. (Skipping the
+	# Arena payout/ladder flow on purpose — Tier 3 default for this scene.)
+	MissionManager.report_extraction()
+	TransitionManager.transition_to(
+		"res://game/start_menu/StartMenu.tscn",
+		"Rebooting System..."
+	)
 
 
 # ---- Game-flow signal handlers ----
@@ -483,6 +502,18 @@ func _on_WindsTimer_timeout() -> void:
 	# Stub — Arena had this hooked to random_wind_sound() which was empty.
 	# Kept for future ambient layer.
 	pass
+
+
+# ---- Mission ----
+
+# Standard "Survive and Extract" objectives mirrored from Arena's default.
+# Kills are reported in _on_mecha_died, extraction in _on_player_extracted.
+func _setup_mission() -> void:
+	var mission = MissionData.new()
+	mission.mission_name = "Survive and Extract"
+	mission.add_objective("kill", "Eliminate enemies", 3)
+	mission.add_objective("extract", "Extract from the arena", 1)
+	MissionManager.start_mission(mission)
 
 
 # ---- Exit handling (mirrors Arena's ExitPoint signal flow) ----

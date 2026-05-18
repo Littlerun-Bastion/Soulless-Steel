@@ -368,26 +368,34 @@ var ecm_strength_difference = 0.0
 var bleed_timer = 0.0
 
 func _ready():
+	# duplicate(false) keeps the underlying Shader resource shared across
+	# instances (shaders are stateless — per-instance state lives in
+	# shader_parameter values, which duplicate(false) still copies). The
+	# previous deep duplicate(true) cloned the Shader 30 times per
+	# Mecha._ready (~200ms per spawn), which was the dominant cost of NPC
+	# spawning and the cause of the visible hitch on world population +
+	# soft-spawns.
 	for node in [Core, Head, HeadPort,\
 				LeftShoulder, RightShoulder,\
 				LeftArmWeaponMain, RightArmWeaponMain,\
 				LeftShoulderWeaponMain, RightShoulderWeaponMain,\
 				SingleChassis, LeftChassis, RightChassis]:
-		node.material = Core.material.duplicate(true)
+		node.material = Core.material.duplicate(false)
 	for node in [CoreSub, HeadSub,\
 				LeftArmWeaponSub, RightArmWeaponSub,\
 				LeftShoulderWeaponSub, RightShoulderWeaponSub,\
 				SingleChassisSub, LeftChassisSub, RightChassisSub]:
-		node.material = CoreSub.material.duplicate(true)
+		node.material = CoreSub.material.duplicate(false)
 	for node in [CoreGlow, HeadGlow,\
 				LeftArmWeaponGlow, RightArmWeaponGlow,\
 				LeftShoulderWeaponGlow, RightShoulderWeaponGlow,\
 				SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
-		node.material = CoreGlow.material.duplicate(true)
+		node.material = CoreGlow.material.duplicate(false)
 	global_rotation_degrees = randf_range(0, 360)
-	
+
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
+
 
 func _physics_process(dt):
 	if paused:
@@ -2722,8 +2730,8 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 
 func component_destroyed(part_name: String, comp_name: String):
 	var comp = components[part_name][comp_name]
-	
-	
+
+
 	# Emit destruction signal
 	emit_signal("component_destroyed_alert", part_name, comp_name)
 	
@@ -2981,7 +2989,8 @@ func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	# Random offset
 	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	explosion.global_position += offset
-	
+
+
 func get_part_global_position(part_name: String) -> Vector2:
 	match part_name:
 		"core":

@@ -57,6 +57,22 @@ const FX_TO_PREWARM := [
 var allow_debug_cam: bool = false
 var target_arena_zoom: Vector2 = Vector2(0.1, 0.1)
 
+# Enemy pool. Each ENEMY.instantiate() + _ready cascade costs ~140ms on this
+# scene (heavy @onready chain, weapon/part wiring, AI bootstrap). We
+# pre-instantiate POOL_TARGET enemies during the intro — one per frame so
+# the cost is spread instead of bunched — so Director's initial population
+# burst at level start consumes ready-made instances and avoids a single
+# multi-hundred-ms hitch on that frame. NO background refill (see
+# _process): a periodic refill produced strictly worse combat hitches than
+# the rare fallback cost of a fresh instantiate on a soft-spawn.
+const POOL_TARGET := 8
+
+var _enemy_pool: Array[Node] = []
+var _pool_container: Node2D
+var _enemy_defaults_captured: bool = false
+var _enemy_default_collision_layer: int = 0
+var _enemy_default_collision_mask: int = 0
+
 var player
 var all_mechas: Array = []
 
@@ -67,10 +83,18 @@ func _ready() -> void:
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	_setup_exits()
 	_add_player()
-	Director.start(self)
 	# Heatmap depends on the player's head part; configure after spawn.
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
+
+	# Compile impact + mecha shaders BEFORE Director spawns NPCs. Without
+	# this, Director.start triggers a chain of ~140ms first-render hitches
+	# as each NPC variant compiles its shaders. Pre-warm puts them at the
+	# player's position so the camera renders them and the GPU compiles
+	# pipelines — the dummies are torn down before the player sees anything.
+	await _prewarm_fx()
+
+	Director.start(self)
 
 	# Freeze AI until the entrance animation finishes.
 	set_mechas_block_status(true)
@@ -84,10 +108,6 @@ func _ready() -> void:
 	# objectives on top.
 	_setup_mission()
 
-	# Compile impact-effect shaders during the intro so the first shot/impact
-	# of a weapon type doesn't hitch. ~2 frames of work, invisible to the user.
-	await _prewarm_fx()
-
 
 func _process(dt: float) -> void:
 	if player and not PauseMenu.is_paused():
@@ -98,6 +118,14 @@ func _process(dt: float) -> void:
 		_update_arena_cam(dt)
 	if Debug.get_setting("navigation"):
 		_update_enemies_debug_navigation()
+
+	# Pool intentionally has NO background refill. Each _fill_pool_one() call
+	# costs ~140ms (instantiate + _ready cascade on the heavy Enemy scene),
+	# and a periodic background fill produces a steady stream of mid-combat
+	# hitches — strictly worse than the rare soft-spawn fallback hitch we
+	# were trying to avoid. The pool absorbs the initial population burst
+	# (its real purpose); soft-spawns after that pay fresh instantiate cost
+	# only when they fire, which is rare (~30–60s in Director).
 
 
 func _input(event: InputEvent) -> void:
@@ -156,7 +184,7 @@ func _add_player() -> void:
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
-	var enemy = ENEMY.instantiate()
+	var enemy = _take_pooled_enemy()
 	Mechas.add_child(enemy)
 	# Caller can pass an explicit position (used by Director soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
@@ -557,18 +585,32 @@ func _setup_mission() -> void:
 	MissionManager.start_mission(mission)
 
 
-# Pre-compile impact-effect shaders by rendering each FX scene off-screen
-# for one frame. Mutes the master bus briefly so the user doesn't hear a
-# burst of impact sfx during the intro.
+# Pre-compile shaders for impact-effects AND a representative NPC mecha by
+# rendering each off-screen for a few frames. First-time render of each
+# scene triggers GPU shader pipeline compilation on the render thread —
+# without this, the very first NPC to appear in combat causes a ~140ms
+# hitch. Mutes the master bus briefly so the user doesn't hear a burst
+# of sfx during the intro.
+const PREWARM_NPC_COUNT := 3
+const PREWARM_FRAMES := 4
+
 func _prewarm_fx() -> void:
 	var master_idx := AudioServer.get_bus_index("Master")
 	var prev_db := AudioServer.get_bus_volume_db(master_idx)
 	AudioServer.set_bus_volume_db(master_idx, -80.0)
 
+	# Place the prewarm holder at the player's position (or origin if no
+	# player yet). Sprite2D children would be culled off-screen, so the
+	# Enemy mecha needs to be in the camera frustum to actually render and
+	# compile its shaders. modulate near-zero hides them visually; the
+	# intro transition shader covers any remaining flash.
 	var holder := Node2D.new()
-	holder.position = Vector2(-100000, -100000)  # off-screen
+	holder.position = player.global_position if player else Vector2.ZERO
+	holder.modulate = Color(1, 1, 1, 0.01)
+	holder.z_index = -4096  # behind everything that's already on screen
 	add_child(holder)
 
+	# 1. Impact / explosion VFX scenes.
 	for scene in FX_TO_PREWARM:
 		# Warm all three branches (OnHit / OnShield / OnMiss) where applicable;
 		# scenes without a setup() method (e.g. PartDestructionExplosion) emit
@@ -579,13 +621,59 @@ func _prewarm_fx() -> void:
 			if inst.has_method("setup"):
 				inst.setup(1.0, 0.0, branch[0], branch[1])
 
-	# Two frames: first queues the draw + kicks off pipeline compile, second
-	# is the safety margin so we tear down only after the shader is cached.
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# Wait for the FX shaders to compile.
+	for _i in PREWARM_FRAMES:
+		await get_tree().process_frame
 
 	holder.queue_free()
 	AudioServer.set_bus_volume_db(master_idx, prev_db)
+
+	# 2. Populate the enemy pool. Each ENEMY.instantiate() is heavy; we spread
+	# the cost across frames by awaiting between instantiates. The pool lives
+	# in _pool_container off-screen until taken via _take_pooled_enemy.
+	_pool_container = Node2D.new()
+	_pool_container.name = "EnemyPool"
+	_pool_container.position = Vector2(-200000, -200000)
+	add_child(_pool_container)
+	for _i in POOL_TARGET:
+		_fill_pool_one()
+		await get_tree().process_frame
+
+
+# Synchronous: instantiate one Enemy and park it in the pool. Captures the
+# default collision layer/mask from the first instance so we can restore them
+# when handing the enemy out to gameplay.
+func _fill_pool_one() -> void:
+	if _pool_container == null or not is_instance_valid(_pool_container):
+		return
+	var enemy = ENEMY.instantiate()
+	_pool_container.add_child(enemy)
+	if not _enemy_defaults_captured:
+		_enemy_default_collision_layer = enemy.collision_layer
+		_enemy_default_collision_mask = enemy.collision_mask
+		_enemy_defaults_captured = true
+	enemy.collision_layer = 0
+	enemy.collision_mask = 0
+	enemy.process_mode = Node.PROCESS_MODE_DISABLED
+	_enemy_pool.push_back(enemy)
+
+
+# Take a ready enemy from the pool (cheap) or fall back to a fresh instantiate
+# (pays the ~150ms cost). Caller reparents and calls setup() on the result.
+func _take_pooled_enemy() -> Node:
+	while not _enemy_pool.is_empty():
+		var enemy = _enemy_pool.pop_back()
+		if not is_instance_valid(enemy):
+			continue
+		if enemy.get_parent():
+			enemy.get_parent().remove_child(enemy)
+		enemy.process_mode = Node.PROCESS_MODE_INHERIT
+		if _enemy_defaults_captured:
+			enemy.collision_layer = _enemy_default_collision_layer
+			enemy.collision_mask = _enemy_default_collision_mask
+		return enemy
+	# Pool empty — pay the full instantiate cost (will hitch).
+	return ENEMY.instantiate()
 
 
 # ---- Debug tools (Tier 4) ----

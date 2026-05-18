@@ -52,9 +52,9 @@ var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool 
 
 func _ready():
 	super()
-	
+
 	steering_setup()
-	
+
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
 		logic.setup(Debug.get_setting("ai_behaviour"))

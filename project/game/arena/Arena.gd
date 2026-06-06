@@ -427,7 +427,8 @@ func _on_mecha_made_sound(sound_data):
 func _on_ExitPos_mecha_extracting(extractingMech):
 	extractingMech.extracting()
 	if extractingMech.name == "Player":
-		print("[Arena] Player is extracting")
+		if Debug.get_setting("verbose_logging"):
+			print("[Arena] Player is extracting")
 		$PlayerHUD/SubViewportContainer/SubViewport/ExtractingLabel.visible = true
 
 
@@ -463,7 +464,8 @@ func _on_player_mech_extracted(playerMech):
 		var left_shoulder_ammo_cost = 0.0
 		if player.get_max_ammo("shoulder_weapon_left") and player.get_ammo_cost("shoulder_weapon_left"):
 			left_shoulder_ammo_cost = (player.get_max_ammo("shoulder_weapon_left") - player.get_total_ammo("shoulder_weapon_left")) * player.get_ammo_cost("shoulder_weapon_left")
-		print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
+		if Debug.get_setting("verbose_logging"):
+			print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
 		
 		var total_ammo_cost = right_arm_ammo_cost + left_arm_ammo_cost + right_shoulder_ammo_cost + left_shoulder_ammo_cost
 		

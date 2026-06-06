@@ -466,12 +466,15 @@ func _physics_process(dt):
 		if shield <= 0.0:
 			shield_down()
 
-	#Bloom
-	for part in ["right_arm", "left_arm", "right_shoulder", "left_shoulder"]:
-		if get(part+"_bloom_time") > 0:
-			set(part+"_bloom_time", max(get(part+"_bloom_time") - dt, 0))
-		else:
-			set(part+"_bloom_count", 0)
+	#Bloom — direct member access (avoids per-frame get()/set() string reflection)
+	if right_arm_bloom_time > 0: right_arm_bloom_time = max(right_arm_bloom_time - dt, 0.0)
+	else: right_arm_bloom_count = 0
+	if left_arm_bloom_time > 0: left_arm_bloom_time = max(left_arm_bloom_time - dt, 0.0)
+	else: left_arm_bloom_count = 0
+	if right_shoulder_bloom_time > 0: right_shoulder_bloom_time = max(right_shoulder_bloom_time - dt, 0.0)
+	else: right_shoulder_bloom_count = 0
+	if left_shoulder_bloom_time > 0: left_shoulder_bloom_time = max(left_shoulder_bloom_time - dt, 0.0)
+	else: left_shoulder_bloom_count = 0
 
 	#Handle shield
 	if build.generator and shield < max_shield:

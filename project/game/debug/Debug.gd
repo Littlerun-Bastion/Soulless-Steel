@@ -17,6 +17,7 @@ var debug_settings = {
 	"disable_projectiles_light": false,
 	"use_debug_cam": false,
 	"draw_debug_lines": false,
+	"verbose_logging": false,  # gates diagnostic prints (Director metrics, etc.)
 }
 
 
@@ -33,7 +34,8 @@ func window_debug_mode():
 
 
 func create_marker(pos, color:= Color.WHITE, scale_mod := 1.0):
-	print("Creating marker at ", pos, " with color ", str(color))
+	if get_setting("verbose_logging"):
+		print("Creating marker at ", pos, " with color ", str(color))
 	var marker = MARKER.instantiate()
 	Markers.add_child(marker)
 	marker.global_position = pos

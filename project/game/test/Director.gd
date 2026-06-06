@@ -78,7 +78,8 @@ func _populate_initial_world() -> void:
 		var design = NPCManager.get_design_data(npc)
 		arena.add_enemy(design, "NPC_" + str(i))
 	initial_population_done = true
-	print("[Director] World populated with ", count, " NPCs")
+	if Debug.get_setting("verbose_logging"):
+		print("[Director] World populated with ", count, " NPCs")
 
 
 func _process(dt: float) -> void:
@@ -115,6 +116,8 @@ func _process(dt: float) -> void:
 
 
 func _print_metrics() -> void:
+	if not Debug.get_setting("verbose_logging"):
+		return
 	if not is_instance_valid(arena.player):
 		print("[Director] player gone")
 		return
@@ -169,13 +172,16 @@ func notify_mecha_died(mecha) -> void:
 	# Player getting killed is its own category — not a player kill, not NPC-vs-NPC.
 	if mecha == arena.player:
 		player_deaths += 1
-		print("[Director] player killed by ", killer.mecha_name)
+		if Debug.get_setting("verbose_logging"):
+			print("[Director] player killed by ", killer.mecha_name)
 	elif killer == arena.player:
 		player_kills += 1
-		print("[Director] player killed ", mecha.mecha_name)
+		if Debug.get_setting("verbose_logging"):
+			print("[Director] player killed ", mecha.mecha_name)
 	else:
 		npc_vs_npc_kills += 1
-		print("[Director] npc-vs-npc: ", killer.mecha_name, " killed ", mecha.mecha_name)
+		if Debug.get_setting("verbose_logging"):
+			print("[Director] npc-vs-npc: ", killer.mecha_name, " killed ", mecha.mecha_name)
 
 
 # ---- Soft spawns ----
@@ -215,8 +221,9 @@ func _try_soft_spawn() -> void:
 
 	total_soft_spawns += 1
 	time_since_last_spawn = 0.0
-	print("[Director] soft-spawned ", enemy_name, " at ", pos,
-		"  [pop ", pop, " -> ", pop + 1, "]")
+	if Debug.get_setting("verbose_logging"):
+		print("[Director] soft-spawned ", enemy_name, " at ", pos,
+			"  [pop ", pop, " -> ", pop + 1, "]")
 
 
 # Counts living NPCs (excludes player and dead-but-not-yet-removed mechas).
@@ -300,8 +307,9 @@ func _try_redirect() -> void:
 	total_redirects += 1
 	time_since_last_redirect = 0.0
 	var dist_was = int(arena.player.global_position.distance_to(candidate.global_position))
-	print("[Director] redirected ", candidate.mecha_name,
-		" toward player area (was ", dist_was, " away)")
+	if Debug.get_setting("verbose_logging"):
+		print("[Director] redirected ", candidate.mecha_name,
+			" toward player area (was ", dist_was, " away)")
 
 
 # ---- Ambient events ----
@@ -332,8 +340,9 @@ func _try_ambient_event() -> void:
 
 	total_ambient_events += 1
 	var dist_from_player = int(arena.player.global_position.distance_to(pos))
-	print("[Director] ambient gunfire at ", pos,
-		"  (", dist_from_player, " from player)")
+	if Debug.get_setting("verbose_logging"):
+		print("[Director] ambient gunfire at ", pos,
+			"  (", dist_from_player, " from player)")
 
 
 # Picks a random valid point ambient_event_min_distance..max_distance from the

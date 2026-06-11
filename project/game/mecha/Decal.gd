@@ -13,6 +13,10 @@ var fade_out_timer = 2.0
 
 func _ready():
 	await get_tree().create_timer(fade_out_timer).timeout
+	# Decals live on mecha parts — the host mecha is often freed before the
+	# fade timer fires. Same guard pattern as the rest of the codebase.
+	if not is_instance_valid(self):
+		return
 	start_fade_out()
 	
 

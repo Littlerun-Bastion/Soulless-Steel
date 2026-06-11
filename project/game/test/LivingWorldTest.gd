@@ -327,6 +327,8 @@ func _on_mecha_create_projectile(mecha, args, weapon) -> void:
 		var delay = randf_range(0, args.bullet_spread_delay)
 		if delay > 0:
 			await get_tree().create_timer(delay).timeout
+			if not is_instance_valid(self):
+				return
 
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:

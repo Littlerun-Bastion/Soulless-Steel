@@ -752,8 +752,13 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 func do_hitstop():
 	if VisibilityNode.is_on_screen():
 		Engine.time_scale = HITSTOP_TIMESCALE
-		await get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE).timeout
-		Engine.time_scale = 1.0
+		# Restore via the timer's signal, not an await on this mecha: if the
+		# mecha is freed mid-hitstop (death, scene change), an awaiting
+		# coroutine dies with it and the game stays stuck at 10% speed.
+		# The lambda captures no instance state, so it survives the free.
+		get_tree().create_timer(HITSTOP_DURATION * HITSTOP_TIMESCALE).timeout.connect(
+			func(): Engine.time_scale = 1.0
+		)
 
 
 func has_status(status_name):

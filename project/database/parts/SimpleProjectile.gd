@@ -209,6 +209,10 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 	
 	# If penetrated, damage component (if one was selected)
 	if pen_result.penetrated:
+		# Record attribution before damage: a cockpit kill inside
+		# damage_component() calls die(), which reads last_damage_source.
+		body.last_damage_source = original_mecha_info
+		body.last_damage_weapon = part_id
 		# NEW: Only damage component if one was actually selected
 		if pen_result.component_name != "":
 			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)

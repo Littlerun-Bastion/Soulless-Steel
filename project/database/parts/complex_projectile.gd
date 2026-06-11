@@ -331,6 +331,12 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 					base_damage
 				)
 				
+				# Record attribution before damage: a cockpit kill inside
+				# damage_component() calls die(), which reads last_damage_source.
+				if pen_result.penetrated:
+					body.last_damage_source = original_mecha_info
+					body.last_damage_weapon = part_id
+
 				# Damage component if penetrated and a component was selected
 				if pen_result.penetrated and pen_result.component_name != "":
 					body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
@@ -573,6 +579,11 @@ func explosion():
 				# Find all parts within explosion radius using area query
 				var parts_hit = get_explosion_parts(hit_mecha, explosion_center, payload_explosion_radius)
 				
+				# Record attribution before damage: a cockpit kill inside
+				# damage_component() calls die(), which reads last_damage_source.
+				hit_mecha.last_damage_source = original_mecha_info
+				hit_mecha.last_damage_weapon = part_id
+
 				# Run armor check for EACH part hit by explosion
 				# Explosions can damage multiple parts simultaneously
 				for hit_name in parts_hit:

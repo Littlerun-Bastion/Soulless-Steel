@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bxi2yfpcghqde"]
 
-[ext_resource type="Script" path="res://ProjectileTrail.gd" id="1"]
+[ext_resource type="Script" path="res://game/weapons/ProjectileTrail.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ciwhpfoffrk7x" path="res://assets/images/fx/trail_cloudy_hi.png" id="2"]
 
 [sub_resource type="Curve" id="1"]

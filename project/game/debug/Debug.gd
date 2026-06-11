@@ -17,7 +17,7 @@ var debug_settings = {
 	"disable_projectiles_light": false,
 	"use_debug_cam": false,
 	"draw_debug_lines": false,
-	"verbose_logging": false,  # gates diagnostic prints (Director metrics, etc.)
+	"verbose_logging": true,  # gates diagnostic prints (Director metrics, etc.)
 }
 
 

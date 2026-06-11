@@ -167,21 +167,25 @@ func notify_mecha_died(mecha) -> void:
 	if src == null or typeof(src) != TYPE_DICTIONARY or not src.has("body"):
 		return
 	var killer = src.body
-	if not is_instance_valid(killer) or killer == mecha:
+	# The "died" signal fires ~3s after death, so the killer may itself have
+	# died and been freed by then — fall back to the name recorded at impact.
+	var killer_name = str(src.get("name", "?"))
+	var killer_valid = is_instance_valid(killer)
+	if killer_valid and killer == mecha:
 		return
 	# Player getting killed is its own category — not a player kill, not NPC-vs-NPC.
 	if mecha == arena.player:
 		player_deaths += 1
 		if Debug.get_setting("verbose_logging"):
-			print("[Director] player killed by ", killer.mecha_name)
-	elif killer == arena.player:
+			print("[Director] player killed by ", killer_name)
+	elif (killer_valid and killer == arena.player) or killer_name == "Player":
 		player_kills += 1
 		if Debug.get_setting("verbose_logging"):
 			print("[Director] player killed ", mecha.mecha_name)
 	else:
 		npc_vs_npc_kills += 1
 		if Debug.get_setting("verbose_logging"):
-			print("[Director] npc-vs-npc: ", killer.mecha_name, " killed ", mecha.mecha_name)
+			print("[Director] npc-vs-npc: ", killer_name, " killed ", mecha.mecha_name)
 
 
 # ---- Soft spawns ----

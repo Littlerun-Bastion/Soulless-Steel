@@ -150,6 +150,7 @@ func setup(mecha, _args, _weapon):
 
 # Handle mecha hits detected by raycast
 func handle_mecha_raycast_hit(body, collision_point: Vector2):
+	FrameSpikeDetector.mark("hit")
 	# Find which part was hit
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()

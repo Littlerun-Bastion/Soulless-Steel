@@ -386,6 +386,7 @@ func _on_mecha_died(mecha) -> void:
 	# Tell Director before removal so it can attribute the kill
 	if Director:
 		Director.notify_mecha_died(mecha)
+	FrameSpikeDetector.mark("died:scrap_spawn")
 	create_mecha_scraps(mecha)
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
@@ -398,6 +399,7 @@ func _on_mecha_died(mecha) -> void:
 				and typeof(mecha.last_damage_source) == TYPE_DICTIONARY \
 				and mecha.last_damage_source.get("name") == "Player":
 			MissionManager.report_kill()
+		FrameSpikeDetector.mark("died:queue_free")
 		mecha.queue_free()
 
 

@@ -164,6 +164,7 @@ func light_attack():
 
 
 func shoot(amount := 1):
+	FrameSpikeDetector.mark("shoot")
 	burst_count += 1
 	add_time(data.burst_fire_rate)
 	clip_ammo -= amount

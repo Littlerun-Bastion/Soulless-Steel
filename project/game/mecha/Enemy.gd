@@ -500,7 +500,18 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		var pos = get_global_transform().origin
 		var dir = (target - pos).normalized()
 		set_interest(dir.rotated(PI * direction), wander)
-		set_danger()
+		# Full-rate danger rays near the player or when engaged; far idle
+		# wanderers refresh on a stagger and steer off the cached map.
+		_steering_frame += 1
+		# valid_target is either a mecha Object or the sentinel `false` —
+		# truthiness check only; Object != bool is a runtime error in GDScript 4.
+		var needs_full_rate: bool = true if valid_target else false
+		if not needs_full_rate and arena and "player" in arena:
+			var p = arena.player
+			needs_full_rate = p != null and is_instance_valid(p) \
+				and global_position.distance_to(p.global_position) < STEERING_FULL_DISTANCE
+		if needs_full_rate or _steering_frame % FAR_STEERING_INTERVAL == 0:
+			set_danger()
 		choose_direction()
 		if sprint:
 			is_sprinting = true
@@ -536,13 +547,29 @@ func _on_NavigationAgent2D_target_reached():
 
 #-------- Context Steering
 
+# Steering LOD: NPCs far from the player refresh their 32-ray danger map
+# every FAR_STEERING_INTERVAL physics frames instead of every frame, reusing
+# the cached danger[] in between. At 9+ NPCs roaming the big expedition map,
+# full-rate steering for everyone costs ~17k raycasts/sec, almost all of it
+# for mechas nowhere near the action. Stagger offset spreads the refreshes
+# so far NPCs don't all raycast on the same frame.
+const STEERING_FULL_DISTANCE := 4000.0
+const FAR_STEERING_INTERVAL := 6
+var _steering_frame := 0
+
 func steering_setup():
 	interest.resize(num_rays)
 	danger.resize(num_rays)
+	# resize() pads untyped Arrays with null — fill with real zeros so
+	# choose_direction() can run before the first (possibly LOD-deferred)
+	# set_danger() refresh.
+	interest.fill(0.0)
+	danger.fill(0.0)
 	ray_directions.resize(num_rays)
 	for i in num_rays:
 		var angle = i * 2 * PI / num_rays
 		ray_directions[i] = Vector2.UP.rotated(angle)
+	_steering_frame = randi() % FAR_STEERING_INTERVAL
 
 func set_interest(target, wander):
 	if target:
@@ -562,12 +589,15 @@ func set_danger():
 		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
-		queue_redraw()
 		if result:
 			var distance = self.global_position.distance_to(result.position)
 			danger[i] = (look_ahead_range - distance)/look_ahead_range
 		else:
 			danger[i] = 0.0
+	# Redraw once per refresh (was once per ray), and only when the debug
+	# overlay actually draws something.
+	if Debug.get_setting("draw_debug_lines"):
+		queue_redraw()
 
 func choose_direction():
 	# Eliminate interest in slots with danger.

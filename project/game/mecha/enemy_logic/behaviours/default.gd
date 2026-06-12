@@ -127,26 +127,22 @@ func alert_roam_to_defending_lock(enemy):
 		priority = 5
 	return priority
 
-func ambush_lock_to_in_combat(enemy):
-	var priority = 0
+# Shared by every lock/alert state that escalates into combat: a target we
+# can engage is either hard-locked or inside close-quarters range.
+func _combat_entry_priority(enemy):
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			priority = 6
-	return priority
+			return 6
+	return 0
+
+func ambush_lock_to_in_combat(enemy):
+	return _combat_entry_priority(enemy)
 
 func defending_lock_to_in_combat(enemy):
-	var priority = 0
-	if enemy.valid_target:
-		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			priority = 6
-	return priority
+	return _combat_entry_priority(enemy)
 
 func alert_to_in_combat(enemy):
-	var priority = 0
-	if enemy.valid_target:
-		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			priority = 6
-	return priority
+	return _combat_entry_priority(enemy)
 
 func in_combat_to_attack(enemy):
 	var priority = 0
@@ -187,22 +183,13 @@ func defend_to_roam(enemy):
 	return priority
 
 func attack_to_flee(enemy):
-	var priority = 0
-	if _should_flee(enemy):
-		priority = 9
-	return priority
+	return 9 if _should_flee(enemy) else 0
 
 func defend_to_flee(enemy):
-	var priority = 0
-	if _should_flee(enemy):
-		priority = 9
-	return priority
+	return 9 if _should_flee(enemy) else 0
 
 func in_combat_to_flee(enemy):
-	var priority = 0
-	if _should_flee(enemy):
-		priority = 9
-	return priority
+	return 9 if _should_flee(enemy) else 0
 
 func flee_to_roam(enemy):
 	var priority = 0
@@ -309,190 +296,151 @@ func enter_defend(_enemy):
 	stance_time = 0.0
 
 
+## SHARED STATE HELPERS ##
+# Mechanical extractions of blocks that were copy-pasted across do_* states.
+# Behaviour-preserving: each helper is byte-equivalent to the block it
+# replaced, including evaluation order.
+
+# Standard movement preamble: ramp throttle up to full cruise.
+func _ramp_throttle_full(dt, enemy):
+	if enemy.throttle < 1.0:
+		enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
+	else:
+		enemy.decrease_throttle(1.0, 1.0)
+
+
+# Wander: pick a random map point when we have nowhere to go.
+func _wander_if_idle(enemy):
+	if not enemy.going_to_position:
+		point_of_interest = enemy.arena.get_random_position()
+		enemy.going_to_position = true
+
+
+# Head toward the most recent loud noise; on arrival consume it.
+func _investigate_loud_noise(enemy):
+	var recent = enemy.get_most_recent_loud_noise()
+	if not recent:
+		return
+	if enemy.global_position.distance_to(recent.position) > POSITIONAL_ACCURACY:
+		point_of_interest = recent.position
+		enemy.going_to_position = true
+	else:
+		enemy.senses.sounds.erase(recent)
+		enemy.going_to_position = false
+		point_of_interest = false
+
+
+# Head toward the most recent quiet noise; on arrival consume every quiet
+# sound from that source so we don't immediately re-investigate it.
+func _investigate_quiet_noise(enemy):
+	var recent = enemy.get_most_recent_quiet_noise()
+	if not recent:
+		return
+	if enemy.global_position.distance_to(recent.position) > POSITIONAL_ACCURACY:
+		point_of_interest = recent.position
+		enemy.going_to_position = true
+	else:
+		var to_erase = []
+		for sound in enemy.senses.sounds:
+			if sound.source and\
+			   sound.volume_type == "quiet" and sound.source == recent.source:
+				to_erase.append(sound)
+		to_erase.append(recent)
+		for sound in to_erase:
+			enemy.senses.sounds.erase(sound)
+		enemy.going_to_position = false
+		point_of_interest = false
+
+
+# Push the point of interest into the nav agent (if far enough to matter).
+func _push_poi_to_nav(enemy):
+	if point_of_interest:
+		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+			enemy.NavAgent.target_position = point_of_interest
+
+
+# On nav arrival, clear movement intent.
+func _clear_arrival(enemy):
+	if enemy.NavAgent.is_navigation_finished():
+		enemy.going_to_position = false
+		point_of_interest = false
+
+
+# Combat readiness: positive = press the attack, negative = back off.
+func _update_aggression(enemy, state):
+	var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
+	var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
+	aggression = base_aggression + personality_mod + _self_state_aggression_mod(state)
+
+
 ## STATE METHODS ##
 
 func do_roam(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		if enemy.throttle < 1.0:
-			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
-		else:
-			enemy.decrease_throttle(1.0, 1.0)
-		if not enemy.going_to_position: #Wander around if we are in the state and have no points of interest.
-			point_of_interest = enemy.arena.get_random_position()
-			enemy.going_to_position = true
-		
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
-		
+		_ramp_throttle_full(dt, enemy)
+		_wander_if_idle(enemy)
+		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0.65, false)
-		
-		if enemy.NavAgent.is_navigation_finished(): 
-			enemy.going_to_position = false
-			point_of_interest = false
+		_clear_arrival(enemy)
 
 func do_seek(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		if enemy.throttle < 1.0:
-			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
-		else:
-			enemy.decrease_throttle(1.0, 1.0)
-		
-		if enemy.get_most_recent_loud_noise():
-			if enemy.global_position.distance_to(enemy.get_most_recent_loud_noise().position) > POSITIONAL_ACCURACY:
-				point_of_interest = enemy.get_most_recent_loud_noise().position
-				enemy.going_to_position = true
-			else:
-				enemy.senses.sounds.erase(enemy.get_most_recent_loud_noise())
-				enemy.going_to_position = false
-				point_of_interest = false
-				
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
-		
+		_ramp_throttle_full(dt, enemy)
+		_investigate_loud_noise(enemy)
+		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
-		
-		if enemy.NavAgent.is_navigation_finished():
-			enemy.going_to_position = false
-			point_of_interest = false
+		_clear_arrival(enemy)
 
 func do_alert(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		if enemy.throttle < 1.0:
-			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
-		else:
-			enemy.decrease_throttle(1.0, 1.0)
-		
+		_ramp_throttle_full(dt, enemy)
+
 		shield_check(enemy)
-		
+
 		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
 		if enemy.last_attack_position:
 			point_of_interest = enemy.last_attack_position
 			enemy.going_to_position = true
-			
-		if enemy.get_most_recent_quiet_noise():
-			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
-				point_of_interest = enemy.get_most_recent_quiet_noise().position
-				enemy.going_to_position = true
-			else:
-				var to_erase = []
-				var recent = enemy.get_most_recent_quiet_noise()
-				for sound in enemy.senses.sounds:
-					if sound.source and\
-					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
-						to_erase.append(sound)
-				if recent:
-					to_erase.append(recent)
-				for sound in to_erase:
-					enemy.senses.sounds.erase(sound)
-				enemy.going_to_position = false
-				point_of_interest = false
 
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
-
-		if enemy.NavAgent.is_navigation_finished():
-			enemy.going_to_position = false
-			point_of_interest = false
-
+		_investigate_quiet_noise(enemy)
+		_push_poi_to_nav(enemy)
+		# NOTE: arrival check intentionally precedes navigate in this state
+		# (preserved from the original ordering).
+		_clear_arrival(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
 
 
 func do_alert_roam(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		if enemy.throttle < 1.0:
-			enemy.increase_throttle(false, dt/THROTTLE_CHANGE_TIME)
-		else:
-			enemy.decrease_throttle(1.0, 1.0)
-		if not enemy.going_to_position: #Wander around if we are in the state and have no points of interest.
-			point_of_interest = enemy.arena.get_random_position()
-			enemy.going_to_position = true
-			
-		if enemy.get_most_recent_quiet_noise():
-			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
-				point_of_interest = enemy.get_most_recent_quiet_noise().position
-				enemy.going_to_position = true
-			else:
-				var to_erase = []
-				var recent = enemy.get_most_recent_quiet_noise()
-				for sound in enemy.senses.sounds:
-					if sound.source and\
-					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
-						to_erase.append(sound)
-				if recent:
-					to_erase.append(recent)
-				for sound in to_erase:
-					enemy.senses.sounds.erase(sound)
-				enemy.going_to_position = false
-				point_of_interest = false
+		_ramp_throttle_full(dt, enemy)
+		_wander_if_idle(enemy)
+		_investigate_quiet_noise(enemy)
 
 		if enemy.is_shielding:
 			enemy.shield_down()
-		
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
-		
+
+		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
-		
-		if enemy.NavAgent.is_navigation_finished(): 
-			enemy.going_to_position = false
-			point_of_interest = false
-			
+		_clear_arrival(enemy)
+
 func do_ambush(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
+		# Ambush idles at half throttle — quieter, harder to detect.
 		if enemy.throttle > 0.5:
 			enemy.decrease_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
 			enemy.increase_throttle(0.5, 0.5)
-		if not enemy.going_to_position: #Wander around if we are in the state and have no points of interest.
-			point_of_interest = enemy.arena.get_random_position()
-			enemy.going_to_position = true
-		
-		if enemy.get_most_recent_loud_noise():
-			if enemy.global_position.distance_to(enemy.get_most_recent_loud_noise().position) > POSITIONAL_ACCURACY:
-				point_of_interest = enemy.get_most_recent_loud_noise().position
-				enemy.going_to_position = true
-			else:
-				enemy.senses.sounds.erase(enemy.get_most_recent_loud_noise())
-				enemy.going_to_position = false
-				point_of_interest = false
-				
-		if enemy.get_most_recent_quiet_noise():
-			if enemy.global_position.distance_to(enemy.get_most_recent_quiet_noise().position) > POSITIONAL_ACCURACY:
-				point_of_interest = enemy.get_most_recent_quiet_noise().position
-				enemy.going_to_position = true
-			else:
-				var to_erase = []
-				var recent = enemy.get_most_recent_quiet_noise()
-				for sound in enemy.senses.sounds:
-					if sound.source and\
-					   sound.volume_type == "quiet" and recent and sound.source == recent.source:
-						to_erase.append(sound)
-				if recent:
-					to_erase.append(recent)
-				for sound in to_erase:
-					enemy.senses.sounds.erase(sound)
-				enemy.going_to_position = false
-				point_of_interest = false
-
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
-
+		_wander_if_idle(enemy)
+		_investigate_loud_noise(enemy)
+		_investigate_quiet_noise(enemy)
+		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0)
-		
-		if enemy.NavAgent.is_navigation_finished():
-			enemy.going_to_position = false
-			point_of_interest = false
-			
+		_clear_arrival(enemy)
 		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
 		shield_check(enemy)
 
@@ -548,10 +496,7 @@ func do_in_combat(_dt, enemy):
 		if not enemy.current_target:
 			enemy.current_target = enemy.valid_target
 		var state = _get_self_state(enemy)
-		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
-		var state_mod = _self_state_aggression_mod(state)
-		aggression = base_aggression + personality_mod + state_mod
+		_update_aggression(enemy, state)
 
 func _get_effective_distances(enemy) -> Dictionary:
 	var eff = {
@@ -739,10 +684,7 @@ func do_attack(dt, enemy):
 		else:
 			reaction_timer += dt
 
-		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
-		var state_mod = _self_state_aggression_mod(state)
-		aggression = base_aggression + personality_mod + state_mod
+		_update_aggression(enemy, state)
 		enemy.going_to_position = true
 
 		if enemy.can_see_target(enemy.current_target):
@@ -801,10 +743,7 @@ func do_defend(dt, enemy):
 		var state = _get_self_state(enemy)
 		shield_check(enemy)
 		enemy.going_to_position = true
-		var base_aggression = health_diff(enemy) + heat_diff(enemy) + status_diff(enemy)
-		var personality_mod = (enemy.personality.aggression - 0.5) * 2.0
-		var state_mod = _self_state_aggression_mod(state)
-		aggression = base_aggression + personality_mod + state_mod
+		_update_aggression(enemy, state)
 		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
 
 		# Overheating or out of ammo: retreat harder to create distance

@@ -427,23 +427,74 @@ func get_recent_noise(var_type, var_value):
 
 #COMBAT METHODS
 
+# Threat-based target selection. Candidates are still gated by
+# should_attack (flag/traitor/personality code); the score only ranks
+# among permissible targets. The under-fire bonus dominates proximity so
+# someone actively shooting us displaces a passive duel partner.
+const TARGET_SWITCH_MARGIN := 0.75       # challenger must beat current by this
+const TARGET_SWITCH_COOLDOWN_MS := 1500  # min time between voluntary switches
+const TARGET_REEVAL_INTERVAL_MS := 300   # rescan rate while already engaged
+var _last_target_eval_ms := -100000
+var _last_target_switch_ms := -100000
+
+
+func _threat_score(target, distance, eng_distance) -> float:
+	# Proximity: 1.0 point-blank, fading to 0.0 at engage range
+	var score: float = clampf(1.0 - distance / max(eng_distance, 1.0), 0.0, 1.0)
+	# Actively shooting us right now — dominant signal (fixes flanking blindness)
+	if under_fire_timer > 0 and target == most_recent_attacker:
+		score += 2.0
+	# Accumulated grudge (0..1; built +0.25 per shot received, faction-seeded)
+	score += get_relationship(target).hostility
+	return score
+
+
 func check_for_targets(eng_distance, max_shooting_distance):
-	#Check if current target is still in distance
+	#Drop the current target if gone, dead, or out of range
 	if valid_target and is_instance_valid(valid_target):
-		if position.distance_to(valid_target.position) > max_shooting_distance:
+		if valid_target.is_dead or position.distance_to(valid_target.position) > max_shooting_distance:
 			valid_target = false
 	else:
 		valid_target = false
 
-	#Find new target — filtered by should_attack
+	# While engaged, only rescan for better threats at an interval —
+	# should_attack -> estimate_threat_level is too heavy for every frame.
+	# When seeking (no target), scan every call, as before.
+	var now = Time.get_ticks_msec()
+	if valid_target and now - _last_target_eval_ms < TARGET_REEVAL_INTERVAL_MS:
+		return
+	_last_target_eval_ms = now
+
+	#Find the highest-threat permissible target
+	var best = null
+	var best_score := -1.0
+	for target in arena.get_mechas():
+		if target == self or not is_instance_valid(target) or target.is_dead:
+			continue
+		var distance = position.distance_to(target.position)
+		if distance > eng_distance:
+			continue
+		if not should_attack(target):
+			continue
+		var score = _threat_score(target, distance, eng_distance)
+		if score > best_score:
+			best_score = score
+			best = target
+
+	if best == null:
+		return
+
 	if not valid_target:
-		var min_distance = 99999999
-		for target in arena.get_mechas():
-			var distance = position.distance_to(target.position)
-			if target != self and distance <= eng_distance and distance < min_distance:
-				if should_attack(target):
-					valid_target = target
-					min_distance = distance
+		valid_target = best
+		_last_target_switch_ms = now
+	elif best != valid_target:
+		# Switch only on a clear threat margin, rate-limited so two
+		# attackers can't ping-pong our attention every rescan.
+		var cur_score = _threat_score(valid_target, position.distance_to(valid_target.position), eng_distance)
+		if best_score >= cur_score + TARGET_SWITCH_MARGIN \
+				and now - _last_target_switch_ms >= TARGET_SWITCH_COOLDOWN_MS:
+			valid_target = best
+			_last_target_switch_ms = now
 
 
 func shoot_weapons(target):

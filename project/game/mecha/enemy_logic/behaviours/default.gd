@@ -710,6 +710,14 @@ func _find_loot_target(enemy):
 
 func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
+		# Mid-combat threat re-evaluation (interval-gated inside Enemy) — a
+		# flanker shooting us can displace the duel partner. A hard lock-on
+		# keeps priority over threat switching.
+		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		if not enemy.get_locked_to() and enemy.valid_target \
+				and enemy.valid_target != enemy.current_target:
+			enemy.current_target = enemy.valid_target
+			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt
@@ -780,6 +788,12 @@ func do_attack(dt, enemy):
 
 func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
+		# Same mid-combat threat re-evaluation as do_attack.
+		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		if not enemy.get_locked_to() and enemy.valid_target \
+				and enemy.valid_target != enemy.current_target:
+			enemy.current_target = enemy.valid_target
+			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt

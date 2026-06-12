@@ -193,17 +193,13 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		add_child(kill_timer)
 		kill_timer.wait_time = 0.5
 		kill_timer.one_shot = true
-		kill_timer.timeout.connect(func():
-			# Guard captures: body (mecha) may be freed if it dies during the 0.5s delay,
-			# and self (projectile) may be freed by other paths. Avoid passing a freed
-			# ref into die()'s bullet_impact signal.
-			if not is_instance_valid(self):
-				return
-			if is_instance_valid(body):
-				die(body)
-			else:
-				queue_free()
-		)
+		# Named method + bind, NOT a lambda: a lambda capturing `body` makes
+		# the engine print "Lambda capture at index 0 was freed" whenever the
+		# mecha dies during the 0.5s window — Godot validates captures before
+		# our guard can run. Bound args skip that check; is_instance_valid
+		# handles the freed case. Self-safety is structural: the timer is our
+		# child, so if this projectile is freed the timer never fires.
+		kill_timer.timeout.connect(_on_deflect_kill_timeout.bind(body))
 		kill_timer.start()
 		return
 	
@@ -313,6 +309,15 @@ func get_image():
 
 func get_collision():
 	return $CollisionShape3D.polygon
+
+# Deflection kill-timer callback. `deflected_body` arrives via bind() and
+# may be a freed instance if the mecha died during the 0.5s delay.
+func _on_deflect_kill_timeout(deflected_body):
+	if is_instance_valid(deflected_body):
+		die(deflected_body)
+	else:
+		queue_free()
+
 
 func die(body):
 	if dying:

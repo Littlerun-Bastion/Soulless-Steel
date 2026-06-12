@@ -23,6 +23,15 @@ var cooldown_time = 6.0
 var barrage_min_time = 2.0
 var reaction_speed = 2
 
+# Attack<->defend stance hysteresis. aggression sums quantized diffs
+# recomputed every frame, so near zero it flickers across the sign — without
+# damping, the stance (and its movement regime) thrashes frame to frame.
+# Swapping requires BOTH: aggression clear of the +/- band, and at least
+# MIN_DWELL seconds in the current stance. The initial pick from in_combat
+# stays a plain sign check, and flee / target-lost exits are never gated.
+const STANCE_HYSTERESIS = 0.5
+const STANCE_MIN_DWELL = 1.0
+
 
 var point_of_interest
 var cooldown_timer = 0.0
@@ -34,6 +43,7 @@ var reaction_timer = 0.0
 var target_container = null
 var target_exit = null
 var times_looted = 0
+var stance_time = 0.0  # seconds in the current attack/defend stance
 var _start_tick_msec = 0  # lazy-initialized; tracks behaviour lifetime
 
 func get_nodes():
@@ -152,13 +162,15 @@ func in_combat_to_defend(enemy):
 
 func attack_to_defend(enemy):
 	var priority = 0
-	if enemy.valid_target and enemy.current_target and aggression <= 0:
+	if enemy.valid_target and enemy.current_target \
+			and stance_time >= STANCE_MIN_DWELL and aggression <= -STANCE_HYSTERESIS:
 		priority = 7
 	return priority
-	
+
 func defend_to_attack(enemy):
 	var priority = 0
-	if enemy.valid_target and enemy.current_target and aggression > 0:
+	if enemy.valid_target and enemy.current_target \
+			and stance_time >= STANCE_MIN_DWELL and aggression >= STANCE_HYSTERESIS:
 		priority = 7
 	return priority
 
@@ -287,6 +299,14 @@ func enter_alert(_enemy):
 	# Escalating to alert abandons any loot plan (covers loot_to_alert, and
 	# is harmlessly redundant for the other entry paths).
 	target_container = null
+
+
+func enter_attack(_enemy):
+	stance_time = 0.0
+
+
+func enter_defend(_enemy):
+	stance_time = 0.0
 
 
 ## STATE METHODS ##
@@ -692,6 +712,7 @@ func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
+		stance_time += dt
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		if enemy.is_shielding:
@@ -761,6 +782,7 @@ func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
+		stance_time += dt
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		shield_check(enemy)

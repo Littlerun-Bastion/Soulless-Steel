@@ -526,7 +526,23 @@ func _get_effective_distances(enemy) -> Dictionary:
 
 # --- Self-aware mech state helpers ---
 
+# Frame-memoized: the do_* combat methods and the flee transition edges both
+# need this snapshot, and computing it walks the weapon slots + components
+# dict. Callers only read the returned Dictionary, so sharing one instance
+# per physics frame is safe.
+var _self_state_cache = null
+var _self_state_frame := -1
+
 func _get_self_state(enemy) -> Dictionary:
+	var frame = Engine.get_physics_frames()
+	if _self_state_frame == frame and _self_state_cache != null:
+		return _self_state_cache
+	_self_state_frame = frame
+	_self_state_cache = _compute_self_state(enemy)
+	return _self_state_cache
+
+
+func _compute_self_state(enemy) -> Dictionary:
 	# Returns a snapshot of the AI's own condition for decision-making
 	var state = {
 		"heat_ratio": 0.0,
@@ -914,7 +930,20 @@ func _time_alive_seconds() -> float:
 	return float(Time.get_ticks_msec() - _start_tick_msec) / 1000.0
 
 
+# Frame-scoped cache keyed by mecha: health_diff / heat_diff / _should_flee
+# can ask for the same mecha's structural health several times per frame
+# (heat_diff even re-enters health_diff). Cleared every physics frame, so
+# freed-mecha references are never held longer than one frame.
+var _health_cache := {}
+var _health_cache_frame := -1
+
 func _structural_health(mecha) -> float:
+	var frame = Engine.get_physics_frames()
+	if _health_cache_frame != frame:
+		_health_cache_frame = frame
+		_health_cache.clear()
+	if _health_cache.has(mecha):
+		return _health_cache[mecha]
 	# Armor + component health only — no heat/status/weapons to avoid double-counting
 	var score := 0.0
 
@@ -946,7 +975,9 @@ func _structural_health(mecha) -> float:
 	else:
 		score += 0.45
 
-	return clampf(score, 0.0, 1.0)
+	var result = clampf(score, 0.0, 1.0)
+	_health_cache[mecha] = result
+	return result
 
 
 func health_diff(enemy):

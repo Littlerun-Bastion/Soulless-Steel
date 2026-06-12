@@ -8,14 +8,25 @@ extends RefCounted
 const GRAPH = preload("res://game/mecha/enemy_logic/Graphs.gd")
 const BEHAVIOUR_PATH = "res://game/mecha/enemy_logic/behaviours/"
 
+# Transition evaluation runs at ~10Hz instead of every physics frame.
+# do_<state> still runs every frame (movement/aim stay smooth) — only the
+# decision to CHANGE state is throttled. No condition reads single-frame
+# state (under_fire lasts 0.5s, sounds have lifetimes, targets persist),
+# so <=100ms decision latency is imperceptible and far under the existing
+# 2s reaction_speed. Stagger is randomized per NPC so a full population
+# doesn't evaluate on the same frame.
+const TRANSITION_INTERVAL_MS := 100
+
 var g = GRAPH.new()
 var current_state
 var behaviour
+var _next_eval_ms := 0
 
 func setup(behaviour_name):
 	var path = BEHAVIOUR_PATH + str(behaviour_name) + ".gd"
 	assert(FileAccess.file_exists(path),"Not a valid enemy behaviour: " + str(behaviour_name))
-	
+
+	_next_eval_ms = Time.get_ticks_msec() + randi() % TRANSITION_INTERVAL_MS
 	behaviour = load(path).new()
 	
 	for node in behaviour.get_nodes():
@@ -36,6 +47,11 @@ func get_current_state():
 	
 	
 func update(enemy):
+	var now = Time.get_ticks_msec()
+	if now < _next_eval_ms:
+		return
+	_next_eval_ms = now + TRANSITION_INTERVAL_MS
+
 	var a_node = g.get_a_node(g.current_state)
 	var valid_connection = a_node.get_best_connection(enemy)
 	if valid_connection and valid_connection.id != g.current_state:

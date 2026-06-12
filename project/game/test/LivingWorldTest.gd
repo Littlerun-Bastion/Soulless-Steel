@@ -554,13 +554,11 @@ func _on_WindsTimer_timeout() -> void:
 
 # Pre-compile impact-FX shader pipelines by rendering each scene once,
 # in-frustum (off-screen sprites get culled and never compile), hidden by
-# near-zero alpha and the intro transition. Master bus is muted so the
-# burst of impact SFX from the FX _ready()s is inaudible.
+# near-zero alpha and the intro transition. SFX pools are emptied per
+# instance BEFORE add_child: the FX _ready() schedules sounds through the
+# global AudioManager, which outlive any local mute window — a Master-bus
+# mute here previously let the boom tails leak out audibly at scene load.
 func _prewarm_fx() -> void:
-	var master_idx := AudioServer.get_bus_index("Master")
-	var prev_db := AudioServer.get_bus_volume_db(master_idx)
-	AudioServer.set_bus_volume_db(master_idx, -80.0)
-
 	var holder := Node2D.new()
 	holder.position = player.global_position if player else Vector2.ZERO
 	holder.modulate = Color(1, 1, 1, 0.01)
@@ -573,6 +571,12 @@ func _prewarm_fx() -> void:
 		# from _ready and ignore the args.
 		for branch in [[true, false], [true, true], [false, false]]:
 			var inst = scene.instantiate()
+			# Silence: _ready() pick_randoms from these pools via
+			# AudioManager. Clear in place (exported arrays are per-instance
+			# copies) so no sound is ever scheduled.
+			for prop in ["on_hit_sfxs", "on_shield_sfxs", "on_miss_sfxs"]:
+				if prop in inst:
+					inst.get(prop).clear()
 			holder.add_child(inst)
 			if inst.has_method("setup"):
 				inst.setup(1.0, 0.0, branch[0], branch[1])
@@ -582,7 +586,6 @@ func _prewarm_fx() -> void:
 		await get_tree().process_frame
 
 	holder.queue_free()
-	AudioServer.set_bus_volume_db(master_idx, prev_db)
 
 
 # ---- Mission ----

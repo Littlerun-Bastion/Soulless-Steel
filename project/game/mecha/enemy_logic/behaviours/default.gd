@@ -118,35 +118,23 @@ func alert_roam_to_defending_lock(enemy):
 	return priority
 
 func ambush_lock_to_in_combat(enemy):
-	var priority = 0 
+	var priority = 0
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			if enemy.get_locked_to():
-				enemy.current_target = enemy.get_locked_to()
-			else:
-				enemy.current_target = enemy.valid_target
 			priority = 6
 	return priority
 
 func defending_lock_to_in_combat(enemy):
-	var priority = 0 
+	var priority = 0
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			if enemy.get_locked_to():
-				enemy.current_target = enemy.get_locked_to()
-			else:
-				enemy.current_target = enemy.valid_target
 			priority = 6
 	return priority
-	
+
 func alert_to_in_combat(enemy):
-	var priority = 0 
+	var priority = 0
 	if enemy.valid_target:
 		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
-			if enemy.get_locked_to():
-				enemy.current_target = enemy.get_locked_to()
-			else:
-				enemy.current_target = enemy.valid_target
 			priority = 6
 	return priority
 
@@ -212,9 +200,7 @@ func flee_to_roam(enemy):
 
 func roam_to_loot(enemy):
 	var priority = 0
-	var container = _find_loot_target(enemy)
-	if container:
-		target_container = container
+	if _find_loot_target(enemy):
 		priority = 2
 	return priority
 
@@ -227,7 +213,6 @@ func loot_to_roam(_enemy):
 func loot_to_alert(enemy):
 	var priority = 0
 	if enemy.under_fire_timer:
-		target_container = null
 		priority = 3
 	return priority
 
@@ -277,6 +262,32 @@ func extract_to_roam(enemy):
 		if _find_nearest_exit(enemy) == null:
 			priority = 1
 	return priority
+
+## ENTRY HOOKS ##
+# Called once by EnemyLogic when the FSM actually enters the state — this is
+# where on-enter mutations live. Transition conditions above are evaluated
+# every frame for scoring (including frames where they lose), so they must
+# stay pure: no assignments to behaviour or enemy state inside them.
+
+func enter_in_combat(enemy):
+	# Commit to a target. Lock takes precedence over proximity sighting.
+	if enemy.get_locked_to():
+		enemy.current_target = enemy.get_locked_to()
+	else:
+		enemy.current_target = enemy.valid_target
+
+
+func enter_loot(enemy):
+	# Claim the container found during scoring. Same-frame re-query returns
+	# the same container _find_loot_target saw in roam_to_loot.
+	target_container = _find_loot_target(enemy)
+
+
+func enter_alert(_enemy):
+	# Escalating to alert abandons any loot plan (covers loot_to_alert, and
+	# is harmlessly redundant for the other entry paths).
+	target_container = null
+
 
 ## STATE METHODS ##
 

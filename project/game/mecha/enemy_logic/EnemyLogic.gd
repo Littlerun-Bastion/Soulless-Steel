@@ -38,8 +38,16 @@ func get_current_state():
 func update(enemy):
 	var a_node = g.get_a_node(g.current_state)
 	var valid_connection = a_node.get_best_connection(enemy)
-	if valid_connection:
+	if valid_connection and valid_connection.id != g.current_state:
 		g.set_state(valid_connection.id)
+		# Entry hook: transition conditions are evaluated every frame for
+		# scoring and must stay pure. On-enter mutations (picking targets,
+		# claiming loot, etc.) belong in optional enter_<state>(enemy)
+		# methods, called exactly once per state change — before this
+		# frame's do_<state> runs.
+		var hook = "enter_" + str(valid_connection.id)
+		if behaviour.has_method(hook):
+			behaviour.call(hook, enemy)
 
 
 func run(enemy, dt):

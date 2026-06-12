@@ -43,6 +43,7 @@ var reaction_timer = 0.0
 var target_container = null
 var target_exit = null
 var times_looted = 0
+var _wants_to_extract := false  # "shift over" decision, made in do_roam (dt-scaled)
 var stance_time = 0.0  # seconds in the current attack/defend stance
 var _start_tick_msec = 0  # lazy-initialized; tracks behaviour lifetime
 
@@ -240,18 +241,15 @@ func flee_to_extract(enemy):
 	return priority
 
 
-# "Shift over" — long-alive NPCs eventually wander toward an exit. Threshold
-# scales with courage: brave NPCs stay way longer than cowards.
+# "Shift over" — long-alive NPCs eventually wander toward an exit. The
+# decision itself is rolled in do_roam (dt-scaled, frame-rate independent,
+# and keeps this condition pure); here we only read the committed flag.
+# Once decided, the intent persists through interruptions (fights, loot) —
+# the NPC resumes leaving afterward. Priority 1 = anything else overrides.
 func roam_to_extract(enemy):
-	var priority = 0
-	# Min 30s, max 300s alive before this even starts firing.
-	var shift_duration = lerpf(300.0, 30.0, 1.0 - enemy.personality.courage)
-	if _time_alive_seconds() > shift_duration:
-		# Per-frame chance — small, biased by greed.
-		if randf() < (0.001 + enemy.personality.greed * 0.002):
-			if _find_nearest_exit(enemy):
-				priority = 1
-	return priority
+	if _wants_to_extract and _find_nearest_exit(enemy):
+		return 1
+	return 0
 
 
 # Bail out if our chosen exit became invalid and there are no others.
@@ -383,6 +381,18 @@ func do_roam(dt, enemy):
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0.65, false)
 		_clear_arrival(enemy)
+
+		# "Shift over": after staying long enough (courage-scaled threshold),
+		# roll a dt-scaled chance to decide to leave. Rate preserves the old
+		# tuning as observed at 144fps (0.001+greed*0.002 per frame ~=
+		# 0.15+greed*0.3 per second). roam_to_extract reads the flag.
+		if not _wants_to_extract:
+			# Min 30s, max 300s alive before this even starts firing.
+			var shift_duration = lerpf(300.0, 30.0, 1.0 - enemy.personality.courage)
+			if _time_alive_seconds() > shift_duration:
+				var leave_rate_per_sec = 0.15 + enemy.personality.greed * 0.3
+				if randf() < leave_rate_per_sec * dt:
+					_wants_to_extract = true
 
 func do_seek(dt, enemy):
 	if is_instance_valid(enemy):

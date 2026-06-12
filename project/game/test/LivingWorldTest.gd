@@ -23,6 +23,18 @@ const ENEMY = preload("res://game/mecha/Enemy.tscn")
 const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
 const NAV_TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png")
 
+# Impact / explosion scenes whose first render compiles a GPU pipeline
+# (~135ms stall, measured via FrameSpikeDetector). Pre-rendered once during
+# the intro by _prewarm_fx so the stall never lands mid-combat.
+const FX_TO_PREWARM := [
+	preload("res://game/weapons/BallisticImpact.tscn"),
+	preload("res://game/weapons/BallisticImpactMini.tscn"),
+	preload("res://game/weapons/ShapedChargeImpact.tscn"),
+	preload("res://game/weapons/OMRivetImpact.tscn"),
+	preload("res://game/weapons/MissileDirectedImpact.tscn"),
+	preload("res://game/weapons/PartDestructionExplosion.tscn"),
+]
+
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
 @onready var Trails = $Trails
@@ -56,6 +68,14 @@ func _ready() -> void:
 	# Heatmap depends on the player's head part; configure after spawn.
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
+
+	# Compile impact-FX shader pipelines before anyone can shoot. The first
+	# render of each impact scene stalls ~135ms (measured); since NPCs fight
+	# each other, the first impact can happen before the player ever fires —
+	# so this must run before Director populates the world. (Scoped lesson
+	# from the earlier reverted version: prewarm ONLY the FX scenes — the
+	# enemy pool and NPC prewarm weren't worth their complexity.)
+	await _prewarm_fx()
 
 	Director.start(self)
 
@@ -530,6 +550,39 @@ func _on_WindsTimer_timeout() -> void:
 	# Stub — Arena had this hooked to random_wind_sound() which was empty.
 	# Kept for future ambient layer.
 	pass
+
+
+# Pre-compile impact-FX shader pipelines by rendering each scene once,
+# in-frustum (off-screen sprites get culled and never compile), hidden by
+# near-zero alpha and the intro transition. Master bus is muted so the
+# burst of impact SFX from the FX _ready()s is inaudible.
+func _prewarm_fx() -> void:
+	var master_idx := AudioServer.get_bus_index("Master")
+	var prev_db := AudioServer.get_bus_volume_db(master_idx)
+	AudioServer.set_bus_volume_db(master_idx, -80.0)
+
+	var holder := Node2D.new()
+	holder.position = player.global_position if player else Vector2.ZERO
+	holder.modulate = Color(1, 1, 1, 0.01)
+	holder.z_index = -4096  # behind everything already on screen
+	add_child(holder)
+
+	for scene in FX_TO_PREWARM:
+		# Warm all three branches (OnHit / OnShield / OnMiss) where the scene
+		# has a setup(); scenes without one (PartDestructionExplosion) emit
+		# from _ready and ignore the args.
+		for branch in [[true, false], [true, true], [false, false]]:
+			var inst = scene.instantiate()
+			holder.add_child(inst)
+			if inst.has_method("setup"):
+				inst.setup(1.0, 0.0, branch[0], branch[1])
+
+	# A few frames so the render thread finishes the pipeline compiles.
+	for _i in 4:
+		await get_tree().process_frame
+
+	holder.queue_free()
+	AudioServer.set_bus_volume_db(master_idx, prev_db)
 
 
 # ---- Mission ----

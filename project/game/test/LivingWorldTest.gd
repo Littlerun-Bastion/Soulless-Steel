@@ -650,23 +650,18 @@ func _spawn_prewarm_instance(scene: PackedScene, holder: Node2D) -> Node:
 		if pool in inst:
 			inst.get(pool).clear()
 	holder.add_child(inst)
-	_force_emit_particles(inst)
+	# Force every particle system to emit so its shader/pipeline compiles.
+	# Also keeps scenes alive that self-free when nothing emits (MuzzleFlash
+	# queue_frees unless its Linger child is emitting).
+	var particles: Array = []
+	_collect_particles(inst, particles)
+	for p in particles:
+		p.emitting = true
 	return inst
 
 
-# Force every particle system in the subtree to emit so its generated
-# shader/pipeline compiles. Also keeps scenes alive that self-free when
-# nothing emits (MuzzleFlash queue_frees unless its Linger child is
-# emitting).
-func _force_emit_particles(node: Node) -> void:
-	if node is GPUParticles2D or node is CPUParticles2D:
-		node.emitting = true
-	for child in node.get_children():
-		_force_emit_particles(child)
-
-
-# Collect every particle system in a subtree (used to warm and then restore
-# the player's hit-reaction particles).
+# Collect every particle system in a subtree (prewarm: force-emit for
+# pipeline compiles, and restore the player's set afterward).
 func _collect_particles(node: Node, out: Array) -> void:
 	if node is GPUParticles2D or node is CPUParticles2D:
 		out.append(node)

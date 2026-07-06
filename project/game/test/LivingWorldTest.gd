@@ -60,6 +60,10 @@ var all_mechas: Array = []
 
 
 func _ready() -> void:
+	# FrameSpikeDetector is an autoload — its mark trail survives scene
+	# changes and misattributes reload hitches to stale combat marks.
+	# Stamp the boundary so teardown/load spikes are labeled correctly.
+	FrameSpikeDetector.mark("scene_load:LivingWorldTest")
 	randomize()
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
@@ -69,19 +73,24 @@ func _ready() -> void:
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
 
-	# Compile impact-FX shader pipelines before anyone can shoot. The first
-	# render of each impact scene stalls ~135ms (measured); since NPCs fight
-	# each other, the first impact can happen before the player ever fires —
-	# so this must run before Director populates the world. (Scoped lesson
-	# from the earlier reverted version: prewarm ONLY the FX scenes — the
-	# enemy pool and NPC prewarm weren't worth their complexity.)
+	# The intro cover must be up BEFORE the prewarm: _prewarm_fx awaits
+	# several frames in which the scene actively renders (that's how the
+	# pipelines compile), and those frames were visible as a flash of raw
+	# scene + the player's force-emitted particles.
+	IntroAnimation.play("Entrance")
+
+	# Compile FX shader pipelines before anyone can shoot. NPCs fight each
+	# other, so the first impact can happen before the player ever fires —
+	# this must finish before Director populates the world.
 	await _prewarm_fx()
 
 	Director.start(self)
 
-	# Freeze AI until the entrance animation finishes.
+	# Freeze AI until the entrance animation finishes. Must run after
+	# Director.start (it iterates existing mechas), and the skip-intro stop
+	# must come after the freeze — stop_animation fires the ending signal
+	# that unfreezes everyone.
 	set_mechas_block_status(true)
-	IntroAnimation.play("Entrance")
 	if Debug.get_setting("skip_intro"):
 		await get_tree().create_timer(.01).timeout
 		IntroAnimation.stop_animation()
@@ -427,6 +436,7 @@ func _on_mecha_died(mecha) -> void:
 func player_died() -> void:
 	if not is_instance_valid(player):
 		return
+	FrameSpikeDetector.mark("player_died:teardown")
 	player.queue_free()
 	player = null
 	PlayerHUD.player_died()
@@ -552,12 +562,15 @@ func _on_WindsTimer_timeout() -> void:
 	pass
 
 
-# Pre-compile impact-FX shader pipelines by rendering each scene once,
-# in-frustum (off-screen sprites get culled and never compile), hidden by
-# near-zero alpha and the intro transition. SFX pools are emptied per
-# instance BEFORE add_child: the FX _ready() schedules sounds through the
-# global AudioManager, which outlive any local mute window — a Master-bus
-# mute here previously let the boom tails leak out audibly at scene load.
+# Pre-compile combat-FX shader pipelines by rendering one instance of every
+# scene the first fight can spawn: the static impact/explosion list plus
+# database-derived muzzle flashes, projectiles, and each projectile's
+# trail / impact effect. Each distinct ParticleProcessMaterial generates its
+# own shader, so ALL of these compile on first render (~135ms stall each,
+# measured) — warming only the impact scenes still left first-shot spikes.
+# Rendered in-frustum (off-screen sprites get culled and never compile),
+# hidden by near-zero alpha and the intro transition, silenced by emptying
+# per-instance SFX pools (AudioManager players outlive any mute window).
 func _prewarm_fx() -> void:
 	var holder := Node2D.new()
 	holder.position = player.global_position if player else Vector2.ZERO
@@ -565,27 +578,100 @@ func _prewarm_fx() -> void:
 	holder.z_index = -4096  # behind everything already on screen
 	add_child(holder)
 
+	# Collect unique scenes: statics + every weapon's muzzle flash and
+	# projectile from the parts database (covers player and all NPCs).
+	var seen := {}
+	var scenes: Array = []
 	for scene in FX_TO_PREWARM:
-		# Warm all three branches (OnHit / OnShield / OnMiss) where the scene
-		# has a setup(); scenes without one (PartDestructionExplosion) emit
-		# from _ready and ignore the args.
-		for branch in [[true, false], [true, true], [false, false]]:
-			var inst = scene.instantiate()
-			# Silence: _ready() pick_randoms from these pools via
-			# AudioManager. Clear in place (exported arrays are per-instance
-			# copies) so no sound is ever scheduled.
-			for prop in ["on_hit_sfxs", "on_shield_sfxs", "on_miss_sfxs"]:
-				if prop in inst:
-					inst.get(prop).clear()
-			holder.add_child(inst)
-			if inst.has_method("setup"):
-				inst.setup(1.0, 0.0, branch[0], branch[1])
+		if not seen.has(scene):
+			seen[scene] = true
+			scenes.append(scene)
+	for weapons in [PartManager.ARM_WEAPONS, PartManager.SHOULDER_WEAPONS]:
+		for key in weapons:
+			var w = weapons[key]
+			for prop in ["muzzle_flash", "projectile"]:
+				var s = w.get(prop)
+				if s is PackedScene and not seen.has(s):
+					seen[s] = true
+					scenes.append(s)
+
+	# Instantiate one of each. Projectile instances expose their own trail /
+	# impact_effect scenes — collect those for a second pass.
+	var nested: Array = []
+	for scene in scenes:
+		var inst = _spawn_prewarm_instance(scene, holder)
+		for prop in ["trail", "impact_effect"]:
+			var s = inst.get(prop)
+			if s is PackedScene and not seen.has(s):
+				seen[s] = true
+				nested.append(s)
+	for scene in nested:
+		_spawn_prewarm_instance(scene, holder)
+
+	# Mecha hit-reaction particles (blood, shield ring, fire/status effects)
+	# live inside every mecha and first emit on first DAMAGE — movement
+	# particles warm naturally as NPCs walk, but these compile right when
+	# the first brawl starts. Force-emit the player's set for the same
+	# window (the intro transition hides it), then switch them back off.
+	# The pooled casing emitter ($Casings) has the same first-use profile.
+	var warmed_particles: Array = []
+	if player:
+		_collect_particles(player, warmed_particles)
+	_collect_particles($Casings, warmed_particles)
+	for p in warmed_particles:
+		p.emitting = true
 
 	# A few frames so the render thread finishes the pipeline compiles.
 	for _i in 4:
 		await get_tree().process_frame
 
+	for p in warmed_particles:
+		if is_instance_valid(p):
+			p.emitting = false
 	holder.queue_free()
+
+
+# Instantiate a scene for prewarm: inert, silent, but rendering. Returns the
+# instance (already added to the holder).
+func _spawn_prewarm_instance(scene: PackedScene, holder: Node2D) -> Node:
+	var inst = scene.instantiate()
+	# Projectiles (all four variants) early-return _physics_process on
+	# `dying` — without setup() their `dir` is null and movement would crash.
+	if "dying" in inst:
+		inst.set("dying", true)
+	# Trails follow home_projectile; give them the holder so they neither
+	# crash on null nor stop themselves (SmokeTrail kills emission when its
+	# projectile is gone).
+	if "home_projectile" in inst:
+		inst.set("home_projectile", holder)
+	# Silence: FX _ready() pick_randoms from these pools via the global
+	# AudioManager. Exported arrays are per-instance copies — clear in place.
+	for pool in ["on_hit_sfxs", "on_shield_sfxs", "on_miss_sfxs"]:
+		if pool in inst:
+			inst.get(pool).clear()
+	holder.add_child(inst)
+	_force_emit_particles(inst)
+	return inst
+
+
+# Force every particle system in the subtree to emit so its generated
+# shader/pipeline compiles. Also keeps scenes alive that self-free when
+# nothing emits (MuzzleFlash queue_frees unless its Linger child is
+# emitting).
+func _force_emit_particles(node: Node) -> void:
+	if node is GPUParticles2D or node is CPUParticles2D:
+		node.emitting = true
+	for child in node.get_children():
+		_force_emit_particles(child)
+
+
+# Collect every particle system in a subtree (used to warm and then restore
+# the player's hit-reaction particles).
+func _collect_particles(node: Node, out: Array) -> void:
+	if node is GPUParticles2D or node is CPUParticles2D:
+		out.append(node)
+	for child in node.get_children():
+		_collect_particles(child, out)
 
 
 # ---- Mission ----

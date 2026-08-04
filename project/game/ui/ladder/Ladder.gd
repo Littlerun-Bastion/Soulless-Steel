@@ -107,7 +107,6 @@ func start_match():
 
 func on_ladderlabel_pressed(selected_mecha):
 	selected_challenger = selected_mecha
-	#$VBoxContainer2/Button.disabled = false
 	for child in LadderButtons.get_children():
 		if child.Name.text == selected_mecha:
 			child.press()

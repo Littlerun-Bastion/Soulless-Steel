@@ -54,9 +54,6 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 @onready var wireframe_display: WireframeDisplay = $SubViewportContainer/SubViewport/WireframeDisplay
 
-#@export var InventoryUIScene: PackedScene
-#var inventory_ui: InventoryUI
-
 
 var use_fog = false
 var player = false

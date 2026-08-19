@@ -47,6 +47,13 @@ var personality: Personality = null
 var preferred_combat_range: float = 2000.0
 var combat_style: String = "balanced"
 var combat_behaviour: String = "default"
+# Target leading. compute_lead_point() aims ahead of a moving target using the
+# average muzzle speed of the equipped direct-fire weapons, scaled by this
+# NPC's skill. ai_aim_point is set per-frame by the combat behaviour and read
+# by navigate_to_target for weapon/body rotation; null = aim at the target.
+var ai_aim_point = null
+var ai_projectile_speed := 0.0    # avg direct-fire muzzle speed (0 = don't lead)
+var ai_lead_accuracy := 0.55      # 0 = aim at current pos, 1 = perfect intercept
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
 
 
@@ -84,6 +91,8 @@ func _physics_process(dt):
 	
 	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
 	if not wait_for_map_sync and not is_dead:
+		# Fresh each frame; the combat behaviour re-sets it while engaging.
+		ai_aim_point = null
 		logic.update(self)
 		logic.run(self, dt)
 
@@ -191,6 +200,53 @@ func _analyze_build():
 		if weapon and weapon.get("is_indirect_fire"):
 			combat_style = "artillery"
 			break
+
+	# Cache leading data: average direct-fire muzzle speed + a skill factor.
+	# combat_style is finalized above, so accuracy can key off it.
+	var speeds := []
+	for weapon_key in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
+		var ms = _read_muzzle_speed(build[weapon_key])
+		if ms > 0.0:
+			speeds.append(ms)
+	if speeds.size() > 0:
+		var total := 0.0
+		for s in speeds:
+			total += s
+		ai_projectile_speed = total / speeds.size()
+	ai_lead_accuracy = _compute_lead_accuracy()
+
+
+# Reads a projectile scene's muzzle_speed without side effects: instantiate()
+# builds the node but does not run _ready/_physics_process, so we can read the
+# exported default and free it immediately. Returns 0 for melee / indirect /
+# speed-less projectiles, which disables leading for that weapon.
+func _read_muzzle_speed(weapon) -> float:
+	if weapon == null or weapon.is_melee or weapon.get("is_indirect_fire"):
+		return 0.0
+	var scene = weapon.get("projectile")
+	if scene == null or not (scene is PackedScene):
+		return 0.0
+	var inst = scene.instantiate()
+	var ms = inst.get("muzzle_speed")
+	inst.free()
+	if ms == null:
+		return 0.0
+	return float(ms)
+
+
+# How well this NPC leads a moving target. Sharpshooter styles and disciplined
+# personalities lead cleanly; brawlers barely bother.
+func _compute_lead_accuracy() -> float:
+	var acc := 0.55
+	match combat_style:
+		"sniper": acc = 0.95
+		"brawler": acc = 0.4
+		"artillery": acc = 0.5
+	if personality:
+		match personality.type:
+			Personality.Type.PROFESSIONAL: acc += 0.2
+			Personality.Type.HUNTER: acc += 0.1
+	return clampf(acc, 0.0, 1.0)
 
 
 func get_relationship(target) -> Dictionary:
@@ -526,6 +582,29 @@ func can_see_target(target):
 	return false
 
 
+# Predicted intercept point for leading a moving target with our average
+# projectile speed, scaled by this NPC's skill (ai_lead_accuracy). Falls back
+# to the target's current position when we can't or shouldn't lead. Bullet drag
+# is ignored, so this slightly over-leads slow/draggy rounds — acceptable.
+func compute_lead_point(target) -> Vector2:
+	if not is_instance_valid(target):
+		return global_position
+	var tpos = target.global_position
+	if ai_projectile_speed <= 0.0 or ai_lead_accuracy <= 0.0:
+		return tpos
+	var tvel = Vector2.ZERO
+	if "velocity" in target:
+		tvel = target.velocity
+	if tvel == Vector2.ZERO:
+		return tpos
+	# Iterative intercept — converges in a few steps.
+	var t := 0.0
+	for i in 3:
+		t = global_position.distance_to(tpos + tvel * t) / ai_projectile_speed
+	var full_lead = tpos + tvel * t
+	return tpos + (full_lead - tpos) * ai_lead_accuracy
+
+
 # Navigation
 
 #Assumes enemy has a valid target
@@ -571,7 +650,9 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		if movement_type != "tank":
 			chosen_dir = chosen_dir.rotated(-global_rotation)
 		apply_movement(dt, chosen_dir)
-		if valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
+		if ai_aim_point != null:
+			apply_rotation_by_point(dt, ai_aim_point, false)
+		elif valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
 			apply_rotation_by_point(dt, valid_target.position, false)
 		else:
 			apply_rotation_by_point(dt, target, false)

@@ -692,6 +692,9 @@ func do_attack(dt, enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt
+		# Lead the target so our weapons track its movement (see compute_lead_point).
+		if enemy.can_see_target(enemy.current_target):
+			enemy.ai_aim_point = enemy.compute_lead_point(enemy.current_target)
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		if enemy.is_shielding:
@@ -765,6 +768,9 @@ func do_defend(dt, enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt
+		# Lead the target so our weapons track its movement (see compute_lead_point).
+		if enemy.can_see_target(enemy.current_target):
+			enemy.ai_aim_point = enemy.compute_lead_point(enemy.current_target)
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		shield_check(enemy)

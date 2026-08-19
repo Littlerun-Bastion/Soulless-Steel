@@ -160,12 +160,14 @@ func setup(arena_ref, design_data, _name):
 		personality = Personality.new()
 
 	if design_data.has("combat_behaviour") and typeof(design_data["combat_behaviour"]) == TYPE_STRING:
-		combat_behaviour = design_data["combat_behaviour"]
-		# Re-init AI logic with the behaviour from NPC data.
-		# _ready() already ran with the fallback since add_child() fires before setup().
-		# Debug override still takes precedence.
-		if not Debug.get_setting("ai_behaviour"):
-			logic.setup(combat_behaviour)
+		var new_behaviour = design_data["combat_behaviour"]
+		# _ready() already set up logic with the fallback since add_child() fires
+		# before setup(). Only rebuild when the design actually names a different
+		# behaviour and no Debug override is forcing one — avoids a wasted second
+		# setup() (and AI-chain alloc) for the common "default" case.
+		if new_behaviour != combat_behaviour and not Debug.get_setting("ai_behaviour"):
+			logic.setup(new_behaviour)
+		combat_behaviour = new_behaviour
 
 	_analyze_build()
 

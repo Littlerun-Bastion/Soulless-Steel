@@ -25,8 +25,6 @@ var cqb_distance = 1200
 var max_shooting_distance = 2000
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
-var cooldown_time = 6.0
-var barrage_min_time = 2.0
 var reaction_speed = 2
 
 # Attack<->defend stance hysteresis. aggression sums quantized diffs
@@ -40,9 +38,6 @@ const STANCE_MIN_DWELL = 1.0
 
 
 var point_of_interest
-var cooldown_timer = 0.0
-var barrage_timer = 0.0
-var lock_timer = 0.0
 var aggression = 0
 var aiming_at_enemy = false
 var reaction_timer = 0.0

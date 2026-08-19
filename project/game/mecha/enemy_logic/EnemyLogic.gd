@@ -18,7 +18,6 @@ const BEHAVIOUR_PATH = "res://game/mecha/enemy_logic/behaviours/"
 const TRANSITION_INTERVAL_MS := 100
 
 var g = GRAPH.new()
-var current_state
 var behaviour
 var _next_eval_ms := 0
 
@@ -42,10 +41,9 @@ func setup(behaviour_name):
 
 
 func get_current_state():
-	current_state = g.get_current_state()
 	return g.get_current_state()
-	
-	
+
+
 func update(enemy):
 	var now = Time.get_ticks_msec()
 	if now < _next_eval_ms:

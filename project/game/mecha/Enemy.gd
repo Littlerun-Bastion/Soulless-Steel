@@ -26,12 +26,8 @@ var wait_for_map_sync = .1
 
 var chosen_dir = Vector2()
 
-var health = 100
-var speed = 100
-var mov_vec = Vector2()
 var going_to_position = false
 var logic
-var all_mechas
 var engage_distance = 2000 #How far to see other mechas
 var senses = {
 	"sounds": [],

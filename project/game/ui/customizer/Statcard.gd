@@ -28,4 +28,3 @@ func toggle_description():
 	AudioManager.play_sfx("boop")
 	$description.visible = !$description.visible
 	$parts.visible = !$parts.visible
-	pass # Replace with function body.

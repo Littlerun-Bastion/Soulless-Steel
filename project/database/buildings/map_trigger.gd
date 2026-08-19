@@ -6,7 +6,6 @@ signal trigger_entered
 
 var disabled = false
 
-# Called when the node enters the scene tree for the first time.
 
 func _on_body_entered(body):
 	if body.name == "Player" and not disabled:

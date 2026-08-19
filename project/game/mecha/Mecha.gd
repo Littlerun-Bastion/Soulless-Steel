@@ -1255,7 +1255,9 @@ func set_chipset(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("chipset", part_name)
 		build.chipset = part_data
-		#TODO remove this variables
+		# Flatten chipset stats onto the mecha so the lock-on/ECM code can read
+		# them as plain properties — including cross-mecha (locking_to.mecha.ecm).
+		# Mechs with no chipset keep the safe defaults these vars declare.
 		ecm = build.chipset.ECM
 		ecm_frequency = build.chipset.ECM_frequency
 		lock_strength = build.chipset.lock_on_strength

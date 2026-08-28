@@ -1017,8 +1017,6 @@ func update_heat(dt):
 		shader_heat_value = min(shader_heat_value + 200 * dt, target_visible)
 	else:
 		shader_heat_value = max(shader_heat_value - 100 * dt, target_visible)
-	for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-		weapon.update_heat(get_effective_cooling(), shader_heat_value, dt)
 	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
 				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
 				RightChassis, RightChassisSub, RightChassisGlow]:

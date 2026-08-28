@@ -355,5 +355,3 @@ func _on_system_degraded(_system_name: String, _severity: float):
 	# - Weapon offline icons
 	# - Heat dispersion warning
 	pass
-
-

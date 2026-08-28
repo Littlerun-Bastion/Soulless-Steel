@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_s6xkx")
-coolant_name = "Glycol"
-density = 1.08
-specific_heat = 3.3
-overheat_temp = 125.0
+coolant_name = "AVF"
+density = 0.85
+specific_heat = 6.5
+overheat_temp = 86.0
 metadata/_custom_type_script = "uid://vinw15j5guph"

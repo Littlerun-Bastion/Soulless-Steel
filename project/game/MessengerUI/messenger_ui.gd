@@ -82,6 +82,9 @@ func _ready() -> void:
 	# Rebuild contact list now that layout is correct
 	_build_contact_list()
 
+	# Replies can be gated on story state, so refresh them when it changes
+	StoryDirector.state_changed.connect(_refresh_replies)
+
 	hide()
 
 func toggle() -> void:
@@ -130,10 +133,16 @@ func _build_reply_options() -> void:
 	if current_contact.pending_replies.is_empty():
 		return
 	for reply in current_contact.pending_replies:
+		if not StoryDirector.meets(reply.get("requires", {})):
+			continue
 		var btn = Button.new()
 		btn.text = reply.text
 		btn.pressed.connect(_on_reply_pressed.bind(reply))
 		reply_options.add_child(btn)
+
+func _refresh_replies() -> void:
+	if current_contact != null:
+		_build_reply_options()
 
 func _on_reply_pressed(reply) -> void:
 	current_contact.messages.append({
@@ -143,6 +152,8 @@ func _on_reply_pressed(reply) -> void:
 	current_contact.pending_replies = reply.next_replies if reply.has("next_replies") else []
 	if reply.has("mission"):
 		MissionManager.start_mission(reply.mission)
+	if reply.has("story_effects"):
+		StoryDirector.apply_effects(reply.story_effects)
 	_build_messages()
 
 func _input(event: InputEvent) -> void:

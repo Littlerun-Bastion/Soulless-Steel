@@ -37,6 +37,7 @@ MouseManager="*res://game/ui/MouseManager.gd"
 NPCManager="*res://game/mecha/NPCManager.gd"
 TransitionManager="*res://game/ui/TransitionManager.tscn"
 MissionManager="*res://database/Missions/MissionManager.gd"
+StoryDirector="*res://game/story/StoryDirector.gd"
 MessengerUI="*res://game/MessengerUI/MessengerUI.tscn"
 MechOS="*uid://ylc8a0xjpom3"
 

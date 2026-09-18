@@ -112,7 +112,13 @@ func _setup_test_contact() -> void:
 	mission.mission_name = "Lady Volk Contract"
 	mission.add_objective("kill", "Eliminate 3 targets", 3)
 	mission.add_objective("extract", "Extract from arena", 1)
-	
-	contact.add_reply_option("I'm in.", [], mission)
+	# Story hooks for manual testing — press F7 to print story state.
+	mission.story_effects = {"flags": {"test_volk_contract_done": true}}
+
+	contact.add_reply_option("I'm in.", [], mission,
+			{"flags": {"test_volk_contract_accepted": true}})
 	contact.add_reply_option("Not interested.")
+	# Only offered once the contract above has been completed.
+	contact.add_reply_option("Got any more work?", [], null, {},
+			{"flags": {"test_volk_contract_done": true}})
 	MessengerUI.add_contact(contact)

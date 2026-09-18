@@ -88,6 +88,7 @@ func get_save_data():
 		"debug": Debug.debug_settings,
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
+		"story": StoryDirector.get_save_data(),
 	}
 	
 	return data
@@ -127,6 +128,9 @@ func set_save_data(data):
 		mech_inventory = _inventory_from_dict(data["mech_inventory"])
 	else:
 		mech_inventory = null
+
+	if data.has("story"):
+		StoryDirector.set_save_data(data["story"])
 
 func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):

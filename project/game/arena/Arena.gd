@@ -445,7 +445,9 @@ func _on_ExitPos_extracting_cancelled(extractingMech):
 		$PlayerHUD/SubViewportContainer/SubViewport/ExtractingLabel.visible = false
 
 func _on_player_trigger_entered(trigger):
-	if has_method(trigger):
+	if trigger.begins_with("story:"):
+		StoryDirector.handle_trigger(trigger.trim_prefix("story:"))
+	elif has_method(trigger):
 		call(trigger)
 
 func _on_player_mech_extracted(playerMech):

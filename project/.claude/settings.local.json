@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "Bash(git commit *)",
+      "Bash(git mv *)",
+      "Bash(grep -rnE \"^\\\\s*#\\\\s*\\(if |for |while |var |func |return |print|\\\\$|get_node|emit_signal|queue_free|add_child|\\\\.[a-z_]+\\\\\\(\\)\" --include=\"*.gd\" . --exclude-dir=.claude)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 extends Node
 
 signal objective_updated(objective)
-signal mission_completed
+signal mission_completed(mission)
 
 var current_mission = null
 
@@ -29,9 +29,10 @@ func _progress_objectives(type: String) -> void:
 	_check_mission_complete()
 
 func _check_mission_complete() -> void:
-	if current_mission == null:
+	if current_mission == null or current_mission.completed:
 		return
 	for obj in current_mission.objectives:
 		if not obj.completed:
 			return
-	emit_signal("mission_completed")
+	current_mission.completed = true
+	emit_signal("mission_completed", current_mission)

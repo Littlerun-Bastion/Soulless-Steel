@@ -206,6 +206,10 @@ func setup(player_ref, mechas_ref):
 	for bullethole in Bulletholes.get_children():
 		bullethole.modulate.a = 0
 
+func set_extracting(value: bool) -> void:
+	ExtractingLabel.visible = value
+
+
 func set_pause(value):
 	Cursor.visible = not value
 

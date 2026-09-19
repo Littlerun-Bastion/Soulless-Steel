@@ -1,9 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://rb322e1okgbo"]
+[gd_scene load_steps=12 format=3 uid="uid://rb322e1okgbo"]
 
 [ext_resource type="Script" uid="uid://cnmpo0q6dmbu8" path="res://game/expedition/Expedition.gd" id="1_root"]
 [ext_resource type="Script" uid="uid://pdse1py3u5dq" path="res://game/expedition/ExpeditionDirector.gd" id="2_director"]
 [ext_resource type="PackedScene" uid="uid://btestbigmap00001" path="res://database/maps/big_map.tscn" id="3_map"]
-[ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="4_exit"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
 [ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]
@@ -17,48 +16,6 @@
 script = ExtResource("1_root")
 
 [node name="Map" parent="." instance=ExtResource("3_map")]
-
-; SpawnZones spread across the big_map's 20k×20k area (corners at ±10000).
-; Kept well inside the boundary so jitter doesn't push them out of nav.
-[node name="SpawnZones" type="Node2D" parent="."]
-
-[node name="Spawn_N" type="Marker2D" parent="SpawnZones"]
-position = Vector2(0, -9000)
-
-[node name="Spawn_S" type="Marker2D" parent="SpawnZones"]
-position = Vector2(0, 9000)
-
-[node name="Spawn_W" type="Marker2D" parent="SpawnZones"]
-position = Vector2(-9000, 0)
-
-[node name="Spawn_E" type="Marker2D" parent="SpawnZones"]
-position = Vector2(9000, 0)
-
-[node name="Spawn_NE" type="Marker2D" parent="SpawnZones"]
-position = Vector2(8000, -8000)
-
-[node name="Spawn_NW" type="Marker2D" parent="SpawnZones"]
-position = Vector2(-8000, -8000)
-
-[node name="Spawn_SE" type="Marker2D" parent="SpawnZones"]
-position = Vector2(8000, 8000)
-
-[node name="Spawn_SW" type="Marker2D" parent="SpawnZones"]
-position = Vector2(-8000, 8000)
-
-[node name="Exits" type="Node2D" parent="."]
-
-[node name="Exit_N" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(0, -9500)
-
-[node name="Exit_S" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(0, 9500)
-
-[node name="Exit_E" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(9500, 0)
-
-[node name="Exit_W" parent="Exits" instance=ExtResource("4_exit")]
-position = Vector2(-9500, 0)
 
 ; In-match visual feedback containers (mirrors Arena's structure).
 ; Particles and one-shot effects get spawned under these at runtime.

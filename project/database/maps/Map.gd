@@ -42,3 +42,10 @@ func get_navigation_polygon():
 
 func get_triggers():
 	return $Triggers.get_children()
+
+# Optional: only maps built for Expedition have SpawnZones (Marker2Ds used for
+# soft spawns). Arena maps don't, so this returns [] for them.
+func get_spawn_zones():
+	if has_node("SpawnZones"):
+		return $SpawnZones.get_children()
+	return []

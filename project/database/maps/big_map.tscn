@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://btestbigmap00001"]
+[gd_scene load_steps=4 format=3 uid="uid://btestbigmap00001"]
 
 [ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="1_map"]
 [ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="2_start"]
+[ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="3_exit"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_BigMap"]
 vertices = PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)
@@ -23,7 +24,22 @@ script = ExtResource("1_map")
 [node name="Buildings" type="Node2D" parent="."]
 [node name="Texts" type="Node2D" parent="."]
 [node name="Triggers" type="Node2D" parent="."]
+
+; Extraction points at the four edges. Found at runtime via the "exit_point"
+; group, so Expedition and NPC extract logic need no extra wiring.
 [node name="Exits" type="Node2D" parent="."]
+
+[node name="Exit_N" parent="Exits" instance=ExtResource("3_exit")]
+position = Vector2(0, -9500)
+
+[node name="Exit_S" parent="Exits" instance=ExtResource("3_exit")]
+position = Vector2(0, 9500)
+
+[node name="Exit_E" parent="Exits" instance=ExtResource("3_exit")]
+position = Vector2(9500, 0)
+
+[node name="Exit_W" parent="Exits" instance=ExtResource("3_exit")]
+position = Vector2(-9500, 0)
 
 ; 9 start positions spread across the 20k area. The first is used as the
 ; player spawn; the rest are used by ExpeditionDirector for initial NPC placement.
@@ -55,6 +71,35 @@ position = Vector2(7000, 7000)
 
 [node name="Pos9" parent="StartPositions" instance=ExtResource("2_start")]
 position = Vector2(-7000, 7000)
+
+; Soft-spawn points for ExpeditionDirector (read via Map.get_spawn_zones).
+; Spread across the 20k×20k area (corners at ±10000), kept well inside the
+; boundary so jitter doesn't push them out of nav.
+[node name="SpawnZones" type="Node2D" parent="."]
+
+[node name="Spawn_N" type="Marker2D" parent="SpawnZones"]
+position = Vector2(0, -9000)
+
+[node name="Spawn_S" type="Marker2D" parent="SpawnZones"]
+position = Vector2(0, 9000)
+
+[node name="Spawn_W" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-9000, 0)
+
+[node name="Spawn_E" type="Marker2D" parent="SpawnZones"]
+position = Vector2(9000, 0)
+
+[node name="Spawn_NE" type="Marker2D" parent="SpawnZones"]
+position = Vector2(8000, -8000)
+
+[node name="Spawn_NW" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-8000, -8000)
+
+[node name="Spawn_SE" type="Marker2D" parent="SpawnZones"]
+position = Vector2(8000, 8000)
+
+[node name="Spawn_SW" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-8000, 8000)
 
 ; 20k×20k unified nav polygon. Single outline = no cross-region pathfinding bugs.
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]

@@ -10,15 +10,16 @@ extends Node2D
 #
 # Required scene children (added in the .tscn):
 #   - Map (instance of database/maps/*.tscn)  provides BG, Walls, NavigationRegion2D,
-#                                             StartPositions; player spawns at the
-#                                             Map's first start position
+#                                             StartPositions, Exits, Triggers and
+#                                             (optionally) SpawnZones. The player
+#                                             spawns at the first start position.
 #   - Mechas (Node2D)        container for player + NPCs
 #   - Projectiles (Node2D)   bullets, missiles, etc. land here
-#   - SpawnZones (Node2D)    Marker2D children — fallback spawn points for the
-#                            director when the Map runs out of start positions
-#   - Exits (Node2D)         ExitPoint instances (also auto-discovered via
-#                            the "exit_point" group, even if inside Map)
 #   - ExpeditionDirector (Node)  the ExpeditionDirector.gd manager
+#
+# The map owns its layout: exits are found via the "exit_point" group, spawn
+# zones via Map.get_spawn_zones(), and map triggers are connected on _ready
+# ("story:..." triggers go to StoryDirector).
 # Player.tscn has its own Camera2D — no scene-level camera required.
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
@@ -60,6 +61,10 @@ var target_arena_zoom: Vector2 = Vector2(0.1, 0.1)
 
 var player
 var all_mechas: Array = []
+# Names of NPCs the player downed (exposed) and killed this expedition.
+# Same bookkeeping as Arena, kept for future expedition rewards/conduct.
+var player_downs: Array = []
+var player_kills: Array = []
 
 
 func _ready() -> void:
@@ -71,6 +76,7 @@ func _ready() -> void:
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	_setup_exits()
+	_setup_triggers()
 	_add_player()
 	# Heatmap depends on the player's head part; configure after spawn.
 	if player and player.build.head and player.build.head.heatmap:
@@ -131,6 +137,10 @@ func _input(event: InputEvent) -> void:
 		PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
 		_activate_debug_cam()
+	elif event.is_action_pressed("debug_2"):
+		# Same as Arena: hit the player for 500 to test damage/death flow.
+		if player:
+			player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
 
 
 func _setup_exits() -> void:
@@ -141,6 +151,16 @@ func _setup_exits() -> void:
 			exit.connect("mecha_extracting", Callable(self, "_on_exit_mecha_extracting"))
 		if not exit.is_connected("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled")):
 			exit.connect("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled"))
+
+
+func _setup_triggers() -> void:
+	# map_trigger instances under the Map's Triggers node. They only fire for
+	# the player (see map_trigger.gd).
+	if not (has_node("Map") and $Map.has_method("get_triggers")):
+		return
+	for trigger in $Map.get_triggers():
+		if trigger.has_signal("trigger_entered"):
+			trigger.connect("trigger_entered", Callable(self, "_on_player_trigger_entered"))
 
 
 # ---- Spawning ----
@@ -287,6 +307,14 @@ func _ensure_position_on_nav(pos: Vector2) -> Vector2:
 	return get_safe_position()
 
 
+# Soft-spawn Marker2Ds owned by the Map (empty if the map has none). Used by
+# _random_spawn_position and ExpeditionDirector's offscreen soft spawns.
+func get_spawn_zones() -> Array:
+	if has_node("Map") and $Map.has_method("get_spawn_zones"):
+		return $Map.get_spawn_zones()
+	return []
+
+
 # Returns a position guaranteed to be reachable — used as a last-resort
 # relocate target for NPCs that get stuck outside the navmesh somehow.
 func get_safe_position() -> Vector2:
@@ -323,8 +351,9 @@ func _random_spawn_position() -> Vector2:
 			var spot = pool.pick_random()
 			var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 			return spot.global_position + jitter
-	if has_node("SpawnZones") and $SpawnZones.get_child_count() > 0:
-		var zone = $SpawnZones.get_children().pick_random()
+	var zones := get_spawn_zones()
+	if zones.size() > 0:
+		var zone = zones.pick_random()
 		var jitter = Vector2(randf_range(-100, 100), randf_range(-100, 100))
 		return zone.global_position + jitter
 	return Vector2(randf_range(-500, 500), randf_range(-500, 500))
@@ -407,10 +436,17 @@ func _on_create_trail(projectile, trail) -> void:
 		Trails.add_child(created_trail)
 
 
-func _on_mecha_exposed(_mecha) -> void:
-	# Hook point — ExpeditionDirector already tracks downs via notify_mecha_died, so
-	# nothing to do here yet. Kept for future "first-blood" / "exposed" UI.
-	pass
+func _on_mecha_exposed(mecha) -> void:
+	# Record NPCs the player downed (same rule as Arena's conduct tracking).
+	if _was_hit_by_player(mecha):
+		player_downs.append(mecha.mecha_name)
+
+
+# last_damage_source is a Dictionary {body, name} populated by projectile impacts.
+func _was_hit_by_player(mecha) -> bool:
+	return mecha.last_damage_source \
+			and typeof(mecha.last_damage_source) == TYPE_DICTIONARY \
+			and mecha.last_damage_source.get("name") == "Player"
 
 
 func _on_mecha_died(mecha) -> void:
@@ -426,10 +462,9 @@ func _on_mecha_died(mecha) -> void:
 	if mecha == player:
 		player_died()
 	else:
-		# Mission system: count player kills toward objectives.
-		if mecha.last_damage_source \
-				and typeof(mecha.last_damage_source) == TYPE_DICTIONARY \
-				and mecha.last_damage_source.get("name") == "Player":
+		# Player kills: recorded by name and counted toward mission objectives.
+		if _was_hit_by_player(mecha):
+			player_kills.append(mecha.mecha_name)
 			MissionManager.report_kill()
 		FrameSpikeDetector.mark("died:queue_free")
 		mecha.queue_free()
@@ -754,6 +789,8 @@ func _on_exit_mecha_extracting(extracting_mech) -> void:
 		return
 	if extracting_mech.has_method("extracting"):
 		extracting_mech.extracting()
+	if extracting_mech == player:
+		_set_hud_extracting(true)
 
 
 func _on_exit_extracting_cancelled(extracting_mech) -> void:
@@ -761,3 +798,24 @@ func _on_exit_extracting_cancelled(extracting_mech) -> void:
 		return
 	if extracting_mech.has_method("cancel_extract"):
 		extracting_mech.cancel_extract()
+	if extracting_mech == player:
+		_set_hud_extracting(false)
+
+
+# The HUD is freed after the player dies, so guard every access.
+func _set_hud_extracting(value: bool) -> void:
+	if is_instance_valid(PlayerHUD):
+		PlayerHUD.set_extracting(value)
+
+
+# ---- Map triggers ----
+
+# "story:<command>" goes to StoryDirector; any other name calls the matching
+# method on this scene if one exists (same convention as Arena).
+func _on_player_trigger_entered(trigger: String) -> void:
+	if trigger.begins_with("story:"):
+		StoryDirector.handle_trigger(trigger.trim_prefix("story:"))
+	elif has_method(trigger):
+		call(trigger)
+	else:
+		push_warning("Expedition: no handler for map trigger '" + trigger + "'")

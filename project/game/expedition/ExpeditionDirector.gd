@@ -254,13 +254,15 @@ func _pick_offscreen_spawn_position():
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return null
 
-	var spawn_zones = arena.get_node_or_null("SpawnZones")
-	if spawn_zones == null:
+	if not arena.has_method("get_spawn_zones"):
+		return null
+	var spawn_zones: Array = arena.get_spawn_zones()
+	if spawn_zones.is_empty():
 		return null
 
 	var player_pos = arena.player.global_position
 	var candidates: Array = []
-	for zone in spawn_zones.get_children():
+	for zone in spawn_zones:
 		if not is_instance_valid(zone):
 			continue
 		var d = player_pos.distance_to(zone.global_position)

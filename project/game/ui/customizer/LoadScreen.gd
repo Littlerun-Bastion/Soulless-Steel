@@ -18,17 +18,25 @@ const DESIGN_BUTTON = preload("res://game/ui/customizer/DesignButton.tscn")
 var designs = []
 var current_design
 var pressed_design
-var shopping_mode = true
+# In shopping mode (the Store) designs can only be browsed, not loaded.
+# Parents set this in their own _ready, which runs after ours, so the setter
+# has to update the button too — otherwise it stays hidden everywhere.
+var shopping_mode = true:
+	set(value):
+		shopping_mode = value
+		if is_node_ready():
+			_update_load_button()
 
 signal load_pressed
 
 
 func _ready():
 	reload_designs()
-	if shopping_mode:
-		$LoadButton.visible = false
-	else:
-		$LoadButton.visible = true
+	_update_load_button()
+
+
+func _update_load_button():
+	$LoadButton.visible = not shopping_mode
 
 func check_pressed_design():
 	if pressed_design == null:

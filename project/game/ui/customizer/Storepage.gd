@@ -111,19 +111,6 @@ func shoulder_weapon_check():
 		$PartCategories/Equipment/shoulder_weapon_right.disabled = false
 
 
-func is_build_valid():
-	var build_valid = true
-	var missing_parts : String
-	for part in ["head", "core", "shoulders", "generator",\
-				"chipset", "chassis", "thruster", "shoulders"]:
-		if not DisplayMecha.build[part]:
-			build_valid = false
-			missing_parts = missing_parts + "WARN: " + part + " "
-	if not build_valid:
-		push_warning("Storepage: incomplete build — " + missing_parts)
-	return build_valid
-
-
 func add_to_basket(type, part_name):
 	#Transaction code goes here
 	CommandLine.display("market_basket_add_item_entry --" + str(part_name))
@@ -192,13 +179,11 @@ func reset_category_name(button):
 	button.text[0] = button.text[0].capitalize()
 
 
+# The Store only previews and buys parts; equipping happens in the Customizer
+# and Hangar, so leaving doesn't change the current mecha.
 func exit():
 	AudioManager.play_sfx("back")
-	if is_build_valid():
-		PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())
-		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
-	else:
-		print("Build invalid")
+	TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 
 
 func confirm_basket():

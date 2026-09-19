@@ -10,6 +10,12 @@ const WEAPON_NAMES = {
 	"shoulder_weapon_left": "L Shoulder",
 }
 
+# Design dictionary keys, in the order a design is applied (core before the
+# shoulder weapons that depend on its mounts).
+const DESIGN_SLOTS = ["head", "core", "shoulders", "generator", "chipset",
+		"chassis", "thruster", "arm_weapon_left", "arm_weapon_right",
+		"shoulder_weapon_left", "shoulder_weapon_right"]
+
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}
 
@@ -334,11 +340,64 @@ func _on_Load_pressed():
 	$LoadScreen.visible = true
 
 
+# Loads a saved design through the stash: each part that differs is taken
+# from the stash and the part it replaces goes back in. Slots whose part isn't
+# owned (or whose old part doesn't fit back in the stash) keep what they have.
 func _LoadScreen_on_load_pressed(design):
-	DisplayMecha.set_parts_from_design(design)
-	ComparisonMecha.set_parts_from_design(design)
+	if category_visible:
+		reset_category()
+	var not_owned := []
+	var stash_full := false
+	for slot in DESIGN_SLOTS:
+		var new_id = design.get(slot, false)
+		var current = DisplayMecha.build[slot]
+		var old_id = current.part_id if current else false
+		if new_id == old_id:
+			continue
+		# The core can't be removed here (see unequip_core).
+		if slot == "core" and not new_id:
+			continue
+		var type: String = slot.replace("_left", "").replace("_right", "")
+		if new_id and PlayerProgress.count_part(type, new_id) <= 0:
+			not_owned.append(str(new_id))
+			continue
+		if not _swap_slot_from_stash(slot, type, old_id, new_id):
+			stash_full = true
+	for mecha in [DisplayMecha, ComparisonMecha]:
+		mecha.refresh_dynamic_components()
+	PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())  # also saves the stash
+	if not not_owned.is_empty():
+		AudioManager.play_sfx("deny_softer")
+		CommandLine.display("/throw-error: Not in stash: " + ", ".join(not_owned))
+	if stash_full:
+		AudioManager.play_sfx("deny_softer")
+		CommandLine.display("/throw-error: Stash Full")
 	shoulder_weapon_check()
 	update_weight()
+
+
+# Takes new_id out of the stash and puts old_id back, then sets the slot.
+# Returns false (changing nothing) if old_id doesn't fit in the stash.
+func _swap_slot_from_stash(slot, type, old_id, new_id) -> bool:
+	# Remove the new part first so its space is free for the old one.
+	if new_id:
+		PlayerProgress.remove_part(type, new_id, false)
+	if old_id and not PlayerProgress.add_part(type, old_id, false):
+		if new_id:
+			PlayerProgress.add_part(type, new_id, false)  # fits: its space was just freed
+		return false
+	var value = new_id if new_id else null
+	var side = false
+	if slot.ends_with("_left"):
+		side = DisplayMecha.SIDE.LEFT
+	elif slot.ends_with("_right"):
+		side = DisplayMecha.SIDE.RIGHT
+	for mecha in [DisplayMecha, ComparisonMecha]:
+		if typeof(side) == TYPE_INT:
+			mecha.callv("set_" + type, [value, side])
+		else:
+			mecha.callv("set_" + type, [value])
+	return true
 
 
 func _on_category_mouse_entered():

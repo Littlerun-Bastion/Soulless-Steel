@@ -22,6 +22,7 @@ func _ready() -> void:
 	_run("effects and conditions", _test_effects_and_conditions)
 	_run("map trigger commands", _test_triggers)
 	_run("mission completion applies story effects once", _test_mission)
+	_run("contracts survive sorties until completed", _test_contract)
 	_run("save data survives JSON round-trip", _test_save_round_trip)
 
 	StoryDirector.set_save_data(saved_state)
@@ -103,6 +104,40 @@ func _test_mission() -> void:
 	_check(completions[0] == 1, "mission_completed emitted once")
 	_check(StoryDirector.is_at("ch1", "mission_done"), "mission advanced story")
 	_check(StoryDirector.has_flag("test_mission_done"), "mission set flag")
+
+
+func _test_contract() -> void:
+	var contract := MissionData.new()
+	contract.mission_name = "Story test contract"
+	contract.add_objective("kill", "Kill 2", 2)
+	contract.story_effects = {"flags": {"test_contract_done": true}}
+	MissionManager.accept_contract(contract)
+
+	# First sortie: one kill, then the player dies (no completion).
+	MissionManager.start_default_mission(_make_default_mission())
+	_check(MissionManager.current_mission == contract, "default mission doesn't replace an active contract")
+	MissionManager.report_kill()
+
+	# Next sortie starts fresh: progress resets, contract still active.
+	MissionManager.start_default_mission(_make_default_mission())
+	_check(MissionManager.current_mission == contract, "contract still active on the next sortie")
+	_check(contract.objectives[0].current_amount == 0, "contract progress resets each sortie")
+	MissionManager.report_kill()
+	MissionManager.report_kill()
+	_check(contract.completed, "contract completes within one sortie")
+	_check(StoryDirector.has_flag("test_contract_done"), "contract story effects applied")
+
+	# Once completed, the next sortie gets the default mission again.
+	var default_mission := _make_default_mission()
+	MissionManager.start_default_mission(default_mission)
+	_check(MissionManager.current_mission == default_mission, "default mission used after contract completes")
+
+
+func _make_default_mission() -> MissionData:
+	var mission := MissionData.new()
+	mission.mission_name = "Default test mission"
+	mission.add_objective("extract", "Extract", 1)
+	return mission
 
 
 func _test_save_round_trip() -> void:

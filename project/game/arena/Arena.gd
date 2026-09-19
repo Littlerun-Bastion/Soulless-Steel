@@ -222,8 +222,11 @@ func _on_player_mech_extracted(playerMech):
 			PlayerProgress.add_money(total_payout)
 			TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Downloading Data...")
 			ArenaManager.last_match_unread = true
-		elif ArenaManager.mode == "Tutorial":
-			TransitionManager.transition_to("res://StartMenu.tscn", "Downloading Data...")
+		else:
+			# Tutorial mode on a non-tutorial map, or no mode set (e.g. the
+			# debug go_to_mode start): no payout, just go back to the menu so
+			# extraction never leaves the player stuck in the arena.
+			TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Downloading Data...")
 
 
 #---TRIGGERS---
@@ -237,4 +240,5 @@ func _setup_mission() -> void:
 	mission.mission_name = "Survive and Extract"
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
-	MissionManager.start_mission(mission)
+	# Used only if no messenger contract is active (see MissionManager).
+	MissionManager.start_default_mission(mission)

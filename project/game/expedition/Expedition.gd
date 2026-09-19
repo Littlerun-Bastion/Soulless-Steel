@@ -282,4 +282,5 @@ func _setup_mission() -> void:
 	mission.mission_name = "Survive and Extract"
 	mission.add_objective("kill", "Eliminate enemies", 3)
 	mission.add_objective("extract", "Extract from the arena", 1)
-	MissionManager.start_mission(mission)
+	# Used only if no messenger contract is active (see MissionManager).
+	MissionManager.start_default_mission(mission)

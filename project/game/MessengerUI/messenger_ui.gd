@@ -163,7 +163,7 @@ func _on_reply_pressed(reply) -> void:
 	})
 	current_contact.pending_replies = reply.next_replies if reply.has("next_replies") else []
 	if reply.has("mission"):
-		MissionManager.start_mission(reply.mission)
+		MissionManager.accept_contract(reply.mission)
 	if reply.has("story_effects"):
 		StoryDirector.apply_effects(reply.story_effects)
 	_build_messages()

@@ -103,6 +103,9 @@ func _on_Store_pressed():
 	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
 
 func _setup_test_contact() -> void:
+	# MessengerUI is an autoload, so the contact survives returning to the menu.
+	if MessengerUI.has_contact("Lady Volk"):
+		return
 	var contact = ContactData.new()
 	contact.name = "Lady Volk"
 	contact.add_message("Hey. I have a job for you.")

@@ -92,8 +92,20 @@ func toggle() -> void:
 	$Root.mouse_filter = Control.MOUSE_FILTER_STOP if visible else Control.MOUSE_FILTER_IGNORE
 
 func add_contact(contact) -> void:
+	if has_contact(contact.name):
+		push_warning("Messenger already has a contact named '" + contact.name + "', ignoring duplicate")
+		return
 	contacts.append(contact)
 	call_deferred("_build_contact_list")
+
+func has_contact(contact_name: String) -> bool:
+	return get_contact(contact_name) != null
+
+func get_contact(contact_name: String):
+	for contact in contacts:
+		if contact.name == contact_name:
+			return contact
+	return null
 
 func _build_contact_list() -> void:
 	for child in contact_list.get_children():

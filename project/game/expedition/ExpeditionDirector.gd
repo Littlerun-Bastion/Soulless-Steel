@@ -1,8 +1,10 @@
 extends Node
 
-# Director is the "living world" manager. It populates the test scene with NPCs
-# at start, monitors the player's experience, and intervenes (redirect, spawn,
-# ambient events) to keep things interesting without overwhelming the player.
+# ExpeditionDirector is the "living world" manager for Expedition mode (not to
+# be confused with StoryDirector, which tracks story progress). It populates
+# the map with NPCs at start, monitors the player's experience, and intervenes
+# (redirect, spawn, ambient events) to keep things interesting without
+# overwhelming the player.
 #
 # This is a SKELETON — start small, add interventions as we validate each layer.
 
@@ -40,7 +42,7 @@ extends Node
 @export var ambient_event_max_distance: float = 8000.0   # but not so far it's pointless
 @export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
 
-var arena                                   # Ref to LivingWorldTest (acts as arena)
+var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
 var time_since_last_player_damage: float = 0.0
 var print_timer: float = 0.0
@@ -79,7 +81,7 @@ func _populate_initial_world() -> void:
 		arena.add_enemy(design, "NPC_" + str(i))
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[Director] World populated with ", count, " NPCs")
+		print("[ExpeditionDirector] World populated with ", count, " NPCs")
 
 
 func _process(dt: float) -> void:
@@ -119,12 +121,12 @@ func _print_metrics() -> void:
 	if not Debug.get_setting("verbose_logging"):
 		return
 	if not is_instance_valid(arena.player):
-		print("[Director] player gone")
+		print("[ExpeditionDirector] player gone")
 		return
 
 	var npc_count = _alive_npc_count()
 	var nearest = _nearest_enemy_distance()
-	print("[Director] fps=", Engine.get_frames_per_second(),
+	print("[ExpeditionDirector] fps=", Engine.get_frames_per_second(),
 		"  frame_ms=", "%.1f" % (1000.0 / max(Engine.get_frames_per_second(), 1)),
 		"  npcs=", npc_count,
 		"  nearest_enemy_dist=", int(nearest),
@@ -177,15 +179,15 @@ func notify_mecha_died(mecha) -> void:
 	if mecha == arena.player:
 		player_deaths += 1
 		if Debug.get_setting("verbose_logging"):
-			print("[Director] player killed by ", killer_name)
+			print("[ExpeditionDirector] player killed by ", killer_name)
 	elif (killer_valid and killer == arena.player) or killer_name == "Player":
 		player_kills += 1
 		if Debug.get_setting("verbose_logging"):
-			print("[Director] player killed ", mecha.mecha_name)
+			print("[ExpeditionDirector] player killed ", mecha.mecha_name)
 	else:
 		npc_vs_npc_kills += 1
 		if Debug.get_setting("verbose_logging"):
-			print("[Director] npc-vs-npc: ", killer_name, " killed ", mecha.mecha_name)
+			print("[ExpeditionDirector] npc-vs-npc: ", killer_name, " killed ", mecha.mecha_name)
 
 
 # ---- Soft spawns ----
@@ -226,7 +228,7 @@ func _try_soft_spawn() -> void:
 	total_soft_spawns += 1
 	time_since_last_spawn = 0.0
 	if Debug.get_setting("verbose_logging"):
-		print("[Director] soft-spawned ", enemy_name, " at ", pos,
+		print("[ExpeditionDirector] soft-spawned ", enemy_name, " at ", pos,
 			"  [pop ", pop, " -> ", pop + 1, "]")
 
 
@@ -312,7 +314,7 @@ func _try_redirect() -> void:
 	time_since_last_redirect = 0.0
 	var dist_was = int(arena.player.global_position.distance_to(candidate.global_position))
 	if Debug.get_setting("verbose_logging"):
-		print("[Director] redirected ", candidate.mecha_name,
+		print("[ExpeditionDirector] redirected ", candidate.mecha_name,
 			" toward player area (was ", dist_was, " away)")
 
 
@@ -345,7 +347,7 @@ func _try_ambient_event() -> void:
 	total_ambient_events += 1
 	var dist_from_player = int(arena.player.global_position.distance_to(pos))
 	if Debug.get_setting("verbose_logging"):
-		print("[Director] ambient gunfire at ", pos,
+		print("[ExpeditionDirector] ambient gunfire at ", pos,
 			"  (", dist_from_player, " from player)")
 
 

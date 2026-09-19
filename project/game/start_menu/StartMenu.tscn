@@ -89,16 +89,16 @@ theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "SAV BOOT SEQUENCE"
 
-[node name="TestModeContainer" type="VBoxContainer" parent="MainButtons" unique_id=988913429]
+[node name="ExpeditionContainer" type="VBoxContainer" parent="MainButtons" unique_id=988913429]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="MainButtons/TestModeContainer" unique_id=305244712]
+[node name="Button" type="Button" parent="MainButtons/ExpeditionContainer" unique_id=305244712]
 layout_mode = 2
 theme = ExtResource("12")
-text = "TEST MODE"
+text = "Expedition Mode"
 alignment = 0
 
-[node name="Descriptor" type="Label" parent="MainButtons/TestModeContainer" unique_id=1620044347]
+[node name="Descriptor" type="Label" parent="MainButtons/ExpeditionContainer" unique_id=1620044347]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
@@ -285,9 +285,9 @@ horizontal_alignment = 2
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_Arena_pressed"]
-[connection signal="mouse_entered" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_entered"]
-[connection signal="mouse_exited" from="MainButtons/TestModeContainer/Button" to="." method="_on_Button_mouse_exited"]
-[connection signal="pressed" from="MainButtons/TestModeContainer/Button" to="." method="_on_TestMode_pressed"]
+[connection signal="mouse_entered" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Expedition_pressed"]
 [connection signal="mouse_entered" from="MainButtons/HangarContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/HangarContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/HangarContainer/Button" to="." method="_on_Hangar_pressed"]

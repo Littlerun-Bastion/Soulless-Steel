@@ -1,9 +1,12 @@
 extends Node2D
 
-# LivingWorldTest is a minimal "arena-like" host for the Director system.
+# Expedition is the big-map living-world game mode. The ExpeditionDirector
+# populates the map with NPCs and keeps it alive (respawns, redirects,
+# ambient events). Arena (game/arena/) is the separate ladder mode.
+#
 # It implements just enough of the Arena interface that Player.gd, Enemy.gd,
-# and the AI behaviours work — without inheriting Arena's mission/ladder/
-# exhibition coupling. Iterate the Director here freely.
+# and the AI behaviours work — without Arena's mission/ladder/exhibition
+# coupling.
 #
 # Required scene children (added in the .tscn):
 #   - Map (instance of database/maps/*.tscn)  provides BG, Walls, NavigationRegion2D,
@@ -12,10 +15,10 @@ extends Node2D
 #   - Mechas (Node2D)        container for player + NPCs
 #   - Projectiles (Node2D)   bullets, missiles, etc. land here
 #   - SpawnZones (Node2D)    Marker2D children — fallback spawn points for the
-#                            Director when the Map runs out of start positions
+#                            director when the Map runs out of start positions
 #   - Exits (Node2D)         ExitPoint instances (also auto-discovered via
 #                            the "exit_point" group, even if inside Map)
-#   - Director (Node)        the Director.gd manager
+#   - ExpeditionDirector (Node)  the ExpeditionDirector.gd manager
 # Player.tscn has its own Camera2D — no scene-level camera required.
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
@@ -43,7 +46,7 @@ const FX_TO_PREWARM := [
 @onready var Explosions = $Explosions
 @onready var ScrapParts = $ScrapParts
 @onready var Heatmap = $HeatmapEffects
-@onready var Director = $Director
+@onready var ExpeditionDirector = $ExpeditionDirector
 @onready var PlayerHUD = $PlayerHUD
 @onready var PauseMenu = $PauseMenu
 @onready var GameOver = $GameOver
@@ -63,7 +66,7 @@ func _ready() -> void:
 	# FrameSpikeDetector is an autoload — its mark trail survives scene
 	# changes and misattributes reload hitches to stale combat marks.
 	# Stamp the boundary so teardown/load spikes are labeled correctly.
-	FrameSpikeDetector.mark("scene_load:LivingWorldTest")
+	FrameSpikeDetector.mark("scene_load:Expedition")
 	randomize()
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
@@ -81,13 +84,13 @@ func _ready() -> void:
 
 	# Compile FX shader pipelines before anyone can shoot. NPCs fight each
 	# other, so the first impact can happen before the player ever fires —
-	# this must finish before Director populates the world.
+	# this must finish before ExpeditionDirector populates the world.
 	await _prewarm_fx()
 
-	Director.start(self)
+	ExpeditionDirector.start(self)
 
 	# Freeze AI until the entrance animation finishes. Must run after
-	# Director.start (it iterates existing mechas), and the skip-intro stop
+	# ExpeditionDirector.start (it iterates existing mechas), and the skip-intro stop
 	# must come after the freeze — stop_animation fires the ending signal
 	# that unfreezes everyone.
 	set_mechas_block_status(true)
@@ -96,7 +99,7 @@ func _ready() -> void:
 		IntroAnimation.stop_animation()
 
 	# Tier 3: surface a clear goal via the standard mission system.
-	# Director still tracks its own kills for tuning; this adds player-facing
+	# ExpeditionDirector still tracks its own kills for tuning; this adds player-facing
 	# objectives on top.
 	_setup_mission()
 
@@ -170,7 +173,7 @@ func _add_player() -> void:
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	var enemy = ENEMY.instantiate()
 	Mechas.add_child(enemy)
-	# Caller can pass an explicit position (used by Director soft-spawns);
+	# Caller can pass an explicit position (used by ExpeditionDirector soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
 	var pos: Vector2
 	if spawn_position is Vector2:
@@ -405,16 +408,16 @@ func _on_create_trail(projectile, trail) -> void:
 
 
 func _on_mecha_exposed(_mecha) -> void:
-	# Hook point — Director already tracks downs via notify_mecha_died, so
+	# Hook point — ExpeditionDirector already tracks downs via notify_mecha_died, so
 	# nothing to do here yet. Kept for future "first-blood" / "exposed" UI.
 	pass
 
 
 func _on_mecha_died(mecha) -> void:
 	mecha.is_dead = true
-	# Tell Director before removal so it can attribute the kill
-	if Director:
-		Director.notify_mecha_died(mecha)
+	# Tell ExpeditionDirector before removal so it can attribute the kill
+	if ExpeditionDirector:
+		ExpeditionDirector.notify_mecha_died(mecha)
 	FrameSpikeDetector.mark("died:scrap_spawn")
 	create_mecha_scraps(mecha)
 	var idx = all_mechas.find(mecha)
@@ -511,12 +514,12 @@ func _on_mecha_made_sound(sound_data) -> void:
 
 func _on_player_lost_health() -> void:
 	ShaderEffects.damage_burst_effect()
-	Director.notify_player_damaged()
+	ExpeditionDirector.notify_player_damaged()
 
 
 func _on_player_extracted(_mecha) -> void:
 	# Mission objective: extraction. Transition back to the main menu so the
-	# player can re-enter the test, customize their mech, etc. (Skipping the
+	# player can start another expedition, customize their mech, etc. (Skipping the
 	# Arena payout/ladder flow on purpose — Tier 3 default for this scene.)
 	MissionManager.report_extraction()
 	TransitionManager.transition_to(

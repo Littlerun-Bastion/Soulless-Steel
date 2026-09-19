@@ -88,12 +88,12 @@ func _on_Arena_pressed():
 	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings...")
 
 
-func _on_TestMode_pressed():
+func _on_Expedition_pressed():
 	AudioManager.play_sfx("confirm")
 	# Old test mode (tutorial) kept here for reference, currently disconnected:
 	#start_game("tutorial")
 	AudioManager.stop_bgm()
-	TransitionManager.transition_to("res://game/test/LivingWorldTest.tscn", "Booting Test Sandbox...")
+	TransitionManager.transition_to("res://game/expedition/Expedition.tscn", "Launching Expedition...")
 
 
 func _on_Store_pressed():

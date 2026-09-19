@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://rb322e1okgbo"]
 
-[ext_resource type="Script" path="res://game/test/LivingWorldTest.gd" id="1_root"]
-[ext_resource type="Script" path="res://game/test/Director.gd" id="2_director"]
+[ext_resource type="Script" uid="uid://cnmpo0q6dmbu8" path="res://game/expedition/Expedition.gd" id="1_root"]
+[ext_resource type="Script" uid="uid://pdse1py3u5dq" path="res://game/expedition/ExpeditionDirector.gd" id="2_director"]
 [ext_resource type="PackedScene" uid="uid://btestbigmap00001" path="res://database/maps/big_map.tscn" id="3_map"]
 [ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="4_exit"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="11_intro"]
 [ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="12_cam"]
 
-[node name="LivingWorldTest" type="Node2D"]
+[node name="Expedition" type="Node2D"]
 script = ExtResource("1_root")
 
 [node name="Map" parent="." instance=ExtResource("3_map")]
@@ -114,7 +114,7 @@ layer = 2
 
 [node name="IntroAnimation" parent="Intro" instance=ExtResource("11_intro")]
 
-[node name="Director" type="Node" parent="."]
+[node name="ExpeditionDirector" type="Node" parent="."]
 script = ExtResource("2_director")
 
 [connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]

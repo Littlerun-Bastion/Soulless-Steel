@@ -36,11 +36,8 @@ var current_group
 
 func _ready():
 	$LoadScreen.shopping_mode = false
-	if Profile.stats.current_mecha:
-		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
-		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
-	else:
-		push_error("Couldn't find a current mecha")
+	DisplayMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
+	ComparisonMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 	update_weight()
 	ComparisonMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
@@ -95,6 +92,8 @@ func show_category_button(parts, selected):
 		child.visible = (child == selected)
 
 
+# Puts the part on the mecha and shows it in CurrentItemFrame. Does not touch
+# the stash — callers take the part out first (see _on_ItemFrame_pressed).
 func equip_part(part, type, side):
 	if typeof(side) == TYPE_INT:
 		DisplayMecha.callv("set_" + str(type), [part,side])
@@ -102,8 +101,8 @@ func equip_part(part, type, side):
 	else:
 		DisplayMecha.callv("set_" + str(type), [part])
 		ComparisonMecha.callv("set_" + str(type), [part])
-	Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-	
+	PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())
+
 	if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_part")):
 		$CurrentItemFrame.get_button().disconnect("pressed",Callable(self,"unequip_part"))
 	if $CurrentItemFrame.get_button().is_connected("pressed",Callable(self,"unequip_core")):
@@ -114,31 +113,39 @@ func equip_part(part, type, side):
 		$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_core"))
 	else:
 		$CurrentItemFrame.get_button().connect("pressed",Callable(self,"unequip_part").bind(type,side))
-	Profile.remove_from_inventory(part)
-	for child in PartList.get_children():
-		child.update_quantity(Profile.get_inventory_amount(child.current_part))
+	update_quantities(type)
 	shoulder_weapon_check()
 	update_weight()
 
 
-func unequip_part(type, side):
+# Returns the equipped part to the stash. Returns false (and keeps it
+# equipped) when the stash is full.
+func unequip_part(type, side) -> bool:
 	if not $CurrentItemFrame.visible:
-		return
+		return true
+	if not PlayerProgress.add_part(type, $CurrentItemFrame.current_part, false):
+		AudioManager.play_sfx("deny")
+		CommandLine.display("/throw-error: Stash Full")
+		return false
 	if typeof(side) == TYPE_INT:
 		DisplayMecha.callv("set_" + str(type), [null,side])
 		ComparisonMecha.callv("set_" + str(type), [null,side])
 	else:
 		DisplayMecha.callv("set_" + str(type), [null])
 		ComparisonMecha.callv("set_" + str(type), [null])
-	Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
-	Profile.add_to_inventory($CurrentItemFrame.current_part)
-	
-	for child in PartList.get_children():
-		child.update_quantity(Profile.get_inventory()[child.current_part])
+	PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())
+
+	update_quantities(type)
 	$CurrentItemFrame.visible = false
 	$CurrentItemFrame.clear()
 	shoulder_weapon_check()
 	update_weight()
+	return true
+
+
+func update_quantities(type):
+	for child in PartList.get_children():
+		child.update_quantity(PlayerProgress.count_part(type, child.current_part))
 
 
 func unequip_core():
@@ -199,7 +206,7 @@ func reset_category_name(button):
 func exit():
 	if is_build_valid():
 		AudioManager.play_sfx("confirm")
-		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+		PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())
 		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 	else:
 		AudioManager.play_sfx("deny")
@@ -207,7 +214,7 @@ func exit():
 
 
 func _on_Category_pressed(type, group, side = false):
-	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
+	ComparisonMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 	if not category_visible:
 		current_group = group
 		var group_node = PartCategories.get_node(group)
@@ -234,7 +241,7 @@ func _on_Category_pressed(type, group, side = false):
 		var parts = PartManager.get_parts(type)
 		for child in PartList.get_children(): #Clear PartList
 			PartList.remove_child(child)
-		var inventory = Profile.get_inventory()
+		var inventory = PlayerProgress.get_owned_parts(type)
 		for part_key in inventory.keys(): #Parsing through a dictionary using super.values()
 			if parts.has(part_key):
 				var part = parts[part_key]
@@ -268,10 +275,14 @@ func _on_EquipmentButton_pressed():
 
 
 func _on_ItemFrame_pressed(part_name, type, side):
-	if not Profile.get_inventory().has(part_name) or Profile.get_inventory()[part_name] <= 0:
+	# Take the new part out of the stash first so its space is free for the
+	# part being swapped out.
+	if not PlayerProgress.remove_part(type, part_name, false):
 		AudioManager.play_sfx("deny_softer")
 		return
-	unequip_part(type, side)
+	if not unequip_part(type, side):
+		PlayerProgress.add_part(type, part_name, false)  # fits: its space was just freed
+		return
 	equip_part(part_name, type, side)
 
 

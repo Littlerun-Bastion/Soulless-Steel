@@ -37,15 +37,12 @@ var balance = 100000.0
 var region = "United Federation of America" ##United Federation of America, Northern Circle, Continental African Republic, Pacific Association of Nations
 
 func _ready():
-	if Profile.stats.current_mecha:
-		DisplayMecha.set_parts_from_design(Profile.stats.current_mecha)
-		ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
-	else:
-		default_loadout()
+	DisplayMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
+	ComparisonMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 	DisplayMecha.global_rotation = 0
 	ComparisonMecha.global_rotation = 0
 	LoadScreen.connect("load_pressed",Callable(self,"_LoadScreen_on_load_pressed"))
-	balance = Profile.get_stat("money")
+	balance = PlayerProgress.get_money()
 	$BalanceLabel.text = str(balance)
 	if BasketList.get_child_count() == 0:
 		$Basket/BottomSect/Button.disabled = true
@@ -74,35 +71,10 @@ func _input(event):
 			else:
 				confirm_purchase()
 	elif event.is_action_pressed("debug_1"):
-		balance += 10000000
+		PlayerProgress.add_money(10000000)
+		balance = PlayerProgress.get_money()
 		$BalanceLabel.text = str(balance)
 		recalculate_total()
-
-
-func default_loadout():
-	DisplayMecha.set_core("MSV-L3J-C")
-	DisplayMecha.set_generator("type_1_gen")
-	DisplayMecha.set_chipset("type_1_chip")
-	DisplayMecha.set_head("MSV-L3J-H")
-	DisplayMecha.set_chassis("MSV-L3J-L")
-	DisplayMecha.set_arm_weapon("MA-L127", SIDE.LEFT)
-	DisplayMecha.set_arm_weapon("MA-L127", SIDE.RIGHT)
-	DisplayMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
-	DisplayMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	DisplayMecha.set_shoulders("MSV-L3J-SG")
-	
-	ComparisonMecha.set_core("MSV-L3J-C")
-	ComparisonMecha.set_generator("type_1")
-	ComparisonMecha.set_chipset("type_1")
-	ComparisonMecha.set_head("MSV-L3J-H")
-	ComparisonMecha.set_chassis("MSV-L3J-L")
-	ComparisonMecha.set_arm_weapon("MA-L127", SIDE.LEFT)
-	ComparisonMecha.set_arm_weapon("MA-L127", SIDE.RIGHT)
-	ComparisonMecha.set_shoulder_weapon("CL1-Shoot", SIDE.RIGHT)
-	ComparisonMecha.set_shoulder_weapon(false, SIDE.LEFT)
-	ComparisonMecha.set_shoulders("MSV-M2-SG")
-	
-	shoulder_weapon_check()
 
 
 func show_category_button(parts, selected):
@@ -157,7 +129,7 @@ func add_to_basket(type, part_name):
 	CommandLine.display("market_basket_add_item_entry --" + str(part_name))
 	var item = PartManager.get_part(type, part_name)
 	var basket_item_entry = BASKET_ITEM.instantiate()
-	basket_item_entry.setup(item)
+	basket_item_entry.setup(item, type)
 	BasketList.add_child(basket_item_entry)
 	basket_item_entry.get_button().connect("pressed",Callable(self,"remove_from_basket").bind(basket_item_entry))
 	recalculate_total()
@@ -223,7 +195,7 @@ func reset_category_name(button):
 func exit():
 	AudioManager.play_sfx("back")
 	if is_build_valid():
-		Profile.set_stat("current_mecha", DisplayMecha.get_design_data())
+		PlayerProgress.set_current_mecha(DisplayMecha.get_design_data())
 		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 	else:
 		print("Build invalid")
@@ -241,19 +213,28 @@ func confirm_basket():
 	PurchaseComplete.visible = false
 
 
+# Parts go into the stash. Only parts that fit are charged for; the rest stay
+# in the basket.
 func confirm_purchase():
-	if balance >= basket_total:
-		balance -= basket_total
-		CommandLine.display("/market_escrow --ctg_amount(" + str(basket_total) + ")")
+	if PlayerProgress.can_afford(basket_total):
+		var spent := 0.0
+		var stash_full := false
 		for item in BasketList.get_children():
-			Profile.add_to_inventory(item.current_item.part_id)
+			if not PlayerProgress.add_part(item.part_type, item.current_item.part_id, false):
+				stash_full = true
+				continue
+			spent += item.get_price()
 			BasketList.remove_child(item)
 			item.queue_free()
+		PlayerProgress.spend_money(spent)  # also saves the stash
+		balance = PlayerProgress.get_money()
+		CommandLine.display("/market_escrow --ctg_amount(" + str(spent) + ")")
+		if stash_full:
+			CommandLine.display("/throw-error: Stash Full")
 		recalculate_total()
 		PurchaseConfirm.visible = false
 		PurchaseComplete.visible = true
 		$BalanceLabel.text = str(balance)
-		Profile.set_stat("money", balance)
 		AudioManager.play_sfx("confirm")
 	else:
 		AudioManager.play_sfx("keystrike")
@@ -266,7 +247,7 @@ func cancel_purchase():
 
 
 func _on_Category_pressed(type,group,side = false):
-	ComparisonMecha.set_parts_from_design(Profile.stats.current_mecha)
+	ComparisonMecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 	if not category_visible:
 		CommandLine.display("/market_parser --" + str(type))
 		current_group = group

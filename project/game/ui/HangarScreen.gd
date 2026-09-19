@@ -8,17 +8,13 @@ var stash_inventory: Inventory = null  # player’s stash / hangar inventory
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
 func _ready() -> void:
-	stash_inventory = Profile.get_stash_inventory()
+	stash_inventory = PlayerProgress.get_stash_inventory()
 
-	var design = Profile.stats.current_mecha
-	if design != null:
-		player_mecha.set_parts_from_design(design)
-	else:
-		push_warning("Hangar: Profile.stats.current_mecha is null, using default Mecha scene setup.")
+	player_mecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 
 	var core_size := _get_core_inventory_size()
 
-	var mech_inv: Inventory = Profile.get_mech_inventory()
+	var mech_inv: Inventory = PlayerProgress.get_mech_inventory()
 
 	if mech_inv.grid_width == 0 or mech_inv.grid_height == 0 or mech_inv.grid.is_empty():
 		# First-time setup
@@ -56,12 +52,9 @@ func _get_core_inventory_size() -> Array:
 func _on_BackButton_pressed() -> void:
 	var design = player_mecha.get_design_data()
 
-	Profile.set_stash_inventory(stash_inventory)
-	Profile.set_mech_inventory(player_mecha.mech_inventory)
-
-	Profile.set_stat("current_mecha", design)
-	
-	FileManager.save_profile()
+	PlayerProgress.set_stash_inventory(stash_inventory)
+	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
+	PlayerProgress.set_current_mecha(design)  # also saves the profile
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",
 		"Leaving Hangar..."

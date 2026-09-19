@@ -59,9 +59,8 @@ func _ready():
 				ConductPerformance.text = str(ArenaManager.last_match.conduct_downs_reward)
 			else:
 				$PayoutScreen/VBoxContainer/VBoxContainer2/HBoxContainer5.visible = false
-			var balance = Profile.get_stat("money") + ArenaManager.last_match.total_payout
-			Profile.set_stat("money", balance)
-			Balance.text = str(Profile.get_stat("money"))
+			# Payout was already credited by Arena on extraction.
+			Balance.text = str(PlayerProgress.get_money())
 			AmmoCost.text = str(ArenaManager.last_match.total_ammo_cost)
 			PayoutTotal.text = str(ArenaManager.last_match.total_payout)
 		ArenaManager.last_match_unread = false
@@ -86,8 +85,6 @@ func setup_leaderboards(lb_idx):
 
 func start_game(mode):
 	AudioManager.stop_bgm()
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
 	match mode:
 		"main":
 			ArenaManager.set_map_to_load("arena_oldgate")

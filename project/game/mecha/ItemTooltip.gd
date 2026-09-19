@@ -51,8 +51,8 @@ func show_item(stack: item_stack) -> void:
 		tags_text = ", ".join(tags_val)
 	else:
 		# Optional: for part stacks, fall back to part_type if no tags
-		if stack.kind == item_stack.ItemKind.PART and stack.part_type != "":
-			tags_text = str(stack.part_type).to_upper()
+		if stack.kind == item_stack.ItemKind.PART and stack.item_type != "":
+			tags_text = str(stack.item_type).to_upper()
 
 	type_label.text = tags_text
 

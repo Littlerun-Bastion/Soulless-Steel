@@ -46,8 +46,6 @@ func _input(event):
 
 func start_game(mode):
 	AudioManager.stop_bgm()
-	PlayerStatManager.NumberofExtracts = 0
-	PlayerStatManager.Credits = 0
 	match mode:
 		"main":
 			ArenaManager.set_map_to_load("arena_oldgate")

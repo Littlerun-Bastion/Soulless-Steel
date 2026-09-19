@@ -145,11 +145,11 @@ func _setup_exits() -> void:
 func _add_player() -> void:
 	player = PLAYER.instantiate()
 	Mechas.add_child(player)
-	# Player.setup() already restores Profile.stats.current_mecha as the
+	# Player.setup() already restores PlayerProgress' current mecha as the
 	# loadout (or falls back to the debug loadout). We additionally restore
 	# the saved mech inventory so cargo carries over from the hangar.
 	player.setup(self)
-	player.mech_inventory = Profile.get_mech_inventory()
+	player.mech_inventory = PlayerProgress.get_mech_inventory()
 	player.position = _player_start_position()
 	player.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 	player.connect("create_casing", Callable(self, "_on_mecha_create_casing"))

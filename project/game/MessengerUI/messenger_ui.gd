@@ -98,12 +98,12 @@ func add_contact(contact) -> void:
 	contacts.append(contact)
 	call_deferred("_build_contact_list")
 
-func has_contact(contact_name: String) -> bool:
-	return get_contact(contact_name) != null
+func has_contact(name_to_find: String) -> bool:
+	return get_contact(name_to_find) != null
 
-func get_contact(contact_name: String):
+func get_contact(name_to_find: String):
 	for contact in contacts:
-		if contact.name == contact_name:
+		if contact.name == name_to_find:
 			return contact
 	return null
 

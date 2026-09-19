@@ -270,14 +270,11 @@ func setup(arena_ref):
 	arena = arena_ref
 	mecha_name = "Player"
 	$MechaShadowGen.enabled = true
-	if PlayerStatManager.NumberofExtracts != 0:
-		hp = PlayerStatManager.PlayerHP
-		emit_signal("lost_health")
-	
+
 	if Debug.get_setting("debug_loadout"):
 		set_debug_loadout()
-	elif Profile.stats.current_mecha:
-		set_parts_from_design(Profile.stats.current_mecha)
+	elif PlayerProgress.get_current_mecha():
+		set_parts_from_design(PlayerProgress.get_current_mecha())
 	else:
 		push_warning("No design set for player, using the same as the debug loadout")
 		set_debug_loadout()

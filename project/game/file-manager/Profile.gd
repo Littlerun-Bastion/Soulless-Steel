@@ -30,17 +30,8 @@ var controls = {
 }
 
 
-var stats = {
-	"gameover": 0,
-	"current_mecha" : {
-		"head": "MSV-L3J-H", "core": "MSV-L3J-C", "shoulders": "MSV-L3J-SG",
-		"generator": "type_1_gen", "chipset": "type_2_chip", "chassis": "MSV-L3J-L",
-		"thruster": "type_1_thruster",
-		"arm_weapon_left": "MA-L127", "arm_weapon_right": "MA-L127",
-		"shoulder_weapon_left": false, "shoulder_weapon_right": false,
-	},
-	"money": 0,
-}
+# Player progress (money, mecha, inventories) lives in PlayerProgress and story
+# position in StoryDirector; this file only packs them into the save.
 
 var leaderboards = {
 	"civ-grade": [
@@ -61,9 +52,6 @@ var leaderboards = {
 }
 
 
-var stash_inventory: Inventory = null
-var mech_inventory: Inventory = null
-
 func get_locale_idx(locale):
 	var idx = 0
 	for lang in LANGUAGES:
@@ -83,11 +71,9 @@ func get_save_data():
 		"version": VERSION,
 		"options": options,
 		"controls": controls,
-		"stats": stats,
 		"leaderboards": leaderboards,
 		"debug": Debug.debug_settings,
-		"stash_inventory": _inventory_to_dict(stash_inventory),
-		"mech_inventory": _inventory_to_dict(mech_inventory),
+		"progress": PlayerProgress.get_save_data(),
 		"story": StoryDirector.get_save_data(),
 	}
 	
@@ -105,32 +91,25 @@ func set_save_data(data):
 	
 	set_data(data, "options", options)
 	set_data(data, "controls", controls)
-	set_data(data, "stats", stats)
 	set_data(data, "leaderboards", leaderboards)
 	# Debug settings are dev-only; don't load them from profile so code defaults
 	# in Debug.gd always win. (Still saved in get_save_data for inspection.)
 	#set_data(data, "debug", Debug.debug_settings)
-	
-	
-	if data.has("stash_inventory"):
-		stash_inventory = _inventory_from_dict(data["stash_inventory"])
+
+	if data.has("progress"):
+		PlayerProgress.set_save_data(data["progress"])
 	else:
-		stash_inventory = null
-	
+		PlayerProgress.set_save_data(PlayerProgress.migrate_legacy_save(data))
+
+	if data.has("story"):
+		StoryDirector.set_save_data(data["story"])
+
 	AudioManager.set_bus_volume(AudioManager.MASTER_BUS, options.master_volume)
 	AudioManager.set_bus_volume(AudioManager.BGM_BUS, options.bgm_volume)
 	AudioManager.set_bus_volume(AudioManager.SFX_BUS, options.sfx_volume)
 	
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
-
-	if data.has("mech_inventory"):
-		mech_inventory = _inventory_from_dict(data["mech_inventory"])
-	else:
-		mech_inventory = null
-
-	if data.has("story"):
-		StoryDirector.set_save_data(data["story"])
 
 func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):
@@ -188,130 +167,3 @@ func edit_control_action(action: String, keycode:int):
 	key.keycode = keycode
 	InputMap.action_erase_events(action)
 	InputMap.action_add_event(action, key)
-
-
-func get_stat(type):
-	assert(stats.has(type),"Not a valid stat: "+str(type))
-	return stats[type]
-
-
-func set_stat(type, value):
-	assert(stats.has(type),"Not a valid stat: "+str(type))
-	stats[type] = value
-	FileManager.save_profile()
-
-
-
-func get_stash_inventory() -> Inventory:
-	if stash_inventory == null:
-		# If no stash exists, create one
-		stash_inventory = Inventory.new()
-		stash_inventory.grid_width = 8
-		stash_inventory.grid_height = 20
-		stash_inventory.initialize_grid(stash_inventory.grid_width, stash_inventory.grid_height)
-	return stash_inventory
-
-func set_stash_inventory(inv: Inventory) -> void:
-	stash_inventory = inv
-
-func get_mech_inventory() -> Inventory:
-	if mech_inventory == null:
-		# If no mech inventory exists, create one
-		mech_inventory = Inventory.new()
-	return mech_inventory
-
-
-func set_mech_inventory(inv: Inventory) -> void:
-	mech_inventory = inv
-func _inventory_to_dict(inv: Inventory) -> Dictionary:
-	if inv == null:
-		return {}  # represent "no inventory" as empty dict
-
-	var data: Dictionary = {}
-	data["grid_width"] = inv.grid_width
-	data["grid_height"] = inv.grid_height
-
-	var items: Array = []
-
-	for y in range(inv.grid_height):
-		for x in range(inv.grid_width):
-			var cell = inv.grid[y][x]
-			var stack: item_stack = cell["stack"]
-			if stack == null:
-				continue
-
-			# Only serialize origin cells
-			if cell["origin_x"] != x or cell["origin_y"] != y:
-				continue
-
-			var entry: Dictionary = {}
-			entry["x"] = x
-			entry["y"] = y
-			entry["quantity"] = stack.quantity
-			entry["rotated"] = stack.rotated
-			entry["kind"] = stack.kind  # just store the enum integer
-
-			if stack.kind == item_stack.ItemKind.PART:
-				entry["part_type"] = stack.item_type
-				entry["part_name"] = stack.item_id
-			else:
-				var path := ""
-				if stack.item != null and stack.item.resource_path != "":
-					path = stack.item.resource_path
-				entry["item_path"] = path
-
-			items.append(entry)
-
-	data["items"] = items
-	return data
-
-
-func _inventory_from_dict(data) -> Inventory:
-	# Be defensive: old saves might have wrong types here.
-	if data == null:
-		return null
-	if typeof(data) != TYPE_DICTIONARY:
-		return null
-	if data.is_empty():
-		return null
-
-	var inv := Inventory.new()
-
-	var w: int = int(data.get("grid_width", 0))
-	var h: int = int(data.get("grid_height", 0))
-	if w <= 0 or h <= 0:
-		# No valid size, just return the empty inventory
-		return inv
-
-	inv.initialize_grid(w, h)
-
-	var items: Array = data.get("items", [])
-	for entry in items:
-		if typeof(entry) != TYPE_DICTIONARY:
-			continue
-
-		var stack := item_stack.new()
-		stack.quantity = int(entry.get("quantity", 1))
-		stack.rotated = bool(entry.get("rotated", false))
-
-		# Do NOT assume an ItemKind.ITEM constant exists
-		var kind_val := 0
-		if entry.has("kind"):
-			kind_val = int(entry["kind"])
-		stack.kind = kind_val as item_stack.ItemKind
-
-		if stack.kind == item_stack.ItemKind.PART:
-			stack.part_type = str(entry.get("part_type", ""))
-			stack.part_name = str(entry.get("part_name", ""))
-		else:
-			var item_path: String = entry.get("item_path", "")
-			if item_path != "":
-				var res = load(item_path)
-				if res != null:
-					stack.item = res
-
-		var x: int = int(entry.get("x", 0))
-		var y: int = int(entry.get("y", 0))
-		inv.place_item(stack, x, y)
-
-	return inv

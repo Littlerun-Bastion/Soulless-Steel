@@ -151,7 +151,7 @@ func setup_arena():
 func setup_inventory_layer(_player) -> void:
 	# Get the Control node that actually has the InventoryUI.gd script
 	# Wire up data refs
-	player.mech_inventory = Profile.get_mech_inventory()
+	player.mech_inventory = PlayerProgress.get_mech_inventory()
 
 func update_arena_cam(dt):
 	var speed = 4600*(ArenaCam.zoom.x/10.0)
@@ -212,7 +212,6 @@ func add_player():
 	player.connect("made_sound", Callable(self,"_on_mecha_made_sound"))
 	all_mechas.push_back(player)
 	PlayerHUD.setup(player, all_mechas)
-	player_ammo_set()
 	MechOS.set_player(player)
 
 
@@ -276,17 +275,6 @@ func get_random_position():
 		point = Vector2(randf_range(-w/2, w/2),\
 							randf_range(-h/2, h/2)) - $BG.position
 	return point
-
-
-func player_ammo_set():
-	if PlayerStatManager.NumberofExtracts > 0:
-		player.hp = PlayerStatManager.PlayerHP
-		player.set_ammo("arm_weapon_right", PlayerStatManager.RArmAmmo)
-		player.set_ammo("arm_weapon_left", PlayerStatManager.LArmAmmo)
-		player.set_ammo("shoulder_weapon_right", PlayerStatManager.RShoulderAmmo)
-		player.set_ammo("shoulder_weapon_left", PlayerStatManager.LShoulderAmmo)
-		$PlayerHUD.update_cursor()
-		$PlayerHUD.update_arsenal()
 
 
 func random_wind_sound():
@@ -471,7 +459,7 @@ func _on_player_mech_extracted(playerMech):
 		if player.get_max_ammo("shoulder_weapon_left") and player.get_ammo_cost("shoulder_weapon_left"):
 			left_shoulder_ammo_cost = (player.get_max_ammo("shoulder_weapon_left") - player.get_total_ammo("shoulder_weapon_left")) * player.get_ammo_cost("shoulder_weapon_left")
 		if Debug.get_setting("verbose_logging"):
-			print("Player Extracted! Kills: " + str(PlayerStatManager.PlayerKills))
+			print("Player Extracted! Kills: " + str(player_kills))
 		
 		var total_ammo_cost = right_arm_ammo_cost + left_arm_ammo_cost + right_shoulder_ammo_cost + left_shoulder_ammo_cost
 		
@@ -511,6 +499,9 @@ func _on_player_mech_extracted(playerMech):
 			"total_ammo_cost": total_ammo_cost,
 		}
 		if ArenaManager.mode == "Exhibition" or ArenaManager.mode == "Challenge":
+			# Credit now, not when the Ladder screen opens, so the payout can't
+			# depend on UI. Ladder only displays last_match.
+			PlayerProgress.add_money(total_payout)
 			TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Downloading Data...")
 			ArenaManager.last_match_unread = true
 		elif ArenaManager.mode == "Tutorial":

@@ -143,10 +143,15 @@ func _setup_heatmap() -> void:
 # an exit area starts the extract timer, and leaving cancels.
 func _setup_exits() -> void:
 	for exit in get_tree().get_nodes_in_group("exit_point"):
-		if not exit.is_connected("mecha_extracting", Callable(self, "_on_exit_mecha_extracting")):
-			exit.connect("mecha_extracting", Callable(self, "_on_exit_mecha_extracting"))
-		if not exit.is_connected("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled")):
-			exit.connect("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled"))
+		_connect_exit(exit)
+
+
+# Safe to call more than once for the same exit.
+func _connect_exit(exit) -> void:
+	if not exit.is_connected("mecha_extracting", Callable(self, "_on_exit_mecha_extracting")):
+		exit.connect("mecha_extracting", Callable(self, "_on_exit_mecha_extracting"))
+	if not exit.is_connected("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled")):
+		exit.connect("extracting_cancelled", Callable(self, "_on_exit_extracting_cancelled"))
 
 
 # ---- Arena interface (read by Player.gd / Enemy.gd / behaviours) ----
@@ -477,13 +482,16 @@ func _prewarm_fx() -> void:
 	# live inside every mecha and first emit on first DAMAGE — movement
 	# particles warm naturally as NPCs walk, but these compile right when
 	# the first brawl starts. Force-emit the player's set for the same
-	# window (the intro transition hides it), then switch them back off.
+	# window (the intro transition hides it), then restore each one to what
+	# it was doing before (some, like the dash-cooldown sparks, start on).
 	# The pooled casing emitter ($Casings) has the same first-use profile.
 	var warmed_particles: Array = []
 	if player:
 		_collect_particles(player, warmed_particles)
 	_collect_particles($Casings, warmed_particles)
+	var was_emitting := {}
 	for p in warmed_particles:
+		was_emitting[p] = p.emitting
 		p.emitting = true
 
 	# A few frames so the render thread finishes the pipeline compiles.
@@ -492,7 +500,7 @@ func _prewarm_fx() -> void:
 
 	for p in warmed_particles:
 		if is_instance_valid(p):
-			p.emitting = false
+			p.emitting = was_emitting[p]
 	holder.queue_free()
 
 

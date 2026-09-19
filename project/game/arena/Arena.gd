@@ -32,6 +32,10 @@ func _ready():
 		add_enemy(enemy_design, 1)
 
 	_setup_exits()
+	# Also wire the map's exits directly (as Arena always did), so extraction
+	# doesn't depend on the "exit_point" group surviving duplicate().
+	for exit in $Exits.get_children():
+		_connect_exit(exit)
 
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)

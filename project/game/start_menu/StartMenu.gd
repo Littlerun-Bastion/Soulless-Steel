@@ -116,10 +116,16 @@ func _setup_test_contact() -> void:
 	# Story hooks for manual testing — press F7 to print story state.
 	mission.story_effects = {"flags": {"test_volk_contract_done": true}}
 
-	contact.add_reply_option("I'm in.", [], mission,
+	# Only offered once the contract has been completed. It's both a follow-up
+	# to "I'm in." (picking a reply replaces the pending ones) and a top-level
+	# reply (for after a restart, when the contact is rebuilt).
+	var more_work := {
+		"text": "Got any more work?",
+		"next_replies": [],
+		"requires": {"flags": {"test_volk_contract_done": true}},
+	}
+	contact.add_reply_option("I'm in.", [more_work], mission,
 			{"flags": {"test_volk_contract_accepted": true}})
 	contact.add_reply_option("Not interested.")
-	# Only offered once the contract above has been completed.
-	contact.add_reply_option("Got any more work?", [], null, {},
-			{"flags": {"test_volk_contract_done": true}})
+	contact.pending_replies.append(more_work)
 	MessengerUI.add_contact(contact)

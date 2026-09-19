@@ -21,7 +21,7 @@ extends Node
 #   - MissionData.story_effects       applied when MissionManager completes it
 #   - messenger reply "story_effects" applied when the player picks the reply
 #   - messenger reply "requires"      hides the reply until conditions are met
-#   - map_trigger named "story:..."   routed by Arena and Expedition, see handle_trigger()
+#   - map_trigger named "story:..."   routed by CombatScene (Arena and Expedition), see handle_trigger()
 #
 # Testing:
 #   - debug_7 (F7) prints the current story state

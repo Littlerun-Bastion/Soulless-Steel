@@ -1200,14 +1200,17 @@ func set_core(part_name):
 			"disabled": false
 		}
 	
-	# CHANGED: replaced initialize_grid with resize_and_migrate to preserve items
+	# Size cargo to the core. Same rules as HangarScreen: a never-sized grid
+	# is initialised; an existing one is only repacked when the size actually
+	# changes (resize_and_migrate re-places every item, which would shuffle
+	# the player's layout and can drop items that only fit their arrangement).
+	var cargo = build.core.cargo_space
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
-		var cargo = build.core.cargo_space  # MOVED: cargo declaration inside if block
+	if mech_inventory.grid_width == 0 or mech_inventory.grid_height == 0 or mech_inventory.grid.is_empty():
 		mech_inventory.initialize_grid(cargo[0], cargo[1])
-	else:
-		var cargo = build.core.cargo_space  
-		mech_inventory.resize_and_migrate(cargo[0], cargo[1])  
+	elif mech_inventory.grid_width != cargo[0] or mech_inventory.grid_height != cargo[1]:
+		mech_inventory.resize_and_migrate(cargo[0], cargo[1])
 		
 	# Derive internal thermal capacity from coolant
 	if build.core.coolant_type:

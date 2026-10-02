@@ -93,11 +93,12 @@ func _on_player_lost_health() -> void:
 func _add_player() -> void:
 	player = PLAYER.instantiate()
 	Mechas.add_child(player)
-	# Player.setup() already restores PlayerProgress' current mecha as the
-	# loadout (or falls back to the debug loadout). We additionally restore
-	# the saved mech inventory so cargo carries over from the hangar.
-	player.setup(self)
+	# Hand over the saved cargo BEFORE setup: setup() equips the current
+	# mecha, and equipping the core sizes mech_inventory to its cargo space
+	# (keeping what's inside). Assigning it afterwards left a never-sized
+	# (0x0) cargo for players who hadn't opened the Hangar yet.
 	player.mech_inventory = PlayerProgress.get_mech_inventory()
+	player.setup(self)
 	player.position = _player_start_position()
 	_connect_mecha_signals(player)
 	player.connect("lost_health", Callable(self, "_on_player_lost_health"))

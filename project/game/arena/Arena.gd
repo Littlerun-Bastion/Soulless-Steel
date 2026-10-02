@@ -45,7 +45,6 @@ func _ready():
 
 	if Debug.get_setting("use_debug_cam"):
 		activate_debug_cam()
-	setup_inventory_layer(player)
 	_setup_mission()
 
 	if is_tutorial:
@@ -97,15 +96,12 @@ func setup_arena():
 
 	$NavigationPolygon.navpoly = arena_data.get_navigation_polygon()
 
-func setup_inventory_layer(_player) -> void:
-	# Get the Control node that actually has the InventoryUI.gd script
-	# Wire up data refs
-	player.mech_inventory = PlayerProgress.get_mech_inventory()
-
-
 func add_player():
 	player = PLAYER.instantiate()
 	Mechas.add_child(player)
+	# Saved cargo goes in BEFORE setup so equipping the core sizes it
+	# (see Expedition._add_player for the full story).
+	player.mech_inventory = PlayerProgress.get_mech_inventory()
 	player.setup(self)
 	player.position = get_start_position(0)
 	_connect_mecha_signals(player)

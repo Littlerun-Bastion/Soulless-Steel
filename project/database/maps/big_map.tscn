@@ -1,13 +1,22 @@
-[gd_scene load_steps=4 format=3 uid="uid://btestbigmap00001"]
+[gd_scene load_steps=10 format=3 uid="uid://btestbigmap00001"]
 
 [ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="1_map"]
 [ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="2_start"]
 [ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="3_exit"]
+[ext_resource type="PackedScene" uid="uid://tv5db4m62wwu" path="res://game/mecha/LootContainer.tscn" id="4_loot"]
+[ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="5_lootentry"]
+[ext_resource type="Resource" uid="uid://coshyiwvfrj5r" path="res://database/loot-tables/test_table.tres" id="6_testtable"]
+[ext_resource type="Resource" uid="uid://7hhseaxopa1d" path="res://database/items/test/TestItem.tres" id="7_testitem"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_BigMap"]
 vertices = PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)])
+
+[sub_resource type="Resource" id="LootEntry_TestItem"]
+script = ExtResource("5_lootentry")
+item = ExtResource("7_testitem")
+quantity = 1
 
 [node name="BigMap" type="Node2D"]
 script = ExtResource("1_map")
@@ -19,6 +28,15 @@ script = ExtResource("1_map")
 ; Mirrors arena_oldgate's structure so Map.gd's getters all work.
 [node name="Bushes" type="Node2D" parent="."]
 [node name="Props" type="Node2D" parent="."]
+
+; TEST: loot container next to the player spawn (Pos1 at 0,0) for trying the
+; container -> cargo drag flow. Press G next to it. Holds both test items
+; (2x2 head, 1x3 weapon). Remove once wrecks provide real loot.
+[node name="TestLootContainer" parent="Props" instance=ExtResource("4_loot")]
+position = Vector2(700, 0)
+scale = Vector2(0.5, 0.5)
+default_contents = Array[ExtResource("5_lootentry")]([ExtResource("6_testtable"), SubResource("LootEntry_TestItem")])
+
 [node name="Walls" type="Node2D" parent="."]
 [node name="Trees" type="Node2D" parent="."]
 [node name="Buildings" type="Node2D" parent="."]

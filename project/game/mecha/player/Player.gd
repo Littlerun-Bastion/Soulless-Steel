@@ -26,6 +26,7 @@ var invert_controls = {
 }
 var current_open_container: LootContainer = null
 
+var _awaiting_release := {} #For weapons that were firing, shooting is paused when crosshair goes away for pointer. Shooting resumed when crosshair comes back.
 func _ready():
 	super()
 	
@@ -34,7 +35,7 @@ func _ready():
 		Cam.zoom = Vector2(zoom, zoom)
 	else:
 		Cam.zoom = DEFAULT_CAM_ZOOM 
-
+	MouseManager.cursor_mode_changed.connect(_on_cursor_mode_changed)
 
 func _physics_process(dt):
 	if paused:
@@ -46,8 +47,8 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	if not controls_locked and not is_inventory_open():
-		check_input()	
+	if not controls_locked:
+		check_input()
 	apply_movement(dt, get_input())
 	
 	#Update sprinting timer
@@ -56,10 +57,13 @@ func _physics_process(dt):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 	
-	if not get_locked_to() and not is_inventory_open():# and movement_type != "tank":
+	if not get_locked_to():
 		var target_pos = get_global_mouse_position()
 		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-			apply_rotation_by_point(dt, target_pos, Input.is_action_pressed("strafe"))
+			# POINTER (Alt) locks the body; head, shoulders and arms keep
+			# tracking within their rotation ranges.
+			var lock_body: bool = Input.is_action_pressed("strafe") or not MouseManager.is_aiming()
+			apply_rotation_by_point(dt, target_pos, lock_body)
 		rotate_sight(dt, target_pos)
 		
 	update_camera_zoom(dt)
@@ -93,16 +97,13 @@ func _input(event):
 		current_open_container = null
 		get_viewport().set_input_as_handled()
 		return
-	
-	if is_inventory_open():
-		return
 
-	if event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left:
+	if event.is_action_pressed("arm_weapon_left_shoot") and build.arm_weapon_left and MouseManager.is_aiming():
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponLeft.reload()
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponLeft.reloading:
 			shoot("arm_weapon_left")
-	elif event.is_action_pressed("arm_weapon_right_shoot") and build.arm_weapon_right:
+	elif event.is_action_pressed("arm_weapon_right_shoot") and build.arm_weapon_right and MouseManager.is_aiming():
 		if cur_mode == MODES.RELOAD:
 			$ArmWeaponRight.reload()
 		elif cur_mode == MODES.NEUTRAL and not $ArmWeaponRight.reloading:
@@ -259,12 +260,14 @@ func check_input():
 func check_weapon_input(weapon_name):
 	var node = get_weapon_part(weapon_name)
 	var weapon_ref = build[weapon_name]
-	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and\
-	not node.reloading and Input.is_action_pressed(weapon_name+"_shoot"):
-		shoot(weapon_name, true)
-	if not Input.is_action_pressed(weapon_name+"_shoot"):
+	if not Input.is_action_pressed(weapon_name + "_shoot"):
+		_awaiting_release.erase(weapon_name)
 		stop_shooting(weapon_name)
-
+		return
+	if _awaiting_release.has(weapon_name):
+		return
+	if weapon_ref and weapon_ref.auto_fire and cur_mode == MODES.NEUTRAL and not node.reloading:
+		shoot(weapon_name, true)
 
 func setup(arena_ref):
 	arena = arena_ref
@@ -361,6 +364,24 @@ func exited_building():
 	super.exited_building()
 	emit_signal("update_building_status", false)
 
+func shoot(type, is_auto_fire = false):
+	if not MouseManager.is_aiming():
+		return
+	super.shoot(type, is_auto_fire)
+
+
+func _on_cursor_mode_changed(_mode) -> void:
+	if MouseManager.is_aiming():
+		for weapon_type in WeaponSFXs.keys():
+			if Input.is_action_pressed(weapon_type + "_shoot"):
+				_awaiting_release[weapon_type] = true
+	else:
+		for weapon_type in WeaponSFXs.keys():
+			stop_shooting(weapon_type)
+		if cur_mode == MODES.ACTIVATING_LOCK:
+			locking_to = false
+			cur_mode = MODES.NEUTRAL
+			emit_signal("update_lock_mode", false)
 
 # CALLBACKS
 
@@ -371,6 +392,3 @@ func _on_finished_reloading():
 
 func _on_reloading(reload_time, side):
 	emit_signal("reloading", reload_time, side)
-
-func is_inventory_open() -> bool:
-	return not MechOS.open_windows.is_empty()

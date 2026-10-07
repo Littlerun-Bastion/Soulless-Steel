@@ -108,8 +108,7 @@ func add_player():
 	player.connect("lost_health", Callable(self,"_on_player_lost_health"))
 	player.connect("mecha_extracted", Callable(self,"_on_player_mech_extracted"))
 	all_mechas.push_back(player)
-	PlayerHUD.setup(player, all_mechas)
-	MechOS.set_player(player)
+	_register_player()
 
 
 func add_enemy(design_data, enemy_name):

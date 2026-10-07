@@ -105,11 +105,7 @@ func _add_player() -> void:
 	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
 	all_mechas.append(player)
 	# Player.tscn has its own Camera2D — no extra setup needed
-
-	# Wire up the HUD (reload progress circle, lock-on, lifebar, etc.)
-	PlayerHUD.setup(player, all_mechas)
-	# Let MechOS know about the player so its windows can operate on the mech.
-	MechOS.set_player(player)
+	_register_player()
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:

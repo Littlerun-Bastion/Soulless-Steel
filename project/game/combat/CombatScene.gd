@@ -614,3 +614,13 @@ func _update_enemies_debug_navigation() -> void:
 				target.texture = NAV_TARGET_SPRITE
 				target.global_position = target_pos
 				DebugNavigation.add_child(target)
+
+# Run HUD and OS setups
+func _register_player() -> void:
+	PlayerHUD.setup(player, all_mechas)
+	MechOS.set_player(player)
+	MouseManager.set_aim_available(true)
+
+
+func _exit_tree() -> void:
+	MouseManager.reset()

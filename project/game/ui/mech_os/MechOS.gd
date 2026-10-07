@@ -24,23 +24,23 @@ func _ready() -> void:
 	add_child(drag_manager)
 	drag_manager.setup(drag_layer)
 	_register_apps()
+	MouseManager.cursor_mode_changed.connect(_on_cursor_mode_changed)
+	_on_cursor_mode_changed(MouseManager.cursor_mode)
 
-func _process(_delta: float) -> void:
-	if not is_active:
-		return
+#func _process(_delta: float) -> void:
+#	if not is_active:
+#		return
+#	
+#	var was_over := mouse_over_window
+##	mouse_over_window = _is_mouse_over_any_window()
 	
-	var was_over := mouse_over_window
-	mouse_over_window = _is_mouse_over_any_window()
-	
-	if mouse_over_window and not was_over:
-		MouseManager.show_cursor()
-	elif not mouse_over_window and was_over:
-		MouseManager.hide_cursor()
+#	if mouse_over_window and not was_over:
+##		MouseManager.show_cursor()
+#	elif not mouse_over_window and was_over:
+#		MouseManager.hide_cursor()
 
-
-	
 func _input(event: InputEvent) -> void:
-	if not is_active:
+	if not is_active or MouseManager.is_aiming():
 		return
 	if drag_manager.handle_input(event):
 		get_viewport().set_input_as_handled()
@@ -125,17 +125,17 @@ func set_active(active: bool) -> void:
 	visible = active
 	if not active:
 		close_all()
-		if mouse_over_window:
-			mouse_over_window = false
-			MouseManager.hide_cursor()
+		#if mouse_over_window:
+		#	mouse_over_window = false
+		#	MouseManager.hide_cursor()
 
 
 func close_all() -> void:
 	for app_id in open_windows.keys():
 		close_app(app_id)
-	if mouse_over_window:
-		mouse_over_window = false
-		MouseManager.hide_cursor()
+	#if mouse_over_window:
+	#	mouse_over_window = false
+	#	MouseManager.hide_cursor()
 		
 
 func _is_mouse_over_any_window() -> bool:
@@ -203,3 +203,10 @@ func open_equipment(mecha: Mecha) -> MechWindow:
 	
 func set_player(player: Node) -> void:
 	player_ref = player
+
+# In AIM the mouse belongs to the mech: windows and taskbar ignore it.
+func _on_cursor_mode_changed(_mode) -> void:
+	var behaviour := Control.MOUSE_BEHAVIOR_DISABLED if MouseManager.is_aiming() \
+		else Control.MOUSE_BEHAVIOR_INHERITED
+	window_layer.mouse_behavior_recursive = behaviour
+	taskbar.mouse_behavior_recursive = behaviour

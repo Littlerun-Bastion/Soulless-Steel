@@ -27,7 +27,8 @@ var lock_reticle_size := 5
 
 
 func _ready():
-	MouseManager.hide_cursor()
+	MouseManager.cursor_mode_changed.connect(_on_cursor_mode_changed)
+	visible = MouseManager.is_aiming()
 	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload]:
 		set_alpha(node, 1.0)
 	for node in [ReloadLabel, ChangeModeProgress]:
@@ -153,3 +154,7 @@ func reloading(reload_time, side):
 	
 	weapon_node.show()
 	reload_node.hide()
+	
+	
+func _on_cursor_mode_changed(_mode) -> void:
+	visible = MouseManager.is_aiming()

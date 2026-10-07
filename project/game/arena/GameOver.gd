@@ -7,7 +7,7 @@ func _ready():
 
 
 func enable():
-	MouseManager.show_cursor()
+	MouseManager.force_pointer(true)
 	$SubViewportContainer.visible = true
 	ShaderEffects.reset_shader_effect("gameover")
 	ReturnButton.disabled = false

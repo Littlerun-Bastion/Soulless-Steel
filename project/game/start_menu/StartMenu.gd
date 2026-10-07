@@ -17,7 +17,6 @@ func _ready():
 		Debug.window_debug_mode()
 	
 	randomize()
-	MouseManager.show_cursor()
 	ShaderEffects.reset_shader_effect("main_menu")
 	$AnimationPlayer.play("Typewrite")
 	AudioManager.play_bgm("main-menu")

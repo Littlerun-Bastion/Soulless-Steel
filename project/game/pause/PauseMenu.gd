@@ -17,7 +17,7 @@ func is_paused():
 
 
 func enable():
-	MouseManager.show_cursor()
+	MouseManager.force_pointer(true)
 	ShaderEffects.play_transition(0, 1000, 2.0)
 	ResumeButton.disabled = false
 	QuitButton.disabled = false
@@ -37,7 +37,7 @@ func toggle_pause():
 		enable()
 	else:
 		AudioManager.play_sfx("unpause")
-		MouseManager.hide_cursor()
+		MouseManager.force_pointer(false)
 		disable()
 	
 	emit_signal("pause_toggle", $SubViewportContainer.visible)

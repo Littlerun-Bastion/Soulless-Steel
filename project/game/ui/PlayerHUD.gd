@@ -211,7 +211,8 @@ func set_extracting(value: bool) -> void:
 
 
 func set_pause(value):
-	Cursor.visible = not value
+	#Cursor.visible = not value
+	pass
 
 
 func setup_lifebar():

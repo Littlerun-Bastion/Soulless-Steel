@@ -68,7 +68,7 @@ func handle_input(event: InputEvent) -> bool:
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		if event.pressed and dragging_stack != null:
-			_cancel_drag()
+			cancel_drag()
 			return true
 	
 	if event is InputEventMouseMotion and dragging_stack != null:
@@ -314,7 +314,7 @@ func start_drag_from_equipment(stack: item_stack, slot: PartSlot, _equip_window)
 	_create_drag_visuals(stack)
 	_update_drag_visual()
 
-func _cancel_drag() -> void:
+func cancel_drag() -> void:
 	if dragging_stack == null:
 		return
 	_revert_drag()

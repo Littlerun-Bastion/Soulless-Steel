@@ -38,7 +38,7 @@ const LEADERBOARDS =[
 var selected_challenger
 
 func _ready():
-	MouseManager.show_cursor()
+	#MouseManager.show_cursor()
 	setup_leaderboards(1)
 	if ArenaManager.last_match_unread:
 		if ArenaManager.last_match:

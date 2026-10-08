@@ -111,8 +111,11 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
 	elif event.is_action_pressed("escape") and player:
-		MechOS.close_all()
-		PauseMenu.toggle_pause()
+		if MechOS.context_menu.is_open():
+			MechOS.context_menu.close()
+		else:
+			MechOS.close_all()
+			PauseMenu.toggle_pause()
 	elif event.is_action_pressed("debug_1"):
 		activate_debug_cam()
 	elif event.is_action_pressed("debug_2"):
@@ -623,4 +626,5 @@ func _register_player() -> void:
 
 
 func _exit_tree() -> void:
+	MechOS.close_all()
 	MouseManager.reset()

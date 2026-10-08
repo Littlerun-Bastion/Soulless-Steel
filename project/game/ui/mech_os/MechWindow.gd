@@ -151,3 +151,9 @@ func set_focused(is_focused: bool) -> void:
 	else:
 		title_bar.add_theme_stylebox_override("panel", titlebar_unfocused_style)
 		title_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 1.0))
+
+# Right-clicking the title bar targets the window
+func get_context_target(global_pos: Vector2) -> Dictionary:
+	if title_bar.get_global_rect().has_point(global_pos):
+		return {"type": "window", "target": self}
+	return {}

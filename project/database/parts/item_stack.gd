@@ -73,6 +73,20 @@ func _get_size_from_item() -> Vector2i:
 
 
 
+# Weight of one item in this stack. Parts are resolved through PartManager
+# like _get_size_from_item, so a weapon in cargo weighs what the weapon does.
+func get_unit_weight() -> float:
+	var source = item
+	if source == null and kind == ItemKind.PART and item_type != "" and item_id != "":
+		source = PartManager.get_part(item_type, item_id)
+	if source == null or not source.has_method("get"):
+		return 0.0
+	var w = source.get("weight")
+	if typeof(w) == TYPE_FLOAT or typeof(w) == TYPE_INT:
+		return float(w)
+	return 0.0
+
+
 func _get_int_prop(name: String, default_val: int) -> int:
 	if item == null or not item.has_method("get"):
 		return default_val

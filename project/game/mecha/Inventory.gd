@@ -64,8 +64,8 @@ func get_current_weight() -> float:
 		for x in range(grid_width):
 			var cell = grid[y][x]
 			var stack: item_stack = cell["stack"]
-			if stack and stack.item and cell["origin_x"] == x and cell["origin_y"] == y:
-				total += stack.item.weight * stack.quantity
+			if stack and cell["origin_x"] == x and cell["origin_y"] == y:
+				total += stack.get_unit_weight() * stack.quantity
 	return total
 
 
@@ -172,6 +172,87 @@ func add_stacks_bulk(stacks: Array) -> Array:
 			overflow.append(stack)
 	return overflow
 	
+# ---- Moving stacks between inventories (looting) ----
+
+# Every stack, once each (origin cells only).
+func get_stacks() -> Array:
+	var stacks: Array = []
+	for y in range(grid_height):
+		for x in range(grid_width):
+			var cell = grid[y][x]
+			if cell["stack"] != null and cell["origin_x"] == x and cell["origin_y"] == y:
+				stacks.append(cell["stack"])
+	return stacks
+
+
+func is_empty() -> bool:
+	return get_stacks().is_empty()
+
+
+# First free spot for the stack as it's currently rotated, or (-1, -1).
+func find_free_slot(stack: item_stack) -> Vector2i:
+	for y in range(grid_height):
+		for x in range(grid_width):
+			if item_fits_at(stack, x, y):
+				return Vector2i(x, y)
+	return Vector2i(-1, -1)
+
+
+# Whether the stack fits somewhere, either way round. Changes nothing.
+func has_room_for(stack: item_stack) -> bool:
+	if find_free_slot(stack).x >= 0:
+		return true
+	stack.rotated = not stack.rotated
+	var fits := find_free_slot(stack).x >= 0
+	stack.rotated = not stack.rotated
+	return fits
+
+
+# Like add_stack_to_first_available_slot, but turns the stack if that's the
+# only way it fits.
+func add_stack_anywhere(stack: item_stack) -> bool:
+	if add_stack_to_first_available_slot(stack):
+		return true
+	stack.rotated = not stack.rotated
+	if add_stack_to_first_available_slot(stack):
+		return true
+	stack.rotated = not stack.rotated
+	return false
+
+
+# Moves one stack from this inventory into target. Leaves it where it was
+# (same spot, same rotation) when target has no room.
+func transfer_stack_to(stack: item_stack, target: Inventory) -> bool:
+	var origin := _find_origin(stack)
+	if origin.x < 0 or target == null:
+		return false
+	var was_rotated := stack.rotated
+	remove_item_stack(stack)  # before rotating: removal uses the current size
+	if target.add_stack_anywhere(stack):
+		return true
+	stack.rotated = was_rotated
+	place_item(stack, origin.x, origin.y)
+	return false
+
+
+# Moves every stack that fits into target; returns how many moved.
+func transfer_all_to(target: Inventory) -> int:
+	var moved := 0
+	for stack in get_stacks():
+		if transfer_stack_to(stack, target):
+			moved += 1
+	return moved
+
+
+func _find_origin(stack: item_stack) -> Vector2i:
+	for y in range(grid_height):
+		for x in range(grid_width):
+			var cell = grid[y][x]
+			if cell["stack"] == stack:
+				return Vector2i(cell["origin_x"], cell["origin_y"])
+	return Vector2i(-1, -1)
+
+
 # Convenience version that takes item_data + quantity pairs
 # Each entry: { "item": item_data, "quantity": int }
 func add_items_bulk(entries: Array) -> Array:

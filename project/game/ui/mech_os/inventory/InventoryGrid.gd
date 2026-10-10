@@ -48,6 +48,17 @@ func refresh() -> void:
 	call_deferred("_layout_grid_border")
 
 
+# Right-click (see MechOS context menu): on an item targets that item
+# ("item"); on empty grid space, the whole inventory ("inventory").
+func get_context_target(global_pos: Vector2) -> Dictionary:
+	if inventory == null or not grid_frame.get_global_rect().has_point(global_pos):
+		return {}
+	var info := get_stack_at_mouse()
+	if not info.is_empty():
+		return {"type": "item", "stack": info["stack"], "inventory": inventory, "grid": self}
+	return {"type": "inventory", "inventory": inventory, "grid": self}
+
+
 func is_mouse_over() -> bool:
 	var mouse_pos := get_viewport().get_mouse_position()
 	return grid_frame.get_global_rect().has_point(mouse_pos)

@@ -168,7 +168,7 @@ func _unhandled_input(event: InputEvent) -> void:
 					if mech_win != null:
 						mech_win.position = Vector2(80, (screen_size.y - mech_win.size.y) * 0.5)
 				
-				var container_win = MechOS.open_inventory("container", thing.inventory, "CONTAINER")
+				var container_win = MechOS.open_inventory("container", thing.inventory, thing.display_name)
 				if container_win != null:
 					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
 				

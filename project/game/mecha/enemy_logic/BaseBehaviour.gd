@@ -670,7 +670,7 @@ func _find_loot_target(enemy):
 	for container in containers:
 		if not is_instance_valid(container):
 			continue
-		if container.is_open:
+		if container.is_open or container.npc_searched:
 			continue
 		var dist = enemy.global_position.distance_to(container.global_position)
 		if dist < search_range and dist < best_dist:

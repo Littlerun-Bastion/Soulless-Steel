@@ -10,6 +10,7 @@ signal closed(container)
 @export var grid_height: int = 4
 @export var persistent: bool = true
 @export var container_id: String = ""  # for save/load later
+@export var display_name: String = "CONTAINER"  # Mech OS window title
 @export var default_contents: Array[LootEntry] = []
 # Optional random contents, added after default_contents: loot_rolls items
 # rolled from loot_table when the container is created.
@@ -17,7 +18,10 @@ signal closed(container)
 @export var loot_rolls: int = 0
 
 var inventory: Inventory = null
-var is_open: bool = false
+var is_open: bool = false  # the player has it open in Mech OS
+# An NPC has already been over to it (see BaseBehaviour loot state). NPCs only
+# look for now — they don't take anything — so this just stops repeat visits.
+var npc_searched: bool = false
 
 @onready var interact_area: Area2D = $InteractArea
 
@@ -39,8 +43,13 @@ func _init_inventory() -> void:
 	if loot_table != null and loot_rolls > 0:
 		populate_stacks(loot_table.roll_stacks(loot_rolls))
 
-# Called by the player when they press the interact key
-func interact(_player: Node) -> void:
+# Called by the player when they press the interact key, and by NPCs that
+# reach it while looting. An NPC visit used to set is_open and nothing closed
+# it again, leaving the container stuck "open".
+func interact(by: Node) -> void:
+	if by != null and by.has_method("is_player") and not by.is_player():
+		npc_searched = true
+		return
 	if is_open:
 		return
 	is_open = true

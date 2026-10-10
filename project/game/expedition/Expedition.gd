@@ -29,7 +29,15 @@ extends "res://game/combat/CombatScene.gd"
 
 const QUIT_WARNING := "Quitting abandons the expedition: your mecha and everything in its cargo will be lost."
 
+# Destroyed NPCs leave a Wreck holding salvage (WreckLoot decides what).
+# The oldest wrecks nobody has open are removed past MAX_WRECKS, so a long
+# run with respawns doesn't pile them up.
+const WRECK = preload("res://game/mecha/Wreck.tscn")
+const MAX_WRECKS := 12
+
 @onready var ExpeditionDirector = $ExpeditionDirector
+
+var Wrecks: Node2D
 
 
 func _ready() -> void:
@@ -42,6 +50,7 @@ func _ready() -> void:
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
 	_setup_exits()
 	_setup_triggers()
+	_setup_wrecks()
 	_add_player()
 	_setup_heatmap()
 	_begin_stakes()
@@ -86,10 +95,13 @@ func _setup_triggers() -> void:
 
 # ---- CombatScene hooks ----
 
-# Tell ExpeditionDirector before removal so it can attribute the kill.
+# Tell ExpeditionDirector before removal so it can attribute the kill, and
+# leave a wreck for NPCs (the player's mecha is simply lost).
 func _before_mecha_removed(mecha) -> void:
 	if ExpeditionDirector:
 		ExpeditionDirector.notify_mecha_died(mecha)
+	if mecha != player:
+		_spawn_wreck(mecha)
 
 
 func _on_player_lost_health() -> void:
@@ -102,6 +114,38 @@ func _on_player_lost_health() -> void:
 func _on_player_destroyed() -> String:
 	PlayerProgress.lose_expedition(PlayerProgress.LOSS_DESTROYED)
 	return PlayerProgress.format_loss_report(PlayerProgress.take_loss_report())
+
+
+# ---- Wrecks ----
+
+# Drawn under the mechas (sibling order), above the map.
+func _setup_wrecks() -> void:
+	Wrecks = Node2D.new()
+	Wrecks.name = "Wrecks"
+	add_child(Wrecks)
+	move_child(Wrecks, Mechas.get_index())
+
+
+func _spawn_wreck(mecha) -> void:
+	var wreck = WRECK.instantiate()
+	wreck.position = mecha.global_position
+	wreck.setup(mecha.mecha_name, WreckLoot.roll(mecha.get_design_data()))
+	wreck.copy_mecha_visuals(mecha)
+	Wrecks.add_child(wreck)
+	_trim_wrecks()
+
+
+# Oldest first (child order); never removes one the player has open.
+func _trim_wrecks() -> void:
+	var wrecks := Wrecks.get_children().filter(func(w): return not w.is_queued_for_deletion())
+	var excess := wrecks.size() - MAX_WRECKS
+	for wreck in wrecks:
+		if excess <= 0:
+			break
+		if wreck.is_open:
+			continue
+		wreck.queue_free()
+		excess -= 1
 
 
 # ---- Stakes ----

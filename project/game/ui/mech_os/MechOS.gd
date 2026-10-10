@@ -312,3 +312,51 @@ func _register_context_actions() -> void:
 		"id": "close", "label": "Close", "priority": 100, "group": "close",
 		"run": func(ctx): close_app(ctx["target"].app_id),
 	})
+
+	# Looting: move items from any other inventory (container, wreck) into
+	# the player's cargo without dragging.
+	register_context_action("item", {
+		"id": "take", "label": "Take", "priority": 0,
+		"visible_if": _is_loot_context,
+		"enabled_if": func(ctx): return "" if _player_cargo().has_room_for(ctx["stack"]) else "NO SPACE",
+		"run": func(ctx):
+			ctx["inventory"].transfer_stack_to(ctx["stack"], _player_cargo())
+			refresh_inventory_windows(),
+	})
+	for target_type in ["item", "inventory"]:
+		register_context_action(target_type, {
+			"id": "take_all", "label": "Take all", "priority": 1,
+			"visible_if": _is_loot_context,
+			"enabled_if": func(ctx): return "" if _cargo_fits_any(ctx["inventory"]) else "NO SPACE",
+			"run": func(ctx):
+				ctx["inventory"].transfer_all_to(_player_cargo())
+				refresh_inventory_windows(),
+		})
+
+
+func _player_cargo() -> Inventory:
+	if is_instance_valid(player_ref) and player_ref.get("mech_inventory") is Inventory:
+		return player_ref.mech_inventory
+	return null
+
+
+# Right-clicked an inventory that isn't the player's own cargo, while there
+# is a cargo to take into.
+func _is_loot_context(ctx: Dictionary) -> bool:
+	var cargo := _player_cargo()
+	return cargo != null and ctx.get("inventory") != cargo and not ctx["inventory"].is_empty()
+
+
+func _cargo_fits_any(source: Inventory) -> bool:
+	var cargo := _player_cargo()
+	for stack in source.get_stacks():
+		if cargo.has_room_for(stack):
+			return true
+	return false
+
+
+# Redraws every open inventory window and its item count / weight.
+func refresh_inventory_windows() -> void:
+	for window in open_windows.values():
+		if window is InventoryWindow:
+			window.refresh()

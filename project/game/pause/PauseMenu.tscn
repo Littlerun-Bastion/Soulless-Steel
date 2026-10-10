@@ -153,6 +153,19 @@ layout_mode = 2
 texture_normal = ExtResource("2")
 texture_hover = ExtResource("5")
 
+[node name="QuitWarning" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+visible = false
+layout_mode = 0
+offset_left = 40.6972
+offset_top = 345.0
+offset_right = 1457.7
+offset_bottom = 545.0
+theme = ExtResource("4_teyo3")
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 35
+text = "Quitting abandons the expedition."
+autowrap_mode = 3
+
 [node name="ColorRect2" type="ColorRect" parent="SubViewportContainer/SubViewport/Control" unique_id=1880568734]
 layout_mode = 0
 anchor_left = 0.007

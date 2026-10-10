@@ -26,6 +26,7 @@ func _ready():
 		start_game(Debug.get_setting("go_to_mode"))
 		
 	_setup_test_contact()
+	_show_loss_notice()
 
 func _input(event):
 	if event is InputEventMouseMotion:
@@ -98,6 +99,51 @@ func _on_Expedition_pressed():
 func _on_Store_pressed():
 	AudioManager.play_sfx("confirm")
 	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
+
+# An expedition lost without a game-over screen (quit from pause, game closed
+# or crashed mid-run) is reported here, once.
+func _show_loss_notice() -> void:
+	if not PlayerProgress.has_loss_report():
+		return
+	var report := PlayerProgress.take_loss_report()
+
+	var panel := PanelContainer.new()
+	panel.name = "LossNotice"
+	panel.theme = preload("res://game/ui/HUDFont.tres")
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.92)
+	style.set_border_width_all(2)
+	style.border_color = Color(1, 1, 1, 1)
+	style.set_content_margin_all(32)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 24)
+	panel.add_child(box)
+
+	var title := Label.new()
+	title.text = "EXPEDITION ABANDONED" if report.get("reason") == PlayerProgress.LOSS_ABANDONED else "EXPEDITION LOST"
+	box.add_child(title)
+
+	var body := Label.new()
+	body.text = PlayerProgress.format_loss_report(report)
+	body.add_theme_font_size_override("font_size", 28)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size.x = 900
+	box.add_child(body)
+
+	var ok := Button.new()
+	ok.text = "Acknowledge"
+	ok.size_flags_horizontal = Control.SIZE_SHRINK_END
+	ok.pressed.connect(func():
+		AudioManager.play_sfx("confirm")
+		panel.queue_free())
+	box.add_child(ok)
+
+	add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	AudioManager.play_sfx("back")
+
 
 func _setup_test_contact() -> void:
 	# MessengerUI is an autoload, so the contact survives returning to the menu.

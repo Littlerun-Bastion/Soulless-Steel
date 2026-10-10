@@ -17,6 +17,10 @@ var drag_manager: DragManager = null
 var mouse_over_window: bool = false
 var player_ref: Node = null
 
+# Whether the equipment window lets parts be swapped. Expedition turns this
+# off (no part swaps mid-run); the Hangar zone will control it later.
+var equipment_customizable: bool = true
+
 var context_menu: ContextMenu = null
 var context_actions: Dictionary = {}
 var _rmb_armed: bool = false
@@ -111,7 +115,7 @@ func open_app(app_id: String) -> MechWindow:
 	if window.has_method("setup") and player_ref != null:
 		if window is EquipmentWindow:
 			window.setup(player_ref)
-			window.set_customize(true)  # TODO: hangar zone controls this later
+			window.set_customize(equipment_customizable)
 	
 	_center_window(window)
 	focus_window(window)
@@ -226,11 +230,17 @@ func open_equipment(mecha: Mecha) -> MechWindow:
 	var window = open_app("equipment")
 	if window != null and window.has_method("setup"):
 		window.setup(mecha)
-		window.set_customize(true)  # TODO: remove once hangar zone controls this
+		window.set_customize(equipment_customizable)
 	return window
 	
 func set_player(player: Node) -> void:
 	player_ref = player
+
+
+func set_equipment_customizable(enabled: bool) -> void:
+	equipment_customizable = enabled
+	if open_windows.has("equipment"):
+		open_windows["equipment"].set_customize(enabled)
 
 # In AIM the mouse belongs to the mech: windows and taskbar ignore it.
 func _on_cursor_mode_changed(_mode) -> void:

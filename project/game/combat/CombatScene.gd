@@ -11,6 +11,8 @@ extends Node2D
 #   _before_mecha_removed(mecha)  called on death before the mecha is removed
 #   _plays_ambience()             whether to start ambient BGM after the intro
 #   _on_player_lost_health()      override and call super to add reactions
+#   _on_player_destroyed()        the player just died; returns extra text for
+#                                 the game-over screen (e.g. what was lost)
 #
 # Required scene children (both Arena.tscn and Expedition.tscn have them):
 #   Mechas, Projectiles, Trails, Flashes, Smoke, Explosions, ScrapParts,
@@ -84,6 +86,12 @@ func _before_mecha_removed(_mecha) -> void:
 # Whether ambient BGM starts once the intro ends and mechas unfreeze.
 func _plays_ambience() -> bool:
 	return true
+
+
+# Called once when the player dies, before the game-over fade. Whatever it
+# returns is shown on the game-over screen; "" keeps the default text only.
+func _on_player_destroyed() -> String:
+	return ""
 
 
 # ---- Frame / input ----
@@ -284,6 +292,8 @@ func player_died() -> void:
 	if not is_instance_valid(player):
 		return
 	FrameSpikeDetector.mark("player_died:teardown")
+	var game_over_text := _on_player_destroyed()
+	MechOS.close_all()  # cargo/container windows belong to the dead player
 	activate_arena_cam()
 	player.queue_free()
 	player = null
@@ -297,7 +307,7 @@ func player_died() -> void:
 		return
 	PlayerHUD.queue_free()
 	PauseMenu.queue_free()
-	GameOver.killed()
+	GameOver.killed(game_over_text)
 
 
 # Spawns debris particles from a dead mecha — visual feedback for kills.

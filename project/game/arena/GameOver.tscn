@@ -69,6 +69,19 @@ theme = ExtResource("2_8dhrv")
 text = "Lost connection...
 Would you like to return to the menu?"
 
+[node name="LossLabel" type="Label" parent="SubViewportContainer/SubViewport/Control"]
+visible = false
+layout_mode = 0
+offset_left = 12.0208
+offset_top = 640.0
+offset_right = 1880.0
+offset_bottom = 960.0
+theme = ExtResource("2_8dhrv")
+theme_override_font_sizes/font_size = 35
+text = "Mecha lost: ..."
+vertical_alignment = 2
+autowrap_mode = 3
+
 [node name="ReturnButton" type="TextureButton" parent="SubViewportContainer/SubViewport/Control"]
 layout_mode = 0
 anchor_left = 1.0

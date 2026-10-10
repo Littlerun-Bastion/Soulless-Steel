@@ -20,6 +20,14 @@ extends "res://game/combat/CombatScene.gd"
 # zones via Map.get_spawn_zones(), and map triggers are connected on _ready
 # ("story:..." triggers go to StoryDirector).
 # Player.tscn has its own Camera2D — no scene-level camera required.
+#
+# Stakes (hardcore extraction): the run starts as soon as the player spawns
+# (PlayerProgress.begin_expedition). Extracting keeps the mecha and cargo;
+# dying, quitting from the pause menu or leaving the scene any other way loses
+# them (PlayerProgress.lose_expedition). Parts can't be swapped mid-run, so the
+# Mech OS equipment window is view-only here.
+
+const QUIT_WARNING := "Quitting abandons the expedition: your mecha and everything in its cargo will be lost."
 
 @onready var ExpeditionDirector = $ExpeditionDirector
 
@@ -36,6 +44,7 @@ func _ready() -> void:
 	_setup_triggers()
 	_add_player()
 	_setup_heatmap()
+	_begin_stakes()
 
 	# The intro cover must be up BEFORE the prewarm: _prewarm_fx awaits
 	# several frames in which the scene actively renders (that's how the
@@ -86,6 +95,31 @@ func _before_mecha_removed(mecha) -> void:
 func _on_player_lost_health() -> void:
 	super._on_player_lost_health()
 	ExpeditionDirector.notify_player_damaged()
+
+
+# Dying loses everything that came out; the game-over screen says what.
+# take_loss_report so the main menu doesn't repeat it.
+func _on_player_destroyed() -> String:
+	PlayerProgress.lose_expedition(PlayerProgress.LOSS_DESTROYED)
+	return PlayerProgress.format_loss_report(PlayerProgress.take_loss_report())
+
+
+# ---- Stakes ----
+
+func _begin_stakes() -> void:
+	PlayerProgress.begin_expedition()
+	MechOS.set_equipment_customizable(false)
+	PauseMenu.quit_warning = QUIT_WARNING
+
+
+# Leaving without extracting or dying (quit from pause, any other scene
+# change) abandons the run; the main menu then shows what was lost. Closing
+# the game is caught on the next boot instead (FileManager.load_game).
+func _exit_tree() -> void:
+	if PlayerProgress.is_in_expedition():
+		PlayerProgress.lose_expedition(PlayerProgress.LOSS_ABANDONED)
+	MechOS.set_equipment_customizable(true)
+	super._exit_tree()
 
 
 # ---- Spawning ----
@@ -265,6 +299,8 @@ func _on_player_extracted(_mecha) -> void:
 	# Mission objective: extraction. Transition back to the main menu so the
 	# player can start another expedition, customize their mech, etc. (Skipping the
 	# Arena payout/ladder flow on purpose — Tier 3 default for this scene.)
+	# Ends the run first, so nothing after this point can cost the cargo.
+	PlayerProgress.extract_expedition()
 	MissionManager.report_extraction()
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",

@@ -16,11 +16,22 @@ extends Node
 # Anything that changes progress saves the profile unless should_save = false
 # (use that to batch several changes, then save once).
 #
+# Expedition stakes (begin/extract/lose_expedition): Expedition is hardcore.
+# The equipped mecha and its cargo go out with the player and are lost unless
+# they extract; the stash and money at home are always safe. The in-expedition
+# flag is saved, so a crash or closing the game mid-run counts as abandoning
+# it — FileManager resolves that on the next boot.
+#
 # Testing: game/test/PlayerProgressTest.tscn runs self-checks (F6 in the
 # editor) with autosave off, restoring the real progress afterwards.
 
 signal money_changed(new_amount)
 signal mecha_changed(design)
+signal expedition_lost(report)
+
+# Why an expedition was lost (the "reason" in a loss report).
+const LOSS_DESTROYED := "destroyed"   # the player's mecha was destroyed
+const LOSS_ABANDONED := "abandoned"   # quit, closed the game or crashed mid-run
 
 const DEFAULT_MECHA := {
 	"head": "MSV-L3J-H", "core": "MSV-L3J-C", "shoulders": "MSV-L3J-SG",
@@ -35,6 +46,10 @@ var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
 var stash_inventory: Inventory = null
 var mech_inventory: Inventory = null
+var in_expedition := false
+# What the last lost expedition cost, until something shows it to the player
+# (game-over screen or main menu). Saved, so it survives a crash.
+var pending_loss_report: Dictionary = {}
 
 var autosave := true  # tests turn this off so the real profile isn't written
 
@@ -164,6 +179,133 @@ func _get_stash_stacks() -> Array:
 	return stacks
 
 
+# ---- Expedition stakes ----
+
+func begin_expedition() -> void:
+	in_expedition = true
+	_log("expedition started")
+	_save()
+
+
+func is_in_expedition() -> bool:
+	return in_expedition
+
+
+# Cargo already lives in mech_inventory, so extracting only has to end the
+# run and save what the player brought back.
+func extract_expedition() -> void:
+	if not in_expedition:
+		return
+	in_expedition = false
+	_log("expedition extracted")
+	_save()
+
+
+# Loses everything that went out: the cargo is emptied and the player starts
+# over in DEFAULT_MECHA. Stash and money are untouched. Returns the loss
+# report (also kept as pending until take_loss_report), or {} when no
+# expedition is running — so dying after extracting costs nothing.
+func lose_expedition(reason: String) -> Dictionary:
+	if not in_expedition:
+		return {}
+	var report := {
+		"reason": reason,
+		"mecha": _describe_mecha(current_mecha),
+		"cargo": _describe_inventory(mech_inventory),
+	}
+	in_expedition = false
+	pending_loss_report = report
+	mech_inventory = null  # the next core to be equipped sizes a fresh one
+	set_current_mecha(DEFAULT_MECHA.duplicate(), false)
+	_log("expedition lost (%s)" % reason)
+	_save()
+	expedition_lost.emit(report)
+	return report
+
+
+# Called once the profile is loaded at boot: a run that was still going when
+# the game closed is lost.
+func resolve_abandoned_expedition() -> bool:
+	if not in_expedition:
+		return false
+	lose_expedition(LOSS_ABANDONED)
+	return true
+
+
+func has_loss_report() -> bool:
+	return not pending_loss_report.is_empty()
+
+
+# Returns the pending loss report and clears it, so it's only shown once.
+func take_loss_report() -> Dictionary:
+	var report := pending_loss_report
+	if report.is_empty():
+		return report
+	pending_loss_report = {}
+	_save()
+	return report
+
+
+# Player-facing lines for a loss report (game-over screen, main menu).
+func format_loss_report(report: Dictionary) -> String:
+	if report.is_empty():
+		return ""
+	var lines := []
+	var mecha: Array = report.get("mecha", [])
+	var cargo: Array = report.get("cargo", [])
+	lines.append("Mecha lost: " + (", ".join(mecha) if not mecha.is_empty() else "none"))
+	lines.append("Cargo lost: " + (", ".join(cargo) if not cargo.is_empty() else "empty"))
+	lines.append("Your stash and credits are safe. A standard mecha has been issued.")
+	return "\n".join(lines)
+
+
+# Part names of every equipped part, in DEFAULT_MECHA slot order.
+func _describe_mecha(design: Dictionary) -> Array:
+	var names := []
+	for slot in DEFAULT_MECHA:
+		var part_id = design.get(slot)
+		if typeof(part_id) == TYPE_STRING and part_id != "":
+			names.append(_part_display_name(_part_type_for_slot(slot), part_id))
+	return names
+
+
+# "Name" or "Name x3" for every stack in an inventory.
+func _describe_inventory(inv: Inventory) -> Array:
+	var names := []
+	if inv == null:
+		return names
+	for y in range(inv.grid_height):
+		for x in range(inv.grid_width):
+			var cell = inv.grid[y][x]
+			var stack: item_stack = cell["stack"]
+			if stack == null or cell["origin_x"] != x or cell["origin_y"] != y:
+				continue
+			var item_name := "?"
+			if stack.kind == item_stack.ItemKind.PART:
+				item_name = _part_display_name(stack.item_type, stack.item_id)
+			elif stack.item != null and stack.item.get("display_name"):
+				item_name = stack.item.display_name
+			names.append(item_name if stack.quantity <= 1 else "%s x%d" % [item_name, stack.quantity])
+	return names
+
+
+# Design slots name the side ("arm_weapon_left"); PartManager wants the type.
+func _part_type_for_slot(slot: String) -> String:
+	if "arm_weapon" in slot:
+		return "arm_weapon"
+	if "shoulder_weapon" in slot:
+		return "shoulder_weapon"
+	return slot
+
+
+func _part_display_name(part_type: String, part_id: String) -> String:
+	if PartManager.get_parts(part_type) is Dictionary and PartManager.is_valid_part(part_type, part_id):
+		var part_name = PartManager.get_part(part_type, part_id).get("part_name")
+		if typeof(part_name) == TYPE_STRING and part_name != "":
+			return part_name
+	return part_id
+
+
 # ---- Save / load ----
 
 func reset() -> void:
@@ -171,6 +313,8 @@ func reset() -> void:
 	current_mecha = DEFAULT_MECHA.duplicate()
 	stash_inventory = null
 	mech_inventory = null
+	in_expedition = false
+	pending_loss_report = {}
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
 
@@ -181,6 +325,8 @@ func get_save_data() -> Dictionary:
 		"current_mecha": current_mecha,
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
+		"in_expedition": in_expedition,
+		"pending_loss_report": pending_loss_report,
 	}
 
 
@@ -191,6 +337,9 @@ func set_save_data(data) -> void:
 	current_mecha = _with_default_slots(data.get("current_mecha"))
 	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
+	in_expedition = bool(data.get("in_expedition", false))
+	var report = data.get("pending_loss_report", {})
+	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
 

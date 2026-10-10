@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 @onready var ReturnButton = $SubViewportContainer/SubViewport/Control/ReturnButton
+@onready var LossLabel = $SubViewportContainer/SubViewport/Control/LossLabel
 
 func _ready():
 	disable()
@@ -18,7 +19,10 @@ func disable():
 	ReturnButton.disabled = true
 
 
-func killed():
+# loss_text: what the player lost (Expedition), shown above the prompt.
+func killed(loss_text := ""):
+	LossLabel.text = loss_text
+	LossLabel.visible = loss_text != ""
 	enable()
 
 

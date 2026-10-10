@@ -1,5 +1,10 @@
 extends Node
 
+# Saving is refused until a profile has been loaded (or created). Scenes run
+# straight from the editor (F6) skip the Intro, so nothing is loaded and
+# saving there would overwrite the real profile with blank defaults.
+var profile_loaded := false
+
 
 func _notification(what):
 	if what == MainLoop.NOTIFICATION_CRASH:
@@ -17,6 +22,8 @@ func save_game():
 
 func load_game():
 	load_profile()
+	# A run still marked as in progress means the game closed mid-expedition.
+	PlayerProgress.resolve_abandoned_expedition()
 
 
 func load_profile():
@@ -73,6 +80,7 @@ func load_profile():
 
 	if not FileAccess.file_exists("user://profile.save"):
 		print("[FileManager] No profile found, starting new")
+		profile_loaded = true
 		save_profile()
 		
 	profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
@@ -86,11 +94,15 @@ func load_profile():
 		var data = test_json_conv.get_data()
 		Profile.set_save_data(data)
 		break
-		
+
 	profile_file.close()
+	profile_loaded = true
 
 
 func save_profile():
+	if not profile_loaded:
+		push_warning("[FileManager] Not saving: no profile loaded (scene run without the Intro?)")
+		return
 	var profile_data = Profile.get_save_data()
 	
 	#First save on a separate file as to avoid corruption

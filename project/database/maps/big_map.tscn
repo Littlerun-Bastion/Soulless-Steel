@@ -65,6 +65,13 @@ position = Vector2(9500, 0)
 [node name="Exit_W" parent="Exits" instance=ExtResource("3_exit")]
 position = Vector2(-9500, 0)
 
+; TEST: exit right next to the player spawn (Pos1 at 0,0), on the opposite
+; side from the test loot container, for trying extraction without crossing
+; the map. Drive left into it and wait 5s. Nearby NPCs may use it too.
+; Remove once there's a way to find the real exits (HUD exit marker).
+[node name="Exit_Test" parent="Exits" instance=ExtResource("3_exit")]
+position = Vector2(-900, 0)
+
 ; 9 start positions spread across the 20k area. The first is used as the
 ; player spawn; the rest are used by ExpeditionDirector for initial NPC placement.
 [node name="StartPositions" type="Node2D" parent="."]

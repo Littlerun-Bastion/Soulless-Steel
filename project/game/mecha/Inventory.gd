@@ -32,7 +32,9 @@ func initialize_grid(width: int, height: int):
 			grid[y][x] = EMPTY_CELL.duplicate()
 
 
-func resize_and_migrate(new_width: int, new_height: int):
+# Returns the stacks that no longer fit (empty if everything did). Callers
+# decide where those go — they used to be dropped silently.
+func resize_and_migrate(new_width: int, new_height: int) -> Array:
 	var old_items: Array = []
 
 	# Collect item stacks from origin cells only
@@ -45,9 +47,12 @@ func resize_and_migrate(new_width: int, new_height: int):
 	# Create new grid
 	initialize_grid(new_width, new_height)
 
-	# Try to reinsert items
+	# Try to reinsert items (turned, if that's the only way they fit)
+	var overflow: Array = []
 	for stack in old_items:
-		add_stack_to_first_available_slot(stack)
+		if not add_stack_anywhere(stack):
+			overflow.append(stack)
+	return overflow
 
 
 func add_stack_to_first_available_slot(stack: item_stack) -> bool:

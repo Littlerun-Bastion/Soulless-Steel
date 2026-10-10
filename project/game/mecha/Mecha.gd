@@ -51,6 +51,9 @@ signal create_casing
 signal shoot_signal
 signal took_damage
 signal died
+# Equipping a core with less cargo space pushed these stacks out of the cargo
+# (the Hangar moves them to the stash).
+signal cargo_overflow(stacks)
 signal exposed
 signal mecha_extracted
 signal shield_ready
@@ -1210,8 +1213,10 @@ func set_core(part_name):
 	if mech_inventory.grid_width == 0 or mech_inventory.grid_height == 0 or mech_inventory.grid.is_empty():
 		mech_inventory.initialize_grid(cargo[0], cargo[1])
 	elif mech_inventory.grid_width != cargo[0] or mech_inventory.grid_height != cargo[1]:
-		mech_inventory.resize_and_migrate(cargo[0], cargo[1])
-		
+		var overflow: Array = mech_inventory.resize_and_migrate(cargo[0], cargo[1])
+		if not overflow.is_empty():
+			cargo_overflow.emit(overflow)
+
 	# Derive internal thermal capacity from coolant
 	if build.core.coolant_type:
 		var ct: CoolantType = build.core.coolant_type

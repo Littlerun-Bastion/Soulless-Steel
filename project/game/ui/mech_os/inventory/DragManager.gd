@@ -82,6 +82,39 @@ func is_dragging() -> bool:
 	return dragging_stack != null
 
 
+# Hover tooltip (MechOS creates it and calls this every frame). Shows the
+# item under the mouse in whichever grid is actually hovered, so windows
+# stacked on top of each other don't leak tooltips through.
+var _tooltip_stack: item_stack = null
+
+func update_tooltip(allowed: bool) -> void:
+	if tooltip == null:
+		return
+	var stack: item_stack = null
+	if allowed and dragging_stack == null:
+		var grid := _hovered_grid()
+		if grid != null:
+			var info := grid.get_stack_at_mouse()
+			if not info.is_empty():
+				stack = info["stack"]
+	if stack == _tooltip_stack:
+		return
+	_tooltip_stack = stack
+	if stack == null:
+		tooltip.hide()
+	else:
+		tooltip.show_item(stack)
+
+
+func _hovered_grid() -> InventoryGrid:
+	var node: Node = get_viewport().gui_get_hovered_control()
+	while node != null:
+		if node is InventoryGrid:
+			return node
+		node = node.get_parent()
+	return null
+
+
 # Start drag
 func _try_start_drag() -> bool:
 	# Check each registered grid to see if the mouse is over a stack

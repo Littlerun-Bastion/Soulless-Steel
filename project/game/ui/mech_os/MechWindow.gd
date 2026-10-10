@@ -7,6 +7,13 @@ signal focused(window)
 @export var window_title: String = "Window"
 @export var min_size: Vector2 = Vector2(300, 200)
 @export var app_id: String = ""  # matches taskbar button ID
+# False for windows a screen depends on (the Hangar's cargo and stash):
+# hides the close button, and the right-click "Close" action skips them.
+@export var closable: bool = true:
+	set(value):
+		closable = value
+		if is_node_ready():
+			close_button.visible = closable
 
 # Resize handle size in pixels
 const RESIZE_MARGIN := 6
@@ -28,6 +35,7 @@ var titlebar_unfocused_style: StyleBoxFlat = preload("res://game/ui/mech_os/wind
 func _ready() -> void:
 	title_label.text = window_title
 	close_button.pressed.connect(_on_close_pressed)
+	close_button.visible = closable
 	custom_minimum_size = min_size
 	# Ensure we get input
 	mouse_filter = Control.MOUSE_FILTER_STOP

@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const ITEM_TOOLTIP := preload("res://game/mecha/ItemTooltip.tscn")
+
 # Registry of available apps: app_id -> PackedScene
 var app_registry: Dictionary = {}
 
@@ -20,6 +22,9 @@ var player_ref: Node = null
 # Whether the equipment window lets parts be swapped. Expedition turns this
 # off (no part swaps mid-run); the Hangar zone will control it later.
 var equipment_customizable: bool = true
+# Whether inventory right-click menus offer Recycle. Only the Hangar turns it
+# on (PlayerProgress also refuses during an expedition).
+var recycling_enabled: bool = false
 
 var context_menu: ContextMenu = null
 var context_actions: Dictionary = {}
@@ -32,6 +37,9 @@ func _ready() -> void:
 	add_child(drag_manager)
 	drag_manager.setup(drag_layer)
 	_register_apps()
+	var tooltip: ItemTooltip = ITEM_TOOLTIP.instantiate()
+	drag_layer.add_child(tooltip)
+	drag_manager.tooltip = tooltip
 	context_menu = ContextMenu.new()
 	add_child(context_menu)  # last child, so it draws above windows and the drag layer
 	_register_context_actions()
@@ -49,6 +57,13 @@ func _ready() -> void:
 ##		MouseManager.show_cursor()
 #	elif not mouse_over_window and was_over:
 #		MouseManager.hide_cursor()
+
+# Item tooltips: only while the mouse belongs to Mech OS and no menu is up.
+func _process(_delta: float) -> void:
+	if not is_active or MouseManager.is_aiming() or context_menu.is_open():
+		drag_manager.update_tooltip(false)
+	else:
+		drag_manager.update_tooltip(true)
 
 func _input(event: InputEvent) -> void:
 	if not is_active or MouseManager.is_aiming():
@@ -134,7 +149,10 @@ func close_app(app_id: String) -> void:
 
 func toggle_app(app_id: String) -> void:
 	if open_windows.has(app_id):
-		close_app(app_id)
+		if open_windows[app_id].closable:
+			close_app(app_id)
+		else:
+			focus_window(open_windows[app_id])
 	else:
 		open_app(app_id)
 
@@ -268,9 +286,9 @@ func _open_context_menu() -> bool:
 	return open_context_menu(context)
 
 
-# Opens the menu at the mouse for a context built elsewhere — screens that
-# handle their own right-click (the Hangar's InventoryUI) call this. The
-# context needs "type" and a "source" node (the menu checks it's still valid).
+# Opens the menu at the mouse for a context built elsewhere, for screens that
+# handle their own right-click. The context needs "type" and a "source" node
+# (the menu checks it's still valid).
 func open_context_menu(context: Dictionary) -> bool:
 	var mouse_pos := get_viewport().get_mouse_position()
 	context["screen_pos"] = mouse_pos
@@ -317,6 +335,7 @@ func _register_context_actions() -> void:
 	})
 	register_context_action("window", {
 		"id": "close", "label": "Close", "priority": 100, "group": "close",
+		"visible_if": func(ctx): return ctx["target"].closable,
 		"run": func(ctx): close_app(ctx["target"].app_id),
 	})
 

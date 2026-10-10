@@ -21,11 +21,7 @@ func _ready() -> void:
 	wetware_btn.pressed.connect(_on_wetware_pressed)
 	weapons_btn.pressed.connect(_on_weapons_pressed)
 	
-	# Override PartSlot's default pressed behavior
 	for slot in part_slots:
-		# Disconnect old signal if connected
-		if slot.is_connected("pressed", slot._on_slot_pressed):
-			slot.disconnect("pressed", slot._on_slot_pressed)
 		slot.pressed.connect(_on_slot_pressed.bind(slot))
 
 
@@ -115,13 +111,20 @@ func revert_equip(slot: PartSlot, stack: item_stack) -> void:
 	_set_mecha_part_for_slot(slot, stack.item_id)
 	refresh_slots()
 
+# Where a part swapped out of a slot goes, in order; then any other open
+# inventory window.
+const RETURN_ORDER := ["stash", "mech_cargo"]
+
 func _return_stack_to_inventory(stack: item_stack) -> bool:
-	# Try to place the stack in any open inventory window
+	var app_ids: Array = RETURN_ORDER.duplicate()
 	for win_app_id in MechOS.open_windows:
-		var window = MechOS.open_windows[win_app_id]
+		if not win_app_id in app_ids:
+			app_ids.append(win_app_id)
+	for win_app_id in app_ids:
+		var window = MechOS.open_windows.get(win_app_id)
 		if window is InventoryWindow and window.inventory_grid != null:
 			var inv: Inventory = window.inventory_grid.get_inventory()
-			if inv != null and inv.add_stack_to_first_available_slot(stack):
+			if inv != null and inv.add_stack_anywhere(stack):
 				window.refresh()
 				return true
 	return false

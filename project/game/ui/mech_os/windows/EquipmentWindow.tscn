@@ -9,6 +9,7 @@ offset_right = 420.0
 offset_bottom = 500.0
 script = ExtResource("2_r52rp")
 min_size = Vector2(420, 500)
+window_title = "EQUIPMENT"
 
 [node name="VBox" type="VBoxContainer" parent="Content" parent_id_path=PackedInt32Array(1619727558) index="0" unique_id=1857127572]
 layout_mode = 2

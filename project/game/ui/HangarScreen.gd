@@ -1,40 +1,76 @@
 extends Control
 
-@onready var player_mecha: Mecha = $Mecha
-@onready var inventory_ui: InventoryUI = $MarginContainer/VBoxContainer/MarginContainer/InventoryUI
-@onready var materials_label: Label = $MarginContainer/VBoxContainer/MaterialsLabel
-
-var stash_inventory: Inventory = null  # player’s stash / hangar inventory
+# The Hangar: refit the mecha between expeditions and recycle salvage.
+# Built on Mech OS windows — the same ones used in the field — so the Hangar
+# and Expedition share one inventory/equipment system:
+#   EQUIPMENT   the mecha's part slots (editable here; view-only mid-run)
+#   MECH CARGO  what the mecha carries into the next run (lost if it dies)
+#   STASH       everything kept at home (always safe)
+# Drag parts between the grids and the slots; right-click salvage in the cargo
+# or stash to recycle it into materials (shown along the bottom).
+#
+# The mecha design is saved when leaving (ESC). Inventories are the same
+# objects PlayerProgress saves, and materials save as they change.
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
+
+# Window layout in the 1920x1080 viewport: equipment left, cargo middle,
+# stash right. Windows can still be moved and resized.
+const EQUIPMENT_RECT := Rect2(90, 40, 460, 820)
+const CARGO_RECT := Rect2(580, 40, 560, 620)
+const STASH_RECT := Rect2(1170, 40, 700, 900)
+
+@onready var player_mecha: Mecha = $Mecha
+@onready var materials_label: Label = $MarginContainer/VBoxContainer/MaterialsLabel
+
+var stash_inventory: Inventory = null
+
 
 func _ready() -> void:
 	stash_inventory = PlayerProgress.get_stash_inventory()
 
+	# Hand over the cargo before equipping: equipping the core sizes it
+	# (Mecha.set_core), and anything a smaller core can't hold comes back
+	# through cargo_overflow and goes to the stash.
+	player_mecha.mech_inventory = PlayerProgress.get_mech_inventory()
+	player_mecha.cargo_overflow.connect(_on_cargo_overflow)
 	player_mecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 
-	var core_size := _get_core_inventory_size()
-
-	var mech_inv: Inventory = PlayerProgress.get_mech_inventory()
-
-	if mech_inv.grid_width == 0 or mech_inv.grid_height == 0 or mech_inv.grid.is_empty():
-		# First-time setup
-		mech_inv.initialize_grid(core_size[0], core_size[1])
-	elif mech_inv.grid_width != core_size[0] or mech_inv.grid_height != core_size[1]:
-		# Core changed → resize and migrate items
-		mech_inv.resize_and_migrate(core_size[0], core_size[1])
-
-	# 5) Attach inventory to this Mecha instance
-	player_mecha.mech_inventory = mech_inv
-
-	# 6) Hand everything to InventoryUI
-	inventory_ui.can_customize = true
-	# Right-click salvage in the cargo or stash: Recycle / Recycle all salvage.
-	inventory_ui.recycle_allowed = true
-	inventory_ui.setup_for_mecha(player_mecha, stash_inventory)
+	MechOS.set_player(player_mecha)
+	MechOS.set_equipment_customizable(true)
+	MechOS.recycling_enabled = true
+	_open_windows()
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
+
+
+func _exit_tree() -> void:
+	MechOS.close_all()
+	MechOS.recycling_enabled = false
+	MechOS.set_player(null)
+
+
+func _open_windows() -> void:
+	_place(MechOS.open_equipment(player_mecha), EQUIPMENT_RECT)
+	_place(MechOS.open_inventory("mech_cargo", player_mecha.mech_inventory, "MECH CARGO"), CARGO_RECT)
+	_place(MechOS.open_inventory("stash", stash_inventory, "STASH"), STASH_RECT)
+
+
+# The Hangar is these three windows, so they stay open.
+func _place(window: MechWindow, rect: Rect2) -> void:
+	if window == null:
+		return
+	window.closable = false
+	window.position = rect.position
+	window.size = rect.size.max(window.min_size)
+
+
+func _on_cargo_overflow(stacks: Array) -> void:
+	for stack in stacks:
+		if not stash_inventory.add_stack_anywhere(stack):
+			push_warning("Hangar: no room in the stash for an item pushed out of the cargo; it was lost.")
+	MechOS.refresh_inventory_windows()
 
 
 func _on_materials_changed(materials: Dictionary) -> void:
@@ -44,30 +80,10 @@ func _on_materials_changed(materials: Dictionary) -> void:
 	materials_label.text = "MATERIALS   " + "   ".join(parts)
 
 
-func _get_core_inventory_size() -> Array:
-	# Fallback / safety size
-	var default_size := [3,3]
-
-	if not player_mecha or not player_mecha.build:
-		return default_size
-
-	var core = player_mecha.build.core
-	if core == null:
-		print("Using default cargo space.")
-		return default_size
-
-	if core.cargo_space:
-		return core.cargo_space
-
-	return default_size
-
-
 func _on_BackButton_pressed() -> void:
-	var design = player_mecha.get_design_data()
-
 	PlayerProgress.set_stash_inventory(stash_inventory)
 	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
-	PlayerProgress.set_current_mecha(design)  # also saves the profile
+	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",
 		"Leaving Hangar..."
@@ -79,7 +95,6 @@ func _unhandled_input(event):
 		return
 
 	if event.is_action_pressed("debug_6"):
-		var inv = player_mecha.mech_inventory
-		inv.add_item(TEST_ITEM_DATA, 1)
-		inventory_ui.refresh()
+		player_mecha.mech_inventory.add_item(TEST_ITEM_DATA, 1)
+		MechOS.refresh_inventory_windows()
 		get_viewport().set_input_as_handled()

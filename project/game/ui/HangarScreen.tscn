@@ -1,8 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://c1bupwppgtkov"]
+[gd_scene load_steps=7 format=3 uid="uid://c1bupwppgtkov"]
 
 [ext_resource type="Script" path="res://game/ui/HangarScreen.gd" id="1_6y6oh"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="1_p705l"]
-[ext_resource type="PackedScene" uid="uid://bysc0hpr1nxaj" path="res://game/ui/InventoryUI.tscn" id="2_3j6od"]
 [ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="4_ki33h"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="4_pe3m2"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="5_ojaxq"]
@@ -38,9 +37,6 @@ layout_mode = 2
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="InventoryUI" parent="MarginContainer/VBoxContainer/MarginContainer" instance=ExtResource("2_3j6od")]
-layout_mode = 2
 
 [node name="MaterialsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

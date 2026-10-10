@@ -11,9 +11,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var display_name: String = "HEAD"
 @export var part_side: int = SIDE.SINGLE
 
-var current_part_id: String = "" 
+# Pressing a slot is handled by whoever shows it (Mech OS EquipmentWindow
+# connects `pressed` itself).
+var current_part_id: String = ""
 var player_mecha: Mecha = null
-var inventory_ui: InventoryUI = null
 
 func _ready() -> void:
 	PartCategory.text = display_name
@@ -39,9 +40,4 @@ func clear_equipped_part() -> void:
 	current_part_id = ""
 	PartName.text = "Empty"
 	# icon = null
-
-func _on_slot_pressed() -> void:
-	if inventory_ui == null:
-		return
-	inventory_ui.unequip_part(self)
 		

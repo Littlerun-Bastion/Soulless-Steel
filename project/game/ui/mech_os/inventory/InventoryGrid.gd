@@ -53,10 +53,14 @@ func refresh() -> void:
 func get_context_target(global_pos: Vector2) -> Dictionary:
 	if inventory == null or not grid_frame.get_global_rect().has_point(global_pos):
 		return {}
+	var context := {"inventory": inventory, "grid": self, "recycle_allowed": MechOS.recycling_enabled}
 	var info := get_stack_at_mouse()
 	if not info.is_empty():
-		return {"type": "item", "stack": info["stack"], "inventory": inventory, "grid": self}
-	return {"type": "inventory", "inventory": inventory, "grid": self}
+		context["type"] = "item"
+		context["stack"] = info["stack"]
+	else:
+		context["type"] = "inventory"
+	return context
 
 
 func is_mouse_over() -> bool:

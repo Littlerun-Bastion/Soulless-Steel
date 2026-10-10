@@ -282,6 +282,9 @@ func _clear_drag() -> void:
 func _refresh_all_grids() -> void:
 	for entry in grid_participants:
 		entry["grid"].refresh()
+		# Keep the window's item count / weight in step with the grid.
+		if entry["window"].has_method("update_info"):
+			entry["window"].update_info()
 
 
 # Rotate

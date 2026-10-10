@@ -259,6 +259,11 @@ func format_loss_report(report: Dictionary) -> String:
 	return "\n".join(lines)
 
 
+# "Name" / "Name x3" for everything in the mech cargo (extraction summary).
+func describe_cargo() -> Array:
+	return _describe_inventory(mech_inventory)
+
+
 # Part names of every equipped part, in DEFAULT_MECHA slot order.
 func _describe_mecha(design: Dictionary) -> Array:
 	var names := []

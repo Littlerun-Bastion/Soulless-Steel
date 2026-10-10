@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/ui/MissionTracker.gd" id="1_tracker"]
+[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2_font"]
+
+[node name="MissionTracker" type="VBoxContainer"]
+offset_right = 520.0
+offset_bottom = 120.0
+mouse_filter = 2
+script = ExtResource("1_tracker")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+theme = ExtResource("2_font")
+text = "MISSION"
+horizontal_alignment = 2
+
+[node name="Objectives" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2

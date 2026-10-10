@@ -33,6 +33,7 @@ const QUIT_WARNING := "Quitting abandons the expedition: your mecha and everythi
 # The oldest wrecks nobody has open are removed past MAX_WRECKS, so a long
 # run with respawns doesn't pile them up.
 const WRECK = preload("res://game/mecha/Wreck.tscn")
+const EXTRACTION_SUMMARY = preload("res://game/expedition/ExtractionSummary.tscn")
 const MAX_WRECKS := 12
 
 @onready var ExpeditionDirector = $ExpeditionDirector
@@ -339,17 +340,38 @@ func _random_spawn_position() -> Vector2:
 
 # ---- Extraction and mission ----
 
+# Ends the run (saving the cargo), takes the mecha off the map, shows the
+# extraction summary, then returns to the main menu on Continue. (No Arena
+# payout/ladder flow here on purpose.)
 func _on_player_extracted(_mecha) -> void:
-	# Mission objective: extraction. Transition back to the main menu so the
-	# player can start another expedition, customize their mech, etc. (Skipping the
-	# Arena payout/ladder flow on purpose — Tier 3 default for this scene.)
 	# Ends the run first, so nothing after this point can cost the cargo.
 	PlayerProgress.extract_expedition()
 	MissionManager.report_extraction()
+	var kills := player_kills.size()
+	_remove_extracted_player()
+
+	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()
+	add_child(summary)
+	summary.show_summary(PlayerProgress.describe_cargo(), kills, MissionManager.current_mission)
+	await summary.continued
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",
 		"Rebooting System..."
 	)
+
+
+# The extracted mecha has left: off the map, so NPCs can't shoot it while the
+# summary is up. Same teardown as a death, minus the game over.
+func _remove_extracted_player() -> void:
+	MechOS.close_all()
+	activate_arena_cam()
+	all_mechas.erase(player)
+	player.queue_free()
+	player = null
+	PlayerHUD.player_died()
+	PlayerHUD.hide()
+	if PauseMenu.is_paused():
+		PauseMenu.toggle_pause()
 
 
 # Standard "Survive and Extract" objectives mirrored from Arena's default.
@@ -358,6 +380,6 @@ func _setup_mission() -> void:
 	var mission = MissionData.new()
 	mission.mission_name = "Survive and Extract"
 	mission.add_objective("kill", "Eliminate enemies", 3)
-	mission.add_objective("extract", "Extract from the arena", 1)
+	mission.add_objective("extract", "Reach an exit and extract", 1)
 	# Used only if no messenger contract is active (see MissionManager).
 	MissionManager.start_default_mission(mission)

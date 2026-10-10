@@ -11,6 +11,9 @@ extends Node
 # Every sortie is a fresh attempt: an active contract's progress is reset
 # when a sortie starts, so its objectives must be met within one run.
 
+# mission_started fires whenever a sortie gets its mission (including a kept
+# contract whose progress was just reset), so the HUD can show it.
+signal mission_started(mission)
 signal objective_updated(objective)
 signal mission_completed(mission)
 
@@ -19,6 +22,7 @@ var current_mission = null
 # Replaces whatever mission is active.
 func start_mission(mission) -> void:
 	current_mission = mission
+	emit_signal("mission_started", mission)
 
 # Starts a mission that survives until completed (see header).
 func accept_contract(mission) -> void:
@@ -32,6 +36,7 @@ func has_active_contract() -> bool:
 func start_default_mission(default_mission) -> void:
 	if has_active_contract():
 		_reset_progress(current_mission)
+		emit_signal("mission_started", current_mission)
 		if Debug.get_setting("verbose_logging"):
 			print("[MissionManager] contract active, keeping: ", current_mission.mission_name)
 		return

@@ -19,6 +19,8 @@
 [ext_resource type="PackedScene" uid="uid://drcrlsi0fjar4" path="res://game/ui/WireframeDisplay.tscn" id="13_4d0cs"]
 [ext_resource type="PackedScene" uid="uid://c5r3r3jlxvedd" path="res://game/ui/player_radar/PlayerRadar.tscn" id="14"]
 [ext_resource type="PackedScene" uid="uid://bvtw2rmyhtr0p" path="res://game/ui/DashCooldown.tscn" id="18_hvc7y"]
+[ext_resource type="PackedScene" path="res://game/ui/MissionTracker.tscn" id="19_mission"]
+[ext_resource type="Script" path="res://game/ui/LoadIndicator.gd" id="20_load"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
 shader = ExtResource("3_3y8od")
@@ -1402,6 +1404,22 @@ theme = ExtResource("2")
 text = "extracting"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="LoadIndicator" type="Label" parent="SubViewportContainer/SubViewport"]
+offset_left = 1360.0
+offset_top = 24.0
+offset_right = 1880.0
+offset_bottom = 60.0
+theme = ExtResource("2")
+text = "LOAD 0 / 0"
+horizontal_alignment = 2
+script = ExtResource("20_load")
+
+[node name="MissionTracker" parent="SubViewportContainer/SubViewport" instance=ExtResource("19_mission")]
+offset_left = 1360.0
+offset_top = 68.0
+offset_right = 1880.0
+offset_bottom = 300.0
 
 [node name="Bulletholes" type="Control" parent="SubViewportContainer/SubViewport" unique_id=1956674405]
 layout_mode = 3

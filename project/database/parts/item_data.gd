@@ -1,6 +1,11 @@
 extends Resource
 class_name item_data
 
+# How advanced a piece of salvage is. LootTable uses it to make higher tech
+# rarer. NONE is for anything that isn't salvage (it never comes out of a
+# loot table roll).
+enum TechTier { NONE, LOW, MID, HIGH }
+
 @export var id: String
 @export var display_name: String
 @export var description: String
@@ -15,6 +20,12 @@ class_name item_data
 
 # Fields for stackable items
 @export var max_stack := 1
+
+@export var tech_tier: TechTier = TechTier.NONE
+# Later: a composition (what recycling this yields in the Hangar) goes here,
+# next to tech_tier. Not designed yet.
+
+
 func width() -> int:
 	return item_size[0]
 

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://game/items/LootTable.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://database/items/salvage/scrap_plating.tres" id="3_scrap"]
+[ext_resource type="Resource" path="res://database/items/salvage/wiring_bundle.tres" id="4_wiring"]
+[ext_resource type="Resource" path="res://database/items/salvage/servo_assembly.tres" id="5_servo"]
+[ext_resource type="Resource" path="res://database/items/salvage/circuit_board.tres" id="6_board"]
+[ext_resource type="Resource" path="res://database/items/salvage/fusion_cell.tres" id="7_fusion"]
+[ext_resource type="Resource" path="res://database/items/salvage/neural_chip.tres" id="8_chip"]
+
+[sub_resource type="Resource" id="LootEntry_scrap"]
+script = ExtResource("2_entry")
+item = ExtResource("3_scrap")
+
+[sub_resource type="Resource" id="LootEntry_wiring"]
+script = ExtResource("2_entry")
+item = ExtResource("4_wiring")
+
+[sub_resource type="Resource" id="LootEntry_servo"]
+script = ExtResource("2_entry")
+item = ExtResource("5_servo")
+
+[sub_resource type="Resource" id="LootEntry_board"]
+script = ExtResource("2_entry")
+item = ExtResource("6_board")
+
+[sub_resource type="Resource" id="LootEntry_fusion"]
+script = ExtResource("2_entry")
+item = ExtResource("7_fusion")
+
+[sub_resource type="Resource" id="LootEntry_chip"]
+script = ExtResource("2_entry")
+item = ExtResource("8_chip")
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[ExtResource("2_entry")]([SubResource("LootEntry_scrap"), SubResource("LootEntry_wiring"), SubResource("LootEntry_servo"), SubResource("LootEntry_board"), SubResource("LootEntry_fusion"), SubResource("LootEntry_chip")])

@@ -11,6 +11,10 @@ signal closed(container)
 @export var persistent: bool = true
 @export var container_id: String = ""  # for save/load later
 @export var default_contents: Array[LootEntry] = []
+# Optional random contents, added after default_contents: loot_rolls items
+# rolled from loot_table when the container is created.
+@export var loot_table: LootTable
+@export var loot_rolls: int = 0
 
 var inventory: Inventory = null
 var is_open: bool = false
@@ -32,6 +36,8 @@ func _init_inventory() -> void:
 
 	if not default_contents.is_empty():
 		populate(default_contents)
+	if loot_table != null and loot_rolls > 0:
+		populate_stacks(loot_table.roll_stacks(loot_rolls))
 
 # Called by the player when they press the interact key
 func interact(_player: Node) -> void:
@@ -67,11 +73,15 @@ func _on_body_exited(body: Node) -> void:
 func populate(entries: Array) -> void:
 	var stacks: Array = []
 	for entry in entries:
-		if entry is LootEntry and entry.item != null:
-			var stack := item_stack.new()
-			stack.item = entry.item
-			stack.quantity = entry.quantity
-			stacks.append(stack)
+		if entry is LootEntry:
+			var stack: item_stack = entry.make_stack()
+			if stack != null:
+				stacks.append(stack)
+	populate_stacks(stacks)
+
+
+# Wrecks (and anything else that builds its own loot) hand stacks in here.
+func populate_stacks(stacks: Array) -> void:
 	var overflow := inventory.add_stacks_bulk(stacks)
 	if not overflow.is_empty():
 		push_warning("LootContainer '%s': %d items didn't fit." % [container_id, overflow.size()])

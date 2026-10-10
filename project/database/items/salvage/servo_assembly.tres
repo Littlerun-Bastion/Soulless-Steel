@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "servo_assembly"
+display_name = "Servo Assembly"
+description = "An actuator pulled from a joint, still mostly intact. Mid-tech salvage."
+icon = ExtResource("2_icon")
+weight = 6.0
+price = 40
+tags = Array[String](["salvage", "mid_tech"])
+item_size = [2, 2]
+tech_tier = 2

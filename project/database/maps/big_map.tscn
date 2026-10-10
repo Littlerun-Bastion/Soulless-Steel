@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://btestbigmap00001"]
+[gd_scene load_steps=11 format=3 uid="uid://btestbigmap00001"]
 
 [ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="1_map"]
 [ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="2_start"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="5_lootentry"]
 [ext_resource type="Resource" uid="uid://coshyiwvfrj5r" path="res://database/loot-tables/test_table.tres" id="6_testtable"]
 [ext_resource type="Resource" uid="uid://7hhseaxopa1d" path="res://database/items/test/TestItem.tres" id="7_testitem"]
+[ext_resource type="Resource" path="res://database/loot-tables/wreck_salvage.tres" id="8_salvage"]
 
 [sub_resource type="NavigationPolygon" id="NavPoly_BigMap"]
 vertices = PackedVector2Array(-10000, -10000, 10000, -10000, 10000, 10000, -10000, 10000)
@@ -31,11 +32,16 @@ script = ExtResource("1_map")
 
 ; TEST: loot container next to the player spawn (Pos1 at 0,0) for trying the
 ; container -> cargo drag flow. Press G next to it. Holds both test items
-; (2x2 head, 1x3 weapon). Remove once wrecks provide real loot.
+; (2x2 head, 1x3 weapon) plus 4 random salvage rolls from wreck_salvage, so
+; tiers can be eyeballed. Remove once wrecks provide real loot.
 [node name="TestLootContainer" parent="Props" instance=ExtResource("4_loot")]
 position = Vector2(700, 0)
 scale = Vector2(0.5, 0.5)
 default_contents = Array[ExtResource("5_lootentry")]([ExtResource("6_testtable"), SubResource("LootEntry_TestItem")])
+grid_width = 6
+grid_height = 6
+loot_table = ExtResource("8_salvage")
+loot_rolls = 4
 
 [node name="Walls" type="Node2D" parent="."]
 [node name="Trees" type="Node2D" parent="."]

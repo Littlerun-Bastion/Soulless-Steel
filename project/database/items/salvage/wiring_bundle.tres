@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djolsmgyvm2qf" path="res://assets/images/ui/player_ui/weapon_types/kinetic_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "wiring_bundle"
+display_name = "Wiring Bundle"
+description = "A tangle of copper wiring. Low-tech salvage."
+icon = ExtResource("2_icon")
+weight = 1.0
+price = 8
+tags = Array[String](["salvage", "low_tech"])
+item_size = [1, 1]
+tech_tier = 1

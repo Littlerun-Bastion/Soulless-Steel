@@ -5,6 +5,7 @@ extends Node
 #   - current mecha  : the design dictionary the player pilots
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
+#   - materials      : crafting materials from recycling salvage (Materials)
 #
 # Story position lives in StoryDirector; settings live in Profile.
 # Profile only packs/unpacks this data into the save file under "progress".
@@ -28,6 +29,7 @@ extends Node
 signal money_changed(new_amount)
 signal mecha_changed(design)
 signal expedition_lost(report)
+signal materials_changed(materials)
 
 # Why an expedition was lost (the "reason" in a loss report).
 const LOSS_DESTROYED := "destroyed"   # the player's mecha was destroyed
@@ -46,6 +48,7 @@ var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
 var stash_inventory: Inventory = null
 var mech_inventory: Inventory = null
+var materials: Dictionary = {}  # material id -> amount
 var in_expedition := false
 # What the last lost expedition cost, until something shows it to the player
 # (game-over screen or main menu). Saved, so it survives a crash.
@@ -177,6 +180,74 @@ func _get_stash_stacks() -> Array:
 			if cell["stack"] != null and cell["origin_x"] == x and cell["origin_y"] == y:
 				stacks.append(cell["stack"])
 	return stacks
+
+
+# ---- Materials and recycling ----
+
+# A copy; change counts through add_materials / recycling.
+func get_materials() -> Dictionary:
+	return materials.duplicate()
+
+
+func get_material_count(material_id: String) -> int:
+	return int(materials.get(material_id, 0))
+
+
+func add_materials(amounts: Dictionary, should_save := true) -> void:
+	for material_id in amounts:
+		var amount := int(amounts[material_id])
+		if amount != 0:
+			materials[material_id] = get_material_count(material_id) + amount
+	_log("materials = " + str(materials))
+	materials_changed.emit(get_materials())
+	if should_save:
+		_save()
+
+
+# Salvage with a composition can be recycled — at home only: recycling
+# mid-run would turn loot into materials that can't be lost.
+func can_recycle(stack: item_stack) -> bool:
+	return not in_expedition and not recycle_value(stack).is_empty()
+
+
+# What recycling the whole stack yields: material id -> amount.
+func recycle_value(stack: item_stack) -> Dictionary:
+	var value := {}
+	if stack == null or stack.kind != item_stack.ItemKind.GENERIC or stack.item == null:
+		return value
+	var composition = stack.item.get("composition")
+	if not composition is Dictionary:
+		return value
+	for material_id in composition:
+		var amount := int(composition[material_id]) * stack.quantity
+		if amount > 0:
+			value[material_id] = amount
+	return value
+
+
+# Removes the stack from inv and adds its materials. Returns what was gained
+# ({} if it can't be recycled).
+func recycle_stack(inv: Inventory, stack: item_stack, should_save := true) -> Dictionary:
+	if inv == null or not can_recycle(stack) or not inv.get_stacks().has(stack):
+		return {}
+	var gained := recycle_value(stack)
+	inv.remove_item_stack(stack)
+	add_materials(gained, should_save)
+	return gained
+
+
+# Recycles every recyclable stack in inv (parts and the rest stay). Saves once.
+func recycle_all(inv: Inventory) -> Dictionary:
+	var gained := {}
+	if inv == null:
+		return gained
+	for stack in inv.get_stacks():
+		var got := recycle_stack(inv, stack, false)
+		for material_id in got:
+			gained[material_id] = int(gained.get(material_id, 0)) + int(got[material_id])
+	if not gained.is_empty():
+		_save()
+	return gained
 
 
 # ---- Expedition stakes ----
@@ -318,10 +389,12 @@ func reset() -> void:
 	current_mecha = DEFAULT_MECHA.duplicate()
 	stash_inventory = null
 	mech_inventory = null
+	materials = {}
 	in_expedition = false
 	pending_loss_report = {}
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
+	materials_changed.emit(get_materials())
 
 
 func get_save_data() -> Dictionary:
@@ -330,6 +403,7 @@ func get_save_data() -> Dictionary:
 		"current_mecha": current_mecha,
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
+		"materials": materials,
 		"in_expedition": in_expedition,
 		"pending_loss_report": pending_loss_report,
 	}
@@ -342,11 +416,17 @@ func set_save_data(data) -> void:
 	current_mecha = _with_default_slots(data.get("current_mecha"))
 	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
+	materials = {}
+	var saved_materials = data.get("materials", {})
+	if typeof(saved_materials) == TYPE_DICTIONARY:
+		for material_id in saved_materials:
+			materials[str(material_id)] = int(saved_materials[material_id])  # JSON numbers load as floats
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
+	materials_changed.emit(get_materials())
 
 
 # Saves from before PlayerProgress kept money and the mecha in "stats" and the

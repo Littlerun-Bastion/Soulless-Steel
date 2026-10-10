@@ -262,10 +262,17 @@ func register_context_action(target_type: String, action: Dictionary) -> void:
 
 
 func _open_context_menu() -> bool:
-	var mouse_pos := get_viewport().get_mouse_position()
-	var context := _find_context_target(mouse_pos)
+	var context := _find_context_target(get_viewport().get_mouse_position())
 	if context.is_empty():
 		return false
+	return open_context_menu(context)
+
+
+# Opens the menu at the mouse for a context built elsewhere — screens that
+# handle their own right-click (the Hangar's InventoryUI) call this. The
+# context needs "type" and a "source" node (the menu checks it's still valid).
+func open_context_menu(context: Dictionary) -> bool:
+	var mouse_pos := get_viewport().get_mouse_position()
 	context["screen_pos"] = mouse_pos
 	var actions := _get_context_actions(context)
 	if actions.is_empty():
@@ -332,6 +339,40 @@ func _register_context_actions() -> void:
 				ctx["inventory"].transfer_all_to(_player_cargo())
 				refresh_inventory_windows(),
 		})
+
+	# Recycling (Hangar only): salvage -> materials. Only offered when the
+	# context says recycling is allowed here ("recycle_allowed", set by the
+	# Hangar); PlayerProgress also refuses during an expedition.
+	register_context_action("item", {
+		"id": "recycle", "label": "Recycle", "priority": 20, "group": "recycle",
+		"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and PlayerProgress.can_recycle(ctx["stack"]),
+		"run": func(ctx):
+			PlayerProgress.recycle_stack(ctx["inventory"], ctx["stack"])
+			_refresh_after_inventory_change(ctx),
+	})
+	for target_type in ["item", "inventory"]:
+		register_context_action(target_type, {
+			"id": "recycle_all", "label": "Recycle all salvage", "priority": 21, "group": "recycle",
+			"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and _has_recyclable(ctx["inventory"]),
+			"run": func(ctx):
+				PlayerProgress.recycle_all(ctx["inventory"])
+				_refresh_after_inventory_change(ctx),
+		})
+
+
+func _has_recyclable(inv: Inventory) -> bool:
+	for stack in inv.get_stacks():
+		if PlayerProgress.can_recycle(stack):
+			return true
+	return false
+
+
+# Redraws Mech OS windows and the screen that opened the menu, if it can.
+func _refresh_after_inventory_change(ctx: Dictionary) -> void:
+	refresh_inventory_windows()
+	var source = ctx.get("source")
+	if is_instance_valid(source) and source.has_method("refresh"):
+		source.refresh()
 
 
 func _player_cargo() -> Inventory:

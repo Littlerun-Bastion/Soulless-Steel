@@ -42,6 +42,12 @@ size_flags_vertical = 3
 [node name="InventoryUI" parent="MarginContainer/VBoxContainer/MarginContainer" instance=ExtResource("2_3j6od")]
 layout_mode = 2
 
+[node name="MaterialsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("4_ki33h")
+theme_override_font_sizes/font_size = 24
+text = "MATERIALS"
+
 [node name="Button" type="Button" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2

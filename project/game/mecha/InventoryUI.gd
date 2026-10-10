@@ -12,6 +12,7 @@ var other_inventory: Inventory = null       # secondary inventory (stash/contain
 @export var item_scene: PackedScene         # scene for item UI panel
 
 @export var can_customize: bool = true     # if true, equipment slots are interactive
+@export var recycle_allowed: bool = false  # right-click menu offers Recycle (Hangar sets this)
 var mecha_ref: Mecha = null                 # use this inside equip_part/unequip_part
 
 
@@ -66,6 +67,10 @@ var drag_hover_y: int = -1                  # predicted origin cell Y while drag
 var drag_preview: Panel = null              # transparent footprint outline
 
 var pan_scroll: ScrollContainer = null  # which scroll we're currently panning
+# Right-click that moves less than this (px) between press and release is a
+# click (opens the item menu), not a pan.
+const RIGHT_CLICK_SLOP := 6.0
+var right_press_pos := Vector2.ZERO
 
 
 func setup_for_mecha(mecha: Mecha, target_inv: Inventory = null) -> void:
@@ -262,18 +267,26 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton:
+		# The Mech OS right-click menu is open: its clicks are for it.
+		if MechOS.context_menu.is_open():
+			return
+
 		var target_scroll := _get_scroll_under_mouse()
 		var over_inv := target_scroll != null
 
-		# --- Right mouse: panning in whichever inventory is under the mouse ---
+		# --- Right mouse: panning in whichever inventory is under the mouse,
+		# or a plain right-click (no pan) opens the item menu ---
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			if event.pressed and over_inv:
 				is_panning = true
 				pan_scroll = target_scroll
+				right_press_pos = event.position
 				get_viewport().set_input_as_handled()
 			elif not event.pressed and is_panning:
 				is_panning = false
 				pan_scroll = null
+				if dragging_stack == null and event.position.distance_to(right_press_pos) <= RIGHT_CLICK_SLOP:
+					_open_item_menu()
 				get_viewport().set_input_as_handled()
 			return
 
@@ -755,6 +768,48 @@ func _get_inventory_under_mouse() -> Dictionary:
 		}
 
 	return {}  # nothing under mouse
+
+# Opens the Mech OS right-click menu for the item (or empty grid space) under
+# the mouse. Actions decide for themselves whether they apply (e.g. Recycle
+# needs recycle_allowed).
+func _open_item_menu() -> void:
+	var info := _get_inventory_under_mouse()
+	if info.is_empty() or info["inventory"] == null:
+		return
+	var context := {
+		"inventory": info["inventory"],
+		"source": self,
+		"recycle_allowed": recycle_allowed,
+	}
+	var stack := _get_stack_under_mouse(info)
+	if stack != null:
+		context["type"] = "item"
+		context["stack"] = stack
+	else:
+		context["type"] = "inventory"
+	if tooltip != null:
+		hover_stack = null
+		tooltip.hide()
+	MechOS.open_context_menu(context)
+
+
+# The stack (origin-resolved) under the mouse in the inventory described by
+# info (see _get_inventory_under_mouse), or null.
+func _get_stack_under_mouse(info: Dictionary) -> item_stack:
+	var inv: Inventory = info["inventory"]
+	var layer: Control = info["layer"]
+	var local: Vector2 = layer.get_local_mouse_position()
+	var cell_x := int(floor(local.x / float(cell_size + sep_x)))
+	var cell_y := int(floor(local.y / float(cell_size + sep_y)))
+	if cell_x < 0 or cell_y < 0 or cell_x >= inv.grid_width or cell_y >= inv.grid_height:
+		return null
+	var cell = inv.grid[cell_y][cell_x]
+	if cell["stack"] == null:
+		return null
+	if cell["origin_x"] >= 0 and cell["origin_y"] >= 0:
+		return inv.grid[cell["origin_y"]][cell["origin_x"]]["stack"]
+	return cell["stack"]
+
 
 func _get_scroll_under_mouse() -> ScrollContainer:
 	var mouse_pos: Vector2 = get_viewport().get_mouse_position()

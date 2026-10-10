@@ -22,8 +22,9 @@ enum TechTier { NONE, LOW, MID, HIGH }
 @export var max_stack := 1
 
 @export var tech_tier: TechTier = TechTier.NONE
-# Later: a composition (what recycling this yields in the Hangar) goes here,
-# next to tech_tier. Not designed yet.
+# What recycling one of this item yields in the Hangar: material id
+# (see Materials) -> amount. Empty = can't be recycled.
+@export var composition: Dictionary[String, int] = {}
 
 
 func width() -> int:

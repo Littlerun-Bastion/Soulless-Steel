@@ -75,6 +75,9 @@ func _test_salvage_tiers() -> void:
 		_check(entry.get_tech_tier() != item_data.TechTier.NONE,
 				"%s has a tech tier" % entry.item.id)
 		_check("salvage" in entry.item.tags, "%s is tagged salvage" % entry.item.id)
+		_check(not entry.item.composition.is_empty(), "%s can be recycled" % entry.item.id)
+		for material_id in entry.item.composition:
+			_check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [entry.item.id, material_id])
 
 
 func _test_tier_chances() -> void:

@@ -2,6 +2,7 @@ extends Control
 
 @onready var player_mecha: Mecha = $Mecha
 @onready var inventory_ui: InventoryUI = $MarginContainer/VBoxContainer/MarginContainer/InventoryUI
+@onready var materials_label: Label = $MarginContainer/VBoxContainer/MaterialsLabel
 
 var stash_inventory: Inventory = null  # player’s stash / hangar inventory
 
@@ -28,7 +29,19 @@ func _ready() -> void:
 
 	# 6) Hand everything to InventoryUI
 	inventory_ui.can_customize = true
+	# Right-click salvage in the cargo or stash: Recycle / Recycle all salvage.
+	inventory_ui.recycle_allowed = true
 	inventory_ui.setup_for_mecha(player_mecha, stash_inventory)
+
+	PlayerProgress.materials_changed.connect(_on_materials_changed)
+	_on_materials_changed(PlayerProgress.get_materials())
+
+
+func _on_materials_changed(materials: Dictionary) -> void:
+	var parts := []
+	for material_id in Materials.ids():
+		parts.append("%s %d" % [Materials.display_name(material_id), int(materials.get(material_id, 0))])
+	materials_label.text = "MATERIALS   " + "   ".join(parts)
 
 
 func _get_core_inventory_size() -> Array:

@@ -71,6 +71,14 @@ func show_item(stack: item_stack) -> void:
 	if typeof(price_val) == TYPE_FLOAT or typeof(price_val) == TYPE_INT:
 		lines.append("Value: %s" % price_val)
 
+	# Salvage: tech tier and what recycling it yields (per item).
+	var tier_val = res.get("tech_tier")
+	if typeof(tier_val) == TYPE_INT and tier_val != item_data.TechTier.NONE:
+		lines.append("Tech: %s" % str(item_data.TechTier.keys()[tier_val]).capitalize())
+	var composition_val = res.get("composition")
+	if composition_val is Dictionary and not composition_val.is_empty():
+		lines.append("Recycles into: %s" % Materials.describe(composition_val))
+
 	if lines.is_empty():
 		stats_label.text = ""
 	else:

@@ -15,8 +15,6 @@ var part_slots: Array = []
 func _ready() -> void:
 	super()
 	_collect_part_slots()
-	super()
-	_collect_part_slots()
 	hardware_btn.pressed.connect(_on_hardware_pressed)
 	wetware_btn.pressed.connect(_on_wetware_pressed)
 	weapons_btn.pressed.connect(_on_weapons_pressed)
@@ -28,10 +26,6 @@ func _ready() -> void:
 func setup(mecha: Mecha) -> void:
 	mecha_ref = mecha
 	refresh_slots()
-	MechOS.drag_manager.equipment_window = self
-	mecha_ref = mecha
-	refresh_slots()
-	
 	# Register with DragManager
 	MechOS.drag_manager.equipment_window = self
 

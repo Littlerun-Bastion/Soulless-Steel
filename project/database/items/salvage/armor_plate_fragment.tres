@@ -5,13 +5,13 @@
 
 [resource]
 script = ExtResource("1_script")
-id = "scrap_plating"
-display_name = "Scrap Plating"
-description = "Bent armor plates torn off a wreck. Low-tech salvage."
+id = "armor_plate_fragment"
+display_name = "Armor Plate Fragment"
+description = "A buckled slab of hull plating torn from a SAV's frame."
 icon = ExtResource("2_icon")
 weight = 2.0
 price = 10
-tags = Array[String](["salvage", "low_tech"])
+tags = Array[String](["salvage"])
 item_size = [2, 1]
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3})

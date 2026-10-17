@@ -9,7 +9,7 @@ extends Node
 # while the checks run, so the profile is never touched.
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
-const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 steel, 2x1
+const SCRAP := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 3 steel, 2x1
 
 var _passed := 0
 var _failed := 0

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "damaged_nt_engine"
+display_name = "Damaged NT Engine"
+description = "A cracked Non-Thermal Engine. Even broken, it never gets warm."
+icon = ExtResource("2_icon")
+weight = 2.0
+price = 220
+tags = Array[String](["salvage"])
+item_size = [2, 2]
+tech_tier = 3
+composition = Dictionary[String, int]({"nt_engines": 1, "nt_fluid": 2})

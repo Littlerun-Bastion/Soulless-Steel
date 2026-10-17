@@ -11,7 +11,7 @@ extends Node
 
 const TEST_PART_TYPE := "head"
 const TEST_PART_ID := "MSV-L3J-H"
-const SALVAGE := preload("res://database/items/salvage/fusion_cell.tres")
+const SALVAGE := preload("res://database/items/salvage/damaged_nt_engine.tres")
 
 var _passed := 0
 var _failed := 0
@@ -197,7 +197,7 @@ func _test_abandoned() -> void:
 
 # ---- Materials and recycling ----
 
-const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 steel
+const SCRAP := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 3 steel
 
 
 func _test_materials() -> void:
@@ -247,7 +247,7 @@ func _test_old_save_cleanup() -> void:
 	old_save["stash_inventory"] = {
 		"grid_width": 6, "grid_height": 6,
 		"items": [
-			{"x": 0, "y": 0, "quantity": 1, "rotated": false, "kind": 0, "item_path": "res://database/items/salvage/gone_item.tres"},
+			{"x": 0, "y": 0, "quantity": 1, "rotated": false, "kind": 0, "item_path": "res://database/items/salvage/scrap_plating.tres"},
 			{"x": 0, "y": 2, "quantity": 1, "rotated": false, "kind": 0, "item_path": ""},
 			{"x": 3, "y": 0, "quantity": 1, "rotated": false, "kind": 0, "item_path": SCRAP.resource_path},
 		],
@@ -262,7 +262,7 @@ func _test_old_save_cleanup() -> void:
 func _test_recycling() -> void:
 	var stash := PlayerProgress.get_stash_inventory()
 	var scrap := item_stack.from_generic(SCRAP, 2)
-	var cell := item_stack.from_generic(SALVAGE)  # fusion cell: 2 fissile_materials, 1 nt_fluid
+	var cell := item_stack.from_generic(SALVAGE)  # damaged NT engine: 1 nt_engines, 2 nt_fluid
 	stash.add_stack_anywhere(scrap)
 	stash.add_stack_anywhere(cell)
 	PlayerProgress.add_part(TEST_PART_TYPE, TEST_PART_ID)
@@ -281,7 +281,7 @@ func _test_recycling() -> void:
 	_check(PlayerProgress.recycle_stack(stash, scrap).is_empty(), "can't recycle it twice")
 
 	PlayerProgress.recycle_all(stash)
-	_check(PlayerProgress.get_material_count("fissile_materials") == 2 and PlayerProgress.get_material_count("nt_fluid") == 1,
+	_check(PlayerProgress.get_material_count("nt_engines") == 1 and PlayerProgress.get_material_count("nt_fluid") == 2,
 			"recycle_all gives everything's materials")
 	_check(PlayerProgress.count_part(TEST_PART_TYPE, TEST_PART_ID) == 1, "recycle_all leaves parts alone")
 

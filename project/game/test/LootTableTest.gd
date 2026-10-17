@@ -11,8 +11,8 @@ extends Node
 # while the checks run, so the profile is never touched.
 
 const WRECK_SALVAGE := preload("res://database/loot-tables/wreck_salvage.tres")
-const LOW_ITEM := preload("res://database/items/salvage/scrap_plating.tres")
-const HIGH_ITEM := preload("res://database/items/salvage/fusion_cell.tres")
+const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")
+const HIGH_ITEM := preload("res://database/items/salvage/damaged_nt_engine.tres")
 const LOOT_CONTAINER := preload("res://game/mecha/LootContainer.tscn")
 
 # Matches the weapon in PlayerProgress.DEFAULT_MECHA.
@@ -78,6 +78,21 @@ func _test_salvage_tiers() -> void:
 		_check(not entry.item.composition.is_empty(), "%s can be recycled" % entry.item.id)
 		for material_id in entry.item.composition:
 			_check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [entry.item.id, material_id])
+		var item: item_data = entry.item
+		_check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
+		_check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
+		_check(item.display_name != "" and item.description != "", "%s is named and described" % item.id)
+		_check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
+
+	# Every salvage item is in the table, once: 4 low, 4 mid, 3 high.
+	var table_items := WRECK_SALVAGE.entries.map(func(e): return e.item)
+	var files := Array(DirAccess.get_files_at("res://database/items/salvage")).filter(func(f): return f.ends_with(".tres"))
+	_check(files.size() == 11 and table_items.size() == 11, "eleven salvage items, all in the table")
+	for file in files:
+		_check(load("res://database/items/salvage/" + file) in table_items, "%s is in wreck_salvage" % file)
+	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.LOW).size() == 4, "four low-tech")
+	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).size() == 4, "four mid-tech")
+	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
 
 
 func _test_tier_chances() -> void:

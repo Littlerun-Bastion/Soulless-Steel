@@ -1,17 +1,17 @@
 [gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
 
 [ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://djolsmgyvm2qf" path="res://assets/images/ui/player_ui/weapon_types/kinetic_icon.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = "servo_assembly"
 display_name = "Servo Assembly"
-description = "An actuator pulled from a joint, still mostly intact. Mid-tech salvage."
+description = "A precision servo from a SAV joint, its rare-earth magnets replaced with AVI-Polymer."
 icon = ExtResource("2_icon")
 weight = 2.0
-price = 40
-tags = Array[String](["salvage", "mid_tech"])
+price = 45
+tags = Array[String](["salvage"])
 item_size = [2, 2]
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 2, "copper": 1, "avi_polymer": 1})

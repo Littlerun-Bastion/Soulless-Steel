@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djolsmgyvm2qf" path="res://assets/images/ui/player_ui/weapon_types/kinetic_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "hydraulic_actuator"
+display_name = "Hydraulic Actuator"
+description = "A hydraulic ram from a limb joint, still weeping oil from a burst seal."
+icon = ExtResource("2_icon")
+weight = 1.5
+price = 18
+tags = Array[String](["salvage"])
+item_size = [1, 2]
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 2, "oil": 2})

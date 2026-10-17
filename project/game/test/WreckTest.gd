@@ -10,8 +10,8 @@ extends Node
 # Nothing here touches the player's progress.
 
 const WRECK := preload("res://game/mecha/Wreck.tscn")
-const LOW_ITEM := preload("res://database/items/salvage/scrap_plating.tres")   # 2x1
-const HIGH_ITEM := preload("res://database/items/salvage/fusion_cell.tres")    # 2x2
+const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 2x1
+const HIGH_ITEM := preload("res://database/items/salvage/damaged_nt_engine.tres")    # 2x2
 
 const DESIGN_ROLLS := 5000
 

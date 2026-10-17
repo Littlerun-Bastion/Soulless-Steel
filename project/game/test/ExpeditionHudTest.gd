@@ -115,8 +115,8 @@ func _test_summary() -> void:
 	var mission := _make_mission()
 	mission.objectives[1].current_amount = 1
 	mission.objectives[1].completed = true
-	var text := ExtractionSummary.format_summary(["Fusion Cell", "Scrap Plating x2"], 2, mission)
-	_check("Cargo secured: Fusion Cell, Scrap Plating x2" in text, "lists the cargo")
+	var text := ExtractionSummary.format_summary(["Damaged NT Engine", "Armor Plate Fragment x2"], 2, mission)
+	_check("Cargo secured: Damaged NT Engine, Armor Plate Fragment x2" in text, "lists the cargo")
 	_check("Kills: 2" in text, "counts kills")
 	_check("Mission: Survive and Extract - incomplete" in text, "mission status")
 	_check("[X] Reach an exit and extract" in text and "[ ] Eliminate enemies  0/3" in text, "objectives listed")
@@ -125,8 +125,8 @@ func _test_summary() -> void:
 	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()
 	add_child(summary)
 	_check(not summary.visible, "hidden until shown")
-	summary.show_summary(["Fusion Cell"], 1, mission)
-	_check(summary.visible and summary.body_label.text.begins_with("Cargo secured: Fusion Cell"), "shows the summary")
+	summary.show_summary(["Damaged NT Engine"], 1, mission)
+	_check(summary.visible and summary.body_label.text.begins_with("Cargo secured: Damaged NT Engine"), "shows the summary")
 	var continued := [false]
 	summary.continued.connect(func(): continued[0] = true)
 	summary.continue_button.pressed.emit()

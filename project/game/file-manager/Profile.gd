@@ -111,6 +111,8 @@ func set_save_data(data):
 	for action in controls.keys():
 		edit_control_action(action, controls[action])
 
+	Global.apply_window_mode()
+
 func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):
 		return

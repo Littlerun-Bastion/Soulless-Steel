@@ -4,7 +4,7 @@ class_name ItemTooltip
 @onready var name_label: Label              = $MarginContainer/VBoxContainer/NameLabel
 @onready var type_label: Label              = $MarginContainer/VBoxContainer/TypeLabel
 @onready var stats_label: Label             = $MarginContainer/VBoxContainer/StatsLabel
-@onready var description_label: RichTextLabel = $MarginContainer/VBoxContainer/DescriptionLabel
+@onready var description_label: Label        = $MarginContainer/VBoxContainer/DescriptionLabel
 
 func _ready() -> void:
 	visible = false
@@ -87,8 +87,15 @@ func show_item(stack: item_stack) -> void:
 	# --- Description ---
 	var desc_val = res.get("description")
 	description_label.text = str(desc_val if desc_val != null else "")
+	description_label.visible = description_label.text != ""
+	type_label.visible = type_label.text != ""
 
-	reset_size()
+	# The panel doesn't size itself to its content, so fit it to the margin
+	# box (keeps the background behind the text and the clamp on screen).
+	var content := $MarginContainer as Control
+	content.reset_size()
+	size = content.get_combined_minimum_size()
+	content.size = size
 	visible = true
 	_update_position()   # position immediately on first show
 

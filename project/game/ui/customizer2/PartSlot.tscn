@@ -23,7 +23,7 @@ theme_override_constants/margin_bottom = 10
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=95490962]
 layout_mode = 2
-theme_override_constants/separation = -5
+theme_override_constants/separation = 0
 
 [node name="PartCategory" type="Label" parent="MarginContainer/VBoxContainer" unique_id=2075734517]
 layout_mode = 2
@@ -37,7 +37,7 @@ vertical_alignment = 2
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_qy8s0")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 28
 text = "Test item"
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=872070614]

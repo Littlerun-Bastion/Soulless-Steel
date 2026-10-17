@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "oil"
+display_name = "Oil"
+tech_tier = 1
+description = "Used as hydraulic fluid, processed into fuel, or as a lubricant for mechanisms, oil is a vitally important fluid for all SAV activities and parts. Used in almost all SAV parts, where not substituted for NT Fluid-based analogues."

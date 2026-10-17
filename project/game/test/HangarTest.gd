@@ -9,7 +9,7 @@ extends Node
 # while the checks run, so the profile is never touched.
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
-const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 scrap_metal, 2x1
+const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 steel, 2x1
 
 var _passed := 0
 var _failed := 0
@@ -66,8 +66,8 @@ func _run_hangar_checks() -> void:
 	var ctx := {"type": "item", "stack": scrap, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled}
 	_check(recycle["visible_if"].call(ctx), "Recycle offered on stash salvage")
 	recycle["run"].call(ctx)
-	_check(PlayerProgress.get_material_count("scrap_metal") == 3, "recycled into materials")
-	_check("Scrap Metal 3" in hangar.materials_label.text, "materials line updated")
+	_check(PlayerProgress.get_material_count("steel") == 3, "recycled into materials")
+	_check("Steel 3" in hangar.materials_label.text, "materials line updated")
 	_pass("recycling in the Hangar", before)
 
 	before = _failed

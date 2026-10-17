@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "noble_metals"
+display_name = "Noble Metals"
+tech_tier = 2
+description = "Precious metals used in the construction of advanced weapons and SAV internals, highly prized due to their resistance to corrosion and other various chemical attributes. Used as a less labour intensive substitute to AVI-Polymer, but exceedingly hard to come by. Found only in certain salvageable scientific facilities."

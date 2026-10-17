@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "myofibrilium"
+display_name = "Myofibrilium"
+tech_tier = 3
+description = "An AVIS-synthesised material found on larger Entities. Extraordinarily tough, lightweight and flexible, it is considered to be a wonder material rivalling carbon nanotubes; with the added benefit of its ability to contract or expand based on the reception of electrical signals, analogous to biological muscle. Used extensively in state-of-the-art SAV hardware."

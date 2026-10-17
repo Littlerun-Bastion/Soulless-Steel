@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "nt_engines"
+display_name = "NT Engines"
+tech_tier = 3
+description = "Non-Thermal Engines, the \"heart\" of the most powerful Entities. The mechanics of NT Engines are an enigma, as they appear to violate the laws of thermodynamics - driving AVIS-based mechanisms without producing any waste energy. Used in advanced SAV Generators to achieve unmatchable performance gains over traditional nuclear-powered Generators."

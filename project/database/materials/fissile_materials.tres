@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "fissile_materials"
+display_name = "Fissile Materials"
+tech_tier = 1
+description = "Used as a power source for all but the very bleeding-edge SAV Generators, fissile material such as Uranium or Plutonium is critical in the functioning of SAVs, generating electricity and thermal energy to drive SAV hardware. Hard to procure aside from taking generator cores from other SAVs or Entities, but can be found sparingly in old human surface facilities."

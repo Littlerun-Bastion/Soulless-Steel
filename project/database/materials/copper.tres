@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "copper"
+display_name = "Copper"
+tech_tier = 1
+description = "Found in every electronic device, copper is the most important component to facilitate any kind of electronic circuit, and is used as an electrical conductor and as a thermal conductor. Used in every single SAV part."

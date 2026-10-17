@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "steel"
+display_name = "Steel"
+tech_tier = 1
+description = "An iron-carbon alloy, found all over the world in buildings, machines and all sorts of human constructs. Can sometimes be substituted for more fragile aluminium. Used in almost all SAV parts as structural reinforcement, armor plating, circuit shielding, and any number of other applications."

@@ -7,5 +7,6 @@ class_name MaterialData
 
 @export var id: String = ""
 @export var display_name: String = ""
+@export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export_multiline var description: String = ""
 @export var icon: Texture2D

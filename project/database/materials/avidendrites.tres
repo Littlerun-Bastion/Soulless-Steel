@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "avidendrites"
+display_name = "Avidendrites"
+tech_tier = 3
+description = "An AVIS-synthesized material found in most Entities, but can only be harvested in workable amounts from larger or smarter Entities. It is a silicon-based substance that exhibits similar properties to neural biomatter, but with a responsiveness and capacitance that far outweighs carbon-based neural biomatter. Used in small amounts in certain SAV hardware and wetware."

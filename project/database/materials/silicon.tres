@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "silicon"
+display_name = "Silicon"
+tech_tier = 1
+description = "Used to make almost all complex electronic circuits, Silicon can be used as a semiconductor to facilitate advanced circuitry, or it can be used in a crystalline form for transmitters or optics. Used in every single SAV part."

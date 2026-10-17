@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "avi_polymer"
+display_name = "AVI-Polymer"
+tech_tier = 1
+description = "Used as a substitute for rare technology-critical elements such as rare-earth metals or noble metals, AVI-Polymer is aggregate matter produced by Entities that can take on the physical properties of many elements. Found in small quantities in Entities and Cysts. While AVI-Polymer can be used as a substitute for any material involved in SAV construction, due to its relatively scarcity it isn't used to replicate the more readily available steel (as iron), copper or silicon, and instead is used to replicate rare-earth metals or other such uncommon elements. Used in the production of Generators, and in small amounts across SAV hull hardware."

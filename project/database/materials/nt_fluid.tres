@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "nt_fluid"
+display_name = "NT Fluid"
+tech_tier = 2
+description = "The 'blood' of larger, more advanced Entities, it is used commonly in military-grade weapons and SAV hardware as a vastly more efficient coolant than water-based solutions. Found in sizeable quantities in large Entities or Cysts."

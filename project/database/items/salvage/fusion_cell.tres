@@ -14,4 +14,4 @@ price = 150
 tags = Array[String](["salvage", "high_tech"])
 item_size = [2, 2]
 tech_tier = 3
-composition = Dictionary[String, int]({"power_cells": 2, "rare_alloys": 1})
+composition = Dictionary[String, int]({"fissile_materials": 2, "nt_fluid": 1})

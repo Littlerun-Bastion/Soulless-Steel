@@ -30,6 +30,8 @@ func _ready() -> void:
 	_run("no loss outside an expedition", _test_lose_without_expedition)
 	_run("abandoned run resolved on load", _test_abandoned)
 	_run("materials", _test_materials)
+	_run("material registry", _test_material_registry)
+	_run("old saves cleaned up on load", _test_old_save_cleanup)
 	_run("recycling", _test_recycling)
 	_run("no recycling mid-run", _test_no_recycling_in_expedition)
 	_run("recycle menu actions", _test_recycle_actions)
@@ -195,32 +197,77 @@ func _test_abandoned() -> void:
 
 # ---- Materials and recycling ----
 
-const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 scrap_metal
+const SCRAP := preload("res://database/items/salvage/scrap_plating.tres")   # 3 steel
 
 
 func _test_materials() -> void:
 	_check(PlayerProgress.get_materials().is_empty(), "no materials at first")
-	PlayerProgress.add_materials({"scrap_metal": 3, "electronics": 1})
-	PlayerProgress.add_materials({"scrap_metal": 2})
-	_check(PlayerProgress.get_material_count("scrap_metal") == 5, "amounts add up")
-	_check(PlayerProgress.get_material_count("rare_alloys") == 0, "missing material is 0")
+	PlayerProgress.add_materials({"steel": 3, "copper": 1})
+	PlayerProgress.add_materials({"steel": 2})
+	_check(PlayerProgress.get_material_count("steel") == 5, "amounts add up")
+	_check(PlayerProgress.get_material_count("myofibrilium") == 0, "missing material is 0")
 
 	var json := JSON.stringify(PlayerProgress.get_save_data())
 	PlayerProgress.reset()
 	PlayerProgress.set_save_data(JSON.parse_string(json))
-	_check(PlayerProgress.get_material_count("scrap_metal") == 5, "materials survive a save")
-	_check(typeof(PlayerProgress.get_materials()["scrap_metal"]) == TYPE_INT, "loaded as whole numbers")
+	_check(PlayerProgress.get_material_count("steel") == 5, "materials survive a save")
+	_check(typeof(PlayerProgress.get_materials()["steel"]) == TYPE_INT, "loaded as whole numbers")
+
+
+func _test_material_registry() -> void:
+	_check(Materials.ALL.size() == 12, "twelve materials")
+	var seen := {}
+	for material in Materials.ALL:
+		_check(material.id != "" and not seen.has(material.id), "unique id: " + material.id)
+		seen[material.id] = true
+		_check(material.display_name != "" and material.description != "", "named and described: " + material.id)
+		_check(material.tech_tier in Materials.TIERS, "has a tier: " + material.id)
+	_check(Materials.of_tier(item_data.TechTier.LOW).size() == 6, "six low-tech")
+	_check(Materials.of_tier(item_data.TechTier.MID).size() == 3, "three mid-tech")
+	_check(Materials.of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
+	_check(Materials.display_name("avi_polymer") == "AVI-Polymer", "names as written")
+	_check(Materials.tier_name(item_data.TechTier.HIGH) == "High", "tier name")
+	_check(Materials.describe({"copper": 1, "steel": 3}) == "3 Steel, 1 Copper", "describe in registry order")
+
+	# Every salvage item recycles into real materials only.
+	for path in DirAccess.get_files_at("res://database/items/salvage"):
+		if not path.ends_with(".tres"):
+			continue
+		var item = load("res://database/items/salvage/" + path)
+		_check(not item.composition.is_empty(), "%s has a composition" % path)
+		for material_id in item.composition:
+			_check(Materials.is_valid(material_id), "%s uses known material %s" % [path, material_id])
+
+
+func _test_old_save_cleanup() -> void:
+	# A dev save from before the lore materials, with a salvage file that
+	# no longer exists next to one that does.
+	var old_save := PlayerProgress.get_save_data()
+	old_save["materials"] = {"scrap_metal": 4.0, "steel": 2.0, "electronics": 1.0}
+	old_save["stash_inventory"] = {
+		"grid_width": 6, "grid_height": 6,
+		"items": [
+			{"x": 0, "y": 0, "quantity": 1, "rotated": false, "kind": 0, "item_path": "res://database/items/salvage/gone_item.tres"},
+			{"x": 0, "y": 2, "quantity": 1, "rotated": false, "kind": 0, "item_path": ""},
+			{"x": 3, "y": 0, "quantity": 1, "rotated": false, "kind": 0, "item_path": SCRAP.resource_path},
+		],
+	}
+	PlayerProgress.set_save_data(JSON.parse_string(JSON.stringify(old_save)))
+	_check(PlayerProgress.get_materials() == {"steel": 2}, "unknown materials dropped, known kept")
+	var stacks := PlayerProgress.get_stash_inventory().get_stacks()
+	_check(stacks.size() == 1, "missing and blank items dropped")
+	_check(stacks.size() == 1 and stacks[0].item == SCRAP, "existing item kept")
 
 
 func _test_recycling() -> void:
 	var stash := PlayerProgress.get_stash_inventory()
 	var scrap := item_stack.from_generic(SCRAP, 2)
-	var cell := item_stack.from_generic(SALVAGE)  # fusion cell: 2 power_cells, 1 rare_alloys
+	var cell := item_stack.from_generic(SALVAGE)  # fusion cell: 2 fissile_materials, 1 nt_fluid
 	stash.add_stack_anywhere(scrap)
 	stash.add_stack_anywhere(cell)
 	PlayerProgress.add_part(TEST_PART_TYPE, TEST_PART_ID)
 
-	_check(PlayerProgress.recycle_value(scrap) == {"scrap_metal": 6}, "value counts the whole stack")
+	_check(PlayerProgress.recycle_value(scrap) == {"steel": 6}, "value counts the whole stack")
 	var part_stack: item_stack = null
 	for stack in stash.get_stacks():
 		if stack.kind == item_stack.ItemKind.PART:
@@ -228,13 +275,13 @@ func _test_recycling() -> void:
 	_check(not PlayerProgress.can_recycle(part_stack), "parts can't be recycled")
 
 	var gained := PlayerProgress.recycle_stack(stash, scrap)
-	_check(gained == {"scrap_metal": 6}, "recycle_stack returns what it gave")
-	_check(PlayerProgress.get_material_count("scrap_metal") == 6, "materials added")
+	_check(gained == {"steel": 6}, "recycle_stack returns what it gave")
+	_check(PlayerProgress.get_material_count("steel") == 6, "materials added")
 	_check(not stash.get_stacks().has(scrap), "recycled stack removed")
 	_check(PlayerProgress.recycle_stack(stash, scrap).is_empty(), "can't recycle it twice")
 
 	PlayerProgress.recycle_all(stash)
-	_check(PlayerProgress.get_material_count("power_cells") == 2 and PlayerProgress.get_material_count("rare_alloys") == 1,
+	_check(PlayerProgress.get_material_count("fissile_materials") == 2 and PlayerProgress.get_material_count("nt_fluid") == 1,
 			"recycle_all gives everything's materials")
 	_check(PlayerProgress.count_part(TEST_PART_TYPE, TEST_PART_ID) == 1, "recycle_all leaves parts alone")
 
@@ -271,6 +318,6 @@ func _test_recycle_actions() -> void:
 	ctx["recycle_allowed"] = true
 	_check(recycle["visible_if"].call(ctx), "shown in the Hangar")
 	recycle["run"].call(ctx)
-	_check(PlayerProgress.get_material_count("scrap_metal") == 3 and stash.is_empty(), "Recycle recycles the item")
+	_check(PlayerProgress.get_material_count("steel") == 3 and stash.is_empty(), "Recycle recycles the item")
 	_check(not recycle_all["visible_if"].call({"type": "inventory", "inventory": stash, "recycle_allowed": true}),
 			"no Recycle all on an empty stash")

@@ -416,11 +416,7 @@ func set_save_data(data) -> void:
 	current_mecha = _with_default_slots(data.get("current_mecha"))
 	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
-	materials = {}
-	var saved_materials = data.get("materials", {})
-	if typeof(saved_materials) == TYPE_DICTIONARY:
-		for material_id in saved_materials:
-			materials[str(material_id)] = int(saved_materials[material_id])  # JSON numbers load as floats
+	materials = _materials_from_dict(data.get("materials", {}))
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
@@ -441,6 +437,22 @@ func migrate_legacy_save(data: Dictionary) -> Dictionary:
 		"stash_inventory": data.get("stash_inventory"),
 		"mech_inventory": data.get("mech_inventory"),
 	}
+
+
+# Materials that were renamed or removed since the save are dropped.
+func _materials_from_dict(data) -> Dictionary:
+	var result := {}
+	if typeof(data) != TYPE_DICTIONARY:
+		return result
+	for material_id in data:
+		var id := str(material_id)
+		if not Materials.is_valid(id):
+			push_warning("PlayerProgress: dropping unknown material '%s' from save" % id)
+			continue
+		var amount := int(data[material_id])  # JSON numbers load as floats
+		if amount > 0:
+			result[id] = amount
+	return result
 
 
 # Fills slots added to DEFAULT_MECHA since the design was saved.
@@ -521,11 +533,14 @@ func _inventory_from_dict(data) -> Inventory:
 				push_warning("PlayerProgress: dropping saved part with no type/id at %s,%s" % [entry.get("x"), entry.get("y")])
 				continue
 		else:
-			var item_path: String = entry.get("item_path", "")
-			if item_path != "":
-				var res = load(item_path)
-				if res != null:
-					stack.item = res
+			# Items whose file was removed or renamed since the save would
+			# load as blank squares; drop them instead.
+			var item_path := str(entry.get("item_path", ""))
+			var res = load(item_path) if item_path != "" and ResourceLoader.exists(item_path) else null
+			if res == null:
+				push_warning("PlayerProgress: dropping saved item '%s' (file missing)" % item_path)
+				continue
+			stack.item = res
 
 		inv.place_item(stack, int(entry.get("x", 0)), int(entry.get("y", 0)))
 

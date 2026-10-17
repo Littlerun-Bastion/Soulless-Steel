@@ -73,11 +73,14 @@ func _on_cargo_overflow(stacks: Array) -> void:
 	MechOS.refresh_inventory_windows()
 
 
+# Only the materials the player has, so twelve zeroes don't crowd the line.
 func _on_materials_changed(materials: Dictionary) -> void:
 	var parts := []
 	for material_id in Materials.ids():
-		parts.append("%s %d" % [Materials.display_name(material_id), int(materials.get(material_id, 0))])
-	materials_label.text = "MATERIALS   " + "   ".join(parts)
+		var amount := int(materials.get(material_id, 0))
+		if amount > 0:
+			parts.append("%s %d" % [Materials.display_name(material_id), amount])
+	materials_label.text = "MATERIALS   " + ("   ".join(parts) if not parts.is_empty() else "none")
 
 
 func _on_BackButton_pressed() -> void:

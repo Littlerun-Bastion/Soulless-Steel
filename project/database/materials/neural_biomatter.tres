@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "neural_biomatter"
+display_name = "Neural Biomatter"
+tech_tier = 2
+description = "Advanced, specialised cells from a eukaryotic creature's nervous system. Used as a control interface for military-grade hardware that makes heavy use of AVIS materials. Found inside other SAVs, or within certain Entities. Can be sporadically salvaged from old human vehicles or within buildings."

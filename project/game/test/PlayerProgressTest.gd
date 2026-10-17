@@ -317,7 +317,31 @@ func _test_recycle_actions() -> void:
 	_check(not recycle["visible_if"].call(ctx), "hidden where recycling isn't allowed (Mech OS mid-run)")
 	ctx["recycle_allowed"] = true
 	_check(recycle["visible_if"].call(ctx), "shown in the Hangar")
+	_check(recycle["enabled_if"].call(ctx) == "", "enabled on salvage")
+	var test_item := item_stack.from_generic(load("res://database/items/test/TestItem2.tres"))
+	var part_ctx := {"type": "item", "stack": test_item, "inventory": stash, "recycle_allowed": true}
+	_check(recycle["visible_if"].call(part_ctx) and recycle["enabled_if"].call(part_ctx) == "NOT SALVAGE",
+			"shown greyed out on things that aren't salvage")
+	var take := _action("item", "take")
+	var fake_player := _FakePlayer.new()
+	MechOS.set_player(fake_player)
+	_check(not take["visible_if"].call(ctx), "the stash isn't treated as loot")
+	var wreck := Inventory.new()
+	wreck.initialize_grid(4, 4)
+	wreck.add_stack_anywhere(item_stack.from_generic(SCRAP))
+	_check(take["visible_if"].call({"type": "item", "stack": wreck.get_stacks()[0], "inventory": wreck}),
+			"other inventories still are")
+	MechOS.set_player(null)
+	fake_player.free()
 	recycle["run"].call(ctx)
 	_check(PlayerProgress.get_material_count("steel") == 3 and stash.is_empty(), "Recycle recycles the item")
 	_check(not recycle_all["visible_if"].call({"type": "inventory", "inventory": stash, "recycle_allowed": true}),
 			"no Recycle all on an empty stash")
+
+
+# Stands in for the player's mecha: just a cargo for MechOS to take into.
+class _FakePlayer extends Node:
+	var mech_inventory := Inventory.new()
+
+	func _init() -> void:
+		mech_inventory.initialize_grid(4, 4)

@@ -361,10 +361,12 @@ func _register_context_actions() -> void:
 
 	# Recycling (Hangar only): salvage -> materials. Only offered when the
 	# context says recycling is allowed here ("recycle_allowed", set by the
-	# Hangar); PlayerProgress also refuses during an expedition.
+	# Hangar); PlayerProgress also refuses during an expedition. Shown greyed
+	# out for things that can't be recycled, so the option is discoverable.
 	register_context_action("item", {
 		"id": "recycle", "label": "Recycle", "priority": 20, "group": "recycle",
-		"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and PlayerProgress.can_recycle(ctx["stack"]),
+		"visible_if": func(ctx): return ctx.get("recycle_allowed", false),
+		"enabled_if": func(ctx): return "" if PlayerProgress.can_recycle(ctx["stack"]) else "NOT SALVAGE",
 		"run": func(ctx):
 			PlayerProgress.recycle_stack(ctx["inventory"], ctx["stack"])
 			_refresh_after_inventory_change(ctx),
@@ -372,7 +374,8 @@ func _register_context_actions() -> void:
 	for target_type in ["item", "inventory"]:
 		register_context_action(target_type, {
 			"id": "recycle_all", "label": "Recycle all salvage", "priority": 21, "group": "recycle",
-			"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and _has_recyclable(ctx["inventory"]),
+			"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and not ctx["inventory"].is_empty(),
+			"enabled_if": func(ctx): return "" if _has_recyclable(ctx["inventory"]) else "NO SALVAGE",
 			"run": func(ctx):
 				PlayerProgress.recycle_all(ctx["inventory"])
 				_refresh_after_inventory_change(ctx),
@@ -400,11 +403,12 @@ func _player_cargo() -> Inventory:
 	return null
 
 
-# Right-clicked an inventory that isn't the player's own cargo, while there
-# is a cargo to take into.
+# Right-clicked an inventory that isn't the player's own cargo or stash,
+# while there is a cargo to take into.
 func _is_loot_context(ctx: Dictionary) -> bool:
 	var cargo := _player_cargo()
-	return cargo != null and ctx.get("inventory") != cargo and not ctx["inventory"].is_empty()
+	var inv = ctx.get("inventory")
+	return cargo != null and inv != cargo and inv != PlayerProgress.get_stash_inventory() and not inv.is_empty()
 
 
 func _cargo_fits_any(source: Inventory) -> bool:

@@ -64,7 +64,9 @@ func _run_hangar_checks() -> void:
 	var scrap: item_stack = stash.get_stacks()[0]
 	var recycle := _action("item", "recycle")
 	var ctx := {"type": "item", "stack": scrap, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled}
-	_check(recycle["visible_if"].call(ctx), "Recycle offered on stash salvage")
+	_check(recycle["visible_if"].call(ctx) and recycle["enabled_if"].call(ctx) == "", "Recycle offered on stash salvage")
+	var menu_ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
+	_check(not "take" in menu_ids and not "take_all" in menu_ids, "no looting actions on the stash")
 	recycle["run"].call(ctx)
 	_check(PlayerProgress.get_material_count("steel") == 3, "recycled into materials")
 	_check("Steel 3" in hangar.materials_label.text, "materials line updated")

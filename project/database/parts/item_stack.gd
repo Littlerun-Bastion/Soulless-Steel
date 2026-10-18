@@ -73,18 +73,44 @@ func _get_size_from_item() -> Vector2i:
 
 
 
-# Weight of one item in this stack. Parts are resolved through PartManager
-# like _get_size_from_item, so a weapon in cargo weighs what the weapon does.
-func get_unit_weight() -> float:
+# What this stack is: the item_data for salvage, or the part (resolved
+# through PartManager like _get_size_from_item) for parts. null if unknown.
+func get_resource() -> Object:
 	var source = item
 	if source == null and kind == ItemKind.PART and item_type != "" and item_id != "":
 		source = PartManager.get_part(item_type, item_id)
 	if source == null or not source.has_method("get"):
-		return 0.0
-	var w = source.get("weight")
+		return null
+	return source
+
+
+# Weight of one item in this stack, so a weapon in cargo weighs what the
+# weapon does.
+func get_unit_weight() -> float:
+	var source = get_resource()
+	var w = source.get("weight") if source != null else null
 	if typeof(w) == TYPE_FLOAT or typeof(w) == TYPE_INT:
 		return float(w)
 	return 0.0
+
+
+# item_data.TechTier of salvage or a weapon; NONE for anything without one.
+func get_tech_tier() -> int:
+	var source = get_resource()
+	var tier = source.get("tech_tier") if source != null else null
+	return int(tier) if typeof(tier) == TYPE_INT else item_data.TechTier.NONE
+
+
+# What recycling one of these gives (material id -> amount); {} if it can't
+# be recycled. Salvage and weapons both list a composition.
+func get_composition() -> Dictionary:
+	var source = get_resource()
+	var composition = source.get("composition") if source != null else null
+	return composition if composition is Dictionary else {}
+
+
+func is_part() -> bool:
+	return kind == ItemKind.PART
 
 
 func _get_int_prop(name: String, default_val: int) -> int:

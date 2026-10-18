@@ -11,6 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_0fgb2")
 part_name = "MA-H250"
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 4, "copper": 1, "oil": 1})
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Autocannon"

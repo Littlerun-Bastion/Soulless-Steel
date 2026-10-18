@@ -11,6 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_6faml")
 part_name = "Kruis CL157.0"
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 6, "oil": 1})
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "Cannon"

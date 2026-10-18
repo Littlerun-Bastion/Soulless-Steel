@@ -7,16 +7,16 @@ class_name WreckLoot
 #            generator gives generator scrap, a head or chipset electronics).
 #            Each pool picks the tech tier, so high tech stays rare; pools
 #            with no high-tech item give mid tech on a high roll.
-#   Weapons: every equipped weapon has WEAPON_DROP_CHANCE to drop as itself,
-#            as a part stack. 0 for now: weapon drops are ready but switched
-#            off. Raise it to turn them on.
+#   Weapons: every equipped weapon has WEAPON_DROP_CHANCE to drop intact, as
+#            a part stack. A weapon that drops gives no salvage on top (it
+#            wasn't scrapped), so loot per wreck stays about the same.
 #
 # roll() takes the mecha's design (Mecha.get_design_data: slot -> part id, or
 # false for an empty slot) and an optional seeded RNG for tests. Passing a
 # table rolls every part from it instead of the per-part pools.
 
 const SALVAGE_CHANCE := 0.3
-const WEAPON_DROP_CHANCE := 0.0
+const WEAPON_DROP_CHANCE := 0.2
 # Any part type without a pool of its own rolls from every salvage item.
 const SALVAGE_TABLE := preload("res://database/loot-tables/wreck_salvage.tres")
 const PART_TABLES := {
@@ -41,16 +41,17 @@ static func roll(design: Dictionary, rng: RandomNumberGenerator = null,
 		var part_id = design[slot]
 		if typeof(part_id) != TYPE_STRING or part_id == "":
 			continue
+		# Skipped entirely when off, so it doesn't change the salvage rolls.
+		if weapon_chance > 0.0 and slot in WEAPON_SLOTS and _randf(rng) < weapon_chance:
+			var weapon := weapon_stack(slot, part_id)
+			if weapon != null:
+				stacks.append(weapon)
+				continue
 		if _randf(rng) < salvage_chance:
 			var pool: LootTable = table if table != null else table_for_slot(slot)
 			var salvage := pool.roll_stack(rng)
 			if salvage != null:
 				stacks.append(salvage)
-		# Skipped entirely while off, so it doesn't change the salvage rolls.
-		if weapon_chance > 0.0 and slot in WEAPON_SLOTS and _randf(rng) < weapon_chance:
-			var weapon := weapon_stack(slot, part_id)
-			if weapon != null:
-				stacks.append(weapon)
 	return stacks
 
 

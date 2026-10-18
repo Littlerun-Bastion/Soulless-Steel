@@ -373,17 +373,17 @@ func _register_context_actions() -> void:
 				refresh_inventory_windows(),
 		})
 
-	# Recycling (Hangar only): salvage -> materials. Only offered when the
-	# context says recycling is allowed here ("recycle_allowed", set by the
-	# Hangar); PlayerProgress also refuses during an expedition. Shown greyed
+	# Recycling (Hangar only): salvage and weapons -> materials. Only offered
+	# when the context says recycling is allowed here ("recycle_allowed", set by
+	# the Hangar); PlayerProgress also refuses during an expedition. Shown greyed
 	# out for things that can't be recycled, so the option is discoverable.
-	# The label previews what recycling gives; high tech asks first.
+	# The label previews what recycling gives; weapons and high tech ask first.
 	register_context_action("item", {
 		"id": "recycle", "priority": 20, "group": "recycle",
 		"label": func(ctx): return _recycle_label(ctx["stack"]),
 		"visible_if": func(ctx): return ctx.get("recycle_allowed", false),
-		"enabled_if": func(ctx): return "" if PlayerProgress.can_recycle(ctx["stack"]) else "NOT SALVAGE",
-		"confirm": func(ctx): return "Confirm: recycle high-tech item?" if _is_high_tech(ctx["stack"]) else "",
+		"enabled_if": func(ctx): return "" if PlayerProgress.can_recycle(ctx["stack"]) else "CAN'T RECYCLE",
+		"confirm": func(ctx): return _recycle_question(ctx["stack"]),
 		"run": func(ctx):
 			PlayerProgress.recycle_stack(ctx["inventory"], ctx["stack"])
 			_refresh_after_inventory_change(ctx),
@@ -400,11 +400,23 @@ func _register_context_actions() -> void:
 		})
 
 
+# Salvage only: "Recycle all salvage" never takes weapons.
 func _has_recyclable(inv: Inventory) -> bool:
 	for stack in inv.get_stacks():
-		if PlayerProgress.can_recycle(stack):
+		if not stack.is_part() and PlayerProgress.can_recycle(stack):
 			return true
 	return false
+
+
+# Weapons and high-tech salvage ask before they're recycled.
+func _recycle_question(stack: item_stack) -> String:
+	if not PlayerProgress.can_recycle(stack):
+		return ""
+	if stack.is_part():
+		return "Confirm: recycle this weapon?"
+	if _is_high_tech(stack):
+		return "Confirm: recycle high-tech item?"
+	return ""
 
 
 # "Recycle (2 Steel, 2 Oil)", or just "Recycle" when it can't be.
@@ -415,12 +427,12 @@ func _recycle_label(stack: item_stack) -> String:
 
 
 func _is_high_tech(stack: item_stack) -> bool:
-	return PlayerProgress.can_recycle(stack) and stack.item.get("tech_tier") == item_data.TechTier.HIGH
+	return PlayerProgress.can_recycle(stack) and stack.get_tech_tier() == item_data.TechTier.HIGH
 
 
 func _has_high_tech(inv: Inventory) -> bool:
 	for stack in inv.get_stacks():
-		if _is_high_tech(stack):
+		if not stack.is_part() and _is_high_tech(stack):
 			return true
 	return false
 

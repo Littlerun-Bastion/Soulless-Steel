@@ -204,8 +204,8 @@ func add_materials(amounts: Dictionary, should_save := true) -> void:
 		_save()
 
 
-# Salvage with a composition can be recycled — at home only: recycling
-# mid-run would turn loot into materials that can't be lost.
+# Salvage and weapons with a composition can be recycled — at home only:
+# recycling mid-run would turn loot into materials that can't be lost.
 func can_recycle(stack: item_stack) -> bool:
 	return not in_expedition and not recycle_value(stack).is_empty()
 
@@ -213,11 +213,9 @@ func can_recycle(stack: item_stack) -> bool:
 # What recycling the whole stack yields: material id -> amount.
 func recycle_value(stack: item_stack) -> Dictionary:
 	var value := {}
-	if stack == null or stack.kind != item_stack.ItemKind.GENERIC or stack.item == null:
+	if stack == null:
 		return value
-	var composition = stack.item.get("composition")
-	if not composition is Dictionary:
-		return value
+	var composition := stack.get_composition()
 	for material_id in composition:
 		var amount := int(composition[material_id]) * stack.quantity
 		if amount > 0:
@@ -236,12 +234,15 @@ func recycle_stack(inv: Inventory, stack: item_stack, should_save := true) -> Di
 	return gained
 
 
-# Recycles every recyclable stack in inv (parts and the rest stay). Saves once.
+# Recycles every piece of salvage in inv. Parts stay, weapons included: they
+# are only recycled one at a time. Saves once.
 func recycle_all(inv: Inventory) -> Dictionary:
 	var gained := {}
 	if inv == null:
 		return gained
 	for stack in inv.get_stacks():
+		if stack.is_part():
+			continue
 		var got := recycle_stack(inv, stack, false)
 		for material_id in got:
 			gained[material_id] = int(gained.get(material_id, 0)) + int(got[material_id])

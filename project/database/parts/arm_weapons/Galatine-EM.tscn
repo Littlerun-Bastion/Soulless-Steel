@@ -11,6 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_ekwmf")
 part_name = "Galatine-EM"
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 3, "copper": 2, "silicon": 1, "noble_metals": 1})
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Canister Gun (EMP)"

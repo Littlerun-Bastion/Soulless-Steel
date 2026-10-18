@@ -35,6 +35,7 @@ func _ready() -> void:
 	_run("recycling", _test_recycling)
 	_run("no recycling mid-run", _test_no_recycling_in_expedition)
 	_run("recycle menu actions", _test_recycle_actions)
+	_run("recycling weapons", _test_weapon_recycling)
 
 	PlayerProgress.set_save_data(saved_state)
 	PlayerProgress.autosave = true
@@ -320,7 +321,7 @@ func _test_recycle_actions() -> void:
 	_check(recycle["enabled_if"].call(ctx) == "", "enabled on salvage")
 	var test_item := item_stack.from_generic(load("res://database/items/test/TestItem2.tres"))
 	var part_ctx := {"type": "item", "stack": test_item, "inventory": stash, "recycle_allowed": true}
-	_check(recycle["visible_if"].call(part_ctx) and recycle["enabled_if"].call(part_ctx) == "NOT SALVAGE",
+	_check(recycle["visible_if"].call(part_ctx) and recycle["enabled_if"].call(part_ctx) == "CAN'T RECYCLE",
 			"shown greyed out on things that aren't salvage")
 	var take := _action("item", "take")
 	var fake_player := _FakePlayer.new()
@@ -345,3 +346,45 @@ class _FakePlayer extends Node:
 
 	func _init() -> void:
 		mech_inventory.initialize_grid(4, 4)
+
+
+func _weapon_stack(part_type: String, part_id: String) -> item_stack:
+	var entry := LootEntry.new()
+	entry.part_type = part_type
+	entry.part_id = part_id
+	return entry.make_stack()
+
+
+func _test_weapon_recycling() -> void:
+	# Every weapon breaks down into known materials.
+	for part_type in ["arm_weapon", "shoulder_weapon"]:
+		for part_id in PartManager.get_parts(part_type):
+			var weapon := _weapon_stack(part_type, part_id)
+			var composition := weapon.get_composition()
+			_check(not composition.is_empty(), "%s has a composition" % part_id)
+			_check(weapon.get_tech_tier() in Materials.TIERS, "%s has a tech tier" % part_id)
+			for material_id in composition:
+				_check(Materials.is_valid(material_id), "%s uses known material %s" % [part_id, material_id])
+
+	var stash := PlayerProgress.get_stash_inventory()
+	var gun := _weapon_stack("arm_weapon", "MA-L127")
+	var scrap := item_stack.from_generic(SCRAP)
+	stash.add_stack_anywhere(gun)
+	stash.add_stack_anywhere(scrap)
+	_check(PlayerProgress.recycle_value(gun) == {"steel": 3, "copper": 1}, "weapon value is its composition")
+	PlayerProgress.recycle_all(stash)
+	_check(stash.get_stacks().has(gun) and not stash.get_stacks().has(scrap), "recycle_all takes salvage, not weapons")
+	var gained := PlayerProgress.recycle_stack(stash, gun)
+	_check(gained == {"steel": 3, "copper": 1} and stash.is_empty(), "a weapon recycles on its own")
+	_check(not PlayerProgress.can_recycle(_weapon_stack("head", TEST_PART_ID)), "other parts still can't")
+
+	# The menu asks before recycling a weapon, and Recycle all ignores them.
+	var recycle := _action("item", "recycle")
+	var recycle_all := _action("inventory", "recycle_all")
+	var gun2 := _weapon_stack("arm_weapon", "MA-L127")
+	stash.add_stack_anywhere(gun2)
+	var ctx := {"type": "item", "stack": gun2, "inventory": stash, "recycle_allowed": true}
+	_check(recycle["enabled_if"].call(ctx) == "", "Recycle enabled on a weapon")
+	_check(recycle["confirm"].call(ctx) == "Confirm: recycle this weapon?", "weapons ask first")
+	_check(recycle_all["enabled_if"].call({"type": "inventory", "inventory": stash, "recycle_allowed": true}) == "NO SALVAGE",
+			"a stash of only weapons has nothing for Recycle all")

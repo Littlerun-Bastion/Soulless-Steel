@@ -34,7 +34,7 @@ func _ready() -> void:
 	_run("salvage pools per part type", _test_part_pools)
 	_run("salvage comes from the part's pool", _test_salvage_by_part)
 	_run("pool tier spread", _test_pool_tiers)
-	_run("weapon drops are off by default", _test_weapons_off)
+	_run("weapon drops", _test_weapon_drops)
 	_run("weapon drops when switched on", _test_weapons_on)
 	_run("transfer between inventories", _test_transfer)
 	_run("transfer turns items to fit", _test_transfer_rotates)
@@ -99,7 +99,7 @@ func _test_salvage_average() -> void:
 	var rng := _seeded_rng()
 	var total := 0
 	for _i in DESIGN_ROLLS:
-		total += WreckLoot.roll(design, rng).size()
+		total += WreckLoot.roll(design, rng, WreckLoot.SALVAGE_CHANCE, 0.0).size()
 	var average := float(total) / DESIGN_ROLLS
 	var expected := WreckLoot.SALVAGE_CHANCE * _equipped_count(design)
 	print("    %d wrecks of the default mecha: %.2f salvage each (expected %.2f)" % [DESIGN_ROLLS, average, expected])
@@ -174,15 +174,25 @@ func _test_pool_tiers() -> void:
 	_check(high == 0, "core pool never gives high tech")
 
 
-func _test_weapons_off() -> void:
-	_check(WreckLoot.WEAPON_DROP_CHANCE == 0.0, "WEAPON_DROP_CHANCE is 0")
+func _test_weapon_drops() -> void:
+	_check(WreckLoot.WEAPON_DROP_CHANCE == 0.2, "WEAPON_DROP_CHANCE is 20%")
+	var design := PlayerProgress.DEFAULT_MECHA.duplicate()  # MA-L127 on both arms
 	var rng := _seeded_rng()
-	var parts := 0
-	for _i in 500:
-		for stack in WreckLoot.roll(PlayerProgress.DEFAULT_MECHA.duplicate(), rng):
-			if stack.kind == item_stack.ItemKind.PART:
-				parts += 1
-	_check(parts == 0, "no weapons drop")
+	var weapons := 0
+	var with_weapon := 0
+	for _i in DESIGN_ROLLS:
+		var parts := WreckLoot.roll(design, rng).filter(func(s): return s.is_part()).size()
+		weapons += parts
+		if parts > 0:
+			with_weapon += 1
+	var per_wreck := float(weapons) / DESIGN_ROLLS
+	print("    %d wrecks of the default mecha: %.2f weapons each, %.0f%% have one" % [DESIGN_ROLLS, per_wreck, 100.0 * with_weapon / DESIGN_ROLLS])
+	_check(absf(per_wreck - 0.4) < 0.04, "about 20% per equipped weapon")
+	# A weapon that drops isn't also scrapped: with every roll succeeding,
+	# the two arms give weapons and every other part gives salvage.
+	var stacks := WreckLoot.roll(design, rng, 1.0, 1.0)
+	var dropped := stacks.filter(func(s): return s.is_part()).size()
+	_check(dropped == 2 and stacks.size() == _equipped_count(design), "a dropped weapon replaces its salvage")
 
 
 func _test_weapons_on() -> void:

@@ -11,6 +11,10 @@ extends Node
 @export var description : String
 @export var image : Texture2D
 @export var item_size := [3,2]
+# Recycling in the Hangar, like salvage (item_data.composition): what one of
+# these breaks down into, material id (see Materials) -> amount.
+@export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
+@export var composition: Dictionary[String, int] = {}
 @export var ai_engage_range := 2000
 @export var is_indirect_fire := false
 @export var additional_components: Array[Dictionary] = [

@@ -11,6 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_36efv")
 part_name = "TORI-ML"
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 2, "copper": 1, "silicon": 2, "avi_polymer": 1})
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Tamaguchi"
 tagline = "Cluster Missile"

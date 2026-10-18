@@ -11,6 +11,8 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_e4xy1")
 part_name = "Clarent-01"
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 2, "copper": 2, "silicon": 1, "nt_fluid": 1})
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "EN Shotgun"

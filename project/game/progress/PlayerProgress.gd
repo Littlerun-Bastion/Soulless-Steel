@@ -43,6 +43,8 @@ const DEFAULT_MECHA := {
 	"shoulder_weapon_left": false, "shoulder_weapon_right": false,
 }
 const STASH_SIZE := Vector2i(8, 20)
+# Slots a mecha can't deploy without; weapons are optional.
+const REQUIRED_SLOTS := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster"]
 
 var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
@@ -438,6 +440,22 @@ func migrate_legacy_save(data: Dictionary) -> Dictionary:
 		"stash_inventory": data.get("stash_inventory"),
 		"mech_inventory": data.get("mech_inventory"),
 	}
+
+
+# The required slots a design has nothing in, e.g. ["core"]. A mecha missing
+# any of these mustn't deploy (it spawns broken).
+static func missing_parts(design) -> Array:
+	var missing := []
+	for slot in REQUIRED_SLOTS:
+		var part_id = design.get(slot) if typeof(design) == TYPE_DICTIONARY else null
+		if typeof(part_id) != TYPE_STRING or part_id == "":
+			missing.append(slot)
+	return missing
+
+
+# ["core", "head"] -> "CORE, HEAD", for messages about missing_parts.
+static func describe_missing_parts(missing: Array) -> String:
+	return ", ".join(missing.map(func(slot): return str(slot).to_upper()))
 
 
 # Materials that were renamed or removed since the save are dropped.

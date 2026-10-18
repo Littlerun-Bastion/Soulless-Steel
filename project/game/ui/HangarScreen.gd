@@ -23,6 +23,7 @@ const STASH_RECT := Rect2(1170, 40, 700, 900)
 
 @onready var player_mecha: Mecha = $Mecha
 @onready var materials_label: Label = $MarginContainer/VBoxContainer/MaterialsLabel
+@onready var warning_label: Label = $MarginContainer/VBoxContainer/WarningLabel
 
 var stash_inventory: Inventory = null
 
@@ -87,7 +88,25 @@ func _on_materials_changed(materials: Dictionary) -> void:
 	materials_label.text = "MATERIALS   %s   (MAT for details)" % "   ".join(parts)
 
 
+# Leaving saves the design, so it's blocked while a required part is missing
+# (a mecha without a core etc. spawns broken). The warning clears itself once
+# the slots are filled.
+func _process(_delta: float) -> void:
+	if warning_label.visible and get_missing_parts().is_empty():
+		warning_label.hide()
+
+
+func get_missing_parts() -> Array:
+	return PlayerProgress.missing_parts(player_mecha.get_design_data())
+
+
 func _on_BackButton_pressed() -> void:
+	var missing := get_missing_parts()
+	if not missing.is_empty():
+		warning_label.text = "CAN'T LEAVE: NO %s EQUIPPED" % PlayerProgress.describe_missing_parts(missing)
+		warning_label.show()
+		AudioManager.play_sfx("back")
+		return
 	PlayerProgress.set_stash_inventory(stash_inventory)
 	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
 	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile

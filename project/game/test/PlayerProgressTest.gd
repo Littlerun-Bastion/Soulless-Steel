@@ -36,6 +36,7 @@ func _ready() -> void:
 	_run("no recycling mid-run", _test_no_recycling_in_expedition)
 	_run("recycle menu actions", _test_recycle_actions)
 	_run("recycling weapons", _test_weapon_recycling)
+	_run("required parts", _test_required_parts)
 
 	PlayerProgress.set_save_data(saved_state)
 	PlayerProgress.autosave = true
@@ -388,3 +389,16 @@ func _test_weapon_recycling() -> void:
 	_check(recycle["confirm"].call(ctx) == "Confirm: recycle this weapon?", "weapons ask first")
 	_check(recycle_all["enabled_if"].call({"type": "inventory", "inventory": stash, "recycle_allowed": true}) == "NO SALVAGE",
 			"a stash of only weapons has nothing for Recycle all")
+
+
+func _test_required_parts() -> void:
+	var design := PlayerProgress.DEFAULT_MECHA.duplicate()
+	_check(PlayerProgress.missing_parts(design).is_empty(), "default mecha has every required part")
+	design["shoulder_weapon_left"] = false
+	design["arm_weapon_right"] = false
+	_check(PlayerProgress.missing_parts(design).is_empty(), "weapons are optional")
+	design["core"] = false
+	design.erase("head")
+	_check(PlayerProgress.missing_parts(design) == ["head", "core"], "empty and absent slots are missing")
+	_check(PlayerProgress.describe_missing_parts(["head", "core"]) == "HEAD, CORE", "described for messages")
+	_check(PlayerProgress.missing_parts(null).size() == PlayerProgress.REQUIRED_SLOTS.size(), "no design misses everything")

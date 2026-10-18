@@ -86,6 +86,10 @@ func _run_hangar_checks() -> void:
 	_pass("high tech asks before recycling", before)
 
 	before = _failed
+	await _test_leave_guard(hangar, equipment)
+	_pass("can't leave with a required part missing", before)
+
+	before = _failed
 	_test_swap_returns_to_stash(hangar, equipment)
 	_pass("swapped-out part goes to the stash", before)
 
@@ -135,6 +139,25 @@ func _slot(equipment, part_type: String) -> PartSlot:
 		if slot.part_type == part_type:
 			return slot
 	return null
+
+
+# Only the blocked path is pressed: a complete mecha would really leave.
+func _test_leave_guard(hangar, equipment) -> void:
+	var mecha: Mecha = hangar.player_mecha
+	var core_id: String = mecha.build.core.part_id
+	var saved_design := PlayerProgress.get_current_mecha().duplicate()
+	_check(hangar.get_missing_parts().is_empty(), "default mecha is complete")
+	equipment._set_mecha_part_for_slot(_slot(equipment, "core"), null)
+	equipment.refresh_slots()
+	_check(hangar.get_missing_parts() == ["core"], "core reported missing")
+	hangar._on_BackButton_pressed()
+	_check(hangar.warning_label.visible and "NO CORE EQUIPPED" in hangar.warning_label.text, "warning names the empty slot")
+	_check(PlayerProgress.get_current_mecha() == saved_design, "incomplete design not saved")
+	_check(is_instance_valid(hangar) and hangar.is_inside_tree(), "still in the Hangar")
+	equipment._set_mecha_part_for_slot(_slot(equipment, "core"), core_id)
+	equipment.refresh_slots()
+	await get_tree().process_frame
+	_check(not hangar.warning_label.visible, "warning clears once the core is back")
 
 
 func _test_swap_returns_to_stash(hangar, equipment) -> void:

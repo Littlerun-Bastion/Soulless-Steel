@@ -84,11 +84,15 @@ func _on_Hangar_pressed():
 
 
 func _on_Arena_pressed():
+	if not _mecha_ready_to_deploy():
+		return
 	AudioManager.play_sfx("confirm")
 	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings...")
 
 
 func _on_Expedition_pressed():
+	if not _mecha_ready_to_deploy():
+		return
 	AudioManager.play_sfx("confirm")
 	# Old test mode (tutorial) kept here for reference, currently disconnected:
 	#start_game("tutorial")
@@ -106,9 +110,27 @@ func _show_loss_notice() -> void:
 	if not PlayerProgress.has_loss_report():
 		return
 	var report := PlayerProgress.take_loss_report()
+	var title := "EXPEDITION ABANDONED" if report.get("reason") == PlayerProgress.LOSS_ABANDONED else "EXPEDITION LOST"
+	_show_notice("LossNotice", title, PlayerProgress.format_loss_report(report))
 
+
+# A mecha missing a required part spawns broken, so combat modes refuse it.
+# (The Hangar won't let an incomplete design be saved; this catches old saves.)
+func _mecha_ready_to_deploy() -> bool:
+	var missing := PlayerProgress.missing_parts(PlayerProgress.get_current_mecha())
+	if missing.is_empty():
+		return true
+	_show_notice("MechaNotice", "MECHA INCOMPLETE",
+			"No %s equipped. Fit the missing parts in the Hangar first." % PlayerProgress.describe_missing_parts(missing))
+	return false
+
+
+# A centred panel with a title, a message and an Acknowledge button.
+func _show_notice(node_name: String, title_text: String, body_text: String) -> void:
+	if has_node(node_name):
+		return  # already showing
 	var panel := PanelContainer.new()
-	panel.name = "LossNotice"
+	panel.name = node_name
 	panel.theme = preload("res://game/ui/HUDFont.tres")
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0, 0, 0, 0.92)
@@ -122,11 +144,11 @@ func _show_loss_notice() -> void:
 	panel.add_child(box)
 
 	var title := Label.new()
-	title.text = "EXPEDITION ABANDONED" if report.get("reason") == PlayerProgress.LOSS_ABANDONED else "EXPEDITION LOST"
+	title.text = title_text
 	box.add_child(title)
 
 	var body := Label.new()
-	body.text = PlayerProgress.format_loss_report(report)
+	body.text = body_text
 	body.add_theme_font_size_override("font_size", 28)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.custom_minimum_size.x = 900

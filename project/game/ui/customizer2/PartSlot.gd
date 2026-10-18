@@ -30,7 +30,7 @@ func set_current_part(part):
 		if part_ref:
 			PartName.text = part_ref.part_name
 	else:
-		PartName.text = "UNKNOWN"
+		PartName.text = "EMPTY"
 	
 
 func set_equipped_part(part_id: String, _item: item_data) -> void:

@@ -38,6 +38,14 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="WarningLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme = ExtResource("4_ki33h")
+theme_override_colors/font_color = Color(1, 0.35, 0.3, 1)
+theme_override_font_sizes/font_size = 28
+text = "CAN'T LEAVE"
+
 [node name="MaterialsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("4_ki33h")

@@ -11,3 +11,7 @@ data_*/
 
 # Local Godot editor binaries (kept next to the repo for running headless tests)
 Godot_v*.exe
+
+# The Godot editor copies GDExtension libraries (the git plugin) to
+# ~<name>.dll while it runs on Windows; those copies change every session.
+~*.dll*

@@ -7,7 +7,8 @@ extends Control
 #   MECH CARGO  what the mecha carries into the next run (lost if it dies)
 #   STASH       everything kept at home (always safe)
 # Drag parts between the grids and the slots; right-click salvage in the cargo
-# or stash to recycle it into materials (shown along the bottom).
+# or stash to recycle it into materials (totals along the bottom; MAT on the
+# taskbar opens the full list).
 #
 # The mecha design is saved when leaving (ESC). Inventories are the same
 # objects PlayerProgress saves, and materials save as they change.
@@ -39,6 +40,7 @@ func _ready() -> void:
 	MechOS.set_player(player_mecha)
 	MechOS.set_equipment_customizable(true)
 	MechOS.recycling_enabled = true
+	MechOS.set_app_available("materials", true)
 	_open_windows()
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
@@ -46,6 +48,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	MechOS.set_app_available("materials", false)
 	MechOS.close_all()
 	MechOS.recycling_enabled = false
 	MechOS.set_player(null)
@@ -73,14 +76,15 @@ func _on_cargo_overflow(stacks: Array) -> void:
 	MechOS.refresh_inventory_windows()
 
 
-# Only the materials the player has, so twelve zeroes don't crowd the line.
+# A short total per tech tier; the MAT window has the full list.
 func _on_materials_changed(materials: Dictionary) -> void:
 	var parts := []
-	for material_id in Materials.ids():
-		var amount := int(materials.get(material_id, 0))
-		if amount > 0:
-			parts.append("%s %d" % [Materials.display_name(material_id), amount])
-	materials_label.text = "MATERIALS   " + ("   ".join(parts) if not parts.is_empty() else "none")
+	for tier in Materials.TIERS:
+		var total := 0
+		for material in Materials.of_tier(tier):
+			total += int(materials.get(material.id, 0))
+		parts.append("%s %d" % [Materials.tier_name(tier).to_upper(), total])
+	materials_label.text = "MATERIALS   %s   (MAT for details)" % "   ".join(parts)
 
 
 func _on_BackButton_pressed() -> void:

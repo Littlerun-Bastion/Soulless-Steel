@@ -26,5 +26,14 @@ func remove_app_button(app_id: String) -> void:
 	buttons.erase(app_id)
 
 
+func set_app_button_visible(app_id: String, shown: bool) -> void:
+	if buttons.has(app_id):
+		buttons[app_id].visible = shown
+
+
+func is_app_button_visible(app_id: String) -> bool:
+	return buttons.has(app_id) and buttons[app_id].visible
+
+
 func _on_app_button_pressed(app_id: String) -> void:
 	MechOS.toggle_app(app_id)

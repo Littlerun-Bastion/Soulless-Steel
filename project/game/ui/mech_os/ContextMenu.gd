@@ -3,7 +3,9 @@ class_name ContextMenu
 
 
 #   id -- String    stable name, for debugging and later lookups
-#   label -- String    button text
+#   label -- String    button text, or Callable (context) -> String
+#   confirm -- Callable  (context) -> String; non-empty = the first click
+#              turns the button into this text and only a second click runs
 #   priority -- int       lower sorts first (default 0)
 #   group -- String    a separator is drawn where the group changes
 #   visible_if -- Callable  (context) -> bool; false hides the action
@@ -77,13 +79,14 @@ func handle_input(event: InputEvent) -> bool:
 
 func _make_button(action: Dictionary) -> Button:
 	var button := Button.new()
-	button.text = action.get("label", "?")
+	var label = action.get("label", "?")
+	button.text = str(label.call(_context) if label is Callable else label)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var reason := _disabled_reason(action, _context)
 	if reason != "":
 		button.disabled = true
 		button.text += "  [%s]" % reason
-	button.pressed.connect(_on_action_pressed.bind(action))
+	button.pressed.connect(_on_action_pressed.bind(action, button))
 	return button
 
 
@@ -94,7 +97,17 @@ func _disabled_reason(action: Dictionary, context: Dictionary) -> String:
 	return ""
 
 
-func _on_action_pressed(action: Dictionary) -> void:
+func _on_action_pressed(action: Dictionary, button: Button = null) -> void:
+	# Actions that ask first: the first click only arms the button.
+	var confirm = action.get("confirm")
+	if button != null and confirm is Callable and not button.has_meta("armed"):
+		var question := str(confirm.call(_context))
+		if question != "":
+			button.set_meta("armed", true)
+			button.text = question
+			reset_size()
+			_keep_on_screen(position)
+			return
 	var context := _context
 	close()
 	# Check again: the target may have changed or gone since the menu opened.
@@ -119,6 +132,11 @@ func _place(at: Vector2) -> void:
 		pos.x = at.x - size.x
 	if pos.y + size.y > screen.y - EDGE_MARGIN:
 		pos.y = at.y - size.y
+	_keep_on_screen(pos)
+
+
+func _keep_on_screen(pos: Vector2) -> void:
+	var screen := get_viewport_rect().size
 	pos.x = clampf(pos.x, EDGE_MARGIN, screen.x - EDGE_MARGIN - size.x)
 	pos.y = clampf(pos.y, EDGE_MARGIN, screen.y - EDGE_MARGIN - size.y)
 	position = pos

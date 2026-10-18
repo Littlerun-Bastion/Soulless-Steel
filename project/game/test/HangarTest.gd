@@ -1,8 +1,9 @@
 extends Node
 
 # HangarTest loads the real Hangar (HangarScreen.tscn, built on Mech OS) and
-# checks it end to end: its three windows, recycling, swapping parts, a
-# smaller core pushing cargo into the stash, and cleaning up Mech OS on exit.
+# checks it end to end: its three windows, recycling (with the Materials
+# window and the high-tech confirm), swapping parts, a smaller core pushing
+# cargo into the stash, and cleaning up Mech OS on exit.
 # Open HangarTest.tscn and press F6; results print to Output.
 #
 # The player's real progress is snapshotted and restored, and autosave is off
@@ -65,12 +66,24 @@ func _run_hangar_checks() -> void:
 	var recycle := _action("item", "recycle")
 	var ctx := {"type": "item", "stack": scrap, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled}
 	_check(recycle["visible_if"].call(ctx) and recycle["enabled_if"].call(ctx) == "", "Recycle offered on stash salvage")
+	_check(recycle["label"].call(ctx) == "Recycle (3 Steel)", "label previews what it gives")
+	_check(recycle["confirm"].call(ctx) == "", "low tech recycles without asking")
 	var menu_ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
 	_check(not "take" in menu_ids and not "take_all" in menu_ids, "no looting actions on the stash")
+	_check(MechOS.is_app_available("materials"), "MAT on the taskbar in the Hangar")
+	var materials_window = MechOS.open_app("materials")
+	_check(materials_window != null and materials_window.get_count_text("steel") == "0", "Materials window lists steel at 0")
 	recycle["run"].call(ctx)
 	_check(PlayerProgress.get_material_count("steel") == 3, "recycled into materials")
-	_check("Steel 3" in hangar.materials_label.text, "materials line updated")
+	_check("LOW 3" in hangar.materials_label.text, "materials line shows the tier totals")
+	_check(materials_window.get_count_text("steel") == "3", "Materials window updates live")
+	materials_window._show_detail(Materials.get_material("steel"))
+	_check(Materials.get_material("steel").description in materials_window.detail_label.text, "hovering shows the description")
 	_pass("recycling in the Hangar", before)
+
+	before = _failed
+	await _test_high_tech_confirm(stash)
+	_pass("high tech asks before recycling", before)
 
 	before = _failed
 	_test_swap_returns_to_stash(hangar, equipment)
@@ -86,7 +99,28 @@ func _run_hangar_checks() -> void:
 	_check(MechOS.open_windows.is_empty(), "leaving closes the Hangar's windows")
 	_check(not MechOS.recycling_enabled, "recycling off again after leaving")
 	_check(MechOS.player_ref == null, "Mech OS forgets the Hangar mecha")
+	_check(not MechOS.is_app_available("materials"), "MAT gone from the taskbar after leaving")
 	_pass("leaving the Hangar", before)
+
+
+# Through the real menu: the first click only asks, the second recycles.
+func _test_high_tech_confirm(stash: Inventory) -> void:
+	var engine := item_stack.from_generic(load("res://database/items/salvage/damaged_nt_engine.tres"))
+	stash.add_stack_anywhere(engine)
+	var grid = MechOS.open_windows["stash"].inventory_grid
+	var ctx := {"type": "item", "stack": engine, "inventory": stash, "recycle_allowed": true, "source": grid}
+	var menu: ContextMenu = MechOS.context_menu
+	menu.open([_action("item", "recycle")], ctx, Vector2(400, 400))
+	var button: Button = menu._list.get_child(0)
+	_check(button.text == "Recycle (2 NT Fluid, 1 NT Engines)", "high-tech label previews too")
+	button.pressed.emit()
+	_check(stash.get_stacks().has(engine) and menu.is_open(), "first click only asks")
+	_check(button.text.begins_with("Confirm"), "button asks to confirm")
+	button.pressed.emit()
+	_check(not stash.get_stacks().has(engine), "second click recycles")
+	_check(PlayerProgress.get_material_count("nt_engines") == 1, "high-tech materials added")
+	_check(not menu.is_open(), "menu closes after recycling")
+	await get_tree().process_frame
 
 
 func _action(target_type: String, id: String) -> Dictionary:

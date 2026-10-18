@@ -97,13 +97,27 @@ func _register_apps() -> void:
 	
 	register_app("test", preload("res://game/ui/mech_os/windows/TestWindow.tscn"), "TST")
 	register_app("equipment", preload("res://game/ui/mech_os/windows/EquipmentWindow.tscn"), "EQP")
-	pass
+	# Hangar only: the Hangar turns it on with set_app_available.
+	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT")
+	set_app_available("materials", false)
 
 
 func register_app(app_id: String, scene: PackedScene, label: String = "") -> void:
 	app_registry[app_id] = scene
 	if label != "":
 		taskbar.add_app_button(app_id, label)
+
+# Shows or hides an app's taskbar button, for apps that only make sense on
+# some screens. Hiding it closes the app's window.
+func set_app_available(app_id: String, available: bool) -> void:
+	taskbar.set_app_button_visible(app_id, available)
+	if not available and open_windows.has(app_id):
+		close_app(app_id)
+
+
+func is_app_available(app_id: String) -> bool:
+	return taskbar.is_app_button_visible(app_id)
+
 
 func open_app(app_id: String) -> MechWindow:
 	if open_windows.has(app_id):
@@ -363,10 +377,13 @@ func _register_context_actions() -> void:
 	# context says recycling is allowed here ("recycle_allowed", set by the
 	# Hangar); PlayerProgress also refuses during an expedition. Shown greyed
 	# out for things that can't be recycled, so the option is discoverable.
+	# The label previews what recycling gives; high tech asks first.
 	register_context_action("item", {
-		"id": "recycle", "label": "Recycle", "priority": 20, "group": "recycle",
+		"id": "recycle", "priority": 20, "group": "recycle",
+		"label": func(ctx): return _recycle_label(ctx["stack"]),
 		"visible_if": func(ctx): return ctx.get("recycle_allowed", false),
 		"enabled_if": func(ctx): return "" if PlayerProgress.can_recycle(ctx["stack"]) else "NOT SALVAGE",
+		"confirm": func(ctx): return "Confirm: recycle high-tech item?" if _is_high_tech(ctx["stack"]) else "",
 		"run": func(ctx):
 			PlayerProgress.recycle_stack(ctx["inventory"], ctx["stack"])
 			_refresh_after_inventory_change(ctx),
@@ -376,6 +393,7 @@ func _register_context_actions() -> void:
 			"id": "recycle_all", "label": "Recycle all salvage", "priority": 21, "group": "recycle",
 			"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and not ctx["inventory"].is_empty(),
 			"enabled_if": func(ctx): return "" if _has_recyclable(ctx["inventory"]) else "NO SALVAGE",
+			"confirm": func(ctx): return "Confirm: includes high-tech salvage?" if _has_high_tech(ctx["inventory"]) else "",
 			"run": func(ctx):
 				PlayerProgress.recycle_all(ctx["inventory"])
 				_refresh_after_inventory_change(ctx),
@@ -385,6 +403,24 @@ func _register_context_actions() -> void:
 func _has_recyclable(inv: Inventory) -> bool:
 	for stack in inv.get_stacks():
 		if PlayerProgress.can_recycle(stack):
+			return true
+	return false
+
+
+# "Recycle (2 Steel, 2 Oil)", or just "Recycle" when it can't be.
+func _recycle_label(stack: item_stack) -> String:
+	if not PlayerProgress.can_recycle(stack):
+		return "Recycle"
+	return "Recycle (%s)" % Materials.describe(PlayerProgress.recycle_value(stack))
+
+
+func _is_high_tech(stack: item_stack) -> bool:
+	return PlayerProgress.can_recycle(stack) and stack.item.get("tech_tier") == item_data.TechTier.HIGH
+
+
+func _has_high_tech(inv: Inventory) -> bool:
+	for stack in inv.get_stacks():
+		if _is_high_tech(stack):
 			return true
 	return false
 

@@ -1,8 +1,9 @@
 extends Node
 
 # WreckTest runs self-checks on Expedition wrecks: what WreckLoot rolls for a
-# destroyed mecha, moving stacks between inventories (Take / Take all), part
-# weights in cargo, the Wreck states, and the Mech OS "Take" actions.
+# destroyed mecha (per-part salvage pools), moving stacks between inventories
+# (Take / Take all), part weights in cargo, the Wreck states, and the Mech OS
+# "Take" actions.
 # Open WreckTest.tscn and press F6; results print to Output, along with the
 # average salvage per wreck.
 #
@@ -30,6 +31,9 @@ class FakeMecha extends Node:
 func _ready() -> void:
 	_run("salvage chance per part", _test_salvage_chance)
 	_run("average salvage per wreck", _test_salvage_average)
+	_run("salvage pools per part type", _test_part_pools)
+	_run("salvage comes from the part's pool", _test_salvage_by_part)
+	_run("pool tier spread", _test_pool_tiers)
 	_run("weapon drops are off by default", _test_weapons_off)
 	_run("weapon drops when switched on", _test_weapons_on)
 	_run("transfer between inventories", _test_transfer)
@@ -100,6 +104,74 @@ func _test_salvage_average() -> void:
 	var expected := WreckLoot.SALVAGE_CHANCE * _equipped_count(design)
 	print("    %d wrecks of the default mecha: %.2f salvage each (expected %.2f)" % [DESIGN_ROLLS, average, expected])
 	_check(absf(average - expected) < 0.1, "average close to 30% per part")
+
+
+func _items_of(table: LootTable) -> Array:
+	return table.entries.map(func(e): return e.item)
+
+
+func _test_part_pools() -> void:
+	var covered := {}
+	for slot in PlayerProgress.DEFAULT_MECHA:
+		var table := WreckLoot.table_for_slot(slot)
+		_check(table != WreckLoot.SALVAGE_TABLE, "%s has its own salvage pool" % slot)
+		_check(not table.get_entries_of_tier(item_data.TechTier.LOW).is_empty(), "%s pool has low-tech salvage" % slot)
+		for item in _items_of(table):
+			_check(item in _items_of(WreckLoot.SALVAGE_TABLE), "%s pool item %s is wreck salvage" % [slot, item.id])
+			covered[item] = true
+	for item in _items_of(WreckLoot.SALVAGE_TABLE):
+		_check(covered.has(item), "%s drops from some part" % item.id)
+	_check(WreckLoot.table_for_slot("arm_weapon_left") == WreckLoot.table_for_slot("shoulder_weapon_right"),
+			"arm and shoulder weapons share a pool")
+	_check(WreckLoot.table_for_slot("not_a_part") == WreckLoot.SALVAGE_TABLE, "unknown part types roll from everything")
+
+
+# A design with only the given slots filled.
+func _only(slots: Dictionary) -> Dictionary:
+	var design := {}
+	for slot in PlayerProgress.DEFAULT_MECHA:
+		design[slot] = slots.get(slot, false)
+	return design
+
+
+func _test_salvage_by_part() -> void:
+	var rng := _seeded_rng()
+	for slot in ["generator", "head", "chassis", "core", "thruster", "arm_weapon_left"]:
+		var pool := _items_of(WreckLoot.table_for_slot(slot))
+		var design := _only({slot: PlayerProgress.DEFAULT_MECHA.get(slot, "X")})
+		var stray := 0
+		for _i in 300:
+			for stack in WreckLoot.roll(design, rng, 1.0, 0.0):
+				if not stack.item in pool:
+					stray += 1
+		_check(stray == 0, "a wreck with only a %s drops from its pool" % slot)
+	# A table passed in still overrides the pools (tests and special wrecks).
+	var only_low := LootTable.new()
+	var entry := LootEntry.new()
+	entry.item = LOW_ITEM
+	only_low.entries.append(entry)
+	var stacks := WreckLoot.roll(PlayerProgress.DEFAULT_MECHA.duplicate(), rng, 1.0, 0.0, only_low)
+	_check(not stacks.is_empty() and stacks.all(func(s): return s.item == LOW_ITEM), "a given table overrides the pools")
+
+
+func _test_pool_tiers() -> void:
+	var rng := _seeded_rng()
+	var rolls := 4000
+	# Full pool: about 70 / 25 / 5.
+	var counts := {item_data.TechTier.LOW: 0, item_data.TechTier.MID: 0, item_data.TechTier.HIGH: 0}
+	var frame := WreckLoot.table_for_slot("chassis")
+	for _i in rolls:
+		counts[frame.roll_stack(rng).item.tech_tier] += 1
+	print("    chassis pool over %d rolls: low %d, mid %d, high %d" % [rolls, counts[1], counts[2], counts[3]])
+	_check(absf(counts[item_data.TechTier.LOW] / float(rolls) - 0.70) < 0.03, "about 70% low tech")
+	_check(absf(counts[item_data.TechTier.HIGH] / float(rolls) - 0.05) < 0.015, "about 5% high tech")
+	# No high-tech item in the pool: high rolls give mid instead.
+	var core := WreckLoot.table_for_slot("core")
+	var high := 0
+	for _i in 1000:
+		if core.roll_stack(rng).item.tech_tier == item_data.TechTier.HIGH:
+			high += 1
+	_check(high == 0, "core pool never gives high tech")
 
 
 func _test_weapons_off() -> void:

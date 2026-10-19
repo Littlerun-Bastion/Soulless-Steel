@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 6, "oil": 1})
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "Cannon"
+price = 940.0
 weight = 7.8
 description = "Nomhoyi skirts the line between civilian grade and military grade with this hefty 157mm cannon. Accurate and devastating to unshielded targets, though prohibitively heavy."
 image = ExtResource("2_ra5bf")

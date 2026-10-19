@@ -1,6 +1,9 @@
 extends MechWindow
 class_name EquipmentWindow
 
+# A part was equipped or taken off through this window.
+signal parts_changed
+
 var mecha_ref: Mecha = null
 var can_customize: bool = false
 
@@ -63,7 +66,8 @@ func _on_slot_pressed(slot: PartSlot) -> void:
 	# Remove from mech
 	_set_mecha_part_for_slot(slot, null)
 	refresh_slots()
-	
+	parts_changed.emit()
+
 	# Tell DragManager to start dragging this stack
 	MechOS.drag_manager.start_drag_from_equipment(stack, slot, self)
 
@@ -97,6 +101,7 @@ func try_equip(slot: PartSlot, stack: item_stack) -> bool:
 	# Equip the new part
 	_set_mecha_part_for_slot(slot, stack.item_id)
 	refresh_slots()
+	parts_changed.emit()
 	return true
 
 
@@ -104,6 +109,7 @@ func revert_equip(slot: PartSlot, stack: item_stack) -> void:
 	# Re-equip a part that was unequipped for a drag that got cancelled
 	_set_mecha_part_for_slot(slot, stack.item_id)
 	refresh_slots()
+	parts_changed.emit()
 
 # Where a part swapped out of a slot goes, in order; then any other open
 # inventory window.

@@ -95,11 +95,11 @@ func _init() -> void:
 | ExpeditionHudTest | mission tracker, load readout, extraction summary |
 | ExpeditionRunTest *(slow)* | a real Expedition: spawn, shooting, wrecks and loot, extraction, death, pause, quitting |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
-| HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts |
+| HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers |
 | NpcDesignsTest | every enemy design is valid and builds |
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
-| PartsTest | every part's data, equipping, every weapon fires |
+| PartsTest | every part's data (weapons need a price), equipping, every weapon fires |
 | PlayerProgressTest | money, stash, stakes, materials, recycling, required parts |
 | SaveFileTest | saving/loading on disk, backup recovery, abandoned runs on boot |
 | StoryDirectorTest | story beats, flags, triggers, missions |

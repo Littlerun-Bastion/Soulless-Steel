@@ -26,6 +26,7 @@ func run_tests() -> void:
 	await case("high tech asks before recycling", func(): await _test_high_tech_confirm(PlayerProgress.get_stash_inventory()))
 	await case("can't leave with a required part missing", func(): await _test_leave_guard(_hangar, _equipment))
 	await case("swapped-out part goes to the stash", func(): _test_swap_returns_to_stash(_hangar, _equipment))
+	await case("closing the game in the Hangar keeps the design", _test_close_game)
 	await case("smaller core moves cargo to the stash", func(): _test_smaller_core(_hangar, _equipment))
 	await case("leaving the Hangar", _test_leaving)
 	await case("cargo resize returns overflow", _test_resize_overflow)
@@ -140,6 +141,26 @@ func _test_swap_returns_to_stash(hangar, equipment) -> void:
 	check(equipment.try_equip(_slot(equipment, "head"), stack), "equip a different head")
 	check(mecha.build.head.part_id == new_head, "new head equipped")
 	check(PlayerProgress.count_part("head", old_head) == 1, "old head went to the stash")
+	# So a save before leaving (recycling, say) can't keep the old head in
+	# both the design and the stash.
+	check(PlayerProgress.get_current_mecha()["head"] == new_head, "the design PlayerProgress saves has the new head")
+
+
+# Closing the window (or Alt+F4) instead of leaving with ESC used to lose the
+# design. Here a part is mid-drag off the mecha when the game closes.
+func _test_close_game() -> void:
+	var mecha: Mecha = _hangar.player_mecha
+	var head_id: String = mecha.build.head.part_id
+	var stash_before := PlayerProgress.get_stash_inventory().get_stacks().size()
+	_equipment._on_slot_pressed(_slot(_equipment, "head"))
+	check(MechOS.drag_manager.is_dragging() and mecha.build.head == null, "head picked up off the mecha")
+	check(not PlayerProgress.get_current_mecha()["head"], "the design follows the unequip")
+	_hangar.notification(NOTIFICATION_WM_CLOSE_REQUEST)
+	check(not MechOS.drag_manager.is_dragging(), "closing drops the drag")
+	check(mecha.build.head != null and mecha.build.head.part_id == head_id, "the head went back on the mecha")
+	check(PlayerProgress.get_current_mecha() == mecha.get_design_data(), "the design is handed over to be saved")
+	check(PlayerProgress.get_stash_inventory().get_stacks().size() == stash_before, "nothing duplicated or lost in the stash")
+	check(PlayerProgress.get_mech_inventory() == mecha.mech_inventory, "the cargo is handed over too")
 
 
 func _test_smaller_core(hangar, equipment) -> void:

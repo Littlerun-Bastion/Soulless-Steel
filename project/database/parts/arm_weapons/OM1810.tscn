@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 3, "copper": 1, "silicon": 1})
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "Rivet Gun"
+price = 430.0
 weight = 4.1
 image = ExtResource("2_gh2f2")
 muzzle_flash = ExtResource("3_kqwcc")

@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 3, "copper": 2, "silicon": 1, "n
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Canister Gun (EMP)"
+price = 1850.0
 tags = Array[String](["arm_weapon", "claymore"])
 weight = 5.8
 description = "Essentially a heavily modified MA-H250, the Galatine fires a 25mm cartridge loaded with effect shells. This particular platform fires flash-capacitor EMP rounds that can scramble electronics and impair Shields."

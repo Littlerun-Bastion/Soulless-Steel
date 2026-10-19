@@ -65,7 +65,11 @@ func _test_part_data() -> void:
 		var size = part.get("item_size")
 		check(size is Array and size.size() == 2 and int(size[0]) > 0 and int(size[1]) > 0,
 				"%s has a cargo size" % label)
-		if float(part.get("price")) <= 0.0:
+		# Weapons drop from wrecks and show their value; other parts aren't
+		# priced yet.
+		if entry[0] in ["arm_weapon", "shoulder_weapon"]:
+			check(float(part.get("price")) > 0.0, "%s has a price" % label)
+		elif float(part.get("price")) <= 0.0:
 			_notes.append("%s has no price" % label)
 		if str(part.get("description")) == "":
 			_notes.append("%s has no description" % label)

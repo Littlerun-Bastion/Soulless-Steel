@@ -95,7 +95,6 @@ func _register_apps() -> void:
 	# register_app("inventory", preload("res://game/ui/mech_os/windows/InventoryWindow.tscn"))
 	# register_app("hangar", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"))
 	
-	register_app("test", preload("res://game/ui/mech_os/windows/TestWindow.tscn"), "TST")
 	register_app("equipment", preload("res://game/ui/mech_os/windows/EquipmentWindow.tscn"), "EQP")
 	# Hangar only: the Hangar turns it on with set_app_available.
 	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT")
@@ -341,11 +340,6 @@ func _register_context_actions() -> void:
 	register_context_action("window", {
 		"id": "centre", "label": "Centre", "priority": 10,
 		"run": func(ctx): _center_window(ctx["target"]),
-	})
-	# TODO: remove once real disabled actions exist. Tests the disabled state.
-	register_context_action("window", {
-		"id": "debug_disabled", "label": "Test", "priority": 50,
-		"enabled_if": func(_ctx): return "NOT AVAILABLE",
 	})
 	register_context_action("window", {
 		"id": "close", "label": "Close", "priority": 100, "group": "close",

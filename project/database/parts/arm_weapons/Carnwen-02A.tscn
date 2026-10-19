@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 2, "copper": 2, "silicon": 2, "n
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "CW2A"
+price = 1180.0
 tags = Array[String](["arm_weapon", "claymore"])
 weight = 3.3
 description = "Based on the venerated Excalibur-model laser cannon, the Carnwen features a rapid q-switch to distribute the otherwise massive power of the Excalibur's condenser cavity into a rapid-fire weapon analogous to a chaingun in stopping power - making the weapon pass civilian-grade safety standards."

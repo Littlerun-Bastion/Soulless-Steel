@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 2, "copper": 2, "silicon": 1, "n
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "EN Shotgun"
+price = 1320.0
 tags = Array[String](["arm_weapon", "claymore"])
 weight = 3.3
 description = "An automatic energy shotgun made by Claymore International, designed for mechs with poor visual sensors to lay down a wall of fire without relying on accuracy. While the damage on impact is poor, especially against Armor, it imparts quite a lot of heat."

@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 3, "copper": 1, "oil": 1})
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Chaingun"
+price = 410.0
 weight = 4.1
 image = ExtResource("2_n47yx")
 muzzle_flash = ExtResource("8")

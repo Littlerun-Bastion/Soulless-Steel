@@ -10,8 +10,10 @@ extends Control
 # or stash to recycle it into materials (totals along the bottom; MAT on the
 # taskbar opens the full list).
 #
-# The mecha design is saved when leaving (ESC). Inventories are the same
-# objects PlayerProgress saves, and materials save as they change.
+# Inventories are the same objects PlayerProgress saves, and materials save as
+# they change. The design is handed to PlayerProgress on every equip, so any
+# save (recycling, say) writes parts, cargo and stash that agree; leaving (ESC)
+# or closing the game saves it all.
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
@@ -55,8 +57,20 @@ func _exit_tree() -> void:
 	MechOS.set_player(null)
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# Closing the game: a part still being dragged goes back where it came
+		# from first, so it isn't lost. An incomplete design is saved as it is
+		# (its parts are in the stash); the main menu won't deploy it.
+		MechOS.drag_manager.cancel_drag()
+		_save_progress()
+
+
 func _open_windows() -> void:
-	_place(MechOS.open_equipment(player_mecha), EQUIPMENT_RECT)
+	var equipment = MechOS.open_equipment(player_mecha)
+	if equipment != null:
+		equipment.parts_changed.connect(_sync_design)
+	_place(equipment, EQUIPMENT_RECT)
 	_place(MechOS.open_inventory("mech_cargo", player_mecha.mech_inventory, "MECH CARGO"), CARGO_RECT)
 	_place(MechOS.open_inventory("stash", stash_inventory, "STASH"), STASH_RECT)
 
@@ -107,13 +121,22 @@ func _on_BackButton_pressed() -> void:
 		warning_label.show()
 		AudioManager.play_sfx("back")
 		return
-	PlayerProgress.set_stash_inventory(stash_inventory)
-	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
-	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile
+	_save_progress()
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",
 		"Leaving Hangar..."
 	)
+
+
+# Without saving: the next save, whatever triggers it, includes the design.
+func _sync_design() -> void:
+	PlayerProgress.set_current_mecha(player_mecha.get_design_data(), false)
+
+
+func _save_progress() -> void:
+	PlayerProgress.set_stash_inventory(stash_inventory)
+	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
+	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile
 
 
 func _unhandled_input(event):

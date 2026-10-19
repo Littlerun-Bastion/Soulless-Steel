@@ -39,9 +39,6 @@ func _input(event):
 		$ParallaxBackground/GridLayer.motion_offset.y = parallaxMult * relative_y
 	if event.is_action_pressed("toggle_fullscreen"):
 		Global.toggle_fullscreen()
-	
-	if event.is_action_pressed("debug_4"):
-		MechOS.toggle_app("test")
 
 
 func start_game(mode):
@@ -115,7 +112,8 @@ func _show_loss_notice() -> void:
 
 
 # A mecha missing a required part spawns broken, so combat modes refuse it.
-# (The Hangar won't let an incomplete design be saved; this catches old saves.)
+# (The Hangar won't be left with one, but closing the game there saves it as
+# is, and old saves can have one.)
 func _mecha_ready_to_deploy() -> bool:
 	var missing := PlayerProgress.missing_parts(PlayerProgress.get_current_mecha())
 	if missing.is_empty():

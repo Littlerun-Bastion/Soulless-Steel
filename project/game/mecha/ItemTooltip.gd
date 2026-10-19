@@ -67,9 +67,10 @@ func show_item(stack: item_stack) -> void:
 	var h := stack.height_cells()
 	lines.append("Size: %sx%s" % [w, h])
 
+	# Parts without a price yet show none rather than "Value: 0".
 	var price_val = res.get("price")
-	if typeof(price_val) == TYPE_FLOAT or typeof(price_val) == TYPE_INT:
-		lines.append("Value: %s" % price_val)
+	if (typeof(price_val) == TYPE_FLOAT or typeof(price_val) == TYPE_INT) and price_val > 0:
+		lines.append("Value: %d ct" % int(price_val))
 
 	# Salvage: tech tier and what recycling it yields (per item).
 	var tier_val = res.get("tech_tier")

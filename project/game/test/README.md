@@ -1,0 +1,73 @@
+# Automated tests
+
+Every suite in `suites/` checks one part of the game. Run them often: a failing
+test means something that used to work doesn't any more.
+
+## Running
+
+| How | What runs |
+|---|---|
+| Double-click `run_tests.bat` in the repo root | every suite |
+| `run_tests.bat --fast` | every suite except slow ones (whole-game simulations) |
+| `run_tests.bat --suite=Hangar,Wreck` | suites whose name contains one of these |
+| Editor: open `game/test/RunAllTests.tscn`, press F6 | every suite, results in Output |
+| Editor: open one suite's scene, press F6 | just that suite |
+| Committing (GitHub Desktop or git) | the fast suites, via the pre-commit hook |
+
+The report ends with `RESULT: PASSED` or `RESULT: FAILED` and a list of what
+failed. From the command line the exit code is 0 or 1.
+
+**Pre-commit hook:** once per clone, run
+`git config core.hooksPath tools/git-hooks`. Then every commit that touches
+`project/` runs the fast suites first and is blocked if one fails (full log in
+`test-results.log`). It needs the Godot console exe next to the repo
+(`Godot_v*_win64_console.exe`) or a `GODOT` environment variable; without one
+it skips with a message.
+
+## What a test run guarantees
+
+- **Your real save is never touched.** Each suite snapshots progress, story
+  and the current mission, turns autosave off, makes FileManager refuse to
+  save, and restores everything afterwards.
+- **Errors fail tests.** Any script error, `push_error` or engine error while
+  a case runs fails that case, even if all its checks passed. Known harmless
+  engine noise is listed in `framework/TestErrorWatch.gd` (`ALLOWED`).
+- **Game time runs 4x faster** so timers don't slow the run (a suite can set
+  `time_scale` lower).
+
+## Writing a suite
+
+Add `suites/MyThingTest.gd` and a scene `suites/MyThingTest.tscn` (a single
+Node with the script). The runner finds it automatically.
+
+```gdscript
+extends TestSuite
+
+# MyThingTest: what this suite covers, in a sentence or two.
+
+
+func run_tests() -> void:
+	await case("does the thing", _test_thing)
+
+
+func before_each() -> void:   # optional: reset state before every case
+	PlayerProgress.reset()
+
+
+func _test_thing() -> void:
+	check(1 + 1 == 2, "maths works")
+	check_eq(PlayerProgress.get_money(), 0.0, "starts broke")
+	expect_error("planned")          # the next error containing "planned" is OK
+	await wait_until(func(): return some_condition(), 5.0)
+```
+
+Mark a whole-game simulation `slow = true` (in `_init`) so the pre-commit hook
+skips it.
+
+## Files
+
+- `framework/TestSuite.gd`: base class (checks, cases, waiting, state safety)
+- `framework/TestSession.gd`: runs suites, prints the report, options
+- `framework/TestErrorWatch.gd`: turns Godot errors into failures
+- `framework/TestRunner.gd` + `RunAllTests.tscn`: run everything
+- `tools/git-hooks/pre-commit` and `run_tests.bat` (repo root)

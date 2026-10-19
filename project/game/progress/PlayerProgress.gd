@@ -23,7 +23,7 @@ extends Node
 # flag is saved, so a crash or closing the game mid-run counts as abandoning
 # it — FileManager resolves that on the next boot.
 #
-# Testing: game/test/PlayerProgressTest.tscn runs self-checks (F6 in the
+# Testing: game/test/suites/PlayerProgressTest.tscn runs self-checks (F6 in the
 # editor) with autosave off, restoring the real progress afterwards.
 
 signal money_changed(new_amount)

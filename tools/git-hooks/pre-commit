@@ -1,0 +1,37 @@
+#!/bin/sh
+# Runs the fast automated tests before each commit (GitHub Desktop too) and
+# blocks the commit if any fail. Only runs when the commit touches project/.
+# The full log is written to test-results.log in the repo root.
+#
+# Turned on per clone with:  git config core.hooksPath tools/git-hooks
+# Skip it once (not recommended):  git commit --no-verify
+
+cd "$(git rev-parse --show-toplevel)" || exit 0
+git diff --cached --name-only | grep -q '^project/' || exit 0
+
+GODOT_BIN="$GODOT"
+if [ -z "$GODOT_BIN" ]; then
+	GODOT_BIN=$(ls Godot_v*_win64_console.exe Godot_v*_linux.x86_64 2>/dev/null | head -n 1)
+	[ -n "$GODOT_BIN" ] && GODOT_BIN="./$GODOT_BIN"
+fi
+if [ -z "$GODOT_BIN" ]; then
+	echo "pre-commit: Godot not found next to the repo; tests skipped."
+	exit 0
+fi
+
+# New or changed scripts need Godot's class cache refreshed first.
+CACHE=project/.godot/global_script_class_cache.cfg
+if [ ! -f "$CACHE" ] || [ -n "$(find project -name '*.gd' -newer "$CACHE" -not -path '*/.godot/*' -not -path '*/.claude/*' | head -n 1)" ]; then
+	"$GODOT_BIN" --headless --import --path project >/dev/null 2>&1
+fi
+
+echo "pre-commit: running tests..."
+"$GODOT_BIN" --headless --path project res://game/test/RunAllTests.tscn -- --fast > test-results.log 2>&1
+STATUS=$?
+sed -n '/=== Summary ===/,/^RESULT:/p' test-results.log
+if [ $STATUS -ne 0 ]; then
+	echo ""
+	echo "Tests failed: commit blocked. Full log: test-results.log"
+	exit 1
+fi
+exit 0

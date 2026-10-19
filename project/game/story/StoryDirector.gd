@@ -25,7 +25,7 @@ extends Node
 #
 # Testing:
 #   - debug_7 (F7) prints the current story state
-#   - game/test/StoryDirectorTest.tscn runs self-checks (F6 in the editor)
+#   - game/test/suites/StoryDirectorTest.tscn runs self-checks (F6 in the editor)
 #   - set autosave = false to change state without writing the profile
 
 signal beat_changed(chapter, beat)

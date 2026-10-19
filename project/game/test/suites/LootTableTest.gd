@@ -1,14 +1,12 @@
-extends Node
+extends TestSuite
 
-# LootTableTest runs self-checks on the loot data: tech tiers, LootTable rolls
-# and rarity, LootEntry parts (for weapon drops later), LootContainer random
-# contents, and salvage/parts surviving a save in the cargo.
-# Open LootTableTest.tscn and press F6; results print to Output, along with
-# the tier spread of a large batch of rolls.
+# LootTableTest: the loot data. Tech tiers, LootTable rolls and rarity,
+# LootEntry parts (weapon drops), LootContainer random contents, and
+# salvage/parts surviving a save in the cargo. Prints the tier spread of a
+# large batch of rolls.
 #
 # Rolls use a seeded RandomNumberGenerator so results are the same every run.
-# The player's real progress is snapshotted and restored, and autosave is off
-# while the checks run, so the profile is never touched.
+# Each case starts from fresh progress (PlayerProgress.reset).
 
 const WRECK_SALVAGE := preload("res://database/loot-tables/wreck_salvage.tres")
 const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")
@@ -21,44 +19,21 @@ const TEST_WEAPON_ID := "MA-L127"
 
 const SPREAD_ROLLS := 10000
 
-var _passed := 0
-var _failed := 0
+
+func run_tests() -> void:
+	await case("salvage items have tiers", _test_salvage_tiers)
+	await case("tier chances", _test_tier_chances)
+	await case("roll spread follows weights", _test_roll_spread)
+	await case("empty tier falls back", _test_fallback)
+	await case("empty table", _test_empty_table)
+	await case("entries make fresh stacks", _test_fresh_stacks)
+	await case("part entries", _test_part_entry)
+	await case("container rolls its contents", _test_container)
+	await case("salvage and parts survive a save in cargo", _test_cargo_save)
 
 
-func _ready() -> void:
-	var saved_state = JSON.parse_string(JSON.stringify(PlayerProgress.get_save_data()))
-	PlayerProgress.autosave = false
-
-	_run("salvage items have tiers", _test_salvage_tiers)
-	_run("tier chances", _test_tier_chances)
-	_run("roll spread follows weights", _test_roll_spread)
-	_run("empty tier falls back", _test_fallback)
-	_run("empty table", _test_empty_table)
-	_run("entries make fresh stacks", _test_fresh_stacks)
-	_run("part entries", _test_part_entry)
-	_run("container rolls its contents", _test_container)
-	_run("salvage and parts survive a save in cargo", _test_cargo_save)
-
-	PlayerProgress.set_save_data(saved_state)
-	PlayerProgress.autosave = true
-
-	print("[LootTableTest] %d passed, %d failed" % [_passed, _failed])
-
-
-func _run(test_name: String, test: Callable) -> void:
+func before_each() -> void:
 	PlayerProgress.reset()
-	var failures_before := _failed
-	test.call()
-	if _failed == failures_before:
-		print("  PASS ", test_name)
-
-
-func _check(condition: bool, message: String) -> void:
-	if condition:
-		_passed += 1
-	else:
-		_failed += 1
-		push_error("[LootTableTest] FAIL " + message)
 
 
 func _seeded_rng() -> RandomNumberGenerator:
@@ -69,37 +44,37 @@ func _seeded_rng() -> RandomNumberGenerator:
 
 func _test_salvage_tiers() -> void:
 	for tier in LootTable.ROLLED_TIERS:
-		_check(not WRECK_SALVAGE.get_entries_of_tier(tier).is_empty(),
+		check(not WRECK_SALVAGE.get_entries_of_tier(tier).is_empty(),
 				"wreck_salvage has items of tier %d" % tier)
 	for entry in WRECK_SALVAGE.entries:
-		_check(entry.get_tech_tier() != item_data.TechTier.NONE,
+		check(entry.get_tech_tier() != item_data.TechTier.NONE,
 				"%s has a tech tier" % entry.item.id)
-		_check("salvage" in entry.item.tags, "%s is tagged salvage" % entry.item.id)
-		_check(not entry.item.composition.is_empty(), "%s can be recycled" % entry.item.id)
+		check("salvage" in entry.item.tags, "%s is tagged salvage" % entry.item.id)
+		check(not entry.item.composition.is_empty(), "%s can be recycled" % entry.item.id)
 		for material_id in entry.item.composition:
-			_check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [entry.item.id, material_id])
+			check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [entry.item.id, material_id])
 		var item: item_data = entry.item
-		_check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
-		_check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
-		_check(item.display_name != "" and item.description != "", "%s is named and described" % item.id)
-		_check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
+		check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
+		check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
+		check(item.display_name != "" and item.description != "", "%s is named and described" % item.id)
+		check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
 
 	# Every salvage item is in the table, once: 4 low, 4 mid, 3 high.
 	var table_items := WRECK_SALVAGE.entries.map(func(e): return e.item)
 	var files := Array(DirAccess.get_files_at("res://database/items/salvage")).filter(func(f): return f.ends_with(".tres"))
-	_check(files.size() == 11 and table_items.size() == 11, "eleven salvage items, all in the table")
+	check(files.size() == 11 and table_items.size() == 11, "eleven salvage items, all in the table")
 	for file in files:
-		_check(load("res://database/items/salvage/" + file) in table_items, "%s is in wreck_salvage" % file)
-	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.LOW).size() == 4, "four low-tech")
-	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).size() == 4, "four mid-tech")
-	_check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
+		check(load("res://database/items/salvage/" + file) in table_items, "%s is in wreck_salvage" % file)
+	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.LOW).size() == 4, "four low-tech")
+	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).size() == 4, "four mid-tech")
+	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
 
 
 func _test_tier_chances() -> void:
 	var chances: Dictionary = WRECK_SALVAGE.get_tier_chances()
-	_check(is_equal_approx(chances[item_data.TechTier.LOW], 0.70), "low is 70%")
-	_check(is_equal_approx(chances[item_data.TechTier.MID], 0.25), "mid is 25%")
-	_check(is_equal_approx(chances[item_data.TechTier.HIGH], 0.05), "high is 5%")
+	check(is_equal_approx(chances[item_data.TechTier.LOW], 0.70), "low is 70%")
+	check(is_equal_approx(chances[item_data.TechTier.MID], 0.25), "mid is 25%")
+	check(is_equal_approx(chances[item_data.TechTier.HIGH], 0.05), "high is 5%")
 
 
 func _test_roll_spread() -> void:
@@ -112,10 +87,10 @@ func _test_roll_spread() -> void:
 	var mid := float(counts[item_data.TechTier.MID]) / SPREAD_ROLLS
 	var high := float(counts[item_data.TechTier.HIGH]) / SPREAD_ROLLS
 	print("    %d rolls: low %.1f%%, mid %.1f%%, high %.1f%%" % [SPREAD_ROLLS, low * 100, mid * 100, high * 100])
-	_check(absf(low - 0.70) < 0.03, "low close to 70%")
-	_check(absf(mid - 0.25) < 0.03, "mid close to 25%")
-	_check(absf(high - 0.05) < 0.015, "high close to 5%")
-	_check(high < mid and mid < low, "rarer as tech rises")
+	check(absf(low - 0.70) < 0.03, "low close to 70%")
+	check(absf(mid - 0.25) < 0.03, "mid close to 25%")
+	check(absf(high - 0.05) < 0.015, "high close to 5%")
+	check(high < mid and mid < low, "rarer as tech rises")
 
 
 func _test_fallback() -> void:
@@ -127,7 +102,7 @@ func _test_fallback() -> void:
 	table.high_weight = 100.0
 	var rng := _seeded_rng()
 	var entry := table.roll_entry(rng)
-	_check(entry != null and entry.item == LOW_ITEM, "high roll steps down to low")
+	check(entry != null and entry.item == LOW_ITEM, "high roll steps down to low")
 
 	# Only a high item, every roll wants low tech.
 	table = LootTable.new()
@@ -136,47 +111,47 @@ func _test_fallback() -> void:
 	table.mid_weight = 0.0
 	table.high_weight = 0.0
 	entry = table.roll_entry(rng)
-	_check(entry != null and entry.item == HIGH_ITEM, "low roll steps up to high")
+	check(entry != null and entry.item == HIGH_ITEM, "low roll steps up to high")
 
 
 func _test_empty_table() -> void:
 	var table := LootTable.new()
-	_check(table.roll_entry() == null, "no entry from an empty table")
-	_check(table.roll_stacks(3).is_empty(), "no stacks from an empty table")
+	check(table.roll_entry() == null, "no entry from an empty table")
+	check(table.roll_stacks(3).is_empty(), "no stacks from an empty table")
 
 
 func _test_fresh_stacks() -> void:
 	var entry := _entry(LOW_ITEM, 2)
 	var a := entry.make_stack()
 	var b := entry.make_stack()
-	_check(a != null and a != b, "each make_stack is a new stack")
-	_check(a.kind == item_stack.ItemKind.GENERIC and a.item == LOW_ITEM, "generic stack holds the item")
-	_check(a.quantity == 2, "quantity carried over")
-	_check(a.width_cells() == 2 and a.height_cells() == 1, "size comes from item_size")
-	_check(not _entry(null).is_valid(), "entry with nothing set is invalid")
+	check(a != null and a != b, "each make_stack is a new stack")
+	check(a.kind == item_stack.ItemKind.GENERIC and a.item == LOW_ITEM, "generic stack holds the item")
+	check(a.quantity == 2, "quantity carried over")
+	check(a.width_cells() == 2 and a.height_cells() == 1, "size comes from item_size")
+	check(not _entry(null).is_valid(), "entry with nothing set is invalid")
 
 
 func _test_part_entry() -> void:
 	var entry := LootEntry.new()
 	entry.part_type = TEST_WEAPON_TYPE
 	entry.part_id = TEST_WEAPON_ID
-	_check(entry.is_part() and entry.is_valid(), "weapon entry is valid")
-	_check(entry.get_tech_tier() == item_data.TechTier.NONE, "parts have no tier")
+	check(entry.is_part() and entry.is_valid(), "weapon entry is valid")
+	check(entry.get_tech_tier() == item_data.TechTier.NONE, "parts have no tier")
 
 	var stack := entry.make_stack()
-	_check(stack != null and stack.kind == item_stack.ItemKind.PART, "makes a part stack")
-	_check(stack.item_type == TEST_WEAPON_TYPE and stack.item_id == TEST_WEAPON_ID, "part stack keeps type and id")
-	_check(stack.width_cells() == 3 and stack.height_cells() == 2, "weapon size resolved through PartManager")
+	check(stack != null and stack.kind == item_stack.ItemKind.PART, "makes a part stack")
+	check(stack.item_type == TEST_WEAPON_TYPE and stack.item_id == TEST_WEAPON_ID, "part stack keeps type and id")
+	check(stack.width_cells() == 3 and stack.height_cells() == 2, "weapon size resolved through PartManager")
 
 	var bad := LootEntry.new()
 	bad.part_type = TEST_WEAPON_TYPE
 	bad.part_id = "NOT-A-WEAPON"
-	_check(not bad.is_valid() and bad.make_stack() == null, "unknown part is invalid")
+	check(not bad.is_valid() and bad.make_stack() == null, "unknown part is invalid")
 
 	# Tier rolls never hand out parts.
 	var table := LootTable.new()
 	table.entries.append(entry)
-	_check(table.roll_entry() == null, "table skips part entries")
+	check(table.roll_entry() == null, "table skips part entries")
 
 
 func _test_container() -> void:
@@ -187,13 +162,13 @@ func _test_container() -> void:
 	container.loot_table = WRECK_SALVAGE
 	container.loot_rolls = 3
 	add_child(container)
-	_check(_count_stacks(container.inventory) == 3, "3 rolled items placed")
+	check(_count_stacks(container.inventory) == 3, "3 rolled items placed")
 
 	var weapon := LootEntry.new()
 	weapon.part_type = TEST_WEAPON_TYPE
 	weapon.part_id = TEST_WEAPON_ID
 	container.populate([weapon])
-	_check(_count_stacks(container.inventory) == 4, "part entry placed in a container")
+	check(_count_stacks(container.inventory) == 4, "part entry placed in a container")
 	container.queue_free()
 
 
@@ -219,8 +194,8 @@ func _test_cargo_save() -> void:
 			found_salvage = stack.item.tech_tier == item_data.TechTier.HIGH
 		elif stack.kind == item_stack.ItemKind.PART and stack.item_id == TEST_WEAPON_ID:
 			found_weapon = stack.item_type == TEST_WEAPON_TYPE
-	_check(found_salvage, "salvage restored with its tier")
-	_check(found_weapon, "weapon part restored with type and id")
+	check(found_salvage, "salvage restored with its tier")
+	check(found_weapon, "weapon part restored with type and id")
 
 
 # ---- Helpers ----

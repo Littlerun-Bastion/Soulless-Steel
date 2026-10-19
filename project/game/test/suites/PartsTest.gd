@@ -23,13 +23,6 @@ var _mecha: Mecha = null
 var _notes: Array[String] = []
 
 
-func _init() -> void:
-	known_issues = {
-		"shoulders shoulder_test has an image": "2022 test part with no image; flagged 2026-10-19",
-		"shoulders shoulder_test2 has an image": "2022 test part with no image; flagged 2026-10-19",
-	}
-
-
 func run_tests() -> void:
 	_mecha = MECHA.instantiate()
 	_mecha.mech_inventory = Inventory.new()
@@ -40,6 +33,7 @@ func run_tests() -> void:
 	await case("every part has its data", _test_part_data)
 	await case("every part equips onto a mecha", _test_equip)
 	await case("every weapon fires", _test_weapons_fire)
+	await case("weapons swapped on the same mecha still fire", _test_weapon_swaps)
 
 	for note in _notes:
 		print("    note: " + note)
@@ -123,6 +117,30 @@ func _check_fires(part_type: String, part_id: String) -> void:
 		check(instance != null, "%s projectile instances" % part_id)
 		if instance != null:
 			instance.free()
+
+
+# One mecha, every arm weapon in turn, firing each: a weapon with fewer
+# barrels than the one before used to crash on its first shot (WeaponNode
+# kept the old barrel index).
+func _test_weapon_swaps() -> void:
+	var mecha: Mecha = MECHA.instantiate()
+	mecha.mech_inventory = Inventory.new()
+	add_child(mecha)
+	mecha.battery = 1000000.0
+	var shots := []
+	mecha.create_projectile.connect(func(_m, args, _w): shots.append(args))
+	var weapons: Array = PartManager.get_parts("arm_weapon").keys()
+	for part_id in weapons + weapons:  # twice, so every weapon follows another
+		mecha.set_parts_from_design(_design_with("arm_weapon", part_id))
+		if mecha.build["arm_weapon_left"].is_melee:
+			continue
+		shots.clear()
+		var fired := await wait_until(func():
+			mecha.shoot("arm_weapon_left")
+			return not shots.is_empty(), 3.0)
+		check(fired, "%s fires after a swap" % part_id)
+	mecha.queue_free()
+	await wait_frames()
 
 
 # The default mecha with one part swapped in. Shoulder weapons need a core

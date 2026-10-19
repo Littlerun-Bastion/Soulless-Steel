@@ -11,12 +11,6 @@ extends TestSuite
 const ROOTS := ["res://game/", "res://database/"]
 
 
-func _init() -> void:
-	known_issues = {
-		"res://game/weapons/Trail.tscn": "unused scene with a Godot 3 Tween node Godot 4 can't create; flagged 2026-10-19",
-	}
-
-
 func run_tests() -> void:
 	await case("every script compiles", _test_scripts)
 	await case("every scene loads and instances", _test_scenes)

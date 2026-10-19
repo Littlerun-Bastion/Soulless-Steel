@@ -82,7 +82,7 @@ entry then. Use this for flagged problems only, never to hide a new failure.
 ```gdscript
 func _init() -> void:
 	known_issues = {
-		"res://game/weapons/Trail.tscn": "Godot 3 Tween node; flagged 2026-10-19",
+		"res://game/some/Scene.tscn": "what is wrong; who flagged it and when",
 	}
 ```
 

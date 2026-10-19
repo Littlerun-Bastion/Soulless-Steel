@@ -42,6 +42,11 @@ func setup(mecha, weapon_ref, core, _side):
 	side = _side
 	total_ammo = data.total_ammo
 	clip_ammo = data.clip_size
+	# A new weapon starts fresh, not with the previous one's cooldown or burst.
+	timer = 0.0
+	burst_count = 0
+	do_burst = false
+	heat = 0.0
 	
 	if data.is_melee:
 		add_child(weapon_ref.get_attack_animation())
@@ -198,7 +203,11 @@ func set_shooting_pos(pos):
 	shooting_pos_array.append(pos)
 
 func clear_shooting_pos():
+	for marker in shooting_pos_array:
+		if is_instance_valid(marker):
+			marker.queue_free()
 	shooting_pos_array = []
+	shooting_pos_idx = 0  # the next weapon may have fewer barrels than this one
 
 func get_direction(multishot_offset := 0.0, angle := 0.0):
 	var angle_offset = randf_range(-multishot_offset, multishot_offset)

@@ -12,17 +12,6 @@ const DESIGN_SLOTS := ["head", "core", "shoulders", "generator", "chipset", "cha
 const PERSONALITIES := ["professional", "scavenger", "guardian", "hunter", "rat"]
 
 
-func _init() -> void:
-	const WRONG_IDS := "part ids that don't exist (type_1, type_2, test1); flagged 2026-10-19"
-	known_issues = {
-		"special NPC 'Lady Volk'": WRONG_IDS,
-		"special NPC 'Test Dummy'": WRONG_IDS,
-		"given the tags: [\"type_1\"]": WRONG_IDS,
-		"given the tags: [\"type_2\"]": WRONG_IDS,
-		"given the tags: [\"test1\"]": WRONG_IDS,
-	}
-
-
 func run_tests() -> void:
 	await case("NPCs are loaded", _test_loaded)
 	await case("every design names real parts", _test_parts_exist)

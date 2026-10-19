@@ -17,11 +17,6 @@ var _saved_arena := {}
 
 func _init() -> void:
 	slow = true
-	known_issues = {
-		"given the tags: [\"type_1\"]": "Lady Volk's part ids don't exist (see NpcDesignsTest); flagged 2026-10-19",
-		"given the tags: [\"type_2\"]": "Lady Volk's part ids don't exist (see NpcDesignsTest); flagged 2026-10-19",
-		"given the tags: [\"test1\"]": "Lady Volk's part ids don't exist (see NpcDesignsTest); flagged 2026-10-19",
-	}
 
 
 func run_tests() -> void:

@@ -86,6 +86,32 @@ func _init() -> void:
 	}
 ```
 
+## What's covered
+
+| Suite | Covers |
+|---|---|
+| BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
+| ContentScenesTest | every script compiles, every scene loads |
+| ExpeditionHudTest | mission tracker, load readout, extraction summary |
+| ExpeditionRunTest *(slow)* | a real Expedition: spawn, shooting, wrecks and loot, extraction, death, pause, quitting |
+| GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
+| HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts |
+| LootTableTest | loot tables, tiers, containers |
+| NpcDesignsTest | every enemy design is valid and builds |
+| OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
+| PartsTest | every part's data, equipping, every weapon fires |
+| PlayerProgressTest | money, stash, stakes, materials, recycling, required parts |
+| SaveFileTest | saving/loading on disk, backup recovery, abandoned runs on boot |
+| StoryDirectorTest | story beats, flags, triggers, missions |
+| WreckTest | wreck loot, weapon drops, Take / Take all |
+
+Not covered: real mouse input (drag-and-drop is tested through the same code
+a drop calls, not the mouse tracking), audio, and how things look.
+
+Test saves go to `user://test/` (deleted after each suite); FileManager is
+pointed there for every suite, so the real `user://profile.save` can't be
+read or written by a test.
+
 ## Files
 
 - `framework/TestSuite.gd`: base class (checks, cases, waiting, state safety)

@@ -5,7 +5,8 @@ extends TestSuite
 #   - a successful run: spawn with the saved mecha and cargo, shoot an enemy,
 #     kill it, loot its wreck, extract through an exit, and the cargo is home
 #   - dying: everything brought out is lost, the game-over screen says what
-#   - leaving mid-run (quit, closing the scene) abandons the run
+#   - pausing and resuming; quitting from the pause menu (warned first)
+#     abandons the run
 #
 # Enemies are frozen after spawning and the director stopped, so the player
 # isn't attacked at random and results don't depend on luck. Scene changes
@@ -40,7 +41,8 @@ func run_tests() -> void:
 	await _close_expedition()
 
 	await _start_expedition()
-	await case("leaving mid-run abandons the expedition", _test_abandon)
+	await case("pausing and resuming", _test_pause)
+	await case("quitting from the pause menu abandons the expedition", _test_abandon)
 
 	Debug.debug_settings["skip_intro"] = _saved_skip_intro
 
@@ -210,8 +212,29 @@ func _test_death() -> void:
 
 # ---- Abandoning ----
 
+func _test_pause() -> void:
+	var pause = _scene.PauseMenu
+	var player := _player()
+	pause.toggle_pause()
+	check(pause.is_paused(), "the pause menu opens")
+	check(player.paused, "the player is frozen while paused")
+	check(not MouseManager.is_aiming(), "the mouse is a pointer in the menu")
+	pause._on_Resume_pressed()
+	check(not pause.is_paused() and not player.paused, "Resume goes back to the fight")
+	check(MouseManager.is_aiming(), "aiming again")
+
+
+# Quitting from the pause menu warns first, then leaves (the scene change
+# frees the Expedition, which abandons the run).
 func _test_abandon() -> void:
 	check(PlayerProgress.is_in_expedition(), "in a run")
+	var pause = _scene.PauseMenu
+	pause.toggle_pause()
+	pause._on_Quit_pressed()
+	check(pause.QuitWarning.visible and "lost" in pause.QuitWarning.text, "the first Quit warns what will be lost")
+	check(TransitionManager.captured.is_empty(), "and doesn't leave yet")
+	pause._on_Quit_pressed()
+	check_eq(TransitionManager.captured, ["res://game/start_menu/StartMenu.tscn"], "the second Quit leaves for the main menu")
 	await _close_expedition()
 	check(not PlayerProgress.is_in_expedition(), "leaving ended the run")
 	check(PlayerProgress.get_mech_inventory().is_empty(), "the cargo is lost")

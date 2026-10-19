@@ -1,6 +1,8 @@
 extends Node
 
 var previous_windowed_pos = false
+# Automated tests set this so loading a test profile doesn't resize the window.
+var keep_window := false
 
 func toggle_fullscreen():
 	var window = get_window()
@@ -13,6 +15,8 @@ func toggle_fullscreen():
 # Puts the window in the mode saved in the profile options (fullscreen, or a
 # window of the chosen size). Called when the profile loads and on F11.
 func apply_window_mode():
+	if keep_window:
+		return
 	var window = get_window()
 	var cur_screen = window.get_current_screen()
 	var fullscreen: bool = Profile.get_option("fullscreen")

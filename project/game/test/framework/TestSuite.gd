@@ -41,6 +41,10 @@ var _known_seen := {}
 var _saved := {}
 var _session: TestSession = null  # kept while running alone (F6)
 
+## Test-only files (profile saves, archives) go here and are deleted after
+## every suite.
+const TEST_DIR := "user://test/"
+
 
 # Override: the suite's cases, in order.
 func run_tests() -> void:
@@ -179,8 +183,17 @@ func _save_state() -> void:
 		"story": JSON.parse_string(JSON.stringify(StoryDirector.get_save_data())),
 		"mission": MissionManager.current_mission,
 		"profile_loaded": FileManager.profile_loaded,
+		"paths": [FileManager.profile_path, FileManager.backup_path, FileManager.archive_dir],
+		"options": Profile.options.duplicate(true),
+		"controls": Profile.controls.duplicate(true),
 	}
 	FileManager.profile_loaded = false
+	# Even a test that loads or saves for real only touches files in TEST_DIR.
+	DirAccess.make_dir_recursive_absolute(TEST_DIR)
+	FileManager.profile_path = TEST_DIR + "profile.save"
+	FileManager.backup_path = TEST_DIR + "profile.backup"
+	FileManager.archive_dir = TEST_DIR + "archive"
+	Global.keep_window = true
 	PlayerProgress.autosave = false
 	StoryDirector.autosave = false
 	# A test pressing "Continue" or "Return" must not change the scene under
@@ -204,5 +217,24 @@ func _restore_state() -> void:
 	PlayerProgress.autosave = true
 	StoryDirector.autosave = true
 	FileManager.profile_loaded = _saved["profile_loaded"]
+	FileManager.profile_path = _saved["paths"][0]
+	FileManager.backup_path = _saved["paths"][1]
+	FileManager.archive_dir = _saved["paths"][2]
+	Profile.options = _saved["options"]
+	Profile.controls = _saved["controls"]
+	for action in Profile.controls:
+		Profile.edit_control_action(action, Profile.controls[action])
+	Global.keep_window = false
+	remove_test_files()
+	DirAccess.remove_absolute(TEST_DIR)
 	TransitionManager.capture_only = false
 	TransitionManager.captured.clear()
+
+
+# Deletes everything under TEST_DIR.
+static func remove_test_files(dir_path := TEST_DIR) -> void:
+	for sub in DirAccess.get_directories_at(dir_path):
+		remove_test_files(dir_path + sub + "/")
+		DirAccess.remove_absolute(dir_path + sub)
+	for file in DirAccess.get_files_at(dir_path):
+		DirAccess.remove_absolute(dir_path + file)

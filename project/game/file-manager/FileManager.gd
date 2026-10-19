@@ -5,6 +5,12 @@ extends Node
 # saving there would overwrite the real profile with blank defaults.
 var profile_loaded := false
 
+# Where the profile lives. Automated tests point these at test files so the
+# real profile is never read or written (see game/test/suites/SaveFileTest).
+var profile_path := "user://profile.save"
+var backup_path := "user://profile.backup"
+var archive_dir := "user://archived_files"
+
 
 func _notification(what):
 	if what == MainLoop.NOTIFICATION_CRASH:
@@ -28,15 +34,15 @@ func load_game():
 
 func load_profile():
 	var profile_file
-	if FileAccess.file_exists("user://profile.backup"):
+	if FileAccess.file_exists(backup_path):
 		push_warning("Something went wrong with profile in a previous sessions, trying to fix it")
-		if not FileAccess.file_exists("user://profile.save"):
+		if not FileAccess.file_exists(profile_path):
 			push_warning("No original profile found")
 			#If there isn't an official profile, just rename the backup
-			DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
+			DirAccess.rename_absolute(backup_path, profile_path)
 		else:
 			var backup_data
-			profile_file = FileAccess.open("user://profile.backup", FileAccess.READ)
+			profile_file = FileAccess.open(backup_path, FileAccess.READ)
 			if not profile_file:
 				push_error("Error trying to open debug profile whilst fixing errors:" + str(FileAccess.get_open_error()))
 				return
@@ -48,7 +54,7 @@ func load_profile():
 			profile_file.close()
 			if backup_data.has("time"):
 				var profile_data
-				profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
+				profile_file = FileAccess.open(profile_path, FileAccess.READ)
 				if not profile_file:
 					push_error("Error trying to open original profile whilst fixing errors:" + str(FileAccess.get_open_error()))
 					return
@@ -59,31 +65,31 @@ func load_profile():
 					profile_data = test_json_conv.get_data()
 				profile_file.close()
 				if profile_data.has("time"):
-					if Debug.compare_datetimes(backup_data.time, profile_data.time):
+					if is_later(backup_data.time, profile_data.time):
 						push_warning("Backup data is more recent... using backup")
-						archive_file("user://profile.save")
-						DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
+						archive_file(profile_path)
+						DirAccess.rename_absolute(backup_path, profile_path)
 					else:
 						push_warning("Original profile data is more recent... archiving backup")
-						archive_file("user://profile.backup")
-						DirAccess.remove_absolute("user://profile.backup")
+						archive_file(backup_path)
+						DirAccess.remove_absolute(backup_path)
 				else:
 					push_warning("Profile data has no time information... using backup")
-					archive_file("user://profile.save")
-					DirAccess.rename_absolute("user://profile.backup", "user://profile.save")
+					archive_file(profile_path)
+					DirAccess.rename_absolute(backup_path, profile_path)
 			else:
 				push_warning("Backup data has no time information; using backup as fallback")
-				archive_file("user://profile.backup")
+				archive_file(backup_path)
 				
 		print("[FileManager] Profile recovery complete")
 
 
-	if not FileAccess.file_exists("user://profile.save"):
+	if not FileAccess.file_exists(profile_path):
 		print("[FileManager] No profile found, starting new")
 		profile_loaded = true
 		save_profile()
 		
-	profile_file = FileAccess.open("user://profile.save", FileAccess.READ)
+	profile_file = FileAccess.open(profile_path, FileAccess.READ)
 	if not profile_file:
 		push_error("Error trying to open profile whilst loading:" + str(FileAccess.get_open_error()))
 		return
@@ -107,7 +113,7 @@ func save_profile():
 	
 	#First save on a separate file as to avoid corruption
 	var backup_file
-	backup_file = FileAccess.open("user://profile.backup", FileAccess.WRITE)
+	backup_file = FileAccess.open(backup_path, FileAccess.WRITE)
 	if not backup_file:
 		push_error("Error trying to open backup profile whilst saving:" + str(FileAccess.get_open_error()))
 		return
@@ -116,7 +122,7 @@ func save_profile():
 	
 	#Now save directly on official profile.save
 	var profile_file
-	profile_file = FileAccess.open("user://profile.save", FileAccess.WRITE)
+	profile_file = FileAccess.open(profile_path, FileAccess.WRITE)
 	if not profile_file:
 		push_error("Error trying to open profile whilst saving:" + str(FileAccess.get_open_error()))
 		return
@@ -124,7 +130,7 @@ func save_profile():
 	profile_file.close()
 	
 	#If reached here, everything should be okay, lets delete the backup
-	var err = DirAccess.remove_absolute("user://profile.backup")
+	var err = DirAccess.remove_absolute(backup_path)
 	if err != OK:
 		push_error("Error trying to delete backup profile whilst saving:" + str(err))
 
@@ -199,14 +205,14 @@ func get_all_mecha_design_names():
 
 
 func archive_file(path, use_warning := true):
-	if not DirAccess.dir_exists_absolute("user://archived_files"):
+	if not DirAccess.dir_exists_absolute(archive_dir):
 		print("[FileManager] Creating archive directory")
-		DirAccess.make_dir_absolute("user://archived_files")
+		DirAccess.make_dir_absolute(archive_dir)
 	var date = Time.get_datetime_dict_from_system()
 	var archive_filename = str(date.year) + "y_" + str(date.month) + "mo_" + str(date.day) + "d_" +\
 							str(date.hour) + "h_" + str(date.minute) + "mi_" + str(date.second) + "s_" +\
-							str(randi()%1000) + "_" + path.lstrip("user://")
-	var err =  DirAccess.copy_absolute(path, "user://archived_files/" + archive_filename)
+							str(randi()%1000) + "_" + path.get_file()
+	var err =  DirAccess.copy_absolute(path, archive_dir + "/" + archive_filename)
 	if err != OK:
 		push_error("Error trying to duplicate file whilst archiving:" + str(err))
 	
@@ -214,3 +220,14 @@ func archive_file(path, use_warning := true):
 		print("[FileManager] Archived: ", archive_filename)
 	else:
 		print("Archived file: " + str(archive_filename))
+
+
+# Whether datetime a (Time.get_datetime_dict_from_system, as saved in the
+# profile's "time") is later than b. JSON loads the numbers as floats.
+static func is_later(a: Dictionary, b: Dictionary) -> bool:
+	for key in ["year", "month", "day", "hour", "minute", "second"]:
+		var x := int(a.get(key, 0))
+		var y := int(b.get(key, 0))
+		if x != y:
+			return x > y
+	return false

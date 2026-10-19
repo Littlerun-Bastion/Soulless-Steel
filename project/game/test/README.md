@@ -64,6 +64,21 @@ func _test_thing() -> void:
 Mark a whole-game simulation `slow = true` (in `_init`) so the pre-commit hook
 skips it.
 
+## Known issues
+
+A problem that's been reported but not fixed yet (often in someone else's
+code) can be listed in the suite's `known_issues` (set in `_init`): any failure
+whose text contains a key shows under "Known issues" in the report instead of
+failing the run. When one stops happening, the report says so; remove the
+entry then. Use this for flagged problems only, never to hide a new failure.
+
+```gdscript
+func _init() -> void:
+	known_issues = {
+		"res://game/weapons/Trail.tscn": "Godot 3 Tween node; flagged 2026-10-19",
+	}
+```
+
 ## Files
 
 - `framework/TestSuite.gd`: base class (checks, cases, waiting, state safety)

@@ -88,6 +88,8 @@ func _run_suite(suite: TestSuite, host: Node) -> void:
 		"passed": suite.passed,
 		"failed": suite.failed,
 		"failures": suite.failures.duplicate(),
+		"known": suite.known_hits.duplicate(),
+		"fixed": suite.fixed_known_issues.duplicate(),
 		"seconds": (Time.get_ticks_msec() - started) / 1000.0,
 	})
 	if host != null:
@@ -123,6 +125,7 @@ func _finish(node: Node) -> bool:
 	if _results.is_empty():
 		all_passed = false
 		print("  No suites matched.")
+	_print_known_issues()
 	if all_passed:
 		print("\nRESULT: PASSED  (%d suites, %d checks, %.1fs)" % [_results.size(), checks, seconds])
 	else:
@@ -139,3 +142,23 @@ func _matches(suite_name: String, filters: Array) -> bool:
 		if str(filter).to_lower() in suite_name.to_lower():
 			return true
 	return false
+
+
+# Flagged problems (TestSuite.known_issues): listed so they stay visible, but
+# they don't fail the run.
+func _print_known_issues() -> void:
+	var known := []
+	var fixed := []
+	for result in _results:
+		for hit in result.get("known", []):
+			known.append("%s: %s" % [result["name"], hit])
+		for key in result.get("fixed", []):
+			fixed.append("%s: %s" % [result["name"], key])
+	if not known.is_empty():
+		print("\n  Known issues (flagged, not failing):")
+		for line in known:
+			print("          - " + line)
+	if not fixed.is_empty():
+		print("\n  Known issues that didn't happen this run (fixed? remove them from known_issues):")
+		for line in fixed:
+			print("          - " + line)

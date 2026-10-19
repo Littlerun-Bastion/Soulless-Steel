@@ -21,12 +21,21 @@ var slow := false
 ## simulations can lower it.
 var time_scale := 4.0
 
+## Problems already reported but not fixed yet (often in a teammate's code).
+## A failure whose text contains a key is listed as a known issue instead of
+## failing the run. Key -> who flagged it and why. Set in _init(); remove the
+## entry once it's fixed (the report says when one stops happening).
+var known_issues := {}
+
 var passed := 0
 var failed := 0
 var failures: Array[String] = []
+var known_hits: Array[String] = []
+var fixed_known_issues: Array[String] = []
 var errors: TestErrorWatch = null
 
 var _case_name := ""
+var _known_seen := {}
 var _saved := {}
 var _session: TestSession = null  # kept while running alone (F6)
 
@@ -61,6 +70,7 @@ func run_suite() -> void:
 	_take_errors_as("outside a case")
 	await _restore_state()
 	_take_errors_as("teardown")
+	_report_fixed_known_issues()
 
 
 func case(case_name: String, test: Callable) -> void:
@@ -121,9 +131,16 @@ func wait_until(condition: Callable, timeout := 5.0) -> bool:
 
 # ---- Internals ----
 
-func _fail(message: String) -> void:
+func _fail(message: String, where := "") -> void:
+	if where == "":
+		where = _case_name if _case_name != "" else "suite"
+	for key in known_issues:
+		if key in message:
+			_known_seen[key] = true
+			known_hits.append("%s  (%s)" % [message, known_issues[key]])
+			print("    KNOWN [%s] %s" % [where, message])
+			return
 	failed += 1
-	var where := _case_name if _case_name != "" else "suite"
 	failures.append("%s: %s" % [where, message])
 	printerr("    FAIL [%s] %s" % [where, message])
 
@@ -132,9 +149,14 @@ func _take_errors_as(where: String) -> void:
 	if errors == null:
 		return
 	for error in errors.take_errors():
-		failed += 1
-		failures.append("%s: unexpected error: %s" % [where, error])
-		printerr("    FAIL [%s] unexpected error: %s" % [where, error])
+		_fail("unexpected error: " + error, where)
+
+
+# Known issues that didn't come up this run were probably fixed.
+func _report_fixed_known_issues() -> void:
+	for key in known_issues:
+		if not _known_seen.has(key):
+			fixed_known_issues.append(key)
 
 
 func _save_state() -> void:

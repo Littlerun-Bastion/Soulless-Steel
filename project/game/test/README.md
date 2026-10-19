@@ -34,6 +34,13 @@ it skips with a message.
   engine noise is listed in `framework/TestErrorWatch.gd` (`ALLOWED`).
 - **Game time runs 4x faster** so timers don't slow the run (a suite can set
   `time_scale` lower).
+- **Scenes never change under the runner.** While tests run,
+  `TransitionManager.transition_to` only records the target in
+  `TransitionManager.captured` (so a test can check "Continue goes to the main
+  menu"). A suite opens the next screen itself.
+- **Nothing hangs.** A case that doesn't finish within 60 seconds (a script
+  error stopped it, or it's stuck waiting) fails; a whole run over 10 minutes
+  is stopped and fails.
 
 ## Writing a suite
 

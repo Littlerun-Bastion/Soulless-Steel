@@ -14,6 +14,11 @@ var sound_tick = 0.0
 var active = false
 var play_sound = false
 
+# Automated tests (game/test) turn this on so nothing they trigger changes the
+# scene under them: transition_to only records where it would have gone.
+var capture_only := false
+var captured: Array[String] = []
+
 func _ready():
 	BlockScreen.hide()
 	BlurScreen.hide()
@@ -29,6 +34,9 @@ func _process(dt):
 			sound_tick += dt
 
 func transition_to(scene_path: String, command_line_text: String):
+	if capture_only:
+		captured.append(scene_path)
+		return
 	if active:
 		#push_warning("Already has an active transition, aborting " + str(scene_path))
 		return

@@ -20,6 +20,8 @@ var slow := false
 ## How fast game time runs during the suite (Engine.time_scale). Physics-heavy
 ## simulations can lower it.
 var time_scale := 4.0
+## Real seconds a case may take before it counts as stuck.
+var case_timeout := 60
 
 ## Problems already reported but not fixed yet (often in a teammate's code).
 ## A failure whose text contains a key is listed as a known issue instead of
@@ -30,7 +32,7 @@ var known_issues := {}
 var passed := 0
 var failed := 0
 var failures: Array[String] = []
-var known_hits: Array[String] = []
+var known_hits: Array = []  # {reason, message}
 var fixed_known_issues: Array[String] = []
 var errors: TestErrorWatch = null
 
@@ -78,7 +80,19 @@ func case(case_name: String, test: Callable) -> void:
 	var failed_before := failed
 	_take_errors_as("before " + case_name)
 	await before_each()
-	await test.call()
+	# A script error inside a waiting case stops it without returning, which
+	# would hang the run; so the case runs on its own and gets a time limit.
+	var done := [false]
+	var run_case := func():
+		await test.call()
+		done[0] = true
+	run_case.call()
+	if not done[0]:
+		var started := Time.get_ticks_msec()
+		while not done[0] and Time.get_ticks_msec() - started < case_timeout * 1000:
+			await get_tree().process_frame
+		if not done[0]:
+			_fail("the case didn't finish within %d seconds (stopped by an error, or stuck waiting)" % case_timeout)
 	for error in errors.take_errors():
 		_fail("unexpected error: " + error)
 	print("  %s %s" % ["PASS" if failed == failed_before else "FAIL", case_name])
@@ -137,7 +151,7 @@ func _fail(message: String, where := "") -> void:
 	for key in known_issues:
 		if key in message:
 			_known_seen[key] = true
-			known_hits.append("%s  (%s)" % [message, known_issues[key]])
+			known_hits.append({"reason": known_issues[key], "message": message})
 			print("    KNOWN [%s] %s" % [where, message])
 			return
 	failed += 1
@@ -169,6 +183,10 @@ func _save_state() -> void:
 	FileManager.profile_loaded = false
 	PlayerProgress.autosave = false
 	StoryDirector.autosave = false
+	# A test pressing "Continue" or "Return" must not change the scene under
+	# the runner; the target is recorded in TransitionManager.captured.
+	TransitionManager.capture_only = true
+	TransitionManager.captured.clear()
 
 
 func _restore_state() -> void:
@@ -178,6 +196,7 @@ func _restore_state() -> void:
 	MechOS.set_equipment_customizable(true)
 	MechOS.set_app_available("materials", false)
 	get_tree().paused = false
+	MouseManager.reset()
 	await wait_frames(2)  # let freed nodes go before restoring state
 	PlayerProgress.set_save_data(_saved["progress"])
 	StoryDirector.set_save_data(_saved["story"])
@@ -185,3 +204,5 @@ func _restore_state() -> void:
 	PlayerProgress.autosave = true
 	StoryDirector.autosave = true
 	FileManager.profile_loaded = _saved["profile_loaded"]
+	TransitionManager.capture_only = false
+	TransitionManager.captured.clear()

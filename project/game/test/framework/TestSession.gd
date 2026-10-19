@@ -12,6 +12,7 @@ class_name TestSession
 # passed, 1 otherwise.
 
 const SUITES_DIR := "res://game/test/suites/"
+const MAX_RUN_SECONDS := 600
 
 var watch := TestErrorWatch.new()
 var _results: Array = []  # {name, passed, failed, failures, seconds, skipped}
@@ -45,12 +46,21 @@ static func find_suite_scenes() -> Array[String]:
 # the tree while they run.
 func run_all(host: Node) -> bool:
 	var options := get_options()
-	_begin()
+	_begin(host)
 	for path in find_suite_scenes():
 		var suite_name := path.get_file().get_basename()
 		if not _matches(suite_name, options["suites"]):
 			continue
-		var suite: TestSuite = load(path).instantiate()
+		var instance = load(path).instantiate() if load(path) is PackedScene else null
+		if not instance is TestSuite:
+			# Usually a parse error in the suite's script (printed above).
+			_results.append({"name": suite_name, "passed": 0, "failed": 1, "seconds": 0.0,
+					"failures": ["the suite didn't load: is its script broken? (see the errors above)"]})
+			if instance is Node:
+				instance.free()
+			watch.take_errors()
+			continue
+		var suite: TestSuite = instance
 		if options["fast"] and suite.slow:
 			_results.append({"name": suite_name, "skipped": true})
 			suite.free()
@@ -60,13 +70,19 @@ func run_all(host: Node) -> bool:
 
 
 func run_standalone(suite: TestSuite) -> void:
-	_begin()
+	_begin(suite)
 	await _run_suite(suite, null)
 	_finish(suite)
 
 
-func _begin() -> void:
+func _begin(host: Node) -> void:
 	OS.add_logger(watch)
+	# A test stuck waiting (or a coroutine that died) must not hang the run,
+	# least of all inside the pre-commit hook. Real seconds, not game time.
+	if should_quit():
+		host.get_tree().create_timer(MAX_RUN_SECONDS, true, false, true).timeout.connect(func():
+			printerr("\nRESULT: FAILED  (the run took over %d seconds and was stopped; a test is stuck)" % MAX_RUN_SECONDS)
+			host.get_tree().quit(1))
 	# The game's diagnostic prints would bury the results.
 	_quieted = {"verbose": Debug.debug_settings.get("verbose_logging"), "spikes": FrameSpikeDetector.enabled}
 	Debug.debug_settings["verbose_logging"] = false
@@ -147,17 +163,22 @@ func _matches(suite_name: String, filters: Array) -> bool:
 # Flagged problems (TestSuite.known_issues): listed so they stay visible, but
 # they don't fail the run.
 func _print_known_issues() -> void:
-	var known := []
+	# One line per flagged problem: a count and the first failure as an example.
+	var groups := {}  # "suite: reason" -> {count, example}
 	var fixed := []
 	for result in _results:
 		for hit in result.get("known", []):
-			known.append("%s: %s" % [result["name"], hit])
-		for key in result.get("fixed", []):
-			fixed.append("%s: %s" % [result["name"], key])
-	if not known.is_empty():
+			var key := "%s: %s" % [result["name"], hit["reason"]]
+			if not groups.has(key):
+				groups[key] = {"count": 0, "example": hit["message"]}
+			groups[key]["count"] += 1
+		for issue in result.get("fixed", []):
+			fixed.append("%s: %s" % [result["name"], issue])
+	if not groups.is_empty():
 		print("\n  Known issues (flagged, not failing):")
-		for line in known:
-			print("          - " + line)
+		for key in groups:
+			print("          - %s  [%d failure%s, e.g. %s]" % [key, groups[key]["count"],
+					"" if groups[key]["count"] == 1 else "s", groups[key]["example"]])
 	if not fixed.is_empty():
 		print("\n  Known issues that didn't happen this run (fixed? remove them from known_issues):")
 		for line in fixed:

@@ -1,7 +1,7 @@
 @echo off
 rem Runs the automated tests headless (project/game/test, see README there).
 rem   run_tests.bat                  every suite
-rem   run_tests.bat --fast           skip the slow suites (what the pre-commit hook runs)
+rem   run_tests.bat --fast           skip the slow suites (whole-game simulations)
 rem   run_tests.bat --suite=Hangar   only suites whose name contains "Hangar"
 rem Uses the Godot console exe in this folder, or the one in the GODOT variable.
 setlocal

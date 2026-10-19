@@ -15,7 +15,7 @@ class_name TestSuite
 # FileManager refuses to save, so the real profile is never written. Mech OS is
 # reset after each suite.
 
-## Whole-game simulations set this; the fast run (pre-commit hook) skips them.
+## Whole-game simulations set this; the fast run (--fast) skips them.
 var slow := false
 ## How fast game time runs during the suite (Engine.time_scale). Physics-heavy
 ## simulations can lower it.

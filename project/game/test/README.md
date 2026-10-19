@@ -12,17 +12,13 @@ test means something that used to work doesn't any more.
 | `run_tests.bat --suite=Hangar,Wreck` | suites whose name contains one of these |
 | Editor: open `game/test/RunAllTests.tscn`, press F6 | every suite, results in Output |
 | Editor: open one suite's scene, press F6 | just that suite |
-| Committing (GitHub Desktop or git) | the fast suites, via the pre-commit hook |
 
 The report ends with `RESULT: PASSED` or `RESULT: FAILED` and a list of what
 failed. From the command line the exit code is 0 or 1.
 
-**Pre-commit hook:** once per clone, run
-`git config core.hooksPath tools/git-hooks`. Then every commit that touches
-`project/` runs the fast suites first and is blocked if one fails (full log in
-`test-results.log`). It needs the Godot console exe next to the repo
-(`Godot_v*_win64_console.exe`) or a `GODOT` environment variable; without one
-it skips with a message.
+Tests only run when you start them; committing doesn't run them.
+`run_tests.bat` needs the Godot console exe next to the repo
+(`Godot_v*_win64_console.exe`) or a `GODOT` environment variable.
 
 ## What a test run guarantees
 
@@ -68,8 +64,7 @@ func _test_thing() -> void:
 	await wait_until(func(): return some_condition(), 5.0)
 ```
 
-Mark a whole-game simulation `slow = true` (in `_init`) so the pre-commit hook
-skips it.
+Mark a whole-game simulation `slow = true` (in `_init`) so `--fast` skips it.
 
 ## Known issues
 
@@ -118,4 +113,4 @@ read or written by a test.
 - `framework/TestSession.gd`: runs suites, prints the report, options
 - `framework/TestErrorWatch.gd`: turns Godot errors into failures
 - `framework/TestRunner.gd` + `RunAllTests.tscn`: run everything
-- `tools/git-hooks/pre-commit` and `run_tests.bat` (repo root)
+- `run_tests.bat` (repo root)

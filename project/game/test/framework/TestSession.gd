@@ -77,8 +77,8 @@ func run_standalone(suite: TestSuite) -> void:
 
 func _begin(host: Node) -> void:
 	OS.add_logger(watch)
-	# A test stuck waiting (or a coroutine that died) must not hang the run,
-	# least of all inside the pre-commit hook. Real seconds, not game time.
+	# A test stuck waiting (or a coroutine that died) must not hang the run.
+	# Real seconds, not game time.
 	if should_quit():
 		host.get_tree().create_timer(MAX_RUN_SECONDS, true, false, true).timeout.connect(func():
 			printerr("\nRESULT: FAILED  (the run took over %d seconds and was stopped; a test is stuck)" % MAX_RUN_SECONDS)

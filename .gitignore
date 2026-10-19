@@ -15,6 +15,3 @@ Godot_v*.exe
 # The Godot editor copies GDExtension libraries (the git plugin) to
 # ~<name>.dll while it runs on Windows; those copies change every session.
 ~*.dll*
-
-# Output of the pre-commit test run
-test-results.log

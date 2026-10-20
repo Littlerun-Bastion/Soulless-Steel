@@ -92,7 +92,7 @@ func on_target_acquired(prey: Node2D) -> void:
 func on_target_lost() -> void:
 	_give_back_token()
 	if state != State.FLEE:
-		home = global_position
+		settle_home()
 		_wander_point = null
 		_set_state(State.WANDER)
 
@@ -137,7 +137,7 @@ func _wander(dt: float) -> void:
 		stop()
 		return
 	if _wander_point == null or _state_time > 10.0:
-		_wander_point = random_point_near(home, wander_radius)
+		_wander_point = random_point_near(home, wander_reach(wander_radius))
 		_state_time = 0.0
 	if global_position.distance_to(_wander_point) < 80.0:
 		_wander_point = null
@@ -157,7 +157,7 @@ func _investigate() -> void:
 	move_to(_investigate_point, run_speed * 0.7, 120.0)
 	if global_position.distance_to(_investigate_point) < 150.0 or _state_time > 12.0:
 		# Nothing here: settle down nearby.
-		home = global_position
+		settle_home()
 		_wander_point = null
 		_set_state(State.WANDER)
 
@@ -248,7 +248,7 @@ func _flee() -> void:
 		away = -forward()
 	move_in(away, run_speed)
 	if _state_time >= flee_time:
-		home = global_position
+		settle_home()
 		_wander_point = null
 		last_attacker = null
 		if pack != null and pack.broken:

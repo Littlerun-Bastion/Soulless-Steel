@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://game/entities/Cyst.gd" id="1_cyst"]
+[ext_resource type="Script" path="res://game/entities/CystBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_cyst.tres" id="3_loot"]
+[ext_resource type="Resource" path="res://database/items/bio/nt_engine_heart.tres" id="4_heart"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 130.0
+
+[node name="Cyst" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_cyst")
+species = "Cyst"
+max_hp = 40.0
+armor_rating = 1
+radius = 130.0
+walk_speed = 0.0
+run_speed = 0.0
+sight_range = 0.0
+regen_rate = 0.2
+rooted = true
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(4, 5)
+rare_drop = ExtResource("4_heart")
+rare_chance = 0.4
+carcass_grid = Vector2i(6, 6)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")
+length = 300.0
+width = 300.0
+shell_color = Color(0.26, 0.17, 0.2, 1)
+ridge_color = Color(0.5, 0.3, 0.36, 1)
+eye_color = Color(0.4, 1, 0.8, 1)

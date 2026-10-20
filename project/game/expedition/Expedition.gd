@@ -345,6 +345,13 @@ func get_spawn_zones() -> Array:
 	return []
 
 
+# Where the map grows Entity nests (empty if it has none).
+func get_cyst_sites() -> Array:
+	if has_node("Map") and $Map.has_method("get_cyst_sites"):
+		return $Map.get_cyst_sites()
+	return []
+
+
 # Returns a position guaranteed to be reachable — used as a last-resort
 # relocate target for NPCs that get stuck outside the navmesh somehow.
 func get_safe_position() -> Vector2:

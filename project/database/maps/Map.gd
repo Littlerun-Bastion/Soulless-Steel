@@ -49,3 +49,10 @@ func get_spawn_zones():
 	if has_node("SpawnZones"):
 		return $SpawnZones.get_children()
 	return []
+
+# Optional: Marker2Ds where Expedition grows Entity nests (Cysts); [] for maps
+# without them.
+func get_cyst_sites():
+	if has_node("CystSites"):
+		return $CystSites.get_children()
+	return []

@@ -8,13 +8,17 @@ extends TestSuite
 # cleans up after itself, and Stalkers drop bio salvage into a Carcass.
 # Spitters keep their distance and lob acid that splashes where it lands;
 # Brutes wind up, charge, ram, stomp, get stunned by walls, shrug off light
-# guns and never flee; both drop their own loot.
+# guns and never flee; both drop their own loot. Cysts sleep until a mecha
+# comes near, hatch leashed guards (and replace them, up to a limit), set
+# them on whoever hits the nest, can't be shoved, and burst into a rich carcass.
 # (In the real Expedition: ExpeditionRunTest.)
 
 const STALKER := preload("res://game/entities/Stalker.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const SPITTER := preload("res://game/entities/Spitter.tscn")
 const BRUTE := preload("res://game/entities/Brute.tscn")
+const CYST := preload("res://game/entities/Cyst.tscn")
+const CYST_LOOT := preload("res://database/loot-tables/entity_cyst.tres")
 const CARCASS := preload("res://game/entities/Carcass.tscn")
 const STALKER_LOOT := preload("res://database/loot-tables/entity_stalker.tres")
 const SPITTER_LOOT := preload("res://database/loot-tables/entity_spitter.tres")
@@ -38,6 +42,13 @@ class FakeArena extends Node2D:
 		return mechas
 	func get_entities() -> Array:
 		return entities
+	func add_entity(scene: PackedScene, pos: Vector2) -> Entity:
+		var entity: Entity = scene.instantiate()
+		entity.position = pos
+		add_child(entity)
+		entity.setup(self)
+		entities.append(entity)
+		return entity
 
 
 var _arena: FakeArena = null
@@ -64,6 +75,11 @@ func run_tests() -> void:
 	await case("a Brute charging into a wall is stunned", _test_brute_stun)
 	await case("a Brute shrugs off light guns and gets angry, never scared", _test_brute_tough)
 	await case("Spitters and Brutes drop their loot", _test_spitter_brute_loot)
+	await case("a Cyst sleeps until a mecha comes near, then hatches guards", _test_cyst_wakes)
+	await case("Cyst guards stay on their ground", _test_cyst_leash)
+	await case("hitting a Cyst sets its guards on the attacker", _test_cyst_defended)
+	await case("a Cyst replaces lost guards, but not forever", _test_cyst_brood_limit)
+	await case("a Cyst is rooted and bursts into a rich carcass", _test_cyst_death)
 	await _clear_arena()
 
 
@@ -81,13 +97,13 @@ func _clear_arena() -> void:
 
 
 func _spawn(scene: PackedScene, pos: Vector2, paused: bool) -> Entity:
-	var entity: Entity = scene.instantiate()
-	entity.position = pos
-	_arena.add_child(entity)
-	entity.setup(_arena)
+	var entity := _arena.add_entity(scene, pos)
 	entity.set_pause(paused)
-	_arena.entities.append(entity)
 	return entity
+
+
+func _cyst(pos: Vector2, paused := true) -> Cyst:
+	return _spawn(CYST, pos, paused)
 
 
 func _stalker(pos: Vector2, paused := true) -> Stalker:
@@ -533,3 +549,101 @@ func _test_spitter_brute_loot() -> void:
 	_arena.add_child(carcass)
 	check(carcass.inventory.grid_width == 5 and carcass.inventory.grid_height == 5, "a Brute carcass has room for it all")
 	check(not carcass.inventory.is_empty(), "and holds it")
+
+
+# ---- Cyst ----
+
+func _test_cyst_wakes() -> void:
+	var cyst := _cyst(Vector2.ZERO, false)
+	await wait_seconds(2.0)
+	check(not cyst.awake and cyst.guards.is_empty(), "with no mecha about, it sleeps")
+	_mecha(Vector2(2000, 0))
+	var woke := await wait_until(func(): return cyst.awake, 2.0)
+	check(woke, "a mecha within wake range wakes it")
+	var full := await wait_until(func(): return cyst.guards.size() == cyst.max_guards,
+			cyst.first_spawn_delay + cyst.spawn_interval * cyst.max_guards + 2.0)
+	check(full, "it hatches guards, up to %d" % cyst.max_guards)
+	check(cyst.guards.all(func(g): return g.leash_radius == cyst.guard_leash and g.leash_center == cyst.global_position),
+			"each leashed to the nest (%s)" % str(cyst.guards.map(func(g): return [g.leash_radius, g.leash_center, cyst.global_position])))
+	check(cyst.guards.all(func(g): return g.global_position.distance_to(cyst.global_position) < cyst.guard_leash),
+			"hatched around it")
+	check(cyst.guards.all(func(g): return g.target == null), "the mecha 2000 away is off their ground: they leave it be")
+
+
+# A leashed Stalker: takes on prey that comes onto its ground, follows it only
+# so far, then goes back.
+func _test_cyst_leash() -> void:
+	var mecha := _mecha(Vector2(1500, 0))
+	var guard := _stalker(Vector2.ZERO, false)
+	guard.set_leash(Vector2.ZERO, 1000.0)
+	await wait_seconds(1.0)
+	check(guard.target == null, "prey outside its ground is left alone")
+	guard.heard_sound({"volume_type": "loud", "position": Vector2(3000, 0)})
+	check(guard.state == Stalker.State.WANDER, "and so is a noise outside it")
+	mecha.global_position = Vector2(600, 0)
+	var hunting := await wait_until(func(): return guard.target == mecha, 2.0)
+	check(hunting, "prey on its ground is hunted")
+	mecha.global_position = Vector2(2200, 0)
+	var gave_up := await wait_until(func(): return guard.target == null, 8.0)
+	check(gave_up, "it follows the prey off its ground only so far")
+	check(guard.home == Vector2.ZERO, "and settles back at the nest")
+	var back := await wait_until(func(): return guard.global_position.length() < 1000.0, 15.0)
+	check(back, "it goes back")
+	await wait_seconds(6.0)
+	check(guard.global_position.length() < 1000.0, "and wanders inside its ground")
+
+
+func _test_cyst_defended() -> void:
+	var cyst := _cyst(Vector2.ZERO)
+	var guards := [cyst.hatch_guard(), cyst.hatch_guard()]
+	check(guards.all(func(g): return g != null and g in cyst.guards), "guards hatch")
+	var mecha := _mecha(Vector2(800, 0))
+	cyst.take_hit(1.0, 5, Vector2.LEFT, {"body": mecha, "name": "Shooter"})
+	check(cyst.awake, "being hit wakes it")
+	check(guards.all(func(g): return g.target == mecha), "its guards go for the attacker")
+
+
+func _test_cyst_brood_limit() -> void:
+	var cyst := _cyst(Vector2.ZERO, false)
+	cyst.max_guards = 2
+	cyst.max_spawns = 3
+	cyst.spawn_interval = 0.5
+	_mecha(Vector2(2000, 0))
+	var full := await wait_until(func(): return cyst.guards.size() == 2, 4.0)
+	check(full, "two guards")
+	cyst.guards[0].take_hit(100.0, 5)
+	var replaced := await wait_until(func(): return cyst.spawned == 3 and cyst.guards.size() == 2, 4.0)
+	check(replaced, "a lost guard is replaced")
+	cyst.guards[0].take_hit(100.0, 5)
+	await wait_seconds(2.0)
+	check(cyst.spawned == 3 and cyst.guards.size() == 1, "but only up to its brood limit (%d hatched)" % cyst.spawned)
+
+
+func _test_cyst_death() -> void:
+	var cyst := _cyst(Vector2(100, 100), false)
+	cyst.take_hit(1.0, 5, Vector2.RIGHT, null, 50.0)
+	await _physics_frames(3)
+	check(cyst.global_position.is_equal_approx(Vector2(100, 100)), "shots don't shove it")
+	check(not cyst.wants_prey() and cyst.target == null, "it doesn't hunt")
+	check(cyst.loot_table == CYST_LOOT, "it uses the entity_cyst table")
+	var cyst_items := CYST_LOOT.entries.map(func(e): return e.item)
+	var rng := _seeded_rng(17)
+	var loot_ok := true
+	var hearts := 0
+	for _i in LOOT_ROLLS:
+		var stacks := cyst.roll_loot(rng)
+		var heart_count := stacks.filter(func(s): return s.item == HEART).size()
+		hearts += heart_count
+		var rolled := stacks.size() - heart_count
+		loot_ok = loot_ok and rolled >= 4 and rolled <= 5 and heart_count <= 1 \
+				and stacks.all(func(s): return s.item == HEART or s.item in cyst_items)
+	check(loot_ok, "4-5 items from its table, plus at most one heart")
+	var heart_rate := float(hearts) / LOOT_ROLLS
+	check(heart_rate > 0.3 and heart_rate < 0.5, "about 40%% carry an NT Engine Heart (%.2f)" % heart_rate)
+	var carcass: Carcass = CARCASS.instantiate()
+	carcass.setup_from(cyst, _seeded_rng(3))
+	_arena.add_child(carcass)
+	check(carcass.inventory.grid_width == 6 and carcass.inventory.grid_height == 6, "a 6x6 carcass")
+	var corpse := carcass.get_corpse()
+	check(corpse is CystBody and corpse.dead, "drawn burst open")
+	check_eq(carcass.display_name, "CARCASS - CYST", "named")

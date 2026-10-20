@@ -241,6 +241,12 @@ func _test_entities_spawned() -> void:
 	check(spitters.size() >= director.min_initial_spitters and spitters.size() <= director.max_initial_spitters,
 			"%d-%d Spitters (%d)" % [director.min_initial_spitters, director.max_initial_spitters, spitters.size()])
 	check(brutes.size() <= 1, "at most one Brute to start with (%d)" % brutes.size())
+	var cysts: Array = _scene.get_entities().filter(func(e): return e is Cyst)
+	var sites: Array = _scene.get_cyst_sites()
+	check(not sites.is_empty() and cysts.size() == sites.size(), "a Cyst on each of the map's %d sites (%d)" % [sites.size(), cysts.size()])
+	for cyst in cysts:
+		check(sites.any(func(s): return s.global_position.distance_to(cyst.global_position) < 1.0), "%s sits on a site" % cyst.name)
+		check(not cyst.awake and cyst.guards.is_empty(), "%s is asleep at the start" % cyst.name)
 	var player_pos: Vector2 = _player().global_position
 	# Spawns are at least min_entity_distance_from_player away; pack members spread 250 around theirs.
 	var nearest := INF

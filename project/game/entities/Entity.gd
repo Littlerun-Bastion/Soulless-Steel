@@ -47,6 +47,8 @@ const KNOCKBACK_SCALE := 20.0   # impact_force -> speed (px/s) added
 @export var lose_range := 3200.0
 ## Hit points regained per second while not hunting.
 @export var regen_rate := 0.3
+## Never moves (a Cyst): no movement, no knockback, not nudged by others.
+@export var rooted := false
 
 @export_group("Loot")
 ## What its carcass holds: loot_rolls (min, max) rolls on loot_table, plus
@@ -68,6 +70,10 @@ var last_damage_source = null   # {"body", "name"} of whoever hit it last
 var last_attacker: Node2D = null
 var target: Node2D = null       # the mecha it's hunting
 var home := Vector2.ZERO        # where it wanders around
+# A Cyst's guards are leashed to it (set_leash): they only fight and follow
+# noises inside leash_radius of leash_center, and always settle back there.
+var leash_center := Vector2.ZERO
+var leash_radius := 0.0         # 0 = free to roam
 var desired_velocity := Vector2.ZERO
 var face_point = null           # a Vector2 to face instead of where it's going
 
@@ -119,9 +125,12 @@ func _physics_process(dt: float) -> void:
 		_sense_timer = FAR_SENSE_INTERVAL if _far_from_player() else NEAR_SENSE_INTERVAL
 		_sense()
 	behave(dt)
-	velocity = velocity.move_toward(desired_velocity, acceleration * dt)
-	move_and_slide()
-	_turn(dt)
+	if rooted:
+		velocity = Vector2.ZERO
+	else:
+		velocity = velocity.move_toward(desired_velocity, acceleration * dt)
+		move_and_slide()
+		_turn(dt)
 	_flash_timer = maxf(_flash_timer - dt, 0.0)
 	body_visual.flash = 1.0 if _flash_timer > 0.0 else 0.0
 	body_visual.update_motion(velocity.length(), dt)
@@ -152,13 +161,13 @@ func on_heard(_point: Vector2) -> void:
 
 
 func on_hurt(_amount: float) -> void:
-	if target == null and wants_prey() and is_valid_prey(last_attacker):
+	if target == null and wants_prey() and is_valid_prey(last_attacker) and in_territory(last_attacker):
 		acquire_target(last_attacker)
 
 
-# Another pack member found prey / heard something.
+# Another pack member (or its Cyst) found prey / heard something.
 func join_hunt(prey: Node2D) -> void:
-	if target == null and wants_prey() and is_valid_prey(prey):
+	if target == null and wants_prey() and is_valid_prey(prey) and in_territory(prey):
 		target = prey
 		on_target_acquired(prey)
 
@@ -171,7 +180,7 @@ func join_investigation(_point: Vector2) -> void:
 
 func _sense() -> void:
 	if target != null:
-		if not is_valid_prey(target) or distance_to(target) > lose_range:
+		if not is_valid_prey(target) or distance_to(target) > lose_range or beyond_leash():
 			lose_target()
 	if target == null and wants_prey():
 		var prey := find_prey()
@@ -181,14 +190,14 @@ func _sense() -> void:
 
 # Whoever hurt it last, if still around; otherwise the nearest mecha it can see.
 func find_prey() -> Node2D:
-	if is_valid_prey(last_attacker) and distance_to(last_attacker) < lose_range:
+	if is_valid_prey(last_attacker) and distance_to(last_attacker) < lose_range and in_territory(last_attacker):
 		return last_attacker
 	if arena == null or not arena.has_method("get_mechas"):
 		return null
 	var best: Node2D = null
 	var best_distance := sight_range
 	for mecha in arena.get_mechas():
-		if not is_valid_prey(mecha):
+		if not is_valid_prey(mecha) or not in_territory(mecha):
 			continue
 		var d := distance_to(mecha)
 		if d < best_distance and can_see(mecha):
@@ -208,6 +217,38 @@ func lose_target() -> void:
 	on_target_lost()
 
 
+# ---- Leash ----
+
+func set_leash(center: Vector2, radius_: float) -> void:
+	leash_center = center
+	leash_radius = radius_
+	home = center
+
+
+# Where to wander from after a hunt, a noise or a scare: the leash centre if
+# it has one, else wherever it ended up.
+func settle_home() -> void:
+	home = leash_center if leash_radius > 0.0 else global_position
+
+
+# Chasing prey at the edge of its territory takes it a little past the leash
+# (circling, lunging); only well past it does it give up and go back.
+const LEASH_SLACK := 1.4
+
+# How far from home it wanders: its own range, but well inside a leash.
+func wander_reach(wander_radius: float) -> float:
+	return minf(wander_radius, leash_radius * 0.6) if leash_radius > 0.0 else wander_radius
+
+
+func beyond_leash() -> bool:
+	return leash_radius > 0.0 and global_position.distance_to(leash_center) > leash_radius * LEASH_SLACK
+
+
+# Leashed Entities only take on what comes into their territory.
+func in_territory(node: Node2D) -> bool:
+	return leash_radius <= 0.0 or node.global_position.distance_to(leash_center) <= leash_radius
+
+
 func is_valid_prey(node) -> bool:
 	return node != null and is_instance_valid(node) and node.is_inside_tree() \
 			and node.is_in_group("mecha") and not node.is_dead
@@ -225,6 +266,8 @@ func heard_sound(sound_data: Dictionary) -> void:
 	if is_dead or paused or target != null:
 		return
 	if sound_data.get("volume_type") != "loud":
+		return
+	if leash_radius > 0.0 and sound_data.position.distance_to(leash_center) > leash_radius:
 		return
 	on_heard(sound_data.position)
 

@@ -43,7 +43,8 @@ extends Node
 @export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
 
 # Entities (creatures, game/entities/) — Stalker packs, a Spitter or two and
-# sometimes a Brute roam the map from the start, well away from the player.
+# sometimes a Brute roam the map from the start, well away from the player,
+# and a Cyst (nest) grows on each of the map's cyst sites.
 # While the population is low, newcomers wander in now and then: mostly
 # Stalker packs, sometimes a Spitter or a Brute.
 @export_group("Entities")
@@ -64,6 +65,7 @@ extends Node
 const STALKER = preload("res://game/entities/Stalker.tscn")
 const SPITTER = preload("res://game/entities/Spitter.tscn")
 const BRUTE = preload("res://game/entities/Brute.tscn")
+const CYST = preload("res://game/entities/Cyst.tscn")
 
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
@@ -122,10 +124,14 @@ func _populate_initial_world() -> void:
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
 			arena.add_entity(scene, pos)
+	# A Cyst (nest) on each of the map's sites; it hatches its guards itself.
+	var cyst_sites: Array = arena.get_cyst_sites() if arena.has_method("get_cyst_sites") else []
+	for site in cyst_sites:
+		arena.add_entity(CYST, site.global_position)
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Stalker packs and ",
-				loners.size(), " Spitters/Brutes")
+		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Stalker packs, ",
+				loners.size(), " Spitters/Brutes and ", cyst_sites.size(), " Cysts")
 
 
 func _process(dt: float) -> void:

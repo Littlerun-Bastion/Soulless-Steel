@@ -109,6 +109,20 @@ position = Vector2(8000, 8000)
 [node name="Spawn_SW" type="Marker2D" parent="SpawnZones"]
 position = Vector2(-8000, 8000)
 
+; Entity nests (read via Map.get_cyst_sites): ExpeditionDirector grows a Cyst
+; on each at the start of a run. Kept 3000+ from the NPC start positions (so
+; NPCs don't wake them the moment they spawn) and 6500+ from the player's.
+[node name="CystSites" type="Node2D" parent="."]
+
+[node name="Cyst_NE" type="Marker2D" parent="CystSites"]
+position = Vector2(3500, -6500)
+
+[node name="Cyst_W" type="Marker2D" parent="CystSites"]
+position = Vector2(-6500, 3000)
+
+[node name="Cyst_SE" type="Marker2D" parent="CystSites"]
+position = Vector2(5500, 4000)
+
 ; 20k×20k unified nav polygon. Single outline = no cross-region pathfinding bugs.
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavPoly_BigMap")

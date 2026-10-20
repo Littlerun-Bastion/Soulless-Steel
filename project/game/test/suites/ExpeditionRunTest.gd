@@ -44,7 +44,7 @@ func run_tests() -> void:
 	await _close_expedition()
 
 	await _start_expedition()
-	await case("Stalker packs roam the map", _test_entities_spawned)
+	await case("Entities roam the map", _test_entities_spawned)
 	await case("NPCs and Stalkers fight", _test_npcs_fight_entities)
 	await case("gunfire reaches Entities", _test_entities_hear)
 	await case("the intro freeze holds Entities too", _test_entities_freeze)
@@ -236,11 +236,16 @@ func _test_entities_spawned() -> void:
 	var stalkers := _stalkers()
 	check(stalkers.size() >= director.min_initial_packs * director.min_pack_size,
 			"at least %d packs of %d (%d Stalkers)" % [director.min_initial_packs, director.min_pack_size, stalkers.size()])
+	var spitters: Array = _scene.get_entities().filter(func(e): return e is Spitter)
+	var brutes: Array = _scene.get_entities().filter(func(e): return e is Brute)
+	check(spitters.size() >= director.min_initial_spitters and spitters.size() <= director.max_initial_spitters,
+			"%d-%d Spitters (%d)" % [director.min_initial_spitters, director.max_initial_spitters, spitters.size()])
+	check(brutes.size() <= 1, "at most one Brute to start with (%d)" % brutes.size())
 	var player_pos: Vector2 = _player().global_position
-	# Packs centre at least min_entity_distance_from_player away; members spread 250 around it.
+	# Spawns are at least min_entity_distance_from_player away; pack members spread 250 around theirs.
 	var nearest := INF
-	for stalker in stalkers:
-		nearest = minf(nearest, stalker.global_position.distance_to(player_pos))
+	for entity in _scene.get_entities():
+		nearest = minf(nearest, entity.global_position.distance_to(player_pos))
 	check(nearest > director.min_entity_distance_from_player - 400.0, "none spawn on top of the player (nearest %d)" % int(nearest))
 	check(stalkers.all(func(s): return s.pack != null and s.pack.members.size() >= director.min_pack_size), "each is in a pack")
 	check(_scene.Entities.get_index() < _scene.Mechas.get_index(), "drawn under the mechas")
@@ -253,6 +258,15 @@ func _test_npcs_fight_entities() -> void:
 	var stalker: Stalker = _stalkers()[0]
 	# Behind it (mechas face -Y), where a bite always gets through.
 	stalker.global_position = enemy.global_position + Vector2(0, 300).rotated(enemy.global_rotation)
+	# NPC fire makes an idle Stalker hunt the NPC. (First, while the NPC is
+	# sure to be alive: the bites below can take out its cockpit. And the
+	# Stalker may already have been after something when the world froze.)
+	stalker.lose_target()
+	stalker._set_state(Stalker.State.WANDER)
+	stalker.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
+	check(stalker.target == enemy, "a shot Stalker hunts its shooter")
+	stalker.lose_target()
+	# And the other way round: a bitten NPC turns on the Stalker.
 	var damaged := [0]
 	enemy.component_damaged.connect(func(_p, _c, _hp, _max): damaged[0] += 1)
 	for _i in 4:
@@ -264,13 +278,6 @@ func _test_npcs_fight_entities() -> void:
 	enemy.check_for_targets(2000, 2000)
 	check(enemy.valid_target == stalker, "the NPC targets the Stalker")
 	check(damaged[0] > 0, "the bites damaged the NPC")
-	# And the other way round: NPC fire makes an idle Stalker hunt the NPC.
-	# (It may already have been after something when the world froze.)
-	stalker.lose_target()
-	stalker._set_state(Stalker.State.WANDER)
-	stalker.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
-	check(stalker.target == enemy, "a shot Stalker hunts its shooter")
-	stalker.lose_target()
 
 
 func _test_entities_hear() -> void:

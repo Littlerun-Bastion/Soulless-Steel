@@ -6,12 +6,20 @@ extends TestSuite
 # not from the front, a Stalker pack hunts and bites, a hurt Stalker flees, a
 # broken pack scatters and regroups, gunfire draws a pack in, a dead Entity
 # cleans up after itself, and Stalkers drop bio salvage into a Carcass.
+# Spitters keep their distance and lob acid that splashes where it lands;
+# Brutes wind up, charge, ram, stomp, get stunned by walls, shrug off light
+# guns and never flee; both drop their own loot.
 # (In the real Expedition: ExpeditionRunTest.)
 
 const STALKER := preload("res://game/entities/Stalker.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
+const SPITTER := preload("res://game/entities/Spitter.tscn")
+const BRUTE := preload("res://game/entities/Brute.tscn")
 const CARCASS := preload("res://game/entities/Carcass.tscn")
 const STALKER_LOOT := preload("res://database/loot-tables/entity_stalker.tres")
+const SPITTER_LOOT := preload("res://database/loot-tables/entity_spitter.tres")
+const BRUTE_LOOT := preload("res://database/loot-tables/entity_brute.tres")
+const HEART := preload("res://database/items/bio/nt_engine_heart.tres")
 const LOOT_ROLLS := 300
 
 
@@ -48,6 +56,14 @@ func run_tests() -> void:
 	await case("a dead Entity cleans up", _test_death)
 	await case("a Stalker drops bio salvage", _test_stalker_loot)
 	await case("a carcass holds the loot and shows the corpse", _test_carcass)
+	await case("a Spitter keeps its distance", _test_spitter_range)
+	await case("a Spitter's acid hits its prey", _test_spitter_acid)
+	await case("an acid glob splashes only where it lands", _test_acid_glob)
+	await case("a Brute winds up, charges and rams", _test_brute_charge)
+	await case("a Brute stomps what's close", _test_brute_stomp)
+	await case("a Brute charging into a wall is stunned", _test_brute_stun)
+	await case("a Brute shrugs off light guns and gets angry, never scared", _test_brute_tough)
+	await case("Spitters and Brutes drop their loot", _test_spitter_brute_loot)
 	await _clear_arena()
 
 
@@ -64,14 +80,32 @@ func _clear_arena() -> void:
 	_arena = null
 
 
+func _spawn(scene: PackedScene, pos: Vector2, paused: bool) -> Entity:
+	var entity: Entity = scene.instantiate()
+	entity.position = pos
+	_arena.add_child(entity)
+	entity.setup(_arena)
+	entity.set_pause(paused)
+	_arena.entities.append(entity)
+	return entity
+
+
 func _stalker(pos: Vector2, paused := true) -> Stalker:
-	var stalker: Stalker = STALKER.instantiate()
-	stalker.position = pos
-	_arena.add_child(stalker)
-	stalker.setup(_arena)
-	stalker.set_pause(paused)
-	_arena.entities.append(stalker)
-	return stalker
+	return _spawn(STALKER, pos, paused)
+
+
+func _spitter(pos: Vector2, paused := true) -> Spitter:
+	return _spawn(SPITTER, pos, paused)
+
+
+func _brute(pos: Vector2, paused := true) -> Brute:
+	return _spawn(BRUTE, pos, paused)
+
+
+func _damage_counter(mecha: Mecha) -> Array:
+	var damaged := [0]
+	mecha.component_damaged.connect(func(_p, _c, _hp, _max): damaged[0] += 1)
+	return damaged
 
 
 func _mecha(pos: Vector2, design := PlayerProgress.DEFAULT_MECHA) -> Mecha:
@@ -185,8 +219,12 @@ func _test_bite_facing() -> void:
 		mecha.armor[part_name]["rear"].level = 1
 	var damaged := [0]
 	mecha.component_damaged.connect(func(_p, _c, _hp, _max): damaged[0] += 1)
+	var stalker := _stalker(Vector2(0, 1000))
+	# Bites trace a ray to the hull (EntityAttack.find_impact): let the
+	# physics world catch up with the new mecha's shapes and rotation first.
+	await _physics_frames(2)
 	var forward := Vector2(0, -1).rotated(mecha.global_rotation)
-	var stalker := _stalker(mecha.global_position + forward * 150.0)
+	stalker.global_position = mecha.global_position + forward * 150.0
 	check_eq(EntityAttack.facing_toward(mecha, stalker.global_position), "front", "a Stalker ahead of the mecha is in front of it")
 	# A worn-through face counts as penetrated (armor_check), and glancing bites
 	# chip it; so the front plating is refitted before each bite here.
@@ -197,15 +235,6 @@ func _test_bite_facing() -> void:
 		if EntityAttack.hit_mecha(stalker, mecha, 1, 2):
 			front_through += 1
 	check_eq(front_through, 0, "no front bite gets through intact plating")
-	var front_pips := func():
-		var total := 0
-		for part_name in mecha.armor:
-			total += mecha.armor[part_name]["front"].pips
-		return total
-	var pips_before: int = front_pips.call()
-	for _i in 30:
-		EntityAttack.hit_mecha(stalker, mecha, 1, 2)
-	check(front_pips.call() < pips_before, "but repeated bites wear the front plating down")
 	stalker.global_position = mecha.global_position - forward * 150.0
 	check_eq(EntityAttack.facing_toward(mecha, stalker.global_position), "rear", "the other side is behind it")
 	var rear_through := 0
@@ -216,6 +245,24 @@ func _test_bite_facing() -> void:
 	check(damaged[0] > 0, "the mecha's components took damage")
 	var source = mecha.last_damage_source
 	check(typeof(source) == TYPE_DICTIONARY and source.get("body") == stalker, "the damage is credited to the Stalker")
+
+	# Glancing bites chip the plating; enough of them wear a face through.
+	# (Its own mecha: once worn through, bites can finish one off.)
+	var worn := _mecha(Vector2(2000, 0))
+	for part_name in worn.armor:
+		worn.armor[part_name]["front"].level = 3
+	await _physics_frames(2)
+	var worn_forward := Vector2(0, -1).rotated(worn.global_rotation)
+	stalker.global_position = worn.global_position + worn_forward * 150.0
+	var front_pips := func():
+		var total := 0
+		for part_name in worn.armor:
+			total += worn.armor[part_name]["front"].pips
+		return total
+	var pips_before: int = front_pips.call()
+	for _i in 30:
+		EntityAttack.hit_mecha(stalker, worn, 1, 2)
+	check(front_pips.call() < pips_before, "repeated front bites wear the plating down")
 
 
 # A pack 900 away from a mecha that stands still: they spot it, circle round
@@ -354,3 +401,135 @@ func _test_carcass() -> void:
 	check_eq(carcass.state, Wreck.State.EMPTY, "empty once taken")
 	check(carcass.get_node("Hull").modulate == Carcass.CORPSE_EMPTY_TINT, "an empty carcass goes darker")
 	player.queue_free()
+
+
+# ---- Spitter ----
+
+func _test_spitter_range() -> void:
+	var mecha := _mecha(Vector2.ZERO)
+	var spitter := _spitter(Vector2(500, 0), false)
+	var hunting := await wait_until(func(): return spitter.target == mecha, 2.0)
+	check(hunting, "it spots the mecha")
+	var backed_off := await wait_until(func(): return spitter.distance_to(mecha) >= spitter.keep_range.x - 50.0, 8.0)
+	check(backed_off, "too close: it backs off to spitting range (%d)" % int(spitter.distance_to(mecha)))
+
+
+func _test_spitter_acid() -> void:
+	var mecha := _mecha(Vector2.ZERO)
+	var damaged := _damage_counter(mecha)
+	var spitter := _spitter(Vector2(1000, 0), false)
+	var spat := await wait_until(func(): return spitter.volleys > 0, 8.0)
+	check(spat, "it rears up and spits")
+	var hurt := await wait_until(func(): return damaged[0] > 0, 15.0)
+	check(hurt, "the acid ate through to the mecha's components")
+	var source = mecha.last_damage_source
+	check(typeof(source) == TYPE_DICTIONARY and source.get("name") == "Spitter", "the Spitter is credited")
+	check(spitter.distance_to(mecha) > spitter.retreat_range, "it stayed out of reach while doing it")
+
+
+# A glob lobbed at one mecha: that one takes the splash, a mecha 600 away
+# doesn't, and nor does an Entity in the splash. (Whether one splash gets
+# through the armour varies; the case above covers the damage.)
+func _test_acid_glob() -> void:
+	var near := _mecha(Vector2.ZERO)
+	var far := _mecha(Vector2(600, 0))
+	var far_damage := _damage_counter(far)
+	var stalker := _stalker(Vector2(0, 120))
+	var glob: AcidGlob = AcidGlob.new()
+	_arena.add_child(glob)
+	var splashes := []
+	glob.splashed.connect(func(_g, mechas_hit): splashes.append(mechas_hit))
+	glob.launch(null, _arena, Vector2(-800, 0), Vector2.ZERO, 0.3)
+	var landed := await wait_until(func(): return not splashes.is_empty(), 3.0)
+	if not check(landed, "the glob lands"):
+		return
+	check_eq(splashes[0], [near], "the mecha it landed on is splashed, not the one 600 away")
+	check_eq(far_damage[0], 0, "the far mecha is untouched")
+	check_eq(stalker.hp, stalker.max_hp, "Entities aren't hurt by acid")
+	var ref: WeakRef = weakref(glob)
+	var gone := await wait_until(func(): return ref.get_ref() == null, 2.0)
+	check(gone, "the splash fades and frees itself")
+
+
+# ---- Brute ----
+
+func _test_brute_charge() -> void:
+	var mecha := _mecha(Vector2.ZERO)
+	var damaged := _damage_counter(mecha)
+	var brute := _brute(Vector2(800, 0), false)
+	var winding := await wait_until(func(): return brute.state == Brute.State.WINDUP, 6.0)
+	check(winding, "it winds up first (the tell)")
+	var charging := await wait_until(func(): return brute.state == Brute.State.CHARGE, 3.0)
+	check(charging, "then charges")
+	var rammed := await wait_until(func(): return brute.rams > 0, 4.0)
+	check(rammed, "and rams the mecha")
+	check(damaged[0] > 0, "the ram got through to the components")
+
+
+func _test_brute_stomp() -> void:
+	var mecha := _mecha(Vector2.ZERO)
+	var damaged := _damage_counter(mecha)
+	var brute := _brute(Vector2(230, 0), false)
+	var stomped := await wait_until(func(): return brute.stomps > 0, 4.0)
+	check(stomped, "it stomps")
+	check(damaged[0] > 0, "the stomp hurt the mecha")
+
+
+func _test_brute_stun() -> void:
+	var wall := StaticBody2D.new()
+	var shape := CollisionShape2D.new()
+	shape.shape = RectangleShape2D.new()
+	shape.shape.size = Vector2(60, 800)
+	wall.add_child(shape)
+	wall.position = Vector2(450, 0)
+	_arena.add_child(wall)
+	var brute := _brute(Vector2.ZERO, false)
+	await _physics_frames(2)
+	brute.start_charge(Vector2.RIGHT)
+	var stunned := await wait_until(func(): return brute.state == Brute.State.STUNNED, 3.0)
+	check(stunned and brute.stuns == 1, "it hits the wall and is stunned")
+	var recovered := await wait_until(func(): return brute.state != Brute.State.STUNNED, brute.stun_time + 1.0)
+	check(recovered, "for a moment")
+
+
+func _test_brute_tough() -> void:
+	var brute := _brute(Vector2.ZERO)
+	brute.take_hit(2.0, 1)
+	check_eq(brute.hp, brute.max_hp - 1.0, "pen 1 does half against its armour 2")
+	brute.take_hit(2.0, 3)
+	check_eq(brute.hp, brute.max_hp - 3.0, "pen 3 does full damage")
+	check(brute.is_enraged(), "hurting it enrages it")
+	brute.take_hit(brute.hp - 1.0, 5)
+	check(brute.wants_prey(), "nearly dead, it still wants a fight")
+	check(not Brute.State.has("FLEE"), "it has no way to flee")
+
+
+func _test_spitter_brute_loot() -> void:
+	var spitter := _spitter(Vector2.ZERO)
+	var brute := _brute(Vector2(600, 0))
+	check(spitter.loot_table == SPITTER_LOOT and brute.loot_table == BRUTE_LOOT, "each has its own table")
+	var spitter_items := SPITTER_LOOT.entries.map(func(e): return e.item)
+	var brute_items := BRUTE_LOOT.entries.map(func(e): return e.item)
+	var rng := _seeded_rng(31)
+	var spitter_ok := true
+	var brute_ok := true
+	var hearts := 0
+	for _i in LOOT_ROLLS:
+		var stacks := spitter.roll_loot(rng)
+		spitter_ok = spitter_ok and stacks.size() >= 1 and stacks.size() <= 2 \
+				and stacks.all(func(s): return s.item in spitter_items)
+		stacks = brute.roll_loot(rng)
+		var heart_count := stacks.filter(func(s): return s.item == HEART).size()
+		hearts += heart_count
+		var rolled := stacks.size() - heart_count
+		brute_ok = brute_ok and rolled >= 3 and rolled <= 4 and heart_count <= 1 \
+				and stacks.all(func(s): return s.item == HEART or s.item in brute_items)
+	check(spitter_ok, "a Spitter leaves 1-2 items from its table")
+	check(brute_ok, "a Brute leaves 3-4 items from its table, plus at most one heart")
+	var heart_rate := float(hearts) / LOOT_ROLLS
+	check(heart_rate > 0.15 and heart_rate < 0.35, "about a quarter of Brutes carry an NT Engine Heart (%.2f)" % heart_rate)
+	var carcass: Carcass = CARCASS.instantiate()
+	carcass.setup_from(brute, _seeded_rng(5))
+	_arena.add_child(carcass)
+	check(carcass.inventory.grid_width == 5 and carcass.inventory.grid_height == 5, "a Brute carcass has room for it all")
+	check(not carcass.inventory.is_empty(), "and holds it")

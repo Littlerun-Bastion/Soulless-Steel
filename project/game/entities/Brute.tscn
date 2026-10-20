@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://game/entities/Brute.gd" id="1_brute"]
+[ext_resource type="Script" path="res://game/entities/EntityBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_brute.tres" id="3_loot"]
+[ext_resource type="Resource" path="res://database/items/bio/nt_engine_heart.tres" id="4_heart"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 100.0
+
+[node name="Brute" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_brute")
+species = "Brute"
+max_hp = 45.0
+armor_rating = 2
+radius = 100.0
+walk_speed = 260.0
+run_speed = 260.0
+acceleration = 1600.0
+turn_rate = 3.0
+sight_range = 1400.0
+lose_range = 2600.0
+regen_rate = 0.5
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(3, 4)
+rare_drop = ExtResource("4_heart")
+rare_chance = 0.25
+carcass_grid = Vector2i(5, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")
+length = 240.0
+width = 150.0
+leg_pairs = 2
+leg_length = 120.0
+leg_width = 14.0
+has_tail = false
+shell_color = Color(0.24, 0.2, 0.18, 1)
+ridge_color = Color(0.5, 0.42, 0.36, 1)
+eye_color = Color(1, 0.75, 0.3, 1)
+back_plates = 4

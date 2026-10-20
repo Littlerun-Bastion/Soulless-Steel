@@ -42,20 +42,28 @@ extends Node
 @export var ambient_event_max_distance: float = 8000.0   # but not so far it's pointless
 @export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
 
-# Entities (creatures, game/entities/) — Stalker packs roam the map from the
-# start, well away from the player, and a new pack wanders in now and then
-# while the population is low.
+# Entities (creatures, game/entities/) — Stalker packs, a Spitter or two and
+# sometimes a Brute roam the map from the start, well away from the player.
+# While the population is low, newcomers wander in now and then: mostly
+# Stalker packs, sometimes a Spitter or a Brute.
 @export_group("Entities")
 @export var min_initial_packs: int = 2
 @export var max_initial_packs: int = 4
 @export var min_pack_size: int = 3
 @export var max_pack_size: int = 5
+@export var min_initial_spitters: int = 1
+@export var max_initial_spitters: int = 2
+@export var initial_brute_chance: float = 0.5
 @export var min_entity_distance_from_player: float = 3500.0
-@export var target_entity_population: int = 10           # below this, a new pack may arrive
+@export var target_entity_population: int = 10           # below this, newcomers may arrive
 @export var pack_respawn_cooldown: float = 75.0          # seconds between arrivals
 @export var max_pack_respawns: int = 6                   # hard cap per run
+@export var arrival_spitter_chance: float = 0.2          # an arrival is a Spitter...
+@export var arrival_brute_chance: float = 0.1            # ...or a Brute, else a Stalker pack
 
 const STALKER = preload("res://game/entities/Stalker.tscn")
+const SPITTER = preload("res://game/entities/Spitter.tscn")
+const BRUTE = preload("res://game/entities/Brute.tscn")
 
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
@@ -105,9 +113,19 @@ func _populate_initial_world() -> void:
 		if pos != null:
 			spawn_stalker_pack(pos)
 			packs += 1
+	var loners := []
+	for i in randi_range(min_initial_spitters, max_initial_spitters):
+		loners.append(SPITTER)
+	if randf() < initial_brute_chance:
+		loners.append(BRUTE)
+	for scene in loners:
+		var pos = _pick_entity_spawn_position()
+		if pos != null:
+			arena.add_entity(scene, pos)
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", count, " NPCs and ", packs, " Stalker packs")
+		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Stalker packs and ",
+				loners.size(), " Spitters/Brutes")
 
 
 func _process(dt: float) -> void:
@@ -338,7 +356,7 @@ func _pick_entity_spawn_position():
 	return null
 
 
-# A new pack wanders in (out of sight) while the population is low.
+# Newcomers wander in (out of sight) while the population is low.
 func _try_pack_respawn() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
@@ -351,11 +369,20 @@ func _try_pack_respawn() -> void:
 	var pos = _pick_offscreen_spawn_position()
 	if pos == null:
 		return
-	spawn_stalker_pack(pos)
+	var roll := randf()
+	var arrival := "Stalker pack"
+	if roll < arrival_brute_chance:
+		arena.add_entity(BRUTE, pos)
+		arrival = "Brute"
+	elif roll < arrival_brute_chance + arrival_spitter_chance:
+		arena.add_entity(SPITTER, pos)
+		arrival = "Spitter"
+	else:
+		spawn_stalker_pack(pos)
 	total_pack_respawns += 1
 	time_since_pack_respawn = 0.0
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] a Stalker pack arrived at ", pos)
+		print("[ExpeditionDirector] a ", arrival, " arrived at ", pos)
 
 
 # ---- Redirect ----

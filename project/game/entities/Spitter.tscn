@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://game/entities/Spitter.gd" id="1_spitter"]
+[ext_resource type="Script" path="res://game/entities/EntityBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_spitter.tres" id="3_loot"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 45.0
+
+[node name="Spitter" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_spitter")
+species = "Spitter"
+max_hp = 8.0
+armor_rating = 1
+radius = 45.0
+walk_speed = 330.0
+run_speed = 420.0
+sight_range = 1600.0
+lose_range = 2800.0
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(1, 2)
+carcass_grid = Vector2i(4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")
+length = 120.0
+width = 66.0
+leg_length = 64.0
+shell_color = Color(0.17, 0.21, 0.18, 1)
+ridge_color = Color(0.38, 0.48, 0.4, 1)
+eye_color = Color(0.75, 1, 0.4, 1)
+sac_color = Color(0.62, 1, 0.3, 0.9)

@@ -16,6 +16,10 @@ class_name EntityBody
 @export var shell_color := Color(0.20, 0.22, 0.24)
 @export var ridge_color := Color(0.42, 0.47, 0.48)
 @export var eye_color := Color(0.35, 1.0, 0.85)
+## A glowing sac on its back (Spitter); transparent = none.
+@export var sac_color := Color(0, 0, 0, 0)
+## Overlapping armour plates down its back (Brute).
+@export var back_plates := 0
 
 var gait := 0.0    # leg cycle, advanced by speed
 var crouch := 0.0  # 0..1, squashes the body before a lunge
@@ -66,6 +70,18 @@ func _draw() -> void:
 	for s in 3:
 		var x := lerpf(-length * 0.3, length * 0.15, s / 2.0)
 		draw_line(Vector2(x, -width * 0.4 * squash), Vector2(x + 8.0, width * 0.4 * squash), ridge, 3.0)
+	for p in back_plates:
+		var x := lerpf(-length * 0.32, length * 0.18, float(p) / maxf(back_plates - 1, 1))
+		var plate_w := width * 0.42 * squash
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(x - length * 0.07, -plate_w), Vector2(x + length * 0.09, 0.0),
+			Vector2(x - length * 0.07, plate_w), Vector2(x - length * 0.02, 0.0),
+		]), ridge.darkened(0.25))
+	if sac_color.a > 0.0:
+		var pulse := 1.0 if dead else 1.0 + sin(gait * 0.7) * 0.06
+		var sac := sac_color.darkened(0.5) if dead else sac_color.lerp(Color.WHITE, flash)
+		draw_circle(Vector2(-length * 0.12, 0.0), width * 0.32 * squash * pulse, sac)
+		draw_circle(Vector2(-length * 0.16, -width * 0.08), width * 0.1 * squash, sac.lightened(0.4))
 	# Head and mandibles
 	draw_colored_polygon(PackedVector2Array([
 		Vector2(length * 0.32, -width * 0.32 * squash),

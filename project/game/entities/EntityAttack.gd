@@ -19,9 +19,12 @@ static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, kn
 	var to_attacker: Vector2 = (attacker.global_position - mecha.global_position).normalized()
 	if to_attacker == Vector2.ZERO:
 		to_attacker = Vector2.UP
-	var impact_point: Vector2 = mecha.global_position + to_attacker * 60.0
 	var dir := -to_attacker
-	var part := pick_part(mecha, to_attacker)
+	var impact := find_impact(attacker, mecha)
+	var part: String = impact.get("part", "")
+	var impact_point: Vector2 = impact.get("point", mecha.global_position + to_attacker * 60.0)
+	if part == "":
+		part = pick_part(mecha, to_attacker)
 
 	var result: Dictionary = mecha.armor_check(part, impact_point, dir, pen, damage)
 	if result.penetrated:
@@ -36,6 +39,51 @@ static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, kn
 	if mecha.has_method("on_attacked_by"):
 		mecha.on_attacked_by(attacker)
 	return result.penetrated and result.component_name != ""
+
+
+# Every living mecha whose hull is within reach of center takes the hit
+# (a Brute's stomp, a Spitter's acid splash). Returns the mechas hit.
+const HULL_REACH := 90.0  # a mecha's hull reaches about this far from its centre
+
+static func hit_mechas_near(attacker: Node2D, mechas: Array, center: Vector2, reach: float,
+		damage: int, pen: int, knockback := 0.0) -> Array:
+	var hit := []
+	for mecha in mechas:
+		if not is_instance_valid(mecha) or mecha.is_dead:
+			continue
+		if mecha.global_position.distance_to(center) <= reach + HULL_REACH:
+			hit_mecha(attacker, mecha, damage, pen, knockback)
+			hit.append(mecha)
+	return hit
+
+
+# Where the attack lands, the way a projectile finds it: a ray from the
+# attacker to the mecha's centre, and the part and surface point it meets
+# (armour angles then come out as they would for a shot). {} when the ray
+# can't reach the hull (attacker inside it, a wall in between, a shield):
+# then a part is picked by weight instead.
+const IMPACT_PARTS := ["head", "core", "chassis", "left_shoulder", "right_shoulder"]
+
+static func find_impact(attacker: Node2D, mecha: Node2D) -> Dictionary:
+	var space: PhysicsDirectSpaceState2D = mecha.get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(attacker.global_position, mecha.global_position)
+	var exclude: Array[RID] = []
+	if attacker is CollisionObject2D:
+		exclude.append(attacker.get_rid())
+	for _i in 4:  # see past other Entities in the way
+		query.exclude = exclude
+		var result := space.intersect_ray(query)
+		if result.is_empty():
+			return {}
+		if result.collider == mecha:
+			var part: String = mecha.get_part_name_from_shape(result.shape)
+			if part in IMPACT_PARTS:
+				return {"part": part, "point": result.position}
+			return {}
+		if not result.collider is Entity:
+			return {}
+		exclude.append(result.rid)
+	return {}
 
 
 # A part on the side of the mecha the attacker is on, weighted by size.

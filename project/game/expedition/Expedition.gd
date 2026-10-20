@@ -156,10 +156,20 @@ func _spawn_wreck(mecha) -> void:
 	_trim_oldest(Wrecks, MAX_WRECKS)
 
 
+# Built now, from the dying Entity; added to the map after the physics step:
+# a bullet kills from inside a collision callback, where adding a node with
+# its own Area2D (the carcass's interact range) is an engine error.
 func _spawn_carcass(entity) -> void:
 	var carcass: Carcass = CARCASS.instantiate()
 	carcass.position = entity.global_position
 	carcass.setup_from(entity)
+	_add_carcass.call_deferred(carcass)
+
+
+func _add_carcass(carcass: Carcass) -> void:
+	if not is_inside_tree():
+		carcass.free()
+		return
 	Carcasses.add_child(carcass)
 	_trim_oldest(Carcasses, MAX_CARCASSES)
 

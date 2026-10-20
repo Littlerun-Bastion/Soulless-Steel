@@ -50,6 +50,7 @@ func run_tests() -> void:
 	await case("the intro freeze holds Entities too", _test_entities_freeze)
 	await case("killing an Entity counts for the player", _test_entity_kill)
 	await case("a dead Entity leaves a carcass of bio salvage", _test_carcass_loot)
+	await case("an Entity killed mid-collision leaves its carcass cleanly", _test_kill_in_collision)
 	await case("pausing and resuming", _test_pause)
 	await case("quitting from the pause menu abandons the expedition", _test_abandon)
 
@@ -317,13 +318,14 @@ func _test_entity_kill() -> void:
 
 
 func _test_carcass_loot() -> void:
+	await wait_frames(2)  # carcasses land a frame after a death (the previous case's)
 	var stalker: Stalker = _stalkers()[0]
 	var where := stalker.global_position
 	var carcasses_before: int = _scene.Carcasses.get_child_count()
 	var ref: WeakRef = weakref(stalker)
 	stalker.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
-	check(_scene.Carcasses.get_child_count() == carcasses_before + 1, "a carcass is left behind")
 	await wait_frames(2)
+	check(_scene.Carcasses.get_child_count() == carcasses_before + 1, "a carcass is left behind")
 	check(ref.get_ref() == null, "the Stalker itself is gone (the carcass is the corpse)")
 	var carcass: Carcass = _scene.Carcasses.get_children()[-1]
 	check(carcass.global_position.distance_to(where) < 1.0, "where it died")
@@ -337,6 +339,34 @@ func _test_carcass_loot() -> void:
 	take_all["run"].call(ctx)
 	check(cargo.get_stacks().size() > cargo_before, "the bio salvage is in the cargo")
 	check(_scene.Carcasses.get_index() < _scene.Mechas.get_index(), "carcasses are drawn under the mechas")
+
+
+# A bullet kills from inside the physics engine's collision callback (its
+# Area2D's body_shape_entered), where adding a carcass (it has its own
+# interact area) straight away is an engine error. Same here, with a plain
+# Area2D doing the killing.
+func _test_kill_in_collision() -> void:
+	await wait_frames(2)  # carcasses land a frame after a death (earlier cases')
+	var stalker: Stalker = _stalkers()[0]
+	var carcasses_before: int = _scene.Carcasses.get_child_count()
+	var player := _player()
+	# Weak: the Stalker is freed once its carcass takes over.
+	var ref: WeakRef = weakref(stalker)
+	var killer := Area2D.new()
+	var shape := CollisionShape2D.new()
+	shape.shape = CircleShape2D.new()
+	shape.shape.radius = 60.0
+	killer.add_child(shape)
+	killer.global_position = stalker.global_position
+	killer.body_entered.connect(func(body):
+		if body == ref.get_ref():
+			body.take_hit(100.0, 5, Vector2.ZERO, {"body": player, "name": "Player"}))
+	_scene.add_child(killer)
+	var died := await wait_until(func(): return ref.get_ref() == null or ref.get_ref().is_dead, 2.0)
+	check(died, "killed from inside a collision callback")
+	await wait_frames(2)
+	check(_scene.Carcasses.get_child_count() == carcasses_before + 1, "its carcass still appears")
+	killer.queue_free()
 
 
 # ---- Abandoning ----

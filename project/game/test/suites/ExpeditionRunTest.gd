@@ -7,10 +7,12 @@ extends TestSuite
 #   - dying: everything brought out is lost, the game-over screen says what
 #   - pausing and resuming; quitting from the pause menu (warned first)
 #     abandons the run
+#   - Entities: Stalker packs spawn away from the player, NPCs fight them,
+#     gunfire reaches them, the intro freeze holds them, kills count
 #
-# Enemies are frozen after spawning and the director stopped, so the player
-# isn't attacked at random and results don't depend on luck. Scene changes
-# (Continue, Return) are captured, not performed (TransitionManager).
+# Enemies and Entities are frozen after spawning and the director stopped, so
+# the player isn't attacked at random and results don't depend on luck. Scene
+# changes (Continue, Return) are captured, not performed (TransitionManager).
 
 const EXPEDITION := preload("res://game/expedition/Expedition.tscn")
 const SALVAGE := preload("res://database/items/salvage/servo_assembly.tres")
@@ -41,6 +43,11 @@ func run_tests() -> void:
 	await _close_expedition()
 
 	await _start_expedition()
+	await case("Stalker packs roam the map", _test_entities_spawned)
+	await case("NPCs and Stalkers fight", _test_npcs_fight_entities)
+	await case("gunfire reaches Entities", _test_entities_hear)
+	await case("the intro freeze holds Entities too", _test_entities_freeze)
+	await case("killing an Entity counts for the player", _test_entity_kill)
 	await case("pausing and resuming", _test_pause)
 	await case("quitting from the pause menu abandons the expedition", _test_abandon)
 
@@ -65,8 +72,14 @@ func _start_expedition() -> void:
 	check(populated, "enemies spawned")
 	_scene.ExpeditionDirector.set_process(false)
 	await wait_frames(2)
+	_freeze_world()
+
+
+func _freeze_world() -> void:
 	for enemy in _enemies():
 		enemy.set_pause(true)
+	for entity in _scene.get_entities():
+		entity.set_pause(true)
 
 
 func _close_expedition() -> void:
@@ -208,6 +221,81 @@ func _test_death() -> void:
 	check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
 	_scene.GameOver._on_ReturnButton_pressed()
 	check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Return goes to the main menu")
+
+
+# ---- Entities ----
+
+func _stalkers() -> Array:
+	return _scene.get_entities().filter(func(e): return e is Stalker and not e.is_dead)
+
+
+func _test_entities_spawned() -> void:
+	var director = _scene.ExpeditionDirector
+	var stalkers := _stalkers()
+	check(stalkers.size() >= director.min_initial_packs * director.min_pack_size,
+			"at least %d packs of %d (%d Stalkers)" % [director.min_initial_packs, director.min_pack_size, stalkers.size()])
+	var player_pos: Vector2 = _player().global_position
+	# Packs centre at least min_entity_distance_from_player away; members spread 250 around it.
+	var nearest := INF
+	for stalker in stalkers:
+		nearest = minf(nearest, stalker.global_position.distance_to(player_pos))
+	check(nearest > director.min_entity_distance_from_player - 400.0, "none spawn on top of the player (nearest %d)" % int(nearest))
+	check(stalkers.all(func(s): return s.pack != null and s.pack.members.size() >= director.min_pack_size), "each is in a pack")
+	check(_scene.Entities.get_index() < _scene.Mechas.get_index(), "drawn under the mechas")
+
+
+# A Stalker bites an NPC: the NPC turns on it (and Stalkers always count as
+# fair game, no flags or grudges needed).
+func _test_npcs_fight_entities() -> void:
+	var enemy = _enemies()[0]
+	var stalker: Stalker = _stalkers()[0]
+	# Behind it (mechas face -Y), where a bite always gets through.
+	stalker.global_position = enemy.global_position + Vector2(0, 300).rotated(enemy.global_rotation)
+	var damaged := [0]
+	enemy.component_damaged.connect(func(_p, _c, _hp, _max): damaged[0] += 1)
+	for _i in 4:
+		EntityAttack.hit_mecha(stalker, enemy, 1, 2)
+	check(enemy.most_recent_attacker == stalker and enemy.under_fire_timer > 0.0, "the NPC knows it's under attack")
+	# Whatever it was after before the world froze, it re-picks now.
+	enemy.valid_target = false
+	enemy._last_target_eval_ms = -100000
+	enemy.check_for_targets(2000, 2000)
+	check(enemy.valid_target == stalker, "the NPC targets the Stalker")
+	check(damaged[0] > 0, "the bites damaged the NPC")
+	# And the other way round: NPC fire makes the Stalker hunt the NPC.
+	stalker.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
+	check(stalker.target == enemy, "a shot Stalker hunts its shooter")
+	stalker.lose_target()
+
+
+func _test_entities_hear() -> void:
+	var stalker: Stalker = _stalkers()[0]
+	stalker.set_pause(false)
+	stalker.lose_target()
+	_scene._on_mecha_made_sound({
+		"volume_type": "loud", "type": "gunshot", "source": null,
+		"position": stalker.global_position + Vector2(600, 0), "max_distance": 1500.0,
+	})
+	check_eq(stalker.state, Stalker.State.INVESTIGATE, "the Stalker goes to look")
+	stalker.set_pause(true)
+
+
+func _test_entities_freeze() -> void:
+	for stalker in _stalkers():
+		stalker.paused = false
+	_scene.set_mechas_block_status(true)
+	check(_stalkers().all(func(s): return s.paused), "every Entity is frozen with the mechas")
+	_player().set_pause(false)  # the freeze includes the player; later cases need it moving
+
+
+func _test_entity_kill() -> void:
+	var stalker: Stalker = _stalkers()[0]
+	var kills_before: int = _scene.player_kills.size()
+	stalker.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
+	check(stalker.is_dead, "the Stalker died")
+	check(not _scene.get_entities().has(stalker), "it's off the scene's Entity list")
+	check(_scene.player_kills.size() == kills_before + 1 and _scene.player_kills[-1] == "Stalker", "the kill counts for the player")
+	check_eq(_scene.ExpeditionDirector.entity_kills, 1, "the director counts it")
 
 
 # ---- Abandoning ----

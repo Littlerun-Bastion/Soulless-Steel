@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/entities/Stalker.gd" id="1_stalker"]
+[ext_resource type="Script" path="res://game/entities/EntityBody.gd" id="2_body"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 40.0
+
+[node name="Stalker" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_stalker")
+species = "Stalker"
+max_hp = 10.0
+armor_rating = 1
+radius = 40.0
+walk_speed = 300.0
+run_speed = 420.0
+sight_range = 1800.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")

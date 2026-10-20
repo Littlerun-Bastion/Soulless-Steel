@@ -519,16 +519,17 @@ func check_for_targets(eng_distance, max_shooting_distance):
 		return
 	_last_target_eval_ms = now
 
-	#Find the highest-threat permissible target
+	#Find the highest-threat permissible target (mechas and Entities)
 	var best = null
 	var best_score := -1.0
-	for target in arena.get_mechas():
+	for target in arena.get_mechas() + _get_entities():
 		if target == self or not is_instance_valid(target) or target.is_dead:
 			continue
 		var distance = position.distance_to(target.position)
 		if distance > eng_distance:
 			continue
-		if not should_attack(target):
+		# Entities are monsters: always fair game, no flags or grudges.
+		if not target.is_in_group("entity") and not should_attack(target):
 			continue
 		var score = _threat_score(target, distance, eng_distance)
 		if score > best_score:
@@ -549,6 +550,22 @@ func check_for_targets(eng_distance, max_shooting_distance):
 				and now - _last_target_switch_ms >= TARGET_SWITCH_COOLDOWN_MS:
 			valid_target = best
 			_last_target_switch_ms = now
+
+
+func _get_entities() -> Array:
+	if arena and arena.has_method("get_entities"):
+		return arena.get_entities()
+	return []
+
+
+# An Entity's bite or acid (EntityAttack): react as to being shot. Shots
+# report themselves through _on_nearby_projectile_area_entered instead.
+func on_attacked_by(attacker) -> void:
+	if not is_instance_valid(attacker):
+		return
+	under_fire_timer = 0.5
+	most_recent_attacker = attacker
+	last_attack_position = attacker.global_position
 
 
 func shoot_weapons(target):

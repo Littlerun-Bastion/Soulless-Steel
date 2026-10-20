@@ -42,6 +42,21 @@ extends Node
 @export var ambient_event_max_distance: float = 8000.0   # but not so far it's pointless
 @export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
 
+# Entities (creatures, game/entities/) — Stalker packs roam the map from the
+# start, well away from the player, and a new pack wanders in now and then
+# while the population is low.
+@export_group("Entities")
+@export var min_initial_packs: int = 2
+@export var max_initial_packs: int = 4
+@export var min_pack_size: int = 3
+@export var max_pack_size: int = 5
+@export var min_entity_distance_from_player: float = 3500.0
+@export var target_entity_population: int = 10           # below this, a new pack may arrive
+@export var pack_respawn_cooldown: float = 75.0          # seconds between arrivals
+@export var max_pack_respawns: int = 6                   # hard cap per run
+
+const STALKER = preload("res://game/entities/Stalker.tscn")
+
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
 var time_since_last_player_damage: float = 0.0
@@ -64,6 +79,11 @@ var redirect_check_timer: float = 0.0
 var total_ambient_events: int = 0
 var ambient_event_timer: float = 10.0  # short initial delay before the first event
 
+# Entity state
+var entity_kills: int = 0             # Entities the player killed
+var total_pack_respawns: int = 0
+var time_since_pack_respawn: float = 0.0
+
 
 func start(arena_ref) -> void:
 	arena = arena_ref
@@ -79,9 +99,15 @@ func _populate_initial_world() -> void:
 			continue
 		var design = NPCManager.get_design_data(npc)
 		arena.add_enemy(design, "NPC_" + str(i))
+	var packs := 0
+	for i in randi_range(min_initial_packs, max_initial_packs):
+		var pos = _pick_entity_spawn_position()
+		if pos != null:
+			spawn_stalker_pack(pos)
+			packs += 1
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", count, " NPCs")
+		print("[ExpeditionDirector] World populated with ", count, " NPCs and ", packs, " Stalker packs")
 
 
 func _process(dt: float) -> void:
@@ -91,6 +117,7 @@ func _process(dt: float) -> void:
 	time_since_last_player_damage += dt
 	time_since_last_spawn += dt
 	time_since_last_redirect += dt
+	time_since_pack_respawn += dt
 
 	print_timer -= dt
 	if print_timer <= 0.0:
@@ -101,6 +128,7 @@ func _process(dt: float) -> void:
 	if soft_spawn_check_timer <= 0.0:
 		soft_spawn_check_timer = soft_spawn_check_interval
 		_try_soft_spawn()
+		_try_pack_respawn()
 
 	redirect_check_timer -= dt
 	if redirect_check_timer <= 0.0:
@@ -136,7 +164,9 @@ func _print_metrics() -> void:
 		"  player_deaths=", player_deaths,
 		"  soft_spawns=", total_soft_spawns,
 		"  redirects=", total_redirects,
-		"  ambient=", total_ambient_events)
+		"  ambient=", total_ambient_events,
+		"  entities=", arena.get_entities().size(),
+		"  entity_kills=", entity_kills)
 
 
 func _nearest_enemy_distance() -> float:
@@ -275,6 +305,57 @@ func _pick_offscreen_spawn_position():
 	var pick = candidates.pick_random()
 	var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 	return pick.global_position + jitter
+
+
+# ---- Entities ----
+
+# A Stalker pack around center. size -1 = random (min_pack_size..max_pack_size).
+func spawn_stalker_pack(center: Vector2, size := -1) -> EntityPack:
+	if size < 0:
+		size = randi_range(min_pack_size, max_pack_size)
+	var pack := EntityPack.new()
+	for i in size:
+		var offset := Vector2(randf_range(-250.0, 250.0), randf_range(-250.0, 250.0))
+		pack.add(arena.add_entity(STALKER, center + offset))
+	return pack
+
+
+func notify_entity_died(entity) -> void:
+	var src = entity.last_damage_source
+	if typeof(src) == TYPE_DICTIONARY and str(src.get("name", "")) == "Player":
+		entity_kills += 1
+	if Debug.get_setting("verbose_logging"):
+		print("[ExpeditionDirector] ", entity.mecha_name, " died")
+
+
+# A random map point far enough from the player, or null after a few tries.
+func _pick_entity_spawn_position():
+	for _i in 20:
+		var pos: Vector2 = arena.get_random_position()
+		if not is_instance_valid(arena.player) \
+				or pos.distance_to(arena.player.global_position) >= min_entity_distance_from_player:
+			return pos
+	return null
+
+
+# A new pack wanders in (out of sight) while the population is low.
+func _try_pack_respawn() -> void:
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+	if total_pack_respawns >= max_pack_respawns:
+		return
+	if arena.get_entities().size() >= target_entity_population:
+		return
+	if time_since_pack_respawn < pack_respawn_cooldown:
+		return
+	var pos = _pick_offscreen_spawn_position()
+	if pos == null:
+		return
+	spawn_stalker_pack(pos)
+	total_pack_respawns += 1
+	time_since_pack_respawn = 0.0
+	if Debug.get_setting("verbose_logging"):
+		print("[ExpeditionDirector] a Stalker pack arrived at ", pos)
 
 
 # ---- Redirect ----

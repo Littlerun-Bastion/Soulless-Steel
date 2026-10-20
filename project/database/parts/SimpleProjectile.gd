@@ -111,9 +111,10 @@ func _physics_process(dt):
 		elif is_mecha and deflection_cooldown > 0:
 			position += dir*speed*dt
 		else:
-			# Stop for non-mecha obstacles (walls, terrain) and die
+			# Stop for non-mecha obstacles (walls, terrain, Entities) and die
 			position = result.position
 			speed = 0
+			hit_entity(result.collider)
 			die(result.collider)  # NEW: Die when hitting terrain
 			return  # NEW: Exit immediately
 	else:
@@ -257,7 +258,18 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
+			hit_entity(body)
 		die(body)
+
+
+# Entities (creatures) have no armour parts: one hit, armour pen against their
+# armour rating. Safe to call with anything; only Entities are hurt, once.
+func hit_entity(body) -> void:
+	if has_impacted or dying or not is_instance_valid(body) or not body.is_in_group("entity"):
+		return
+	has_impacted = true
+	mech_hit = true
+	body.take_hit(base_damage, armor_pen, dir, original_mecha_info, impact_force)
 
 func handle_deflection(body, collision_point: Vector2, deflection_type: String, hit_part: String):
 	match deflection_type:

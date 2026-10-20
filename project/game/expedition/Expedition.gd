@@ -1,8 +1,9 @@
 extends "res://game/combat/CombatScene.gd"
 
 # Expedition is the big-map living-world game mode. The ExpeditionDirector
-# populates the map with NPCs and keeps it alive (respawns, redirects,
-# ambient events). Arena (game/arena/) is the separate ladder mode.
+# populates the map with NPCs and Entity packs (creatures, game/entities/) and
+# keeps it alive (respawns, redirects, ambient events). Arena (game/arena/) is
+# the separate ladder mode.
 #
 # Combat plumbing shared with Arena (effects, deaths, pause, extraction,
 # triggers, intro, prewarm, debug cam) lives in game/combat/CombatScene.gd.
@@ -39,6 +40,7 @@ const MAX_WRECKS := 12
 @onready var ExpeditionDirector = $ExpeditionDirector
 
 var Wrecks: Node2D
+var Entities: Node2D
 
 
 func _ready() -> void:
@@ -52,6 +54,7 @@ func _ready() -> void:
 	_setup_exits()
 	_setup_triggers()
 	_setup_wrecks()
+	_setup_entities()
 	_add_player()
 	_setup_heatmap()
 	_begin_stakes()
@@ -105,6 +108,11 @@ func _before_mecha_removed(mecha) -> void:
 		_spawn_wreck(mecha)
 
 
+func _before_entity_removed(entity) -> void:
+	if ExpeditionDirector:
+		ExpeditionDirector.notify_entity_died(entity)
+
+
 func _on_player_lost_health() -> void:
 	super._on_player_lost_health()
 	ExpeditionDirector.notify_player_damaged()
@@ -147,6 +155,26 @@ func _trim_wrecks() -> void:
 			continue
 		wreck.queue_free()
 		excess -= 1
+
+
+# ---- Entities ----
+
+# Creatures walk on the ground: drawn above wrecks, under the mechas.
+func _setup_entities() -> void:
+	Entities = Node2D.new()
+	Entities.name = "Entities"
+	add_child(Entities)
+	move_child(Entities, Mechas.get_index())
+
+
+# Spawns one Entity (e.g. Stalker.tscn) on the navmesh near spawn_position.
+func add_entity(scene: PackedScene, spawn_position: Vector2) -> Entity:
+	var entity: Entity = scene.instantiate()
+	entity.position = _ensure_position_on_nav(spawn_position)
+	Entities.add_child(entity)
+	entity.setup(self)
+	register_entity(entity)
+	return entity
 
 
 # ---- Stakes ----

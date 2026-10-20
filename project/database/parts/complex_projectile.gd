@@ -181,9 +181,10 @@ func _physics_process(dt):
 		if is_mecha:
 			position += velocity*dt
 		else:
-			# Hit terrain/wall - stop and die
+			# Hit terrain/wall (or an Entity) - stop and die
 			position = result.position
 			speed = 0
+			hit_entity(result.collider)
 			die(result.collider)
 			return
 	else:
@@ -208,8 +209,8 @@ func _physics_process(dt):
 	# Check for proximity fuse trigger
 	if fuse_waiting == true:
 		var in_range_targets = $Fuse.get_overlapping_bodies()
-		for body in in_range_targets:	
-			if not body.is_in_group("mecha"):
+		for body in in_range_targets:
+			if not is_fuse_target(body):
 				in_range_targets.erase(body)
 			else:
 				fuse(null, body, null, null)
@@ -357,7 +358,26 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
 		if not body.is_in_group("mecha"):
 			mech_hit = false
+			hit_entity(body)
 		die(body)
+
+
+# Entities (creatures) have no armour parts: a direct hit is one hit, armour
+# pen against their armour rating. Only for contact-fused rounds, like mecha
+# hits; anything that isn't an Entity is ignored.
+func hit_entity(body) -> void:
+	if has_impacted or dying or not fuse_is_contact_enabled:
+		return
+	if not is_instance_valid(body) or not body.is_in_group("entity"):
+		return
+	has_impacted = true
+	mech_hit = true
+	body.take_hit(base_damage, armor_pen, dir, original_mecha_info, impact_force)
+
+
+# What sets off a proximity fuse and takes blast damage: mechas and Entities.
+func is_fuse_target(body) -> bool:
+	return body.is_in_group("mecha") or body.is_in_group("entity")
 
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
@@ -497,7 +517,7 @@ func guidance(dt):
 
 # Proximity fuse - triggers when enemy enters detection radius
 func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
-	if body.is_in_group("mecha") and fuse_proximity_distance > 0.0:
+	if is_fuse_target(body) and fuse_proximity_distance > 0.0:
 		# Wait for fuse to arm
 		if lifetime < fuse_arm_time:
 			fuse_waiting = true
@@ -514,7 +534,7 @@ func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
 			
-			if result and result.collider and result.collider.is_in_group("mecha"):
+			if result and result.collider and is_fuse_target(result.collider):
 				# Check seeker requirements
 				if fuse_detection_type == "IR":
 					if result.collider.has_method("get_thermal_signature"):
@@ -571,7 +591,12 @@ func explosion():
 			var query = PhysicsRayQueryParameters2D.create(position, body.position)
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
-			
+
+			# Entities: one blast hit, no parts to spread it over.
+			if result and result.collider and result.collider.is_in_group("entity"):
+				result.collider.take_hit(base_damage, armor_pen, ray, original_mecha_info, payload_explosion_force)
+				continue
+
 			if result and result.collider and result.collider.is_in_group("mecha"):
 				var hit_mecha = result.collider
 				var explosion_center = result.position
@@ -635,16 +660,16 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 
 	return parts_hit
 
-# Track mechas entering explosion radius
+# Track mechas (and Entities) entering explosion radius
 func _on_explosion_body_entered(body):
-	if not body.is_in_group("mecha"):
+	if not is_fuse_target(body):
 		return
 	if not explosion_targets.has(body):
 		explosion_targets.append(body)
 
 # Track mechas leaving explosion radius
 func _on_explosion_body_exited(body):
-	if not body.is_in_group("mecha"):
+	if not is_fuse_target(body):
 		return
 	if explosion_targets.has(body):
 		explosion_targets.erase(body)
@@ -653,7 +678,7 @@ func _on_explosion_body_exited(body):
 func _on_fuse_body_shape_exited(_body_rid, body, _body_shape_index, _local_shape_index):
 	var in_range = $Fuse.get_overlapping_bodies()
 	for i in in_range:
-		if not i.is_in_group("mecha"):
+		if not is_fuse_target(i):
 			in_range.erase(body)
 	if in_range == []:
 		fuse_waiting = false

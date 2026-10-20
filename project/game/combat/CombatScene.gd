@@ -9,6 +9,7 @@ extends Node2D
 #
 # Subclasses own their _ready (map setup, spawning, missions) and can hook in:
 #   _before_mecha_removed(mecha)  called on death before the mecha is removed
+#   _before_entity_removed(entity) called when an Entity (creature) dies
 #   _plays_ambience()             whether to start ambient BGM after the intro
 #   _on_player_lost_health()      override and call super to add reactions
 #   _on_player_destroyed()        the player just died; returns extra text for
@@ -67,6 +68,8 @@ const MAX_ACTIVE_SCRAPS := 16
 
 var player
 var all_mechas: Array = []
+# Living Entities (creatures; only Expedition spawns them, via register_entity).
+var all_entities: Array = []
 # Names of NPCs the player downed (exposed) and killed this match.
 var player_downs: Array = []
 var player_kills: Array = []
@@ -80,6 +83,11 @@ var target_arena_zoom: Vector2 = Vector2(0.1, 0.1)
 
 # Called when any mecha dies, before it's removed from all_mechas.
 func _before_mecha_removed(_mecha) -> void:
+	pass
+
+
+# Called when an Entity dies, after it's left all_entities.
+func _before_entity_removed(_entity) -> void:
 	pass
 
 
@@ -171,6 +179,16 @@ func get_mechas() -> Array:
 	return all_mechas
 
 
+func get_entities() -> Array:
+	return all_entities
+
+
+# Tracks a spawned Entity: deaths, kill credit, sounds, the intro freeze.
+func register_entity(entity) -> void:
+	all_entities.append(entity)
+	entity.died.connect(_on_entity_died)
+
+
 func get_lock_areas() -> Array:
 	var areas := []
 	for m in all_mechas:
@@ -233,7 +251,7 @@ func _on_bullet_impact(projectile, effect, clear, body) -> void:
 		_evict_oldest_if_full(Explosions, MAX_ACTIVE_EXPLOSIONS)
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
 		var mecha_hit = false
-		if body and body.is_in_group("mecha"):
+		if is_instance_valid(body) and (body.is_in_group("mecha") or body.is_in_group("entity")):
 			mecha_hit = true
 		impact_effect.setup(projectile.impact_size, projectile.global_rotation, mecha_hit, projectile.shield_hit)
 		Explosions.add_child(impact_effect)
@@ -284,6 +302,15 @@ func _on_mecha_died(mecha) -> void:
 			MissionManager.report_kill()
 		FrameSpikeDetector.mark("died:queue_free")
 		mecha.queue_free()
+
+
+# The Entity frees itself after its corpse fades (Entity.die).
+func _on_entity_died(entity) -> void:
+	all_entities.erase(entity)
+	_before_entity_removed(entity)
+	if _was_hit_by_player(entity):
+		player_kills.append(entity.mecha_name)
+		MissionManager.report_kill()
 
 
 # Match-end on player death: hold the view on the arena camera, tear down
@@ -352,6 +379,11 @@ func _on_mecha_made_sound(sound_data) -> void:
 			continue
 		if m.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
 			m.heard_sound(sound_data)
+	for entity in all_entities:
+		if entity == sound_data.source or not is_instance_valid(entity):
+			continue
+		if entity.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
+			entity.heard_sound(sound_data)
 
 
 # ---- Extraction ----
@@ -397,13 +429,16 @@ func _on_player_trigger_entered(trigger: String) -> void:
 
 # ---- Game flow ----
 
-# Pauses or unpauses all mechas in the scene. Used during the intro animation
-# and could be reused for cutscenes. When unblocking AFTER the intro, kick off
-# ambient BGM unless the mode opts out.
+# Pauses or unpauses all mechas (and Entities) in the scene. Used during the
+# intro animation and could be reused for cutscenes. When unblocking AFTER the
+# intro, kick off ambient BGM unless the mode opts out.
 func set_mechas_block_status(status: bool) -> void:
 	for mecha in Mechas.get_children():
 		if mecha.has_method("set_pause"):
 			mecha.set_pause(status)
+	for entity in all_entities:
+		if is_instance_valid(entity):
+			entity.set_pause(status)
 	if not status and _plays_ambience():
 		AudioManager.play_bgm("ambience", true, 40)
 

@@ -8,7 +8,8 @@ extends TestSuite
 #   - pausing and resuming; quitting from the pause menu (warned first)
 #     abandons the run
 #   - Entities: Stalker packs spawn away from the player, NPCs fight them,
-#     gunfire reaches them, the intro freeze holds them, kills count
+#     gunfire reaches them, the intro freeze holds them, kills count, and a
+#     dead one leaves a carcass of bio salvage to loot
 #
 # Enemies and Entities are frozen after spawning and the director stopped, so
 # the player isn't attacked at random and results don't depend on luck. Scene
@@ -48,6 +49,7 @@ func run_tests() -> void:
 	await case("gunfire reaches Entities", _test_entities_hear)
 	await case("the intro freeze holds Entities too", _test_entities_freeze)
 	await case("killing an Entity counts for the player", _test_entity_kill)
+	await case("a dead Entity leaves a carcass of bio salvage", _test_carcass_loot)
 	await case("pausing and resuming", _test_pause)
 	await case("quitting from the pause menu abandons the expedition", _test_abandon)
 
@@ -262,7 +264,10 @@ func _test_npcs_fight_entities() -> void:
 	enemy.check_for_targets(2000, 2000)
 	check(enemy.valid_target == stalker, "the NPC targets the Stalker")
 	check(damaged[0] > 0, "the bites damaged the NPC")
-	# And the other way round: NPC fire makes the Stalker hunt the NPC.
+	# And the other way round: NPC fire makes an idle Stalker hunt the NPC.
+	# (It may already have been after something when the world froze.)
+	stalker.lose_target()
+	stalker._set_state(Stalker.State.WANDER)
 	stalker.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
 	check(stalker.target == enemy, "a shot Stalker hunts its shooter")
 	stalker.lose_target()
@@ -296,6 +301,29 @@ func _test_entity_kill() -> void:
 	check(not _scene.get_entities().has(stalker), "it's off the scene's Entity list")
 	check(_scene.player_kills.size() == kills_before + 1 and _scene.player_kills[-1] == "Stalker", "the kill counts for the player")
 	check_eq(_scene.ExpeditionDirector.entity_kills, 1, "the director counts it")
+
+
+func _test_carcass_loot() -> void:
+	var stalker: Stalker = _stalkers()[0]
+	var where := stalker.global_position
+	var carcasses_before: int = _scene.Carcasses.get_child_count()
+	var ref: WeakRef = weakref(stalker)
+	stalker.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
+	check(_scene.Carcasses.get_child_count() == carcasses_before + 1, "a carcass is left behind")
+	await wait_frames(2)
+	check(ref.get_ref() == null, "the Stalker itself is gone (the carcass is the corpse)")
+	var carcass: Carcass = _scene.Carcasses.get_children()[-1]
+	check(carcass.global_position.distance_to(where) < 1.0, "where it died")
+	check(not carcass.inventory.is_empty(), "with bio salvage in it")
+	check(carcass.inventory.get_stacks().all(func(s): return "bio" in s.item.tags), "only bio salvage")
+	var cargo: Inventory = _player().mech_inventory
+	var cargo_before := cargo.get_stacks().size()
+	var take_all := _action("inventory", "take_all")
+	var ctx := {"type": "inventory", "inventory": carcass.inventory}
+	check(take_all["visible_if"].call(ctx), "Take all offered on the carcass")
+	take_all["run"].call(ctx)
+	check(cargo.get_stacks().size() > cargo_before, "the bio salvage is in the cargo")
+	check(_scene.Carcasses.get_index() < _scene.Mechas.get_index(), "carcasses are drawn under the mechas")
 
 
 # ---- Abandoning ----

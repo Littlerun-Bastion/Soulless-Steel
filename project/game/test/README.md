@@ -87,12 +87,12 @@ func _init() -> void:
 |---|---|
 | BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
 | ContentScenesTest | every script compiles, every scene loads |
-| EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; death |
+| EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; death; bio loot and carcasses |
 | ExpeditionHudTest | mission tracker, load readout, extraction summary |
 | ExpeditionRunTest *(slow)* | a real Expedition: spawn, shooting, wrecks and loot, extraction, death, pause, quitting; Stalker packs, NPCs fighting them |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
 | HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts, closing the game mid-refit |
-| LootTableTest | loot tables, tiers, containers |
+| LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
 | NpcDesignsTest | every enemy design is valid and builds |
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
 | PartsTest | every part's data (weapons need a price), equipping, every weapon fires |

@@ -22,6 +22,7 @@ const SPREAD_ROLLS := 10000
 
 func run_tests() -> void:
 	await case("salvage items have tiers", _test_salvage_tiers)
+	await case("bio salvage and Entity loot tables", _test_bio_salvage)
 	await case("tier chances", _test_tier_chances)
 	await case("roll spread follows weights", _test_roll_spread)
 	await case("empty tier falls back", _test_fallback)
@@ -68,6 +69,55 @@ func _test_salvage_tiers() -> void:
 	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.LOW).size() == 4, "four low-tech")
 	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).size() == 4, "four mid-tech")
 	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
+
+
+# Bio salvage (database/items/bio/) comes from Entity carcasses. Every item is
+# proper salvage, and drops from at least one Entity's table, except the NT
+# Engine Heart, which is a rare extra (Brutes, Cysts), never a table roll.
+const BIO_DIR := "res://database/items/bio/"
+const ENTITY_TABLES := ["entity_stalker", "entity_spitter", "entity_brute", "entity_cyst"]
+const RARE_ONLY := ["nt_engine_heart"]
+
+func _test_bio_salvage() -> void:
+	var files := Array(DirAccess.get_files_at(BIO_DIR)).filter(func(f): return f.ends_with(".tres"))
+	check_eq(files.size(), 8, "bio items")
+	var dropped := {}
+	for table_name in ENTITY_TABLES:
+		var table: LootTable = load("res://database/loot-tables/%s.tres" % table_name)
+		if not check(table != null, "%s loads" % table_name):
+			continue
+		for tier in LootTable.ROLLED_TIERS:
+			check(not table.get_entries_of_tier(tier).is_empty(), "%s has items of tier %d" % [table_name, tier])
+		for entry in table.entries:
+			check(entry.is_valid() and entry.item.resource_path.begins_with(BIO_DIR), "%s only drops bio salvage" % table_name)
+			dropped[entry.item.id] = true
+	for file in files:
+		var item: item_data = load(BIO_DIR + file)
+		check(item.tech_tier != item_data.TechTier.NONE, "%s has a tech tier" % item.id)
+		check("salvage" in item.tags and "bio" in item.tags, "%s is tagged salvage, bio" % item.id)
+		check(not item.composition.is_empty(), "%s can be recycled" % item.id)
+		for material_id in item.composition:
+			check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [item.id, material_id])
+		check_eq(PlayerProgress.recycle_value(item_stack.from_generic(item)), Dictionary(item.composition), "%s recycles into its composition" % item.id)
+		check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
+		check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
+		check(item.display_name != "" and item.description != "" and item.price > 0, "%s is named, described and priced" % item.id)
+		check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
+		if item.id in RARE_ONLY:
+			check(not dropped.has(item.id), "%s is a rare extra, not a table roll" % item.id)
+		else:
+			check(dropped.has(item.id), "%s drops from an Entity table" % item.id)
+
+	# Carried home in cargo, it survives a save like any salvage.
+	var cargo := Inventory.new()
+	cargo.initialize_grid(4, 4)
+	cargo.add_stack_to_first_available_slot(item_stack.from_generic(load(BIO_DIR + "nt_fluid_sac.tres")))
+	PlayerProgress.set_mech_inventory(cargo)
+	var json := JSON.stringify(PlayerProgress.get_save_data())
+	PlayerProgress.reset()
+	PlayerProgress.set_save_data(JSON.parse_string(json))
+	check(PlayerProgress.get_mech_inventory().get_stacks().any(func(s): return s.item != null and s.item.id == "nt_fluid_sac"),
+			"bio salvage survives a save in cargo")
 
 
 func _test_tier_chances() -> void:

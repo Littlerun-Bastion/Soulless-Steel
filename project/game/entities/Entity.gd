@@ -18,6 +18,9 @@ class_name Entity
 #
 # Use: instantiate, add to the tree, then setup(arena) (the combat scene,
 # for get_mechas()). Forward is +X.
+#
+# Dying, it lies there as a corpse and fades, unless the scene replaces it:
+# Expedition leaves a Carcass holding its bio salvage (roll_loot) instead.
 
 signal died(entity)
 
@@ -44,6 +47,16 @@ const KNOCKBACK_SCALE := 20.0   # impact_force -> speed (px/s) added
 @export var lose_range := 3200.0
 ## Hit points regained per second while not hunting.
 @export var regen_rate := 0.3
+
+@export_group("Loot")
+## What its carcass holds: loot_rolls (min, max) rolls on loot_table, plus
+## rare_drop with rare_chance. See roll_loot().
+@export var loot_table: LootTable
+@export var loot_rolls := Vector2i(1, 2)
+@export var rare_drop: item_data
+@export_range(0.0, 1.0) var rare_chance := 0.0
+## The carcass's inventory grid.
+@export var carcass_grid := Vector2i(4, 4)
 
 var arena = null
 var pack: EntityPack = null
@@ -252,10 +265,24 @@ func die() -> void:
 	AudioManager.play_sfx("medium_impact1", global_position)
 	body_visual.die()
 	died.emit(self)
+	# The scene may have replaced the corpse with a Carcass and freed it.
+	if is_queued_for_deletion():
+		return
 	var fade := create_tween()
 	fade.tween_interval(CORPSE_TIME)
 	fade.tween_property(self, "modulate:a", 0.0, CORPSE_FADE_TIME)
 	fade.tween_callback(queue_free)
+
+
+# The bio salvage its carcass holds. Takes an optional seeded rng (tests).
+func roll_loot(rng: RandomNumberGenerator = null) -> Array:
+	var stacks := []
+	if loot_table != null:
+		var count := rng.randi_range(loot_rolls.x, loot_rolls.y) if rng else randi_range(loot_rolls.x, loot_rolls.y)
+		stacks.append_array(loot_table.roll_stacks(count, rng))
+	if rare_drop != null and (rng.randf() if rng else randf()) < rare_chance:
+		stacks.append(item_stack.from_generic(rare_drop))
+	return stacks
 
 
 func heal(amount: float) -> void:

@@ -36,10 +36,15 @@ const QUIT_WARNING := "Quitting abandons the expedition: your mecha and everythi
 const WRECK = preload("res://game/mecha/Wreck.tscn")
 const EXTRACTION_SUMMARY = preload("res://game/expedition/ExtractionSummary.tscn")
 const MAX_WRECKS := 12
+# Dead Entities leave a Carcass of bio salvage; capped separately (Stalkers
+# die in numbers) so they never push out mecha wrecks.
+const CARCASS = preload("res://game/entities/Carcass.tscn")
+const MAX_CARCASSES := 16
 
 @onready var ExpeditionDirector = $ExpeditionDirector
 
 var Wrecks: Node2D
+var Carcasses: Node2D
 var Entities: Node2D
 
 
@@ -108,9 +113,12 @@ func _before_mecha_removed(mecha) -> void:
 		_spawn_wreck(mecha)
 
 
+# The corpse becomes a Carcass the player can loot.
 func _before_entity_removed(entity) -> void:
 	if ExpeditionDirector:
 		ExpeditionDirector.notify_entity_died(entity)
+	_spawn_carcass(entity)
+	entity.queue_free()
 
 
 func _on_player_lost_health() -> void:
@@ -133,6 +141,10 @@ func _setup_wrecks() -> void:
 	Wrecks.name = "Wrecks"
 	add_child(Wrecks)
 	move_child(Wrecks, Mechas.get_index())
+	Carcasses = Node2D.new()
+	Carcasses.name = "Carcasses"
+	add_child(Carcasses)
+	move_child(Carcasses, Mechas.get_index())
 
 
 func _spawn_wreck(mecha) -> void:
@@ -141,13 +153,22 @@ func _spawn_wreck(mecha) -> void:
 	wreck.setup(mecha.mecha_name, WreckLoot.roll(mecha.get_design_data()))
 	wreck.copy_mecha_visuals(mecha)
 	Wrecks.add_child(wreck)
-	_trim_wrecks()
+	_trim_oldest(Wrecks, MAX_WRECKS)
 
 
-# Oldest first (child order); never removes one the player has open.
-func _trim_wrecks() -> void:
-	var wrecks := Wrecks.get_children().filter(func(w): return not w.is_queued_for_deletion())
-	var excess := wrecks.size() - MAX_WRECKS
+func _spawn_carcass(entity) -> void:
+	var carcass: Carcass = CARCASS.instantiate()
+	carcass.position = entity.global_position
+	carcass.setup_from(entity)
+	Carcasses.add_child(carcass)
+	_trim_oldest(Carcasses, MAX_CARCASSES)
+
+
+# Wrecks or carcasses past the limit go, oldest first (child order); never
+# one the player has open.
+func _trim_oldest(container: Node, limit: int) -> void:
+	var wrecks := container.get_children().filter(func(w): return not w.is_queued_for_deletion())
+	var excess := wrecks.size() - limit
 	for wreck in wrecks:
 		if excess <= 0:
 			break

@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://game/entities/Stalker.gd" id="1_stalker"]
 [ext_resource type="Script" path="res://game/entities/EntityBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_stalker.tres" id="3_loot"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 40.0
@@ -16,6 +17,9 @@ radius = 40.0
 walk_speed = 300.0
 run_speed = 420.0
 sight_range = 1800.0
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(1, 2)
+carcass_grid = Vector2i(4, 4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_body")

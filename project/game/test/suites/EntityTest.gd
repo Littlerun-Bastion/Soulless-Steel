@@ -4,11 +4,21 @@ extends TestSuite
 # arena with real mechas: real bullets and grenade blasts hurt them, armour
 # halves weak weapons, their bites go through a mecha's armour from behind but
 # not from the front, a Stalker pack hunts and bites, a hurt Stalker flees, a
-# broken pack scatters and regroups, gunfire draws a pack in, and a dead
-# Entity cleans up after itself. (In the real Expedition: ExpeditionRunTest.)
+# broken pack scatters and regroups, gunfire draws a pack in, a dead Entity
+# cleans up after itself, and Stalkers drop bio salvage into a Carcass.
+# (In the real Expedition: ExpeditionRunTest.)
 
 const STALKER := preload("res://game/entities/Stalker.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
+const CARCASS := preload("res://game/entities/Carcass.tscn")
+const STALKER_LOOT := preload("res://database/loot-tables/entity_stalker.tres")
+const LOOT_ROLLS := 300
+
+
+# Stands in for the player at a carcass: LootContainer only asks is_player().
+class FakePlayer extends Node:
+	func is_player() -> bool:
+		return true
 
 
 # The parts of a combat scene Entities use.
@@ -36,6 +46,8 @@ func run_tests() -> void:
 	await case("a pack that loses half scatters, then regroups", _test_pack_breaks)
 	await case("gunfire draws a pack in", _test_gunfire)
 	await case("a dead Entity cleans up", _test_death)
+	await case("a Stalker drops bio salvage", _test_stalker_loot)
+	await case("a carcass holds the loot and shows the corpse", _test_carcass)
 	await _clear_arena()
 
 
@@ -138,11 +150,16 @@ func _test_blast() -> void:
 		return
 	var stalker := _stalker(Vector2.ZERO)
 	var args: Dictionary = shots[0][0].duplicate()
-	args["pos"] = Vector2(80, 0)
+	args["pos"] = Vector2(100, 0)
 	var grenade = ProjectileManager.create(shooter, args, shots[0][1]).node
+	# Only the blast: no flying, no contact hit, no proximity fuse going off.
+	grenade.monitoring = false
+	grenade.get_node("Fuse").monitoring = false
 	_arena.add_child(grenade)
-	grenade.set_physics_process(false)  # stay put: this tests the blast, not a contact hit
+	grenade.set_physics_process(false)
 	await _physics_frames(3)
+	if not check(is_instance_valid(grenade), "the grenade is still waiting to go off"):
+		return
 	check(stalker in grenade.explosion_targets, "the Stalker is inside the blast radius")
 	grenade.explosion()
 	check(stalker.hp < stalker.max_hp, "the blast hurt the Stalker")
@@ -171,11 +188,24 @@ func _test_bite_facing() -> void:
 	var forward := Vector2(0, -1).rotated(mecha.global_rotation)
 	var stalker := _stalker(mecha.global_position + forward * 150.0)
 	check_eq(EntityAttack.facing_toward(mecha, stalker.global_position), "front", "a Stalker ahead of the mecha is in front of it")
+	# A worn-through face counts as penetrated (armor_check), and glancing bites
+	# chip it; so the front plating is refitted before each bite here.
 	var front_through := 0
 	for _i in 6:
+		for part_name in mecha.armor:
+			mecha.armor[part_name]["front"].pips = 3
 		if EntityAttack.hit_mecha(stalker, mecha, 1, 2):
 			front_through += 1
-	check_eq(front_through, 0, "no front bite gets through")
+	check_eq(front_through, 0, "no front bite gets through intact plating")
+	var front_pips := func():
+		var total := 0
+		for part_name in mecha.armor:
+			total += mecha.armor[part_name]["front"].pips
+		return total
+	var pips_before: int = front_pips.call()
+	for _i in 30:
+		EntityAttack.hit_mecha(stalker, mecha, 1, 2)
+	check(front_pips.call() < pips_before, "but repeated bites wear the front plating down")
 	stalker.global_position = mecha.global_position - forward * 150.0
 	check_eq(EntityAttack.facing_toward(mecha, stalker.global_position), "rear", "the other side is behind it")
 	var rear_through := 0
@@ -260,3 +290,67 @@ func _test_death() -> void:
 	var ref: WeakRef = weakref(stalker)  # a lambda capturing the Stalker itself errors once it's freed
 	var gone := await wait_until(func(): return ref.get_ref() == null, Entity.CORPSE_TIME + Entity.CORPSE_FADE_TIME + 2.0)
 	check(gone, "the corpse fades and frees itself")
+
+
+func _sorted_ids(stacks: Array) -> Array:
+	var ids := stacks.map(func(s): return s.item.id)
+	ids.sort()
+	return ids
+
+
+func _seeded_rng(seed_value := 777) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	return rng
+
+
+# 1-2 items from the Stalker table, low tech mostly.
+func _test_stalker_loot() -> void:
+	var stalker := _stalker(Vector2.ZERO)
+	check(stalker.loot_table == STALKER_LOOT, "Stalkers use the entity_stalker table")
+	var table_items := STALKER_LOOT.entries.map(func(e): return e.item)
+	var rng := _seeded_rng()
+	var counts := {}
+	var tiers := {}
+	var foreign := 0
+	for _i in LOOT_ROLLS:
+		var stacks := stalker.roll_loot(rng)
+		counts[stacks.size()] = counts.get(stacks.size(), 0) + 1
+		for stack in stacks:
+			if not stack.item in table_items:
+				foreign += 1
+			tiers[stack.get_tech_tier()] = tiers.get(stack.get_tech_tier(), 0) + 1
+	check(counts.keys().all(func(n): return n >= 1 and n <= 2), "always 1 or 2 items (%s)" % str(counts))
+	check(counts.has(1) and counts.has(2), "both happen")
+	check_eq(foreign, 0, "items from outside the table")
+	var low: int = tiers.get(item_data.TechTier.LOW, 0)
+	var high: int = tiers.get(item_data.TechTier.HIGH, 0)
+	check(low > high and high > 0, "mostly low tech, high tech rare but possible (%s)" % str(tiers))
+	print("    Stalker carcass: %s items per carcass, tiers %s" % [str(counts), str(tiers)])
+
+
+func _test_carcass() -> void:
+	var stalker := _stalker(Vector2(300, 200))
+	stalker.rotation = 1.0
+	var expected := _sorted_ids(stalker.roll_loot(_seeded_rng(99)))
+	var carcass: Carcass = CARCASS.instantiate()
+	carcass.position = stalker.global_position
+	carcass.setup_from(stalker, _seeded_rng(99))
+	_arena.add_child(carcass)
+	check_eq(carcass.display_name, "CARCASS - STALKER", "named after the Entity")
+	check(carcass.is_in_group("loot_container") and carcass.is_in_group("interactable"), "lootable like a wreck")
+	check_eq(_sorted_ids(carcass.inventory.get_stacks()), expected, "holds the Stalker's rolled loot")
+	var corpse := carcass.get_corpse()
+	check(corpse != null and corpse.dead, "drawn as the dead Stalker")
+	check(is_equal_approx(carcass.get_node("Hull").rotation, 1.0), "lying the way it fell")
+	check(carcass.state == Wreck.State.UNSEARCHED and carcass.get_node("Marker").visible, "marked until searched")
+	var player := FakePlayer.new()
+	add_child(player)
+	carcass.interact(player)
+	check_eq(carcass.state, Wreck.State.SEARCHED, "searched once opened")
+	for stack in carcass.inventory.get_stacks().duplicate():
+		carcass.inventory.remove_item_stack(stack)
+	carcass.close()
+	check_eq(carcass.state, Wreck.State.EMPTY, "empty once taken")
+	check(carcass.get_node("Hull").modulate == Carcass.CORPSE_EMPTY_TINT, "an empty carcass goes darker")
+	player.queue_free()

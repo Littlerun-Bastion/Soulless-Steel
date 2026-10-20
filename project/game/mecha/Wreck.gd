@@ -24,6 +24,9 @@ const MARKER_ALPHA_MAX := 0.55
 const MARKER_PULSE_TIME := 0.9
 
 var state: State = State.UNSEARCHED
+# How the hull is tinted (Carcass draws a corpse, not grey metal).
+var hull_tint := HULL_TINT
+var empty_tint := EMPTY_TINT
 var _pending_stacks: Array = []
 var _pulse: Tween = null
 
@@ -75,7 +78,7 @@ func _on_closed(_container) -> void:
 
 
 func _update_visuals() -> void:
-	$Hull.modulate = EMPTY_TINT if state == State.EMPTY else HULL_TINT
+	$Hull.modulate = empty_tint if state == State.EMPTY else hull_tint
 	var marker: Sprite2D = $Marker
 	marker.visible = state == State.UNSEARCHED
 	if marker.visible and _pulse == null:

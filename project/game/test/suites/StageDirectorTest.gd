@@ -502,7 +502,7 @@ func _test_timed_line_does_not_bleed() -> void:
 	var director := _plain_director()
 	var timed := _say_step(director, "a timed line")
 	timed.advance_on = StageSay.Advance.TIMED
-	timed.seconds = 30.0
+	timed.seconds = 5.0
 	var after := _say_step(director, "the line that follows it")
 
 	director.play()
@@ -513,7 +513,7 @@ func _test_timed_line_does_not_bleed() -> void:
 	var moved := await wait_until(func(): return director.current_step == after, 5.0)
 	check(moved, "the scene moved on to the next line")
 
-	await wait_seconds(1.0)
+	await wait_seconds(6.0)
 	check_eq(director.get_dialogue().get_body_label().text, "the line that follows it",\
 	"the ended line did not wipe the one now on screen")
 

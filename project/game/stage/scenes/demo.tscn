@@ -1,0 +1,67 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/stage/scenes/StageDemo.gd" id="1_demo"]
+[ext_resource type="Script" path="res://game/stage/steps/StageCameraFollow.gd" id="2_follow"]
+[ext_resource type="Script" path="res://game/stage/steps/StageWait.gd" id="3_wait"]
+[ext_resource type="Script" path="res://game/stage/steps/StageMoveActor.gd" id="4_move"]
+[ext_resource type="Script" path="res://game/stage/steps/StageSay.gd" id="5_say"]
+[ext_resource type="Script" path="res://game/stage/steps/StageActorShoot.gd" id="6_shoot"]
+
+[node name="StageDemo" type="Node"]
+script = ExtResource("1_demo")
+
+[node name="WatchPlayer" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "Player"
+snap = true
+
+[node name="HoldOnPlayer" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 1.2
+
+[node name="WatchNPC" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "NPC"
+
+[node name="NPCWalksToPlayer" type="Node2D" parent="."]
+script = ExtResource("4_move")
+actor = "NPC"
+destination_actor = "Player"
+arrive_distance = 400.0
+
+[node name="NPCGreets" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "NPC"
+text = "hello player"
+
+[node name="WatchPlayerAgain" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "Player"
+
+[node name="PlayerReplies" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Player"
+text = "hello npc"
+
+[node name="WatchObstacle" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "OBSTACLE"
+
+[node name="BeforeTheShot" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 1.2
+
+[node name="NPCShootsObstacle" type="Node2D" parent="."]
+script = ExtResource("6_shoot")
+actor = "NPC"
+target_actor = "OBSTACLE"
+shots = 3
+
+[node name="WatchNPCAgain" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "NPC"
+
+[node name="NPCGloats" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "NPC"
+text = "its ded"

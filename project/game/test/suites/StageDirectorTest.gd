@@ -2,6 +2,8 @@ extends TestSuite
 
 const WALK_SPEED := 400.0
 const WALK_DISTANCE := 1200.0
+const SLOW_REVEAL_SECONDS := 3.0
+const SLOW_CAMERA_SPEED := 1.0
 
 
 class RecordingStep extends StageStep:
@@ -326,6 +328,7 @@ func _test_camera_waits() -> void:
 	step.global_position = Vector2(2000, 0)
 	step.wait_until_reached = true
 	director.add_child(step)
+	director.get_camera().follow_speed = SLOW_CAMERA_SPEED
 	var order: Array = []
 	var later := RecordingStep.new()
 	later.order_log = order
@@ -414,6 +417,10 @@ func _say_step(director: StageDirector, line: String) -> StageSay:
 	return step
 
 
+func _slow_reveal(director: StageDirector, line: String) -> void:
+	director.get_dialogue().reveal_speed = line.length() / SLOW_REVEAL_SECONDS
+
+
 func _test_say_waits() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "hello player")
@@ -445,6 +452,7 @@ func _test_say_waits() -> void:
 func _test_say_two_stage() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "a line long enough that it is still being revealed")
+	_slow_reveal(director, step.text)
 
 	director.play()
 	await wait_frames(1)
@@ -545,6 +553,7 @@ func _test_pause_holds_the_scene() -> void:
 func _test_dialogue_is_visible() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "hello player")
+	_slow_reveal(director, step.text)
 
 	director.play()
 	await wait_frames(2)

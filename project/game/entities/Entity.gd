@@ -75,6 +75,9 @@ var home := Vector2.ZERO        # where it wanders around
 var leash_center := Vector2.ZERO
 var leash_radius := 0.0         # 0 = free to roam
 var desired_velocity := Vector2.ZERO
+var scripted := false
+var scripted_destination = null
+var scripted_aim = null
 var face_point = null           # a Vector2 to face instead of where it's going
 
 # Read by NPC combat AI, lock-on and IR seekers when an Entity is the target.
@@ -118,13 +121,16 @@ func set_pause(value: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if is_dead or paused:
 		return
-	if pack != null and pack.is_leader(self):
-		pack.tick(dt)
-	_sense_timer -= dt
-	if _sense_timer <= 0.0:
-		_sense_timer = FAR_SENSE_INTERVAL if _far_from_player() else NEAR_SENSE_INTERVAL
-		_sense()
-	behave(dt)
+	if scripted:
+		_drive_scripted()
+	else:
+		if pack != null and pack.is_leader(self):
+			pack.tick(dt)
+		_sense_timer -= dt
+		if _sense_timer <= 0.0:
+			_sense_timer = FAR_SENSE_INTERVAL if _far_from_player() else NEAR_SENSE_INTERVAL
+			_sense()
+		behave(dt)
 	if rooted:
 		velocity = Vector2.ZERO
 	else:
@@ -350,6 +356,34 @@ func _update_components() -> void:
 
 
 # ---- Movement ----
+
+func set_scripted(value: bool) -> void:
+	scripted = value
+	scripted_destination = null
+	scripted_aim = null
+	if value:
+		paused = false
+		target = null
+		face_point = null
+		stop()
+
+
+func walk_to(point) -> void:
+	scripted_destination = point
+
+
+func stop_walking() -> void:
+	scripted_destination = null
+	stop()
+
+
+func _drive_scripted() -> void:
+	face_point = scripted_aim
+	if scripted_destination == null:
+		stop()
+	else:
+		move_to(scripted_destination, walk_speed)
+
 
 func move_to(point: Vector2, speed: float, arrive_distance := 40.0) -> void:
 	var to := point - global_position

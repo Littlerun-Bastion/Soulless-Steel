@@ -16,6 +16,7 @@ const BODY_LIFETIME = 35
 const STUCK_VELOCITY_THRESHOLD := 50.0
 const STUCK_RESET_TIME := 5.0
 const STUCK_RELOCATE_TIME := 12.0
+const SCRIPTED_THROTTLE_TIME := 0.6
 var stuck_timer: float = 0.0
 
 var ray_directions = []
@@ -48,6 +49,9 @@ var combat_behaviour: String = "default"
 # NPC's skill. ai_aim_point is set per-frame by the combat behaviour and read
 # by navigate_to_target for weapon/body rotation; null = aim at the target.
 var ai_aim_point = null
+var scripted := false
+var scripted_destination = null
+var scripted_aim = null
 var ai_projectile_speed := 0.0    # avg direct-fire muzzle speed (0 = don't lead)
 var ai_lead_accuracy := 0.55      # 0 = aim at current pos, 1 = perfect intercept
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
@@ -83,10 +87,13 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	update_senses(dt)
-	
+	if not scripted:
+		update_senses(dt)
+
 	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
-	if not wait_for_map_sync and not is_dead:
+	if scripted:
+		_drive_scripted(dt)
+	elif not wait_for_map_sync and not is_dead:
 		# Fresh each frame; the combat behaviour re-sets it while engaging.
 		ai_aim_point = null
 		logic.update(self)
@@ -96,7 +103,7 @@ func _physics_process(dt):
 	# position (going_to_position == true) but velocity stays near zero. This
 	# protects NPCs that are intentionally still (alert/ambush/observing) from
 	# being mistakenly reset or teleported.
-	if going_to_position and velocity.length() < STUCK_VELOCITY_THRESHOLD:
+	if not scripted and going_to_position and velocity.length() < STUCK_VELOCITY_THRESHOLD:
 		stuck_timer += dt
 		# Tier 1: soft reset — clear going_to_position so behaviour re-targets.
 		# If the behaviour re-sets it next tick and we still don't move, the
@@ -631,6 +638,43 @@ func random_targeting_pos(min_dist, max_dist):
 	rand_pos = valid_target.position + direction * rand_radius
 	
 	return rand_pos
+
+
+func set_scripted(value: bool) -> void:
+	scripted = value
+	scripted_destination = null
+	scripted_aim = null
+	going_to_position = false
+	stuck_timer = 0.0
+	if value:
+		paused = false
+		valid_target = false
+		current_target = false
+		is_locking = false
+
+
+func walk_to(point) -> void:
+	scripted_destination = point
+
+
+func stop_walking() -> void:
+	scripted_destination = null
+	going_to_position = false
+
+
+func _drive_scripted(dt) -> void:
+	ai_aim_point = scripted_aim
+	if scripted_destination == null:
+		going_to_position = false
+		apply_movement(dt, Vector2.ZERO)
+		if scripted_aim != null:
+			apply_rotation_by_point(dt, scripted_aim, false)
+		return
+	NavAgent.target_position = scripted_destination
+	going_to_position = true
+	if throttle < 1.0:
+		increase_throttle(false, dt / SCRIPTED_THROTTLE_TIME)
+	navigate_to_target(dt)
 
 
 func get_navigation_path():

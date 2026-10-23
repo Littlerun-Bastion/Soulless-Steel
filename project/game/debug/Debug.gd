@@ -18,6 +18,7 @@ var debug_settings = {
 	"use_debug_cam": false,
 	"draw_debug_lines": false,
 	"verbose_logging": true,  # gates diagnostic prints (ExpeditionDirector metrics, etc.)
+	"stage_scene": "demo",
 }
 
 

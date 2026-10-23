@@ -50,6 +50,7 @@ const MAX_ACTIVE_FLASHES := 12
 #      NO new scraps (we'd rather lose visual fidelity than tank FPS)
 const OFFSCREEN_SCRAP_DISTANCE := 3000.0
 const MAX_ACTIVE_SCRAPS := 16
+const STAGE_SCENE_DIR := "res://game/stage/scenes/"
 
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
@@ -73,6 +74,8 @@ var all_entities: Array = []
 # Names of NPCs the player downed (exposed) and killed this match.
 var player_downs: Array = []
 var player_kills: Array = []
+
+var current_stage: StageDirector = null
 
 # Debug free-cam state. Only used when activated via debug_1 input.
 var allow_debug_cam: bool = false
@@ -138,6 +141,8 @@ func _input(event: InputEvent) -> void:
 		# Hit the player for 500 to test the damage/death flow.
 		if player:
 			player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
+	elif event.is_action_pressed("debug_4"):
+		play_stage(Debug.get_setting("stage_scene"))
 
 
 # ---- Setup helpers ----
@@ -416,15 +421,37 @@ func _set_hud_extracting(value: bool) -> void:
 
 # ---- Map triggers ----
 
-# "story:<command>" goes to StoryDirector; any other name calls the matching
-# method on the scene if one exists (e.g. Arena's tutorial1).
+# "story:<command>" goes to StoryDirector; "stage:<name>" plays a scripted
+# scene from game/stage/scenes; any other name calls the matching method on the
+# scene if one exists (e.g. Arena's tutorial1).
 func _on_player_trigger_entered(trigger: String) -> void:
 	if trigger.begins_with("story:"):
 		StoryDirector.handle_trigger(trigger.trim_prefix("story:"))
+	elif trigger.begins_with("stage:"):
+		play_stage(trigger.trim_prefix("stage:"))
 	elif has_method(trigger):
 		call(trigger)
 	else:
 		push_warning(str(name) + ": no handler for map trigger '" + trigger + "'")
+
+
+func play_stage(stage_name) -> StageDirector:
+	if not stage_name is String or stage_name == "":
+		return null
+	if is_instance_valid(current_stage) and current_stage.is_playing:
+		return null
+	var path: String = STAGE_SCENE_DIR + stage_name + ".tscn"
+	if not ResourceLoader.exists(path):
+		push_warning(str(name) + ": no stage scene at '" + path + "'")
+		return null
+	var director = load(path).instantiate()
+	add_child(director)
+	current_stage = director
+	if director.has_method("start"):
+		director.start()
+	else:
+		director.play()
+	return director
 
 
 # ---- Game flow ----

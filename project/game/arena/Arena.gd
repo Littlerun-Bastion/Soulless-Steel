@@ -111,13 +111,17 @@ func add_player():
 	_register_player()
 
 
-func add_enemy(design_data, enemy_name):
+func add_enemy(design_data, enemy_name, spawn_position = null) -> Mecha:
 	var enemy = ENEMY.instantiate()
 	Mechas.add_child(enemy)
-	enemy.position = get_random_start_position([0])
+	if spawn_position is Vector2:
+		enemy.position = spawn_position
+	else:
+		enemy.position = get_random_start_position([0])
 	_connect_mecha_signals(enemy)
 	all_mechas.push_back(enemy)
 	enemy.setup(self, design_data, enemy_name)
+	return enemy
 
 
 func get_random_start_position(exclude_idx := []):

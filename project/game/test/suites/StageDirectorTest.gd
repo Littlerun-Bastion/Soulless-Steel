@@ -86,6 +86,8 @@ func run_tests() -> void:
 	await case("a player action button advances a line", _test_say_input)
 	await case("a timed line advances on its own", _test_say_timed)
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
+	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
+	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
@@ -485,6 +487,58 @@ func _test_say_timed() -> void:
 	var ended := await wait_until(func(): return not director.is_playing, 5.0)
 
 	check(ended, "a timed line advanced without any input")
+	director.queue_free()
+
+
+func _test_timed_line_does_not_bleed() -> void:
+	var director := _plain_director()
+	var timed := _say_step(director, "a timed line")
+	timed.advance_on = StageSay.Advance.TIMED
+	timed.seconds = 30.0
+	var after := _say_step(director, "the line that follows it")
+
+	director.play()
+	await wait_frames(2)
+	timed.advance()
+	timed.advance()
+
+	var moved := await wait_until(func(): return director.current_step == after, 5.0)
+	check(moved, "the scene moved on to the next line")
+
+	await wait_seconds(1.0)
+	check_eq(director.get_dialogue().get_body_label().text, "the line that follows it",\
+	"the ended line did not wipe the one now on screen")
+
+	after.advance()
+	after.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_pause_holds_the_scene() -> void:
+	var director := _plain_director()
+	var wait := StageWait.new()
+	wait.seconds = 0.6
+	director.add_child(wait)
+	var order: Array = []
+	var later := RecordingStep.new()
+	later.order_log = order
+	later.label = "after"
+	director.add_child(later)
+
+	director.play()
+	await wait_frames(1)
+	director.set_paused(true)
+	check(director.is_paused(), "the director reports itself paused")
+
+	await wait_seconds(2.0)
+	check(order.is_empty(), "the wait made no progress while paused")
+	check(director.is_playing, "the scene is still open, just held")
+
+	director.set_paused(false)
+	var ended := await wait_until(func(): return not director.is_playing, 5.0)
+	check(ended, "it carried on once unpaused")
+	check_eq(order, ["after"], "the step after the wait ran")
 	director.queue_free()
 
 

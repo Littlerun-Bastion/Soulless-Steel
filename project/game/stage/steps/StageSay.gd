@@ -21,6 +21,8 @@ const ADVANCE_ACTIONS := [
 @export var advance_on: Advance = Advance.INPUT
 @export var seconds := 2.5
 
+var _elapsed := 0.0
+
 
 func advance() -> void:
 	if not is_running():
@@ -38,12 +40,21 @@ func _start() -> void:
 		_finish()
 		return
 	dialogue.say(speaker, text)
-	if advance_on == Advance.TIMED:
-		get_tree().create_timer(seconds).timeout.connect(_finish)
+	_elapsed = 0.0
+
+
+func _process(dt: float) -> void:
+	if not is_running() or advance_on != Advance.TIMED:
+		return
+	_elapsed += dt
+	if _elapsed >= seconds:
+		_finish()
 
 
 func _finish() -> void:
-	var dialogue := director.get_dialogue() if director != null else null
+	if not is_running():
+		return
+	var dialogue := director.get_dialogue()
 	if dialogue != null:
 		dialogue.clear()
 	super()

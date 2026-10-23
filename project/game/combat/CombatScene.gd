@@ -486,6 +486,8 @@ func _on_PauseMenu_pause_toggle(paused: bool) -> void:
 	# Coming out of pause: re-fade the world in.
 	if not paused:
 		ShaderEffects.play_transition(0.0, 5000.0, 2.0)
+	if is_instance_valid(current_stage):
+		current_stage.set_paused(paused)
 	if player:
 		player.set_pause(paused)
 		PlayerHUD.set_pause(paused)

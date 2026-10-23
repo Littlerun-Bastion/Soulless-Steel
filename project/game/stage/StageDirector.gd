@@ -53,6 +53,14 @@ func play() -> void:
 	finished.emit()
 
 
+func set_paused(value: bool) -> void:
+	process_mode = Node.PROCESS_MODE_DISABLED if value else Node.PROCESS_MODE_INHERIT
+
+
+func is_paused() -> bool:
+	return process_mode == Node.PROCESS_MODE_DISABLED
+
+
 func skip() -> void:
 	if not is_playing or is_skipping:
 		return

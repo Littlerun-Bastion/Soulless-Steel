@@ -25,6 +25,8 @@ var invert_controls = {
 	"y": false,
 }
 var current_open_container: LootContainer = null
+var scripted_move := Vector2.ZERO
+var scripted_aim = null
 
 var _awaiting_release := {} #For weapons that were firing, shooting is paused when crosshair goes away for pointer. Shooting resumed when crosshair comes back.
 func _ready():
@@ -47,24 +49,28 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	if not controls_locked:
+	if controls_locked:
+		apply_movement(dt, scripted_move)
+	else:
 		check_input()
-	apply_movement(dt, get_input())
-	
+		apply_movement(dt, get_input())
+
 	#Update sprinting timer
 	if sprinting_timer > 0.0:
 		sprinting_timer = max(sprinting_timer - dt, 0.0)
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
-	
+
 	if not get_locked_to():
-		var target_pos = get_global_mouse_position()
-		if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-			# POINTER (Alt) locks the body; head, shoulders and arms keep
-			# tracking within their rotation ranges.
-			var lock_body: bool = Input.is_action_pressed("strafe") or not MouseManager.is_aiming()
-			apply_rotation_by_point(dt, target_pos, lock_body)
-		rotate_sight(dt, target_pos)
+		var target_pos = scripted_aim if controls_locked else get_global_mouse_position()
+		if target_pos != null:
+			if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
+				# POINTER (Alt) locks the body; head, shoulders and arms keep
+				# tracking within their rotation ranges.
+				var lock_body: bool = not controls_locked and\
+				(Input.is_action_pressed("strafe") or not MouseManager.is_aiming())
+				apply_rotation_by_point(dt, target_pos, lock_body)
+			rotate_sight(dt, target_pos)
 		
 	update_camera_zoom(dt)
 	update_camera_offset(dt)
@@ -155,6 +161,8 @@ func _input(event):
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if controls_locked:
+		return
 	if event.is_action_pressed("interact"):
 		var thing = get_closest_interactable()
 		if thing != null and thing.has_method("interact"):
@@ -368,6 +376,26 @@ func shoot(type, is_auto_fire = false):
 	if not MouseManager.is_aiming():
 		return
 	super.shoot(type, is_auto_fire)
+
+
+func lock_controls() -> void:
+	if controls_locked:
+		return
+	controls_locked = true
+	scripted_move = Vector2.ZERO
+	scripted_aim = null
+	for weapon_type in WeaponSFXs.keys():
+		stop_shooting(weapon_type)
+	if cur_mode == MODES.ACTIVATING_LOCK or cur_mode == MODES.LOCK:
+		locking_to = false
+		cur_mode = MODES.NEUTRAL
+		emit_signal("update_lock_mode", false)
+
+
+func unlock_controls() -> void:
+	controls_locked = false
+	scripted_move = Vector2.ZERO
+	scripted_aim = null
 
 
 func _on_cursor_mode_changed(_mode) -> void:

@@ -13,10 +13,9 @@ var _elapsed := 0.0
 
 func _start() -> void:
 	_mech = director.find_actor(actor)
-	if _mech == null or not _mech.has_method("set_scripted"):
+	if not director.take_actor(_mech):
 		_finish()
 		return
-	_mech.set_scripted(true)
 	_elapsed = 0.0
 	if not _push():
 		return

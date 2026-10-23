@@ -28,8 +28,7 @@ func cast(with_npc: Node2D = null) -> void:
 		npc = find_nearest_npc()
 	if npc != null:
 		set_actor(NPC_ALIAS, npc)
-		if npc.has_method("set_scripted"):
-			npc.set_scripted(true)
+		take_actor(npc)
 	obstacle = _build_obstacle(npc if npc != null else player)
 	set_actor(OBSTACLE_ALIAS, obstacle)
 

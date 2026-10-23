@@ -245,6 +245,8 @@ func _test_played_live() -> void:
 	check(shoved < PLAYER_DRIFT_LIMIT,\
 	"the scene never shoved the player around (moved " + str(round(shoved)) + ")")
 
+	check(npc != null and not npc.scripted, "the NPC it directed went back to its own AI")
+
 
 func _test_world_frozen() -> void:
 	for enemy in _enemies():
@@ -272,19 +274,20 @@ func _test_world_frozen() -> void:
 	for creature in creatures:
 		check(creature.paused, "an Entity stopped moving during the scene")
 
-	var scripted = bystanders[0] if not bystanders.is_empty() else null
-	if scripted != null:
-		scripted.set_scripted(true)
-		check(not scripted.paused, "an actor the scene takes over starts moving again")
+	var taken = bystanders[0] if not bystanders.is_empty() else null
+	if taken != null:
+		check(director.take_actor(taken), "the scene could take an actor over mid-scene")
+		check(not taken.paused, "an actor the scene takes over starts moving again")
 
 	director.skip()
 	await wait_until(func(): return not director.is_playing, 10.0)
 
+	if taken != null:
+		check(not taken.scripted, "the actor it took over was handed back to its AI")
+
 	for creature in creatures:
 		check(is_instance_valid(creature) and not creature.paused,\
 		"the Entity moves again once the scene is over")
-	if scripted != null:
-		scripted.set_scripted(false)
 	director.queue_free()
 
 
@@ -360,8 +363,8 @@ func _test_entity_directed() -> void:
 	check(arrived, "the scene moved on once the Entity arrived")
 	check(entity.global_position.distance_to(mark) <= step.arrive_distance,\
 	"the Entity walked to the mark")
+	check(not entity.scripted, "the Entity was handed back to its own AI")
 
-	entity.set_scripted(false)
 	director.queue_free()
 
 

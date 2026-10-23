@@ -19,6 +19,7 @@ var _camera: StageCamera = null
 var _dialogue: StageDialogue = null
 var _actors := {}
 var _frozen: Array = []
+var _taken: Array = []
 
 
 func play() -> void:
@@ -38,6 +39,7 @@ func play() -> void:
 	current_step = null
 	if _dialogue != null:
 		_dialogue.clear()
+	_release_actors()
 	_thaw_world()
 	await _hide_bars()
 	_release_camera()
@@ -117,6 +119,26 @@ func get_scene_root() -> Node:
 
 func set_actor(alias: String, node: Node) -> void:
 	_actors[alias] = node
+
+
+func take_actor(node: Node) -> bool:
+	if not is_instance_valid(node) or not node.has_method("set_scripted"):
+		return false
+	if not _taken.has(node):
+		_taken.append(node)
+	node.set_scripted(true)
+	return true
+
+
+func is_taken(node: Node) -> bool:
+	return _taken.has(node)
+
+
+func _release_actors() -> void:
+	for node in _taken:
+		if is_instance_valid(node) and node.has_method("set_scripted"):
+			node.set_scripted(false)
+	_taken = []
 
 
 func find_actor(actor_name: String) -> Node:

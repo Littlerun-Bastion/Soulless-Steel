@@ -5,6 +5,8 @@ signal started
 signal finished
 signal step_started(step: StageStep)
 
+const FREEZE_SWEEP_INTERVAL := 0.2
+
 @export var shows_bars := true
 @export var takes_control := true
 @export var takes_camera := true
@@ -20,6 +22,7 @@ var _dialogue: StageDialogue = null
 var _actors := {}
 var _frozen: Array = []
 var _taken: Array = []
+var _sweep_timer := 0.0
 
 
 func play() -> void:
@@ -27,6 +30,8 @@ func play() -> void:
 		return
 	is_playing = true
 	is_skipping = false
+	_frozen = []
+	_sweep_timer = FREEZE_SWEEP_INTERVAL
 	_show_bars()
 	_set_control_locked(true)
 	_take_camera()
@@ -156,8 +161,16 @@ func find_actor(actor_name: String) -> Node:
 	return null
 
 
+func _process(dt: float) -> void:
+	if not is_playing or not freezes_world:
+		return
+	_sweep_timer -= dt
+	if _sweep_timer <= 0.0:
+		_sweep_timer = FREEZE_SWEEP_INTERVAL
+		_freeze_world()
+
+
 func _freeze_world() -> void:
-	_frozen = []
 	if not freezes_world:
 		return
 	var player := get_player()

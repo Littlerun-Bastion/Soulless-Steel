@@ -282,6 +282,14 @@ func _test_world_frozen() -> void:
 	for creature in creatures:
 		check(creature.paused, "an Entity stopped moving during the scene")
 
+	var latecomer = _scene.add_enemy(
+		NPCManager.get_design_data(NPCManager.get_random_npc()),
+		"Latecomer",
+		_scene.player.global_position + Vector2(3000, 0))
+	check(latecomer != null, "an NPC arrived while the scene was running")
+	var caught := await wait_until(func(): return latecomer.paused, 5.0)
+	check(caught, "an NPC that arrives during a scene is frozen too")
+
 	var taken = bystanders[0] if not bystanders.is_empty() else null
 	if taken != null:
 		check(director.take_actor(taken), "the scene could take an actor over mid-scene")
@@ -292,6 +300,7 @@ func _test_world_frozen() -> void:
 
 	if taken != null:
 		check(not taken.scripted, "the actor it took over was handed back to its AI")
+	check(not latecomer.paused, "the late arrival moves again once the scene is over")
 
 	for creature in creatures:
 		check(is_instance_valid(creature) and not creature.paused,\

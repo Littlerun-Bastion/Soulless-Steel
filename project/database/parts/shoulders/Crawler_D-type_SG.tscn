@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_rd7te")
 part_name = "Crawler C-type SG"
+price = 470.0
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "Test"

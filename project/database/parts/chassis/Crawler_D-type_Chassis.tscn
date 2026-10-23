@@ -9,6 +9,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_eel2p")
 part_name = "Crawler C-type Chassis"
+price = 1550.0
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "Tank"

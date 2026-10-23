@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://bvtw2rmyhtr0p" path="res://game/ui/DashCooldown.tscn" id="18_hvc7y"]
 [ext_resource type="PackedScene" path="res://game/ui/MissionTracker.tscn" id="19_mission"]
 [ext_resource type="Script" path="res://game/ui/LoadIndicator.gd" id="20_load"]
+[ext_resource type="Script" path="res://game/ui/ExitMarker.gd" id="21_exit"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
 shader = ExtResource("3_3y8od")
@@ -1414,6 +1415,22 @@ theme = ExtResource("2")
 text = "LOAD 0 / 0"
 horizontal_alignment = 2
 script = ExtResource("20_load")
+
+[node name="ExitMarker" type="Control" parent="SubViewportContainer/SubViewport"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+script = ExtResource("21_exit")
+
+[node name="DistanceLabel" type="Label" parent="SubViewportContainer/SubViewport/ExitMarker"]
+offset_right = 200.0
+offset_bottom = 36.0
+modulate = Color(1, 0.78, 0.3, 1)
+theme = ExtResource("2")
+text = "EXIT 0"
+horizontal_alignment = 1
 
 [node name="MissionTracker" parent="SubViewportContainer/SubViewport" instance=ExtResource("19_mission")]
 offset_left = 1360.0

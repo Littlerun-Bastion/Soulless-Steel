@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 part_name = "Test Thruster"
+price = 400.0
 manufacturer_name = "Test"
 tagline = "Test"
 thrust_max_speed = 300

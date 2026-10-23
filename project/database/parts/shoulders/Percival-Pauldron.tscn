@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "Percival-Pauldron"
+price = 650.0
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Test"

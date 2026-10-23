@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=674719843]
 script = ExtResource("1_3xd2y")
 part_name = "'Rangda' GTk-2Cr Chassis"
+price = 2100.0
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Bipedal"

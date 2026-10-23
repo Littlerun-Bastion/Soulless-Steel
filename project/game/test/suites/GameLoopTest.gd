@@ -102,7 +102,7 @@ func _test_expedition() -> void:
 	_action("inventory", "take_all")["run"].call({"type": "inventory", "inventory": wreck.inventory})
 	check(_stack_of(player.mech_inventory, func(s): return s.item == LOOT) != null, "looted into the cargo")
 
-	player.global_position = scene.get_node("Map/Exits/Exit_Test").global_position
+	player.global_position = scene.get_node("Map/Exits/Exit_W").global_position
 	var extracted := await wait_until(func(): return not PlayerProgress.is_in_expedition(), 20.0)
 	check(extracted, "extracted")
 	for child in scene.get_children():

@@ -54,6 +54,7 @@ const BUILDING_SPEED = 1.5
 @onready var ExposedLabels = $SubViewportContainer/SubViewport/ExposedLabels
 @onready var wireframe_display: WireframeDisplay = $SubViewportContainer/SubViewport/WireframeDisplay
 @onready var load_indicator: LoadIndicator = $SubViewportContainer/SubViewport/LoadIndicator
+@onready var exit_marker: ExitMarker = $SubViewportContainer/SubViewport/ExitMarker
 
 
 var use_fog = false
@@ -207,6 +208,11 @@ func setup(player_ref, mechas_ref):
 	ShieldBar.get_node("Label").text = str(player.shield)
 	for bullethole in Bulletholes.get_children():
 		bullethole.modulate.a = 0
+
+# Off unless a mode asks for it (Expedition, whose exits are far out).
+func setup_exit_marker(exits: Array) -> void:
+	exit_marker.setup(player, exits)
+
 
 func set_extracting(value: bool) -> void:
 	ExtractingLabel.visible = value

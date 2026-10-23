@@ -9,6 +9,7 @@
 [node name="Part3" type="Node" unique_id=849731777]
 script = ExtResource("1")
 part_name = "O30-Chassis12w"
+price = 1900.0
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "Wheeled"

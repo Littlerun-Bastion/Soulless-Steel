@@ -1,7 +1,7 @@
 extends TestSuite
 
 # ExpeditionHudTest: the in-run feedback — the mission tracker following
-# MissionManager, the load readout, and the extraction summary.
+# MissionManager, the load readout, the exit marker, and the extraction summary.
 
 const MISSION_TRACKER := preload("res://game/ui/MissionTracker.tscn")
 const EXTRACTION_SUMMARY := preload("res://game/expedition/ExtractionSummary.tscn")
@@ -11,7 +11,52 @@ func run_tests() -> void:
 	await case("mission_started signal", _test_mission_started)
 	await case("mission tracker follows the mission", _test_tracker)
 	await case("load readout", _test_load)
+	await case("exit marker points to the nearest exit", _test_exit_marker)
 	await case("extraction summary", _test_summary)
+
+
+# A stand-in player and two exits: the arrow sits at the screen edge towards
+# the nearest, says how far, and hides once it's close or there's no player.
+func _test_exit_marker() -> void:
+	var area := Vector2(1920, 1080)
+	var m := ExitMarker.EDGE_MARGIN
+	check(ExitMarker.edge_point(area, Vector2.RIGHT).is_equal_approx(Vector2(area.x - m.x, area.y / 2)), "right: right edge")
+	check(ExitMarker.edge_point(area, Vector2.UP).is_equal_approx(Vector2(area.x / 2, m.y)), "up: top edge")
+	var diagonal := ExitMarker.edge_point(area, Vector2(1, 1).normalized())
+	check(diagonal.x <= area.x - m.x + 0.01 and diagonal.y <= area.y - m.y + 0.01
+			and (is_equal_approx(diagonal.x, area.x - m.x) or is_equal_approx(diagonal.y, area.y - m.y)),
+			"diagonal: on the inner edge, not off screen (%s)" % str(diagonal))
+
+	var marker := ExitMarker.new()
+	var label := Label.new()
+	label.name = "DistanceLabel"
+	marker.add_child(label)
+	add_child(marker)
+	marker.size = area
+	check(not marker.visible, "hidden until set up")
+	var player := Node2D.new()
+	var east := Node2D.new()
+	var west := Node2D.new()
+	east.position = Vector2(5000, 0)
+	west.position = Vector2(-3000, 0)
+	for node in [player, east, west]:
+		add_child(node)
+	marker.setup(player, [east, west])
+	check(marker.visible and marker.nearest == west, "points to the nearest exit")
+	check(marker.arrow_dir.is_equal_approx(Vector2.LEFT), "in its direction")
+	check(marker.arrow_position.is_equal_approx(Vector2(m.x, area.y / 2)), "at the screen edge")
+	check_eq(label.text, "EXIT 3000", "with the distance")
+	player.position = Vector2(-2500, 0)
+	await wait_frames()
+	check(not marker.visible, "hidden when the exit is close enough to see")
+	player.position = Vector2(4000, 300)
+	await wait_frames()
+	check(marker.visible and marker.nearest == east, "switches to whichever exit is nearer")
+	player.free()
+	await wait_frames()
+	check(not marker.visible, "hidden once the player is gone")
+	for node in [marker, east, west]:
+		node.queue_free()
 
 
 func _make_mission() -> MissionData:

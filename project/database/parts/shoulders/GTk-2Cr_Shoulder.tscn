@@ -8,6 +8,7 @@
 [node name="Part3" type="Node"]
 script = ExtResource("1_ojvcp")
 part_name = "'Rangda' GTk-2Cr Shoulder"
+price = 600.0
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Heavyweight"

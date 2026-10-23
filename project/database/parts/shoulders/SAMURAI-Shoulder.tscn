@@ -8,6 +8,7 @@
 [node name="Part3" type="Node"]
 script = ExtResource("1_orul2")
 part_name = "SAMURAI-03S"
+price = 560.0
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Yamaguchi"
 tagline = "Lightweight"

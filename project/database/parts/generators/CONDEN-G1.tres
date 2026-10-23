@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource( 1 )
 part_name = "EGV-P1L"
+price = 850.0
 manufacturer_name = "Espada Electronica"
 tagline = ""
 description = "Heavier version of the P1 generator, with upgraded shield and heat capacity. Battery performance remains poor. Fairly effective but unnecessarily heavy."

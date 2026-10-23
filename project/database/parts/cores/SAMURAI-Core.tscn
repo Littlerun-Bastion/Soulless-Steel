@@ -19,6 +19,7 @@
 script = ExtResource("1_yxj72")
 coolant_type = ExtResource("coolant_default")
 part_name = "SAMURAI-03C"
+price = 2400.0
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Yamaguchi"
 tagline = "Light3D Core"

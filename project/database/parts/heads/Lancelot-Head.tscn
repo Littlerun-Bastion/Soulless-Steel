@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("4")
 part_name = "Lancelot-Head"
+price = 1000.0
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "LNCH"
 tagline = "Test"

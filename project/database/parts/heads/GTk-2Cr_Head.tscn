@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1_beknh")
 part_name = "'Rangda' GTk-2Cr Head"
+price = 850.0
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "RGDH"

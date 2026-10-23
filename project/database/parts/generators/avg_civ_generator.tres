@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1")
 part_name = "Average Civ Grade"
+price = 400.0
 manufacturer_name = "Martel"
 shield_regen_speed = 666
 shield_regen_delay = 7

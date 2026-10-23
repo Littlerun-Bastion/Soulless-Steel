@@ -9,6 +9,7 @@
 [node name="Part3" type="Node" unique_id=1794012866]
 script = ExtResource("1")
 part_name = "MSV-M3-L"
+price = 1150.0
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Wheeled"

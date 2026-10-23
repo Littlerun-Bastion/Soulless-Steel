@@ -8,6 +8,7 @@
 [node name="Part3" type="Node" unique_id=121581968]
 script = ExtResource("1_1eppx")
 part_name = "'Barong' GTk-1Cr Shoulder"
+price = 550.0
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Heavyweight"

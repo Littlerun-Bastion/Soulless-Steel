@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=353767681]
 script = ExtResource("5")
 part_name = "O10-Chassis15k"
+price = 1600.0
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "Bipedal"

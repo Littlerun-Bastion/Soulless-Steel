@@ -19,6 +19,7 @@
 script = ExtResource("1_xyvne")
 coolant_type = ExtResource("coolant_default")
 part_name = "'Barong' GTk-1Cr Core"
+price = 2200.0
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Heavyweight Core"

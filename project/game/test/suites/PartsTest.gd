@@ -5,8 +5,8 @@ extends TestSuite
 # fires a projectile. A new or edited part that breaks any of this fails here
 # before it can break a fight.
 #
-# Data that's missing but harmless (no price, no description) is listed as a
-# note at the end, not a failure.
+# Data that's missing but harmless (no description, no icon on an internal
+# part) is listed as a note at the end, not a failure.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 
@@ -65,12 +65,8 @@ func _test_part_data() -> void:
 		var size = part.get("item_size")
 		check(size is Array and size.size() == 2 and int(size[0]) > 0 and int(size[1]) > 0,
 				"%s has a cargo size" % label)
-		# Weapons drop from wrecks and show their value; other parts aren't
-		# priced yet.
-		if entry[0] in ["arm_weapon", "shoulder_weapon"]:
-			check(float(part.get("price")) > 0.0, "%s has a price" % label)
-		elif float(part.get("price")) <= 0.0:
-			_notes.append("%s has no price" % label)
+		# Shown as the item's value (tooltip) and in the Store.
+		check(float(part.get("price")) > 0.0, "%s has a price" % label)
 		if str(part.get("description")) == "":
 			_notes.append("%s has no description" % label)
 

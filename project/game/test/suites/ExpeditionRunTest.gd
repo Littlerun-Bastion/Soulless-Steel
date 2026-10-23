@@ -117,6 +117,10 @@ func _test_start() -> void:
 	check(PlayerProgress.is_in_expedition(), "the run has begun (stakes on)")
 	check_eq(player.build.arm_weapon_left.part_id, PlayerProgress.DEFAULT_MECHA["arm_weapon_left"], "player has the saved mecha")
 	check(player.mech_inventory == PlayerProgress.get_mech_inventory(), "player carries the saved cargo")
+	var marker: ExitMarker = _scene.PlayerHUD.exit_marker
+	check(marker.exits.size() == 4 and marker.visible, "the HUD points to the nearest of the map's 4 exits")
+	check(marker.nearest != null and marker.nearest.global_position.distance_to(player.global_position) > 9000.0,
+			"no exit next to the spawn any more: the nearest is out at the map's edge")
 	check(player.mech_inventory.get_stacks().any(func(s): return s.item == SALVAGE), "cargo still holds what was packed")
 	check(MissionManager.current_mission != null, "a mission is running")
 
@@ -193,7 +197,7 @@ func _test_field_rules() -> void:
 func _test_extract() -> void:
 	var player := _player()
 	var carried: int = player.mech_inventory.get_stacks().size()
-	player.global_position = _scene.get_node("Map/Exits/Exit_Test").global_position
+	player.global_position = _scene.get_node("Map/Exits/Exit_W").global_position
 	var extracted := await wait_until(func(): return not PlayerProgress.is_in_expedition(), 20.0)
 	if not check(extracted, "standing on an exit extracts"):
 		return

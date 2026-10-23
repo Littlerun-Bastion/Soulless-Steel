@@ -244,6 +244,8 @@ func _add_player() -> void:
 	all_mechas.append(player)
 	# Player.tscn has its own Camera2D — no extra setup needed
 	_register_player()
+	# The exits are out at the map's edges: point the way on the HUD.
+	PlayerHUD.setup_exit_marker(get_tree().get_nodes_in_group("exit_point"))
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:

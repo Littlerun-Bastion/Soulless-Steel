@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1_6pg7d")
 part_name = "SAMURAI-03H"
+price = 800.0
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Yamaguchi"
 tagline = "SMRH"

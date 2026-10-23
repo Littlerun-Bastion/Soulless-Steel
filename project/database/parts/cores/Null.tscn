@@ -19,6 +19,7 @@
 script = ExtResource("1_8iid2")
 coolant_type = ExtResource("coolant_default")
 part_name = "Null"
+price = 250.0
 tagline = "NULL"
 description = "The base skeleton of an SAV."
 image = ExtResource("2_qal8j")

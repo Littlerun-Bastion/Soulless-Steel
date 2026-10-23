@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "O10-Shoulderguard"
+price = 480.0
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "Lightweight"

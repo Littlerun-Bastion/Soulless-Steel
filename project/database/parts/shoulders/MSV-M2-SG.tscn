@@ -8,6 +8,7 @@
 [node name="Part3" type="Node"]
 script = ExtResource("3")
 part_name = "MSV-M2-SG"
+price = 420.0
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Middleweight"

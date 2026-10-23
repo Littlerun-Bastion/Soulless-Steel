@@ -88,14 +88,14 @@ func _init() -> void:
 | BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
 | ContentScenesTest | every script compiles, every scene loads |
 | EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; Spitter range and acid; Brute charge, ram, stomp, stun, rage; Cysts waking, hatching leashed guards, brood limit; death; bio loot and carcasses |
-| ExpeditionHudTest | mission tracker, load readout, extraction summary |
+| ExpeditionHudTest | mission tracker, load readout, exit marker, extraction summary |
 | ExpeditionRunTest *(slow)* | a real Expedition: spawn, shooting, wrecks and loot, extraction, death, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
 | HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
 | NpcDesignsTest | every enemy design is valid and builds |
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
-| PartsTest | every part's data (weapons need a price), equipping, every weapon fires |
+| PartsTest | every part's data (name, image, weight, size, price), equipping, every weapon fires |
 | PlayerProgressTest | money, stash, stakes, materials, recycling, required parts |
 | SaveFileTest | saving/loading on disk, backup recovery, abandoned runs on boot |
 | StoryDirectorTest | story beats, flags, triggers, missions |

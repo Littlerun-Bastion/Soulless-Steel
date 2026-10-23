@@ -451,11 +451,19 @@ func play_stage(stage_name) -> StageDirector:
 	var director = load(path).instantiate()
 	add_child(director)
 	current_stage = director
+	director.finished.connect(_drop_stage.bind(director), CONNECT_ONE_SHOT)
 	if director.has_method("start"):
 		director.start()
 	else:
 		director.play()
 	return director
+
+
+func _drop_stage(director) -> void:
+	if current_stage == director:
+		current_stage = null
+	if is_instance_valid(director):
+		director.queue_free()
 
 
 # ---- Game flow ----

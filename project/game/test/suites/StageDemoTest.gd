@@ -114,6 +114,14 @@ func _enemies() -> Array:
 	return _scene.all_mechas.filter(func(m): return is_instance_valid(m) and m != _scene.player and not m.is_dead)
 
 
+func _await_stage_end(director, timeout := 30.0) -> bool:
+	if not is_instance_valid(director) or not director.is_playing:
+		return true
+	var ended := [false]
+	director.finished.connect(func(): ended[0] = true, CONNECT_ONE_SHOT)
+	return await wait_until(func(): return ended[0], timeout)
+
+
 func _run_to_end(timeout: float) -> bool:
 	var waited := 0.0
 	while is_instance_valid(_demo) and _demo.is_playing:
@@ -168,7 +176,7 @@ func _test_camera_is_the_one_rendering() -> void:
 	check(moved, "the camera target moved off the player to the NPC")
 
 	_demo.skip()
-	await wait_until(func(): return not _demo.is_playing, 30.0)
+	await _await_stage_end(_demo)
 	check_eq(get_viewport().get_camera_2d(), player_cam, "the player camera renders again afterwards")
 
 
@@ -186,7 +194,7 @@ func _test_skip() -> void:
 	check(_demo.is_playing, "the scene is running before the skip")
 
 	_demo.skip()
-	var finished := await wait_until(func(): return not _demo.is_playing, 30.0)
+	var finished := await _await_stage_end(_demo)
 
 	check(finished, "skipping ended the scene")
 	check(not _scene.player.controls_locked, "a skipped scene still hands control back")
@@ -280,7 +288,7 @@ func _test_world_frozen() -> void:
 		check(not taken.paused, "an actor the scene takes over starts moving again")
 
 	director.skip()
-	await wait_until(func(): return not director.is_playing, 10.0)
+	await _await_stage_end(director, 10.0)
 
 	if taken != null:
 		check(not taken.scripted, "the actor it took over was handed back to its AI")
@@ -317,7 +325,7 @@ func _test_spawns_npc() -> void:
 	"it spawned near the player so the camera has something to cut to (gap " + str(round(gap)) + ")")
 
 	_demo.skip()
-	await wait_until(func(): return not _demo.is_playing, 30.0)
+	await _await_stage_end(_demo)
 
 
 func _test_obstacle_blocks() -> void:
@@ -359,7 +367,7 @@ func _test_entity_directed() -> void:
 	check(entity.scripted, "the Entity came under the scene's control")
 	check(entity.target == null, "it dropped whatever it was hunting")
 
-	var arrived := await wait_until(func(): return not director.is_playing, 30.0)
+	var arrived := await _await_stage_end(director)
 	check(arrived, "the scene moved on once the Entity arrived")
 	check(entity.global_position.distance_to(mark) <= step.arrive_distance,\
 	"the Entity walked to the mark")
@@ -382,6 +390,23 @@ func _test_trigger_plays() -> void:
 
 	check(_scene.play_stage("does_not_exist") == null, "an unknown scene name is refused")
 
+	var layers_before := _count_stage_layers()
 	if playing != null:
 		playing.skip()
-		await wait_until(func(): return not playing.is_playing, 30.0)
+		await _await_stage_end(playing)
+	await wait_frames(3)
+
+	check(not is_instance_valid(playing), "the finished scene freed itself")
+	check(_scene.current_stage == null, "the scene let go of its reference to it")
+	check(_count_stage_layers() < layers_before,\
+	"its bars and dialogue layers went with it instead of piling up")
+
+
+func _count_stage_layers() -> int:
+	var total := 0
+	for node in _scene.get_children():
+		if node is StageDirector:
+			for child in node.get_children():
+				if child is StageBars or child is StageDialogue:
+					total += 1
+	return total

@@ -14,6 +14,10 @@ var obstacle: Node2D = null
 var npc: Node2D = null
 
 
+func _ready() -> void:
+	finished.connect(_clear_obstacle)
+
+
 func start(with_npc: Node2D = null) -> void:
 	cast(with_npc)
 	play()
@@ -75,6 +79,12 @@ func _build_obstacle(near) -> Node2D:
 	if near is Node2D:
 		node.global_position = near.global_position + _away_from_player(near) * OBSTACLE_DISTANCE
 	return node
+
+
+func _clear_obstacle() -> void:
+	if is_instance_valid(obstacle):
+		obstacle.queue_free()
+	obstacle = null
 
 
 func _away_from_player(near: Node2D) -> Vector2:

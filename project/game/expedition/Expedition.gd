@@ -250,7 +250,6 @@ func _add_player() -> void:
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	var enemy = ENEMY.instantiate()
-	Mechas.add_child(enemy)
 	# Caller can pass an explicit position (used by ExpeditionDirector soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
 	var pos: Vector2
@@ -262,6 +261,7 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	# NPC unable to path (NavAgent has no anchor) and they'd sit forever.
 	pos = _ensure_position_on_nav(pos)
 	enemy.position = pos
+	Mechas.add_child(enemy)
 	_connect_mecha_signals(enemy)
 	all_mechas.append(enemy)
 	enemy.setup(self, design_data, enemy_name)

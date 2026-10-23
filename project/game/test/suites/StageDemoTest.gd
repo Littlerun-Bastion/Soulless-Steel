@@ -7,6 +7,7 @@ const NPC_START_OFFSET := Vector2(1500, 0)
 const ENTITY_WALK_START := Vector2(650, 0)
 const ENTITY_WALK_MARK := Vector2(250, 0)
 const LIVE_NPC_MAX_GAP := 4000.0
+const PLAYER_DRIFT_LIMIT := 400.0
 const BEATS: Array[String] = [
 	"WatchPlayer",
 	"HoldOnPlayer",
@@ -220,6 +221,7 @@ func _test_played_live() -> void:
 	for entity in _scene.get_entities():
 		entity.set_pause(false)
 	_scene.ExpeditionDirector.set_process(true)
+	var player_was: Vector2 = _scene.player.global_position
 
 	var played = _scene.play_stage("demo")
 	check(played != null, "play_stage built the scene in a live world")
@@ -238,6 +240,10 @@ func _test_played_live() -> void:
 	var finished := await _run_to_end(RUN_TIMEOUT)
 	check(finished, "it ran to the end in a live world; reached " + str(reached))
 	check_eq(reached, BEATS.slice(2), "every beat ran in a live world")
+
+	var shoved: float = _scene.player.global_position.distance_to(player_was)
+	check(shoved < PLAYER_DRIFT_LIMIT,\
+	"the scene never shoved the player around (moved " + str(round(shoved)) + ")")
 
 
 func _test_world_frozen() -> void:

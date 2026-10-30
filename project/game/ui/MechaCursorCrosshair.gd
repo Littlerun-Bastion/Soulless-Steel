@@ -1,5 +1,9 @@
 extends Control
 
+## Everything at the cursor while aiming: the reticle (Reticle.gd), the arm
+## weapons' clip ammo either side of it, their reload rings and the lock-on
+## charge bar (ReticleProgress.gd). Drawn at 1:1 in MechTheme.
+
 signal enter_lock_mode
 
 enum SIDE {LEFT, RIGHT}
@@ -7,11 +11,6 @@ enum MODES {NEUTRAL, RELOAD, ACTIVATING_LOCK, LOCK}
 
 const ALPHA_SPEED = 8
 const LOCKING_TIME_COOLDOWN = 1.0
-const CROSSHAIRS = {
-	"regular": preload("res://assets/images/ui/player_ui/cursor_crosshair.png"),
-	"lock": preload("res://assets/images/ui/player_ui/lockon_crosshair.png"),
-	"lock_large": preload("res://assets/images/ui/player_ui/lockon_crosshair_large.png")
-}
 
 @onready var LeftWeapon = $LeftWeapon
 @onready var LeftReload = $LeftReloadProgress
@@ -60,16 +59,8 @@ func _process(dt):
 		change_mode_timer = max(change_mode_timer - 10*dt, 0.0)
 	ChangeModeProgress.value = 100*change_mode_timer/float(LOCKING_TIME_COOLDOWN)
 	
-	if cur_mode == MODES.LOCK:
-		Crosshair.texture = CROSSHAIRS.lock
-		var sc = (2*lock_reticle_size)/float(Crosshair.texture.get_width())
-		if sc > 3:
-			sc /= 2
-			Crosshair.texture = CROSSHAIRS.lock_large
-		Crosshair.scale = Vector2(sc, sc)
-	else:
-		Crosshair.texture = CROSSHAIRS.regular
-		Crosshair.scale = Vector2(1.0, 1.0)
+	# Lock-on brackets match the chipset's lock area (see Reticle.gd).
+	Crosshair.lock_size = float(lock_reticle_size) if cur_mode == MODES.LOCK else 0.0
 
 func show_specific_nodes(dt, show_nodes):
 	for node in [Crosshair, LeftWeapon, RightWeapon, LeftReload, RightReload,\

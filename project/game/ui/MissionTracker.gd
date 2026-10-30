@@ -4,9 +4,8 @@ class_name MissionTracker
 # HUD panel (top-right) showing the active mission and its objectives with
 # progress, e.g. "[ ] ELIMINATE ENEMIES  1/3". Follows MissionManager's
 # signals, so it updates as kills and extraction are reported. Hidden while
-# there's no mission.
-
-const DONE_COLOR := Color(0.55, 0.55, 0.55)
+# there's no mission. Styled by MechTheme: title bright, open objectives in
+# Text, done ones dim. Labels show in capitals; their text keeps its case.
 
 @onready var title_label: Label = $Title
 @onready var objective_list: VBoxContainer = $Objectives
@@ -36,11 +35,10 @@ func refresh() -> void:
 		child.queue_free()
 	for obj in mission.objectives:
 		var line := Label.new()
-		line.theme = title_label.theme
+		line.theme_type_variation = &"LabelDim" if obj.completed else &"LabelBody"
 		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		line.uppercase = true
 		line.text = format_objective(obj)
-		if obj.completed:
-			line.modulate = DONE_COLOR
 		objective_list.add_child(line)
 
 

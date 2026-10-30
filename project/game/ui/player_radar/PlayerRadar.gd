@@ -1,11 +1,9 @@
 extends Control
 
+## Radar around the player's mecha: a ring (RadarRing) and one pointer per
+## other mecha in range (RadarPointer: more chevrons = closer). Drawn at 1:1.
+
 const POINTER = preload("res://game/ui/player_radar/Pointer.tscn")
-const POINTER_TEXTURES = {
-	"far": preload("res://assets/images/ui/player_ui/player_directional_pointer_far.png"),
-	"mid": preload("res://assets/images/ui/player_ui/player_directional_pointer_mid.png"),
-	"near": preload("res://assets/images/ui/player_ui/player_directional_pointer_near.png"),
-}
 
 var player
 var mechas
@@ -106,19 +104,19 @@ func update_pointer(pointer_data):
 	else:
 		pointer.modulate.a = 1.0
 		if distance > .6*range_radius:
-			pointer.texture = POINTER_TEXTURES.far
+			pointer.level = 1
 		elif distance > .3*range_radius:
-			pointer.texture = POINTER_TEXTURES.mid
+			pointer.level = 2
 		else:
-			pointer.texture = POINTER_TEXTURES.near
+			pointer.level = 3
 
 
 func _on_UpdateTimer_timeout():
-	var t_scale = Vector2(.6,.6)
+	var t_scale = 0.6
 	var tween = create_tween()
-	$Circle.scale = Vector2(1,1)
+	$Circle.pulse = 1.0
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween.tween_property($Circle, "scale", t_scale, .1)
+	tween.tween_property($Circle, "pulse", t_scale, .1)
 
 	await tween.finished
 	
@@ -126,7 +124,7 @@ func _on_UpdateTimer_timeout():
 	update_pointers()
 	var tween1 = create_tween()
 	tween1.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween1.tween_property($Circle, "scale", Vector2(1,1), .5)
+	tween1.tween_property($Circle, "pulse", 1.0, .5)
 	
 	var tween2 = create_tween()
 	$Pointers.modulate.a = 1.0

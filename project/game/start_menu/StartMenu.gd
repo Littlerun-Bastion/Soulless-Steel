@@ -167,7 +167,7 @@ func _show_notice(node_name: String, title_text: String, body_text: String) -> v
 
 func _setup_test_contact() -> void:
 	# MessengerUI is an autoload, so the contact survives returning to the menu.
-	if MessengerUI.has_contact("Lady Volk"):
+	if Messenger.has_contact("Lady Volk"):
 		return
 	var contact = ContactData.new()
 	contact.name = "Lady Volk"
@@ -193,4 +193,4 @@ func _setup_test_contact() -> void:
 			{"flags": {"test_volk_contract_accepted": true}})
 	contact.add_reply_option("Not interested.")
 	contact.pending_replies.append(more_work)
-	MessengerUI.add_contact(contact)
+	Messenger.add_contact(contact)

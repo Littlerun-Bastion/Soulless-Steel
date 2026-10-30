@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://game/ui/HangarScreen.gd" id="1_6y6oh"]
 [ext_resource type="PackedScene" uid="uid://cbjnlqrdalvrn" path="res://game/mecha/Mecha.tscn" id="1_p705l"]
-[ext_resource type="Theme" uid="uid://d1jq50hkufdkk" path="res://game/customizer_buttons_theme.tres" id="4_ki33h"]
+[ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="2_mech"]
 [ext_resource type="Script" path="res://game/ui/ParallaxBackgroundScrolling.gd" id="4_pe3m2"]
 [ext_resource type="Texture2D" uid="uid://b2n50oqbky7jq" path="res://assets/images/ui/menu/grid.png" id="5_ojaxq"]
 
@@ -15,53 +15,73 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_mech")
 script = ExtResource("1_6y6oh")
 
 [node name="Mecha" parent="." instance=ExtResource("1_p705l")]
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="HangarBar" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 95.0
+offset_top = -118.0
+offset_right = -20.0
+offset_bottom = -31.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 90
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 40
+grow_vertical = 0
+theme_type_variation = &"ScreenBar"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="Row" type="HBoxContainer" parent="HangarBar"]
 layout_mode = 2
+theme_type_variation = &"BarRow"
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="Materials" type="HBoxContainer" parent="HangarBar/Row"]
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_type_variation = &"BarGroup"
 
-[node name="WarningLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-visible = false
+[node name="Heading" type="Label" parent="HangarBar/Row/Materials"]
 layout_mode = 2
-theme = ExtResource("4_ki33h")
-theme_override_colors/font_color = Color(1, 0.35, 0.3, 1)
-theme_override_font_sizes/font_size = 28
-text = "CAN'T LEAVE"
-
-[node name="MaterialsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme = ExtResource("4_ki33h")
-theme_override_font_sizes/font_size = 24
+size_flags_vertical = 4
+theme_type_variation = &"LabelMeta"
 text = "MATERIALS"
 
-[node name="Button" type="Button" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(100, 0)
+[node name="MaterialsLabel" type="Label" parent="HangarBar/Row/Materials"]
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.03
-theme = ExtResource("4_ki33h")
-theme_override_font_sizes/font_size = 30
-text = "ESC"
-alignment = 0
+size_flags_vertical = 4
+theme_type_variation = &"LabelBodyBright"
+text = "LOW 0   MID 0   HIGH 0"
+
+[node name="Hint" type="Label" parent="HangarBar/Row/Materials"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelMeta"
+text = "MAT FOR THE FULL LIST · RIGHT-CLICK SALVAGE TO RECYCLE"
+
+[node name="WarningBox" type="PanelContainer" parent="HangarBar/Row"]
+visible = false
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"AlertCritical"
+
+[node name="WarningLabel" type="Label" parent="HangarBar/Row/WarningBox"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"AlertCriticalText"
+text = "! CAN'T LEAVE"
+vertical_alignment = 1
+
+[node name="LeaveButton" type="Button" parent="HangarBar/Row"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+text = "LEAVE HANGAR [ESC]"
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 scale = Vector2(0.75, 0.75)
@@ -107,5 +127,3 @@ offset_right = 3336.0
 offset_bottom = 3205.34
 texture = ExtResource("5_ojaxq")
 metadata/_edit_use_anchors_ = true
-
-[connection signal="pressed" from="MarginContainer/VBoxContainer/Button" to="." method="_on_BackButton_pressed"]

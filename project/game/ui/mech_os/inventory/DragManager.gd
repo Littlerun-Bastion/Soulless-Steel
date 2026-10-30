@@ -179,14 +179,10 @@ func _create_drag_visuals(stack: item_stack) -> void:
 	# Footprint preview
 	drag_preview = Panel.new()
 	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(1, 1, 1, 0.0)
-	style.border_color = Color(1, 1, 1, 0.9)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	drag_preview.add_theme_stylebox_override("panel", style)
+	drag_preview = Panel.new()
+	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	drag_preview.theme = preload("res://game/ui/mech_os/MechTheme.tres")
+	drag_preview.theme_type_variation = &"DropFootprint"
 	drag_layer.add_child(drag_preview)
 	drag_preview.z_index = dragging_ui.z_index + 1
 

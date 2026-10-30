@@ -46,6 +46,7 @@ const MAX_CARCASSES := 16
 var Wrecks: Node2D
 var Carcasses: Node2D
 var Entities: Node2D
+var _death_debrief := {}
 
 
 func _ready() -> void:
@@ -126,13 +127,31 @@ func _on_player_lost_health() -> void:
 	ExpeditionDirector.notify_player_damaged()
 
 
-# Dying loses everything that came out; the game-over screen says what.
 # take_loss_report so the main menu doesn't repeat it.
 func _on_player_destroyed() -> String:
-	PlayerProgress.lose_expedition(PlayerProgress.LOSS_DESTROYED)
-	return PlayerProgress.format_loss_report(PlayerProgress.take_loss_report())
+	var report := PlayerProgress.lose_expedition(PlayerProgress.LOSS_DESTROYED)
+	PlayerProgress.take_loss_report()  # shown on the debrief, not again in the menu
+	_death_debrief = {"report": report, "kills": player_kills.size(), "details": _run_details(player.global_position)}
+	return ""
 
+func _show_death_screen(_game_over_text: String) -> void:
+	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()
+	add_child(summary)
+	summary.show_written_off(_death_debrief.get("report", {}), _death_debrief.get("kills", 0), MissionManager.current_mission, _death_debrief.get("details", {}))
+	await summary.continued
+	TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
 
+   # Exit (the one nearest pos, by grid square) and run time, for the debrief.
+func _run_details(pos: Vector2) -> Dictionary:
+	var details := {"time": PlayerHUD.top_strip.elapsed}
+	var nearest: Node2D = null
+	for exit in get_tree().get_nodes_in_group("exit_point"):
+		if nearest == null or pos.distance_squared_to(exit.global_position) < pos.distance_squared_to(nearest.global_position):
+			nearest = exit
+	if nearest != null:
+		var square = PlayerHUD.top_strip.grid_square(nearest.global_position)
+		details["exit"] = "EXIT " + square if square != "" else "EXIT"
+	return details
 # ---- Wrecks ----
 
 # Drawn under the mechas (sibling order), above the map.
@@ -246,6 +265,9 @@ func _add_player() -> void:
 	_register_player()
 	# The exits are out at the map's edges: point the way on the HUD.
 	PlayerHUD.setup_exit_marker(get_tree().get_nodes_in_group("exit_point"))
+	var navpoly = _get_map_nav_polygon()
+	if navpoly:
+		PlayerHUD.set_site("Helwan", _get_navpoly_bounds(navpoly))
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
@@ -416,11 +438,13 @@ func _on_player_extracted(_mecha) -> void:
 	PlayerProgress.extract_expedition()
 	MissionManager.report_extraction()
 	var kills := player_kills.size()
+	var details := _run_details(player.global_position)
+	details["damage"] = ExtractionSummary.collect_damage(player)
 	_remove_extracted_player()
 
 	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()
 	add_child(summary)
-	summary.show_summary(PlayerProgress.describe_cargo(), kills, MissionManager.current_mission)
+	summary.show_summary(PlayerProgress.describe_cargo(), kills, MissionManager.current_mission, details)
 	await summary.continued
 	TransitionManager.transition_to(
 		"res://game/start_menu/StartMenu.tscn",

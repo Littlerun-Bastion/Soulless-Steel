@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://bhhfpeexxaqjn" path="res://game/ui/mech_os/MechWindow.tscn" id="1_window"]
+[ext_resource type="Script" path="res://game/ui/mech_os/windows/SystemWindow.gd" id="2_script"]
+
+[node name="SystemWindow" instance=ExtResource("1_window")]
+script = ExtResource("2_script")
+window_title = "SYSTEM"
+min_size = Vector2(560, 720)

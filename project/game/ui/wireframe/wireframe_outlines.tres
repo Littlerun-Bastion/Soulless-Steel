@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="WireframeOutlines" format=3 uid="uid://bafmyjeqmgpba"]
+
+[ext_resource type="Script" uid="uid://bj1t2tdnie43b" path="res://game/ui/wireframe/WireframeOutlines.gd" id="1_e2enr"]
+
+[resource]
+script = ExtResource("1_e2enr")
+parts = {
+"chassis_leg": PackedVector2Array(12, -30, -12, -30, -12, 19.668634, -1.6686325, 30, 12, 30),
+"chassis_single": PackedVector2Array(35.668636, -74, -35.668636, -74, -50, -59.668636, -50, 74, 50, 74, 50, -59.668636),
+"core": PackedVector2Array(19.668634, -42, -19.668633, -42, -30, -31.668634, -30, 42, 30, 42, 30, -31.668634),
+"head": PackedVector2Array(7.668631, -18, -7.268632, -18, -14, -11.268632, -14, 18, 14, 18, 14, -11.668632),
+"shoulder": PackedVector2Array(10, -16, -3.6686318, -16, -10, -9.668632, -10, 16, 10, 16),
+"weapon": PackedVector2Array(2.2, -35, -2.2, -35, -2.2, 35, 2.2, 35)
+}

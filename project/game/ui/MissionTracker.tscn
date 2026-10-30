@@ -1,20 +1,24 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://game/ui/MissionTracker.gd" id="1_tracker"]
-[ext_resource type="Theme" uid="uid://butjorp5qm377" path="res://game/ui/HUDFont.tres" id="2_font"]
+[ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="2_theme"]
 
 [node name="MissionTracker" type="VBoxContainer"]
 offset_right = 520.0
 offset_bottom = 120.0
 mouse_filter = 2
+theme = ExtResource("2_theme")
+theme_type_variation = &"StatRow"
 script = ExtResource("1_tracker")
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 2
-theme = ExtResource("2_font")
+theme_type_variation = &"LabelMetaBright"
 text = "MISSION"
 horizontal_alignment = 2
+uppercase = true
 
 [node name="Objectives" type="VBoxContainer" parent="."]
 layout_mode = 2
 mouse_filter = 2
+theme_type_variation = &"StatRow"

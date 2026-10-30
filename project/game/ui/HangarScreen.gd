@@ -7,25 +7,27 @@ extends Control
 #   MECH CARGO  what the mecha carries into the next run (lost if it dies)
 #   STASH       everything kept at home (always safe)
 # Drag parts between the grids and the slots; right-click salvage in the cargo
-# or stash to recycle it into materials (totals along the bottom; MAT on the
-# taskbar opens the full list).
+# or stash to recycle it into materials (totals in the bar along the bottom;
+# MAT on the sidebar opens the full list).
 #
 # Inventories are the same objects PlayerProgress saves, and materials save as
 # they change. The design is handed to PlayerProgress on every equip, so any
-# save (recycling, say) writes parts, cargo and stash that agree; leaving (ESC)
-# or closing the game saves it all.
+# save (recycling, say) writes parts, cargo and stash that agree; leaving or
+# closing the game saves it all.
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
 # Window layout in the 1920x1080 viewport: equipment left, cargo middle,
-# stash right. Windows can still be moved and resized.
-const EQUIPMENT_RECT := Rect2(90, 40, 460, 820)
-const CARGO_RECT := Rect2(580, 40, 560, 620)
-const STASH_RECT := Rect2(1170, 40, 700, 900)
+# stash right, the Hangar bar underneath. Windows can still be moved and resized.
+const EQUIPMENT_RECT := Rect2(95, 46, 820, 900)
+const CARGO_RECT := Rect2(935, 46, 440, 420)
+const STASH_RECT := Rect2(1395, 46, 505, 900)
 
 @onready var player_mecha: Mecha = $Mecha
-@onready var materials_label: Label = $MarginContainer/VBoxContainer/MaterialsLabel
-@onready var warning_label: Label = $MarginContainer/VBoxContainer/WarningLabel
+@onready var materials_label: Label = $HangarBar/Row/Materials/MaterialsLabel
+@onready var warning_box: PanelContainer = $HangarBar/Row/WarningBox
+@onready var warning_label: Label = $HangarBar/Row/WarningBox/WarningLabel
+@onready var leave_button: Button = $HangarBar/Row/LeaveButton
 
 var stash_inventory: Inventory = null
 
@@ -48,6 +50,8 @@ func _ready() -> void:
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
+	leave_button.pressed.connect(_on_BackButton_pressed)
+	_update_leave_guard()
 
 
 func _exit_tree() -> void:
@@ -99,15 +103,39 @@ func _on_materials_changed(materials: Dictionary) -> void:
 		for material in Materials.of_tier(tier):
 			total += int(materials.get(material.id, 0))
 		parts.append("%s %d" % [Materials.tier_name(tier).to_upper(), total])
-	materials_label.text = "MATERIALS   %s   (MAT for details)" % "   ".join(parts)
+	materials_label.text = "   ".join(parts)
 
 
 # Leaving saves the design, so it's blocked while a required part is missing
-# (a mecha without a core etc. spawns broken). The warning clears itself once
-# the slots are filled.
+# (a mecha without a core etc. spawns broken). The alert shows as soon as a
+# slot is empty and clears itself once the slots are filled. Checked every
+# frame: it's ten dictionary lookups, and the label only changes on a change.
 func _process(_delta: float) -> void:
-	if warning_label.visible and get_missing_parts().is_empty():
+	_update_leave_guard()
+
+
+func _update_leave_guard() -> void:
+	var missing := get_missing_parts()
+	leave_button.disabled = not missing.is_empty()
+	if missing.is_empty():
+		_hide_warning()
+	else:
+		_show_warning(missing)
+
+
+func _show_warning(missing: Array) -> void:
+	var text := "! CAN'T LEAVE — NO %s EQUIPPED" % PlayerProgress.describe_missing_parts(missing)
+	if warning_label.text != text:
+		warning_label.text = text
+	if not warning_box.visible:
+		warning_label.show()
+		warning_box.show()
+
+
+func _hide_warning() -> void:
+	if warning_box.visible:
 		warning_label.hide()
+		warning_box.hide()
 
 
 func get_missing_parts() -> Array:
@@ -117,8 +145,9 @@ func get_missing_parts() -> Array:
 func _on_BackButton_pressed() -> void:
 	var missing := get_missing_parts()
 	if not missing.is_empty():
-		warning_label.text = "CAN'T LEAVE: NO %s EQUIPPED" % PlayerProgress.describe_missing_parts(missing)
-		warning_label.show()
+		_show_warning(missing)
+		MechLog.write("HGR", "Can't leave: no %s equipped" % PlayerProgress.describe_missing_parts(missing).to_lower(),
+				MechLog.Kind.SYSTEM, true)
 		AudioManager.play_sfx("back")
 		return
 	_save_progress()
@@ -141,6 +170,14 @@ func _save_progress() -> void:
 
 func _unhandled_input(event):
 	if not player_mecha or not player_mecha.mech_inventory:
+		return
+
+	# ESC leaves, as the button says. Not mid-drag: saving then would save
+	# the cargo without the item in hand.
+	if event.is_action_pressed("escape"):
+		if MechOS.drag_manager.dragging_stack == null:
+			_on_BackButton_pressed()
+		get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("debug_6"):

@@ -1,9 +1,11 @@
 extends CanvasLayer
 
 const ITEM_TOOLTIP := preload("res://game/mecha/ItemTooltip.tscn")
+const ICONS := "res://game/ui/mech_os/icons/"
 
 # Registry of available apps: app_id -> PackedScene
 var app_registry: Dictionary = {}
+var app_openers: Dictionary = {}  # app_id -> Callable
 
 # Currently open windows: app_id -> MechWindow instance
 var open_windows: Dictionary = {}
@@ -45,6 +47,7 @@ func _ready() -> void:
 	_register_context_actions()
 	MouseManager.cursor_mode_changed.connect(_on_cursor_mode_changed)
 	_on_cursor_mode_changed(MouseManager.cursor_mode)
+	add_child(FieldMode.new())
 
 #func _process(_delta: float) -> void:
 #	if not is_active:
@@ -94,17 +97,25 @@ func _register_apps() -> void:
 	# Example:
 	# register_app("inventory", preload("res://game/ui/mech_os/windows/InventoryWindow.tscn"))
 	# register_app("hangar", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"))
-	
-	register_app("equipment", preload("res://game/ui/mech_os/windows/EquipmentWindow.tscn"), "EQP")
-	# Hangar only: the Hangar turns it on with set_app_available.
-	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT")
+
+	register_app("equipment", preload("res://game/ui/mech_os/windows/EquipmentWindow.tscn"), "EQP", preload(ICONS + "eqp.svg"), "Equipment")
+	register_app("mech_cargo", null, "CGO", preload(ICONS + "cgo.svg"), "Mech cargo")
+	app_openers["mech_cargo"] = _open_mech_cargo
+	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT", preload(ICONS + "mat.svg"), "Materials")
 	set_app_available("materials", false)
+	register_app("messenger", preload("res://game/ui/mech_os/windows/MessengerWindow.tscn"), "MSG", preload(ICONS + "msg.svg"), "Messenger")
+	register_app("deployments", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"), "DEP", preload(ICONS + "dep.svg"), "Deployments")
+	register_app("log", preload("res://game/ui/mech_os/windows/LogWindow.tscn"), "LOG", preload(ICONS + "log.svg"), "Log")
+	register_app("system", preload("res://game/ui/mech_os/windows/SystemWindow.tscn"), "SYS", preload(ICONS + "sys.svg"), "System", true)
+	register_app("net", null, "NET", preload(ICONS + "net.svg"), "Browser", true)
+	taskbar.set_app_enabled("net", false, "Offline")
 
 
-func register_app(app_id: String, scene: PackedScene, label: String = "") -> void:
+func register_app(app_id: String, scene: PackedScene, code: String = "",
+		icon: Texture2D = null, full_name: String = "", bottom: bool = false) -> void:
 	app_registry[app_id] = scene
-	if label != "":
-		taskbar.add_app_button(app_id, label)
+	if code != "":
+		taskbar.add_app_button(app_id, code, icon, full_name, bottom)
 
 # Shows or hides an app's taskbar button, for apps that only make sense on
 # some screens. Hiding it closes the app's window.
@@ -128,6 +139,8 @@ func open_app(app_id: String) -> MechWindow:
 		return null
 	
 	var scene: PackedScene = app_registry[app_id]
+	if scene == null:
+		return null  # on the sidebar, but its window isn't built yet
 	var window: MechWindow = scene.instantiate()
 	window.app_id = app_id
 	
@@ -135,6 +148,7 @@ func open_app(app_id: String) -> MechWindow:
 	window.size = window.min_size
 	
 	open_windows[app_id] = window
+	taskbar.set_app_open(app_id, true)
 	
 	window.closed.connect(_on_window_closed)
 	window.focused.connect(_on_window_focused)
@@ -157,15 +171,20 @@ func close_app(app_id: String) -> void:
 	var window = open_windows[app_id]
 	drag_manager.unregister_window(window)
 	open_windows.erase(app_id)
+	taskbar.set_app_open(app_id, false)
 	window.queue_free()
 
 
 func toggle_app(app_id: String) -> void:
+	if not is_app_available(app_id):
+		return
 	if open_windows.has(app_id):
 		if open_windows[app_id].closable:
 			close_app(app_id)
 		else:
 			focus_window(open_windows[app_id])
+	elif app_openers.has(app_id):
+		app_openers[app_id].call()		
 	else:
 		open_app(app_id)
 
@@ -220,6 +239,7 @@ func _on_window_closed(window: MechWindow) -> void:
 	drag_manager.unregister_window(window)
 	if open_windows.has(window.app_id):
 		open_windows.erase(window.app_id)
+		taskbar.set_app_open(window.app_id, false)
 	window.queue_free()
 
 func _on_window_focused(window: MechWindow) -> void:
@@ -228,7 +248,7 @@ func _on_window_focused(window: MechWindow) -> void:
 
 func _center_window(window: MechWindow) -> void:
 	var screen_size := get_viewport().get_visible_rect().size
-	window.position = (screen_size - window.size) * 0.5
+	window.position = ((screen_size - window.size) * 0.5).floor()
 
 func open_inventory(app_id: String, inv: Inventory, title: String) -> MechWindow:
 	if open_windows.has(app_id):
@@ -243,6 +263,7 @@ func open_inventory(app_id: String, inv: Inventory, title: String) -> MechWindow
 	window.size = window.min_size
 	
 	open_windows[app_id] = window
+	taskbar.set_app_open(app_id, true)
 	
 	window.closed.connect(_on_window_closed)
 	window.focused.connect(_on_window_focused)
@@ -466,3 +487,9 @@ func refresh_inventory_windows() -> void:
 	for window in open_windows.values():
 		if window is InventoryWindow:
 			window.refresh()
+			
+			
+func _open_mech_cargo() -> void:
+	if player_ref == null or player_ref.get("mech_inventory") == null:
+		return
+	open_inventory("mech_cargo", player_ref.mech_inventory, "MECH CARGO")

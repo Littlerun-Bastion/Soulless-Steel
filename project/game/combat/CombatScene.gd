@@ -339,6 +339,10 @@ func player_died() -> void:
 		return
 	PlayerHUD.queue_free()
 	PauseMenu.queue_free()
+	_show_death_screen(game_over_text)
+
+
+func _show_death_screen(game_over_text: String) -> void:
 	GameOver.killed(game_over_text)
 
 

@@ -124,10 +124,9 @@ func _lines(tracker: MissionTracker) -> Array:
 
 
 func _test_load() -> void:
-	check(LoadIndicator.format_load(412.4, 500.0) == "LOAD 412 / 500", "load text")
-	check(LoadIndicator.color_for(100.0, 500.0) == LoadIndicator.NORMAL_COLOR, "normal under 90%")
-	check(LoadIndicator.color_for(460.0, 500.0) == LoadIndicator.WARN_COLOR, "amber from 90%")
-	check(LoadIndicator.color_for(501.0, 500.0) == LoadIndicator.OVER_COLOR, "red when overweight")
+	check(HudStatus.format_weight(41.25, 48.0) == "WT 41.3 / 48", "weight text")
+	check(not HudStatus.is_over(48.0, 48.0), "at capacity is not over")
+	check(HudStatus.is_over(48.5, 48.0), "over capacity")
 
 
 func _test_summary() -> void:

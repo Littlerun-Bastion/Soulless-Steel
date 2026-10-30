@@ -1,5 +1,9 @@
 extends Control
 
+## Dash recharge arrows around the player's mecha (one DashArrow per
+## direction, see DashArrow.gd). An arrow shows while its thruster recharges,
+## fills as it does, then fades.
+
 @onready var Directions = {
 	"fwd": $Fwd, "rwd": $Rwd,
 	"left": $Left, "right": $Right,
@@ -45,7 +49,7 @@ func player_died():
 func start_dir_animation(dir):
 	var node = Directions[dir]
 	var border = node.get_node("Border")
-	node.material.set_shader_parameter("show_percent", 0.0)
+	node.percent = 0.0
 	border.modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(border, "modulate:a", 1.0, .2)
@@ -71,4 +75,4 @@ func end_dir_animation(dir):
 
 func set_dir_values(dir):
 	var value = 1.0 - player.dash_cooldown[dir]/player.build.thruster.dash_cooldown
-	Directions[dir].material.set_shader_parameter("show_percent", value)
+	Directions[dir].percent = value

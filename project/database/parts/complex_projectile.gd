@@ -579,8 +579,10 @@ func payload():
 func explosion():
 	var space_state = get_world_2d().direct_space_state
 	
-	# Process each mecha in explosion radius
-	for body in explosion_targets:
+	# Process each mecha in explosion radius	
+	for body in explosion_targets.duplicate():
+		if not is_instance_valid(body):
+			continue  # destroyed before the blast went off
 		var ray = body.position - position
 		ray = ray.normalized()
 		var explosion_angle = dir.angle_to(ray)

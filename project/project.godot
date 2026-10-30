@@ -38,15 +38,15 @@ NPCManager="*res://game/mecha/NPCManager.gd"
 TransitionManager="*res://game/ui/TransitionManager.tscn"
 MissionManager="*res://database/Missions/MissionManager.gd"
 StoryDirector="*res://game/story/StoryDirector.gd"
-MessengerUI="*res://game/MessengerUI/MessengerUI.tscn"
 MechOS="*uid://ylc8a0xjpom3"
+Messenger="*uid://cwuvrxb4vfc4l"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/window_width_override=1000
-window/size/window_height_override=600
+window/size/window_width_override=1920
+window/size/window_height_override=1080
 window/stretch/mode="viewport"
 
 [editor]

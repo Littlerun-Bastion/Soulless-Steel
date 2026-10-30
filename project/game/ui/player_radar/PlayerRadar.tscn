@@ -1,37 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://c5r3r3jlxvedd"]
+[gd_scene format=3 uid="uid://c5r3r3jlxvedd"]
 
-[ext_resource type="PackedScene" uid="uid://brr0hf80g46ef" path="res://game/ui/player_radar/Pointer.tscn" id="1"]
-[ext_resource type="Texture2D" uid="uid://ctcxeaw445bsb" path="res://assets/images/ui/player_ui/player_directional_circle.png" id="2"]
 [ext_resource type="Script" path="res://game/ui/player_radar/PlayerRadar.gd" id="3"]
+[ext_resource type="Script" path="res://game/ui/player_radar/RadarRing.gd" id="4"]
 
 [node name="PlayerRadar" type="Control"]
 layout_mode = 3
 anchors_preset = 0
+mouse_filter = 2
 script = ExtResource("3")
 
-[node name="Circle" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = -250.0
-offset_top = -250.0
-offset_right = 250.0
-offset_bottom = 250.0
-pivot_offset = Vector2(250, 250)
-texture = ExtResource("2")
+[node name="Circle" type="Node2D" parent="."]
+script = ExtResource("4")
 
-[node name="Pointers" type="Control" parent="."]
-anchors_preset = 0
-offset_left = -250.0
-offset_top = -250.0
-offset_right = -210.0
-offset_bottom = -210.0
-
-[node name="Pointer" parent="Pointers" instance=ExtResource("1")]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 20.0
-offset_bottom = 20.0
-stretch_mode = 2
+[node name="Pointers" type="Node2D" parent="."]
 
 [node name="UpdateTimer" type="Timer" parent="."]
 

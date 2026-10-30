@@ -9,11 +9,12 @@ class_name ExitMarker
 #
 # The camera doesn't rotate, so a direction in the world is the same
 # direction on screen; the player is near the middle of it.
+# Arrow G6, distance LabelMetaBright (MechTheme).
 
 const EDGE_MARGIN := Vector2(110, 110)
 ## World distance under which the exit is on screen and the marker hides.
 const HIDE_WITHIN := 900.0
-const COLOR := Color(1.0, 0.78, 0.3)
+const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const ARROW_SIZE := 28.0
 const LABEL_GAP := 64.0
 
@@ -89,4 +90,5 @@ func _draw() -> void:
 	var side := arrow_dir.orthogonal() * ARROW_SIZE * 0.75
 	var back := arrow_position - arrow_dir * ARROW_SIZE * 0.5
 	var notch := arrow_position - arrow_dir * ARROW_SIZE * 0.05
-	draw_colored_polygon(PackedVector2Array([tip, back + side, notch, back - side]), COLOR)
+	draw_colored_polygon(PackedVector2Array([tip, back + side, notch, back - side]),
+			THEME.get_color(&"g6", &"MechTokens"))

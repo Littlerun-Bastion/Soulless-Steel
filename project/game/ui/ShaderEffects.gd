@@ -1,5 +1,12 @@
 extends CanvasLayer
 
+## Full-screen VCR effect (layer 99, above everything but nothing else).
+## warpAmount is the CRT curve. It bends the whole screen at once: world,
+## HUD, MechOS and the cursor, so what you click is always under the cursor.
+## (The HUD used to curve on its own, which left MechOS flat on top of it.)
+
+const SCREEN_CURVE := 0.15
+
 @onready var VCREffect = $VCREffect
 
 var tweens = []
@@ -27,11 +34,11 @@ func reset_shader_effect(mode):
 		tween.kill()
 	tweens = []
 	if mode == "arena":
-		set_shader_params(0.05, 0.0, 2000.0, 0.0, 0.026, 0.002, 0.48, 0.002, 0.492, 0.0)
+		set_shader_params(0.05, 0.0, 2000.0, 0.0, 0.026, 0.002, 0.48, 0.002, 0.492, SCREEN_CURVE)
 	elif mode == "gameover":
-		set_shader_params(0.05, 0.0, 866.0, 0.001, 0.026, 0.006, 1.0, 0.0073, 0.97, 0.0)
+		set_shader_params(0.05, 0.0, 866.0, 0.001, 0.026, 0.006, 1.0, 0.0073, 0.97, SCREEN_CURVE)
 	elif mode == "score_screen":
-		set_shader_params(0.022, 0.001, 3900.0, 0.001, 0.1, 0.002, 0.133, 0.002, 0.12, 0.0)
+		set_shader_params(0.022, 0.001, 3900.0, 0.001, 0.1, 0.002, 0.133, 0.002, 0.12, SCREEN_CURVE)
 	elif mode == "main_menu":
 		set_shader_params(0.01, 0.001, 5000.0, 0, 0.02, 0.002, 0.133, 0.002, 0.13, .2)
 	else:

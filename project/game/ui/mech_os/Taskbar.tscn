@@ -4,12 +4,14 @@
 [ext_resource type="Theme" uid="uid://c3dgk58unk2ta" path="res://game/ui/mech_os/MechTheme.tres" id="1_yq6il"]
 
 [node name="Taskbar" type="Panel" unique_id=1665287486]
-custom_minimum_size = Vector2(48, 0)
+custom_minimum_size = Vector2(64, 0)
 anchors_preset = -1
 anchor_bottom = 1.0
 offset_left = 15.0
+offset_right = 79.0
 grow_vertical = 2
 theme = ExtResource("1_yq6il")
+theme_type_variation = &"Sidebar"
 script = ExtResource("1_5m4b7")
 
 [node name="ButtonList" type="VBoxContainer" parent="." unique_id=1697402563]
@@ -23,4 +25,14 @@ offset_right = -4.0
 offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 8
+
+[node name="Top" type="VBoxContainer" parent="ButtonList"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="ButtonList"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Bottom" type="VBoxContainer" parent="ButtonList"]
+layout_mode = 2

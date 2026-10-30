@@ -222,13 +222,18 @@ func _test_death() -> void:
 		return
 	check(PlayerProgress.get_mech_inventory().is_empty(), "the cargo is lost")
 	check(PlayerProgress.get_current_mecha() == PlayerProgress.DEFAULT_MECHA, "back to the default mecha")
-	var shown := await wait_until(func(): return _scene.GameOver.get_node("SubViewportContainer").visible, 10.0)
-	check(shown, "the game-over screen shows")
-	check(SALVAGE.display_name in _scene.GameOver.LossLabel.text, "it says what was lost")
-	check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
-	_scene.GameOver._on_ReturnButton_pressed()
-	check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Return goes to the main menu")
-
+	var shown := await wait_until(func():
+		var s = _find_child_of_type(ExtractionSummary)
+		return s != null and s.visible, 10.0)
+	check(shown, "the written-off debrief shows")
+	var summary = _find_child_of_type(ExtractionSummary)
+	if summary != null:
+		var text: String = summary.get_text()
+		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists what was lost as written off")
+		check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
+		summary.continue_button.pressed.emit()
+		await wait_frames()
+		check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Return goes to the main menu")
 
 # ---- Entities ----
 

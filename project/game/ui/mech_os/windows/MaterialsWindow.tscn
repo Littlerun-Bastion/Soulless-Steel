@@ -3,31 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://bhhfpeexxaqjn" path="res://game/ui/mech_os/MechWindow.tscn" id="1_window"]
 [ext_resource type="Script" path="res://game/ui/mech_os/windows/MaterialsWindow.gd" id="2_script"]
 
-[node name="MechWindow" instance=ExtResource("1_window")]
+[node name="MaterialsWindow" instance=ExtResource("1_window")]
 script = ExtResource("2_script")
 window_title = "MATERIALS"
 min_size = Vector2(460, 720)
-
-[node name="VBox" type="VBoxContainer" parent="Content" index="0"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Scroll" type="ScrollContainer" parent="Content/VBox" index="0"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="List" type="VBoxContainer" parent="Content/VBox/Scroll" index="0"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 4
-
-[node name="HSeparator" type="HSeparator" parent="Content/VBox" index="1"]
-layout_mode = 2
-
-[node name="DetailLabel" type="Label" parent="Content/VBox" index="2"]
-custom_minimum_size = Vector2(0, 190)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-autowrap_mode = 3
-vertical_alignment = 0

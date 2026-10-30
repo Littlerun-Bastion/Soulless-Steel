@@ -262,7 +262,7 @@ func _layout_grid_border() -> void:
 		# Fallback: just use grid size directly
 		area_size = grid_size
 		
-	var origin := (area_size - grid_size) * 0.5
+	var origin := ((area_size - grid_size) * 0.5).floor()
 	origin.x = max(origin.x, 0)
 	origin.y = max(origin.y, 0)
 	

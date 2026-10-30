@@ -18,10 +18,15 @@ extends Control
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
 # Window layout in the 1920x1080 viewport: equipment left, cargo middle,
-# stash right, the Hangar bar underneath. Windows can still be moved and resized.
-const EQUIPMENT_RECT := Rect2(95, 46, 820, 900)
-const CARGO_RECT := Rect2(935, 46, 440, 420)
-const STASH_RECT := Rect2(1395, 46, 505, 900)
+# stash right, the Hangar bar underneath, 20px apart. Windows can still be
+# moved and resized.
+const LAYOUT_LEFT := 95.0
+const LAYOUT_RIGHT := 1900.0
+const LAYOUT_TOP := 46.0
+const LAYOUT_GAP := 20.0
+const EQUIPMENT_SIZE := Vector2(820, 900)
+const CARGO_SIZE := Vector2(440, 420)
+const STASH_HEIGHT := 900.0
 
 @onready var player_mecha: Mecha = $Mecha
 @onready var materials_label: Label = $HangarBar/Row/Materials/MaterialsLabel
@@ -74,18 +79,62 @@ func _open_windows() -> void:
 	var equipment = MechOS.open_equipment(player_mecha)
 	if equipment != null:
 		equipment.parts_changed.connect(_sync_design)
-	_place(equipment, EQUIPMENT_RECT)
-	_place(MechOS.open_inventory("mech_cargo", player_mecha.mech_inventory, "MECH CARGO"), CARGO_RECT)
-	_place(MechOS.open_inventory("stash", stash_inventory, "STASH"), STASH_RECT)
-
-
-# The Hangar is these three windows, so they stay open.
-func _place(window: MechWindow, rect: Rect2) -> void:
-	if window == null:
+	var cargo = MechOS.open_inventory("mech_cargo", player_mecha.mech_inventory, "MECH CARGO")
+	var stash = MechOS.open_inventory("stash", stash_inventory, "STASH")
+	# The Hangar is these three windows, so they stay open.
+	for window in [equipment, cargo, stash]:
+		if window != null:
+			window.closable = false
+	# A window only knows how wide its content needs it to be (the cargo grid
+	# sets the cargo window's width) once that content has been laid out.
+	await get_tree().process_frame
+	if not is_inside_tree():
 		return
-	window.closable = false
-	window.position = rect.position
-	window.size = rect.size.max(window.min_size)
+	var windows := [equipment, cargo, stash]
+	var wants := [EQUIPMENT_SIZE.x, CARGO_SIZE.x, 0.0]
+	var mins := []
+	for window in windows:
+		mins.append(_min_width(window))
+	var columns := lay_out_columns(wants, mins)
+	var heights := [EQUIPMENT_SIZE.y, CARGO_SIZE.y, STASH_HEIGHT]
+	for i in windows.size():
+		var window: MechWindow = windows[i]
+		if window == null:
+			continue
+		window.position = Vector2(columns[i].x, LAYOUT_TOP)
+		window.size = Vector2(columns[i].y, heights[i]).max(window.get_combined_minimum_size())
+
+
+## Columns left to right, LAYOUT_GAP apart: each one its wanted width (or its
+## minimum if that's more); the last one fills what's left up to LAYOUT_RIGHT.
+## If that's less than the last one's minimum, the first one gives up width
+## (down to its own minimum). Returns Vector2(x, width) per column.
+static func lay_out_columns(wants: Array, mins: Array) -> Array:
+	var widths := []
+	for i in wants.size():
+		widths.append(maxf(wants[i], mins[i]))
+	var last := widths.size() - 1
+	var used := LAYOUT_GAP * last
+	for i in last:
+		used += widths[i]
+	var room := LAYOUT_RIGHT - LAYOUT_LEFT - used
+	if room < mins[last]:
+		var take := minf(mins[last] - room, widths[0] - mins[0])
+		widths[0] -= take
+		room += take
+	widths[last] = maxf(room, mins[last])
+	var columns := []
+	var x := LAYOUT_LEFT
+	for w in widths:
+		columns.append(Vector2(x, w))
+		x += w + LAYOUT_GAP
+	return columns
+
+
+func _min_width(window) -> float:
+	if window == null:
+		return 0.0
+	return maxf(window.min_size.x, window.get_combined_minimum_size().x)
 
 
 func _on_cargo_overflow(stacks: Array) -> void:

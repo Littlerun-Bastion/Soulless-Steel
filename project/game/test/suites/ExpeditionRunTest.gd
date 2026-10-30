@@ -205,7 +205,7 @@ func _test_extract() -> void:
 	var summary = _find_child_of_type(ExtractionSummary)
 	check(summary != null and summary.visible, "the extraction summary shows")
 	if summary != null:
-		check(SALVAGE.display_name in summary.body_label.text, "the summary lists the cargo")
+		check(SALVAGE.display_name in summary.get_text(), "the summary lists the cargo")
 		summary.continue_button.pressed.emit()
 		await wait_frames()
 		check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Continue returns to the main menu")

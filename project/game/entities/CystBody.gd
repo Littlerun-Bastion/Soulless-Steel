@@ -14,7 +14,7 @@ var awake := false
 var _time := 0.0
 
 
-func update_motion(_speed: float, dt: float) -> void:
+func update_motion(_motion: Vector2, dt: float) -> void:
 	if not dead:
 		_time += dt * (3.0 if awake else 1.0)
 	queue_redraw()

@@ -29,9 +29,9 @@ var dead := false
 const BODY_POINTS := 20
 
 
-func update_motion(speed: float, dt: float) -> void:
+func update_motion(motion: Vector2, dt: float) -> void:
 	if not dead:
-		gait = fmod(gait + speed * dt * 0.035, TAU)
+		gait = fmod(gait + motion.length() * dt * 0.035, TAU)
 	queue_redraw()
 
 

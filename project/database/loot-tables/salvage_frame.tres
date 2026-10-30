@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="LootTable" format=3 uid="uid://phufmqw7j6m3"]
 
-[ext_resource type="Script" path="res://game/items/LootTable.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://cabun1eqj6ail" path="res://game/items/LootTable.gd" id="1_table"]
 [ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="2_entry"]
 [ext_resource type="Resource" path="res://database/items/salvage/hydraulic_actuator.tres" id="item_hydraulic_actuator"]
-[ext_resource type="Resource" path="res://database/items/salvage/servo_assembly.tres" id="item_servo_assembly"]
 [ext_resource type="Resource" path="res://database/items/salvage/myofibrilium_bundle.tres" id="item_myofibrilium_bundle"]
+[ext_resource type="Resource" path="res://database/items/salvage/servo_assembly.tres" id="item_servo_assembly"]
 
 [sub_resource type="Resource" id="LootEntry_hydraulic_actuator"]
 script = ExtResource("2_entry")

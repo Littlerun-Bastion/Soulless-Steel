@@ -92,7 +92,10 @@ var ecm_frequency := 1.0
 var _sense_timer := 0.0
 var _flash_timer := 0.0
 
-@onready var body_visual: EntityBody = $Body
+## The Entity's look. Any Node2D works if it has a `flash` (0..1) and a `dead`
+## flag, plus update_motion(velocity, dt) and die(): EntityBody for the old
+## placeholder species, SandBody for the sand ones.
+@onready var body_visual: Node2D = $Body
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
 
@@ -139,7 +142,7 @@ func _physics_process(dt: float) -> void:
 		_turn(dt)
 	_flash_timer = maxf(_flash_timer - dt, 0.0)
 	body_visual.flash = 1.0 if _flash_timer > 0.0 else 0.0
-	body_visual.update_motion(velocity.length(), dt)
+	body_visual.update_motion(velocity, dt)
 
 
 # ---- Species hooks ----

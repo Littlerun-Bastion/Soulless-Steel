@@ -22,10 +22,10 @@ func setup_from(entity: Entity, rng: RandomNumberGenerator = null) -> void:
 	empty_tint = CORPSE_EMPTY_TINT
 	var hull: Node2D = $Hull
 	hull.rotation = entity.global_rotation
-	var corpse: EntityBody = entity.body_visual.duplicate()
+	var corpse: Node2D = entity.body_visual.duplicate()
 	hull.add_child(corpse)
 	corpse.die()
 
 
-func get_corpse() -> EntityBody:
+func get_corpse() -> Node2D:
 	return $Hull.get_child(0) if $Hull.get_child_count() > 0 else null

@@ -72,6 +72,10 @@ func run_tests() -> void:
 	await case("a map trigger plays a scene by name", _test_trigger_plays)
 	await _close()
 
+	await _open()
+	await case("the player dying ends a running scene", _test_death_ends_the_scene)
+	await _close()
+
 	Debug.debug_settings["skip_intro"] = _saved_skip_intro
 
 
@@ -409,6 +413,23 @@ func _test_trigger_plays() -> void:
 	check(_scene.current_stage == null, "the scene let go of its reference to it")
 	check(_count_stage_layers() < layers_before,\
 	"its bars and dialogue layers went with it instead of piling up")
+
+
+func _test_death_ends_the_scene() -> void:
+	_scene._on_player_trigger_entered("stage:demo")
+	await wait_frames(2)
+
+	var playing = _scene.current_stage
+	check(playing != null and playing.is_playing, "a scene is running before the death")
+
+	_scene.player.die({"name": "Test"}, "test")
+	var ended := await _await_stage_end(playing)
+	check(ended, "the player dying ended the scene")
+	await wait_frames(3)
+
+	check(not is_instance_valid(playing), "the scene freed itself")
+	check(_scene.current_stage == null, "the scene let go of its reference to it")
+	check_eq(_count_stage_layers(), 0, "its bars and dialogue came off screen")
 
 
 func _count_stage_layers() -> int:

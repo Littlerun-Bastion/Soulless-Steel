@@ -53,12 +53,18 @@ class FakeMech extends Node2D:
 
 class FakePlayer extends Node2D:
 	var controls_locked := false
+	var cam: Camera2D = null
 
 	func _ready() -> void:
 		add_to_group("mecha")
+		cam = Camera2D.new()
+		add_child(cam)
 
 	func is_player() -> bool:
 		return true
+
+	func get_cam() -> Camera2D:
+		return cam
 
 	func lock_controls() -> void:
 		controls_locked = true
@@ -83,6 +89,7 @@ func run_tests() -> void:
 	await case("look-at can hold until the camera arrives", _test_camera_waits)
 	await case("follow tracks an actor that keeps moving", _test_camera_follows_mover)
 	await case("the camera is handed back when the scene ends", _test_camera_released)
+	await case("a scene with no player leaves the camera alone", _test_camera_left_alone_without_a_player)
 	await case("a line holds the scene until it is advanced", _test_say_waits)
 	await case("the first press finishes the reveal, the second advances", _test_say_two_stage)
 	await case("a player action button advances a line", _test_say_input)
@@ -90,6 +97,7 @@ func run_tests() -> void:
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
 	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
 	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
+	await case("aborting ends the scene without running the rest", _test_abort_ends_the_scene)
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
@@ -392,6 +400,8 @@ func _test_camera_follows_mover() -> void:
 
 func _test_camera_released() -> void:
 	var director := _plain_director()
+	var player := FakePlayer.new()
+	add_child(player)
 	var cam := Camera2D.new()
 	cam.enabled = true
 	add_child(cam)
@@ -403,8 +413,31 @@ func _test_camera_released() -> void:
 
 	await director.play()
 
-	check(not cam.enabled, "the stage camera switched itself off so the player camera resumes")
+	check(not cam.enabled, "the stage camera switched itself off")
+	check_eq(get_viewport().get_camera_2d(), player.get_cam(), "the player camera renders again")
 	check(director.get_camera().get_target_position() == null, "the stage camera let go of its target")
+	director.queue_free()
+	cam.queue_free()
+	player.queue_free()
+
+
+func _test_camera_left_alone_without_a_player() -> void:
+	var director := _plain_director()
+	var alone := await wait_until(func(): return director.get_player() == null, 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var cam := Camera2D.new()
+	cam.enabled = true
+	add_child(cam)
+	director.use_camera(cam)
+
+	var step := StageWait.new()
+	step.seconds = 0.0
+	director.add_child(step)
+
+	await director.play()
+
+	check(cam.enabled, "with no player to hand back to, the camera is left for the scene to keep")
+	check(director.get_camera().get_target_position() == null, "it still let go of its target")
 	director.queue_free()
 	cam.queue_free()
 
@@ -547,6 +580,29 @@ func _test_pause_holds_the_scene() -> void:
 	var ended := await wait_until(func(): return not director.is_playing, 5.0)
 	check(ended, "it carried on once unpaused")
 	check_eq(order, ["after"], "the step after the wait ran")
+	director.queue_free()
+
+
+func _test_abort_ends_the_scene() -> void:
+	var director := _plain_director()
+	var wait := StageWait.new()
+	wait.seconds = 30.0
+	director.add_child(wait)
+	var order: Array = []
+	var later := RecordingStep.new()
+	later.order_log = order
+	later.label = "after"
+	director.add_child(later)
+
+	director.play()
+	await wait_frames(2)
+	check(director.is_playing, "the scene is running before the abort")
+
+	director.abort()
+	var ended := await wait_until(func(): return not director.is_playing, 5.0)
+	check(ended, "aborting ended the scene")
+	check(director.is_aborted(), "it reports itself aborted")
+	check(order.is_empty(), "the steps after it never ran")
 	director.queue_free()
 
 

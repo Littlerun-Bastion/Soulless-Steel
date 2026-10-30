@@ -324,6 +324,8 @@ func player_died() -> void:
 	if not is_instance_valid(player):
 		return
 	FrameSpikeDetector.mark("player_died:teardown")
+	if is_instance_valid(current_stage):
+		current_stage.abort()
 	var game_over_text := _on_player_destroyed()
 	MechOS.close_all()  # cargo/container windows belong to the dead player
 	activate_arena_cam()

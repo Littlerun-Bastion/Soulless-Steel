@@ -23,6 +23,7 @@ var _actors := {}
 var _frozen: Array = []
 var _taken: Array = []
 var _sweep_timer := 0.0
+var _aborted := false
 
 
 func play() -> void:
@@ -30,6 +31,7 @@ func play() -> void:
 		return
 	is_playing = true
 	is_skipping = false
+	_aborted = false
 	_frozen = []
 	_sweep_timer = FREEZE_SWEEP_INTERVAL
 	_show_bars()
@@ -38,6 +40,8 @@ func play() -> void:
 	_freeze_world()
 	started.emit()
 	for step in get_steps():
+		if _aborted:
+			break
 		current_step = step
 		step_started.emit(step)
 		await step.run(self)
@@ -67,6 +71,18 @@ func skip() -> void:
 	is_skipping = true
 	if current_step != null:
 		current_step.skip()
+
+
+func abort() -> void:
+	if not is_playing or _aborted:
+		return
+	_aborted = true
+	if current_step != null:
+		current_step.stop()
+
+
+func is_aborted() -> bool:
+	return _aborted
 
 
 func get_steps() -> Array[StageStep]:
@@ -216,14 +232,15 @@ func _release_camera() -> void:
 	if _camera == null:
 		return
 	_camera.clear_target()
-	var cam := _camera.get_camera()
-	if cam != null:
-		cam.enabled = false
 	var player := get_player()
-	if player != null and player.has_method("get_cam"):
-		var player_cam = player.get_cam()
-		if player_cam is Camera2D:
-			player_cam.make_current()
+	if player == null or not player.has_method("get_cam"):
+		return
+	var player_cam = player.get_cam()
+	if player_cam is Camera2D:
+		var cam := _camera.get_camera()
+		if cam != null:
+			cam.enabled = false
+		player_cam.make_current()
 
 
 func _set_control_locked(locked: bool) -> void:

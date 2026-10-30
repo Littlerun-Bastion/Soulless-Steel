@@ -5,6 +5,8 @@ signal started
 signal finished
 signal step_started(step: StageStep)
 
+const FREEZE_SWEEP_INTERVAL := 0.2
+
 @export var shows_bars := true
 @export var takes_control := true
 @export var takes_camera := true
@@ -19,6 +21,9 @@ var _camera: StageCamera = null
 var _dialogue: StageDialogue = null
 var _actors := {}
 var _frozen: Array = []
+var _taken: Array = []
+var _sweep_timer := 0.0
+var _aborted := false
 
 
 func play() -> void:
@@ -26,18 +31,24 @@ func play() -> void:
 		return
 	is_playing = true
 	is_skipping = false
+	_aborted = false
+	_frozen = []
+	_sweep_timer = FREEZE_SWEEP_INTERVAL
 	_show_bars()
 	_set_control_locked(true)
 	_take_camera()
 	_freeze_world()
 	started.emit()
 	for step in get_steps():
+		if _aborted:
+			break
 		current_step = step
 		step_started.emit(step)
 		await step.run(self)
 	current_step = null
 	if _dialogue != null:
 		_dialogue.clear()
+	_release_actors()
 	_thaw_world()
 	await _hide_bars()
 	_release_camera()
@@ -46,12 +57,32 @@ func play() -> void:
 	finished.emit()
 
 
+func set_paused(value: bool) -> void:
+	process_mode = Node.PROCESS_MODE_DISABLED if value else Node.PROCESS_MODE_INHERIT
+
+
+func is_paused() -> bool:
+	return process_mode == Node.PROCESS_MODE_DISABLED
+
+
 func skip() -> void:
 	if not is_playing or is_skipping:
 		return
 	is_skipping = true
 	if current_step != null:
 		current_step.skip()
+
+
+func abort() -> void:
+	if not is_playing or _aborted:
+		return
+	_aborted = true
+	if current_step != null:
+		current_step.stop()
+
+
+func is_aborted() -> bool:
+	return _aborted
 
 
 func get_steps() -> Array[StageStep]:
@@ -119,6 +150,26 @@ func set_actor(alias: String, node: Node) -> void:
 	_actors[alias] = node
 
 
+func take_actor(node: Node) -> bool:
+	if not is_instance_valid(node) or not node.has_method("set_scripted"):
+		return false
+	if not _taken.has(node):
+		_taken.append(node)
+	node.set_scripted(true)
+	return true
+
+
+func is_taken(node: Node) -> bool:
+	return _taken.has(node)
+
+
+func _release_actors() -> void:
+	for node in _taken:
+		if is_instance_valid(node) and node.has_method("set_scripted"):
+			node.set_scripted(false)
+	_taken = []
+
+
 func find_actor(actor_name: String) -> Node:
 	if actor_name == "":
 		return null
@@ -134,8 +185,16 @@ func find_actor(actor_name: String) -> Node:
 	return null
 
 
+func _process(dt: float) -> void:
+	if not is_playing or not freezes_world:
+		return
+	_sweep_timer -= dt
+	if _sweep_timer <= 0.0:
+		_sweep_timer = FREEZE_SWEEP_INTERVAL
+		_freeze_world()
+
+
 func _freeze_world() -> void:
-	_frozen = []
 	if not freezes_world:
 		return
 	var player := get_player()
@@ -173,14 +232,15 @@ func _release_camera() -> void:
 	if _camera == null:
 		return
 	_camera.clear_target()
-	var cam := _camera.get_camera()
-	if cam != null:
-		cam.enabled = false
 	var player := get_player()
-	if player != null and player.has_method("get_cam"):
-		var player_cam = player.get_cam()
-		if player_cam is Camera2D:
-			player_cam.make_current()
+	if player == null or not player.has_method("get_cam"):
+		return
+	var player_cam = player.get_cam()
+	if player_cam is Camera2D:
+		var cam := _camera.get_camera()
+		if cam != null:
+			cam.enabled = false
+		player_cam.make_current()
 
 
 func _set_control_locked(locked: bool) -> void:

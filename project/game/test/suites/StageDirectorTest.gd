@@ -2,6 +2,8 @@ extends TestSuite
 
 const WALK_SPEED := 400.0
 const WALK_DISTANCE := 1200.0
+const SLOW_REVEAL_SECONDS := 3.0
+const SLOW_CAMERA_SPEED := 1.0
 
 
 class RecordingStep extends StageStep:
@@ -51,12 +53,18 @@ class FakeMech extends Node2D:
 
 class FakePlayer extends Node2D:
 	var controls_locked := false
+	var cam: Camera2D = null
 
 	func _ready() -> void:
 		add_to_group("mecha")
+		cam = Camera2D.new()
+		add_child(cam)
 
 	func is_player() -> bool:
 		return true
+
+	func get_cam() -> Camera2D:
+		return cam
 
 	func lock_controls() -> void:
 		controls_locked = true
@@ -81,11 +89,15 @@ func run_tests() -> void:
 	await case("look-at can hold until the camera arrives", _test_camera_waits)
 	await case("follow tracks an actor that keeps moving", _test_camera_follows_mover)
 	await case("the camera is handed back when the scene ends", _test_camera_released)
+	await case("a scene with no player leaves the camera alone", _test_camera_left_alone_without_a_player)
 	await case("a line holds the scene until it is advanced", _test_say_waits)
 	await case("the first press finishes the reveal, the second advances", _test_say_two_stage)
 	await case("a player action button advances a line", _test_say_input)
 	await case("a timed line advances on its own", _test_say_timed)
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
+	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
+	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
+	await case("aborting ends the scene without running the rest", _test_abort_ends_the_scene)
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
@@ -324,6 +336,7 @@ func _test_camera_waits() -> void:
 	step.global_position = Vector2(2000, 0)
 	step.wait_until_reached = true
 	director.add_child(step)
+	director.get_camera().follow_speed = SLOW_CAMERA_SPEED
 	var order: Array = []
 	var later := RecordingStep.new()
 	later.order_log = order
@@ -387,6 +400,8 @@ func _test_camera_follows_mover() -> void:
 
 func _test_camera_released() -> void:
 	var director := _plain_director()
+	var player := FakePlayer.new()
+	add_child(player)
 	var cam := Camera2D.new()
 	cam.enabled = true
 	add_child(cam)
@@ -398,8 +413,31 @@ func _test_camera_released() -> void:
 
 	await director.play()
 
-	check(not cam.enabled, "the stage camera switched itself off so the player camera resumes")
+	check(not cam.enabled, "the stage camera switched itself off")
+	check_eq(get_viewport().get_camera_2d(), player.get_cam(), "the player camera renders again")
 	check(director.get_camera().get_target_position() == null, "the stage camera let go of its target")
+	director.queue_free()
+	cam.queue_free()
+	player.queue_free()
+
+
+func _test_camera_left_alone_without_a_player() -> void:
+	var director := _plain_director()
+	var alone := await wait_until(func(): return director.get_player() == null, 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var cam := Camera2D.new()
+	cam.enabled = true
+	add_child(cam)
+	director.use_camera(cam)
+
+	var step := StageWait.new()
+	step.seconds = 0.0
+	director.add_child(step)
+
+	await director.play()
+
+	check(cam.enabled, "with no player to hand back to, the camera is left for the scene to keep")
+	check(director.get_camera().get_target_position() == null, "it still let go of its target")
 	director.queue_free()
 	cam.queue_free()
 
@@ -410,6 +448,10 @@ func _say_step(director: StageDirector, line: String) -> StageSay:
 	step.text = line
 	director.add_child(step)
 	return step
+
+
+func _slow_reveal(director: StageDirector, line: String) -> void:
+	director.get_dialogue().reveal_speed = line.length() / SLOW_REVEAL_SECONDS
 
 
 func _test_say_waits() -> void:
@@ -443,6 +485,7 @@ func _test_say_waits() -> void:
 func _test_say_two_stage() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "a line long enough that it is still being revealed")
+	_slow_reveal(director, step.text)
 
 	director.play()
 	await wait_frames(1)
@@ -488,9 +531,85 @@ func _test_say_timed() -> void:
 	director.queue_free()
 
 
+func _test_timed_line_does_not_bleed() -> void:
+	var director := _plain_director()
+	var timed := _say_step(director, "a timed line")
+	timed.advance_on = StageSay.Advance.TIMED
+	timed.seconds = 5.0
+	var after := _say_step(director, "the line that follows it")
+
+	director.play()
+	await wait_frames(2)
+	timed.advance()
+	timed.advance()
+
+	var moved := await wait_until(func(): return director.current_step == after, 5.0)
+	check(moved, "the scene moved on to the next line")
+
+	await wait_seconds(6.0)
+	check_eq(director.get_dialogue().get_body_label().text, "the line that follows it",\
+	"the ended line did not wipe the one now on screen")
+
+	after.advance()
+	after.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_pause_holds_the_scene() -> void:
+	var director := _plain_director()
+	var wait := StageWait.new()
+	wait.seconds = 0.6
+	director.add_child(wait)
+	var order: Array = []
+	var later := RecordingStep.new()
+	later.order_log = order
+	later.label = "after"
+	director.add_child(later)
+
+	director.play()
+	await wait_frames(1)
+	director.set_paused(true)
+	check(director.is_paused(), "the director reports itself paused")
+
+	await wait_seconds(2.0)
+	check(order.is_empty(), "the wait made no progress while paused")
+	check(director.is_playing, "the scene is still open, just held")
+
+	director.set_paused(false)
+	var ended := await wait_until(func(): return not director.is_playing, 5.0)
+	check(ended, "it carried on once unpaused")
+	check_eq(order, ["after"], "the step after the wait ran")
+	director.queue_free()
+
+
+func _test_abort_ends_the_scene() -> void:
+	var director := _plain_director()
+	var wait := StageWait.new()
+	wait.seconds = 30.0
+	director.add_child(wait)
+	var order: Array = []
+	var later := RecordingStep.new()
+	later.order_log = order
+	later.label = "after"
+	director.add_child(later)
+
+	director.play()
+	await wait_frames(2)
+	check(director.is_playing, "the scene is running before the abort")
+
+	director.abort()
+	var ended := await wait_until(func(): return not director.is_playing, 5.0)
+	check(ended, "aborting ended the scene")
+	check(director.is_aborted(), "it reports itself aborted")
+	check(order.is_empty(), "the steps after it never ran")
+	director.queue_free()
+
+
 func _test_dialogue_is_visible() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "hello player")
+	_slow_reveal(director, step.text)
 
 	director.play()
 	await wait_frames(2)

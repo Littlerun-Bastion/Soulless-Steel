@@ -18,8 +18,7 @@ func _start() -> void:
 	if _mech == null or not _mech.has_method("shoot"):
 		_finish()
 		return
-	if _mech.has_method("set_scripted"):
-		_mech.set_scripted(true)
+	director.take_actor(_mech)
 	_fired = 0
 	_timer = aim_time
 	_aim()

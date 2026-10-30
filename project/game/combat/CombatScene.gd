@@ -324,6 +324,8 @@ func player_died() -> void:
 	if not is_instance_valid(player):
 		return
 	FrameSpikeDetector.mark("player_died:teardown")
+	if is_instance_valid(current_stage):
+		current_stage.abort()
 	var game_over_text := _on_player_destroyed()
 	MechOS.close_all()  # cargo/container windows belong to the dead player
 	activate_arena_cam()
@@ -451,11 +453,19 @@ func play_stage(stage_name) -> StageDirector:
 	var director = load(path).instantiate()
 	add_child(director)
 	current_stage = director
+	director.finished.connect(_drop_stage.bind(director), CONNECT_ONE_SHOT)
 	if director.has_method("start"):
 		director.start()
 	else:
 		director.play()
 	return director
+
+
+func _drop_stage(director) -> void:
+	if current_stage == director:
+		current_stage = null
+	if is_instance_valid(director):
+		director.queue_free()
 
 
 # ---- Game flow ----
@@ -478,6 +488,8 @@ func _on_PauseMenu_pause_toggle(paused: bool) -> void:
 	# Coming out of pause: re-fade the world in.
 	if not paused:
 		ShaderEffects.play_transition(0.0, 5000.0, 2.0)
+	if is_instance_valid(current_stage):
+		current_stage.set_paused(paused)
 	if player:
 		player.set_pause(paused)
 		PlayerHUD.set_pause(paused)

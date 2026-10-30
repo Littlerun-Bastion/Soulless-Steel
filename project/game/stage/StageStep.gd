@@ -24,6 +24,10 @@ func skip() -> void:
 		_skip_to_end()
 
 
+func stop() -> void:
+	_finish()
+
+
 func is_running() -> bool:
 	return _running
 

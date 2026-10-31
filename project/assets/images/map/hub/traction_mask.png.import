@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://dfv12xckbq5kb"
+path="res://.godot/imported/traction_mask.png-259fd2d25180cae5a77819219fbd2a2d.image"
+
+[deps]
+
+source_file="res://assets/images/map/hub/traction_mask.png"
+dest_files=["res://.godot/imported/traction_mask.png-259fd2d25180cae5a77819219fbd2a2d.image"]
+
+[params]
+

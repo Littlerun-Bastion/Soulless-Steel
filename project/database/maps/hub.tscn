@@ -1,0 +1,94 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="2_start"]
+[ext_resource type="Script" path="res://game/map/GroundLayer.gd" id="3_ground"]
+[ext_resource type="Script" path="res://game/map/EditorOnly.gd" id="4_editor_only"]
+[ext_resource type="Shader" path="res://assets/shaders/GroundSplat.gdshader" id="5_splat"]
+[ext_resource type="Texture2D" path="res://assets/images/map/hub/ground_mask.png" id="6_mask"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/snow.png" id="7_snow"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/sand.png" id="8_sand"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/dirt.png" id="9_dirt"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/cracked.png" id="10_cracked"]
+
+[sub_resource type="FastNoiseLite" id="Noise_tone"]
+frequency = 0.012
+
+[sub_resource type="NoiseTexture2D" id="NoiseTex_tone"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("Noise_tone")
+
+[sub_resource type="ShaderMaterial" id="Mat_ground"]
+shader = ExtResource("5_splat")
+shader_parameter/ground_mask = ExtResource("6_mask")
+shader_parameter/tex_snow = ExtResource("7_snow")
+shader_parameter/tex_sand = ExtResource("8_sand")
+shader_parameter/tex_dirt = ExtResource("9_dirt")
+shader_parameter/tex_cracked = ExtResource("10_cracked")
+shader_parameter/tone_noise = SubResource("NoiseTex_tone")
+shader_parameter/map_size = Vector2(4000, 4000)
+shader_parameter/tile_size = 4096.0
+shader_parameter/tone_scale_a = 2650.0
+shader_parameter/tone_scale_b = 930.0
+shader_parameter/tone_strength = 0.25
+
+[sub_resource type="NavigationPolygon" id="NavPoly_Hub"]
+vertices = PackedVector2Array(-2000, -2000, 2000, -2000, 2000, 2000, -2000, 2000)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2000, -2000, 2000, -2000, 2000, 2000, -2000, 2000)])
+
+[node name="Hub" type="Node2D"]
+script = ExtResource("1_map")
+
+; The Hub is one 4000x4000 chunk centred on the origin (corners at ±2000).
+; Ground sits at the top-left corner because its polygon runs from (0, 0) to map_size.
+[node name="BG" type="Node2D" parent="."]
+
+[node name="Ground" type="Polygon2D" parent="BG"]
+material = SubResource("Mat_ground")
+position = Vector2(-2000, -2000)
+polygon = PackedVector2Array(0, 0, 4000, 0, 4000, 4000, 0, 4000)
+script = ExtResource("3_ground")
+map_size = Vector2(4000, 4000)
+
+; Roads, parking lots and ice (SurfaceOverlay nodes, added in slice 2).
+[node name="SurfaceOverlays" type="Node2D" parent="."]
+
+; Hand-drawn ground marks with no gameplay meaning.
+[node name="Decals" type="Node2D" parent="."]
+
+; Map.gd expects these containers to exist, even when empty.
+[node name="Bushes" type="Node2D" parent="."]
+
+[node name="Props" type="Node2D" parent="."]
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Trees" type="Node2D" parent="."]
+
+; Grey-box building footprints go here until buildings are designed.
+[node name="Buildings" type="Node2D" parent="."]
+
+[node name="Texts" type="Node2D" parent="."]
+
+[node name="Triggers" type="Node2D" parent="."]
+
+[node name="Exits" type="Node2D" parent="."]
+
+[node name="StartPositions" type="Node2D" parent="."]
+
+[node name="Pos1" parent="StartPositions" instance=ExtResource("2_start")]
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavPoly_Hub")
+
+; Editor-only guides, removed when the game runs. Drop the 200x200 Hub sketch
+; into SketchUnderlay's texture; scale 20 makes it cover the whole map.
+[node name="Reference" type="Node2D" parent="."]
+script = ExtResource("4_editor_only")
+
+[node name="SketchUnderlay" type="Sprite2D" parent="Reference"]
+modulate = Color(1, 1, 1, 0.35)
+scale = Vector2(20, 20)

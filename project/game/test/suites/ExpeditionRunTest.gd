@@ -123,6 +123,15 @@ func _test_start() -> void:
 			"no exit next to the spawn any more: the nearest is out at the map's edge")
 	check(player.mech_inventory.get_stacks().any(func(s): return s.item == SALVAGE), "cargo still holds what was packed")
 	check(MissionManager.current_mission != null, "a mission is running")
+	# The site comes from the map (Map.site_name), Helwan unless it says otherwise.
+	var map: Node = _scene.get_node("Map")
+	check_eq(_scene.get_site_name(), "Helwan", "the run takes place at the map's site")
+	check_eq(_scene.PlayerHUD.top_strip.get("_site"), "HELWAN", "the HUD shows the site")
+	map.site_name = "Test Ridge"
+	check_eq(_scene.get_site_name(), "Test Ridge", "a map can name its own site")
+	map.site_name = ""
+	check_eq(_scene.get_site_name(), "Helwan", "a map with no site name falls back to Helwan")
+	map.site_name = "Helwan"
 
 
 # The player shoots the left arm; as each shot leaves the barrel the enemy is

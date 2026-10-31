@@ -88,8 +88,8 @@ func _init() -> void:
 | BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
 | ContentScenesTest | every script compiles, every scene loads |
 | EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; Spitter range and acid; Brute charge, ram, stomp, stun, rage; Cysts waking, hatching leashed guards, brood limit; death; bio loot and carcasses |
-| ExpeditionHudTest | mission tracker, load readout, exit marker, extraction summary |
-| ExpeditionRunTest *(slow)* | a real Expedition: spawn, shooting, wrecks and loot, extraction, death, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
+| ExpeditionHudTest | mission tracker, weight readout, exit marker, extraction debrief |
+| ExpeditionRunTest *(slow)* | a real Expedition: spawn, the map's site name, shooting, wrecks and loot, extraction, death and the written-off debrief, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
 | HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
@@ -97,7 +97,10 @@ func _init() -> void:
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
 | PartsTest | every part's data (name, image, weight, size, price), equipping, every weapon fires |
 | PlayerProgressTest | money, stash, stakes, materials, recycling, required parts |
+| SandBodyTest | the sand creature looks (Coyote, Coyote Spitter, Fisher): building, walking, their attack moves, bursting into grains on death, the art bench |
 | SaveFileTest | saving/loading on disk, backup recovery, abandoned runs on boot |
+| StageDemoTest *(slow)* | the demo cutscene in a real Expedition: beats in order, the stage camera, frozen bystanders, the spawned NPC and obstacle, handing control and actors back, skipping, F4 and map triggers, ending on the player's death |
+| StageDirectorTest | cutscene building blocks: steps in order, waits, skipping, pausing, aborting, cinema bars, taking control, camera look-at/follow/hand-back, dialogue lines, actors walking and shooting |
 | StoryDirectorTest | story beats, flags, triggers, missions |
 | WreckTest | wreck loot, weapon drops, Take / Take all |
 

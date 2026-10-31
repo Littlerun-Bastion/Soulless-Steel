@@ -1,5 +1,14 @@
 extends TestSuite
 
+# SandBodyTest: the sand Entity looks (SandBody and the species bodies in
+# game/entities/coyote and game/entities/fisher), driven the way an Entity
+# drives them but without one: each body sits as the Body child of a plain
+# Node2D. Every body builds, walks faster when it moves faster, and bursts
+# into grains that outlive the Entity when it dies. The Coyote's whip and
+# bite, the Spitter's charge and the Fisher's stages, harpoon and leap pose
+# all play through and say when they land. The art bench
+# (game/test/sand_bench) runs every species without errors.
+
 const BODIES := {
 	"Coyote": preload("res://game/entities/coyote/CoyoteBody.gd"),
 	"Coyote Spitter": preload("res://game/entities/coyote/CoyoteSpitterBody.gd"),

@@ -40,6 +40,7 @@ const MAX_WRECKS := 12
 # die in numbers) so they never push out mecha wrecks.
 const CARCASS = preload("res://game/entities/Carcass.tscn")
 const MAX_CARCASSES := 16
+const DEFAULT_SITE := "Helwan"
 
 @onready var ExpeditionDirector = $ExpeditionDirector
 
@@ -267,7 +268,7 @@ func _add_player() -> void:
 	PlayerHUD.setup_exit_marker(get_tree().get_nodes_in_group("exit_point"))
 	var navpoly = _get_map_nav_polygon()
 	if navpoly:
-		PlayerHUD.set_site("Helwan", _get_navpoly_bounds(navpoly))
+		PlayerHUD.set_site(get_site_name(), _get_navpoly_bounds(navpoly))
 
 
 func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
@@ -323,6 +324,12 @@ func _get_navpoly_bounds(navpoly: NavigationPolygon) -> Rect2:
 	for p in outline:
 		rect = rect.expand(p)
 	return rect
+
+
+# The Map's site name (Map.site_name), or Helwan for a map that doesn't set one.
+func get_site_name() -> String:
+	var site = $Map.get("site_name") if has_node("Map") else null
+	return site if site is String and site != "" else DEFAULT_SITE
 
 
 # Returns the Map's NavigationPolygon if available, else null.

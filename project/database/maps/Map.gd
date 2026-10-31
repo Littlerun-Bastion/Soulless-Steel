@@ -1,6 +1,8 @@
 extends Node2D
 
 @export var is_tutorial := false
+## Where a run on this map takes place, shown on the HUD's top strip.
+@export var site_name := "Helwan"
 
 
 func get_bg():

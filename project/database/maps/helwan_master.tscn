@@ -1,0 +1,169 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cvuj4dem66ujh" path="res://database/maps/Map.gd" id="map"]
+[ext_resource type="PackedScene" path="res://database/maps/helwan_generated.tscn" id="generated"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="start"]
+[ext_resource type="PackedScene" uid="uid://dwf22ocgt8ucl" path="res://game/arena/ExitPoint.tscn" id="exit"]
+[ext_resource type="Script" path="res://game/map/EditorOnly.gd" id="editor_only"]
+[ext_resource type="Texture2D" path="res://assets/images/map/helwan/mockup_reference.png" id="mockup"]
+[ext_resource type="Resource" path="res://assets/maps/helwan/props.res" id="props"]
+[ext_resource type="Script" path="res://game/map/props/PropSpawner.gd" id="spawner"]
+
+[sub_resource type="NavigationPolygon" id="NavPoly_Helwan"]
+vertices = PackedVector2Array(-25000, -25000, 25000, -25000, 25000, 25000, -25000, 25000)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-25000, -25000, 25000, -25000, 25000, 25000, -25000, 25000)])
+
+; Helwan: the map the game loads. Hand-made content lives here; the
+; generator never rewrites this file once it exists.
+;   BG/Generated   the generated city (helwan_generated.tscn), regenerated
+;                  by tools/helwan_map
+;   KeepOut        Polygon2D children: the generator builds nothing and
+;                  spawns no props inside them; rerun it after drawing one.
+;   PropSpawner    PropZone and PropSpawnPoint children add or clear props.
+;   Overheads      add OverheadPath (Line2D) children for more overpasses.
+;   Buildings      hand-made buildings (draw a KeepOut round each).
+[node name="Helwan" type="Node2D"]
+script = ExtResource("map")
+
+[node name="BG" type="Node2D" parent="."]
+
+[node name="Generated" parent="BG" instance=ExtResource("generated")]
+
+; Where props go: the generator's spawn points, plus PropZone (CLEAR or
+; SCATTER areas) and PropSpawnPoint (single props) children added by hand.
+[node name="PropSpawner" type="Node2D" parent="." node_paths=PackedStringArray("building_field")]
+script = ExtResource("spawner")
+spawn_set = ExtResource("props")
+building_field = NodePath("../BG/Generated/BuildingField")
+
+; Hand-placed elevated structures (OverheadPath children), above foliage.
+[node name="Overheads" type="Node2D" parent="."]
+z_index = 3
+
+[node name="SurfaceOverlays" type="Node2D" parent="."]
+
+[node name="Decals" type="Node2D" parent="."]
+
+; Map.gd expects these containers to exist, even when empty.
+[node name="Bushes" type="Node2D" parent="."]
+
+[node name="Props" type="Node2D" parent="."]
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Buildings" type="Node2D" parent="."]
+
+[node name="Texts" type="Node2D" parent="."]
+
+[node name="Triggers" type="Node2D" parent="."]
+
+; Extraction points, on roads near the four edges. Found at runtime via the
+; "exit_point" group.
+[node name="Exits" type="Node2D" parent="."]
+
+[node name="Exit_N" parent="Exits" instance=ExtResource("exit")]
+position = Vector2(20367, -24139)
+
+[node name="Exit_E" parent="Exits" instance=ExtResource("exit")]
+position = Vector2(24069, 9814)
+
+[node name="Exit_S" parent="Exits" instance=ExtResource("exit")]
+position = Vector2(-7192, 24086)
+
+[node name="Exit_W" parent="Exits" instance=ExtResource("exit")]
+position = Vector2(-12635, -24070)
+
+; The first start position is the player spawn; ExpeditionDirector uses the
+; rest for NPCs. All on roads, spread over the map.
+[node name="StartPositions" type="Node2D" parent="."]
+
+[node name="Pos1" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(-9894, 1051)
+
+[node name="Pos2" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(20367, -24139)
+
+[node name="Pos3" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(24069, 9814)
+
+[node name="Pos4" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(-12635, -24070)
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(-7192, 24086)
+
+[node name="Pos6" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(16378, -6451)
+
+[node name="Pos7" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(-11389, -11532)
+
+[node name="Pos8" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(-8789, 12597)
+
+[node name="Pos9" parent="StartPositions" instance=ExtResource("start")]
+position = Vector2(16776, 3335)
+
+; Soft-spawn points for ExpeditionDirector (Map.get_spawn_zones).
+[node name="SpawnZones" type="Node2D" parent="."]
+
+[node name="Spawn1" type="Marker2D" parent="SpawnZones"]
+position = Vector2(18895, -55)
+
+[node name="Spawn2" type="Marker2D" parent="SpawnZones"]
+position = Vector2(13204, 13336)
+
+[node name="Spawn3" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-505, 16118)
+
+[node name="Spawn4" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-12172, 13005)
+
+[node name="Spawn5" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-18900, 101)
+
+[node name="Spawn6" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-12919, -12742)
+
+[node name="Spawn7" type="Marker2D" parent="SpawnZones"]
+position = Vector2(539, -17706)
+
+[node name="Spawn8" type="Marker2D" parent="SpawnZones"]
+position = Vector2(13139, -13113)
+
+; Entity nests (Map.get_cyst_sites), on open ground away from the starts.
+[node name="CystSites" type="Node2D" parent="."]
+
+[node name="Cyst1" type="Marker2D" parent="CystSites"]
+position = Vector2(-9793, -15603)
+
+[node name="Cyst2" type="Marker2D" parent="CystSites"]
+position = Vector2(22814, 22655)
+
+[node name="Cyst3" type="Marker2D" parent="CystSites"]
+position = Vector2(-17890, 22810)
+
+[node name="Cyst4" type="Marker2D" parent="CystSites"]
+position = Vector2(22751, -21839)
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavPoly_Helwan")
+
+; The generator reads the Polygon2D children of KeepOut (position, rotation,
+; scale and polygon; KeepOut itself must stay at the origin). Editor only.
+[node name="KeepOut" type="Node2D" parent="."]
+script = ExtResource("editor_only")
+
+; Editor-only guides, removed when the game runs. The mockup is hidden; show
+; it to compare. Scale 39.8724 makes its 1254 px cover the whole map.
+[node name="Reference" type="Node2D" parent="."]
+script = ExtResource("editor_only")
+
+[node name="MockupUnderlay" type="Sprite2D" parent="Reference"]
+visible = false
+modulate = Color(1, 1, 1, 0.5)
+scale = Vector2(39.8724, 39.8724)
+texture = ExtResource("mockup")

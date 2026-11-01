@@ -399,6 +399,9 @@ func _ready():
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
 
+	# Mechas bump into and push map vehicles (see VehicleField).
+	set_collision_mask_value(MapSenses.VEHICLE_LAYER, true)
+
 
 func _physics_process(dt):
 	if paused:
@@ -506,7 +509,8 @@ func _physics_process(dt):
 			all_collisions.append(get_slide_collision(i))
 
 		for collision in all_collisions:
-			if collision and collision.get_collider().is_in_group("mecha"):
+			var other = collision.get_collider() if collision else null
+			if other and other.is_in_group("mecha"):
 				lock_movement(0.1)
 				break
 	else:
@@ -1634,6 +1638,7 @@ func move(vec):
 	NavAgent.set_velocity(vec)
 	set_velocity(vec)
 	move_and_slide()
+	VehicleField.push_from(self, vec)
 
 
 func get_dir_name(dir):

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cnmpo0q6dmbu8" path="res://game/expedition/Expedition.gd" id="1_root"]
 [ext_resource type="Script" uid="uid://pdse1py3u5dq" path="res://game/expedition/ExpeditionDirector.gd" id="2_director"]
-[ext_resource type="PackedScene" uid="uid://btestbigmap00001" path="res://database/maps/big_map.tscn" id="3_map"]
+[ext_resource type="PackedScene" path="res://database/maps/helwan_master.tscn" id="3_map"]
 [ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
 [ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]

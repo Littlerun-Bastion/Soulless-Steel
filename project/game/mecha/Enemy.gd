@@ -440,6 +440,7 @@ func update_senses(dt):
 		senses.bodies.erase(data)
 	
 	#Check for nearby bodies
+	var own_sight_mult = MapSenses.sight_mult(self)
 	for target in arena.get_mechas():
 		var distance = position.distance_to(target.position)
 		var thermal_range_mult = 1.0
@@ -447,8 +448,12 @@ func update_senses(dt):
 			# Cold targets detected at 60% range, hot targets at 140%
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 		
-		var effective_engage_distance = engage_distance * thermal_range_mult
-		if target != self and distance <= effective_engage_distance:
+		# Foliage over the target, or over us, shortens the range; building
+		# walls block sight completely (see MapSenses).
+		var effective_engage_distance = engage_distance * thermal_range_mult \
+				* own_sight_mult * MapSenses.detection_mult(target)
+		if target != self and distance <= effective_engage_distance \
+				and not MapSenses.walls_between(get_world_2d(), global_position, target.global_position):
 			var found = false
 			for data in senses.bodies:
 				if data.body == target:
@@ -595,7 +600,8 @@ func try_to_shoot(weapon_name, target):
 func can_see_target(target):
 	if target and is_instance_valid(target):
 		var space_state = get_world_2d().direct_space_state
-		var ray = PhysicsRayQueryParameters2D.create(position, target.position)
+		# Vehicles don't block sight; building walls do.
+		var ray = PhysicsRayQueryParameters2D.create(position, target.position, MapSenses.SIGHT_MASK)
 		ray.exclude = [self]
 		var result = space_state.intersect_ray(ray)
 		if result:
@@ -777,7 +783,9 @@ func set_interest(target, wander):
 func set_danger():
 	var space_state = get_world_2d().direct_space_state
 	for i in num_rays:
-		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range)
+		# Building walls are not obstacles (mechas walk through them);
+		# vehicles are.
+		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range, MapSenses.NON_WALL_MASK)
 		query.exclude = [self]
 		var result = space_state.intersect_ray(query)
 		if result:

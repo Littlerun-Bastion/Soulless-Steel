@@ -205,11 +205,14 @@ func find_prey() -> Node2D:
 		return null
 	var best: Node2D = null
 	var best_distance := sight_range
+	# A tree over the mecha, or over us, shortens how far we see it; walls
+	# block can_see (see MapSenses).
+	var own_sight := sight_range * MapSenses.sight_mult(self)
 	for mecha in arena.get_mechas():
 		if not is_valid_prey(mecha) or not in_territory(mecha):
 			continue
 		var d := distance_to(mecha)
-		if d < best_distance and can_see(mecha):
+		if d < best_distance and d < own_sight * MapSenses.detection_mult(mecha) and can_see(mecha):
 			best = mecha
 			best_distance = d
 	return best
@@ -263,9 +266,10 @@ func is_valid_prey(node) -> bool:
 			and node.is_in_group("mecha") and not node.is_dead
 
 
-# Line of sight; other Entities don't block it (they're low to the ground).
+# Line of sight; other Entities and vehicles don't block it (they're low to
+# the ground). Building walls do.
 func can_see(node: Node2D) -> bool:
-	var query := PhysicsRayQueryParameters2D.create(global_position, node.global_position)
+	var query := PhysicsRayQueryParameters2D.create(global_position, node.global_position, MapSenses.SIGHT_MASK)
 	query.exclude = [get_rid()]
 	var result := get_world_2d().direct_space_state.intersect_ray(query)
 	return result.is_empty() or result.collider == node or result.collider is Entity

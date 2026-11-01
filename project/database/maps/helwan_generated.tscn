@@ -1,0 +1,794 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/map/GroundLayer.gd" id="ground"]
+[ext_resource type="Shader" path="res://assets/shaders/GroundSplatMacro.gdshader" id="splat"]
+[ext_resource type="Texture2D" path="res://assets/images/map/helwan/ground_mask.png" id="mask"]
+[ext_resource type="Texture2D" path="res://assets/images/map/helwan/macro_tone.png" id="macro"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/snow.png" id="snow"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/sand.png" id="sand"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/dirt.png" id="dirt"]
+[ext_resource type="Texture2D" path="res://assets/images/map/ground/cracked.png" id="cracked"]
+[ext_resource type="Shader" path="res://assets/shaders/CityGrain.gdshader" id="grain"]
+[ext_resource type="Script" path="res://game/map/BuildingField.gd" id="field"]
+[ext_resource type="Resource" path="res://assets/maps/helwan/footprints.res" id="footprints"]
+[ext_resource type="Script" path="res://game/map/OverheadPath.gd" id="overhead"]
+[ext_resource type="Script" path="res://game/map/props/PropSpriteLayer.gd" id="sprite_layer"]
+[ext_resource type="Script" path="res://game/map/props/VehicleField.gd" id="vehicle_field"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_1.png" id="spr_bush_1"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_2.png" id="spr_bush_2"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_3.png" id="spr_bush_3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_4.png" id="spr_bush_4"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_5.png" id="spr_bush_5"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_6.png" id="spr_bush_6"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_1.png" id="spr_tree_1"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_2.png" id="spr_tree_2"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_3.png" id="spr_tree_3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_4.png" id="spr_tree_4"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_ambulance.png" id="spr_vehicle_ambulance"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_estate.png" id="spr_vehicle_estate"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_hatchback.png" id="spr_vehicle_hatchback"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_pickup.png" id="spr_vehicle_pickup"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_sports.png" id="spr_vehicle_sports"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_suv.png" id="spr_vehicle_suv"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_fire_engine.png" id="spr_vehicle_fire_engine"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_minibus.png" id="spr_vehicle_minibus"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_0_0.res" id="ground_0_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_0_1.res" id="ground_0_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_0_2.res" id="ground_0_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_0_3.res" id="ground_0_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_0_4.res" id="ground_0_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_1_0.res" id="ground_1_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_1_1.res" id="ground_1_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_1_2.res" id="ground_1_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_1_3.res" id="ground_1_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_1_4.res" id="ground_1_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_2_0.res" id="ground_2_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_2_1.res" id="ground_2_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_2_2.res" id="ground_2_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_2_3.res" id="ground_2_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_2_4.res" id="ground_2_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_3_0.res" id="ground_3_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_3_1.res" id="ground_3_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_3_2.res" id="ground_3_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_3_3.res" id="ground_3_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_3_4.res" id="ground_3_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_4_0.res" id="ground_4_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_4_1.res" id="ground_4_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_4_2.res" id="ground_4_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_4_3.res" id="ground_4_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/ground_4_4.res" id="ground_4_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_0_0.res" id="groundlines_0_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_0_1.res" id="groundlines_0_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_0_2.res" id="groundlines_0_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_0_3.res" id="groundlines_0_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_0_4.res" id="groundlines_0_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_1_1.res" id="groundlines_1_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_1_2.res" id="groundlines_1_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_1_3.res" id="groundlines_1_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_1_4.res" id="groundlines_1_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_2_1.res" id="groundlines_2_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_2_2.res" id="groundlines_2_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_2_3.res" id="groundlines_2_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_2_4.res" id="groundlines_2_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_3_1.res" id="groundlines_3_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_3_2.res" id="groundlines_3_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_3_3.res" id="groundlines_3_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_3_4.res" id="groundlines_3_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_4_1.res" id="groundlines_4_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_4_2.res" id="groundlines_4_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_4_3.res" id="groundlines_4_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/groundlines_4_4.res" id="groundlines_4_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_0_0.res" id="halos_0_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_0_1.res" id="halos_0_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_0_2.res" id="halos_0_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_0_3.res" id="halos_0_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_0_4.res" id="halos_0_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_1_0.res" id="halos_1_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_1_1.res" id="halos_1_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_1_2.res" id="halos_1_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_1_3.res" id="halos_1_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_1_4.res" id="halos_1_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_2_0.res" id="halos_2_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_2_1.res" id="halos_2_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_2_2.res" id="halos_2_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_2_3.res" id="halos_2_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_2_4.res" id="halos_2_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_3_0.res" id="halos_3_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_3_1.res" id="halos_3_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_3_2.res" id="halos_3_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_3_3.res" id="halos_3_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_3_4.res" id="halos_3_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_4_0.res" id="halos_4_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_4_1.res" id="halos_4_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_4_2.res" id="halos_4_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_4_3.res" id="halos_4_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/halos_4_4.res" id="halos_4_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_0_0.res" id="interiors_0_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_0_1.res" id="interiors_0_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_0_2.res" id="interiors_0_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_0_3.res" id="interiors_0_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_0_4.res" id="interiors_0_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_1_0.res" id="interiors_1_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_1_1.res" id="interiors_1_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_1_2.res" id="interiors_1_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_1_3.res" id="interiors_1_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_1_4.res" id="interiors_1_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_2_0.res" id="interiors_2_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_2_1.res" id="interiors_2_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_2_2.res" id="interiors_2_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_2_3.res" id="interiors_2_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_2_4.res" id="interiors_2_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_3_0.res" id="interiors_3_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_3_1.res" id="interiors_3_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_3_2.res" id="interiors_3_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_3_3.res" id="interiors_3_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_3_4.res" id="interiors_3_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_4_0.res" id="interiors_4_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_4_1.res" id="interiors_4_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_4_2.res" id="interiors_4_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_4_3.res" id="interiors_4_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/interiors_4_4.res" id="interiors_4_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_0_0.res" id="roofs_0_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_0_1.res" id="roofs_0_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_0_2.res" id="roofs_0_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_0_3.res" id="roofs_0_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_0_4.res" id="roofs_0_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_1_0.res" id="roofs_1_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_1_1.res" id="roofs_1_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_1_2.res" id="roofs_1_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_1_3.res" id="roofs_1_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_1_4.res" id="roofs_1_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_2_0.res" id="roofs_2_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_2_1.res" id="roofs_2_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_2_2.res" id="roofs_2_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_2_3.res" id="roofs_2_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_2_4.res" id="roofs_2_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_3_0.res" id="roofs_3_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_3_1.res" id="roofs_3_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_3_2.res" id="roofs_3_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_3_3.res" id="roofs_3_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_3_4.res" id="roofs_3_4"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_4_0.res" id="roofs_4_0"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_4_1.res" id="roofs_4_1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_4_2.res" id="roofs_4_2"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_4_3.res" id="roofs_4_3"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/helwan/roofs_4_4.res" id="roofs_4_4"]
+
+[sub_resource type="FastNoiseLite" id="Noise_tone"]
+frequency = 0.012
+
+[sub_resource type="NoiseTexture2D" id="NoiseTex_tone"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("Noise_tone")
+
+[sub_resource type="ShaderMaterial" id="Mat_ground"]
+shader = ExtResource("splat")
+shader_parameter/ground_mask = ExtResource("mask")
+shader_parameter/macro_tone = ExtResource("macro")
+shader_parameter/tex_snow = ExtResource("snow")
+shader_parameter/tex_sand = ExtResource("sand")
+shader_parameter/tex_dirt = ExtResource("dirt")
+shader_parameter/tex_cracked = ExtResource("cracked")
+shader_parameter/tone_noise = SubResource("NoiseTex_tone")
+shader_parameter/map_size = Vector2(50000, 50000)
+shader_parameter/tile_size = 4096.0
+shader_parameter/macro_strength = 1.0
+shader_parameter/tone_scale = 930.0
+shader_parameter/tone_strength = 0.15
+
+[sub_resource type="FastNoiseLite" id="Noise_grain"]
+noise_type = 1
+frequency = 0.04
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="NoiseTex_grain"]
+width = 512
+height = 512
+seamless = true
+generate_mipmaps = true
+noise = SubResource("Noise_grain")
+
+[sub_resource type="ShaderMaterial" id="Mat_concrete"]
+shader = ExtResource("grain")
+shader_parameter/grain = SubResource("NoiseTex_grain")
+shader_parameter/grain_scale = 900.0
+shader_parameter/grain_strength = 0.2
+shader_parameter/speckle_scale = 40.0
+shader_parameter/speckle_strength = 0.45
+
+[sub_resource type="ShaderMaterial" id="Mat_lines"]
+shader = ExtResource("grain")
+shader_parameter/grain = SubResource("NoiseTex_grain")
+shader_parameter/grain_scale = 900.0
+shader_parameter/grain_strength = 0.2
+shader_parameter/speckle_strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="Mat_interiors"]
+shader = ExtResource("grain")
+shader_parameter/grain = SubResource("NoiseTex_grain")
+shader_parameter/grain_scale = 500.0
+shader_parameter/grain_strength = 0.35
+shader_parameter/speckle_strength = 0.0
+
+[sub_resource type="ShaderMaterial" id="Mat_roofs"]
+shader = ExtResource("grain")
+shader_parameter/grain = SubResource("NoiseTex_grain")
+shader_parameter/grain_scale = 700.0
+shader_parameter/grain_strength = 0.3
+shader_parameter/speckle_strength = 0.0
+
+; GENERATED by tools/helwan_map. Do not edit: the next run replaces this
+; file. Hand-made content goes in helwan_master.tscn.
+;
+; 50,000 px (2.5 km) square centred on the origin, in 10,000 px chunks.
+[node name="HelwanGenerated" type="Node2D"]
+
+; The ground polygon runs from (0, 0) to map_size, so it sits at the map's
+; top-left corner.
+[node name="Ground" type="Polygon2D" parent="."]
+material = SubResource("Mat_ground")
+position = Vector2(-25000, -25000)
+polygon = PackedVector2Array(0, 0, 50000, 0, 50000, 50000, 0, 50000)
+script = ExtResource("ground")
+map_size = Vector2(50000, 50000)
+
+; Five sublayers, each one mesh per chunk; every chunk of a sublayer draws
+; before the next sublayer, so neighbouring chunks never cover each other's
+; detail. Roofs sit at z 1, above mechas, as Building.tscn's roofs do.
+[node name="City" type="Node2D" parent="."]
+
+[node name="Ground" type="Node2D" parent="City"]
+material = SubResource("Mat_concrete")
+
+[node name="GroundLines" type="Node2D" parent="City"]
+material = SubResource("Mat_lines")
+
+[node name="Halos" type="Node2D" parent="City"]
+
+[node name="Interiors" type="Node2D" parent="City"]
+material = SubResource("Mat_interiors")
+
+[node name="Roofs" type="Node2D" parent="City"]
+z_index = 1
+material = SubResource("Mat_roofs")
+
+[node name="ground_0_0" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_0_0")
+
+[node name="ground_0_1" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_0_1")
+
+[node name="ground_0_2" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_0_2")
+
+[node name="ground_0_3" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_0_3")
+
+[node name="ground_0_4" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_0_4")
+
+[node name="ground_1_0" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_1_0")
+
+[node name="ground_1_1" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_1_1")
+
+[node name="ground_1_2" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_1_2")
+
+[node name="ground_1_3" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_1_3")
+
+[node name="ground_1_4" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_1_4")
+
+[node name="ground_2_0" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_2_0")
+
+[node name="ground_2_1" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_2_1")
+
+[node name="ground_2_2" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_2_2")
+
+[node name="ground_2_3" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_2_3")
+
+[node name="ground_2_4" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_2_4")
+
+[node name="ground_3_0" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_3_0")
+
+[node name="ground_3_1" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_3_1")
+
+[node name="ground_3_2" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_3_2")
+
+[node name="ground_3_3" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_3_3")
+
+[node name="ground_3_4" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_3_4")
+
+[node name="ground_4_0" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_4_0")
+
+[node name="ground_4_1" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_4_1")
+
+[node name="ground_4_2" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_4_2")
+
+[node name="ground_4_3" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_4_3")
+
+[node name="ground_4_4" type="MeshInstance2D" parent="City/Ground"]
+use_parent_material = true
+mesh = ExtResource("ground_4_4")
+
+[node name="groundlines_0_0" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_0_0")
+
+[node name="groundlines_0_1" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_0_1")
+
+[node name="groundlines_0_2" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_0_2")
+
+[node name="groundlines_0_3" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_0_3")
+
+[node name="groundlines_0_4" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_0_4")
+
+[node name="groundlines_1_1" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_1_1")
+
+[node name="groundlines_1_2" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_1_2")
+
+[node name="groundlines_1_3" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_1_3")
+
+[node name="groundlines_1_4" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_1_4")
+
+[node name="groundlines_2_1" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_2_1")
+
+[node name="groundlines_2_2" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_2_2")
+
+[node name="groundlines_2_3" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_2_3")
+
+[node name="groundlines_2_4" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_2_4")
+
+[node name="groundlines_3_1" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_3_1")
+
+[node name="groundlines_3_2" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_3_2")
+
+[node name="groundlines_3_3" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_3_3")
+
+[node name="groundlines_3_4" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_3_4")
+
+[node name="groundlines_4_1" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_4_1")
+
+[node name="groundlines_4_2" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_4_2")
+
+[node name="groundlines_4_3" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_4_3")
+
+[node name="groundlines_4_4" type="MeshInstance2D" parent="City/GroundLines"]
+use_parent_material = true
+mesh = ExtResource("groundlines_4_4")
+
+[node name="halos_0_0" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_0_0")
+
+[node name="halos_0_1" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_0_1")
+
+[node name="halos_0_2" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_0_2")
+
+[node name="halos_0_3" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_0_3")
+
+[node name="halos_0_4" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_0_4")
+
+[node name="halos_1_0" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_1_0")
+
+[node name="halos_1_1" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_1_1")
+
+[node name="halos_1_2" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_1_2")
+
+[node name="halos_1_3" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_1_3")
+
+[node name="halos_1_4" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_1_4")
+
+[node name="halos_2_0" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_2_0")
+
+[node name="halos_2_1" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_2_1")
+
+[node name="halos_2_2" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_2_2")
+
+[node name="halos_2_3" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_2_3")
+
+[node name="halos_2_4" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_2_4")
+
+[node name="halos_3_0" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_3_0")
+
+[node name="halos_3_1" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_3_1")
+
+[node name="halos_3_2" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_3_2")
+
+[node name="halos_3_3" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_3_3")
+
+[node name="halos_3_4" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_3_4")
+
+[node name="halos_4_0" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_4_0")
+
+[node name="halos_4_1" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_4_1")
+
+[node name="halos_4_2" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_4_2")
+
+[node name="halos_4_3" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_4_3")
+
+[node name="halos_4_4" type="MeshInstance2D" parent="City/Halos"]
+use_parent_material = true
+mesh = ExtResource("halos_4_4")
+
+[node name="interiors_0_0" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_0_0")
+
+[node name="interiors_0_1" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_0_1")
+
+[node name="interiors_0_2" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_0_2")
+
+[node name="interiors_0_3" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_0_3")
+
+[node name="interiors_0_4" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_0_4")
+
+[node name="interiors_1_0" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_1_0")
+
+[node name="interiors_1_1" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_1_1")
+
+[node name="interiors_1_2" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_1_2")
+
+[node name="interiors_1_3" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_1_3")
+
+[node name="interiors_1_4" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_1_4")
+
+[node name="interiors_2_0" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_2_0")
+
+[node name="interiors_2_1" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_2_1")
+
+[node name="interiors_2_2" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_2_2")
+
+[node name="interiors_2_3" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_2_3")
+
+[node name="interiors_2_4" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_2_4")
+
+[node name="interiors_3_0" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_3_0")
+
+[node name="interiors_3_1" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_3_1")
+
+[node name="interiors_3_2" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_3_2")
+
+[node name="interiors_3_3" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_3_3")
+
+[node name="interiors_3_4" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_3_4")
+
+[node name="interiors_4_0" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_4_0")
+
+[node name="interiors_4_1" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_4_1")
+
+[node name="interiors_4_2" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_4_2")
+
+[node name="interiors_4_3" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_4_3")
+
+[node name="interiors_4_4" type="MeshInstance2D" parent="City/Interiors"]
+use_parent_material = true
+mesh = ExtResource("interiors_4_4")
+
+[node name="roofs_0_0" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_0_0")
+
+[node name="roofs_0_1" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_0_1")
+
+[node name="roofs_0_2" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_0_2")
+
+[node name="roofs_0_3" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_0_3")
+
+[node name="roofs_0_4" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_0_4")
+
+[node name="roofs_1_0" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_1_0")
+
+[node name="roofs_1_1" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_1_1")
+
+[node name="roofs_1_2" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_1_2")
+
+[node name="roofs_1_3" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_1_3")
+
+[node name="roofs_1_4" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_1_4")
+
+[node name="roofs_2_0" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_2_0")
+
+[node name="roofs_2_1" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_2_1")
+
+[node name="roofs_2_2" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_2_2")
+
+[node name="roofs_2_3" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_2_3")
+
+[node name="roofs_2_4" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_2_4")
+
+[node name="roofs_3_0" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_3_0")
+
+[node name="roofs_3_1" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_3_1")
+
+[node name="roofs_3_2" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_3_2")
+
+[node name="roofs_3_3" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_3_3")
+
+[node name="roofs_3_4" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_3_4")
+
+[node name="roofs_4_0" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_4_0")
+
+[node name="roofs_4_1" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_4_1")
+
+[node name="roofs_4_2" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_4_2")
+
+[node name="roofs_4_3" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_4_3")
+
+[node name="roofs_4_4" type="MeshInstance2D" parent="City/Roofs"]
+use_parent_material = true
+mesh = ExtResource("roofs_4_4")
+
+; The prop sprite layers draw the spawn points of the PropSpawner in
+; helwan_master.tscn (three levels up once this scene is instanced there).
+; Parked and abandoned vehicles, at ground level (below mechas and roofs).
+; Wrecks use the car sprites, drawn darker.
+[node name="Vehicles" type="Node2D" parent="."]
+script = ExtResource("sprite_layer")
+spawner_path = NodePath("../../../PropSpawner")
+kinds = PackedStringArray("vehicle_wreck", "vehicle", "truck")
+textures = {"vehicle_wreck": [ExtResource("spr_vehicle_ambulance"), ExtResource("spr_vehicle_estate"), ExtResource("spr_vehicle_hatchback"), ExtResource("spr_vehicle_pickup"), ExtResource("spr_vehicle_sports"), ExtResource("spr_vehicle_suv")], "vehicle": [ExtResource("spr_vehicle_ambulance"), ExtResource("spr_vehicle_estate"), ExtResource("spr_vehicle_hatchback"), ExtResource("spr_vehicle_pickup"), ExtResource("spr_vehicle_sports"), ExtResource("spr_vehicle_suv")], "truck": [ExtResource("spr_vehicle_fire_engine"), ExtResource("spr_vehicle_minibus")]}
+spans = {"vehicle_wreck": PackedFloat32Array(1.0, 0.99, 1.0, 1.0, 1.0, 1.0), "vehicle": PackedFloat32Array(1.0, 0.99, 1.0, 1.0, 1.0, 1.0), "truck": PackedFloat32Array(1.0, 1.0)}
+tones = {"vehicle_wreck": 0.55}
+tone_jitter = 0.15
+
+; Gives the vehicles bodies: mechas push them, and they stop shots by chance
+; (see VehicleField and MapSenses). Mass and shot_block come per sprite from
+; sprite_catalogue.json.
+[node name="VehicleField" type="Node2D" parent="."]
+script = ExtResource("vehicle_field")
+spawner_path = NodePath("../../../PropSpawner")
+layer_path = NodePath("../Vehicles")
+kinds = PackedStringArray("vehicle_wreck", "vehicle", "truck")
+masses = {"vehicle_wreck": PackedFloat32Array(3500.0, 1500.0, 950.0, 2000.0, 1300.0, 2200.0), "vehicle": PackedFloat32Array(3500.0, 1500.0, 950.0, 2000.0, 1300.0, 2200.0), "truck": PackedFloat32Array(14000.0, 4200.0)}
+shot_blocks = {"vehicle_wreck": PackedFloat32Array(0.65, 0.5, 0.5, 0.55, 0.5, 0.55), "vehicle": PackedFloat32Array(0.65, 0.5, 0.5, 0.55, 0.5, 0.55), "truck": PackedFloat32Array(0.85, 0.7)}
+
+; Trees and bushes, above mechas. Each tree is 2-3 bare branch slices
+; stacked. Plants near the player fade; they also hide what is under them
+; from detection (see MapSenses).
+[node name="Foliage" type="Node2D" parent="."]
+z_index = 2
+script = ExtResource("sprite_layer")
+spawner_path = NodePath("../../../PropSpawner")
+kinds = PackedStringArray("bush", "tree")
+textures = {"bush": [ExtResource("spr_bush_1"), ExtResource("spr_bush_2"), ExtResource("spr_bush_3"), ExtResource("spr_bush_4"), ExtResource("spr_bush_5"), ExtResource("spr_bush_6")], "tree": [ExtResource("spr_tree_1"), ExtResource("spr_tree_2"), ExtResource("spr_tree_3"), ExtResource("spr_tree_4")]}
+spans = {"bush": PackedFloat32Array(0.666, 0.707, 0.678, 0.781, 0.697, 0.912), "tree": PackedFloat32Array(0.907, 0.964, 0.94, 0.945)}
+layers = {"tree": Vector2i(2, 3)}
+tones = {"tree": 0.85, "bush": 0.6}
+fade_near_player = true
+conceals = true
+
+; Makes the generated buildings enterable, gives them walls that stop shots
+; and block sight, and fades the roofs round the player.
+[node name="BuildingField" type="Node2D" parent="."]
+script = ExtResource("field")
+footprints = ExtResource("footprints")
+roof_material = SubResource("Mat_roofs")
+
+; Elevated structures from OpenStreetMap, above mechas, foliage and roofs.
+[node name="Overheads" type="Node2D" parent="."]
+z_index = 3
+
+[node name="Viaduct1" type="Line2D" parent="Overheads"]
+points = PackedVector2Array(25000, 14258, 22194, 13008, 19752, 11996, 7643, 7188, -2217, 3201, -9307, 1276, -12351, 792, -14527, 528, -15983, 426, -17576, 348, -19101, 315, -20146, 328, -22040, 463, -25000, 718)
+width = 200.0
+script = ExtResource("overhead")

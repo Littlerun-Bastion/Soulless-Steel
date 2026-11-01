@@ -88,9 +88,21 @@ func _physics_process(dt):
 		if deflection_cooldown <= 0:
 			deflected_from_body = null
 	
-	# Raycast movement to catch high-speed collisions
+	# Building walls and vehicles: each wall crossed costs 1 AP and the shot
+	# stops at the wall where its AP reaches 0; a vehicle stops it by chance
+	# (see MapSenses).
+	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (dir*speed*dt), armor_pen)
+	armor_pen = cover.ap
+	if cover.stop != null:
+		position = cover.stop - dir * 2.0
+		speed = 0
+		die(null)
+		return
+
+	# Raycast movement to catch high-speed collisions (walls and vehicles
+	# handled above)
 	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt))
+	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt), MapSenses.SHOT_MASK)
 	query.exclude = [self]
 	
 	var result = space_state.intersect_ray(query)

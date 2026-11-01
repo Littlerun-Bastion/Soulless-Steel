@@ -66,7 +66,7 @@ const IMPACT_PARTS := ["head", "core", "chassis", "left_shoulder", "right_should
 
 static func find_impact(attacker: Node2D, mecha: Node2D) -> Dictionary:
 	var space: PhysicsDirectSpaceState2D = mecha.get_world_2d().direct_space_state
-	var query := PhysicsRayQueryParameters2D.create(attacker.global_position, mecha.global_position)
+	var query := PhysicsRayQueryParameters2D.create(attacker.global_position, mecha.global_position, MapSenses.SIGHT_MASK)
 	var exclude: Array[RID] = []
 	if attacker is CollisionObject2D:
 		exclude.append(attacker.get_rid())

@@ -139,6 +139,10 @@ var explosion_targets = []
 var fuse_waiting = false
 var has_impacted = false
 var is_trail_created = false
+# Stopped by a building wall or a vehicle: it stays put. An impact-fused
+# round is going off; any other round's timer and proximity fuses keep
+# running.
+var cover_stopped = false
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -152,7 +156,12 @@ func _physics_process(dt):
 
 	if dying:
 		return
-		
+
+	if cover_stopped:
+		lifetime += dt
+		_check_fuses()
+		return
+
 	# Update propulsion (thrust, acceleration) and guidance (homing)
 	propulsion(dt)
 	guidance(dt)
@@ -166,10 +175,27 @@ func _physics_process(dt):
 		wiggle_error_lifetime = 0
 		cur_wiggle_err = randf_range(-wiggle_amount * wiggle_err,wiggle_amount * wiggle_err)
 	
-	# Raycast movement - ONLY checks terrain/walls, NOT mechas
-	# Mechas are handled by body_shape_entered for homing to work
+	# Building walls and vehicles (see MapSenses). A round with an impact fuse
+	# goes off at the first wall it hits, or at a vehicle that stops it. Any
+	# other round loses 1 AP per wall and stops at the wall where its AP
+	# reaches 0, or in a vehicle that stops it; its other fuses keep running.
+	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (velocity*dt), armor_pen, fuse_is_contact_enabled)
+	armor_pen = cover.ap
+	if cover.stop != null:
+		position = cover.stop - dir * 4.0
+		speed = 0
+		velocity = Vector2.ZERO
+		cover_stopped = true
+		if fuse_is_contact_enabled:
+			payload()
+		else:
+			_check_fuses()
+		return
+
+	# Raycast movement - ONLY checks terrain, NOT mechas, building walls or
+	# vehicles. Mechas are handled by body_shape_entered for homing to work
 	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(position, position + (velocity*dt))
+	var query = PhysicsRayQueryParameters2D.create(position, position + (velocity*dt), MapSenses.SHOT_MASK)
 	query.exclude = [self]
 	var result = space_state.intersect_ray(query)
 	
@@ -201,7 +227,10 @@ func _physics_process(dt):
 		dir = true_dir
 		
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
-	
+	_check_fuses()
+
+
+func _check_fuses():
 	# Check for timed fuse trigger
 	if lifetime > fuse_timer and fuse_timer > 0.0:
 		payload()
@@ -528,9 +557,9 @@ func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
 		
 		# Check if enemy is within detection cone
 		if abs(detection_angle) < deg_to_rad(fuse_angle):
-			# Raycast to ensure line of sight
+			# Raycast to ensure line of sight (vehicles don't block it)
 			var space_state = get_world_2d().direct_space_state
-			var query = PhysicsRayQueryParameters2D.create(position, body.position)
+			var query = PhysicsRayQueryParameters2D.create(position, body.position, MapSenses.SIGHT_MASK)
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
 			
@@ -589,8 +618,8 @@ func explosion():
 		
 		# Check if mecha is within explosion cone
 		if abs(explosion_angle) < deg_to_rad(payload_explosion_angle):
-			# Raycast to check line of sight
-			var query = PhysicsRayQueryParameters2D.create(position, body.position)
+			# Raycast to check line of sight (vehicles don't block it)
+			var query = PhysicsRayQueryParameters2D.create(position, body.position, MapSenses.SIGHT_MASK)
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
 

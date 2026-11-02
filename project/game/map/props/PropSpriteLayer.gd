@@ -83,7 +83,7 @@ signal rebuilt
 @export var reveal_margin := 120.0
 
 # Entry: [multimesh, index, position, radius, kind, tone, size, rotation
-# offset from the spawn's, hidden, texture].
+# offset from the spawn's, hidden, texture, base tone].
 var _cells := {}
 # Spawn index -> Array of its entries.
 var _by_spawn := {}
@@ -143,8 +143,9 @@ func hide_sprite(spawn_index: int) -> void:
 		_fading.erase(_entry_id(e))
 
 
-# Shows a spawn's sprites again at a new place (this node's space).
-func place_sprite(spawn_index: int, pos: Vector2, rot: float) -> void:
+# Shows a spawn's sprites again at a new place (this node's space), with
+# their brightness multiplied by tone_mult.
+func place_sprite(spawn_index: int, pos: Vector2, rot: float, tone_mult := 1.0) -> void:
 	for e in _by_spawn.get(spawn_index, []):
 		var old_cell := _cell_of(e[2])
 		var new_cell := _cell_of(pos)
@@ -153,6 +154,7 @@ func place_sprite(spawn_index: int, pos: Vector2, rot: float) -> void:
 			_cells.get_or_add(new_cell, []).append(e)
 		e[2] = pos
 		e[8] = false
+		e[5] = e[10] * tone_mult
 		e[0].set_instance_transform_2d(e[1], Transform2D(rot + e[7], e[6], 0.0, pos))
 		e[0].set_instance_color(e[1], Color(e[5], e[5], e[5], 1.0))
 
@@ -249,7 +251,7 @@ func _build_group(kind: String, tex: Texture2D, span: float, list: Array) -> voi
 		mm.set_instance_transform_2d(i, Transform2D(it[1], size, 0.0, it[0]))
 		var tone: float = it[3]
 		mm.set_instance_color(i, Color(tone, tone, tone, 1.0))
-		var entry := [mm, i, it[0], it[4], kind, tone, size, it[6], false, tex]
+		var entry := [mm, i, it[0], it[4], kind, tone, size, it[6], false, tex, tone]
 		_cells.get_or_add(_cell_of(it[0]), []).append(entry)
 		_by_spawn.get_or_add(it[5], []).append(entry)
 	var node := MultiMeshInstance2D.new()

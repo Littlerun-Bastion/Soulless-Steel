@@ -1,0 +1,79 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/arena/TestArena.gd" id="1_root"]
+[ext_resource type="Script" uid="uid://pdse1py3u5dq" path="res://game/expedition/ExpeditionDirector.gd" id="2_director"]
+[ext_resource type="PackedScene" path="res://database/maps/test_arena.tscn" id="3_map"]
+[ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
+[ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]
+[ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8_heatmap"]
+[ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="9_pause"]
+[ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="10_gameover"]
+[ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="11_intro"]
+[ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="12_cam"]
+
+[node name="TestArena" type="Node2D"]
+script = ExtResource("1_root")
+
+[node name="Map" parent="." instance=ExtResource("3_map")]
+
+; In-match visual feedback containers (mirrors Arena's structure).
+; Particles and one-shot effects get spawned under these at runtime.
+[node name="Casings" type="Node2D" parent="."]
+script = ExtResource("6_casings_script")
+casing = ExtResource("7_casing")
+casings_count = 500
+
+[node name="Mechas" type="Node2D" parent="."]
+
+[node name="ScrapParts" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Trails" type="Node2D" parent="."]
+
+[node name="Flashes" type="Node2D" parent="."]
+
+[node name="Smoke" type="Node2D" parent="."]
+
+[node name="Explosions" type="Node2D" parent="."]
+
+[node name="HeatmapEffects" parent="." instance=ExtResource("8_heatmap")]
+
+; Debug overlay container — populated each frame when Debug.navigation = true.
+; Holds Line2D paths + target sprites for each NPC's current nav route.
+[node name="DebugNavigation" type="Node2D" parent="."]
+
+; Free-cam for orbiting the world during dev. Disabled by default; press
+; debug_1 (insert key) to activate. Wheel zooms, edge pans.
+[node name="ArenaCamera" parent="." instance=ExtResource("12_cam")]
+enabled = false
+zoom = Vector2(0.1, 0.1)
+position_smoothing_speed = 10.0
+drag_horizontal_enabled = false
+drag_vertical_enabled = false
+
+[node name="PlayerHUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="GameOver" parent="." instance=ExtResource("10_gameover")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_pause")]
+
+; Periodic ambient wind sound timer (currently a stub).
+[node name="WindsTimer" type="Timer" parent="."]
+wait_time = 20.0
+autostart = true
+
+; Entrance animation. AI mechas stay paused until this animation_ending signal
+; fires (see _on_IntroAnimation_animation_ending in script).
+[node name="Intro" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="IntroAnimation" parent="Intro" instance=ExtResource("11_intro")]
+
+[node name="ExpeditionDirector" type="Node" parent="."]
+script = ExtResource("2_director")
+
+[connection signal="pause_toggle" from="PauseMenu" to="." method="_on_PauseMenu_pause_toggle"]
+[connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]
+[connection signal="animation_ending" from="Intro/IntroAnimation" to="." method="_on_IntroAnimation_animation_ending"]

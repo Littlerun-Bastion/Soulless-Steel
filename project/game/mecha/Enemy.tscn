@@ -11,8 +11,6 @@ radius = 750.0
 [node name="Enemy" instance=ExtResource("1")]
 position = Vector2(0, 0)
 script = ExtResource("2")
-look_ahead_range = 800
-num_rays = 40
 
 [node name="ArmWeaponLeft" parent="." index="6"]
 position = Vector2(-53.8753, 34.9034)

@@ -179,7 +179,7 @@ func _physics_process(dt):
 	# goes off at the first wall it hits, or at a vehicle that stops it. Any
 	# other round loses 1 AP per wall and stops at the wall where its AP
 	# reaches 0, or in a vehicle that stops it; its other fuses keep running.
-	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (velocity*dt), armor_pen, fuse_is_contact_enabled)
+	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (velocity*dt), armor_pen, fuse_is_contact_enabled, true)
 	armor_pen = cover.ap
 	if cover.stop != null:
 		position = cover.stop - dir * 4.0
@@ -607,6 +607,12 @@ func payload():
 # AOE explosion damage - can hit multiple parts on multiple mechas
 func explosion():
 	var space_state = get_world_2d().direct_space_state
+
+	# Cars in the blast radius take blast damage (see VehicleField).
+	if payload_explosion_radius > 0.0:
+		var vehicles := VehicleField.find(self)
+		if vehicles:
+			vehicles.damage_in_radius(global_position, payload_explosion_radius, VehicleField.BLAST_DAMAGE)
 	
 	# Process each mecha in explosion radius	
 	for body in explosion_targets.duplicate():

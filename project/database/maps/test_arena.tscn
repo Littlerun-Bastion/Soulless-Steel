@@ -1,0 +1,1427 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/maps/Map.gd" id="1_87yrl"]
+[ext_resource type="Script" path="res://game/map/BuildingField.gd" id="2_ef0a7"]
+[ext_resource type="Script" path="res://game/map/props/PropSpriteLayer.gd" id="3_w2k88"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_ambulance.png" id="4_6v0o3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_estate.png" id="5_uo7xi"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_hatchback.png" id="6_xj053"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_pickup.png" id="7_7kwcp"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_sports.png" id="8_w708v"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_suv.png" id="9_8dq7k"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_fire_engine.png" id="10_pxwvv"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_minibus.png" id="11_vq4ve"]
+[ext_resource type="Script" path="res://game/map/props/PropSpawner.gd" id="12_u0c5d"]
+[ext_resource type="Script" path="res://game/map/props/PropSpawnPoint.gd" id="13_c2nni"]
+[ext_resource type="Script" path="res://game/map/props/VehicleField.gd" id="14_dxmor"]
+[ext_resource type="PackedScene" path="res://game/arena/ExitPoint.tscn" id="15_yppec"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="17_ehxy7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7evry"]
+size = Vector2(9400, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ouaox"]
+size = Vector2(9400, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gwa42"]
+size = Vector2(200, 9000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mvlvw"]
+size = Vector2(200, 9000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4nkqx"]
+size = Vector2(1400, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_t37h1"]
+size = Vector2(80, 1200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d844g"]
+size = Vector2(80, 1200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bp170"]
+size = Vector2(220, 220)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rw6gg"]
+size = Vector2(220, 220)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w5h8y"]
+size = Vector2(220, 220)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dk871"]
+size = Vector2(220, 220)
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_q0sly"]
+vertices = PackedVector2Array(-4400, -4400, 4400, -4400, 4400, 4400, -4400, 4400)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-4400, -4400, 4400, -4400, 4400, 4400, -4400, 4400)])
+
+[node name="TestArena" type="Node2D" unique_id=921747860]
+script = ExtResource("1_87yrl")
+site_name = "Test Arena"
+
+[node name="BG" type="Node2D" parent="." unique_id=575104304]
+
+[node name="Ground" type="Polygon2D" parent="BG" unique_id=543214145]
+color = Color(0.07, 0.07, 0.07, 1)
+polygon = PackedVector2Array(-5000, -5000, 5000, -5000, 5000, 5000, -5000, 5000)
+
+[node name="Roads" type="Node2D" parent="BG" unique_id=576109685]
+
+[node name="MainStreet" type="Polygon2D" parent="BG/Roads" unique_id=971463008]
+color = Color(0.13, 0.13, 0.13, 1)
+polygon = PackedVector2Array(-4400, -300, 4400, -300, 4400, 300, -4400, 300)
+
+[node name="NorthSouthStreet" type="Polygon2D" parent="BG/Roads" unique_id=1954273242]
+color = Color(0.13, 0.13, 0.13, 1)
+polygon = PackedVector2Array(1250, -4400, 1750, -4400, 1750, 4400, 1250, 4400)
+
+[node name="Car park" type="Polygon2D" parent="BG/Roads" unique_id=1871957982]
+color = Color(0.11, 0.11, 0.11, 1)
+polygon = PackedVector2Array(-3600, 2200, -1800, 2200, -1800, 3600, -3600, 3600)
+
+[node name="RoadLines" type="Node2D" parent="BG" unique_id=1263285226]
+
+[node name="Dash-4300" type="Polygon2D" parent="BG/RoadLines" unique_id=1217617141]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-4300, -6, -4100, -6, -4100, 6, -4300, 6)
+
+[node name="Dash-3900" type="Polygon2D" parent="BG/RoadLines" unique_id=721726119]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-3900, -6, -3700, -6, -3700, 6, -3900, 6)
+
+[node name="Dash-3500" type="Polygon2D" parent="BG/RoadLines" unique_id=1735371111]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-3500, -6, -3300, -6, -3300, 6, -3500, 6)
+
+[node name="Dash-3100" type="Polygon2D" parent="BG/RoadLines" unique_id=1223134245]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-3100, -6, -2900, -6, -2900, 6, -3100, 6)
+
+[node name="Dash-2700" type="Polygon2D" parent="BG/RoadLines" unique_id=1731030860]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-2700, -6, -2500, -6, -2500, 6, -2700, 6)
+
+[node name="Dash-2300" type="Polygon2D" parent="BG/RoadLines" unique_id=807344449]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-2300, -6, -2100, -6, -2100, 6, -2300, 6)
+
+[node name="Dash-1900" type="Polygon2D" parent="BG/RoadLines" unique_id=352002988]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-1900, -6, -1700, -6, -1700, 6, -1900, 6)
+
+[node name="Dash-1500" type="Polygon2D" parent="BG/RoadLines" unique_id=587006690]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-1500, -6, -1300, -6, -1300, 6, -1500, 6)
+
+[node name="Dash-1100" type="Polygon2D" parent="BG/RoadLines" unique_id=272467255]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-1100, -6, -900, -6, -900, 6, -1100, 6)
+
+[node name="Dash-700" type="Polygon2D" parent="BG/RoadLines" unique_id=190464742]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-700, -6, -500, -6, -500, 6, -700, 6)
+
+[node name="Dash-300" type="Polygon2D" parent="BG/RoadLines" unique_id=729565973]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(-300, -6, -100, -6, -100, 6, -300, 6)
+
+[node name="Dash100" type="Polygon2D" parent="BG/RoadLines" unique_id=1580221120]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(100, -6, 300, -6, 300, 6, 100, 6)
+
+[node name="Dash500" type="Polygon2D" parent="BG/RoadLines" unique_id=1575902204]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(500, -6, 700, -6, 700, 6, 500, 6)
+
+[node name="Dash900" type="Polygon2D" parent="BG/RoadLines" unique_id=2145628695]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(900, -6, 1100, -6, 1100, 6, 900, 6)
+
+[node name="Dash1300" type="Polygon2D" parent="BG/RoadLines" unique_id=2087475410]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1300, -6, 1500, -6, 1500, 6, 1300, 6)
+
+[node name="Dash1700" type="Polygon2D" parent="BG/RoadLines" unique_id=660596990]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1700, -6, 1900, -6, 1900, 6, 1700, 6)
+
+[node name="Dash2100" type="Polygon2D" parent="BG/RoadLines" unique_id=1459153026]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(2100, -6, 2300, -6, 2300, 6, 2100, 6)
+
+[node name="Dash2500" type="Polygon2D" parent="BG/RoadLines" unique_id=2001210493]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(2500, -6, 2700, -6, 2700, 6, 2500, 6)
+
+[node name="Dash2900" type="Polygon2D" parent="BG/RoadLines" unique_id=347137414]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(2900, -6, 3100, -6, 3100, 6, 2900, 6)
+
+[node name="Dash3300" type="Polygon2D" parent="BG/RoadLines" unique_id=1666030035]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(3300, -6, 3500, -6, 3500, 6, 3300, 6)
+
+[node name="Dash3700" type="Polygon2D" parent="BG/RoadLines" unique_id=317789953]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(3700, -6, 3900, -6, 3900, 6, 3700, 6)
+
+[node name="Dash4100" type="Polygon2D" parent="BG/RoadLines" unique_id=647346527]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(4100, -6, 4300, -6, 4300, 6, 4100, 6)
+
+[node name="DashNS-4300" type="Polygon2D" parent="BG/RoadLines" unique_id=1728058459]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -4300, 1506, -4300, 1506, -4100, 1494, -4100)
+
+[node name="DashNS-3900" type="Polygon2D" parent="BG/RoadLines" unique_id=468382941]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -3900, 1506, -3900, 1506, -3700, 1494, -3700)
+
+[node name="DashNS-3500" type="Polygon2D" parent="BG/RoadLines" unique_id=1299703822]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -3500, 1506, -3500, 1506, -3300, 1494, -3300)
+
+[node name="DashNS-3100" type="Polygon2D" parent="BG/RoadLines" unique_id=1137404783]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -3100, 1506, -3100, 1506, -2900, 1494, -2900)
+
+[node name="DashNS-2700" type="Polygon2D" parent="BG/RoadLines" unique_id=878165735]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -2700, 1506, -2700, 1506, -2500, 1494, -2500)
+
+[node name="DashNS-2300" type="Polygon2D" parent="BG/RoadLines" unique_id=2033196748]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -2300, 1506, -2300, 1506, -2100, 1494, -2100)
+
+[node name="DashNS-1900" type="Polygon2D" parent="BG/RoadLines" unique_id=1355113756]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -1900, 1506, -1900, 1506, -1700, 1494, -1700)
+
+[node name="DashNS-1500" type="Polygon2D" parent="BG/RoadLines" unique_id=1895005738]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -1500, 1506, -1500, 1506, -1300, 1494, -1300)
+
+[node name="DashNS-1100" type="Polygon2D" parent="BG/RoadLines" unique_id=1572232284]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -1100, 1506, -1100, 1506, -900, 1494, -900)
+
+[node name="DashNS-700" type="Polygon2D" parent="BG/RoadLines" unique_id=604491337]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -700, 1506, -700, 1506, -500, 1494, -500)
+
+[node name="DashNS-300" type="Polygon2D" parent="BG/RoadLines" unique_id=1937836046]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, -300, 1506, -300, 1506, -100, 1494, -100)
+
+[node name="DashNS100" type="Polygon2D" parent="BG/RoadLines" unique_id=260725189]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 100, 1506, 100, 1506, 300, 1494, 300)
+
+[node name="DashNS500" type="Polygon2D" parent="BG/RoadLines" unique_id=1821406884]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 500, 1506, 500, 1506, 700, 1494, 700)
+
+[node name="DashNS900" type="Polygon2D" parent="BG/RoadLines" unique_id=464805602]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 900, 1506, 900, 1506, 1100, 1494, 1100)
+
+[node name="DashNS1300" type="Polygon2D" parent="BG/RoadLines" unique_id=1385468267]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 1300, 1506, 1300, 1506, 1500, 1494, 1500)
+
+[node name="DashNS1700" type="Polygon2D" parent="BG/RoadLines" unique_id=1262210713]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 1700, 1506, 1700, 1506, 1900, 1494, 1900)
+
+[node name="DashNS2100" type="Polygon2D" parent="BG/RoadLines" unique_id=863638920]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 2100, 1506, 2100, 1506, 2300, 1494, 2300)
+
+[node name="DashNS2500" type="Polygon2D" parent="BG/RoadLines" unique_id=1772061126]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 2500, 1506, 2500, 1506, 2700, 1494, 2700)
+
+[node name="DashNS2900" type="Polygon2D" parent="BG/RoadLines" unique_id=1508671313]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 2900, 1506, 2900, 1506, 3100, 1494, 3100)
+
+[node name="DashNS3300" type="Polygon2D" parent="BG/RoadLines" unique_id=863935320]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 3300, 1506, 3300, 1506, 3500, 1494, 3500)
+
+[node name="DashNS3700" type="Polygon2D" parent="BG/RoadLines" unique_id=1484018588]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 3700, 1506, 3700, 1506, 3900, 1494, 3900)
+
+[node name="DashNS4100" type="Polygon2D" parent="BG/RoadLines" unique_id=1731066769]
+color = Color(0.3, 0.3, 0.3, 1)
+polygon = PackedVector2Array(1494, 4100, 1506, 4100, 1506, 4300, 1494, 4300)
+
+[node name="SurfaceOverlays" type="Node2D" parent="." unique_id=1625281712]
+
+[node name="Decals" type="Node2D" parent="." unique_id=90698121]
+
+[node name="Bushes" type="Node2D" parent="." unique_id=1677540445]
+
+[node name="Props" type="Node2D" parent="." unique_id=736332309]
+
+[node name="Trees" type="Node2D" parent="." unique_id=1535745909]
+
+[node name="Buildings" type="Node2D" parent="." unique_id=431216309]
+
+[node name="Texts" type="Node2D" parent="." unique_id=1098337238]
+
+[node name="Triggers" type="Node2D" parent="." unique_id=1422975428]
+
+[node name="Walls" type="Node2D" parent="." unique_id=477253185]
+
+[node name="EdgeN" type="StaticBody2D" parent="Walls" unique_id=195054152]
+position = Vector2(0, -4600)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeN" unique_id=1378615929]
+shape = SubResource("RectangleShape2D_7evry")
+
+[node name="EdgeS" type="StaticBody2D" parent="Walls" unique_id=198413516]
+position = Vector2(0, 4600)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeS" unique_id=1806243002]
+shape = SubResource("RectangleShape2D_ouaox")
+
+[node name="EdgeW" type="StaticBody2D" parent="Walls" unique_id=552365628]
+position = Vector2(-4600, 0)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeW" unique_id=59995135]
+shape = SubResource("RectangleShape2D_gwa42")
+
+[node name="EdgeE" type="StaticBody2D" parent="Walls" unique_id=1441334796]
+position = Vector2(4600, 0)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeE" unique_id=584783294]
+shape = SubResource("RectangleShape2D_mvlvw")
+
+[node name="Border" type="Line2D" parent="Walls" unique_id=1431740605]
+points = PackedVector2Array(-4500, -4500, 4500, -4500, 4500, 4500, -4500, 4500)
+closed = true
+width = 24.0
+default_color = Color(0.45, 0.45, 0.45, 1)
+
+[node name="UBack" type="StaticBody2D" parent="Walls" unique_id=9285306]
+position = Vector2(-900, -3660)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/UBack" unique_id=933966677]
+shape = SubResource("RectangleShape2D_4nkqx")
+
+[node name="Look" type="Polygon2D" parent="Walls/UBack" unique_id=2086326393]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-700, -40, 700, -40, 700, 40, -700, 40)
+
+[node name="ULeft" type="StaticBody2D" parent="Walls" unique_id=1065713913]
+position = Vector2(-1560, -3100)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/ULeft" unique_id=1110257188]
+shape = SubResource("RectangleShape2D_t37h1")
+
+[node name="Look" type="Polygon2D" parent="Walls/ULeft" unique_id=1416735326]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-40, -600, 40, -600, 40, 600, -40, 600)
+
+[node name="URight" type="StaticBody2D" parent="Walls" unique_id=1182844565]
+position = Vector2(-240, -3100)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/URight" unique_id=1033535916]
+shape = SubResource("RectangleShape2D_d844g")
+
+[node name="Look" type="Polygon2D" parent="Walls/URight" unique_id=100933743]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-40, -600, 40, -600, 40, 600, -40, 600)
+
+[node name="Block0" type="StaticBody2D" parent="Walls" unique_id=425057934]
+position = Vector2(-490, 1010)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/Block0" unique_id=1206449580]
+shape = SubResource("RectangleShape2D_bp170")
+
+[node name="Look" type="Polygon2D" parent="Walls/Block0" unique_id=938084935]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-110, -110, 110, -110, 110, 110, -110, 110)
+
+[node name="Block1" type="StaticBody2D" parent="Walls" unique_id=1519641730]
+position = Vector2(10, 1010)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/Block1" unique_id=105057051]
+shape = SubResource("RectangleShape2D_rw6gg")
+
+[node name="Look" type="Polygon2D" parent="Walls/Block1" unique_id=1439397586]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-110, -110, 110, -110, 110, 110, -110, 110)
+
+[node name="Block2" type="StaticBody2D" parent="Walls" unique_id=600447727]
+position = Vector2(510, 1010)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/Block2" unique_id=1132472979]
+shape = SubResource("RectangleShape2D_w5h8y")
+
+[node name="Look" type="Polygon2D" parent="Walls/Block2" unique_id=676323674]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-110, -110, 110, -110, 110, 110, -110, 110)
+
+[node name="Block3" type="StaticBody2D" parent="Walls" unique_id=1384590606]
+position = Vector2(1010, 1010)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/Block3" unique_id=361985290]
+shape = SubResource("RectangleShape2D_dk871")
+
+[node name="Look" type="Polygon2D" parent="Walls/Block3" unique_id=1264089774]
+color = Color(0.32, 0.32, 0.32, 1)
+polygon = PackedVector2Array(-110, -110, 110, -110, 110, 110, -110, 110)
+
+[node name="BuildingField" type="Node2D" parent="." unique_id=1894734926]
+script = ExtResource("2_ef0a7")
+
+[node name="Footprints" type="Node2D" parent="BuildingField" unique_id=7297290]
+
+[node name="House0" type="Polygon2D" parent="BuildingField/Footprints" unique_id=2068607277]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-3400, -1500, -2920, -1500, -2920, -600, -3400, -600)
+
+[node name="House1" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1966568003]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-2900, -1500, -2420, -1500, -2420, -600, -2900, -600)
+
+[node name="House2" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1444822688]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-2400, -1500, -1920, -1500, -1920, -600, -2400, -600)
+
+[node name="House3" type="Polygon2D" parent="BuildingField/Footprints" unique_id=204069109]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-1600, -1500, -1120, -1500, -1120, -600, -1600, -600)
+
+[node name="House4" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1908221978]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-1100, -1500, -620, -1500, -620, -600, -1100, -600)
+
+[node name="House5" type="Polygon2D" parent="BuildingField/Footprints" unique_id=275023169]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-600, -1500, -120, -1500, -120, -600, -600, -600)
+
+[node name="LBlock" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1940550741]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-2600, 600, -1000, 600, -1000, 1200, -2000, 1200, -2000, 2000, -2600, 2000)
+
+[node name="Warehouse" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1133979427]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(2100, -3400, 3600, -3400, 3600, -1100, 2100, -1100)
+
+[node name="BlockSE1" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1883680761]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(2100, 700, 3600, 700, 3600, 1600, 2100, 1600)
+
+[node name="BlockSE2" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1538782630]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(2100, 1900, 3600, 1900, 3600, 3000, 2100, 3000)
+
+[node name="Shed0" type="Polygon2D" parent="BuildingField/Footprints" unique_id=274644636]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-3800, -3400, -3400, -3400, -3400, -3100, -3800, -3100)
+
+[node name="Shed1" type="Polygon2D" parent="BuildingField/Footprints" unique_id=1757234441]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-2900, -3000, -2600, -3000, -2600, -2600, -2900, -2600)
+
+[node name="Vehicles" type="Node2D" parent="." unique_id=1383144483]
+script = ExtResource("3_w2k88")
+spawner_path = NodePath("../PropSpawner")
+kinds = PackedStringArray("vehicle_wreck", "vehicle", "truck")
+textures = {
+"truck": [ExtResource("10_pxwvv"), ExtResource("11_vq4ve")],
+"vehicle": [ExtResource("4_6v0o3"), ExtResource("5_uo7xi"), ExtResource("6_xj053"), ExtResource("7_7kwcp"), ExtResource("8_w708v"), ExtResource("9_8dq7k")],
+"vehicle_wreck": [ExtResource("4_6v0o3"), ExtResource("5_uo7xi"), ExtResource("6_xj053"), ExtResource("7_7kwcp"), ExtResource("8_w708v"), ExtResource("9_8dq7k")]
+}
+spans = {
+"truck": PackedFloat32Array(1, 1),
+"vehicle": PackedFloat32Array(1, 0.99, 1, 1, 1, 1),
+"vehicle_wreck": PackedFloat32Array(1, 0.99, 1, 1, 1, 1)
+}
+tones = {
+"vehicle_wreck": 0.55
+}
+tone_jitter = 0.15
+
+[node name="PropSpawner" type="Node2D" parent="." unique_id=1391943621]
+script = ExtResource("12_u0c5d")
+show_markers = false
+
+[node name="Vehicle0" type="Marker2D" parent="PropSpawner" unique_id=357788853]
+position = Vector2(-4200, -235)
+rotation = 0.028496195
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle1" type="Marker2D" parent="PropSpawner" unique_id=1610511576]
+position = Vector2(-4060.486, -235)
+rotation = 0.030682001
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle2" type="Marker2D" parent="PropSpawner" unique_id=1061234863]
+position = Vector2(-3942.8442, -235)
+rotation = 0.058502514
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle3" type="Marker2D" parent="PropSpawner" unique_id=453932385]
+position = Vector2(-3655.4285, -235)
+rotation = 0.0032399707
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle4" type="Marker2D" parent="PropSpawner" unique_id=1047451040]
+position = Vector2(-3494.6946, -235)
+rotation = 0.057240423
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle5" type="Marker2D" parent="PropSpawner" unique_id=516638741]
+position = Vector2(-3205.5176, -235)
+rotation = -0.021070186
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle6" type="Marker2D" parent="PropSpawner" unique_id=1141068222]
+position = Vector2(-2922.0715, -235)
+rotation = -0.02388832
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle7" type="Marker2D" parent="PropSpawner" unique_id=680790133]
+position = Vector2(-2667.0583, -235)
+rotation = -0.0027349368
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle8" type="Marker2D" parent="PropSpawner" unique_id=682125223]
+position = Vector2(-2415.5166, -235)
+rotation = -0.040108316
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle9" type="Marker2D" parent="PropSpawner" unique_id=1891946086]
+position = Vector2(-2248.0098, -235)
+rotation = -0.04376015
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle10" type="Marker2D" parent="PropSpawner" unique_id=192178891]
+position = Vector2(-2120.7783, -235)
+rotation = 0.04782391
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle11" type="Marker2D" parent="PropSpawner" unique_id=1304583012]
+position = Vector2(-1997.4994, -235)
+rotation = -0.053644087
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle12" type="Marker2D" parent="PropSpawner" unique_id=493617874]
+position = Vector2(-1834.2584, -235)
+rotation = -0.024792321
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle13" type="Marker2D" parent="PropSpawner" unique_id=964239786]
+position = Vector2(-1697.4236, -235)
+rotation = 0.024212841
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle14" type="Marker2D" parent="PropSpawner" unique_id=2006481316]
+position = Vector2(-1578.4948, -235)
+rotation = 0.05011798
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle15" type="Marker2D" parent="PropSpawner" unique_id=3464056]
+position = Vector2(-1439.8109, -235)
+rotation = 0.038750116
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle16" type="Marker2D" parent="PropSpawner" unique_id=1724315837]
+position = Vector2(-1314.0647, -235)
+rotation = -0.009105351
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle17" type="Marker2D" parent="PropSpawner" unique_id=405640821]
+position = Vector2(-880.19214, -235)
+rotation = -0.053704225
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle18" type="Marker2D" parent="PropSpawner" unique_id=507057477]
+position = Vector2(-761.9146, -235)
+rotation = 0.036139432
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle19" type="Marker2D" parent="PropSpawner" unique_id=1085307748]
+position = Vector2(-300.23636, -235)
+rotation = -0.008567095
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle20" type="Marker2D" parent="PropSpawner" unique_id=228105493]
+position = Vector2(-168.54852, -235)
+rotation = -0.016626872
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle21" type="Marker2D" parent="PropSpawner" unique_id=1458992557]
+position = Vector2(150.72983, -235)
+rotation = -0.041151404
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle22" type="Marker2D" parent="PropSpawner" unique_id=722997383]
+position = Vector2(267.74835, -235)
+rotation = -0.046350725
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle23" type="Marker2D" parent="PropSpawner" unique_id=686533619]
+position = Vector2(544.63214, -235)
+rotation = -0.051475488
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle24" type="Marker2D" parent="PropSpawner" unique_id=1051361297]
+position = Vector2(694.0542, -235)
+rotation = 0.058470596
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle25" type="Marker2D" parent="PropSpawner" unique_id=14506906]
+position = Vector2(828.17096, -235)
+rotation = -0.04098513
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle26" type="Marker2D" parent="PropSpawner" unique_id=1192140822]
+position = Vector2(1092.1161, -235)
+rotation = -0.04321564
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle27" type="Marker2D" parent="PropSpawner" unique_id=1905781686]
+position = Vector2(2234.103, -235)
+rotation = 0.002900619
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle28" type="Marker2D" parent="PropSpawner" unique_id=135232613]
+position = Vector2(2391.4937, -235)
+rotation = 0.04173432
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle29" type="Marker2D" parent="PropSpawner" unique_id=2038264789]
+position = Vector2(2530.3206, -235)
+rotation = 4.458055e-05
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle30" type="Marker2D" parent="PropSpawner" unique_id=1958770919]
+position = Vector2(2656.7239, -235)
+rotation = -0.04242164
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle31" type="Marker2D" parent="PropSpawner" unique_id=1993167971]
+position = Vector2(2800.4153, -235)
+rotation = -0.0318264
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle32" type="Marker2D" parent="PropSpawner" unique_id=94302521]
+position = Vector2(3084.4463, -235)
+rotation = -0.016326848
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle33" type="Marker2D" parent="PropSpawner" unique_id=1980031027]
+position = Vector2(3372.3003, -235)
+rotation = 0.008892413
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle34" type="Marker2D" parent="PropSpawner" unique_id=304545389]
+position = Vector2(3530.7837, -235)
+rotation = -0.012038328
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle35" type="Marker2D" parent="PropSpawner" unique_id=553299212]
+position = Vector2(3688.855, -235)
+rotation = -0.03119558
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle36" type="Marker2D" parent="PropSpawner" unique_id=1906682286]
+position = Vector2(3967.7766, -235)
+rotation = -0.001855325
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle37" type="Marker2D" parent="PropSpawner" unique_id=1033206406]
+position = Vector2(4082.7961, -235)
+rotation = 0.027498167
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle38" type="Marker2D" parent="PropSpawner" unique_id=1792887515]
+position = Vector2(-4200, 235)
+rotation = -0.05463896
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle39" type="Marker2D" parent="PropSpawner" unique_id=464044023]
+position = Vector2(-3951.4197, 235)
+rotation = -0.051978342
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle40" type="Marker2D" parent="PropSpawner" unique_id=2135133366]
+position = Vector2(-3836.3042, 235)
+rotation = 0.01563457
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle41" type="Marker2D" parent="PropSpawner" unique_id=971186181]
+position = Vector2(-3691.2454, 235)
+rotation = 0.011631187
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle42" type="Marker2D" parent="PropSpawner" unique_id=1679939034]
+position = Vector2(-3432.484, 235)
+rotation = -0.004900325
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle43" type="Marker2D" parent="PropSpawner" unique_id=1628805170]
+position = Vector2(-3308.3347, 235)
+rotation = 0.020735528
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle44" type="Marker2D" parent="PropSpawner" unique_id=1426464686]
+position = Vector2(-3149.8843, 235)
+rotation = 0.0013646446
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle45" type="Marker2D" parent="PropSpawner" unique_id=1222669419]
+position = Vector2(-3015.1968, 235)
+rotation = 0.0138263665
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle46" type="Marker2D" parent="PropSpawner" unique_id=1749058459]
+position = Vector2(-2867.6257, 235)
+rotation = -0.048089676
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle47" type="Marker2D" parent="PropSpawner" unique_id=1398559971]
+position = Vector2(-2712.1807, 235)
+rotation = 0.057090547
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle48" type="Marker2D" parent="PropSpawner" unique_id=46771914]
+position = Vector2(-2585.1804, 235)
+rotation = -0.040353633
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle49" type="Marker2D" parent="PropSpawner" unique_id=1417069247]
+position = Vector2(-2424.854, 235)
+rotation = 0.057421412
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle50" type="Marker2D" parent="PropSpawner" unique_id=462868530]
+position = Vector2(-2303.4497, 235)
+rotation = -0.009154998
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle51" type="Marker2D" parent="PropSpawner" unique_id=267453364]
+position = Vector2(-2165.2068, 235)
+rotation = -0.034532875
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle52" type="Marker2D" parent="PropSpawner" unique_id=14900774]
+position = Vector2(-2037.9944, 235)
+rotation = -0.020192444
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle53" type="Marker2D" parent="PropSpawner" unique_id=1138638249]
+position = Vector2(-1907.0754, 235)
+rotation = -0.04656016
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle54" type="Marker2D" parent="PropSpawner" unique_id=2040290334]
+position = Vector2(-1770.6487, 235)
+rotation = 0.03349669
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle55" type="Marker2D" parent="PropSpawner" unique_id=984377400]
+position = Vector2(-1607.0695, 235)
+rotation = 0.039362032
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle56" type="Marker2D" parent="PropSpawner" unique_id=1465160914]
+position = Vector2(-1324.6348, 235)
+rotation = 0.010074522
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle57" type="Marker2D" parent="PropSpawner" unique_id=110910426]
+position = Vector2(-1160.5679, 235)
+rotation = 0.013916854
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle58" type="Marker2D" parent="PropSpawner" unique_id=123913467]
+position = Vector2(-1014.9318, 235)
+rotation = -0.019470155
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle59" type="Marker2D" parent="PropSpawner" unique_id=1003828420]
+position = Vector2(-563.4268, 235)
+rotation = -0.022476815
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle60" type="Marker2D" parent="PropSpawner" unique_id=1878938599]
+position = Vector2(-423.68558, 235)
+rotation = -0.024991054
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle61" type="Marker2D" parent="PropSpawner" unique_id=389499824]
+position = Vector2(-87.91241, 235)
+rotation = 0.0066021793
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle62" type="Marker2D" parent="PropSpawner" unique_id=481517361]
+position = Vector2(35.64572, 235)
+rotation = -0.017112609
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle63" type="Marker2D" parent="PropSpawner" unique_id=1798526029]
+position = Vector2(166.17958, 235)
+rotation = -0.048576184
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle64" type="Marker2D" parent="PropSpawner" unique_id=1398614569]
+position = Vector2(429.47552, 235)
+rotation = 0.020696629
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle65" type="Marker2D" parent="PropSpawner" unique_id=894385580]
+position = Vector2(594.3274, 235)
+rotation = 0.036330495
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle66" type="Marker2D" parent="PropSpawner" unique_id=1685724547]
+position = Vector2(1029.6926, 235)
+rotation = 0.0319865
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle67" type="Marker2D" parent="PropSpawner" unique_id=1886567728]
+position = Vector2(2156.3162, 235)
+rotation = -0.00021489337
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle68" type="Marker2D" parent="PropSpawner" unique_id=99977013]
+position = Vector2(2444.7234, 235)
+rotation = 0.033353116
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle69" type="Marker2D" parent="PropSpawner" unique_id=1346766782]
+position = Vector2(2599.4065, 235)
+rotation = 0.002742555
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle70" type="Marker2D" parent="PropSpawner" unique_id=1784318527]
+position = Vector2(2714.6204, 235)
+rotation = 0.017627392
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle71" type="Marker2D" parent="PropSpawner" unique_id=1303563004]
+position = Vector2(2832.4592, 235)
+rotation = -0.010958862
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle72" type="Marker2D" parent="PropSpawner" unique_id=2006673898]
+position = Vector2(2988.3784, 235)
+rotation = -0.05489109
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle73" type="Marker2D" parent="PropSpawner" unique_id=1795541876]
+position = Vector2(3114.789, 235)
+rotation = -0.032535102
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle74" type="Marker2D" parent="PropSpawner" unique_id=1954144294]
+position = Vector2(3282.5166, 235)
+rotation = 0.029172089
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle75" type="Marker2D" parent="PropSpawner" unique_id=704790528]
+position = Vector2(3444.3984, 235)
+rotation = 0.008326333
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle76" type="Marker2D" parent="PropSpawner" unique_id=699767039]
+position = Vector2(3607.0632, 235)
+rotation = 0.015307266
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle77" type="Marker2D" parent="PropSpawner" unique_id=1716430825]
+position = Vector2(4026.2769, 235)
+rotation = -0.030551126
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle78" type="Marker2D" parent="PropSpawner" unique_id=1461190421]
+position = Vector2(1290, -1900)
+rotation = 1.6265458
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle79" type="Marker2D" parent="PropSpawner" unique_id=1092441066]
+position = Vector2(1375, -1900)
+rotation = 1.6207682
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle80" type="Marker2D" parent="PropSpawner" unique_id=1457349529]
+position = Vector2(1460, -1900)
+rotation = 1.5163523
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle81" type="Marker2D" parent="PropSpawner" unique_id=1195191590]
+position = Vector2(1545, -1900)
+rotation = 1.6399856
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle82" type="Marker2D" parent="PropSpawner" unique_id=1575962142]
+position = Vector2(1630, -1900)
+rotation = 1.4999508
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle83" type="Marker2D" parent="PropSpawner" unique_id=615691269]
+position = Vector2(1715, -1900)
+rotation = 1.5237805
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Truck84" type="Marker2D" parent="PropSpawner" unique_id=1284850260]
+position = Vector2(1420, 1500)
+rotation = 1.7207963
+script = ExtResource("13_c2nni")
+kind = "truck"
+variant = 0
+size = Vector2(190, 73.6)
+
+[node name="Truck85" type="Marker2D" parent="PropSpawner" unique_id=1418109]
+position = Vector2(1620, 1640)
+rotation = 1.3707963
+script = ExtResource("13_c2nni")
+kind = "truck"
+variant = 1
+size = Vector2(140, 47.8)
+
+[node name="Vehicle86" type="Marker2D" parent="PropSpawner" unique_id=326585566]
+position = Vector2(1330, 1760)
+rotation = 0.6
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle87" type="Marker2D" parent="PropSpawner" unique_id=1184321899]
+position = Vector2(1690, 1380)
+rotation = -0.4
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle88" type="Marker2D" parent="PropSpawner" unique_id=1123995133]
+position = Vector2(1500, 1900)
+rotation = 1.5707964
+script = ExtResource("13_c2nni")
+variant = 0
+size = Vector2(120, 54.4)
+
+[node name="Vehicle89" type="Marker2D" parent="PropSpawner" unique_id=63689141]
+position = Vector2(-1750, -1050)
+rotation = 1.5707964
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle90" type="Marker2D" parent="PropSpawner" unique_id=98799865]
+position = Vector2(-3500, 2400)
+rotation = 1.5244578
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="VehicleWreck91" type="Marker2D" parent="PropSpawner" unique_id=1865022414]
+position = Vector2(-3220, 2400)
+rotation = 1.5782579
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle92" type="Marker2D" parent="PropSpawner" unique_id=1419358862]
+position = Vector2(-3080, 2400)
+rotation = 1.5814766
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle93" type="Marker2D" parent="PropSpawner" unique_id=1472494704]
+position = Vector2(-2940, 2400)
+rotation = 1.572274
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle94" type="Marker2D" parent="PropSpawner" unique_id=1780154944]
+position = Vector2(-2660, 2400)
+rotation = 1.5249913
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle95" type="Marker2D" parent="PropSpawner" unique_id=1251728398]
+position = Vector2(-2380, 2400)
+rotation = 1.5591248
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle96" type="Marker2D" parent="PropSpawner" unique_id=1598199651]
+position = Vector2(-2240, 2400)
+rotation = 1.5374126
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="VehicleWreck97" type="Marker2D" parent="PropSpawner" unique_id=907579267]
+position = Vector2(-2100, 2400)
+rotation = 1.5726221
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle98" type="Marker2D" parent="PropSpawner" unique_id=405126273]
+position = Vector2(-1960, 2400)
+rotation = 1.6086138
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="VehicleWreck99" type="Marker2D" parent="PropSpawner" unique_id=854959396]
+position = Vector2(-3500, 2850)
+rotation = 1.6017407
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="VehicleWreck100" type="Marker2D" parent="PropSpawner" unique_id=434851164]
+position = Vector2(-3360, 2850)
+rotation = 1.563517
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle101" type="Marker2D" parent="PropSpawner" unique_id=1026830739]
+position = Vector2(-3220, 2850)
+rotation = 1.6205689
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle102" type="Marker2D" parent="PropSpawner" unique_id=434995486]
+position = Vector2(-3080, 2850)
+rotation = 1.5217204
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle103" type="Marker2D" parent="PropSpawner" unique_id=717083277]
+position = Vector2(-2660, 2850)
+rotation = 1.5861197
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle104" type="Marker2D" parent="PropSpawner" unique_id=283509276]
+position = Vector2(-2520, 2850)
+rotation = 1.5253874
+script = ExtResource("13_c2nni")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle105" type="Marker2D" parent="PropSpawner" unique_id=2139479091]
+position = Vector2(-2100, 2850)
+rotation = 1.5836667
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle106" type="Marker2D" parent="PropSpawner" unique_id=200624403]
+position = Vector2(-1960, 2850)
+rotation = 1.5282689
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle107" type="Marker2D" parent="PropSpawner" unique_id=1070450379]
+position = Vector2(-3360, 3300)
+rotation = 1.6039363
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle108" type="Marker2D" parent="PropSpawner" unique_id=549573784]
+position = Vector2(-3220, 3300)
+rotation = 1.5469948
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle109" type="Marker2D" parent="PropSpawner" unique_id=563624761]
+position = Vector2(-3080, 3300)
+rotation = 1.5748249
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle110" type="Marker2D" parent="PropSpawner" unique_id=2135771876]
+position = Vector2(-2940, 3300)
+rotation = 1.5308452
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="VehicleWreck111" type="Marker2D" parent="PropSpawner" unique_id=1010551189]
+position = Vector2(-2800, 3300)
+rotation = 1.576557
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle112" type="Marker2D" parent="PropSpawner" unique_id=792900185]
+position = Vector2(-2520, 3300)
+rotation = 1.5941447
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle113" type="Marker2D" parent="PropSpawner" unique_id=284041288]
+position = Vector2(-2240, 3300)
+rotation = 1.6107626
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle114" type="Marker2D" parent="PropSpawner" unique_id=1717222397]
+position = Vector2(-2100, 3300)
+rotation = 1.546159
+script = ExtResource("13_c2nni")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle115" type="Marker2D" parent="PropSpawner" unique_id=128573435]
+position = Vector2(-1960, 3300)
+rotation = 1.5308163
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="VehicleWreck116" type="Marker2D" parent="PropSpawner" unique_id=311675593]
+position = Vector2(-2342.5867, -3714.0535)
+rotation = 1.9642265
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle117" type="Marker2D" parent="PropSpawner" unique_id=332261446]
+position = Vector2(2800.4492, -509.29956)
+rotation = 2.7927372
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle118" type="Marker2D" parent="PropSpawner" unique_id=1483318979]
+position = Vector2(1009.5083, 3753.1694)
+rotation = 0.19497935
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle119" type="Marker2D" parent="PropSpawner" unique_id=409345466]
+position = Vector2(-1429.8538, -3055.6946)
+rotation = 0.17690933
+script = ExtResource("13_c2nni")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="VehicleWreck120" type="Marker2D" parent="PropSpawner" unique_id=1973857493]
+position = Vector2(2536.8784, -528.02466)
+rotation = 4.5290155
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 3
+size = Vector2(106, 53)
+
+[node name="VehicleWreck121" type="Marker2D" parent="PropSpawner" unique_id=1037148789]
+position = Vector2(-1010.69653, 2427.3472)
+rotation = 5.625445
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle122" type="Marker2D" parent="PropSpawner" unique_id=2059360212]
+position = Vector2(-2620.4746, 2184.5186)
+rotation = 2.35012
+script = ExtResource("13_c2nni")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle123" type="Marker2D" parent="PropSpawner" unique_id=2131557311]
+position = Vector2(2856.229, -3544.6887)
+rotation = 1.4098693
+script = ExtResource("13_c2nni")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="VehicleWreck124" type="Marker2D" parent="PropSpawner" unique_id=1553775758]
+position = Vector2(2522.0781, 1280.8726)
+rotation = 2.980366
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="VehicleWreck125" type="Marker2D" parent="PropSpawner" unique_id=669848520]
+position = Vector2(3547.9985, 2091.4395)
+rotation = 2.7109778
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 2
+size = Vector2(80, 40)
+
+[node name="VehicleWreck126" type="Marker2D" parent="PropSpawner" unique_id=1089027519]
+position = Vector2(-1120.6897, 775.6001)
+rotation = 5.700253
+script = ExtResource("13_c2nni")
+kind = "vehicle_wreck"
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Truck127" type="Marker2D" parent="PropSpawner" unique_id=655765827]
+position = Vector2(-400, 3100)
+rotation = 0.3
+script = ExtResource("13_c2nni")
+kind = "truck"
+variant = 1
+size = Vector2(140, 47.8)
+
+[node name="VehicleField" type="Node2D" parent="." unique_id=171252674]
+script = ExtResource("14_dxmor")
+spawner_path = NodePath("../PropSpawner")
+layer_path = NodePath("../Vehicles")
+kinds = PackedStringArray("vehicle_wreck", "vehicle", "truck")
+masses = {
+"truck": PackedFloat32Array(14000, 4200),
+"vehicle": PackedFloat32Array(3500, 1500, 950, 2000, 1300, 2200),
+"vehicle_wreck": PackedFloat32Array(3500, 1500, 950, 2000, 1300, 2200)
+}
+shot_blocks = {
+"truck": PackedFloat32Array(0.85, 0.7),
+"vehicle": PackedFloat32Array(0.65, 0.5, 0.5, 0.55, 0.5, 0.55),
+"vehicle_wreck": PackedFloat32Array(0.65, 0.5, 0.5, 0.55, 0.5, 0.55)
+}
+stream = false
+
+[node name="Exits" type="Node2D" parent="." unique_id=1184872876]
+
+[node name="Exit_W" parent="Exits" unique_id=1530315933 instance=ExtResource("15_yppec")]
+position = Vector2(-4100, 0)
+
+[node name="Exit_N" parent="Exits" unique_id=894908250 instance=ExtResource("15_yppec")]
+position = Vector2(1500, -4100)
+
+[node name="StartPositions" type="Node2D" parent="." unique_id=1705944543]
+
+[node name="Pos1" parent="StartPositions" unique_id=667869070 instance=ExtResource("17_ehxy7")]
+position = Vector2(-2800, 3900)
+
+[node name="Pos2" parent="StartPositions" unique_id=1100479579 instance=ExtResource("17_ehxy7")]
+position = Vector2(3000, -500)
+
+[node name="Pos3" parent="StartPositions" unique_id=1025733868 instance=ExtResource("17_ehxy7")]
+position = Vector2(700, -3200)
+
+[node name="Pos4" parent="StartPositions" unique_id=997978881 instance=ExtResource("17_ehxy7")]
+position = Vector2(3000, 3500)
+
+[node name="Pos5" parent="StartPositions" unique_id=1896374225 instance=ExtResource("17_ehxy7")]
+position = Vector2(-300, 1500)
+
+[node name="Pos6" parent="StartPositions" unique_id=739324261 instance=ExtResource("17_ehxy7")]
+position = Vector2(-1000, -2000)
+
+[node name="SpawnZones" type="Node2D" parent="." unique_id=618059515]
+
+[node name="Spawn1" type="Marker2D" parent="SpawnZones" unique_id=1929913372]
+position = Vector2(3000, -500)
+
+[node name="Spawn2" type="Marker2D" parent="SpawnZones" unique_id=540019670]
+position = Vector2(700, -3200)
+
+[node name="Spawn3" type="Marker2D" parent="SpawnZones" unique_id=1910328164]
+position = Vector2(3000, 3500)
+
+[node name="Spawn4" type="Marker2D" parent="SpawnZones" unique_id=1078653339]
+position = Vector2(-300, 1500)
+
+[node name="Spawn5" type="Marker2D" parent="SpawnZones" unique_id=668903054]
+position = Vector2(-1000, -2000)
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=1012603673]
+navigation_polygon = SubResource("NavigationPolygon_q0sly")

@@ -13,11 +13,14 @@ extends RefCounted
 #     the same building have no wall between them, so mechas inside one
 #     building see each other.
 #
-# Vehicles: VehicleField puts every vehicle on VEHICLE_LAYER. Mechas collide
-# with it and push vehicles.
+# Vehicles: VehicleField puts cars (vehicles a tank can trample) on
+# VEHICLE_LAYER and heavier vans and trucks on HEAVY_VEHICLE_LAYER.
+# VEHICLE_MASK covers both. Mechas collide with both and push vehicles; a
+# sprinting mecha drops VEHICLE_LAYER and passes over cars (Mecha.move).
 #   - A shot passing through a vehicle stops in it with that vehicle's
 #     shot_block chance; otherwise it goes on with its AP unchanged
-#     (trace_shot).
+#     (trace_shot). With `damage` on (real projectiles), every vehicle the
+#     shot meets takes 1 point of damage (VehicleField.damage).
 #   - Vehicles don't block sight: they are lower than a mecha.
 #
 # Ray masks:
@@ -33,7 +36,12 @@ extends RefCounted
 const WALL_LAYER := 10
 const WALL_MASK := 1 << (WALL_LAYER - 1)
 const VEHICLE_LAYER := 11
-const VEHICLE_MASK := 1 << (VEHICLE_LAYER - 1)
+const HEAVY_VEHICLE_LAYER := 12
+const CAR_MASK := 1 << (VEHICLE_LAYER - 1)
+const HEAVY_VEHICLE_MASK := 1 << (HEAVY_VEHICLE_LAYER - 1)
+const VEHICLE_MASK := CAR_MASK | HEAVY_VEHICLE_MASK
+## Damage a shot does to each vehicle it meets.
+const SHOT_VEHICLE_DAMAGE := 1.0
 const NON_WALL_MASK := 0xFFFFFFFF & ~WALL_MASK
 const SHOT_MASK := 0xFFFFFFFF & ~(WALL_MASK | VEHICLE_MASK)
 const SIGHT_MASK := 0xFFFFFFFF & ~VEHICLE_MASK
@@ -78,10 +86,11 @@ static func walls_between(world: World2D, a: Vector2, b: Vector2) -> bool:
 # Moves a shot with `ap` armour pen from `from` to `to` through the walls and
 # vehicles on the way, in order. Each wall costs 1 AP and the shot stops at
 # the wall where its AP reaches 0, or at the first wall if stop_at_wall (an
-# impact fuse). Each vehicle stops it with the vehicle's shot_block chance.
+# impact fuse). Each vehicle stops it with the vehicle's shot_block chance,
+# and with `damage` takes SHOT_VEHICLE_DAMAGE.
 # Returns {"ap": AP left, "stop": where it stopped or null, "by": "wall",
 # "vehicle" or ""}.
-static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop_at_wall := false) -> Dictionary:
+static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop_at_wall := false, damage := false) -> Dictionary:
 	var length_sq := from.distance_squared_to(to)
 	if length_sq < 0.0001:
 		return {"ap": ap, "stop": null, "by": ""}
@@ -95,11 +104,17 @@ static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop
 		if result.is_empty():
 			break
 		var collider: Object = result.collider
-		if collider != null and collider.has_method("shot_block_for"):
-			if randf() < collider.shot_block_for(collider, result.rid):
-				return {"ap": ap, "stop": result.position, "by": "vehicle"}
+		var field: VehicleField = null
+		if collider is VehicleField:
+			field = collider
 		elif collider != null and collider.get_parent() is VehicleField:
-			if randf() < collider.get_parent().shot_block_for(collider, result.rid):
+			field = collider.get_parent()
+		if field != null:
+			var index := field.index_of(collider, result.rid)
+			var stopped := randf() < field.shot_block_for(collider, result.rid)
+			if damage and index >= 0:
+				field.damage(index, SHOT_VEHICLE_DAMAGE)
+			if stopped:
 				return {"ap": ap, "stop": result.position, "by": "vehicle"}
 		else:
 			ap -= 1

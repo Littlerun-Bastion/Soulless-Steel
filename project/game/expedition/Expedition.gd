@@ -283,6 +283,7 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	# Snap to a position inside the nav polygon. Spawning outside leaves the
 	# NPC unable to path (NavAgent has no anchor) and they'd sit forever.
 	pos = _ensure_position_on_nav(pos)
+	pos = _clear_spawn_spot(pos)
 	enemy.position = pos
 	Mechas.add_child(enemy)
 	_connect_mecha_signals(enemy)
@@ -396,10 +397,9 @@ func get_cyst_sites() -> Array:
 # Returns a position guaranteed to be reachable — used as a last-resort
 # relocate target for NPCs that get stuck outside the navmesh somehow.
 func get_safe_position() -> Vector2:
-	if has_node("Map") and $Map.has_method("get_start_positions"):
-		var spots = $Map.get_start_positions()
-		if spots.size() > 0:
-			return spots.pick_random().global_position
+	var spots := _npc_start_positions()
+	if spots.size() > 0:
+		return _clear_spawn_spot(spots.pick_random().global_position)
 	var navpoly = _get_map_nav_polygon()
 	if navpoly:
 		return _get_navpoly_bounds(navpoly).get_center()
@@ -417,16 +417,68 @@ func _player_start_position() -> Vector2:
 	return Vector2.ZERO
 
 
+# A mecha put within SPAWN_VEHICLE_CLEARANCE (px) of a vehicle's edge would
+# start inside it, where it can't push it away; one put within
+# SPAWN_MECHA_CLEARANCE of another mecha would start touching it, and touching
+# mechas lock each other's movement.
+const SPAWN_VEHICLE_CLEARANCE := 160.0
+const SPAWN_MECHA_CLEARANCE := 450.0
+
+
+# The nearest spot to `pos` (searched in rings out to 2000 px) clear of
+# vehicles and other mechas; `pos` when nothing nearer is clear.
+func _clear_spawn_spot(pos: Vector2) -> Vector2:
+	var field := VehicleField.find(self)
+	var ring := 0.0
+	while ring <= 2000.0:
+		var count := 1 if ring == 0.0 else maxi(8, ceili(TAU * ring / 300.0))
+		for k in count:
+			var p := pos + Vector2.from_angle(TAU * k / count) * ring
+			if _clear_of_mechas(p) and (field == null or field.is_clear(p, SPAWN_VEHICLE_CLEARANCE)):
+				return p
+		ring += 250.0
+	return pos
+
+
+func _clear_of_mechas(pos: Vector2) -> bool:
+	for m in all_mechas:
+		if is_instance_valid(m) and m.global_position.distance_to(pos) < SPAWN_MECHA_CLEARANCE:
+			return false
+	return true
+
+
+# An NPC put within this distance (px) of an exit would extract a few
+# seconds later, so NPC spawns and relocations keep this far away.
+const NPC_EXIT_CLEARANCE := 1500.0
+
+
+# The Map's start positions an NPC can use: every one except the player's
+# (index 0) that is clear of the exits.
+func _npc_start_positions() -> Array:
+	var out := []
+	if not has_node("Map") or not $Map.has_method("get_start_positions"):
+		return out
+	var spots: Array = $Map.get_start_positions()
+	var exits: Array = $Map.get_exits() if $Map.has_method("get_exits") else []
+	for i in range(1, spots.size()):
+		var pos: Vector2 = spots[i].global_position
+		var clear := true
+		for exit in exits:
+			if pos.distance_to(exit.global_position) < NPC_EXIT_CLEARANCE:
+				clear = false
+				break
+		if clear:
+			out.append(spots[i])
+	return out
+
+
 func _random_spawn_position() -> Vector2:
 	# Prefer Map's other start positions for varied spawn spread
-	if has_node("Map") and $Map.has_method("get_start_positions"):
-		var spots = $Map.get_start_positions()
-		if spots.size() > 1:
-			# Skip index 0 (player) and pick from the rest
-			var pool = spots.slice(1)
-			var spot = pool.pick_random()
-			var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
-			return spot.global_position + jitter
+	var pool := _npc_start_positions()
+	if pool.size() > 0:
+		var spot = pool.pick_random()
+		var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
+		return spot.global_position + jitter
 	var zones := get_spawn_zones()
 	if zones.size() > 0:
 		var zone = zones.pick_random()

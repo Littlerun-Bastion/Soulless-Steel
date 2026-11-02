@@ -16,15 +16,44 @@ extends Node2D
 # mecha (more than stream_radius from both the shooter and the target) goes
 # through it.
 #
-# Pushing: Mecha.move() calls push_from() after it moves. The mecha counts
-# as MECHA_KG_PER_WEIGHT kg per point of its weight. When it first runs into
-# a vehicle, the two collide like bodies with RESTITUTION bounce. While it
-# keeps pushing, the vehicle moves at the speed the two would share as one
-# body (the mecha's speed times mecha mass / both masses). The mecha can only
-# follow as fast as the vehicle in front of it moves, so a light car barely
-# slows it and slides on a few metres when it stops; a heavy truck barely
-# moves and holds it back. A push off the vehicle's centre turns it, scaled
-# by SPIN.
+# Pushing: Mecha.move() calls push_from() after it moves. A mecha's mass
+# grows faster than its weight (pusher_mass): a mecha of MASS_PIVOT_WEIGHT
+# counts as MECHA_KG_PER_WEIGHT kg per point, and the mass scales with weight
+# to the power MASS_CURVE, so heavy builds are much less held back by what
+# they push. When it first runs into a vehicle, the two collide like bodies
+# with RESTITUTION bounce. While it keeps pushing, the vehicle moves at the
+# speed the two would share as one body (the mecha's speed times mecha mass /
+# both masses). The mecha can only follow as fast as the vehicle in front of
+# it moves, so a light car barely slows it and slides on a few metres when it
+# stops; a heavy truck barely moves and holds it back. A push off the
+# vehicle's centre turns it, scaled by SPIN.
+#
+# Trampling: a mecha with tank movement that keeps pushing a vehicle no
+# heavier than trample_max_mass drives over it after trample_time() of
+# pushing (shorter for a heavier tank or a lighter car). A trampled vehicle
+# has no body any more: mechas drive over it, shots pass over it, and NPC
+# steering ignores it. It is drawn with the sprite "<sprite>_trampled.png"
+# next to its normal sprite when that file exists (for example
+# vehicle_hatchback_trampled.png, same image size as vehicle_hatchback.png),
+# otherwise with its normal sprite darkened to TRAMPLED_TONE.
+#
+# Cars (vehicles up to trample_max_mass) sit on MapSenses.VEHICLE_LAYER and
+# heavier vans and trucks on HEAVY_VEHICLE_LAYER, so a sprinting mecha can
+# drop the car layer and pass over cars (Mecha.move) while trucks still stop
+# it.
+#
+# Destroying: a car has vehicle_hp points. Each shot that meets it costs 1
+# (MapSenses.trace_shot), a blast costs BLAST_DAMAGE to every car in its
+# radius (damage_in_radius), and a mecha dashing into it (dash speed over
+# DASH_DESTROY_SPEED) destroys it at once. A destroyed car loses its body
+# like a trampled one and is drawn with "<sprite>_destroyed.png" when that
+# file exists, otherwise darkened to DESTROYED_TONE. Vans and trucks can't be
+# destroyed.
+#
+# Steering: NPC mechas read vehicles straight from this node
+# (vehicles_near, vehicle_transform, vehicle_size, vehicle_mass), so they
+# steer round vehicles that have no box streamed in. last_pushed_by() tells
+# an NPC which vehicle it last pushed.
 #
 # Waking: a pushed vehicle wakes. Its static body is removed and a
 # RigidBody2D takes its place, and its sprite moves off the PropSpriteLayer
@@ -40,6 +69,31 @@ extends Node2D
 # shot passing through the vehicle stops in it (MapSenses.trace_shot).
 
 const MECHA_KG_PER_WEIGHT := 50.0
+## Weight at which a mecha counts as exactly MECHA_KG_PER_WEIGHT kg per point.
+const MASS_PIVOT_WEIGHT := 45.0
+## Mass grows with weight to this power (1 = linear).
+const MASS_CURVE := 2.5
+## Seconds a tank pushes a car of its own mass before it drives over it.
+const TRAMPLE_TIME := 2.0
+## A push pause longer than this (s) restarts the trample count. Shorter
+## pauses (the tank bouncing off the car before it pushes steadily) don't.
+const TRAMPLE_GAP := 0.6
+## Brightness of a trampled vehicle drawn with its normal sprite.
+const TRAMPLED_TONE := 0.55
+## Brightness of a destroyed vehicle drawn with its normal sprite.
+const DESTROYED_TONE := 0.3
+## Damage every car in a blast's radius takes.
+const BLAST_DAMAGE := 3.0
+## A mecha dashing faster than this (px/s) destroys a car it runs into.
+const DASH_DESTROY_SPEED := 600.0
+## Vehicle states.
+const INTACT := 0
+const TRAMPLED := 1
+const DESTROYED := 2
+## last_pushed_by() forgets a push after this many physics frames.
+const PUSH_MEMORY_FRAMES := 30
+## Floats per vehicle in steering_obstacles().
+const STEER_STRIDE := 7
 const RESTITUTION := 0.3
 const SPIN := 0.35
 const MAX_AWAKE := 24
@@ -68,9 +122,33 @@ const STREAM_INTERVAL := 10
 @export var stream_radius := 2000.0
 @export var linear_damp := 3.5
 @export var angular_damp := 6.0
+## Vehicles up to this mass (kg) are cars: tanks drive over them, sprinting
+## mechas pass over them, and they can be destroyed. Heavier vehicles (vans,
+## trucks) can only be pushed.
+@export var trample_max_mass := 3000.0
+## Damage points a car takes before it is destroyed.
+@export var vehicle_hp := 5.0
+
+signal vehicle_trampled(index: int, by: Node)
+signal vehicle_destroyed(index: int, by: Node)
 
 var _layer: PropSpriteLayer
 var _spawn_index := PackedInt32Array()
+var _kind := PackedStringArray()
+var _variant := PackedInt32Array()
+# Vehicle index -> INTACT, TRAMPLED or DESTROYED.
+var _state := PackedByteArray()
+var _damage := PackedFloat32Array()
+# Vehicle index -> Sprite2D drawing its trampled or destroyed sprite.
+var _flat_sprites := {}
+# Sprite path with "_trampled" or "_destroyed" -> Texture2D, or null when
+# there is none.
+var _flat_textures := {}
+# Vehicle index -> seconds a tank has pushed it, and the last frame it did.
+var _trample_push := {}
+var _trample_frame := {}
+# Mecha instance id -> [vehicle index, physics frame] of its last push.
+var _last_pushed := {}
 var _pos := PackedVector2Array()
 var _rot := PackedFloat32Array()
 var _size := PackedVector2Array()
@@ -111,9 +189,34 @@ static func push_from(mecha: CharacterBody2D, intended: Vector2) -> void:
 		field.push(mecha, intended)
 
 
-func push(mecha: CharacterBody2D, intended: Vector2) -> void:
+# The mass (kg) a mecha of this weight pushes with.
+static func pusher_mass(weight: float) -> float:
+	var w := maxf(weight, 1.0)
+	return MECHA_KG_PER_WEIGHT * w * pow(w / MASS_PIVOT_WEIGHT, MASS_CURVE - 1.0)
+
+
+static func mecha_mass(mecha: Node) -> float:
 	var weight: float = mecha.get_total_weight() if mecha.has_method("get_total_weight") else 50.0
-	var pusher := maxf(weight, 1.0) * MECHA_KG_PER_WEIGHT
+	return pusher_mass(weight)
+
+
+# The fraction of its own speed a mecha of `pusher` kg keeps while it pushes
+# a vehicle of `vehicle_kg`.
+static func push_speed_fraction(pusher: float, vehicle_kg: float) -> float:
+	return pusher / (pusher + maxf(vehicle_kg, 0.0))
+
+
+static func find(node: Node) -> VehicleField:
+	if node == null or not node.is_inside_tree():
+		return null
+	return node.get_tree().get_first_node_in_group("vehicle_field") as VehicleField
+
+
+func push(mecha: CharacterBody2D, intended: Vector2) -> void:
+	var pusher := mecha_mass(mecha)
+	var tank: bool = mecha.get("movement_type") == "tank"
+	var dash_vel = mecha.get("dash_velocity")
+	var dashing: bool = dash_vel is Vector2 and (dash_vel as Vector2).length() > DASH_DESTROY_SPEED
 	var frame := Engine.get_physics_frames()
 	for c in mecha.get_slide_collision_count():
 		var col := mecha.get_slide_collision(c)
@@ -123,6 +226,13 @@ func push(mecha: CharacterBody2D, intended: Vector2) -> void:
 		var n := -col.get_normal()
 		var v_n := intended.dot(n)
 		if v_n <= 0.0:
+			continue
+		_last_pushed[mecha.get_instance_id()] = [i, frame]
+		if dashing and is_car(i):
+			_flatten(i, DESTROYED, mecha)
+			continue
+		if tank and _count_trample(i, pusher, frame):
+			_trample(i, mecha)
 			continue
 		var body := _wake(i)
 		if body == null:
@@ -162,6 +272,40 @@ func vehicle_count() -> int:
 	return _pos.size()
 
 
+# False until the vehicles are read from the spawner (a frame after load).
+func is_built() -> bool:
+	return _built
+
+
+# The nearest point to `pos` (searched in rings out to max_search px) with no
+# vehicle within `clearance` px of its edge, so a mecha put there doesn't
+# start inside one. `pos` itself when it is already clear or nothing is.
+func clear_spot(pos: Vector2, clearance: float, max_search := 1500.0) -> Vector2:
+	if not _built or is_clear(pos, clearance):
+		return pos
+	var ring := clearance
+	while ring <= max_search:
+		var count := maxi(8, ceili(TAU * ring / clearance))
+		for k in count:
+			var p := pos + Vector2.from_angle(TAU * k / count) * ring
+			if is_clear(p, clearance):
+				return p
+		ring += clearance * 0.75
+	return pos
+
+
+# Whether no vehicle is within `clearance` px of a global position.
+func is_clear(pos: Vector2, clearance: float) -> bool:
+	for i in vehicles_near(pos, clearance + 150.0):
+		var xf := vehicle_transform(i)
+		var local := xf.affine_inverse() * pos
+		var half := _size[i] * 0.5
+		var outside := Vector2(maxf(absf(local.x) - half.x, 0.0), maxf(absf(local.y) - half.y, 0.0))
+		if outside.length() < clearance:
+			return false
+	return true
+
+
 func awake_count() -> int:
 	return _awake.size()
 
@@ -179,6 +323,119 @@ func vehicle_transform(i: int) -> Transform2D:
 
 func vehicle_mass(i: int) -> float:
 	return _mass[i]
+
+
+# Length (x) by width (y) in px.
+func vehicle_size(i: int) -> Vector2:
+	return _size[i]
+
+
+func is_trampled(i: int) -> bool:
+	return _state[i] == TRAMPLED
+
+
+func is_destroyed(i: int) -> bool:
+	return _state[i] == DESTROYED
+
+
+# Whether vehicle i is a car (see trample_max_mass).
+func is_car(i: int) -> bool:
+	return _mass[i] <= trample_max_mass
+
+
+# Whether a tank can drive over vehicle i.
+func can_trample(i: int) -> bool:
+	return _state[i] == INTACT and is_car(i)
+
+
+# Damages vehicle i; a car destroyed by it is gone. Vans and trucks ignore it.
+func damage(i: int, amount: float, by: Node = null) -> void:
+	if _state[i] != INTACT or not is_car(i):
+		return
+	_damage[i] += amount
+	if _damage[i] >= vehicle_hp:
+		_flatten(i, DESTROYED, by)
+
+
+# Damages every car whose centre is within `radius` of a global position.
+func damage_in_radius(pos: Vector2, radius: float, amount: float, by: Node = null) -> void:
+	for i in vehicles_near(pos, radius + 100.0):
+		if vehicle_transform(i).origin.distance_to(pos) <= radius + _size[i].x * 0.5:
+			damage(i, amount, by)
+
+
+# Seconds a tank of `pusher` kg must push vehicle i before it drives over it.
+func trample_time(i: int, pusher: float) -> float:
+	return TRAMPLE_TIME * clampf(_mass[i] / maxf(pusher, 1.0), 0.5, 2.0)
+
+
+# Vehicles (awake or asleep, not trampled) whose centres are within `radius`
+# of a global position.
+func vehicles_near(pos: Vector2, radius: float) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	if not _built:
+		return out
+	var r2 := radius * radius
+	var c0 := _cell_of(pos - Vector2(radius, radius))
+	var c1 := _cell_of(pos + Vector2(radius, radius))
+	for cx in range(c0.x, c1.x + 1):
+		for cy in range(c0.y, c1.y + 1):
+			for j in _cells.get(Vector2i(cx, cy), PackedInt32Array()):
+				if _pos[j].distance_squared_to(pos) <= r2:
+					out.append(j)
+	for j in _awake:
+		if (_awake[j] as Node2D).global_position.distance_squared_to(pos) <= r2:
+			out.append(j)
+	return out
+
+
+# Steering data for the vehicles (awake or asleep, not trampled) that come
+# within `radius` of a global position, STEER_STRIDE floats each:
+# x, y, rotation, length, width, mass, vehicle index. One call per NPC
+# update, so steering doesn't pay a method call per vehicle.
+func steering_obstacles(pos: Vector2, radius: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	if not _built:
+		return out
+	var reach := radius + 120.0
+	var c0 := _cell_of(pos - Vector2(reach, reach))
+	var c1 := _cell_of(pos + Vector2(reach, reach))
+	for cx in range(c0.x, c1.x + 1):
+		for cy in range(c0.y, c1.y + 1):
+			for j in _cells.get(Vector2i(cx, cy), PackedInt32Array()):
+				var p := _pos[j]
+				var r := radius + _size[j].x * 0.5
+				if p.distance_squared_to(pos) <= r * r:
+					_append_obstacle(out, j, p, _rot[j])
+	for j in _awake:
+		var body: Node2D = _awake[j]
+		var p := body.global_position
+		var r := radius + _size[j].x * 0.5
+		if p.distance_squared_to(pos) <= r * r:
+			_append_obstacle(out, j, p, body.global_rotation)
+	return out
+
+
+func _append_obstacle(out: PackedFloat32Array, j: int, p: Vector2, rot: float) -> void:
+	var n := out.size()
+	out.resize(n + STEER_STRIDE)
+	out[n] = p.x
+	out[n + 1] = p.y
+	out[n + 2] = rot
+	out[n + 3] = _size[j].x
+	out[n + 4] = _size[j].y
+	out[n + 5] = _mass[j]
+	out[n + 6] = j
+
+
+# The vehicle this mecha pushed in the last PUSH_MEMORY_FRAMES physics
+# frames, or -1. A vehicle trampled since counts only with include_trampled.
+func last_pushed_by(mecha: Node, include_trampled := false) -> int:
+	var rec: Array = _last_pushed.get(mecha.get_instance_id(), [])
+	if rec.is_empty() or Engine.get_physics_frames() - int(rec[1]) > PUSH_MEMORY_FRAMES:
+		return -1
+	var i: int = rec[0]
+	return -1 if _state[i] != INTACT and not include_trampled else i
 
 
 # The vehicle nearest a global position, or -1 if none within max_distance.
@@ -239,6 +496,10 @@ func _build() -> void:
 		var kind_masses: PackedFloat32Array = masses.get(s.kind, PackedFloat32Array())
 		var kind_blocks: PackedFloat32Array = shot_blocks.get(s.kind, PackedFloat32Array())
 		_spawn_index.append(si)
+		_kind.append(s.kind)
+		_variant.append(variant)
+		_state.append(INTACT)
+		_damage.append(0.0)
 		_pos.append(spawner.to_global(s.position))
 		_rot.append(s.rotation + spawner.global_rotation)
 		_size.append(s.size)
@@ -262,7 +523,7 @@ func _make_static(i: int) -> void:
 	var body := PhysicsServer2D.body_create()
 	PhysicsServer2D.body_set_mode(body, PhysicsServer2D.BODY_MODE_STATIC)
 	PhysicsServer2D.body_add_shape(body, shape)
-	PhysicsServer2D.body_set_collision_layer(body, MapSenses.VEHICLE_MASK)
+	PhysicsServer2D.body_set_collision_layer(body, _layer_mask(i))
 	PhysicsServer2D.body_set_collision_mask(body, 0)
 	PhysicsServer2D.body_attach_object_instance_id(body, get_instance_id())
 	PhysicsServer2D.body_set_state(body, PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(_rot[i], _pos[i]))
@@ -297,7 +558,7 @@ func _wake(i: int) -> RigidBody2D:
 	body.angular_damp_mode = RigidBody2D.DAMP_MODE_REPLACE
 	body.linear_damp = linear_damp
 	body.angular_damp = angular_damp
-	body.collision_layer = MapSenses.VEHICLE_MASK
+	body.collision_layer = _layer_mask(i)
 	# Not layer 1: the physics engine would let a mecha shove the vehicle
 	# like an unstoppable body. Mechas push only through push().
 	body.collision_mask = MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK
@@ -383,10 +644,104 @@ func _stillest() -> int:
 
 func _on_layer_rebuilt() -> void:
 	for i in _pos.size():
-		if _awake.has(i):
+		if _awake.has(i) or _flat_sprites.has(i):
 			_layer.hide_sprite(_spawn_index[i])
+		elif _state[i] != INTACT:
+			_layer.place_sprite(_spawn_index[i], _layer.to_local(_pos[i]), _rot[i] - _layer.global_rotation, _flat_tone(i))
 		elif _moved[i]:
 			_layer.place_sprite(_spawn_index[i], _layer.to_local(_pos[i]), _rot[i] - _layer.global_rotation)
+
+
+# Counts the time a tank of `pusher` kg has been pushing vehicle i. Returns
+# true when it has pushed long enough to drive over it.
+func _count_trample(i: int, pusher: float, frame: int) -> bool:
+	if not can_trample(i):
+		return false
+	var step := get_physics_process_delta_time()
+	var t: float = _trample_push.get(i, 0.0)
+	if frame - int(_trample_frame.get(i, -100000)) > maxi(1, ceili(TRAMPLE_GAP / step)):
+		t = 0.0
+	t += step
+	_trample_push[i] = t
+	_trample_frame[i] = frame
+	return t >= trample_time(i, pusher)
+
+
+func _trample(i: int, by: Node) -> void:
+	_flatten(i, TRAMPLED, by)
+
+
+# The physics layer for vehicle i: cars and heavy vehicles apart.
+func _layer_mask(i: int) -> int:
+	return MapSenses.CAR_MASK if is_car(i) else MapSenses.HEAVY_VEHICLE_MASK
+
+
+# Trampled or destroyed where it is: its body goes, and its sprite changes.
+func _flatten(i: int, state: int, by: Node) -> void:
+	if _state[i] != INTACT:
+		return
+	if _awake.has(i):
+		var body: RigidBody2D = _awake[i]
+		_pos[i] = body.global_position
+		_rot[i] = body.global_rotation
+		_awake.erase(i)
+		_still.erase(i)
+		_pushed_on.erase(i)
+		remove_child(body)
+		body.queue_free()
+	else:
+		_free_static(i)
+		_remove_from_cell(i)
+	_moved[i] = 1
+	_state[i] = state
+	_trample_push.erase(i)
+	_trample_frame.erase(i)
+	_show_flat(i)
+	if state == TRAMPLED:
+		vehicle_trampled.emit(i, by)
+	else:
+		vehicle_destroyed.emit(i, by)
+
+
+func _flat_tone(i: int) -> float:
+	return DESTROYED_TONE if _state[i] == DESTROYED else TRAMPLED_TONE
+
+
+func _show_flat(i: int) -> void:
+	var info := _layer.sprite_info(_spawn_index[i])
+	var tex := _flat_texture(i)
+	if tex == null or info.is_empty():
+		_layer.place_sprite(_spawn_index[i], _layer.to_local(_pos[i]), _rot[i] - _layer.global_rotation, _flat_tone(i))
+		return
+	_layer.hide_sprite(_spawn_index[i])
+	var normal: Texture2D = info.texture
+	var size: Vector2 = Vector2(info.scale) * normal.get_size()
+	var sprite := Sprite2D.new()
+	sprite.texture = tex
+	sprite.scale = size / tex.get_size()
+	sprite.modulate = Color(info.tone, info.tone, info.tone)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	add_child(sprite)
+	sprite.global_position = _pos[i]
+	sprite.global_rotation = _rot[i]
+	_flat_sprites[i] = sprite
+
+
+# The "<sprite>_trampled" or "<sprite>_destroyed" texture for vehicle i's
+# normal sprite, by its state, or null.
+func _flat_texture(i: int) -> Texture2D:
+	var list: Array = _layer.textures.get(_kind[i], [])
+	var v := _variant[i]
+	if v < 0 or v >= list.size() or not (list[v] is Texture2D):
+		return null
+	var path: String = (list[v] as Texture2D).resource_path
+	if path.is_empty():
+		return null
+	var suffix := "_destroyed." if _state[i] == DESTROYED else "_trampled."
+	var flat_path := path.get_basename() + suffix + path.get_extension()
+	if not _flat_textures.has(flat_path):
+		_flat_textures[flat_path] = load(flat_path) as Texture2D if ResourceLoader.exists(flat_path) else null
+	return _flat_textures[flat_path]
 
 
 # Gives boxes to the sleeping vehicles in cells near a mecha, and removes

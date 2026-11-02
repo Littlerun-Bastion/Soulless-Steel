@@ -55,7 +55,7 @@ func _test_buttons() -> void:
 	var routes := {
 		"_on_Hangar_pressed": "res://game/ui/HangarScreen.tscn",
 		"_on_Expedition_pressed": "res://game/expedition/Expedition.tscn",
-		"_on_Arena_pressed": "res://game/ui/ladder/Ladder.tscn",
+		"_on_Arena_pressed": "res://game/arena/TestArena.tscn",
 		"_on_Store_pressed": "res://game/ui/customizer/Storepage.tscn",
 	}
 	for button in routes:

@@ -91,7 +91,7 @@ func _physics_process(dt):
 	# Building walls and vehicles: each wall crossed costs 1 AP and the shot
 	# stops at the wall where its AP reaches 0; a vehicle stops it by chance
 	# (see MapSenses).
-	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (dir*speed*dt), armor_pen)
+	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (dir*speed*dt), armor_pen, false, true)
 	armor_pen = cover.ap
 	if cover.stop != null:
 		position = cover.stop - dir * 2.0

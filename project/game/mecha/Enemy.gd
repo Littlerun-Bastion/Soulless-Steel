@@ -4,27 +4,26 @@ const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 const SOUND_LIFETIME = 25
 const BODY_LIFETIME = 35
 
-@export var look_ahead_range = 1500
-@export var num_rays = 32
-
-# Stuck-detector tunables. Two-tier:
+# Stuck watchdog, the last resort after the unstick moves in the steering
+# section. stuck_timer counts while the NPC wants to move but either barely
+# moves or makes no progress (_steer_blocked).
 #  1. Soft reset (STUCK_RESET_TIME): clear going_to_position so the behaviour
 #     picks a fresh target on the next tick.
-#  2. Hard relocate (STUCK_RELOCATE_TIME): if STILL not moving, ask the host
-#     scene for a guaranteed-safe position and teleport there. Catches NPCs
-#     that ended up outside the navmesh (where NavAgent can't path at all).
+#  2. Hard relocate (STUCK_RELOCATE_TIME): if it is STILL stuck and off
+#     screen, ask the host scene for a safe position and teleport there.
+#     Catches NPCs that ended up outside the navmesh. An NPC the player can
+#     see is never teleported; it keeps trying to unstick instead.
 const STUCK_VELOCITY_THRESHOLD := 50.0
-const STUCK_RESET_TIME := 5.0
-const STUCK_RELOCATE_TIME := 12.0
+const STUCK_RESET_TIME := 8.0
+const STUCK_RELOCATE_TIME := 15.0
+## An NPC within this distance (px) of the camera's view counts as on screen.
+const ON_SCREEN_MARGIN := 400.0
 const SCRIPTED_THROTTLE_TIME := 0.6
 var stuck_timer: float = 0.0
 
-var ray_directions = []
-var interest = []
-var danger = []
-var debug_lines = []
 var wait_for_map_sync = .1
 
+# World-space direction the NPC is steering in (see Context Steering).
 var chosen_dir = Vector2()
 
 var going_to_position = false
@@ -114,29 +113,36 @@ func _physics_process(dt):
 			move(_coast_velocity)
 
 	# Stuck watchdog. Only fires when the NPC is actively trying to reach a
-	# position (going_to_position == true) but velocity stays near zero. This
-	# protects NPCs that are intentionally still (alert/ambush/observing) from
-	# being mistakenly reset or teleported.
-	if not scripted and going_to_position and velocity.length() < STUCK_VELOCITY_THRESHOLD:
+	# position (going_to_position == true) but stays near still or makes no
+	# progress. NPCs that are still on purpose (alert/ambush/observing) don't
+	# set going_to_position, and NPCs in a fight move slowly on purpose
+	# (turning tanks, holding range), so neither is reset or teleported.
+	if not scripted and going_to_position and not _combat_target() \
+			and (velocity.length() < STUCK_VELOCITY_THRESHOLD or _steer_blocked):
 		stuck_timer += dt
 		# Tier 1: soft reset — clear going_to_position so behaviour re-targets.
 		# If the behaviour re-sets it next tick and we still don't move, the
 		# timer keeps climbing toward Tier 2.
 		if stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
 			going_to_position = false
-		# Tier 2: hard relocate — last-resort teleport to a guaranteed-safe
-		# position. Catches NPCs stranded outside the navmesh entirely.
+		# Tier 2: hard relocate, off screen only.
 		elif stuck_timer >= STUCK_RELOCATE_TIME:
-			if arena and arena.has_method("get_safe_position"):
-				push_warning("[Enemy] " + mecha_name + " hard-relocated after being stuck for " + str(STUCK_RELOCATE_TIME) + "s")
-				global_position = arena.get_safe_position()
-				if has_node("NavigationAgent2D"):
-					$NavigationAgent2D.target_position = global_position
-			going_to_position = false
-			valid_target = false
-			stuck_timer = 0.0
+			if is_on_screen():
+				stuck_timer = STUCK_RESET_TIME
+			else:
+				if arena and arena.has_method("get_safe_position"):
+					push_warning("[Enemy] " + mecha_name + " hard-relocated after being stuck for " + str(STUCK_RELOCATE_TIME) + "s")
+					global_position = arena.get_safe_position()
+					if has_node("NavigationAgent2D"):
+						$NavigationAgent2D.target_position = global_position
+				going_to_position = false
+				valid_target = false
+				stuck_timer = 0.0
+				_reset_unstick()
 	else:
 		stuck_timer = 0.0
+		if not going_to_position:
+			_steer_blocked = false
 
 	if is_locking:
 		update_enemy_locking(dt, valid_target)
@@ -151,15 +157,30 @@ func _physics_process(dt):
 	under_fire_timer = max(under_fire_timer - dt, 0)
 
 
+# Debug overlay (Debug setting "draw_debug_lines"): per slot, hard danger in
+# red and soft cost in orange, the desired heading in grey, the steering
+# direction in white, an active unstick direction in cyan and the rest of the
+# planned route in green.
 func _draw():
-	if Debug.get_setting("draw_debug_lines"):
-		if movement_type != "tank":
-			draw_line(Vector2.ZERO, chosen_dir * 500, Color.WHITE, 5)
-		else:
-			draw_line(Vector2.ZERO, chosen_dir.rotated(-global_rotation) * 500, Color.WHITE, 5)
-		for i in debug_lines:
-			if i:
-				draw_line(Vector2.ZERO, i.rotated(-global_rotation) * look_ahead_range, Color.DARK_GRAY, 2.0)
+	if not Debug.get_setting("draw_debug_lines") or _steer_hard.is_empty():
+		return
+	var back := -global_rotation
+	for i in STEER_SLOTS:
+		var d: Vector2 = _slot_dirs[i].rotated(back)
+		var inner := d * _steer_self_radius
+		if _steer_hard[i] > 0.0:
+			draw_line(inner, inner + d * _steer_range * _steer_hard[i], Color.RED, 6.0)
+		if _steer_soft[i] > 0.0:
+			draw_line(inner, inner + d * _steer_range * minf(_steer_soft[i], 1.0), Color.ORANGE, 3.0)
+	draw_line(Vector2.ZERO, _steer_desired.rotated(back) * 400.0, Color.DARK_GRAY, 4.0)
+	draw_line(Vector2.ZERO, chosen_dir.rotated(back) * 500.0, Color.WHITE, 5.0)
+	if _unstick_time > 0.0:
+		draw_line(Vector2.ZERO, _unstick_dir.rotated(back) * 300.0, Color.CYAN, 4.0)
+	if not _route.is_empty():
+		var line := PackedVector2Array([Vector2.ZERO])
+		for k in range(_route_index, _route.size()):
+			line.append(to_local(_route[k]))
+		draw_polyline(line, Color.GREEN, 4.0)
 
 
 func setup(arena_ref, design_data, _name):
@@ -708,31 +729,44 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 	#Forward when direction = 0, Backwards when direction = 1, 
 	#Clockwise when direction = -0.5, Anticlockwise when direction = 0.5
 	if going_to_position:
-		var target = NavAgent.get_next_path_position()
-		var pos = get_global_transform().origin
-		var dir = (target - pos).normalized()
-		set_interest(dir.rotated(PI * direction), wander)
-		# Full-rate danger rays near the player or when engaged; far idle
-		# wanderers refresh on a stagger and steer off the cached map.
-		_steering_frame += 1
+		var pos := global_position
+		var goal: Vector2 = NavAgent.target_position
+		# In a fight the NPC moves relative to its foe; otherwise it follows a
+		# planned route on long trips (see Routes).
+		var foe = _combat_target()
+		var target: Vector2 = NavAgent.get_next_path_position() if foe else _route_next(goal, dt)
+		var dir := (target - pos).normalized()
+		var heading := dir.rotated(PI * direction)
+		if foe and wander > 0.0:
+			# Approach or back off at the angle `wander` gives (its dot product
+			# with the straight line), on the side it has committed to: the
+			# NPC circles its foe instead of moving on a line (see Orbit).
+			heading = heading.rotated(_orbit_side * acos(clampf(wander, 0.0, 1.0)))
+			set_interest(heading, 0.0)
+		else:
+			set_interest(heading, wander)
 		# valid_target is either a mecha Object or the sentinel `false` —
 		# truthiness check only; Object != bool is a runtime error in GDScript 4.
-		var needs_full_rate: bool = true if valid_target else false
-		if not needs_full_rate and arena and "player" in arena:
-			var p = arena.player
-			needs_full_rate = p != null and is_instance_valid(p) \
-				and global_position.distance_to(p.global_position) < STEERING_FULL_DISTANCE
-		var interval := NEAR_STEERING_INTERVAL if needs_full_rate else FAR_STEERING_INTERVAL
-		if _steering_frame % interval == 0:
-			set_danger()
-		choose_direction()
-		if sprint:
+		var engaged: bool = true if valid_target else false
+		var interval := STEER_NEAR_INTERVAL if engaged or is_near_player() else STEER_FAR_INTERVAL
+		_update_car_burst(dt)
+		var frame := Engine.get_physics_frames()
+		if _steer_hard.is_empty() or frame - _steer_built_frame >= interval:
+			_steer_built_frame = frame
+			_build_context()
+		_track_progress(dt, foe != null)
+		choose_direction(dt)
+		_update_orbit(dt, foe)
+		var want_sprint := sprint or _car_burst_time > 0.0 or _cruise_sprint(goal, foe)
+		if want_sprint:
 			is_sprinting = true
-		elif not sprint and is_sprinting:
+		elif is_sprinting:
 			stop_sprinting(chosen_dir)
-		if movement_type != "tank":
-			chosen_dir = chosen_dir.rotated(-global_rotation)
-		apply_movement(dt, chosen_dir)
+		# Tanks steer by world direction; other chassis move relative to the
+		# body, so they get the direction in the body's frame.
+		var move_dir: Vector2 = chosen_dir if movement_type == "tank" else chosen_dir.rotated(-global_rotation)
+		apply_movement(dt, move_dir)
+		_update_dashes(dt, foe, direction)
 		if ai_aim_point != null:
 			apply_rotation_by_point(dt, ai_aim_point, false)
 		elif valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
@@ -760,26 +794,13 @@ func _on_NavigationAgent2D_navigation_finished():
 func _on_NavigationAgent2D_target_reached():
 	going_to_position = false
 
-#-------- Context Steering
+#-------- Thinking LOD
 
-# Steering LOD: NPCs far from the player refresh their 32-ray danger map
-# every FAR_STEERING_INTERVAL steering updates instead of every one, reusing
-# the cached danger[] in between. At 9+ NPCs roaming the big expedition map,
-# full-rate steering for everyone costs ~17k raycasts/sec, almost all of it
-# for mechas nowhere near the action. NPCs near the player or engaged refresh
-# every NEAR_STEERING_INTERVAL updates. Stagger offset spreads the refreshes
-# so NPCs don't all raycast on the same frame.
-const STEERING_FULL_DISTANCE := 4000.0
-const FAR_STEERING_INTERVAL := 6
-const NEAR_STEERING_INTERVAL := 2
-var _steering_frame := 0
-
-# Thinking LOD: NPCs more than THINK_FULL_DISTANCE from the player update
-# their senses and run their behaviour every FAR_THINK_INTERVAL physics
-# frames, with the time since their last think as dt. In between they keep
-# moving with their last velocity, so motion stays smooth; aiming, decisions
-# and shooting wait for the next think. Near the player (on screen and round
-# it) every frame thinks.
+# NPCs more than THINK_FULL_DISTANCE from the player update their senses and
+# run their behaviour every FAR_THINK_INTERVAL physics frames, with the time
+# since their last think as dt. In between they keep moving with their last
+# velocity, so motion stays smooth; aiming, decisions and shooting wait for
+# the next think. Near the player (on screen and round it) every frame thinks.
 const THINK_FULL_DISTANCE := 4000.0
 const FAR_THINK_INTERVAL := 3
 var _think_offset := randi() % FAR_THINK_INTERVAL
@@ -803,80 +824,892 @@ func is_thinking_frame() -> bool:
 static func think_interval(near_player: bool) -> int:
 	return 1 if near_player else FAR_THINK_INTERVAL
 
-func steering_setup():
-	interest.resize(num_rays)
-	danger.resize(num_rays)
-	# resize() pads untyped Arrays with null — fill with real zeros so
-	# choose_direction() can run before the first (possibly LOD-deferred)
-	# set_danger() refresh.
-	interest.fill(0.0)
-	danger.fill(0.0)
-	ray_directions.resize(num_rays)
-	for i in num_rays:
-		var angle = i * 2 * PI / num_rays
-		ray_directions[i] = Vector2.UP.rotated(angle)
-	_steering_frame = randi() % FAR_STEERING_INTERVAL
 
+# Whether the NPC is in or near the current camera's view.
+func is_on_screen() -> bool:
+	if not is_inside_tree():
+		return false
+	var vp := get_viewport()
+	var view := vp.get_canvas_transform().affine_inverse() * vp.get_visible_rect()
+	return view.grow(ON_SCREEN_MARGIN).has_point(global_position)
+
+
+#-------- Context Steering
+
+# Each steering update fills a context map of STEER_SLOTS directions round
+# the mecha:
+#   interest  how well each direction leads where the behaviour wants to go
+#             (the dot product with the desired heading)
+#   hard      how close something the mecha must not walk into is that way
+#             (1 = touching, 0 = beyond the look-ahead range)
+#   soft      what it costs to go that way: pushing through a vehicle, or
+#             walking through a building it doesn't need to enter
+# Obstacles are projected onto every slot their outline covers, grown by the
+# mecha's own radius, so a car between two slot directions still blocks the
+# slots its body overlaps, and a gap narrower than the mecha stays shut.
+#
+# Sources (no physics rays on maps with a VehicleField and BuildingField):
+#   - Vehicles, from the VehicleField. A vehicle is hard when pushing it
+#     would leave this mecha less than HARD_PUSH_FRACTION of its speed, or
+#     when it jammed (it didn't move when this NPC pushed it). Otherwise it is
+#     soft, costing (1 - speed kept) * push_aversion(): light builds go round
+#     cars, heavy builds push through them. A tank pays TRAMPLE_COST_MULT of
+#     that for a vehicle it can drive over.
+#   - Other mechas, hard, where they will be in MECHA_PREDICT_TIME s. The
+#     mecha this NPC is fighting is left out.
+#   - Buildings, from the BuildingField, soft (BUILDING_COST). Except the
+#     building the NPC is in, the one its destination is in and the one its
+#     target is in: those it means to go into.
+#   - Any other static body (hand-made props, walls on older maps). One
+#     shape query every STATIC_PROBE_INTERVAL frames looks for them; only
+#     when one is near does each slot cast the mecha's circle along itself.
+#     When the circle already touches one, only the directions into it
+#     (against the contact normal) are blocked.
+#
+# Choosing: slots whose hard danger is more than HARD_TOLERANCE above the
+# lowest are ruled out (with every way blocked, the least blocked wins).
+# Each other slot scores interest - soft - hard * HARD_COST, plus
+# COMMIT_BONUS for staying near the last choice and UNSTICK_BONUS toward an
+# unstick direction (see Unstick). The best slot is refined between its
+# neighbours, and chosen_dir turns toward it at no more than the turn rate,
+# so the NPC picks a side round an obstacle and keeps it.
+#
+# The map is rebuilt every STEER_NEAR_INTERVAL physics frames near the
+# player or when engaged, and every STEER_FAR_INTERVAL frames otherwise,
+# staggered per NPC. The choice itself runs on every steering update.
+const STEER_SLOTS := 24
+## Look-ahead: this many seconds of travel at full speed, clamped.
+## Vehicles are only looked for within VEHICLE_RANGE_MAX of that: they are
+## many in a street, and a rebuild comes round before the NPC gets there.
+const STEER_LOOK_TIME := 1.6
+const STEER_RANGE_MIN := 500.0
+const STEER_RANGE_MAX := 900.0
+const VEHICLE_RANGE_MAX := 650.0
+## Push mass and aversion follow the mecha's weight (cargo changes it); they
+## are refreshed every this many physics frames.
+const WEIGHT_REFRESH_INTERVAL := 120
+## Clearance (px) kept between the mecha's outline and an obstacle.
+const STEER_MARGIN := 20.0
+## The mecha's own radius is its outline's furthest point times this.
+const SELF_RADIUS_SCALE := 0.85
+const STEER_NEAR_INTERVAL := 6
+const STEER_FAR_INTERVAL := 30
+const HARD_TOLERANCE := 0.3
+const HARD_COST := 1.0
+const COMMIT_BONUS := 0.15
+## Turn rate (rad/s) of chosen_dir; tanks turn slower.
+const STEER_TURN_RATE := 6.0
+const STEER_TURN_RATE_TANK := 3.0
+## Pushing a vehicle that would leave less than this fraction of the mecha's
+## speed is not an option.
+const HARD_PUSH_FRACTION := 0.35
+## push_aversion() runs from MAX at AVERSION_LIGHT_WEIGHT down to MIN at
+## AVERSION_HEAVY_WEIGHT.
+const PUSH_AVERSION_MAX := 2.0
+const PUSH_AVERSION_MIN := 0.7
+const AVERSION_LIGHT_WEIGHT := 45.0
+const AVERSION_HEAVY_WEIGHT := 80.0
+const TRAMPLE_COST_MULT := 0.5
+const BUILDING_COST := 0.55
+const MECHA_PREDICT_TIME := 0.4
+## Radius (px) assumed for another mecha.
+const OTHER_MECHA_RADIUS := 110.0
+## Seconds a jammed vehicle stays hard for this NPC.
+const JAM_TIME := 4.0
+const STATIC_PROBE_INTERVAL := 30
+## Static bodies are found by casting a circle this fraction of the steering
+## radius, so the NPC can pass close to a wall without already touching it.
+const STATIC_CAST_SCALE := 0.8
+const MARK_SOFT := 0
+const MARK_HARD := 1
+const MARK_CAR := 2
+const STATIC_MASK := MapSenses.NON_WALL_MASK & ~MapSenses.VEHICLE_MASK
+
+var _slot_dirs: Array[Vector2] = []
+var _slot_angles := PackedFloat32Array()
+var _steer_hard := PackedFloat32Array()
+var _steer_soft := PackedFloat32Array()
+# Per slot, how near a car is that way (0 = none in range).
+var _steer_car := PackedFloat32Array()
+var _steer_desired := Vector2.ZERO
+var _steer_built_frame := -100000
+var _steer_range := STEER_RANGE_MAX
+var _steer_self_radius := 0.0
+var _steer_last_choice := Vector2.ZERO
+var _steer_pusher_mass := 0.0
+var _steer_aversion := 1.0
+var _steer_weight_frame := -100000
+# Vehicle index -> Time.get_ticks_msec() until which it counts as jammed.
+var _jammed := {}
+var _static_probe_frame := -100000
+var _static_near := false
+var _static_exclude: Array[RID] = []
+var _static_shape: CircleShape2D = null
+var _vehicle_field: VehicleField = null
+var _building_field: BuildingField = null
+
+
+func steering_setup():
+	_slot_dirs.clear()
+	_slot_angles.resize(STEER_SLOTS)
+	_steer_hard.resize(STEER_SLOTS)
+	_steer_soft.resize(STEER_SLOTS)
+	_steer_car.resize(STEER_SLOTS)
+	_steer_hard.fill(0.0)
+	_steer_soft.fill(0.0)
+	_steer_car.fill(0.0)
+	for i in STEER_SLOTS:
+		var angle := i * TAU / STEER_SLOTS
+		_slot_angles[i] = angle
+		_slot_dirs.append(Vector2.from_angle(angle))
+	# Spread map rebuilds so NPCs don't all rebuild on the same frame.
+	_steer_built_frame = Engine.get_physics_frames() - randi() % STEER_NEAR_INTERVAL
+
+
+# Sets the desired heading. `target` is a world direction (or a falsy value to
+# keep facing forward). `wander` shapes the interest round it as a ring at
+# that dot product; the heading is the interest-weighted sum, as before.
 func set_interest(target, wander):
-	if target:
-		for i in num_rays:
-			var d = ray_directions[i].dot(target)
-			if wander != 0.0:
-				d = 1.0 - abs(d - wander)
-			interest[i] = max(0, d)
-	else:
-		for i in num_rays:
-			var d = ray_directions[i].dot(transform.y)
-			interest[i] = max(0, d)
-	
-func set_danger():
-	var space_state = get_world_2d().direct_space_state
-	for i in num_rays:
-		# Building walls are not obstacles (mechas walk through them);
-		# vehicles are.
-		var query = PhysicsRayQueryParameters2D.create(position, position + ray_directions[i] * look_ahead_range, MapSenses.NON_WALL_MASK)
-		query.exclude = [self]
-		var result = space_state.intersect_ray(query)
-		if result:
-			var distance = self.global_position.distance_to(result.position)
-			danger[i] = (look_ahead_range - distance)/look_ahead_range
-		else:
-			danger[i] = 0.0
-	# Redraw once per refresh (was once per ray), and only when the debug
-	# overlay actually draws something.
+	var sum := Vector2.ZERO
+	var goal: Vector2 = target if target else transform.y
+	for i in STEER_SLOTS:
+		var d := _slot_dirs[i].dot(goal)
+		if target and wander != 0.0:
+			d = 1.0 - absf(d - wander)
+		sum += _slot_dirs[i] * maxf(0.0, d)
+	_steer_desired = sum.normalized() if sum.length_squared() > 0.0001 else goal.normalized()
+
+
+# How much this mecha minds pushing things, from its weight.
+func push_aversion() -> float:
+	var t := inverse_lerp(AVERSION_LIGHT_WEIGHT, AVERSION_HEAVY_WEIGHT, get_total_weight())
+	return lerpf(PUSH_AVERSION_MAX, PUSH_AVERSION_MIN, clampf(t, 0.0, 1.0))
+
+
+# Steering radius: most of the furthest point of the mecha's collision
+# outline from its centre.
+func get_steer_radius() -> float:
+	if _steer_self_radius <= 0.0:
+		var r := 0.0
+		for c in get_children():
+			if c is CollisionPolygon2D and not c.disabled:
+				for p in c.polygon:
+					r = maxf(r, (c.position + p * c.scale).length())
+		_steer_self_radius = r * SELF_RADIUS_SCALE if r > 0.0 else 100.0
+	return _steer_self_radius
+
+
+func _build_context() -> void:
+	_steer_hard.fill(0.0)
+	_steer_soft.fill(0.0)
+	_steer_car.fill(0.0)
+	get_steer_radius()
+	_steer_range = clampf(max_speed * STEER_LOOK_TIME, STEER_RANGE_MIN, STEER_RANGE_MAX)
+	var frame := Engine.get_physics_frames()
+	if frame - _steer_weight_frame >= WEIGHT_REFRESH_INTERVAL:
+		_steer_weight_frame = frame
+		_steer_pusher_mass = VehicleField.mecha_mass(self)
+		_steer_aversion = push_aversion()
+	if not is_instance_valid(_vehicle_field):
+		_vehicle_field = VehicleField.find(self)
+	if not is_instance_valid(_building_field):
+		_building_field = BuildingField.find(self)
+	if _vehicle_field:
+		_add_vehicles()
+	_add_mechas()
+	if _building_field:
+		_add_buildings()
+	_add_static_bodies()
 	if Debug.get_setting("draw_debug_lines"):
 		queue_redraw()
 
-func choose_direction():
-	# Eliminate interest in slots with danger.
-	# Clamp to >= 0 — negative interest used to pull chosen_dir backwards and,
-	# when surrounded by walls (corners), every ray contributed a negative
-	# vector that cancelled out, leaving chosen_dir near zero (NPC frozen).
-	for i in num_rays:
-		interest[i] = max(0.0, interest[i] - danger[i])
 
-	# Sum the surviving interest into the chosen direction
-	chosen_dir = Vector2.ZERO
-	debug_lines = []
-	for i in num_rays:
-		var cur_ray = ray_directions[i] * interest[i]
-		debug_lines.append(cur_ray)
-		chosen_dir += cur_ray
+func _add_vehicles() -> void:
+	var pos := global_position
+	var pusher := _steer_pusher_mass
+	var aversion := _steer_aversion
+	var tank: bool = movement_type == "tank"
+	var now := Time.get_ticks_msec()
+	var grow := _steer_self_radius + STEER_MARGIN
+	var reach := minf(_steer_range, VEHICLE_RANGE_MAX)
+	var max_mass := _vehicle_field.trample_max_mass
+	# A sprinting mecha passes over cars (Mecha._update_car_collision).
+	var over_cars: bool = is_sprinting
+	# Cost per vehicle mass (the few sprite variants share a handful of
+	# masses); -1 marks a vehicle that is hard for this mecha.
+	var costs := {}
+	var data := _vehicle_field.steering_obstacles(pos, reach + grow)
+	var stride := VehicleField.STEER_STRIDE
+	for k in range(0, data.size(), stride):
+		var centre := Vector2(data[k], data[k + 1])
+		var length := data[k + 3]
+		var width := data[k + 4]
+		var mass := data[k + 5]
+		var index := int(data[k + 6])
+		var car := mass <= max_mass
+		if car and over_cars:
+			continue
+		var cost: float = costs.get(mass, -2.0)
+		if cost == -2.0:
+			var kept := VehicleField.push_speed_fraction(pusher, mass)
+			if tank and mass <= max_mass:
+				cost = (1.0 - kept) * aversion * TRAMPLE_COST_MULT
+			elif kept < HARD_PUSH_FRACTION:
+				cost = -1.0
+			else:
+				cost = (1.0 - kept) * aversion
+			costs[mass] = cost
+		var hard := cost < 0.0
+		if not _jammed.is_empty() and now < int(_jammed.get(index, 0)):
+			hard = true
+		var dist := centre.distance_to(pos)
+		if dist - length * 0.5 - grow > reach:
+			continue
+		if dist - length * 0.5 - grow > _steer_self_radius * 2.0:
+			# Far off: one circle round the whole vehicle is close enough.
+			_project_circle(centre, Vector2(length, width).length() * 0.5, hard, cost, car)
+			continue
+		# Close: the vehicle as one to three circles along its length.
+		var n := clampi(roundi(length / maxf(width, 1.0)), 1, 3)
+		var seg := length / n
+		var r := Vector2(seg * 0.5, width * 0.5).length()
+		var axis := Vector2.from_angle(data[k + 2])
+		for c in n:
+			_project_circle(centre + axis * (seg * (c + 0.5) - length * 0.5), r, hard, cost, car)
 
-	# Corner-escape fallback: if every direction was blocked, head toward the
-	# ray with the LEAST danger so we at least try to wiggle out instead of
-	# freezing in place. Threshold is tiny — only triggers when truly stuck.
-	if chosen_dir.length_squared() < 0.0001:
-		var safest_idx := 0
-		var lowest_danger: float = INF
-		for i in num_rays:
-			if danger[i] < lowest_danger:
-				lowest_danger = danger[i]
-				safest_idx = i
-		chosen_dir = ray_directions[safest_idx]
 
-	chosen_dir = chosen_dir.normalized()
-	queue_redraw()
+func _add_mechas() -> void:
+	if arena == null or not arena.has_method("get_mechas"):
+		return
+	var pos := global_position
+	var reach := _steer_range + _steer_self_radius + OTHER_MECHA_RADIUS
+	for m in arena.get_mechas():
+		if m == self or not is_instance_valid(m) or m.is_dead:
+			continue
+		if is_same(m, valid_target) or is_same(m, current_target):
+			continue
+		var at: Vector2 = m.global_position + m.velocity * MECHA_PREDICT_TIME
+		if at.distance_squared_to(pos) > reach * reach:
+			continue
+		_project_circle(at, OTHER_MECHA_RADIUS, true, 0.0)
+
+
+func _add_buildings() -> void:
+	var field := _building_field
+	var pos := global_position
+	var skip := {}
+	var own := field.building_at(pos)
+	if own >= 0:
+		skip[own] = true
+	if going_to_position:
+		var goal := field.building_at(NavAgent.target_position)
+		if goal >= 0:
+			skip[goal] = true
+	for t in [valid_target, current_target]:
+		if t and is_instance_valid(t):
+			var b := field.building_at(t.global_position)
+			if b >= 0:
+				skip[b] = true
+	var grow := _steer_self_radius + STEER_MARGIN
+	for b in field.buildings_within(pos, _steer_range + grow):
+		if skip.has(b):
+			continue
+		var dist := field.distance_to_building(b, pos)
+		var clearance := dist - grow
+		if clearance > _steer_range:
+			continue
+		var poly := field.global_polygon(b)
+		var centre := Vector2.ZERO
+		for p in poly:
+			centre += p
+		centre /= poly.size()
+		var ref := (centre - pos).angle()
+		var lo := 0.0
+		var hi := 0.0
+		for p in poly:
+			var a := angle_difference(ref, (p - pos).angle())
+			lo = minf(lo, a)
+			hi = maxf(hi, a)
+		var inflate := asin(clampf(grow / maxf(dist, 1.0), 0.0, 1.0))
+		var prox := 1.0 - clampf(clearance / _steer_range, 0.0, 1.0)
+		_mark(ref + (lo + hi) * 0.5, (hi - lo) * 0.5 + inflate, MARK_SOFT,
+				BUILDING_COST * (0.4 + 0.6 * prox))
+
+
+# Hand-made static bodies: one probe every STATIC_PROBE_INTERVAL frames; when
+# something static is near, the mecha's circle is cast along each slot.
+func _add_static_bodies() -> void:
+	var space := get_world_2d().direct_space_state
+	var frame := Engine.get_physics_frames()
+	if _static_shape == null:
+		_static_shape = CircleShape2D.new()
+	if frame - _static_probe_frame >= STATIC_PROBE_INTERVAL:
+		_static_probe_frame = frame
+		_static_near = false
+		_static_exclude.clear()
+		_static_exclude.append(get_rid())
+		_static_shape.radius = _steer_range + _steer_self_radius
+		var probe := PhysicsShapeQueryParameters2D.new()
+		probe.shape = _static_shape
+		probe.transform = Transform2D(0.0, global_position)
+		probe.collision_mask = STATIC_MASK
+		for hit in space.intersect_shape(probe, 32):
+			var col: Object = hit.collider
+			if col is StaticBody2D or col is TileMapLayer:
+				_static_near = true
+			else:
+				_static_exclude.append(hit.rid)
+	if not _static_near:
+		return
+	_static_shape.radius = _steer_self_radius * STATIC_CAST_SCALE
+	var cast := PhysicsShapeQueryParameters2D.new()
+	cast.shape = _static_shape
+	cast.transform = Transform2D(0.0, global_position)
+	cast.collision_mask = STATIC_MASK
+	cast.exclude = _static_exclude
+	# Already touching something: a cast in any direction stops at once, so
+	# only the directions into it are blocked (from the contact normal).
+	var touching := space.get_rest_info(cast)
+	if not touching.is_empty():
+		var normal: Vector2 = touching.normal
+		for i in STEER_SLOTS:
+			if _slot_dirs[i].dot(normal) < 0.2:
+				_steer_hard[i] = 1.0
+		return
+	for i in STEER_SLOTS:
+		cast.motion = _slot_dirs[i] * _steer_range
+		var safe: float = space.cast_motion(cast)[0]
+		if safe < 1.0:
+			_steer_hard[i] = maxf(_steer_hard[i], 1.0 - safe)
+
+
+# Projects a circle obstacle (global centre, radius) onto the slots.
+func _project_circle(centre: Vector2, radius: float, hard: bool, cost: float, car := false) -> void:
+	var rel := centre - global_position
+	var dist := rel.length()
+	var reach := radius + _steer_self_radius + STEER_MARGIN
+	var clearance := dist - reach
+	if clearance > _steer_range:
+		return
+	var prox := 1.0 - clampf(clearance / _steer_range, 0.0, 1.0)
+	var half := PI * 0.5 if dist <= reach else asin(reach / dist)
+	if hard:
+		_mark(rel.angle(), half, MARK_HARD, prox)
+	elif cost > 0.0:
+		_mark(rel.angle(), half, MARK_SOFT, cost * (0.4 + 0.6 * prox))
+	if car:
+		_mark(rel.angle(), half, MARK_CAR, prox)
+
+
+# Raises hard danger, soft cost or car nearness (`kind`) to `value` on every
+# slot whose direction lies within bearing ± half. Grown by the mecha's
+# radius, an obstacle in range always spans more than one slot step, so none
+# falls between slots; a narrower one still marks its nearest slot.
+func _mark(bearing: float, half: float, kind: int, value: float) -> void:
+	var step := TAU / STEER_SLOTS
+	var first := ceili((bearing - half) / step)
+	var last := floori((bearing + half) / step)
+	if last < first:
+		first = roundi(bearing / step)
+		last = first
+	if last - first >= STEER_SLOTS:
+		first = 0
+		last = STEER_SLOTS - 1
+	for k in range(first, last + 1):
+		var i := posmod(k, STEER_SLOTS)
+		if kind == MARK_HARD:
+			_steer_hard[i] = maxf(_steer_hard[i], value)
+		elif kind == MARK_SOFT:
+			_steer_soft[i] = maxf(_steer_soft[i], value)
+		else:
+			_steer_car[i] = maxf(_steer_car[i], value)
+
+
+func choose_direction(dt := 0.0):
+	var min_hard := INF
+	for i in STEER_SLOTS:
+		min_hard = minf(min_hard, _steer_hard[i])
+	var scores := PackedFloat32Array()
+	scores.resize(STEER_SLOTS)
+	var best := -1
+	for i in STEER_SLOTS:
+		if _steer_hard[i] > min_hard + HARD_TOLERANCE:
+			scores[i] = -INF
+			continue
+		var d := _slot_dirs[i]
+		var s := d.dot(_steer_desired) - _steer_soft[i] - _steer_hard[i] * HARD_COST
+		s += COMMIT_BONUS * maxf(0.0, d.dot(_steer_last_choice))
+		if _unstick_time > 0.0:
+			s += UNSTICK_BONUS * maxf(0.0, d.dot(_unstick_dir))
+		scores[i] = s
+		if best < 0 or s > scores[best]:
+			best = i
+
+	# Refine between the neighbours (a parabola through the three scores).
+	var angle := _slot_angles[best]
+	var sl := scores[posmod(best - 1, STEER_SLOTS)]
+	var sr := scores[posmod(best + 1, STEER_SLOTS)]
+	if is_finite(sl) and is_finite(sr):
+		var denom := sl - 2.0 * scores[best] + sr
+		if denom < -0.0001:
+			angle += clampf(0.5 * (sl - sr) / denom, -0.5, 0.5) * TAU / STEER_SLOTS
+	var target := Vector2.from_angle(angle)
+	_steer_last_choice = target
+
+	if chosen_dir == Vector2.ZERO or dt <= 0.0:
+		chosen_dir = target
+	else:
+		var rate := STEER_TURN_RATE_TANK if movement_type == "tank" else STEER_TURN_RATE
+		chosen_dir = Vector2.from_angle(rotate_toward(chosen_dir.angle(), angle, rate * dt))
+	if Debug.get_setting("draw_debug_lines"):
+		queue_redraw()
+
+
+#-------- Unstick
+
+# _track_progress() watches how far the NPC actually moves along its desired
+# heading against how far it should, in PROGRESS_SAMPLE s chunks. When the
+# last PROGRESS_CHUNKS chunks together show less than PROGRESS_MIN of the
+# expected distance, the NPC is blocked (_steer_blocked) and escalates:
+#   1. The vehicle it last pushed counts as jammed (hard) for JAM_TIME s. If
+#      that was a car, it sprints over it (see Car burst); otherwise it
+#      commits to the more open side for UNSTICK_SIDE_TIME s.
+#   2. Blocked again within UNSTICK_RESET_TIME s: stuck on a car, it dashes
+#      through it (destroying it); otherwise it dashes back if it can, backs
+#      off for UNSTICK_BACK_TIME s, then tries the other side. Either way it
+#      plans its route again.
+# Progress is only judged while the NPC keeps wanting to go the same way (its
+# heading turns less than PROGRESS_MAX_TURN across the window), and not at
+# all while it has a foe in range: kiting in and out isn't being stuck.
+# A window with good progress clears the escalation. The stuck watchdog in
+# _physics_process is the last resort.
+const PROGRESS_SAMPLE := 0.5
+const PROGRESS_CHUNKS := 3
+const PROGRESS_MIN := 0.25
+## Expected distance (px) under which a window doesn't count (the NPC is
+## meant to be slow, for example holding its kite range).
+const PROGRESS_MIN_EXPECTED := 120.0
+## A chunk in which the desired heading turned more than this isn't judged.
+const PROGRESS_MAX_TURN := PI / 4.0
+const UNSTICK_BONUS := 1.0
+const UNSTICK_SIDE_TIME := 1.5
+const UNSTICK_BACK_TIME := 0.8
+const UNSTICK_RESET_TIME := 4.0
+## Tanks reach this fraction of max_speed (wheels factor and tank gearing).
+const TANK_SPEED_FACTOR := 0.4
+
+var _steer_blocked := false
+var _progress_has_pos := false
+var _progress_heading := Vector2.ZERO
+var _progress_last_pos := Vector2.ZERO
+var _progress_done := 0.0
+var _progress_expected := 0.0
+var _progress_time := 0.0
+var _progress_chunks: Array[Vector2] = []
+var _progress_headings: Array[Vector2] = []
+var _unstick_stage := 0
+var _unstick_dir := Vector2.ZERO
+var _unstick_time := 0.0
+var _unstick_back_time := 0.0
+var _unstick_side := 1.0
+var _unstick_since := 0.0
+
+
+func _reset_unstick() -> void:
+	_steer_blocked = false
+	_unstick_stage = 0
+	_unstick_time = 0.0
+	_unstick_back_time = 0.0
+	_progress_chunks.clear()
+	_progress_headings.clear()
+	_progress_has_pos = false
+
+
+func _track_progress(dt: float, in_combat := false) -> void:
+	_unstick_since += dt
+	if in_combat:
+		# In a fight the NPC moves in and out and round its foe on purpose;
+		# a blocked way is handled by changing its orbit side (see Orbit).
+		_steer_blocked = false
+		_progress_chunks.clear()
+		_progress_headings.clear()
+		_progress_has_pos = false
+		_progress_done = 0.0
+		_progress_expected = 0.0
+		_progress_time = 0.0
+		return
+	if _unstick_back_time > 0.0:
+		_unstick_back_time -= dt
+		if _unstick_back_time <= 0.0:
+			_set_unstick_side(-_unstick_side, UNSTICK_SIDE_TIME)
+	elif _unstick_time > 0.0:
+		_unstick_time -= dt
+	if _progress_time == 0.0:
+		_progress_heading = _steer_desired
+	if _progress_has_pos:
+		_progress_done += (global_position - _progress_last_pos).dot(_steer_desired)
+	_progress_last_pos = global_position
+	_progress_has_pos = true
+	var speed: float = max_speed * throttle
+	if movement_type == "tank":
+		# A tank only drives at speed once its chassis faces the way it wants
+		# to go (Mecha.apply_movement: speed scales with that dot product
+		# cubed), so it isn't stuck while it turns on the spot.
+		var facing: Vector2 = tank_move_target.rotated(deg_to_rad(270.0)).normalized()
+		speed *= TANK_SPEED_FACTOR * pow(maxf(facing.dot(_steer_desired), 0.0), 3.0)
+	_progress_expected += speed * dt
+	_progress_time += dt
+	if _progress_time < PROGRESS_SAMPLE:
+		return
+	if _unstick_time > 0.0 or _unstick_back_time > 0.0 \
+			or absf(_progress_heading.angle_to(_steer_desired)) > PROGRESS_MAX_TURN:
+		# Don't judge progress during an unstick move, or when the NPC changed
+		# where it wants to go during the chunk (kiting in and out, changing
+		# its orbit side): it wasn't trying to go one way.
+		_progress_chunks.clear()
+		_progress_done = 0.0
+		_progress_expected = 0.0
+		_progress_time = 0.0
+		return
+	# A window only counts while the NPC keeps wanting to go the same way.
+	if not _progress_headings.is_empty() \
+			and absf(_progress_headings[-1].angle_to(_progress_heading)) > PROGRESS_MAX_TURN:
+		_progress_chunks.clear()
+		_progress_headings.clear()
+	_progress_chunks.append(Vector2(_progress_done, _progress_expected))
+	_progress_headings.append(_progress_heading)
+	_progress_done = 0.0
+	_progress_expected = 0.0
+	_progress_time = 0.0
+	if _progress_chunks.size() > PROGRESS_CHUNKS:
+		_progress_chunks.pop_front()
+		_progress_headings.pop_front()
+	if _progress_chunks.size() < PROGRESS_CHUNKS:
+		return
+	var total := Vector2.ZERO
+	for c in _progress_chunks:
+		total += c
+	if total.y < PROGRESS_MIN_EXPECTED:
+		_steer_blocked = false
+		return
+	if total.x >= total.y * PROGRESS_MIN or _trampling():
+		_steer_blocked = false
+		if _unstick_time <= 0.0 and _unstick_back_time <= 0.0:
+			_unstick_stage = 0
+		return
+	_steer_blocked = true
+	_progress_chunks.clear()
+	_progress_headings.clear()
+	_on_blocked()
+
+
+# A tank pushing a vehicle it can drive over is getting somewhere: it will be
+# over it in a moment (VehicleField.trample_time).
+func _trampling() -> bool:
+	if movement_type != "tank" or not is_instance_valid(_vehicle_field):
+		return false
+	var pushed := _vehicle_field.last_pushed_by(self, true)
+	return pushed >= 0 and (_vehicle_field.can_trample(pushed) or _vehicle_field.is_trampled(pushed))
+
+
+func _on_blocked() -> void:
+	if _unstick_since > UNSTICK_RESET_TIME:
+		_unstick_stage = 0
+	_unstick_since = 0.0
+	_unstick_stage += 1
+	var car_jam := false
+	if is_instance_valid(_vehicle_field):
+		var pushed := _vehicle_field.last_pushed_by(self)
+		if pushed >= 0:
+			_jammed[pushed] = Time.get_ticks_msec() + int(JAM_TIME * 1000.0)
+			car_jam = _vehicle_field.is_car(pushed)
+	# Rebuild now so a newly jammed vehicle counts straight away, and route
+	# the trip whatever its length.
+	_steer_built_frame = -100000
+	_route_force = ROUTE_FORCE_TIME
+	_route_replan = true
+	if car_jam and _unstick_stage == 1 and _can_burst():
+		# Stuck on a car: sprint over it.
+		_start_car_burst()
+		return
+	if car_jam and _unstick_stage >= 2 and try_dash(_steer_desired):
+		# Still stuck on a car: dash through it (a dash destroys a car).
+		_route_replan = true
+		return
+	if _unstick_stage == 1:
+		_set_unstick_side(_open_side(), UNSTICK_SIDE_TIME)
+	else:
+		_unstick_dir = -_steer_desired
+		_unstick_time = UNSTICK_BACK_TIME
+		_unstick_back_time = UNSTICK_BACK_TIME
+		try_dash(_unstick_dir)
+		_route_replan = true
+
+
+func _set_unstick_side(side: float, seconds: float) -> void:
+	_unstick_side = side
+	_unstick_dir = _steer_desired.rotated(side * deg_to_rad(70.0))
+	_unstick_time = seconds
+
+
+# 1.0 (clockwise) or -1.0, whichever side of the desired heading has less
+# danger and cost.
+func _open_side() -> float:
+	var right := 0.0
+	var left := 0.0
+	for i in STEER_SLOTS:
+		var a := angle_difference(_steer_desired.angle(), _slot_angles[i])
+		var w := _steer_hard[i] * 2.0 + _steer_soft[i]
+		if a > deg_to_rad(20.0) and a < deg_to_rad(130.0):
+			right += w
+		elif a < -deg_to_rad(20.0) and a > -deg_to_rad(130.0):
+			left += w
+	if is_equal_approx(right, left):
+		return _unstick_side
+	return 1.0 if right < left else -1.0
+
+
+#-------- Routes
+
+# On maps with a BuildingField route grid, an NPC heading somewhere more than
+# ROUTE_MIN_DISTANCE away follows a planned route (BuildingField.find_route):
+# along streets and open ground, round building blocks and parked rows. It
+# heads for one route point at a time and moves on to the next when within
+# ROUTE_REACH of it or past it. It plans again when its goal moves more than
+# ROUTE_REPLAN_MOVE, every ROUTE_REPLAN_TIME seconds, and after a bad stuck.
+# Shorter trips, and maps without the grid, go straight (local steering
+# still goes round what's in the way), except for ROUTE_FORCE_TIME s after the
+# NPC is judged blocked: then it routes even a short trip, which takes it
+# round walls and barriers that local steering can't see past.
+const ROUTE_MIN_DISTANCE := 2000.0
+const ROUTE_REACH := 350.0
+const ROUTE_REPLAN_MOVE := 1000.0
+const ROUTE_REPLAN_TIME := 15.0
+const ROUTE_FORCE_TIME := 6.0
+
+var _route := PackedVector2Array()
+var _route_index := 0
+var _route_goal := Vector2.INF
+var _route_age := 0.0
+var _route_replan := false
+var _route_force := 0.0
+
+
+func _route_next(goal: Vector2, dt: float) -> Vector2:
+	if not is_instance_valid(_building_field):
+		_building_field = BuildingField.find(self)
+	var field := _building_field
+	if field == null or not field.routes_ready():
+		return NavAgent.get_next_path_position()
+	var pos := global_position
+	_route_force = maxf(_route_force - dt, 0.0)
+	var short := ROUTE_REACH if _route_force > 0.0 else ROUTE_MIN_DISTANCE
+	if pos.distance_to(goal) < short:
+		_route.clear()
+		return goal
+	_route_age += dt
+	if _route.is_empty() or _route_replan or _route_age > ROUTE_REPLAN_TIME \
+			or _route_goal.distance_to(goal) > ROUTE_REPLAN_MOVE:
+		var route := field.find_route(pos, goal)
+		if not route.is_empty():
+			_route = route
+			_route_index = 0
+			_route_goal = goal
+			_route_age = 0.0
+			_route_replan = false
+	if _route.is_empty():
+		return goal
+	while _route_index < _route.size() - 1:
+		var point := _route[_route_index]
+		var past := (point - pos).dot(_route[_route_index + 1] - point) < 0.0
+		if pos.distance_to(point) > ROUTE_REACH and not past:
+			break
+		_route_index += 1
+	return _route[_route_index]
+
+
+#-------- Orbit
+
+# In a fight the behaviours approach or back off with a `wander` value: the
+# dot product between the way to move and the straight line to the foe.
+# navigate_to_target() turns the line by that angle to one side, so the NPC
+# circles and strafes round its foe. The side holds for ORBIT_MIN_TIME to
+# ORBIT_MAX_TIME s, then may change; it changes at once when that way is
+# blocked.
+const COMBAT_RANGE := 3500.0
+const ORBIT_MIN_TIME := 2.5
+const ORBIT_MAX_TIME := 5.0
+const ORBIT_BLOCKED_DANGER := 0.6
+
+var _orbit_side := 1.0 if randf() < 0.5 else -1.0
+var _orbit_time := 0.0
+
+
+# The mecha or Entity this NPC is fighting, if it is within COMBAT_RANGE.
+func _combat_target():
+	for t in [current_target, valid_target]:
+		if t and is_instance_valid(t) and not ("is_dead" in t and t.is_dead) \
+				and global_position.distance_squared_to(t.global_position) < COMBAT_RANGE * COMBAT_RANGE:
+			return t
+	return null
+
+
+func _update_orbit(dt: float, foe) -> void:
+	if not foe:
+		return
+	_orbit_time -= dt
+	var ahead := posmod(roundi(_steer_desired.angle() / (TAU / STEER_SLOTS)), STEER_SLOTS)
+	var blocked := _steer_hard[ahead] > ORBIT_BLOCKED_DANGER
+	if blocked and _orbit_time < ORBIT_MAX_TIME - 1.0:
+		_orbit_side = -_orbit_side
+		_orbit_time = randf_range(ORBIT_MIN_TIME, ORBIT_MAX_TIME)
+	elif _orbit_time <= 0.0:
+		if randf() < 0.6:
+			_orbit_side = -_orbit_side
+		_orbit_time = randf_range(ORBIT_MIN_TIME, ORBIT_MAX_TIME)
+
+
+#-------- Sprint and dash
+
+# Cruise sprint: on a long trip with no foe near, a cool NPC sprints while
+# the way ahead is clear. It starts below SPRINT_HEAT_START of its overheat
+# temperature and stops above SPRINT_HEAT_STOP, near its goal, or when
+# something is in the way.
+#
+# Dashes, at most one every DASH_MIN_INTERVAL s and only below DASH_HEAT_MAX:
+#   - Dodge: when a shot comes near (the NearbyProjectile area), sometimes
+#     dash to the side away from its line. Better pilots (higher
+#     ai_lead_accuracy) dodge more often.
+#   - Escape: when properly stuck (second unstick stage), dash the unstick
+#     way.
+#   - Gap close: a brawler approaching a foe well outside its range
+#     sometimes dashes in.
+# Mecha.dash() takes a straight direction (forward, back, left or right) in
+# the body's frame for legs and in world space otherwise; try_dash() picks
+# the one nearest the wanted world direction.
+const SPRINT_MIN_DISTANCE := 2500.0
+const SPRINT_HEAT_START := 0.45
+const SPRINT_HEAT_STOP := 0.65
+const DASH_MIN_INTERVAL := 2.5
+const DASH_HEAT_MAX := 0.6
+const DODGE_CHANCE_MIN := 0.15
+const DODGE_CHANCE_MAX := 0.5
+## Chance per second that a brawler closing in dashes.
+const GAP_CLOSE_RATE := 0.35
+
+var _cruising := false
+var _last_dash_ms := -100000
+
+
+# Hottest of internal and external temperature, as a fraction of overheat.
+func heat_ratio() -> float:
+	if overheat_temp <= 0.0:
+		return 0.0
+	return maxf(internal_temp, external_temp) / overheat_temp
+
+
+func _cruise_sprint(goal: Vector2, foe) -> bool:
+	if foe or scripted or build.thruster == null:
+		_cruising = false
+		return false
+	var dist := global_position.distance_to(goal)
+	var ahead := posmod(roundi(chosen_dir.angle() / (TAU / STEER_SLOTS)), STEER_SLOTS)
+	var clear := _steer_hard[ahead] < 0.1 and _steer_soft[ahead] < 0.2
+	var heat := heat_ratio()
+	if _cruising:
+		if heat > SPRINT_HEAT_STOP or dist < SPRINT_MIN_DISTANCE * 0.6 or not clear:
+			_cruising = false
+	elif heat < SPRINT_HEAT_START and dist > SPRINT_MIN_DISTANCE and clear \
+			and absf(chosen_dir.angle_to(_steer_desired)) < deg_to_rad(25.0):
+		_cruising = true
+	return _cruising
+
+
+func _update_dashes(dt: float, foe, direction: float) -> void:
+	if not foe or combat_style != "brawler" or direction != 0.0:
+		return
+	var gap := global_position.distance_to(foe.global_position)
+	if gap > preferred_combat_range * 1.5 and randf() < GAP_CLOSE_RATE * dt:
+		try_dash(chosen_dir)
+
+
+# Dashes as close to `world_dir` as Mecha.dash() allows. Returns whether it
+# dashed.
+func try_dash(world_dir: Vector2) -> bool:
+	if world_dir == Vector2.ZERO or build.thruster == null or scripted or is_dead or is_stunned():
+		return false
+	if Time.get_ticks_msec() - _last_dash_ms < int(DASH_MIN_INTERVAL * 1000.0):
+		return false
+	if heat_ratio() > DASH_HEAT_MAX or has_status("freezing"):
+		return false
+	var d := world_dir.rotated(-global_rotation) if movement_type == "relative" else world_dir
+	var cardinal := Vector2(signf(d.x), 0.0) if absf(d.x) > absf(d.y) else Vector2(0.0, signf(d.y))
+	var dir_name = get_dir_name(cardinal)
+	if typeof(dir_name) != TYPE_STRING or dash_cooldown[dir_name] > 0.0:
+		return false
+	dash(cardinal)
+	_last_dash_ms = Time.get_ticks_msec()
+	return true
+
+
+# Car burst: a sprinting mecha passes over cars, so an NPC facing a wall of
+# cars (cars in CAR_WALL_SLOTS of the slots within CAR_WALL_ANGLE of its
+# heading, nothing harder in front), or stuck on a car, sprints for
+# CAR_BURST_TIME s if it is cool enough.
+const CAR_BURST_TIME := 1.2
+const CAR_NEAR := 0.4
+const CAR_WALL_ANGLE := PI / 3.0
+const CAR_WALL_SLOTS := 7
+
+var _car_burst_time := 0.0
+
+
+func _can_burst() -> bool:
+	return build.thruster != null and not scripted and heat_ratio() < SPRINT_HEAT_STOP
+
+
+func _car_wall_ahead() -> bool:
+	var step := TAU / STEER_SLOTS
+	var ahead := posmod(roundi(_steer_desired.angle() / step), STEER_SLOTS)
+	if _steer_car[ahead] < CAR_NEAR or _steer_hard[ahead] > 0.3:
+		return false
+	var span := ceili(CAR_WALL_ANGLE / step)
+	var count := 0
+	for k in range(-span, span + 1):
+		if _steer_car[posmod(ahead + k, STEER_SLOTS)] >= CAR_NEAR:
+			count += 1
+	return count >= CAR_WALL_SLOTS
+
+
+func _update_car_burst(dt: float) -> void:
+	if _car_burst_time > 0.0:
+		_car_burst_time -= dt
+	elif _can_burst() and _car_wall_ahead():
+		_start_car_burst()
+
+
+func _start_car_burst() -> void:
+	_car_burst_time = CAR_BURST_TIME
+	# Sprint from this frame, and rebuild the map without the cars.
+	is_sprinting = true
+	_steer_built_frame = -100000
+
+
+# A shot coming near: maybe dash to the side, away from its line.
+func _try_dodge(from: Vector2) -> void:
+	if is_dead or scripted or not going_to_position:
+		return
+	var chance := lerpf(DODGE_CHANCE_MIN, DODGE_CHANCE_MAX, clampf(ai_lead_accuracy, 0.0, 1.0))
+	if randf() >= chance:
+		return
+	var line := (global_position - from).normalized()
+	var side := line.orthogonal()
+	# Dodge to the side with less in the way.
+	var right := posmod(roundi(side.angle() / (TAU / STEER_SLOTS)), STEER_SLOTS)
+	var left := posmod(roundi((-side).angle() / (TAU / STEER_SLOTS)), STEER_SLOTS)
+	if _steer_hard.size() == STEER_SLOTS and _steer_hard[left] < _steer_hard[right]:
+		side = -side
+	try_dash(side)
 
 
 func _on_nearby_projectile_area_entered(area):
@@ -887,6 +1720,7 @@ func _on_nearby_projectile_area_entered(area):
 		under_fire_timer = 0.5
 		most_recent_attacker = attacker
 		last_attack_position = attacker.global_position
+		_try_dodge(attacker.global_position)
 
 		# Build hostility — 4 shots = max hostility
 		add_hostility(attacker, 0.25)

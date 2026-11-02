@@ -80,11 +80,14 @@ func _on_Hangar_pressed():
 	TransitionManager.transition_to("res://game/ui/HangarScreen.tscn", "Loading Visualizer...")
 
 
+# Arena Mode opens the test arena (game/arena/TestArena.tscn). The ladder
+# screen (game/ui/ladder/Ladder.tscn) is parked.
 func _on_Arena_pressed():
 	if not _mecha_ready_to_deploy():
 		return
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/ladder/Ladder.tscn", "Loading Rankings...")
+	AudioManager.stop_bgm()
+	TransitionManager.transition_to("res://game/arena/TestArena.tscn", "Loading Test Arena...")
 
 
 func _on_Expedition_pressed():

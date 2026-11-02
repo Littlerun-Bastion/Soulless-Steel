@@ -233,6 +233,8 @@ var movement_type = "free"
 var tank_move_target = Vector2(1,0)
 var tank_lookat_target = Vector2()
 var is_sprinting = false
+# NPC tanks' own driving velocity, kept apart from dash and knockback moves.
+var _tank_drive_velocity := Vector2.ZERO
 var sprinting_ending_correction = Vector2()
 var dash_velocity = Vector2()
 var impact_velocity = Vector2()
@@ -401,6 +403,7 @@ func _ready():
 
 	# Mechas bump into and push map vehicles (see VehicleField).
 	set_collision_mask_value(MapSenses.VEHICLE_LAYER, true)
+	set_collision_mask_value(MapSenses.HEAVY_VEHICLE_LAYER, true)
 
 
 func _physics_process(dt):
@@ -1635,10 +1638,41 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 
 
 func move(vec):
+	_update_car_collision()
 	NavAgent.set_velocity(vec)
 	set_velocity(vec)
 	move_and_slide()
 	VehicleField.push_from(self, vec)
+
+
+# A sprinting mecha passes over cars: it stops colliding with the car layer
+# (vans and trucks are on another layer and still stop it). After the sprint
+# it collides with cars again only once it is clear of every car, so it never
+# ends up inside one.
+func _update_car_collision() -> void:
+	var colliding := get_collision_mask_value(MapSenses.VEHICLE_LAYER)
+	if is_sprinting:
+		if colliding:
+			set_collision_mask_value(MapSenses.VEHICLE_LAYER, false)
+	elif not colliding and not _over_a_car():
+		set_collision_mask_value(MapSenses.VEHICLE_LAYER, true)
+
+
+func _over_a_car() -> bool:
+	if not is_inside_tree():
+		return false
+	var radius := 0.0
+	for c in get_children():
+		if c is CollisionPolygon2D and not c.disabled:
+			for p in c.polygon:
+				radius = maxf(radius, (c.position + p * c.scale).length())
+	var shape := CircleShape2D.new()
+	shape.radius = maxf(radius * 0.85, 60.0)
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = shape
+	query.transform = Transform2D(0.0, global_position)
+	query.collision_mask = MapSenses.CAR_MASK
+	return not get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 
 func get_dir_name(dir):
@@ -1742,6 +1776,11 @@ func apply_movement(dt, direction):
 		velocity = apply_movement_modifiers(velocity*mod)
 		move(velocity)
 	elif movement_type == "tank" and not is_player():
+		# This frame's dash or knockback move overwrote velocity; NPC tanks
+		# drive on from their own driving speed, or the dash would be carried
+		# into their (double) drive move and fly them several times as far.
+		if dash_velocity.length() > 0.0 or impact_velocity.length() > 0.0:
+			velocity = _tank_drive_velocity
 		if direction.length() > 0:
 			moving = true
 			var target_rotation_acc = apply_movement_modifiers(get_chassis_rotation_acc() * 50)
@@ -1765,6 +1804,7 @@ func apply_movement(dt, direction):
 			velocity = apply_movement_modifiers(velocity)
 			move(velocity)
 			#Move forward or backward depending on how closely the chassis is facing the angle
+		_tank_drive_velocity = velocity
 	elif movement_type == "tank":
 		if direction.length() > 0:
 			moving = false

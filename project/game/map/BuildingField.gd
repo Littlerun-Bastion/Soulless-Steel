@@ -23,11 +23,48 @@ extends Node2D
 # physics server (no node). Every ray pays for each body along its path,
 # whatever its mask, so a few dozen merged bodies cost far less than one
 # body per building.
+#
+# Hand-made maps: with no `footprints` resource, the field reads the
+# Polygon2D children of a child node named "Footprints" as the buildings
+# (drawn in the editor; the Polygon2D draws the floor) and gives each one a
+# light outline (outline_color, outline_width).
+#
+# NPC steering reads the footprints through buildings_within(), building_at(),
+# global_polygon() and distance_to_building(), all in global space, to keep
+# mechas out of buildings they don't need to enter.
+#
+# Route planning: a grid of ROUTE_CELL squares over the buildings, where each
+# square costs more to cross the more of it is building and the more vehicles
+# are parked in it. It is built once on a worker thread after the map loads
+# (routes_ready() tells when) and solved with AStarGrid2D. find_route() gives
+# NPCs a path along the streets and open ground for long trips; local
+# steering still handles what they meet on the way. Solid static bodies
+# (walls, barriers, hand-made props) present when the grid is built block the
+# squares they cover, grown by ROUTE_WALL_CLEARANCE. Scenes streamed in later
+# don't. At most
+# ROUTE_SOLVES_PER_FRAME routes are solved per physics frame; past that,
+# find_route() returns nothing and the NPC asks again on a later frame.
 
 const CELL_SIZE := 2000.0
 const FADE_SPEED := 2.3
 const FADE_TEX_SIZE := 128
 const WALL_CELL_SIZE := 5000.0
+## Route grid square (px). 250 px is 12.5 m, a little more than a mecha.
+const ROUTE_CELL := 250.0
+## Extra cost for a square fully covered by building.
+const ROUTE_BUILDING_WEIGHT := 6.0
+## Extra cost per vehicle parked in a square, and per heavy vehicle (over
+## ROUTE_HEAVY_MASS kg), up to ROUTE_VEHICLE_MAX in all.
+const ROUTE_VEHICLE_WEIGHT := 0.5
+const ROUTE_HEAVY_VEHICLE_WEIGHT := 2.0
+const ROUTE_HEAVY_MASS := 3000.0
+const ROUTE_VEHICLE_MAX := 3.0
+## The grid reaches this far (px) past the outermost buildings, vehicles
+## and static bodies.
+const ROUTE_MARGIN := 4000.0
+## Static bodies block route squares within this distance (px).
+const ROUTE_WALL_CLEARANCE := 100.0
+const ROUTE_SOLVES_PER_FRAME := 1
 
 @export var footprints: BuildingFootprints
 @export var roof_material: ShaderMaterial
@@ -39,6 +76,9 @@ const WALL_CELL_SIZE := 5000.0
 ## A mecha this close (px) to a footprint still counts as inside, so the
 ## narrow gaps between neighbouring houses don't flicker the camera zoom.
 @export var inside_margin := 30.0
+## Outline drawn round buildings read from a "Footprints" node.
+@export var outline_color := Color(0.75, 0.75, 0.75)
+@export var outline_width := 8.0
 
 var _polys: Array[PackedVector2Array] = []
 var _rects: Array[Rect2] = []
@@ -52,9 +92,18 @@ var _fade_image: Image
 var _fade_texture: ImageTexture
 var _wall_bodies: Array[RID] = []
 var _wall_shapes: Array[RID] = []
+var _route_grid: AStarGrid2D = null
+var _route_origin := Vector2.ZERO
+var _route_task := -1
+var _route_result: Array = []
+var _route_frame := -1
+var _route_solves := 0
 
 
 func _ready() -> void:
+	add_to_group("building_field")
+	if footprints == null and has_node("Footprints"):
+		footprints = _footprints_from_nodes(get_node("Footprints"))
 	if footprints == null:
 		push_warning("BuildingField has no footprints.")
 		set_physics_process(false)
@@ -80,6 +129,7 @@ func _ready() -> void:
 				_cells[key].append(i)
 	if not Engine.is_editor_hint():
 		_build_walls()
+		_start_route_build.call_deferred()
 	_fade_image = Image.create(FADE_TEX_SIZE, FADE_TEX_SIZE, false, Image.FORMAT_R8)
 	_fade_image.fill(Color.WHITE)
 	_fade_texture = ImageTexture.create_from_image(_fade_image)
@@ -89,6 +139,9 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if _route_task >= 0:
+		WorkerThreadPool.wait_for_task_completion(_route_task)
+		_route_task = -1
 	for rid in _wall_bodies:
 		PhysicsServer2D.free_rid(rid)
 	for rid in _wall_shapes:
@@ -131,6 +184,8 @@ func _build_walls() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _route_task >= 0 and WorkerThreadPool.is_task_completed(_route_task):
+		_finish_route_build()
 	var reveal_at = null
 	var seen := {}
 	for mech in get_tree().get_nodes_in_group("mecha"):
@@ -166,6 +221,284 @@ func buildings_near(pos: Vector2, radius: float) -> PackedInt32Array:
 		if _rects[i].grow(radius).has_point(pos) and _distance_to(i, pos) <= radius:
 			out.append(i)
 	return out
+
+
+# Buildings from the Polygon2D children of `holder` (in this node's space),
+# each given an outline.
+func _footprints_from_nodes(holder: Node) -> BuildingFootprints:
+	var out := BuildingFootprints.new()
+	var starts := PackedInt32Array([0])
+	for child in holder.get_children():
+		var poly := child as Polygon2D
+		if poly == null or poly.polygon.size() < 3:
+			continue
+		for v in poly.polygon:
+			out.points.append(to_local(poly.to_global(v)))
+		starts.append(out.points.size())
+		if not Engine.is_editor_hint():
+			var line := Line2D.new()
+			line.points = poly.polygon
+			line.closed = true
+			line.width = outline_width
+			line.default_color = outline_color
+			line.joint_mode = Line2D.LINE_JOINT_SHARP
+			poly.add_child(line)
+	if starts.size() < 2:
+		return null
+	out.starts = starts
+	return out
+
+
+static func find(node: Node) -> BuildingField:
+	if node == null or not node.is_inside_tree():
+		return null
+	return node.get_tree().get_first_node_in_group("building_field") as BuildingField
+
+
+# Building ids whose footprints come within `radius` of a global position.
+# Unlike buildings_near(), the radius can be larger than a grid cell.
+func buildings_within(global_pos: Vector2, radius: float) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	if _polys.is_empty():
+		return out
+	var pos := to_local(global_pos)
+	var c0 := _cell_of(pos - Vector2(radius, radius))
+	var c1 := _cell_of(pos + Vector2(radius, radius))
+	var seen := {}
+	for cx in range(c0.x, c1.x + 1):
+		for cy in range(c0.y, c1.y + 1):
+			for i in _cells.get(Vector2i(cx, cy), PackedInt32Array()):
+				if seen.has(i):
+					continue
+				seen[i] = true
+				if _rects[i].grow(radius).has_point(pos):
+					out.append(i)
+	return out
+
+
+# The building whose footprint contains a global position, or -1.
+func building_at(global_pos: Vector2) -> int:
+	var pos := to_local(global_pos)
+	for i in _cells.get(_cell_of(pos), PackedInt32Array()):
+		if _rects[i].has_point(pos) and Geometry2D.is_point_in_polygon(pos, _polys[i]):
+			return i
+	return -1
+
+
+func global_polygon(i: int) -> PackedVector2Array:
+	return global_transform * _polys[i]
+
+
+# Distance from a global position to building i's footprint (0 inside).
+func distance_to_building(i: int, global_pos: Vector2) -> float:
+	return _distance_to(i, to_local(global_pos))
+
+
+# ---- Route planning ----
+
+# True once the route grid is built.
+func routes_ready() -> bool:
+	return _route_grid != null
+
+
+# A route from one global position to another, as global points: the first
+# is the next point to head for, the last is `to`. Straight stretches are
+# merged into single legs. Empty when the grid isn't ready yet, or when this
+# frame's solves are used up (ask again later).
+func find_route(from: Vector2, to: Vector2) -> PackedVector2Array:
+	if _route_grid == null:
+		return PackedVector2Array()
+	var frame := Engine.get_physics_frames()
+	if frame != _route_frame:
+		_route_frame = frame
+		_route_solves = 0
+	if _route_solves >= ROUTE_SOLVES_PER_FRAME:
+		return PackedVector2Array()
+	_route_solves += 1
+	var a := _route_cell(to_local(from))
+	var b := _route_cell(to_local(to))
+	var cells := _route_grid.get_id_path(a, b, true)
+	var out := PackedVector2Array()
+	if cells.size() > 1:
+		var kept := _route_simplify(cells)
+		for k in range(1, kept.size()):
+			out.append(to_global(_route_centre(kept[k])))
+	if out.is_empty():
+		out.append(to)
+	else:
+		out[out.size() - 1] = to
+	return out
+
+
+# How much a route grid square costs to cross (1 = open ground), at a global
+# position.
+func route_cost_at(global_pos: Vector2) -> float:
+	if _route_grid == null:
+		return 1.0
+	return _route_grid.get_point_weight_scale(_route_cell(to_local(global_pos)))
+
+
+func _route_cell(local_pos: Vector2) -> Vector2i:
+	var r := _route_grid.region
+	var c := Vector2i(((local_pos - _route_origin) / ROUTE_CELL).floor())
+	return c.clamp(r.position, r.end - Vector2i.ONE)
+
+
+func _route_centre(cell: Vector2i) -> Vector2:
+	return _route_origin + (Vector2(cell) + Vector2(0.5, 0.5)) * ROUTE_CELL
+
+
+# Keeps only the cells where the route turns: from each kept cell, jumps to
+# the furthest later cell (up to 40 on) that a straight line reaches for no
+# more cost than the path itself takes between them.
+func _route_simplify(cells: Array[Vector2i]) -> Array[Vector2i]:
+	var kept: Array[Vector2i] = [cells[0]]
+	var i := 0
+	while i < cells.size() - 1:
+		var best := i + 1
+		var path_cost := 0.0
+		for j in range(i + 1, mini(cells.size(), i + 40)):
+			path_cost += _route_grid.get_point_weight_scale(cells[j]) * Vector2(cells[j - 1]).distance_to(Vector2(cells[j]))
+			if j > i + 1 and _route_line_cost(cells[i], cells[j]) <= path_cost * 1.02:
+				best = j
+		kept.append(cells[best])
+		i = best
+	return kept
+
+
+# What a straight line between two cells costs, in the same units as the
+# path (weight times cells crossed); INF through a blocked square.
+func _route_line_cost(a: Vector2i, b: Vector2i) -> float:
+	var length := Vector2(a).distance_to(Vector2(b))
+	var steps := maxi(ceili(length * 2.0), 1)
+	var cost := 0.0
+	for s in range(1, steps + 1):
+		var c := Vector2i((Vector2(a) + (Vector2(b) - Vector2(a)) * (float(s) / steps)).round())
+		if _route_grid.is_point_solid(c):
+			return INF
+		cost += _route_grid.get_point_weight_scale(c)
+	return cost * length / steps
+
+
+# Gathers what the grid needs on the main thread, then builds it on a worker
+# thread. Waits for the VehicleField (built a frame after load) if there is one.
+func _start_route_build() -> void:
+	if _polys.is_empty() or _route_task >= 0 or _route_grid != null:
+		return
+	var vehicles := VehicleField.find(self)
+	if vehicles and not vehicles.is_built():
+		get_tree().create_timer(0.1, true, true).timeout.connect(_start_route_build, CONNECT_ONE_SHOT)
+		return
+	var bounds := _rects[0]
+	for r in _rects:
+		bounds = bounds.merge(r)
+	var veh_pos := PackedVector2Array()
+	var veh_mass := PackedFloat32Array()
+	if vehicles:
+		for i in vehicles.vehicle_count():
+			if not vehicles.is_trampled(i) and not vehicles.is_destroyed(i):
+				veh_pos.append(to_local(vehicles.vehicle_transform(i).origin))
+				veh_mass.append(vehicles.vehicle_mass(i))
+				bounds = bounds.expand(veh_pos[veh_pos.size() - 1])
+	var solids := _static_outlines()
+	for poly in solids:
+		for v in poly:
+			bounds = bounds.expand(v)
+	bounds = bounds.grow(ROUTE_MARGIN)
+	_route_task = WorkerThreadPool.add_task(_build_route_grid.bind(bounds, veh_pos, veh_mass, solids), false, "BuildingField routes")
+
+
+# Outlines (this node's space) of the collision shapes of every static body in
+# the scene, grown by ROUTE_WALL_CLEARANCE.
+func _static_outlines() -> Array[PackedVector2Array]:
+	var out: Array[PackedVector2Array] = []
+	for body in get_tree().root.find_children("*", "StaticBody2D", true, false):
+		for child in body.get_children():
+			var local := PackedVector2Array()
+			if child is CollisionShape2D and not child.disabled and child.shape != null:
+				var shape: Shape2D = child.shape
+				var r := shape.get_rect()
+				local = PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)])
+				local = child.transform * local
+			elif child is CollisionPolygon2D and not child.disabled and child.polygon.size() >= 3:
+				local = child.transform * child.polygon
+			if local.is_empty():
+				continue
+			var mine := PackedVector2Array()
+			for v in local:
+				mine.append(to_local(body.to_global(v)))
+			var grown := Geometry2D.offset_polygon(mine, ROUTE_WALL_CLEARANCE)
+			if not grown.is_empty():
+				out.append(grown[0])
+	return out
+
+
+func _build_route_grid(bounds: Rect2, veh_pos: PackedVector2Array, veh_mass: PackedFloat32Array, solids: Array[PackedVector2Array]) -> void:
+	var origin := bounds.position
+	var size := Vector2i((bounds.size / ROUTE_CELL).ceil())
+	var extra := PackedFloat32Array()
+	extra.resize(size.x * size.y)
+	# Building cover: five samples per square (centre and four inner corners).
+	var offsets := [Vector2(0.5, 0.5), Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75), Vector2(0.75, 0.75)]
+	for i in _polys.size():
+		var poly := _polys[i]
+		var r := _rects[i]
+		var c0 := Vector2i(((r.position - origin) / ROUTE_CELL).floor())
+		var c1 := Vector2i(((r.end - origin) / ROUTE_CELL).floor())
+		for cx in range(maxi(c0.x, 0), mini(c1.x, size.x - 1) + 1):
+			for cy in range(maxi(c0.y, 0), mini(c1.y, size.y - 1) + 1):
+				var inside := 0
+				for o in offsets:
+					var p: Vector2 = origin + (Vector2(cx, cy) + o) * ROUTE_CELL
+					if r.has_point(p) and Geometry2D.is_point_in_polygon(p, poly):
+						inside += 1
+				if inside > 0:
+					var k := cy * size.x + cx
+					extra[k] = minf(extra[k] + ROUTE_BUILDING_WEIGHT * inside / 5.0, ROUTE_BUILDING_WEIGHT)
+	var veh := PackedFloat32Array()
+	veh.resize(size.x * size.y)
+	for i in veh_pos.size():
+		var c := Vector2i(((veh_pos[i] - origin) / ROUTE_CELL).floor())
+		if c.x < 0 or c.y < 0 or c.x >= size.x or c.y >= size.y:
+			continue
+		var k := c.y * size.x + c.x
+		var w := ROUTE_HEAVY_VEHICLE_WEIGHT if veh_mass[i] > ROUTE_HEAVY_MASS else ROUTE_VEHICLE_WEIGHT
+		veh[k] = minf(veh[k] + w, ROUTE_VEHICLE_MAX)
+	var grid := AStarGrid2D.new()
+	grid.region = Rect2i(Vector2i.ZERO, size)
+	grid.cell_size = Vector2(ROUTE_CELL, ROUTE_CELL)
+	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ALWAYS
+	grid.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	grid.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	grid.update()
+	for cy in size.y:
+		for cx in size.x:
+			var k := cy * size.x + cx
+			var w := 1.0 + extra[k] + veh[k]
+			if w > 1.0:
+				grid.set_point_weight_scale(Vector2i(cx, cy), w)
+	for poly in solids:
+		var r := Rect2(poly[0], Vector2.ZERO)
+		for v in poly:
+			r = r.expand(v)
+		var c0 := Vector2i(((r.position - origin) / ROUTE_CELL).floor())
+		var c1 := Vector2i(((r.end - origin) / ROUTE_CELL).floor())
+		for cx in range(maxi(c0.x, 0), mini(c1.x, size.x - 1) + 1):
+			for cy in range(maxi(c0.y, 0), mini(c1.y, size.y - 1) + 1):
+				var cell_pos := origin + Vector2(cx, cy) * ROUTE_CELL
+				var cell := PackedVector2Array([cell_pos, cell_pos + Vector2(ROUTE_CELL, 0), cell_pos + Vector2(ROUTE_CELL, ROUTE_CELL), cell_pos + Vector2(0, ROUTE_CELL)])
+				if not Geometry2D.intersect_polygons(cell, poly).is_empty():
+					grid.set_point_solid(Vector2i(cx, cy), true)
+	_route_result = [grid, origin]
+
+
+func _finish_route_build() -> void:
+	WorkerThreadPool.wait_for_task_completion(_route_task)
+	_route_task = -1
+	if _route_result.size() == 2:
+		_route_grid = _route_result[0]
+		_route_origin = _route_result[1]
+	_route_result = []
 
 
 func _update_fades(reveal_at, delta: float) -> void:

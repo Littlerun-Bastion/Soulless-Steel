@@ -8,10 +8,10 @@ extends RefCounted
 # A part costs MATERIAL_FACTOR times what it recycles into (its composition),
 # plus CREDIT_RATE of its price in credits. So recycling and rebuilding loses
 # half the materials, and building costs far fewer credits than the Store.
-# High-tech parts need Fabricator Mk II. What comes out is Standard at Mk I.
 #
-# The Fabricator's level is fixed at 1 until the Hangar facilities (EC5) let
-# it be upgraded.
+# The Fabricator is a Hangar facility (Facilities): it has to be built first
+# (Mk I), high-tech parts need Mk II, and at Mk II and III some builds come
+# out Refined or Prototype.
 
 const MATERIAL_FACTOR := 2
 const CREDIT_RATE := 0.25
@@ -20,7 +20,7 @@ const HIGH_TECH_LEVEL := 2
 
 
 static func level() -> int:
-	return 1
+	return Facilities.fabricator_level()
 
 
 static func get_part(part_type: String, part_id: String) -> Object:
@@ -54,6 +54,8 @@ static func needs_upgrade(part_type: String, part_id: String) -> bool:
 static func block_reason(part_type: String, part_id: String) -> String:
 	if get_part(part_type, part_id) == null or material_cost(part_type, part_id).is_empty():
 		return "CAN'T BE BUILT"
+	if level() <= 0:
+		return "NO FABRICATOR: BUILD ONE IN FAC"
 	if not PlayerProgress.knows_blueprint(part_type, part_id):
 		return "NO BLUEPRINT"
 	if needs_upgrade(part_type, part_id):
@@ -67,8 +69,15 @@ static func block_reason(part_type: String, part_id: String) -> String:
 	return ""
 
 
-# The grade a build comes out at.
-static func output_grade(_rng: RandomNumberGenerator = null) -> String:
+# The grade a build comes out at: rolled by the Fabricator's level
+# (Facilities: e.g. Mk II 20% Refined), else Standard.
+static func output_grade(rng: RandomNumberGenerator = null) -> String:
+	var odds: Dictionary = Facilities.value_at(Facilities.FABRICATOR, level())
+	var pick := rng.randf() if rng != null else randf()
+	for grade in [Grades.PROTOTYPE, Grades.REFINED]:
+		pick -= float(odds.get(grade, 0.0))
+		if pick < 0.0:
+			return grade
 	return Grades.STANDARD
 
 

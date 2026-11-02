@@ -3,9 +3,9 @@ extends TestSuite
 # FabricatorTest: blueprints and the Fabricator (Fabricator, FAB app).
 # Recycling copies of a part teaches its blueprint (one Refined copy is
 # enough; salvage teaches nothing); a build costs twice the part's
-# composition plus a quarter of its price; the Fabricator refuses without a
-# blueprint, for high tech at Mk I, without the materials, credits or stash
-# room, and then takes nothing; a build puts a Standard part in the stash and
+# composition plus a quarter of its price; the Fabricator refuses when it
+# isn't built, without a blueprint, for high tech below Mk II, without the
+# materials, credits or stash room, and then takes nothing; a build puts a Standard part in the stash and
 # pays for it; blueprints save; and the FAB window lists, explains and builds.
 # Each case starts from fresh progress (PlayerProgress.reset).
 
@@ -23,8 +23,11 @@ func run_tests() -> void:
 	await case("the FAB window", _test_window)
 
 
+# A Fabricator Mk I is built for every case (the facility starts unbuilt;
+# FacilitiesTest covers that).
 func before_each() -> void:
 	PlayerProgress.reset()
+	PlayerProgress.set_facility_level(Facilities.FABRICATOR, 1)
 
 
 func _part(entry: Array, grade := Grades.STANDARD) -> item_stack:
@@ -93,6 +96,9 @@ func _test_costs() -> void:
 
 func _test_block_reasons() -> void:
 	check_eq(Fabricator.block_reason("core", "no_such_core"), "CAN'T BE BUILT", "a part that doesn't exist")
+	PlayerProgress.set_facility_level(Facilities.FABRICATOR, 0)
+	check_eq(Fabricator.block_reason(CHEAP[0], CHEAP[1]), "NO FABRICATOR: BUILD ONE IN FAC", "no Fabricator built")
+	PlayerProgress.set_facility_level(Facilities.FABRICATOR, 1)
 	check_eq(Fabricator.block_reason(CHEAP[0], CHEAP[1]), "NO BLUEPRINT", "no blueprint")
 	_learn(CHEAP)
 	check_eq(Fabricator.block_reason(CHEAP[0], CHEAP[1]), "NOT ENOUGH MATERIALS", "no materials")
@@ -113,8 +119,10 @@ func _test_block_reasons() -> void:
 
 	_learn(HIGH)
 	_stock_up(HIGH)
-	check_eq(Fabricator.level(), 1, "the Fabricator starts at Mk I")
+	check_eq(Fabricator.level(), 1, "at Mk I")
 	check_eq(Fabricator.block_reason(HIGH[0], HIGH[1]), "NEEDS FABRICATOR MK II", "high tech needs Mk II")
+	PlayerProgress.set_facility_level(Facilities.FABRICATOR, 2)
+	check_eq(Fabricator.block_reason(HIGH[0], HIGH[1]), "", "which builds it")
 
 
 func _test_build() -> void:

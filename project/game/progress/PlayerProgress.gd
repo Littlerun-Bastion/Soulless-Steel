@@ -10,6 +10,8 @@ extends Node
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
 #   - materials      : crafting materials from recycling salvage (Materials)
+#   - blueprints     : parts the Fabricator can build (learned by recycling)
+#   - facilities     : Hangar facility levels (Facilities)
 #
 # Story position lives in StoryDirector; settings live in Profile.
 # Profile only packs/unpacks this data into the save file under "progress".
@@ -35,6 +37,7 @@ signal mecha_changed(design)
 signal expedition_lost(report)
 signal materials_changed(materials)
 signal blueprints_changed
+signal facilities_changed
 
 # Why an expedition was lost (the "reason" in a loss report).
 const LOSS_DESTROYED := "destroyed"   # the player's mecha was destroyed
@@ -47,6 +50,7 @@ const DEFAULT_MECHA := {
 	"arm_weapon_left": "MA-L127", "arm_weapon_right": "MA-L127",
 	"shoulder_weapon_left": false, "shoulder_weapon_right": false,
 }
+# The stash at the start; the Stash facility makes it bigger (Facilities).
 const STASH_SIZE := Vector2i(8, 20)
 # Slots a mecha can't deploy without; weapons are optional.
 const REQUIRED_SLOTS := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster"]
@@ -74,6 +78,9 @@ var materials: Dictionary = {}  # material id -> amount
 # Blueprints for the Fabricator: "part_type:part_id" -> copies recycled
 # towards it, BLUEPRINT_COPIES once it's known (see learn_from).
 var blueprints: Dictionary = {}
+# Hangar facility levels (Facilities): facility id -> level. A missing one is
+# at its starting level.
+var facilities: Dictionary = {}
 var in_expedition := false
 # What the last lost expedition cost, until something shows it to the player
 # (game-over screen or main menu). Saved, so it survives a crash.
@@ -161,7 +168,8 @@ func set_current_grades(grades: Dictionary) -> void:
 func get_stash_inventory() -> Inventory:
 	if stash_inventory == null:
 		stash_inventory = Inventory.new()
-		stash_inventory.initialize_grid(STASH_SIZE.x, STASH_SIZE.y)
+		var size := Facilities.stash_size()
+		stash_inventory.initialize_grid(size.x, size.y)
 	return stash_inventory
 
 
@@ -274,9 +282,10 @@ func recycle_value(stack: item_stack) -> Dictionary:
 		return value
 	var composition := stack.get_composition()
 	for material_id in composition:
-		# A part's grade scales its yield (rounded down: Scrap can lose a
-		# single unit of something).
-		var amount := int(floor(int(composition[material_id]) * stack.quantity * Grades.recycle_mult(stack.grade)))
+		# A part's grade and the Recycler (Facilities) scale the yield,
+		# rounded to the nearest unit.
+		var mult := Grades.recycle_mult(stack.grade) * Facilities.recycle_mult()
+		var amount := roundi(int(composition[material_id]) * stack.quantity * mult)
 		if amount > 0:
 			value[material_id] = amount
 	return value
@@ -309,6 +318,30 @@ func recycle_all(inv: Inventory) -> Dictionary:
 	if not gained.is_empty():
 		_save()
 	return gained
+
+
+# ---- Hangar facilities (Facilities) ----
+
+func get_facility_level(id: String) -> int:
+	return int(facilities.get(id, Facilities.start_level(id)))
+
+
+# Facilities.upgrade calls this (and saves). A bigger Stash grows the grid.
+func set_facility_level(id: String, value: int) -> void:
+	facilities[id] = clampi(value, Facilities.start_level(id), Facilities.max_level(id))
+	if id == Facilities.STASH:
+		fit_stash()
+	facilities_changed.emit()
+
+
+# Grows a stash smaller than the Stash facility allows, keeping every item
+# where it is.
+func fit_stash() -> void:
+	if stash_inventory == null:
+		return
+	var size := Facilities.stash_size()
+	if stash_inventory.grid_width < size.x or stash_inventory.grid_height < size.y:
+		stash_inventory.grow_to(maxi(size.x, stash_inventory.grid_width), maxi(size.y, stash_inventory.grid_height))
 
 
 # ---- Blueprints and spending materials (the Fabricator) ----
@@ -573,6 +606,7 @@ func reset() -> void:
 	mech_inventory = null
 	materials = {}
 	blueprints = {}
+	facilities = {}
 	in_expedition = false
 	pending_loss_report = {}
 	money_changed.emit(money)
@@ -589,6 +623,7 @@ func get_save_data() -> Dictionary:
 		"mech_inventory": _inventory_to_dict(mech_inventory),
 		"materials": materials,
 		"blueprints": blueprints,
+		"facilities": facilities,
 		"in_expedition": in_expedition,
 		"pending_loss_report": pending_loss_report,
 	}
@@ -604,6 +639,8 @@ func set_save_data(data) -> void:
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
 	materials = _materials_from_dict(data.get("materials", {}))
 	blueprints = _blueprints_from_dict(data.get("blueprints", {}))
+	facilities = _facilities_from_dict(data.get("facilities", {}))
+	fit_stash()
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
@@ -651,6 +688,17 @@ func _grades_from_dict(data) -> Dictionary:
 	for slot in data:
 		if DEFAULT_MECHA.has(str(slot)) and Grades.is_valid(data[slot]) and data[slot] != Grades.STANDARD:
 			result[str(slot)] = data[slot]
+	return result
+
+
+# Known facilities, each clamped to its levels.
+func _facilities_from_dict(data) -> Dictionary:
+	var result := {}
+	if typeof(data) != TYPE_DICTIONARY:
+		return result
+	for id in data:
+		if str(id) in Facilities.ALL:
+			result[str(id)] = clampi(int(data[id]), Facilities.start_level(id), Facilities.max_level(id))
 	return result
 
 

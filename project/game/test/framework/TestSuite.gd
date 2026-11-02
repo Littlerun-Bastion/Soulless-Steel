@@ -209,6 +209,7 @@ func _restore_state() -> void:
 	MechOS.set_equipment_customizable(true)
 	MechOS.set_app_available("materials", false)
 	MechOS.set_app_available("fabricator", false)
+	MechOS.set_app_available("facilities", false)
 	get_tree().paused = false
 	MouseManager.reset()
 	await wait_frames(2)  # let freed nodes go before restoring state

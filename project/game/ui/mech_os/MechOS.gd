@@ -103,9 +103,11 @@ func _register_apps() -> void:
 	app_openers["mech_cargo"] = _open_mech_cargo
 	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT", preload(ICONS + "mat.svg"), "Materials")
 	set_app_available("materials", false)
-	# Hangar only too, like MAT.
+	# Hangar only too, like MAT: the Fabricator and the facilities.
 	register_app("fabricator", preload("res://game/ui/mech_os/windows/FabricatorWindow.tscn"), "FAB", preload(ICONS + "fab.svg"), "Fabricator")
 	set_app_available("fabricator", false)
+	register_app("facilities", preload("res://game/ui/mech_os/windows/FacilitiesWindow.tscn"), "FAC", preload(ICONS + "fac.svg"), "Facilities")
+	set_app_available("facilities", false)
 	register_app("messenger", preload("res://game/ui/mech_os/windows/MessengerWindow.tscn"), "MSG", preload(ICONS + "msg.svg"), "Messenger")
 	register_app("deployments", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"), "DEP", preload(ICONS + "dep.svg"), "Deployments")
 	register_app("log", preload("res://game/ui/mech_os/windows/LogWindow.tscn"), "LOG", preload(ICONS + "log.svg"), "Log")

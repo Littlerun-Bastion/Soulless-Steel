@@ -54,6 +54,7 @@ func _ready() -> void:
 	MechOS.recycling_enabled = true
 	MechOS.set_app_available("materials", true)
 	MechOS.set_app_available("fabricator", true)
+	MechOS.set_app_available("facilities", true)
 	_open_windows()
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
@@ -67,6 +68,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	MechOS.set_app_available("materials", false)
 	MechOS.set_app_available("fabricator", false)
+	MechOS.set_app_available("facilities", false)
 	MechOS.close_all()
 	MechOS.recycling_enabled = false
 	MechOS.set_player(null)

@@ -100,7 +100,7 @@ func _test_value_and_recycling() -> void:
 	for grade in [Grades.SCRAP, Grades.REFINED, Grades.PROTOTYPE]:
 		var got := PlayerProgress.recycle_value(_gun(grade))
 		for material_id in composition:
-			var want := int(floor(composition[material_id] * Grades.recycle_mult(grade)))
+			var want := roundi(composition[material_id] * Grades.recycle_mult(grade))  # nearest unit
 			check_eq(int(got.get(material_id, 0)), want, "%s: %s %s -> %d" % [grade, composition[material_id], material_id, want])
 
 	var plain := _make_mecha({})

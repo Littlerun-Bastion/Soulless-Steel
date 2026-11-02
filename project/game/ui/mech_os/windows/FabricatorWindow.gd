@@ -26,6 +26,7 @@ func _ready() -> void:
 	super()
 	_build()
 	PlayerProgress.blueprints_changed.connect(_queue_refresh)
+	PlayerProgress.facilities_changed.connect(_queue_refresh)
 	PlayerProgress.materials_changed.connect(_queue_refresh.unbind(1))
 	PlayerProgress.money_changed.connect(_queue_refresh.unbind(1))
 	refresh()
@@ -186,8 +187,8 @@ func _fill_detail() -> void:
 	var credits := Fabricator.credit_cost(part_type, part_id)
 	_cost_box.add_child(_cost_row("CREDITS", "%d / %d CT" % [int(PlayerProgress.get_money()), credits],
 			PlayerProgress.can_afford(credits)))
-	_output.text = "%s, into the stash (Fabricator Mk %s)" % [
-			Grades.display_name(Fabricator.output_grade()).to_upper(), _roman(Fabricator.level())]
+	_output.text = "Into the stash. Fabricator %s: %s." % [Facilities.level_name(Fabricator.level()),
+			Facilities.describe(Facilities.FABRICATOR, Fabricator.level())]
 	var reason := Fabricator.block_reason(part_type, part_id)
 	block_label.text = "! " + reason if reason != "" else ""
 	_block_box.visible = reason != ""
@@ -252,7 +253,3 @@ func _row_meta(entry: Array) -> String:
 	bits.append("KNOWN" if progress >= PlayerProgress.BLUEPRINT_COPIES
 			else "BLUEPRINT %d/%d" % [progress, PlayerProgress.BLUEPRINT_COPIES])
 	return " · ".join(bits)
-
-
-static func _roman(n: int) -> String:
-	return ["0", "I", "II", "III"][clampi(n, 0, 3)]

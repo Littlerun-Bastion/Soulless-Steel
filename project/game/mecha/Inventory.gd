@@ -55,6 +55,22 @@ func resize_and_migrate(new_width: int, new_height: int) -> Array:
 	return overflow
 
 
+# Makes the grid bigger, keeping every item where it is (resize_and_migrate
+# repacks them instead). A smaller size is ignored.
+func grow_to(new_width: int, new_height: int) -> void:
+	if new_width < grid_width or new_height < grid_height:
+		return
+	var placed: Array = []
+	for y in range(grid_height):
+		for x in range(grid_width):
+			var cell = grid[y][x]
+			if cell["stack"] != null and cell["origin_x"] == x and cell["origin_y"] == y:
+				placed.append([cell["stack"], x, y])
+	initialize_grid(new_width, new_height)
+	for entry in placed:
+		place_item(entry[0], entry[1], entry[2])
+
+
 func add_stack_to_first_available_slot(stack: item_stack) -> bool:
 	for y in range(grid_height):
 		for x in range(grid_width):

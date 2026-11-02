@@ -24,12 +24,12 @@ const SECTIONS := {
 }
 
 
-# The whole bill, in credits.
+# The whole bill, in credits, after the Workshop's discount (Facilities).
 static func estimate(mecha) -> int:
 	var total := 0.0
 	for section in SECTIONS:
 		total += section_value(mecha, section) * section_damage(mecha, section) * RATE
-	return int(round(total))
+	return int(round(total * Facilities.repair_mult()))
 
 
 # What the parts a section carries are worth (price scaled by grade).

@@ -6,9 +6,9 @@ extends Control
 #   EQUIPMENT   the mecha's part slots (editable here; view-only mid-run)
 #   MECH CARGO  what the mecha carries into the next run (lost if it dies)
 #   STASH       everything kept at home (always safe)
-# Drag parts between the grids and the slots; right-click salvage in the cargo
-# or stash to recycle it into materials (totals in the bar along the bottom;
-# MAT on the sidebar opens the full list).
+# Drag parts between the grids and the slots; right-click things in the cargo
+# or stash to recycle them into materials or sell them for credits (both
+# totals in the bar along the bottom; MAT on the sidebar opens the full list).
 #
 # Inventories are the same objects PlayerProgress saves, and materials save as
 # they change. The design is handed to PlayerProgress on every equip, so any
@@ -29,6 +29,7 @@ const CARGO_SIZE := Vector2(440, 420)
 const STASH_HEIGHT := 900.0
 
 @onready var player_mecha: Mecha = $Mecha
+@onready var credits_label: Label = $HangarBar/Row/Credits/CreditsLabel
 @onready var materials_label: Label = $HangarBar/Row/Materials/MaterialsLabel
 @onready var warning_box: PanelContainer = $HangarBar/Row/WarningBox
 @onready var warning_label: Label = $HangarBar/Row/WarningBox/WarningLabel
@@ -45,22 +46,29 @@ func _ready() -> void:
 	# through cargo_overflow and goes to the stash.
 	player_mecha.mech_inventory = PlayerProgress.get_mech_inventory()
 	player_mecha.cargo_overflow.connect(_on_cargo_overflow)
+	player_mecha.part_grades = PlayerProgress.get_current_grades().duplicate()
 	player_mecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 
 	MechOS.set_player(player_mecha)
 	MechOS.set_equipment_customizable(true)
 	MechOS.recycling_enabled = true
 	MechOS.set_app_available("materials", true)
+	MechOS.set_app_available("fabricator", true)
+	MechOS.set_app_available("facilities", true)
 	_open_windows()
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
+	PlayerProgress.money_changed.connect(_on_money_changed)
+	_on_money_changed(PlayerProgress.get_money())
 	leave_button.pressed.connect(_on_BackButton_pressed)
 	_update_leave_guard()
 
 
 func _exit_tree() -> void:
 	MechOS.set_app_available("materials", false)
+	MechOS.set_app_available("fabricator", false)
+	MechOS.set_app_available("facilities", false)
 	MechOS.close_all()
 	MechOS.recycling_enabled = false
 	MechOS.set_player(null)
@@ -144,13 +152,20 @@ func _on_cargo_overflow(stacks: Array) -> void:
 	MechOS.refresh_inventory_windows()
 
 
+# Below zero is debt from repairs (PlayerProgress.charge_repairs): shown
+# inverted, like an overweight load.
+func _on_money_changed(amount: float) -> void:
+	credits_label.text = "%d CT" % int(amount)
+	credits_label.theme_type_variation = &"Badge" if amount < 0.0 else &"LabelBodyBright"
+
+
 # A short total per tech tier; the MAT window has the full list.
 func _on_materials_changed(materials: Dictionary) -> void:
 	var parts := []
 	for tier in Materials.TIERS:
 		var total := 0
-		for material in Materials.of_tier(tier):
-			total += int(materials.get(material.id, 0))
+		for mat in Materials.of_tier(tier):
+			total += int(materials.get(mat.id, 0))
 		parts.append("%s %d" % [Materials.tier_name(tier).to_upper(), total])
 	materials_label.text = "   ".join(parts)
 
@@ -208,12 +223,14 @@ func _on_BackButton_pressed() -> void:
 
 # Without saving: the next save, whatever triggers it, includes the design.
 func _sync_design() -> void:
+	PlayerProgress.set_current_grades(player_mecha.part_grades)
 	PlayerProgress.set_current_mecha(player_mecha.get_design_data(), false)
 
 
 func _save_progress() -> void:
 	PlayerProgress.set_stash_inventory(stash_inventory)
 	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
+	PlayerProgress.set_current_grades(player_mecha.part_grades)
 	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile
 
 

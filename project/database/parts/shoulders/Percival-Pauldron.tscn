@@ -9,6 +9,8 @@
 script = ExtResource("3")
 part_name = "Percival-Pauldron"
 price = 650.0
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 4, "oil": 3, "copper": 1, "noble_metals": 1})
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Test"

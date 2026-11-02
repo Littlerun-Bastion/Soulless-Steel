@@ -29,17 +29,17 @@ func get_ratio() -> float:
 
 
 func _draw() -> void:
-	var ratio := get_ratio()
+	var fill := get_ratio()
 	if ring:
 		var center := size / 2.0
 		var radius := minf(size.x, size.y) / 2.0 - 1.0
 		draw_arc(center, radius, 0.0, TAU, 48, _color(&"g3"), 1.0, true)
-		if ratio > 0.0:
-			draw_arc(center, radius, -PI / 2.0, -PI / 2.0 + TAU * ratio, 48, _color(&"g5"), 2.0, true)
+		if fill > 0.0:
+			draw_arc(center, radius, -PI / 2.0, -PI / 2.0 + TAU * fill, 48, _color(&"g5"), 2.0, true)
 		return
 	var frame := Rect2(Vector2.ZERO, size).grow(-0.5)
 	draw_rect(frame, _color(&"g4"), false, 1.0)
-	var inner := Rect2(Vector2(2, 2), Vector2(maxf(size.x - 4.0, 0.0) * ratio, maxf(size.y - 4.0, 0.0)))
+	var inner := Rect2(Vector2(2, 2), Vector2(maxf(size.x - 4.0, 0.0) * fill, maxf(size.y - 4.0, 0.0)))
 	if inner.size.x > 0.0:
 		draw_rect(inner, _color(&"g5"))
 

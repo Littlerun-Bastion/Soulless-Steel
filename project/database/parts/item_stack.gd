@@ -14,6 +14,8 @@ enum ItemKind { GENERIC, PART }
 @export var item_category: String = ""   # "part", "resource", etc. (for save logic only)
 @export var item_type: String = ""       # e.g. "core", "head", "salvage"
 @export var item_id: String = ""         # e.g. "MSV-L3J-C" or resource path
+# Parts only: this copy's grade (Grades). Generic items are always Standard.
+@export var grade: String = "standard"
 
 
 # ---- Size helpers (this is where we remove class-specific logic) ----

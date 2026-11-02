@@ -12,6 +12,8 @@
 script = ExtResource("1_beknh")
 part_name = "'Rangda' GTk-2Cr Head"
 price = 850.0
+tech_tier = 2
+composition = Dictionary[String, int]({"silicon": 6, "copper": 3, "steel": 2, "neural_biomatter": 2})
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "RGDH"

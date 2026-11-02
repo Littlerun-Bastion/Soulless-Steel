@@ -49,8 +49,8 @@ func _test_start() -> void:
 	check(vehicles != null and vehicles.vehicle_count() > 100, "the arena has its vehicles (%d)" % (vehicles.vehicle_count() if vehicles else 0))
 	var buildings := BuildingField.find(_scene)
 	check(buildings != null and buildings.footprints != null and buildings.footprints.count() >= 10, "and its buildings")
-	var ready := await wait_until(func(): return buildings.routes_ready(), 5.0)
-	check(ready, "and a route grid")
+	var routed := await wait_until(func(): return buildings.routes_ready(), 5.0)
+	check(routed, "and a route grid")
 	var enemies := _enemies()
 	for e in enemies:
 		check(vehicles.is_clear(e.global_position, 100.0), "%s didn't spawn inside a vehicle" % e.mecha_name)

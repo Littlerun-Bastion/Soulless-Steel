@@ -9,6 +9,8 @@
 script = ExtResource("3")
 part_name = "MSV-L3J-SG"
 price = 350.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 2, "oil": 2})
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Lightweight"

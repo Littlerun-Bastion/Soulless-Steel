@@ -154,8 +154,8 @@ func _update() -> void:
 		_set_row("battery", "%d / %d" % [roundi(player.battery), roundi(capacity)], player.battery / capacity, false)
 
 	for dir in _dash_labels:
-		var ready: bool = player.dash_cooldown[dir] <= 0.0
-		_dash_labels[dir].theme_type_variation = &"LabelMetaBright" if ready else &"LabelDim"
+		var off_cooldown: bool = player.dash_cooldown[dir] <= 0.0
+		_dash_labels[dir].theme_type_variation = &"LabelMetaBright" if off_cooldown else &"LabelDim"
 
 	if wireframe.has_method("get_damage_summary"):
 		_damage_label.text = wireframe.get_damage_summary()

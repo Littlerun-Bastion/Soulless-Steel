@@ -9,6 +9,8 @@
 script = ExtResource("1_ojvcp")
 part_name = "'Rangda' GTk-2Cr Shoulder"
 price = 600.0
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 4, "oil": 3, "copper": 1, "noble_metals": 1})
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Heavyweight"

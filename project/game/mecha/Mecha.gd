@@ -300,6 +300,10 @@ var build = {
 	"thruster": null,
 	"chassis": null,
 }
+# Grades of the fitted parts: build slot -> grade (Grades). Missing means
+# Standard. Set it before the parts are fitted (set_parts_from_design) so the
+# stats they set up include it; get_stat applies it to Grades.GRADED_STATS.
+var part_grades := {}
 
 var projectiles = []
 
@@ -1369,7 +1373,8 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	glow.texture = chassis.get_glow(side)
 	collision.polygon = chassis.get_collision(side)
 	movement_type = chassis.movement_type
-	update_speed(chassis.max_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
+	var walk_speed: float = chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
+	update_speed(walk_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
 	update_max_life_from_parts()
 
 
@@ -1503,9 +1508,10 @@ func get_cargo_space():
 
 func get_stat(stat_name):
 	var total_stat = 0.0
-	for part in build.values():
+	for slot in build:
+		var part = build[slot]
 		if part and part.get(stat_name):
-			total_stat += part[stat_name]
+			total_stat += part[stat_name] * Grades.stat_mult(part_grades.get(slot), stat_name)
 
 	if stat_name.contains("max_speed") and is_overweight():
 		var total_weight = get_total_weight()

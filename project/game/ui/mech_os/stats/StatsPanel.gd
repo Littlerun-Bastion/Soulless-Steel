@@ -65,17 +65,19 @@ func _ready() -> void:
 ## build: the mech's parts now. cargo_weight: what the cargo weighs.
 ## preview: the build with one part swapped ({} = no comparison).
 ## header: e.g. "COMPARING CORE  VK-3 > KR-7".
+## grades / preview_grades: slot -> part grade for each (Mecha.part_grades).
 func show_stats(build: Dictionary, cargo_weight: float,
-		preview: Dictionary = {}, header: String = "") -> void:
+		preview: Dictionary = {}, header: String = "",
+		grades: Dictionary = {}, preview_grades: Dictionary = {}) -> void:
 	var comparing := not preview.is_empty()
 	_compare_box.visible = comparing
 	_compare_label.text = header
 
 	# Summary tiles
 	var load_now := sum_stat(build, "weight") + cargo_weight
-	var cap_now := sum_stat(build, "weight_capacity")
+	var cap_now := sum_stat(build, "weight_capacity", grades)
 	var load_new := sum_stat(preview, "weight") + cargo_weight if comparing else load_now
-	var cap_new := sum_stat(preview, "weight_capacity") if comparing else cap_now
+	var cap_new := sum_stat(preview, "weight_capacity", preview_grades) if comparing else cap_now
 	_set_tile("load", load_now, load_new, comparing, "OF %s CAPACITY" % _fmt(cap_new))
 	if load_new > cap_new and cap_new > 0.0:
 		_tiles["load"].note.text = "OVER %s CAPACITY" % _fmt(cap_new)
@@ -84,8 +86,8 @@ func show_stats(build: Dictionary, cargo_weight: float,
 	for group in GROUPS:
 		for stat in group.stats:
 			var id: String = stat.id
-			var cur := sum_stat(build, id)
-			var new := sum_stat(preview, id) if comparing else cur
+			var cur := sum_stat(build, id, grades)
+			var new := sum_stat(preview, id, preview_grades) if comparing else cur
 			var top := maxf(maxf(_max_value(id), cur), maxf(new, 0.0001))
 			var row: Dictionary = _rows[id]
 			var changed := comparing and not is_equal_approx(cur, new)
@@ -98,17 +100,19 @@ func show_stats(build: Dictionary, cargo_weight: float,
 
 
 ## Sum one stat across a build, the way Mecha.get_stat() does (minus the
-## overweight penalty). Non-numbers and empty slots count as 0.
-static func sum_stat(build: Dictionary, stat: String) -> float:
+## overweight penalty), parts scaled by their grade (slot -> grade; Grades).
+## Non-numbers and empty slots count as 0.
+static func sum_stat(build: Dictionary, stat: String, grades: Dictionary = {}) -> float:
 	var total := 0.0
-	for part in build.values():
+	for slot in build:
+		var part = build[slot]
 		if not part:
 			continue
 		var value = part.get(stat)
 		if value is float or value is int:
-			total += value
+			total += value * Grades.stat_mult(grades.get(slot), stat)
 	if stat == "thrust_max_speed":
-		total += sum_stat(build, "max_speed")
+		total += sum_stat(build, "max_speed", grades)
 	return total
 
 

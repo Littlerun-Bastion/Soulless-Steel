@@ -6,6 +6,8 @@
 script = ExtResource("1")
 part_name = "Test Thruster"
 price = 400.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 3, "oil": 2})
 manufacturer_name = "Test"
 tagline = "Test"
 thrust_max_speed = 300

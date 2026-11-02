@@ -9,6 +9,8 @@
 script = ExtResource("1_1eppx")
 part_name = "'Barong' GTk-1Cr Shoulder"
 price = 550.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 4, "oil": 2, "copper": 1})
 manufacturer_name = "PT Gajah Teknis"
 manufacturer_name_short = "Gajah Tek"
 tagline = "Heavyweight"

@@ -86,7 +86,7 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	_refresh_left()
 	var total := int(elapsed)
-	_right_label.text = "T+%02d:%02d · %d°C" % [total / 60, total % 60, roundi(player.AMBIENT_TEMP)]
+	_right_label.text = "T+%02d:%02d · %d°C" % [floori(total / 60.0), total % 60, roundi(player.AMBIENT_TEMP)]
 
 
 func _refresh_left() -> void:

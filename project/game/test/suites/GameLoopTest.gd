@@ -85,8 +85,8 @@ func _test_expedition() -> void:
 	TransitionManager.captured.clear()
 	var scene = EXPEDITION.instantiate()
 	add_child(scene)
-	var ready := await wait_until(func(): return scene.player != null and scene.all_mechas.size() > 1, 20.0)
-	if not check(ready, "the expedition started with enemies"):
+	var started := await wait_until(func(): return scene.player != null and scene.all_mechas.size() > 1, 20.0)
+	if not check(started, "the expedition started with enemies"):
 		scene.queue_free()
 		return
 	scene.ExpeditionDirector.set_process(false)

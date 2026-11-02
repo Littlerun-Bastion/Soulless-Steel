@@ -86,6 +86,7 @@ func load_profile():
 
 	if not FileAccess.file_exists(profile_path):
 		print("[FileManager] No profile found, starting new")
+		PlayerProgress.start_new_profile()
 		profile_loaded = true
 		save_profile()
 		

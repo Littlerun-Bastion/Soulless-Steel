@@ -9,6 +9,8 @@
 script = ExtResource("1_orul2")
 part_name = "SAMURAI-03S"
 price = 560.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 4, "oil": 2, "copper": 1})
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Yamaguchi"
 tagline = "Lightweight"

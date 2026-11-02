@@ -9,9 +9,14 @@ extends Node2D
 #
 # A MapStreamer loads the scene on a background thread when any mecha comes
 # within its load distance of the bounds, adds it as a child of this node, and
-# frees it when every mecha is far away again. Anything the scene changes
-# (opened doors, looted crates) is lost when it is freed; keep such state
-# outside the scene.
+# frees it when every mecha is far away again.
+#
+# Loot crates (LootContainer) in the scene are remembered for the run: when
+# the scene is freed, each crate's contents are kept here, and handed back to
+# it when the scene loads again. Otherwise every crate would roll new loot
+# each time a mecha came back, which could be farmed forever. Anything else
+# the scene changes (opened doors) is still lost when it is freed; keep such
+# state outside the scene.
 #
 # In the editor, the scene shows as a preview child that is not saved.
 
@@ -34,6 +39,9 @@ signal streamed_out
 var instance: Node = null
 var _loading := false
 var _preview: Node = null
+# The scene's crates while it is unloaded: path in the scene -> [Inventory,
+# npc_searched]. Lives as long as this node, i.e. for the run.
+var _loot_memory: Dictionary = {}
 
 
 func _ready() -> void:
@@ -67,6 +75,7 @@ func stream_in() -> void:
 func stream_out() -> void:
 	if instance == null:
 		return
+	_remember_loot()
 	instance.queue_free()
 	instance = null
 	streamed_out.emit()
@@ -87,8 +96,26 @@ func poll() -> void:
 	if packed == null:
 		return
 	instance = packed.instantiate()
+	_restore_loot()  # before it enters the tree, so the crates don't roll
 	add_child(instance)
 	streamed_in.emit(instance)
+
+
+# Every crate in the scene, opened or not, so walking away can't re-roll one.
+func _remember_loot() -> void:
+	for crate in _crates():
+		_loot_memory[instance.get_path_to(crate)] = [crate.inventory, crate.npc_searched]
+
+
+func _restore_loot() -> void:
+	for path in _loot_memory:
+		var crate := instance.get_node_or_null(path) as LootContainer
+		if crate != null:
+			crate.restore(_loot_memory[path][0], _loot_memory[path][1])
+
+
+func _crates() -> Array:
+	return instance.find_children("*", "", true, false).filter(func(n): return n is LootContainer)
 
 
 func _refresh_preview() -> void:

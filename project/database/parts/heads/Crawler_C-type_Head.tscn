@@ -12,6 +12,8 @@
 script = ExtResource("4")
 part_name = "Crawler C-type Head"
 price = 600.0
+tech_tier = 2
+composition = Dictionary[String, int]({"silicon": 4, "copper": 3, "steel": 1, "neural_biomatter": 1})
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "CWCH"

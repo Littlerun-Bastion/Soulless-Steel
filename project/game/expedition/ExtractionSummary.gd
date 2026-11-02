@@ -27,6 +27,7 @@ const STATE_WORDS := {3: "OK", 2: "DAMAGED", 1: "CRITICAL", 0: "DESTROYED", -1: 
 const WRITTEN_OFF := "WRITTEN OFF"
 const BOOT_TIME := 1.5   # seconds for the screen to come back after a death
 const WRITE_OFF_NOTE := "Frame beyond repair. A standard mecha has been issued. Your stash and credits are safe."
+const DEBT_NOTE := "Repairs exceeded your credits. Sales pay off the debt; the Store is closed to you until then."
 
 var window: MechWindow
 var title_label: Label
@@ -46,7 +47,9 @@ func _ready() -> void:
 
 ## A real extraction. cargo: item names (PlayerProgress.describe_cargo).
 ## details (all optional): "exit" ("EXIT C5"), "time" (seconds),
-## "damage" (part -> state, from collect_damage).
+## "damage" (part -> state, from collect_damage), "value" (what selling the
+## cargo would pay, PlayerProgress.cargo_sell_value), "repairs" (the repair
+## bill charged, RepairBill) and "balance" (the credits after it).
 func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -> void:
 	_fill_header(kills, details)
 	_fill_contract(mission)
@@ -55,11 +58,15 @@ func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -
 		_recovered_box.add_child(MechUI.label(&"LabelDim", "Nothing"))
 	for item in cargo:
 		_recovered_box.add_child(MechUI.label(&"LabelBody", str(item), true))
+	if int(details.get("value", 0)) > 0:
+		_recovered_box.add_child(HSeparator.new())
+		_recovered_box.add_child(_line("SALE VALUE", "%d CT" % int(details.value), true))
 	MechUI.clear(_damage_box)
 	var damage: Dictionary = details.get("damage", {})
 	for part in PARTS:
 		var state: int = damage.get(part, 3)
 		_damage_box.add_child(_line(PARTS[part], STATE_WORDS.get(state, "OK"), state <= 1))
+	_fill_repairs(details)
 	MechLog.write("DEP", "Extraction complete")
 	_open()
 
@@ -195,9 +202,23 @@ func _fill_header(kills: int, details: Dictionary) -> void:
 		parts.append(str(details.exit))
 	if details.has("time"):
 		var total := int(details.time)
-		parts.append("T+%02d:%02d" % [total / 60, total % 60])
+		parts.append("T+%02d:%02d" % [floori(total / 60.0), total % 60])
 	parts.append("%d KILL%s" % [kills, "" if kills == 1 else "S"])
 	_details_label.text = " · ".join(parts)
+
+
+# Under the damage report: the repair bill and what's left of the credits.
+func _fill_repairs(details: Dictionary) -> void:
+	var repairs := int(details.get("repairs", 0))
+	if repairs <= 0 and not details.has("balance"):
+		return
+	_damage_box.add_child(HSeparator.new())
+	_damage_box.add_child(_line("REPAIRS", "-%d CT" % repairs if repairs > 0 else "NONE", repairs > 0))
+	if details.has("balance"):
+		var balance := int(details.balance)
+		_damage_box.add_child(_line("CREDITS", "%d CT" % balance, balance < 0))
+		if balance < 0:
+			_damage_box.add_child(MechUI.label(&"LabelMeta", DEBT_NOTE, true))
 
 
 func _fill_contract(mission) -> void:

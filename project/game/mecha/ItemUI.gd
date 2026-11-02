@@ -16,6 +16,7 @@ var cell_size: int = 68  # set by InventoryGrid / DragManager; layout uses the p
 @onready var quantity_label: Label = $Quantity
 
 var _name_label: Label = null
+var grade_label: Label = null
 # Warn once per texture about a size that doesn't match its footprint.
 static var _warned_textures: Dictionary = {}
 
@@ -44,6 +45,17 @@ func _ready():
 
 	quantity_label.theme_type_variation = &"LabelMetaBright"
 	_setup_quantity_label_layout()
+
+	# A part's grade (Grades.short_name), top right; Standard shows nothing.
+	grade_label = Label.new()
+	grade_label.theme_type_variation = &"LabelMetaBright"
+	grade_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	grade_label.set_anchors_preset(Control.PRESET_TOP_RIGHT, false)
+	grade_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	grade_label.offset_right = -ART_MARGIN
+	grade_label.offset_top = ART_MARGIN - 2
+	grade_label.visible = false
+	add_child(grade_label)
 
 
 func set_stack(s: item_stack) -> void:
@@ -165,6 +177,12 @@ func _update_visuals() -> void:
 	# Rotate icon (the layout already accounted for rotated bounds)
 	if icon:
 		icon.rotation_degrees = 90.0 if stack.rotated else 0.0
+
+	if grade_label:
+		var short := Grades.short_name(stack.grade) if stack.is_part() else ""
+		grade_label.text = short
+		grade_label.modulate = Grades.color(stack.grade)
+		grade_label.visible = short != ""
 
 	# Quantity label (always bottom-left, upright)
 	if quantity_label:

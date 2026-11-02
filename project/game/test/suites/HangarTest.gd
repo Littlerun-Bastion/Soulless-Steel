@@ -2,7 +2,8 @@ extends TestSuite
 
 # HangarTest loads the real Hangar (HangarScreen.tscn, built on Mech OS) and
 # checks it end to end: its three windows, recycling (with the Materials
-# window and the high-tech confirm), the leave guard, swapping parts, a
+# window and the high-tech confirm), selling (with the credits in the Hangar
+# bar), the leave guard, swapping parts, a
 # smaller core pushing cargo into the stash, and cleaning up Mech OS on exit.
 # The cases share one Hangar, opened at the start, in order.
 
@@ -24,8 +25,10 @@ func run_tests() -> void:
 	await case("Hangar windows", _test_windows)
 	await case("recycling in the Hangar", _test_recycling)
 	await case("high tech asks before recycling", func(): await _test_high_tech_confirm(PlayerProgress.get_stash_inventory()))
+	await case("selling in the Hangar", _test_selling)
 	await case("can't leave with a required part missing", func(): await _test_leave_guard(_hangar, _equipment))
 	await case("swapped-out part goes to the stash", func(): _test_swap_returns_to_stash(_hangar, _equipment))
+	await case("a part keeps its grade on and off the mecha", _test_grades)
 	await case("closing the game in the Hangar keeps the design", _test_close_game)
 	await case("smaller core moves cargo to the stash", func(): _test_smaller_core(_hangar, _equipment))
 	await case("leaving the Hangar", _test_leaving)
@@ -54,6 +57,7 @@ func _test_recycling() -> void:
 	var menu_ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
 	check(not "take" in menu_ids and not "take_all" in menu_ids, "no looting actions on the stash")
 	check(MechOS.is_app_available("materials"), "MAT on the taskbar in the Hangar")
+	check(MechOS.is_app_available("fabricator") and MechOS.is_app_available("facilities"), "FAB and FAC too")
 	var materials_window = MechOS.open_app("materials")
 	check(materials_window != null and materials_window.get_count_text("steel") == "0", "Materials window lists steel at 0")
 	recycle["run"].call(ctx)
@@ -71,6 +75,7 @@ func _test_leaving() -> void:
 	check(not MechOS.recycling_enabled, "recycling off again after leaving")
 	check(MechOS.player_ref == null, "Mech OS forgets the Hangar mecha")
 	check(not MechOS.is_app_available("materials"), "MAT gone from the taskbar after leaving")
+	check(not MechOS.is_app_available("fabricator") and not MechOS.is_app_available("facilities"), "FAB and FAC too")
 
 
 # Through the real menu: the first click only asks, the second recycles.
@@ -91,6 +96,56 @@ func _test_high_tech_confirm(stash: Inventory) -> void:
 	check(PlayerProgress.get_material_count("nt_engines") == 1, "high-tech materials added")
 	check(not menu.is_open(), "menu closes after recycling")
 	await wait_frames()
+
+
+# Through the real menu: a small sale goes through on one click, a big one
+# asks first, and the credits in the Hangar bar follow.
+func _test_selling() -> void:
+	var stash := PlayerProgress.get_stash_inventory()
+	var grid = MechOS.open_windows["stash"].inventory_grid
+	var menu: ContextMenu = MechOS.context_menu
+	var start := PlayerProgress.get_money()
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start), "the Hangar bar shows the credits")
+
+	var engine := item_stack.from_generic(load("res://database/items/salvage/damaged_nt_engine.tres"))
+	stash.add_stack_anywhere(engine)
+	var ctx := {"type": "item", "stack": engine, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled, "source": grid}
+	menu.open([_action("item", "sell")], ctx, Vector2(400, 400))
+	var button := _menu_button(menu)
+	check_eq(button.text, "Sell (110 ct)", "Sell says what it pays")
+	button.pressed.emit()
+	check(not stash.get_stacks().has(engine), "a small sale goes through on one click")
+	check_eq(PlayerProgress.get_money(), start + 110, "and is paid")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110), "the Hangar bar follows")
+	await wait_frames()
+
+	PlayerProgress.add_part("core", "Lancelot-Core", false)
+	var core: item_stack = stash.get_stacks().filter(func(s): return s.is_part() and s.item_id == "Lancelot-Core")[0]
+	ctx["stack"] = core
+	menu.open([_action("item", "sell")], ctx, Vector2(400, 400))
+	button = _menu_button(menu)
+	button.pressed.emit()
+	check(stash.get_stacks().has(core) and button.text.begins_with("Confirm"), "a big sale asks first")
+	button.pressed.emit()
+	check(not stash.get_stacks().has(core), "and sells on the second click")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110 + 1600), "the Hangar bar follows")
+	await wait_frames()
+
+	# Debt from repairs shows inverted, and goes back once paid off.
+	var money := PlayerProgress.get_money()
+	PlayerProgress.charge_repairs(int(money) + 300, false)
+	check_eq(_hangar.credits_label.text, "-300 CT", "debt shows as negative credits")
+	check_eq(_hangar.credits_label.theme_type_variation, &"Badge", "inverted, like an overweight load")
+	PlayerProgress.add_money(money + 300, false)
+	check_eq(_hangar.credits_label.theme_type_variation, &"LabelBodyBright", "back to normal once paid off")
+
+
+# The menu's first button (ignoring ones from an earlier opening still being freed).
+func _menu_button(menu: ContextMenu) -> Button:
+	for child in menu._list.get_children():
+		if child is Button and not child.is_queued_for_deletion():
+			return child
+	return null
 
 
 func _action(target_type: String, id: String) -> Dictionary:
@@ -144,6 +199,45 @@ func _test_swap_returns_to_stash(hangar, equipment) -> void:
 	# So a save before leaving (recycling, say) can't keep the old head in
 	# both the design and the stash.
 	check(PlayerProgress.get_current_mecha()["head"] == new_head, "the design PlayerProgress saves has the new head")
+
+
+# A Prototype copy of the fitted chassis: fitting it grades the mecha (and the
+# design PlayerProgress saves), the Standard one goes to the stash as
+# Standard, and swapping back returns the Prototype as a Prototype.
+func _test_grades() -> void:
+	var mecha: Mecha = _hangar.player_mecha
+	var stash := PlayerProgress.get_stash_inventory()
+	var slot := _slot(_equipment, "chassis")
+	var chassis_id: String = mecha.build.chassis.part_id
+	var base_speed: float = mecha.build.chassis.max_speed
+	check(is_equal_approx(mecha.max_speed, base_speed), "a Standard chassis walks at its own speed")
+
+	var proto: item_stack = _equipment.make_part_stack("chassis", chassis_id, 1, Grades.PROTOTYPE)
+	check(_equipment.try_equip(slot, proto), "fit a Prototype copy of the same chassis")
+	check_eq(mecha.part_grades.get("chassis"), Grades.PROTOTYPE, "the mecha has its grade")
+	check_eq(PlayerProgress.get_current_grades().get("chassis"), Grades.PROTOTYPE, "so does the design PlayerProgress saves")
+	check(is_equal_approx(mecha.max_speed, base_speed * 1.1), "it walks 10% faster")
+	check(slot.PartName.text.begins_with("Prototype "), "the slot names the grade")
+	var standard := _chassis_in(stash, chassis_id, Grades.STANDARD)
+	check(standard != null, "the Standard one went to the stash, still Standard")
+
+	stash.remove_item_stack(standard)  # as picking it up to drag does
+	check(_equipment.try_equip(slot, standard), "swap the Standard one back in")
+	check(not mecha.part_grades.has("chassis") and not PlayerProgress.get_current_grades().has("chassis"),
+			"back to Standard on the mecha and in the design")
+	check(is_equal_approx(mecha.max_speed, base_speed), "and its own speed")
+	var back := _chassis_in(stash, chassis_id, Grades.PROTOTYPE)
+	check(back != null, "the Prototype came off as a Prototype")
+	if back != null:
+		stash.remove_item_stack(back)
+	MechOS.refresh_inventory_windows()
+
+
+func _chassis_in(inv: Inventory, part_id: String, grade: String) -> item_stack:
+	for stack in inv.get_stacks():
+		if stack.is_part() and stack.item_type == "chassis" and stack.item_id == part_id and stack.grade == grade:
+			return stack
+	return null
 
 
 # Closing the window (or Alt+F4) instead of leaving with ESC used to lose the

@@ -248,7 +248,12 @@ func _test_recycling() -> void:
 	for stack in stash.get_stacks():
 		if stack.kind == item_stack.ItemKind.PART:
 			part_stack = stack
-	check(not PlayerProgress.can_recycle(part_stack), "parts can't be recycled")
+	# Every part has a composition now (the Fabricator builds from it).
+	var head_composition: Dictionary = PartManager.get_part(TEST_PART_TYPE, TEST_PART_ID).composition
+	var head_value := PlayerProgress.recycle_value(part_stack)
+	check(PlayerProgress.can_recycle(part_stack) and head_value.size() == head_composition.size()
+			and head_composition.keys().all(func(m): return head_value.get(m) == head_composition[m]),
+			"parts recycle into their composition")
 
 	var gained := PlayerProgress.recycle_stack(stash, scrap)
 	check(gained == {"steel": 6}, "recycle_stack returns what it gave")
@@ -351,7 +356,7 @@ func _test_weapon_recycling() -> void:
 	check(stash.get_stacks().has(gun) and not stash.get_stacks().has(scrap), "recycle_all takes salvage, not weapons")
 	var gained := PlayerProgress.recycle_stack(stash, gun)
 	check(gained == {"steel": 3, "copper": 1} and stash.is_empty(), "a weapon recycles on its own")
-	check(not PlayerProgress.can_recycle(_weapon_stack("head", TEST_PART_ID)), "other parts still can't")
+	check(PlayerProgress.can_recycle(_weapon_stack("head", TEST_PART_ID)), "other parts can too, one at a time")
 
 	# The menu asks before recycling a weapon, and Recycle all ignores them.
 	var recycle := _action("item", "recycle")
@@ -360,7 +365,7 @@ func _test_weapon_recycling() -> void:
 	stash.add_stack_anywhere(gun2)
 	var ctx := {"type": "item", "stack": gun2, "inventory": stash, "recycle_allowed": true}
 	check(recycle["enabled_if"].call(ctx) == "", "Recycle enabled on a weapon")
-	check(recycle["confirm"].call(ctx) == "Confirm: recycle this weapon?", "weapons ask first")
+	check(recycle["confirm"].call(ctx) == "Confirm: recycle this part?", "weapons ask first")
 	check(recycle_all["enabled_if"].call({"type": "inventory", "inventory": stash, "recycle_allowed": true}) == "NO SALVAGE",
 			"a stash of only weapons has nothing for Recycle all")
 

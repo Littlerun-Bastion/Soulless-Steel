@@ -6,6 +6,10 @@ extends Resource
 @export var tagline : String
 @export var description : String
 @export var price := 0.0
+# Recycling and the Fabricator: the tech tier and what one of these breaks
+# down into (or takes to build), material id (see Materials) -> amount.
+@export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
+@export var composition: Dictionary[String, int] = {}
 @export var image : Texture2D
 @export var thrust_speed_multiplier := 3.0
 @export var thrust_max_speed := 400

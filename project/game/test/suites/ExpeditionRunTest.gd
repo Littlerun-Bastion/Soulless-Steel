@@ -200,12 +200,14 @@ func _test_field_rules() -> void:
 	var cargo: Inventory = _player().mech_inventory
 	var stack: item_stack = cargo.get_stacks()[0]
 	check(not PlayerProgress.can_recycle(stack), "nothing can be recycled mid-run")
-	check(not MechOS.recycling_enabled, "no Recycle in the menus")
+	check(not PlayerProgress.can_sell(stack), "or sold")
+	check(not MechOS.recycling_enabled, "no Recycle or Sell in the menus")
 
 
 func _test_extract() -> void:
 	var player := _player()
 	var carried: int = player.mech_inventory.get_stacks().size()
+	var money_before := PlayerProgress.get_money()
 	player.global_position = _scene.get_node("Map/Exits/Exit_W").global_position
 	var extracted := await wait_until(func(): return not PlayerProgress.is_in_expedition(), 20.0)
 	if not check(extracted, "standing on an exit extracts"):
@@ -215,6 +217,12 @@ func _test_extract() -> void:
 	check(summary != null and summary.visible, "the extraction summary shows")
 	if summary != null:
 		check(SALVAGE.display_name in summary.get_text(), "the summary lists the cargo")
+		check("SALE VALUE" in summary.get_text() and "%d CT" % PlayerProgress.cargo_sell_value() in summary.get_text(),
+				"and what it would sell for")
+		var text: String = summary.get_text()
+		check("REPAIRS" in text and "CREDITS" in text and "%d CT" % int(PlayerProgress.get_money()) in text,
+				"the repair bill was charged and the credits left are shown")
+		check(PlayerProgress.get_money() <= money_before, "repairs never add credits")
 		summary.continue_button.pressed.emit()
 		await wait_frames()
 		check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Continue returns to the main menu")

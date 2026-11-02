@@ -101,7 +101,7 @@ static func _flood_outside(solid: PackedByteArray, w: int, h: int) -> PackedByte
 
 # Width of the outermost line, read across the middle row from the left.
 static func _line_width(solid: PackedByteArray, w: int, h: int) -> float:
-	var y := h / 2
+	var y := floori(h / 2.0)
 	var run := 0
 	for x in w:
 		if solid[y * w + x] == 1:

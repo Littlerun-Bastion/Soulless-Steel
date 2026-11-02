@@ -93,6 +93,10 @@ func _init() -> void:
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
 | HangarTest | Hangar windows, recycling, Materials window, leave guard, swapping parts, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
+| MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, far NPCs thinking less often |
+| MapVehiclesTest | map vehicles: mechas shoving cars, fire engines holding them back, cars shunting each other and stopping at walls, vehicles blocking shots by chance, not blocking sight, collision only near mechas |
+| MapWallsTest | building walls and foliage: walls block sight between outside and inside, each wall costs a shot 1 AP, grenades go off at walls, Entities can't see through walls, trees hide mechas, merged walls still count |
+| NPCSteeringTest | how NPCs move round vehicles and buildings: steering, pushing through or round cars, unsticking, routing through gaps, tanks trampling cars, circling in a fight, sprinting and dashing, cars destroyed by shots, blasts and dashes, spawns clear of vehicles |
 | NpcDesignsTest | every enemy design is valid and builds |
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
 | PartsTest | every part's data (name, image, weight, size, price), equipping, every weapon fires |
@@ -102,6 +106,7 @@ func _init() -> void:
 | StageDemoTest *(slow)* | the demo cutscene in a real Expedition: beats in order, the stage camera, frozen bystanders, the spawned NPC and obstacle, handing control and actors back, skipping, F4 and map triggers, ending on the player's death |
 | StageDirectorTest | cutscene building blocks: steps in order, waits, skipping, pausing, aborting, cinema bars, taking control, camera look-at/follow/hand-back, dialogue lines, actors walking and shooting |
 | StoryDirectorTest | story beats, flags, triggers, missions |
+| TestArenaTest *(slow)* | the test arena that Arena Mode opens: its NPCs, buildings and vehicles, nothing at stake, dead NPCs replaced |
 | WreckTest | wreck loot, weapon drops, Take / Take all |
 
 Not covered: real mouse input (drag-and-drop is tested through the same code

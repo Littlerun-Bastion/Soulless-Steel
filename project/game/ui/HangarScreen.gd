@@ -147,8 +147,11 @@ func _on_cargo_overflow(stacks: Array) -> void:
 	MechOS.refresh_inventory_windows()
 
 
+# Below zero is debt from repairs (PlayerProgress.charge_repairs): shown
+# inverted, like an overweight load.
 func _on_money_changed(amount: float) -> void:
 	credits_label.text = "%d CT" % int(amount)
+	credits_label.theme_type_variation = &"Badge" if amount < 0.0 else &"LabelBodyBright"
 
 
 # A short total per tech tier; the MAT window has the full list.

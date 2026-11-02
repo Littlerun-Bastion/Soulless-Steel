@@ -128,6 +128,14 @@ func _test_selling() -> void:
 	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110 + 1600), "the Hangar bar follows")
 	await wait_frames()
 
+	# Debt from repairs shows inverted, and goes back once paid off.
+	var money := PlayerProgress.get_money()
+	PlayerProgress.charge_repairs(int(money) + 300, false)
+	check_eq(_hangar.credits_label.text, "-300 CT", "debt shows as negative credits")
+	check_eq(_hangar.credits_label.theme_type_variation, &"Badge", "inverted, like an overweight load")
+	PlayerProgress.add_money(money + 300, false)
+	check_eq(_hangar.credits_label.theme_type_variation, &"LabelBodyBright", "back to normal once paid off")
+
 
 # The menu's first button (ignoring ones from an earlier opening still being freed).
 func _menu_button(menu: ContextMenu) -> Button:

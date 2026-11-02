@@ -500,6 +500,10 @@ func _on_player_extracted(_mecha) -> void:
 	var details := _run_details(player.global_position)
 	details["damage"] = ExtractionSummary.collect_damage(player)
 	details["value"] = PlayerProgress.cargo_sell_value()
+	# Fixing the damage is paid for now, from the credits (into debt if need be).
+	details["repairs"] = RepairBill.estimate(player)
+	PlayerProgress.charge_repairs(details.repairs)
+	details["balance"] = PlayerProgress.get_money()
 	_remove_extracted_player()
 
 	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()

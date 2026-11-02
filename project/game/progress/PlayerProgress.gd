@@ -1,8 +1,9 @@
 extends Node
 
 # PlayerProgress owns everything the player has earned or built up:
-#   - money          : credits, spent in the Store, earned by selling in the
-#                      Hangar (and from Arena matches)
+#   - money          : credits, spent in the Store and on repairs, earned by
+#                      selling in the Hangar (and from Arena matches); below
+#                      zero is debt (charge_repairs)
 #   - current mecha  : the design dictionary the player pilots
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
@@ -86,6 +87,21 @@ func spend_money(amount: float, should_save := true) -> bool:
 		return false
 	_set_money(money - amount, should_save)
 	return true
+
+
+# Takes a repair bill (RepairBill) from the credits. Unlike spend_money it
+# always goes through: what the credits don't cover leaves them negative,
+# which is debt. In debt the Store refuses purchases (can_afford), and
+# anything earned pays the debt off first, simply by adding to the balance.
+func charge_repairs(amount: int, should_save := true) -> void:
+	if amount <= 0:
+		return
+	_log("repairs charged: %d" % amount)
+	_set_money(money - amount, should_save)
+
+
+func is_in_debt() -> bool:
+	return money < 0.0
 
 
 # A profile created from nothing (no save on disk) starts with some credits.

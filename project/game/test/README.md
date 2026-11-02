@@ -87,12 +87,12 @@ func _init() -> void:
 |---|---|
 | BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
 | ContentScenesTest | every script compiles, every scene loads |
-| EconomyTest | credits: selling at half value (stacks, parts, weapons), never mid-run, nothing for worthless things, Sell all salvage leaving parts, what the cargo would sell for, the Sell menu actions |
+| EconomyTest | credits: selling at half value (stacks, parts, weapons), never mid-run, nothing for worthless things, Sell all salvage leaving parts, what the cargo would sell for, the Sell menu actions; the repair bill on a real mecha (nothing undamaged, a quarter of what each damaged section is worth), debt from repairs and paying it off |
 | EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; Spitter range and acid; Brute charge, ram, stomp, stun, rage; Cysts waking, hatching leashed guards, brood limit; death; bio loot and carcasses |
-| ExpeditionHudTest | mission tracker, weight readout, exit marker, extraction debrief and its sale value |
-| ExpeditionRunTest *(slow)* | a real Expedition: spawn, the map's site name, shooting, wrecks and loot, extraction, death and the written-off debrief, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
+| ExpeditionHudTest | mission tracker, weight readout, exit marker, extraction debrief with its sale value, repair bill, credits and debt note |
+| ExpeditionRunTest *(slow)* | a real Expedition: spawn, the map's site name, shooting, wrecks and loot, extraction (with the repair bill charged), death and the written-off debrief, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
-| HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout, leave guard, swapping parts, closing the game mid-refit |
+| HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout (debt shown inverted), leave guard, swapping parts, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
 | MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, far NPCs thinking less often |
 | MapVehiclesTest | map vehicles: mechas shoving cars, fire engines holding them back, cars shunting each other and stopping at walls, vehicles blocking shots by chance, not blocking sight, collision only near mechas |

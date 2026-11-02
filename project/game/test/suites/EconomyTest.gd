@@ -4,9 +4,12 @@ extends TestSuite
 # Hangar's right-click Sell / Sell all salvage): an item sells for SELL_RATE
 # of its value, whole stacks at once, at home only; parts and weapons sell one
 # at a time; big sales ask first. What the cargo would sell for (the debrief
-# shows it).
+# shows it). The repair bill (RepairBill) on a real mecha: nothing when it's
+# undamaged, RATE of each section's worth by how damaged it is, and charging
+# it can leave the credits in debt, which sales pay off.
 # Each case starts from fresh progress (PlayerProgress.reset).
 
+const MECHA := preload("res://game/mecha/Mecha.tscn")
 const PLATE := preload("res://database/items/salvage/armor_plate_fragment.tres")  # price 10
 const ENGINE := preload("res://database/items/salvage/damaged_nt_engine.tres")   # price 220
 const BIG_CORE := "Lancelot-Core"  # price 3200: a sale over SELL_CONFIRM_OVER
@@ -20,6 +23,9 @@ func run_tests() -> void:
 	await case("sell all salvage leaves parts", _test_sell_all)
 	await case("what the cargo would sell for", _test_cargo_value)
 	await case("sell menu actions", _test_sell_actions)
+	await case("an undamaged mecha costs nothing to repair", _test_no_damage_no_bill)
+	await case("repairs cost a quarter of what's damaged", _test_repair_bill)
+	await case("repairs can put the credits into debt", _test_debt)
 
 
 func before_each() -> void:
@@ -186,3 +192,87 @@ func _test_sell_actions() -> void:
 	check_eq(stash.get_stacks(), [core], "and leaves the part")
 	check(not sell_all["visible_if"].call({"type": "inventory", "inventory": Inventory.new(), "recycle_allowed": true}),
 			"no Sell all on an empty inventory")
+
+
+# A real mecha in the default design, as the player deploys it.
+func _make_mecha() -> Mecha:
+	var mecha: Mecha = MECHA.instantiate()
+	mecha.mech_inventory = Inventory.new()
+	add_child(mecha)
+	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	return mecha
+
+
+func _build_price(mecha: Mecha) -> float:
+	var total := 0.0
+	for part in mecha.build.values():
+		if part:
+			total += part.price
+	return total
+
+
+func _wreck_section(mecha: Mecha, section: String) -> void:
+	for comp in mecha.components[section].values():
+		comp.hp = 0
+	for facing in mecha.armor[section].values():
+		facing.pips = 0
+
+
+func _test_no_damage_no_bill() -> void:
+	var mecha := _make_mecha()
+	await wait_frames()
+	check_eq(RepairBill.estimate(mecha), 0, "a fresh mecha's bill is 0")
+	for section in RepairBill.SECTIONS:
+		check_eq(RepairBill.section_damage(mecha, section), 0.0, "%s undamaged" % section)
+	mecha.queue_free()
+
+
+func _test_repair_bill() -> void:
+	var mecha := _make_mecha()
+	await wait_frames()
+	var worth := 0.0
+	for section in RepairBill.SECTIONS:
+		worth += RepairBill.section_value(mecha, section)
+	check(is_equal_approx(worth, _build_price(mecha)), "the sections share out every fitted part's price (%d)" % worth)
+
+	# One armour facing on the head worn through: that share of the head.
+	mecha.armor.head.front.pips = 0
+	var head_hp := 0.0
+	for comp in mecha.components.head.values():
+		head_hp += comp.max_hp
+	var share := 3.0 / (head_hp + 3.0 * 3)
+	check(is_equal_approx(RepairBill.section_damage(mecha, "head"), share), "a worn plate is its share of the head")
+	var head_price: float = mecha.build.head.price
+	check_eq(RepairBill.estimate(mecha), int(round(head_price * share * RepairBill.RATE)), "and costs RATE of that")
+
+	# Half a component's HP gone counts as half of it.
+	mecha.armor.head.front.pips = 3
+	var comp = mecha.components.core.values()[0]
+	comp.hp = comp.max_hp / 2.0
+	check(RepairBill.section_damage(mecha, "core") > 0.0, "component damage counts")
+	comp.hp = comp.max_hp
+
+	# Everything wrecked: RATE of the whole mecha's worth.
+	for section in RepairBill.SECTIONS:
+		_wreck_section(mecha, section)
+	check_eq(RepairBill.estimate(mecha), int(round(_build_price(mecha) * RepairBill.RATE)),
+			"a wrecked mecha costs RATE of everything on it")
+	mecha.queue_free()
+
+
+func _test_debt() -> void:
+	PlayerProgress.add_money(100, false)
+	PlayerProgress.charge_repairs(250, false)
+	check_eq(PlayerProgress.get_money(), -150.0, "a bill bigger than the credits goes into debt")
+	check(PlayerProgress.is_in_debt(), "in debt")
+	check(not PlayerProgress.can_afford(1), "nothing can be bought in debt (the Store asks can_afford)")
+	PlayerProgress.charge_repairs(0, false)
+	check_eq(PlayerProgress.get_money(), -150.0, "no bill, no charge")
+	var stash := PlayerProgress.get_stash_inventory()
+	var engine := _stack(ENGINE)
+	stash.add_stack_anywhere(engine)
+	check(PlayerProgress.can_sell(engine), "selling works in debt")
+	PlayerProgress.sell_stack(stash, engine, false)
+	check_eq(PlayerProgress.get_money(), -40.0, "and pays the debt off first")
+	PlayerProgress.add_money(60, false)
+	check(not PlayerProgress.is_in_debt() and PlayerProgress.can_afford(20), "out of debt, buying again")

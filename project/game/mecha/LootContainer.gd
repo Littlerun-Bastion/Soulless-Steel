@@ -34,7 +34,18 @@ func _ready() -> void:
 	interact_area.body_exited.connect(_on_body_exited)
 
 
+# Gives a crate back what it held before its area unloaded (StreamedScene
+# remembers it). Call before the crate enters the tree: it then keeps this
+# inventory instead of rolling new contents, so leaving and coming back can't
+# refill it.
+func restore(inv: Inventory, searched := false) -> void:
+	inventory = inv
+	npc_searched = searched
+
+
 func _init_inventory() -> void:
+	if inventory != null:
+		return  # restored (see restore)
 	inventory = Inventory.new()
 	inventory.initialize_grid(grid_width, grid_height)
 

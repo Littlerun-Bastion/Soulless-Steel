@@ -97,7 +97,7 @@ func _init() -> void:
 | GradesTest | part grades: the grade table, wreck weapon drops rolling grades at their odds, grade scaling value, recycling and repairs, grades scaling a real mecha's summed stats and walk speed (and the stats panel the same), saving and loading grades, old saves as Standard, names showing the grade, a lost run resetting them |
 | HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout (debt shown inverted), leave guard, swapping parts, a part keeping its grade on and off the mecha, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
-| MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, far NPCs thinking less often |
+| MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, their loot crates keeping their contents across reloads (no refilling), far NPCs thinking less often |
 | MapVehiclesTest | map vehicles: mechas shoving cars, fire engines holding them back, cars shunting each other and stopping at walls, vehicles blocking shots by chance, not blocking sight, collision only near mechas |
 | MapWallsTest | building walls and foliage: walls block sight between outside and inside, each wall costs a shot 1 AP, grenades go off at walls, Entities can't see through walls, trees hide mechas, merged walls still count |
 | NPCSteeringTest | how NPCs move round vehicles and buildings: steering, pushing through or round cars, unsticking, routing through gaps, tanks trampling cars, circling in a fight, sprinting and dashing, cars destroyed by shots, blasts and dashes, spawns clear of vehicles |

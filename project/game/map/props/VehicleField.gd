@@ -4,10 +4,17 @@ extends Node2D
 # Gives a map's vehicle props bodies, so mechas can push them and they can
 # stop shots, without a node per vehicle.
 #
-# Every spawn of `kinds` from the PropSpawner gets a box (the vehicle's length
-# by its width) as a static body made directly in the physics server, on
-# MapSenses.VEHICLE_LAYER. Mechas collide with that layer. Entities don't:
+# Every spawn of `kinds` from the PropSpawner can have a box (the vehicle's
+# length by its width) as a static body made directly in the physics server,
+# on MapSenses.VEHICLE_LAYER. Mechas collide with that layer. Entities don't:
 # they slip round and under vehicles. Sight rays ignore it (MapSenses).
+#
+# Streaming: every ray pays for each body along its path, whatever its mask,
+# so with `stream` on, only vehicles in the CELL_SIZE cells within
+# stream_radius of a mecha have boxes. The cells are checked every
+# STREAM_INTERVAL physics frames. A shot that passes a vehicle far from every
+# mecha (more than stream_radius from both the shooter and the target) goes
+# through it.
 #
 # Pushing: Mecha.move() calls push_from() after it moves. The mecha counts
 # as MECHA_KG_PER_WEIGHT kg per point of its weight. When it first runs into
@@ -45,6 +52,7 @@ const SETTLE_CLEARANCE := 150.0
 ## How far ahead (s of travel) a moving vehicle wakes the ones in its way.
 const WAKE_LOOKAHEAD := 0.25
 const CELL_SIZE := 1000.0
+const STREAM_INTERVAL := 10
 
 @export var spawner_path: NodePath
 ## The PropSpriteLayer that draws these vehicles.
@@ -55,6 +63,9 @@ const CELL_SIZE := 1000.0
 ## Mass (kg) for a kind or variant missing from `masses`.
 @export var default_mass := 1500.0
 @export var default_shot_block := 0.5
+## Boxes only near mechas (see above). Off: every vehicle always has a box.
+@export var stream := true
+@export var stream_radius := 2000.0
 @export var linear_damp := 3.5
 @export var angular_damp := 6.0
 
@@ -71,6 +82,9 @@ var _static_shapes: Array[RID] = []
 var _rid_to_index := {}
 # Cell -> PackedInt32Array of vehicle indices, by resting position.
 var _cells := {}
+# Cells whose sleeping vehicles have boxes (with `stream` on).
+var _active_cells := {}
+var _built := false
 # Vehicle index -> RigidBody2D, how long it has been still, and the physics
 # frame it was last pushed in (a mecha can move more than once a frame).
 var _awake := {}
@@ -179,10 +193,18 @@ func nearest_vehicle(pos: Vector2, max_distance := 400.0) -> int:
 	return best
 
 
+func static_body_count() -> int:
+	return _rid_to_index.size()
+
+
 func _physics_process(delta: float) -> void:
-	if _awake.is_empty():
+	if not _built:
 		return
 	var mechas := get_tree().get_nodes_in_group("mecha")
+	if stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0:
+		_update_streaming(mechas)
+	if _awake.is_empty():
+		return
 	for i in _awake.keys():
 		if not _awake.has(i):
 			continue
@@ -226,8 +248,12 @@ func _build() -> void:
 		_static_bodies.append(RID())
 		_static_shapes.append(RID())
 	for i in _pos.size():
-		_make_static(i)
 		_add_to_cell(i)
+		if not stream:
+			_make_static(i)
+	_built = true
+	if stream:
+		_update_streaming(get_tree().get_nodes_in_group("mecha"))
 
 
 func _make_static(i: int) -> void:
@@ -309,8 +335,9 @@ func _settle(i: int) -> void:
 	_moved[i] = 1
 	remove_child(body)
 	body.queue_free()
-	_make_static(i)
 	_add_to_cell(i)
+	if not stream or _active_cells.has(_cell_of(_pos[i])):
+		_make_static(i)
 	_layer.place_sprite(_spawn_index[i], _layer.to_local(_pos[i]), _rot[i] - _layer.global_rotation)
 
 
@@ -360,6 +387,32 @@ func _on_layer_rebuilt() -> void:
 			_layer.hide_sprite(_spawn_index[i])
 		elif _moved[i]:
 			_layer.place_sprite(_spawn_index[i], _layer.to_local(_pos[i]), _rot[i] - _layer.global_rotation)
+
+
+# Gives boxes to the sleeping vehicles in cells near a mecha, and removes
+# them from cells that no mecha is near any more.
+func _update_streaming(mechas: Array) -> void:
+	var wanted := {}
+	var span := ceili(stream_radius / CELL_SIZE)
+	for m in mechas:
+		if not (m is Node2D) or not (m as Node2D).is_inside_tree():
+			continue
+		var c := _cell_of((m as Node2D).global_position)
+		for cx in range(c.x - span, c.x + span + 1):
+			for cy in range(c.y - span, c.y + span + 1):
+				wanted[Vector2i(cx, cy)] = true
+	for key in _active_cells.keys():
+		if not wanted.has(key):
+			_active_cells.erase(key)
+			for j in _cells.get(key, PackedInt32Array()):
+				_free_static(j)
+	for key in wanted:
+		if _active_cells.has(key):
+			continue
+		_active_cells[key] = true
+		for j in _cells.get(key, PackedInt32Array()):
+			if not _awake.has(j) and not _static_bodies[j].is_valid():
+				_make_static(j)
 
 
 func _cell_of(pos: Vector2) -> Vector2i:

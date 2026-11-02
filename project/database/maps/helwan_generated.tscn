@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://game/map/OverheadPath.gd" id="overhead"]
 [ext_resource type="Script" path="res://game/map/props/PropSpriteLayer.gd" id="sprite_layer"]
 [ext_resource type="Script" path="res://game/map/props/VehicleField.gd" id="vehicle_field"]
+[ext_resource type="Script" path="res://game/map/MapStreamer.gd" id="map_streamer"]
 [ext_resource type="Texture2D" path="res://assets/images/map/props/bush_1.png" id="spr_bush_1"]
 [ext_resource type="Texture2D" path="res://assets/images/map/props/bush_2.png" id="spr_bush_2"]
 [ext_resource type="Texture2D" path="res://assets/images/map/props/bush_3.png" id="spr_bush_3"]
@@ -783,6 +784,11 @@ conceals = true
 script = ExtResource("field")
 footprints = ExtResource("footprints")
 roof_material = SubResource("Mat_roofs")
+
+; Hides map chunks away from the camera and streams StreamedScene nodes in
+; the master scene round the mechas (see MapStreamer).
+[node name="MapStreamer" type="Node" parent="."]
+script = ExtResource("map_streamer")
 
 ; Elevated structures from OpenStreetMap, above mechas, foliage and roofs.
 [node name="Overheads" type="Node2D" parent="."]

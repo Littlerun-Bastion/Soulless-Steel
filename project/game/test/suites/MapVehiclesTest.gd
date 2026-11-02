@@ -44,6 +44,7 @@ func run_tests() -> void:
 	await case("a vehicle stops shots by its shot_block chance", _test_shot_chance)
 	await case("a real bullet stops in a car that always blocks", _test_real_bullet)
 	await case("vehicles don't block sight", _test_sight)
+	await case("vehicles only have boxes near a mecha", _test_streaming)
 
 
 func before_each() -> void:
@@ -58,7 +59,7 @@ func _clear() -> void:
 
 
 # A map with vehicles: each item is [kind, position, rotation].
-func _setup(vehicles: Array, buildings: Array = []) -> void:
+func _setup(vehicles: Array, buildings: Array = [], stream := false) -> void:
 	_arena = FakeArena.new()
 	add_child(_arena)
 	var set := PropSpawnSet.new()
@@ -96,6 +97,9 @@ func _setup(vehicles: Array, buildings: Array = []) -> void:
 	_field.kinds = PackedStringArray(["vehicle", "truck"])
 	_field.masses = {"vehicle": PackedFloat32Array([950.0]), "truck": PackedFloat32Array([14000.0])}
 	_field.shot_blocks = {"vehicle": PackedFloat32Array([0.5]), "truck": PackedFloat32Array([0.85])}
+	# Every vehicle has a box, so cases without a mecha nearby still have
+	# solid vehicles. Streaming has its own case.
+	_field.stream = stream
 	_arena.add_child(_field)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
@@ -258,3 +262,22 @@ func _test_sight() -> void:
 	var mecha := _mecha(Vector2(500, 0))
 	await get_tree().physics_frame
 	check(stalker.can_see(mecha), "an Entity sees a mecha past a fire engine")
+
+
+func _test_streaming() -> void:
+	await _setup([["vehicle", Vector2(0, 0), 0.0], ["vehicle", Vector2(20000, 0), 0.0]], [], true)
+	var mecha := _mecha(Vector2(500, 0))
+	await wait_frames(15)
+	await get_tree().physics_frame
+	for _i in VehicleField.STREAM_INTERVAL + 1:
+		await get_tree().physics_frame
+	check_eq(_field.static_body_count(), 1, "only the car near the mecha has a box")
+	_field._block[1] = 1.0
+	var far := MapSenses.trace_shot(_arena.get_world_2d(), Vector2(20000, -300), Vector2(20000, 300), 3)
+	check(far.stop == null, "a shot passes the far car while no mecha is near it")
+	mecha.global_position = Vector2(19000, 300)
+	for _i in VehicleField.STREAM_INTERVAL * 2 + 1:
+		await get_tree().physics_frame
+	check_eq(_field.static_body_count(), 1, "the near car's box went and the far car's came")
+	far = MapSenses.trace_shot(_arena.get_world_2d(), Vector2(20000, -300), Vector2(20000, 300), 3)
+	check(far.by == "vehicle", "the far car now stops shots")

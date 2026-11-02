@@ -87,17 +87,31 @@ func _physics_process(dt):
 	if is_stunned():
 		return
 	
-	if not scripted:
-		update_senses(dt)
+	# Thinking LOD: see is_thinking_frame(). think_dt is the game time since
+	# the last thinking frame.
+	_think_dt += dt
+	var thinking := scripted or is_thinking_frame()
+	var think_dt := _think_dt
+	if thinking:
+		_think_dt = 0.0
+
+	if not scripted and thinking:
+		update_senses(think_dt)
 
 	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
 	if scripted:
 		_drive_scripted(dt)
 	elif not wait_for_map_sync and not is_dead:
-		# Fresh each frame; the combat behaviour re-sets it while engaging.
-		ai_aim_point = null
-		logic.update(self)
-		logic.run(self, dt)
+		if thinking:
+			# Fresh each think; the combat behaviour re-sets it while engaging.
+			ai_aim_point = null
+			var before := global_position
+			logic.update(self)
+			logic.run(self, think_dt)
+			_coast_velocity = velocity if global_position != before else Vector2.ZERO
+		elif _coast_velocity != Vector2.ZERO:
+			# Between thinking frames, keep going the way it was going.
+			move(_coast_velocity)
 
 	# Stuck watchdog. Only fires when the NPC is actively trying to reach a
 	# position (going_to_position == true) but velocity stays near zero. This
@@ -442,6 +456,8 @@ func update_senses(dt):
 	#Check for nearby bodies
 	var own_sight_mult = MapSenses.sight_mult(self)
 	for target in arena.get_mechas():
+		if target == self:
+			continue
 		var distance = position.distance_to(target.position)
 		var thermal_range_mult = 1.0
 		if target.has_method("get_thermal_signature"):
@@ -449,10 +465,11 @@ func update_senses(dt):
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 		
 		# Foliage over the target, or over us, shortens the range; building
-		# walls block sight completely (see MapSenses).
-		var effective_engage_distance = engage_distance * thermal_range_mult \
-				* own_sight_mult * MapSenses.detection_mult(target)
-		if target != self and distance <= effective_engage_distance \
+		# walls block sight completely (see MapSenses). Cheapest checks first:
+		# the foliage and wall checks only run for targets in range.
+		var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
+		if distance <= effective_engage_distance \
+				and distance <= effective_engage_distance * MapSenses.detection_mult(target) \
 				and not MapSenses.walls_between(get_world_2d(), global_position, target.global_position):
 			var found = false
 			for data in senses.bodies:
@@ -705,7 +722,8 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 			var p = arena.player
 			needs_full_rate = p != null and is_instance_valid(p) \
 				and global_position.distance_to(p.global_position) < STEERING_FULL_DISTANCE
-		if needs_full_rate or _steering_frame % FAR_STEERING_INTERVAL == 0:
+		var interval := NEAR_STEERING_INTERVAL if needs_full_rate else FAR_STEERING_INTERVAL
+		if _steering_frame % interval == 0:
 			set_danger()
 		choose_direction()
 		if sprint:
@@ -745,14 +763,45 @@ func _on_NavigationAgent2D_target_reached():
 #-------- Context Steering
 
 # Steering LOD: NPCs far from the player refresh their 32-ray danger map
-# every FAR_STEERING_INTERVAL physics frames instead of every frame, reusing
+# every FAR_STEERING_INTERVAL steering updates instead of every one, reusing
 # the cached danger[] in between. At 9+ NPCs roaming the big expedition map,
 # full-rate steering for everyone costs ~17k raycasts/sec, almost all of it
-# for mechas nowhere near the action. Stagger offset spreads the refreshes
-# so far NPCs don't all raycast on the same frame.
+# for mechas nowhere near the action. NPCs near the player or engaged refresh
+# every NEAR_STEERING_INTERVAL updates. Stagger offset spreads the refreshes
+# so NPCs don't all raycast on the same frame.
 const STEERING_FULL_DISTANCE := 4000.0
 const FAR_STEERING_INTERVAL := 6
+const NEAR_STEERING_INTERVAL := 2
 var _steering_frame := 0
+
+# Thinking LOD: NPCs more than THINK_FULL_DISTANCE from the player update
+# their senses and run their behaviour every FAR_THINK_INTERVAL physics
+# frames, with the time since their last think as dt. In between they keep
+# moving with their last velocity, so motion stays smooth; aiming, decisions
+# and shooting wait for the next think. Near the player (on screen and round
+# it) every frame thinks.
+const THINK_FULL_DISTANCE := 4000.0
+const FAR_THINK_INTERVAL := 3
+var _think_offset := randi() % FAR_THINK_INTERVAL
+var _think_dt := 0.0
+var _coast_velocity := Vector2.ZERO
+
+
+func is_near_player() -> bool:
+	if arena == null or not ("player" in arena):
+		return false
+	var p = arena.player
+	return p != null and is_instance_valid(p) \
+		and global_position.distance_to(p.global_position) < THINK_FULL_DISTANCE
+
+
+func is_thinking_frame() -> bool:
+	return think_interval(is_near_player()) == 1 \
+		or (Engine.get_physics_frames() + _think_offset) % FAR_THINK_INTERVAL == 0
+
+
+static func think_interval(near_player: bool) -> int:
+	return 1 if near_player else FAR_THINK_INTERVAL
 
 func steering_setup():
 	interest.resize(num_rays)

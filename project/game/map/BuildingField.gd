@@ -15,15 +15,19 @@ extends Node2D
 # carries its building's id in UV.x; the roof material reads one fade value
 # per id from a small texture that this node keeps up to date.
 #
-# Each building also gets its outline as a wall: a static body made directly
-# in the physics server (no node), with the outline as segments on
-# MapSenses.WALL_LAYER. Nothing collides with that layer, so mechas still walk
-# through walls; rays see it, so walls stop shots by AP and block sight (see
-# MapSenses).
+# Each building also gets its outline as a wall, on MapSenses.WALL_LAYER.
+# Nothing collides with that layer, so mechas still walk through walls; rays
+# see it, so walls stop shots by AP and block sight (see MapSenses). The
+# outlines of all buildings whose centre is in one WALL_CELL_SIZE square are
+# merged into one static body with one segment shape, made directly in the
+# physics server (no node). Every ray pays for each body along its path,
+# whatever its mask, so a few dozen merged bodies cost far less than one
+# body per building.
 
 const CELL_SIZE := 2000.0
 const FADE_SPEED := 2.3
 const FADE_TEX_SIZE := 128
+const WALL_CELL_SIZE := 5000.0
 
 @export var footprints: BuildingFootprints
 @export var roof_material: ShaderMaterial
@@ -93,20 +97,25 @@ func _exit_tree() -> void:
 	_wall_shapes.clear()
 
 
-# Id of the building whose wall body `rid` is, or -1.
-func building_of_wall(rid: RID) -> int:
-	return _wall_bodies.find(rid)
+func wall_body_count() -> int:
+	return _wall_bodies.size()
 
 
 func _build_walls() -> void:
 	var space := get_world_2d().space
 	var xform := global_transform
+	# Cell -> wall segments (pairs of points) of the buildings centred in it.
+	var cells := {}
 	for i in _polys.size():
 		var poly := _polys[i]
-		var segments := PackedVector2Array()
+		var key := Vector2i((_rects[i].get_center() / WALL_CELL_SIZE).floor())
+		var segments: PackedVector2Array = cells.get(key, PackedVector2Array())
 		for k in poly.size():
 			segments.append(poly[k])
 			segments.append(poly[(k + 1) % poly.size()])
+		cells[key] = segments
+	for key in cells:
+		var segments: PackedVector2Array = cells[key]
 		var shape := PhysicsServer2D.concave_polygon_shape_create()
 		PhysicsServer2D.shape_set_data(shape, segments)
 		var body := PhysicsServer2D.body_create()

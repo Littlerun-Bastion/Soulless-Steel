@@ -126,9 +126,28 @@ static func sight_mult(observer: Node2D) -> float:
 	return TREE_SIGHT if _foliage_at(observer) == "tree" else 1.0
 
 
+# Foliage over a node, looked up once per physics frame per node: many
+# observers ask about the same targets each frame.
+static var _foliage_cache := {}
+static var _foliage_cache_frame := -1
+
+
 static func _foliage_at(node: Node2D) -> String:
 	if not node.is_inside_tree():
 		return ""
+	var frame := Engine.get_physics_frames()
+	if frame != _foliage_cache_frame:
+		_foliage_cache.clear()
+		_foliage_cache_frame = frame
+	var id := node.get_instance_id()
+	if _foliage_cache.has(id):
+		return _foliage_cache[id]
+	var kind := _foliage_lookup(node)
+	_foliage_cache[id] = kind
+	return kind
+
+
+static func _foliage_lookup(node: Node2D) -> String:
 	var best := ""
 	for layer in node.get_tree().get_nodes_in_group("foliage_layer"):
 		var kind: String = layer.concealment_at(layer.to_local(node.global_position))

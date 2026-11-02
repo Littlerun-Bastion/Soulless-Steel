@@ -212,7 +212,7 @@ func find_prey() -> Node2D:
 		if not is_valid_prey(mecha) or not in_territory(mecha):
 			continue
 		var d := distance_to(mecha)
-		if d < best_distance and d < own_sight * MapSenses.detection_mult(mecha) and can_see(mecha):
+		if d < best_distance and d < own_sight and d < own_sight * MapSenses.detection_mult(mecha) and can_see(mecha):
 			best = mecha
 			best_distance = d
 	return best

@@ -41,6 +41,7 @@ func run_tests() -> void:
 	await case("an impact-fused grenade goes off at the first wall", _test_grenade)
 	await case("an Entity can't see a mecha through a wall", _test_entity_sight)
 	await case("a tree over a mecha hides it from further away", _test_tree)
+	await case("walls far apart are merged per cell and still each count", _test_wall_cells)
 
 
 func before_each() -> void:
@@ -191,6 +192,8 @@ func _test_tree() -> void:
 	tree.centre = mecha.global_position
 	tree.add_to_group("foliage_layer")
 	_arena.add_child(tree)
+	# Concealment is looked up once per physics frame.
+	await get_tree().physics_frame
 	check_eq(MapSenses.detection_mult(mecha), MapSenses.TREE_CONCEALMENT, "the tree conceals the mecha")
 	check(stalker.find_prey() == null, "hidden under a tree at the same distance")
 	tree.remove_from_group("foliage_layer")
@@ -204,3 +207,23 @@ func _mecha(pos: Vector2, design := PlayerProgress.DEFAULT_MECHA) -> Mecha:
 	mecha.set_parts_from_design(design)
 	_arena.mechas.append(mecha)
 	return mecha
+
+
+func _test_wall_cells() -> void:
+	for n in _arena.get_children():
+		if n is BuildingField:
+			n.free()
+	# A third building 12,000 px away, in another wall cell.
+	var c := [Vector2(12000, 0), Vector2(12400, 0), Vector2(12400, 400), Vector2(12000, 400)]
+	var footprints := BuildingFootprints.new()
+	footprints.points = PackedVector2Array(A + B + c)
+	footprints.starts = PackedInt32Array([0, 4, 8, 12])
+	var field := BuildingField.new()
+	field.footprints = footprints
+	_arena.add_child(field)
+	await get_tree().physics_frame
+	check_eq(field.wall_body_count(), 2, "two cells, two wall bodies for three buildings")
+	var hits := MapSenses.wall_hits(_world(), Vector2(11800, 200), Vector2(12600, 200))
+	check_eq(hits.size(), 2, "the far building's two walls")
+	var r := MapSenses.trace_shot(_world(), Vector2(-200, 300), Vector2(12600, 300), 6)
+	check(r.stop != null and absf(r.stop.x - 12400.0) < 2.0, "AP 6 stops at the sixth wall, in the far cell")

@@ -34,6 +34,7 @@ signal money_changed(new_amount)
 signal mecha_changed(design)
 signal expedition_lost(report)
 signal materials_changed(materials)
+signal blueprints_changed
 
 # Why an expedition was lost (the "reason" in a loss report).
 const LOSS_DESTROYED := "destroyed"   # the player's mecha was destroyed
@@ -55,6 +56,12 @@ const STARTING_MONEY := 1000
 const SELL_RATE := 0.5
 # Sales worth more than this (credits) ask before they go through.
 const SELL_CONFIRM_OVER := 1000
+# Recycling this many copies of a part teaches its blueprint (one Refined or
+# Prototype copy is enough).
+const BLUEPRINT_COPIES := 3
+# Every PartManager part type.
+const PART_TYPES := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster",
+		"arm_weapon", "shoulder_weapon"]
 
 var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
@@ -64,6 +71,9 @@ var current_grades: Dictionary = {}
 var stash_inventory: Inventory = null
 var mech_inventory: Inventory = null
 var materials: Dictionary = {}  # material id -> amount
+# Blueprints for the Fabricator: "part_type:part_id" -> copies recycled
+# towards it, BLUEPRINT_COPIES once it's known (see learn_from).
+var blueprints: Dictionary = {}
 var in_expedition := false
 # What the last lost expedition cost, until something shows it to the player
 # (game-over screen or main menu). Saved, so it survives a crash.
@@ -251,7 +261,7 @@ func add_materials(amounts: Dictionary, should_save := true) -> void:
 		_save()
 
 
-# Salvage and weapons with a composition can be recycled — at home only:
+# Salvage and parts with a composition can be recycled — at home only:
 # recycling mid-run would turn loot into materials that can't be lost.
 func can_recycle(stack: item_stack) -> bool:
 	return not in_expedition and not recycle_value(stack).is_empty()
@@ -279,6 +289,7 @@ func recycle_stack(inv: Inventory, stack: item_stack, should_save := true) -> Di
 		return {}
 	var gained := recycle_value(stack)
 	inv.remove_item_stack(stack)
+	learn_from(stack)
 	add_materials(gained, should_save)
 	return gained
 
@@ -298,6 +309,60 @@ func recycle_all(inv: Inventory) -> Dictionary:
 	if not gained.is_empty():
 		_save()
 	return gained
+
+
+# ---- Blueprints and spending materials (the Fabricator) ----
+
+static func blueprint_key(part_type: String, part_id: String) -> String:
+	return "%s:%s" % [part_type, part_id]
+
+
+# Copies recycled towards a part's blueprint, 0..BLUEPRINT_COPIES.
+func blueprint_progress(part_type: String, part_id: String) -> int:
+	return int(blueprints.get(blueprint_key(part_type, part_id), 0))
+
+
+func knows_blueprint(part_type: String, part_id: String) -> bool:
+	return blueprint_progress(part_type, part_id) >= BLUEPRINT_COPIES
+
+
+# Every blueprint started or known, as [part_type, part_id] pairs.
+func get_blueprints() -> Array:
+	var result := []
+	for key in blueprints:
+		result.append(str(key).split(":", true, 1))
+	return result
+
+
+# Recycling a part takes it apart: a step towards its blueprint, or all of it
+# for a Refined or Prototype copy. Called by recycle_stack (saved with it).
+func learn_from(stack: item_stack) -> void:
+	if stack == null or not stack.is_part() or knows_blueprint(stack.item_type, stack.item_id):
+		return
+	var key := blueprint_key(stack.item_type, stack.item_id)
+	var best := Grades.of(stack.grade) in [Grades.REFINED, Grades.PROTOTYPE]
+	blueprints[key] = BLUEPRINT_COPIES if best else mini(int(blueprints.get(key, 0)) + stack.quantity, BLUEPRINT_COPIES)
+	if knows_blueprint(stack.item_type, stack.item_id):
+		_log("blueprint learned: " + key)
+	blueprints_changed.emit()
+
+
+func has_materials(amounts: Dictionary) -> bool:
+	for material_id in amounts:
+		if get_material_count(material_id) < int(amounts[material_id]):
+			return false
+	return true
+
+
+# Takes the materials, or nothing (returns false) if any are short.
+func spend_materials(amounts: Dictionary, should_save := true) -> bool:
+	if not has_materials(amounts):
+		return false
+	var negative := {}
+	for material_id in amounts:
+		negative[material_id] = -int(amounts[material_id])
+	add_materials(negative, should_save)
+	return true
 
 
 # ---- Selling ----
@@ -507,6 +572,7 @@ func reset() -> void:
 	stash_inventory = null
 	mech_inventory = null
 	materials = {}
+	blueprints = {}
 	in_expedition = false
 	pending_loss_report = {}
 	money_changed.emit(money)
@@ -522,6 +588,7 @@ func get_save_data() -> Dictionary:
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
 		"materials": materials,
+		"blueprints": blueprints,
 		"in_expedition": in_expedition,
 		"pending_loss_report": pending_loss_report,
 	}
@@ -536,6 +603,7 @@ func set_save_data(data) -> void:
 	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
 	materials = _materials_from_dict(data.get("materials", {}))
+	blueprints = _blueprints_from_dict(data.get("blueprints", {}))
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
@@ -583,6 +651,22 @@ func _grades_from_dict(data) -> Dictionary:
 	for slot in data:
 		if DEFAULT_MECHA.has(str(slot)) and Grades.is_valid(data[slot]) and data[slot] != Grades.STANDARD:
 			result[str(slot)] = data[slot]
+	return result
+
+
+# Blueprints for parts that were renamed or removed since the save are dropped.
+func _blueprints_from_dict(data) -> Dictionary:
+	var result := {}
+	if typeof(data) != TYPE_DICTIONARY:
+		return result
+	for key in data:
+		var parts := str(key).split(":", true, 1)
+		var progress := clampi(int(data[key]), 0, BLUEPRINT_COPIES)  # JSON numbers load as floats
+		if parts.size() != 2 or progress <= 0 or not parts[0] in PART_TYPES \
+				or not PartManager.is_valid_part(parts[0], parts[1]):
+			push_warning("PlayerProgress: dropping blueprint '%s' from save" % key)
+			continue
+		result[str(key)] = progress
 	return result
 
 

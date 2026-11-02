@@ -64,6 +64,11 @@ func show_item(stack: item_stack) -> void:
 
 	if graded:
 		lines.append("Grade: %s" % _grade_text(stack.grade))
+		var progress := PlayerProgress.blueprint_progress(stack.item_type, stack.item_id)
+		if progress >= PlayerProgress.BLUEPRINT_COPIES:
+			lines.append("Blueprint: known (FAB can build it)")
+		elif progress > 0:
+			lines.append("Blueprint: %d/%d recycled" % [progress, PlayerProgress.BLUEPRINT_COPIES])
 
 	var weight_val = res.get("weight")
 	if typeof(weight_val) == TYPE_FLOAT or typeof(weight_val) == TYPE_INT:

@@ -57,6 +57,7 @@ func _test_recycling() -> void:
 	var menu_ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
 	check(not "take" in menu_ids and not "take_all" in menu_ids, "no looting actions on the stash")
 	check(MechOS.is_app_available("materials"), "MAT on the taskbar in the Hangar")
+	check(MechOS.is_app_available("fabricator"), "FAB too")
 	var materials_window = MechOS.open_app("materials")
 	check(materials_window != null and materials_window.get_count_text("steel") == "0", "Materials window lists steel at 0")
 	recycle["run"].call(ctx)
@@ -74,6 +75,7 @@ func _test_leaving() -> void:
 	check(not MechOS.recycling_enabled, "recycling off again after leaving")
 	check(MechOS.player_ref == null, "Mech OS forgets the Hangar mecha")
 	check(not MechOS.is_app_available("materials"), "MAT gone from the taskbar after leaving")
+	check(not MechOS.is_app_available("fabricator"), "FAB too")
 
 
 # Through the real menu: the first click only asks, the second recycles.

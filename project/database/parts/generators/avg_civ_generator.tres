@@ -7,6 +7,8 @@
 script = ExtResource("1")
 part_name = "Average Civ Grade"
 price = 400.0
+tech_tier = 1
+composition = Dictionary[String, int]({"fissile_materials": 3, "copper": 2})
 manufacturer_name = "Martel"
 shield_regen_speed = 666
 shield_regen_delay = 7

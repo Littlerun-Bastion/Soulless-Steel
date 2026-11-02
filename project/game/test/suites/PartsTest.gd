@@ -1,7 +1,8 @@
 extends TestSuite
 
 # PartsTest: every part in the game (database/parts, as PartManager loads it)
-# has the data the game relies on, equips onto a real mecha, and every weapon
+# has the data the game relies on (including the tech tier and composition
+# recycling and the Fabricator use), equips onto a real mecha, and every weapon
 # fires a projectile. A new or edited part that breaks any of this fails here
 # before it can break a fight.
 #
@@ -67,6 +68,14 @@ func _test_part_data() -> void:
 				"%s has a cargo size" % label)
 		# Shown as the item's value (tooltip) and in the Store.
 		check(float(part.get("price")) > 0.0, "%s has a price" % label)
+		# Recycling and the Fabricator: a tier and what it's made of.
+		check(part.get("tech_tier") in Materials.TIERS, "%s has a tech tier" % label)
+		var composition = part.get("composition")
+		check(composition is Dictionary and not composition.is_empty(), "%s has a composition" % label)
+		if composition is Dictionary:
+			for material_id in composition:
+				check(Materials.is_valid(material_id) and int(composition[material_id]) > 0,
+						"%s is made of a known material (%s)" % [label, material_id])
 		if str(part.get("description")) == "":
 			_notes.append("%s has no description" % label)
 

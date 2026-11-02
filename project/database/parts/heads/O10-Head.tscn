@@ -11,6 +11,8 @@
 script = ExtResource("1")
 part_name = "O10-Head"
 price = 700.0
+tech_tier = 2
+composition = Dictionary[String, int]({"silicon": 5, "copper": 3, "steel": 1, "neural_biomatter": 2})
 manufacturer_name = "Orontes Constructions"
 manufacturer_name_short = "Orontes"
 tagline = "O10H"

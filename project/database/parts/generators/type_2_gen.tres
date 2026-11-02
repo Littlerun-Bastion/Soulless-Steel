@@ -6,6 +6,8 @@
 script = ExtResource("1")
 part_name = "Test Generator 2"
 price = 600.0
+tech_tier = 2
+composition = Dictionary[String, int]({"fissile_materials": 4, "copper": 3, "steel": 1, "nt_fluid": 1})
 manufacturer_name = "Test"
 tagline = "High Capacity"
 description = ""

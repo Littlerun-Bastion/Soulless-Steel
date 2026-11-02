@@ -7,7 +7,8 @@ extends Node
 ## The field is any combat scene (MouseManager.aim_available). There:
 ##   - The sidebar is hidden. Holding the free-cursor key (Alt) slides it out.
 ##   - Only field apps are on it: EQP, CGO, LOG, SYS. Messenger, Deployments,
-##     Materials and the browser come back when the player leaves the field.
+##     Materials, Fabricator and the browser come back when the player leaves
+##     the field.
 ##   - While Alt is up, windows hide, except the loot pair (the container and
 ##     Mech Cargo). Those stay on screen; MechOS already stops them taking
 ##     the mouse while the player aims. Hidden windows are not closed: holding
@@ -21,7 +22,7 @@ extends Node
 ## rail_right is the sidebar's right edge on screen (0 while it's hidden), so
 ## HUD blocks on the left can move out of its way (HudStatus).
 
-const FIELD_HIDDEN_APPS := ["messenger", "deployments", "materials", "net"]
+const FIELD_HIDDEN_APPS := ["messenger", "deployments", "materials", "fabricator", "net"]
 ## Windows that stay visible while aiming (opened by E or the cargo key).
 const PINNED_APPS := ["container", "mech_cargo"]
 const SLIDE_TIME := 0.12

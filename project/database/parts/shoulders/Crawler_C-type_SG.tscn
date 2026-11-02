@@ -9,6 +9,8 @@
 script = ExtResource("3")
 part_name = "Crawler C-type SG"
 price = 450.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 3, "oil": 2, "copper": 1})
 manufacturer_name = "Nomhoyi Superheavy"
 manufacturer_name_short = "Nomhoyi"
 tagline = "Test"

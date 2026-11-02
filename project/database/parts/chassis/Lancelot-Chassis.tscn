@@ -10,6 +10,8 @@
 script = ExtResource("1")
 part_name = "Lancelot-Chassis"
 price = 2900.0
+tech_tier = 3
+composition = Dictionary[String, int]({"steel": 10, "oil": 6, "copper": 3, "nt_fluid": 3, "myofibrilium": 2})
 manufacturer_name = "Claymore International"
 manufacturer_name_short = "Claymore"
 tagline = "Wheeled"

@@ -103,6 +103,9 @@ func _register_apps() -> void:
 	app_openers["mech_cargo"] = _open_mech_cargo
 	register_app("materials", preload("res://game/ui/mech_os/windows/MaterialsWindow.tscn"), "MAT", preload(ICONS + "mat.svg"), "Materials")
 	set_app_available("materials", false)
+	# Hangar only too, like MAT.
+	register_app("fabricator", preload("res://game/ui/mech_os/windows/FabricatorWindow.tscn"), "FAB", preload(ICONS + "fab.svg"), "Fabricator")
+	set_app_available("fabricator", false)
 	register_app("messenger", preload("res://game/ui/mech_os/windows/MessengerWindow.tscn"), "MSG", preload(ICONS + "msg.svg"), "Messenger")
 	register_app("deployments", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"), "DEP", preload(ICONS + "dep.svg"), "Deployments")
 	register_app("log", preload("res://game/ui/mech_os/windows/LogWindow.tscn"), "LOG", preload(ICONS + "log.svg"), "Log")
@@ -388,7 +391,7 @@ func _register_context_actions() -> void:
 				refresh_inventory_windows(),
 		})
 
-	# Recycling (Hangar only): salvage and weapons -> materials. Only offered
+	# Recycling (Hangar only): salvage and parts -> materials. Only offered
 	# when the context says recycling is allowed here ("recycle_allowed", set by
 	# the Hangar); PlayerProgress also refuses during an expedition. Shown greyed
 	# out for things that can't be recycled, so the option is discoverable.
@@ -447,12 +450,12 @@ func _has_recyclable(inv: Inventory) -> bool:
 	return false
 
 
-# Weapons and high-tech salvage ask before they're recycled.
+# Parts and high-tech salvage ask before they're recycled.
 func _recycle_question(stack: item_stack) -> String:
 	if not PlayerProgress.can_recycle(stack):
 		return ""
 	if stack.is_part():
-		return "Confirm: recycle this weapon?"
+		return "Confirm: recycle this part?"
 	if _is_high_tech(stack):
 		return "Confirm: recycle high-tech item?"
 	return ""

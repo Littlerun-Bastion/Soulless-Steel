@@ -32,17 +32,20 @@ static func estimate(mecha) -> int:
 	return int(round(total))
 
 
-# What the parts a section carries are worth.
+# What the parts a section carries are worth (price scaled by grade).
 static func section_value(mecha, section: String) -> float:
 	var value := 0.0
 	var build: Dictionary = mecha.build
+	var grades = mecha.get("part_grades")
+	if not grades is Dictionary:
+		grades = {}
 	for slot in SECTIONS[section]:
 		var part = build.get(slot)
 		if not part:
 			continue
 		var price = part.get("price")
 		if price is int or price is float:
-			value += price * SECTIONS[section][slot]
+			value += price * Grades.value_mult(grades.get(slot)) * SECTIONS[section][slot]
 	return value
 
 

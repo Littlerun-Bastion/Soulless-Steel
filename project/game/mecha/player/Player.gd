@@ -285,6 +285,7 @@ func setup(arena_ref):
 	if Debug.get_setting("debug_loadout"):
 		set_debug_loadout()
 	elif PlayerProgress.get_current_mecha():
+		part_grades = PlayerProgress.get_current_grades().duplicate()
 		set_parts_from_design(PlayerProgress.get_current_mecha())
 	else:
 		push_warning("No design set for player, using the same as the debug loadout")

@@ -73,16 +73,19 @@ func refresh_slots() -> void:
 			continue
 		var part_res = _get_mecha_part_for_slot(slot)
 		slot.set_current_part(part_res)
+		if part_res and slot.PartName:
+			slot.PartName.text = Grades.label(_grade_in(slot), slot.PartName.text)
 		_style_slot(slot, part_res != null, false)
 	# Force the stats (and any drag comparison) to redraw next frame.
 	_preview_key = "-"
 	_refresh_timer = 0.0
 
 
-func refresh_stats(preview: Dictionary = {}, header: String = "") -> void:
+func refresh_stats(preview: Dictionary = {}, header: String = "", preview_grades: Dictionary = {}) -> void:
 	if mecha_ref == null or stats_panel == null:
 		return
-	stats_panel.show_stats(mecha_ref.build, mecha_ref.get_inventory_weight(), preview, header)
+	stats_panel.show_stats(mecha_ref.build, mecha_ref.get_inventory_weight(), preview, header,
+			mecha_ref.part_grades, preview_grades)
 
 
 # Slot interaction
@@ -97,7 +100,7 @@ func _on_slot_pressed(slot: PartSlot) -> void:
 	if part == null:
 		return
 
-	var stack := make_part_stack(slot.part_type, part.part_id)
+	var stack := make_part_stack(slot.part_type, part.part_id, 1, _grade_in(slot))
 	if stack == null:
 		return
 
@@ -128,7 +131,7 @@ func try_equip(slot: PartSlot, stack: item_stack) -> bool:
 	# If something is already equipped, return it to the closest open inventory
 	var existing_part = _get_mecha_part_for_slot(slot)
 	if existing_part:
-		var existing_stack := make_part_stack(slot.part_type, existing_part.part_id)
+		var existing_stack := make_part_stack(slot.part_type, existing_part.part_id, 1, _grade_in(slot))
 		if existing_stack == null:
 			return false
 		# Find an open inventory window to put the old part
@@ -137,7 +140,7 @@ func try_equip(slot: PartSlot, stack: item_stack) -> bool:
 			return false
 
 	# Equip the new part
-	_set_mecha_part_for_slot(slot, stack.item_id)
+	_set_mecha_part_for_slot(slot, stack.item_id, stack.grade)
 	refresh_slots()
 	parts_changed.emit()
 	return true
@@ -145,7 +148,7 @@ func try_equip(slot: PartSlot, stack: item_stack) -> bool:
 
 func revert_equip(slot: PartSlot, stack: item_stack) -> void:
 	# Re-equip a part that was unequipped for a drag that got cancelled
-	_set_mecha_part_for_slot(slot, stack.item_id)
+	_set_mecha_part_for_slot(slot, stack.item_id, stack.grade)
 	refresh_slots()
 	parts_changed.emit()
 
@@ -182,7 +185,7 @@ func _process(delta: float) -> void:
 	var target: PartSlot = _preview_slot(stack) if stack != null else null
 	var key := ""
 	if target != null:
-		key = "%s|%s|%d" % [stack.item_id, target.part_type, target.part_side]
+		key = "%s|%s|%s|%d" % [stack.item_id, stack.grade, target.part_type, target.part_side]
 
 	_refresh_timer -= delta
 	if key == _preview_key and _refresh_timer > 0.0:
@@ -200,9 +203,12 @@ func _process(delta: float) -> void:
 	var new_part = PartManager.get_part(stack.item_type, stack.item_id)
 	var preview: Dictionary = mecha_ref.build.duplicate()
 	preview[_build_key(target)] = new_part
-	var header := "COMPARING %s   %s > %s" % [
-			target.display_name, _part_name(_get_mecha_part_for_slot(target)), _part_name(new_part)]
-	refresh_stats(preview, header)
+	var preview_grades: Dictionary = mecha_ref.part_grades.duplicate()
+	preview_grades[_build_key(target)] = stack.grade
+	var header := "COMPARING %s   %s > %s" % [target.display_name,
+			Grades.label(_grade_in(target), _part_name(_get_mecha_part_for_slot(target))),
+			Grades.label(stack.grade, _part_name(new_part))]
+	refresh_stats(preview, header, preview_grades)
 
 
 # The slot a dragged part would go into: the one under the mouse if it
@@ -328,9 +334,16 @@ func _get_mecha_part_for_slot(slot: PartSlot):
 	return null
 
 
-func _set_mecha_part_for_slot(slot: PartSlot, value) -> void:
+# Fits (value = part id) or empties (null) a slot. The grade goes on the mecha
+# first, so the stats the part sets up include it.
+func _set_mecha_part_for_slot(slot: PartSlot, value, grade := Grades.STANDARD) -> void:
 	if mecha_ref == null:
 		return
+	var key := _build_key(slot)
+	if value and Grades.of(grade) != Grades.STANDARD:
+		mecha_ref.part_grades[key] = grade
+	else:
+		mecha_ref.part_grades.erase(key)
 	if slot.part_type == "head":
 		mecha_ref.set_head(value)
 	elif slot.part_type == "core":
@@ -357,14 +370,20 @@ func _set_mecha_part_for_slot(slot: PartSlot, value) -> void:
 			mecha_ref.set_shoulder_weapon(value, Mecha.SIDE.RIGHT)
 
 
-func make_part_stack(part_type: String, part_id: String, qty: int = 1) -> item_stack:
+func make_part_stack(part_type: String, part_id: String, qty: int = 1, grade := Grades.STANDARD) -> item_stack:
 	var s := item_stack.new()
 	s.kind = item_stack.ItemKind.PART
 	s.item_category = "part"
 	s.item_type = part_type
 	s.item_id = part_id
 	s.quantity = qty
+	s.grade = Grades.of(grade)
 	return s
+
+
+# The grade of the part fitted in a slot.
+func _grade_in(slot: PartSlot) -> String:
+	return Grades.of(mecha_ref.part_grades.get(_build_key(slot))) if mecha_ref != null else Grades.STANDARD
 
 func _filter_slots(visible_types: Array) -> void:
 	for slot in part_slots:

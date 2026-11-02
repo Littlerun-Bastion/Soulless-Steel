@@ -28,6 +28,7 @@ func run_tests() -> void:
 	await case("selling in the Hangar", _test_selling)
 	await case("can't leave with a required part missing", func(): await _test_leave_guard(_hangar, _equipment))
 	await case("swapped-out part goes to the stash", func(): _test_swap_returns_to_stash(_hangar, _equipment))
+	await case("a part keeps its grade on and off the mecha", _test_grades)
 	await case("closing the game in the Hangar keeps the design", _test_close_game)
 	await case("smaller core moves cargo to the stash", func(): _test_smaller_core(_hangar, _equipment))
 	await case("leaving the Hangar", _test_leaving)
@@ -196,6 +197,45 @@ func _test_swap_returns_to_stash(hangar, equipment) -> void:
 	# So a save before leaving (recycling, say) can't keep the old head in
 	# both the design and the stash.
 	check(PlayerProgress.get_current_mecha()["head"] == new_head, "the design PlayerProgress saves has the new head")
+
+
+# A Prototype copy of the fitted chassis: fitting it grades the mecha (and the
+# design PlayerProgress saves), the Standard one goes to the stash as
+# Standard, and swapping back returns the Prototype as a Prototype.
+func _test_grades() -> void:
+	var mecha: Mecha = _hangar.player_mecha
+	var stash := PlayerProgress.get_stash_inventory()
+	var slot := _slot(_equipment, "chassis")
+	var chassis_id: String = mecha.build.chassis.part_id
+	var base_speed: float = mecha.build.chassis.max_speed
+	check(is_equal_approx(mecha.max_speed, base_speed), "a Standard chassis walks at its own speed")
+
+	var proto: item_stack = _equipment.make_part_stack("chassis", chassis_id, 1, Grades.PROTOTYPE)
+	check(_equipment.try_equip(slot, proto), "fit a Prototype copy of the same chassis")
+	check_eq(mecha.part_grades.get("chassis"), Grades.PROTOTYPE, "the mecha has its grade")
+	check_eq(PlayerProgress.get_current_grades().get("chassis"), Grades.PROTOTYPE, "so does the design PlayerProgress saves")
+	check(is_equal_approx(mecha.max_speed, base_speed * 1.1), "it walks 10% faster")
+	check(slot.PartName.text.begins_with("Prototype "), "the slot names the grade")
+	var standard := _chassis_in(stash, chassis_id, Grades.STANDARD)
+	check(standard != null, "the Standard one went to the stash, still Standard")
+
+	stash.remove_item_stack(standard)  # as picking it up to drag does
+	check(_equipment.try_equip(slot, standard), "swap the Standard one back in")
+	check(not mecha.part_grades.has("chassis") and not PlayerProgress.get_current_grades().has("chassis"),
+			"back to Standard on the mecha and in the design")
+	check(is_equal_approx(mecha.max_speed, base_speed), "and its own speed")
+	var back := _chassis_in(stash, chassis_id, Grades.PROTOTYPE)
+	check(back != null, "the Prototype came off as a Prototype")
+	if back != null:
+		stash.remove_item_stack(back)
+	MechOS.refresh_inventory_windows()
+
+
+func _chassis_in(inv: Inventory, part_id: String, grade: String) -> item_stack:
+	for stack in inv.get_stacks():
+		if stack.is_part() and stack.item_type == "chassis" and stack.item_id == part_id and stack.grade == grade:
+			return stack
+	return null
 
 
 # Closing the window (or Alt+F4) instead of leaving with ESC used to lose the

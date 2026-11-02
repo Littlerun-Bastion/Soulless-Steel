@@ -43,6 +43,9 @@ func show_item(stack: item_stack) -> void:
 		name_val = res.get("name")
 
 	name_label.text = str(name_val if name_val != null else "UNKNOWN ITEM")
+	var graded := stack.is_part()
+	if graded:
+		name_label.text = Grades.label(stack.grade, name_label.text)
 
 	# --- Type / tags ---
 	var tags_text := ""
@@ -59,6 +62,9 @@ func show_item(stack: item_stack) -> void:
 	# --- Stats: weight, size, value ---
 	var lines: Array[String] = []
 
+	if graded:
+		lines.append("Grade: %s" % _grade_text(stack.grade))
+
 	var weight_val = res.get("weight")
 	if typeof(weight_val) == TYPE_FLOAT or typeof(weight_val) == TYPE_INT:
 		lines.append("Weight: %s" % weight_val)
@@ -70,7 +76,7 @@ func show_item(stack: item_stack) -> void:
 	# Parts without a price yet show none rather than "Value: 0".
 	var price_val = res.get("price")
 	if (typeof(price_val) == TYPE_FLOAT or typeof(price_val) == TYPE_INT) and price_val > 0:
-		lines.append("Value: %d ct" % int(price_val))
+		lines.append("Value: %d ct" % int(price_val * Grades.value_mult(stack.grade)))
 
 	# Salvage: tech tier and what recycling it yields (per item).
 	var tier_val = res.get("tech_tier")
@@ -78,7 +84,9 @@ func show_item(stack: item_stack) -> void:
 		lines.append("Tech: %s" % str(item_data.TechTier.keys()[tier_val]).capitalize())
 	var composition_val = res.get("composition")
 	if composition_val is Dictionary and not composition_val.is_empty():
-		lines.append("Recycles into: %s" % Materials.describe(composition_val))
+		# A part's grade scales what it gives (one part per stack).
+		var yields: Dictionary = PlayerProgress.recycle_value(stack) if graded else composition_val
+		lines.append("Recycles into: %s" % (Materials.describe(yields) if not yields.is_empty() else "nothing"))
 
 	if lines.is_empty():
 		stats_label.text = ""
@@ -99,6 +107,15 @@ func show_item(stack: item_stack) -> void:
 	content.size = size
 	visible = true
 	_update_position()   # position immediately on first show
+
+
+# "Refined (+5% capacity, stability, accuracy, speed)": the stats grades
+# scale (Grades.GRADED_STATS); just "Standard" for Standard.
+static func _grade_text(grade: String) -> String:
+	var mult: float = Grades.DATA[Grades.of(grade)].stats
+	if is_equal_approx(mult, 1.0):
+		return Grades.display_name(grade)
+	return "%s (%+d%% capacity, stability, accuracy, speed)" % [Grades.display_name(grade), roundi((mult - 1.0) * 100.0)]
 
 
 func _process(_delta: float) -> void:

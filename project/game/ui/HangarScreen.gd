@@ -46,6 +46,7 @@ func _ready() -> void:
 	# through cargo_overflow and goes to the stash.
 	player_mecha.mech_inventory = PlayerProgress.get_mech_inventory()
 	player_mecha.cargo_overflow.connect(_on_cargo_overflow)
+	player_mecha.part_grades = PlayerProgress.get_current_grades().duplicate()
 	player_mecha.set_parts_from_design(PlayerProgress.get_current_mecha())
 
 	MechOS.set_player(player_mecha)
@@ -218,12 +219,14 @@ func _on_BackButton_pressed() -> void:
 
 # Without saving: the next save, whatever triggers it, includes the design.
 func _sync_design() -> void:
+	PlayerProgress.set_current_grades(player_mecha.part_grades)
 	PlayerProgress.set_current_mecha(player_mecha.get_design_data(), false)
 
 
 func _save_progress() -> void:
 	PlayerProgress.set_stash_inventory(stash_inventory)
 	PlayerProgress.set_mech_inventory(player_mecha.mech_inventory)
+	PlayerProgress.set_current_grades(player_mecha.part_grades)
 	PlayerProgress.set_current_mecha(player_mecha.get_design_data())  # also saves the profile
 
 

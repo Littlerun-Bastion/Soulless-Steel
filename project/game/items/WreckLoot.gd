@@ -8,8 +8,9 @@ class_name WreckLoot
 #            Each pool picks the tech tier, so high tech stays rare; pools
 #            with no high-tech item give mid tech on a high roll.
 #   Weapons: every equipped weapon has WEAPON_DROP_CHANCE to drop intact, as
-#            a part stack. A weapon that drops gives no salvage on top (it
-#            wasn't scrapped), so loot per wreck stays about the same.
+#            a part stack with a rolled grade (Grades.roll: mostly Scrap or
+#            Standard, rarely better). A weapon that drops gives no salvage on
+#            top (it wasn't scrapped), so loot per wreck stays about the same.
 #
 # roll() takes the mecha's design (Mecha.get_design_data: slot -> part id, or
 # false for an empty slot) and an optional seeded RNG for tests. Passing a
@@ -43,7 +44,7 @@ static func roll(design: Dictionary, rng: RandomNumberGenerator = null,
 			continue
 		# Skipped entirely when off, so it doesn't change the salvage rolls.
 		if weapon_chance > 0.0 and slot in WEAPON_SLOTS and _randf(rng) < weapon_chance:
-			var weapon := weapon_stack(slot, part_id)
+			var weapon := weapon_stack(slot, part_id, rng)
 			if weapon != null:
 				stacks.append(weapon)
 				continue
@@ -66,12 +67,15 @@ static func part_type_of(slot: String) -> String:
 	return slot.trim_suffix("_left").trim_suffix("_right")
 
 
-# A part stack for the weapon in a design slot.
-static func weapon_stack(slot: String, part_id: String) -> item_stack:
+# A part stack for the weapon in a design slot, with a rolled grade.
+static func weapon_stack(slot: String, part_id: String, rng: RandomNumberGenerator = null) -> item_stack:
 	var entry := LootEntry.new()
 	entry.part_type = part_type_of(slot)
 	entry.part_id = part_id
-	return entry.make_stack()
+	var stack := entry.make_stack()
+	if stack != null:
+		stack.grade = Grades.roll(rng)
+	return stack
 
 
 static func _randf(rng: RandomNumberGenerator) -> float:

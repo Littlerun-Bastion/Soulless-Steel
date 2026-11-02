@@ -4,7 +4,9 @@ extends Node
 #   - money          : credits, spent in the Store and on repairs, earned by
 #                      selling in the Hangar (and from Arena matches); below
 #                      zero is debt (charge_repairs)
-#   - current mecha  : the design dictionary the player pilots
+#   - current mecha  : the design dictionary the player pilots, and the grades
+#                      of its parts (current_grades; parts in inventories
+#                      carry theirs on the stack, item_stack.grade)
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
 #   - materials      : crafting materials from recycling salvage (Materials)
@@ -56,6 +58,9 @@ const SELL_CONFIRM_OVER := 1000
 
 var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
+# Grades of the fitted parts: design slot -> grade (Grades), only for parts
+# that aren't Standard.
+var current_grades: Dictionary = {}
 var stash_inventory: Inventory = null
 var mech_inventory: Inventory = null
 var materials: Dictionary = {}  # material id -> amount
@@ -131,6 +136,16 @@ func set_current_mecha(design: Dictionary, should_save := true) -> void:
 		_save()
 
 
+func get_current_grades() -> Dictionary:
+	return current_grades
+
+
+# Set before set_current_mecha (which saves). Standard and unknown grades are
+# left out.
+func set_current_grades(grades: Dictionary) -> void:
+	current_grades = _grades_from_dict(grades)
+
+
 # ---- Inventories ----
 
 func get_stash_inventory() -> Inventory:
@@ -159,12 +174,13 @@ func set_mech_inventory(inv: Inventory) -> void:
 # ---- Parts in the stash ----
 
 # Returns false when the stash has no room; nothing is added in that case.
-func add_part(part_type: String, part_id: String, should_save := true) -> bool:
+func add_part(part_type: String, part_id: String, should_save := true, grade := Grades.STANDARD) -> bool:
 	var stack := item_stack.new()
 	stack.kind = item_stack.ItemKind.PART
 	stack.item_category = "part"
 	stack.item_type = part_type
 	stack.item_id = part_id
+	stack.grade = Grades.of(grade)
 	if not get_stash_inventory().add_stack_to_first_available_slot(stack):
 		return false
 	if should_save:
@@ -248,7 +264,9 @@ func recycle_value(stack: item_stack) -> Dictionary:
 		return value
 	var composition := stack.get_composition()
 	for material_id in composition:
-		var amount := int(composition[material_id]) * stack.quantity
+		# A part's grade scales its yield (rounded down: Scrap can lose a
+		# single unit of something).
+		var amount := int(floor(int(composition[material_id]) * stack.quantity * Grades.recycle_mult(stack.grade)))
 		if amount > 0:
 			value[material_id] = amount
 	return value
@@ -289,8 +307,8 @@ func can_sell(stack: item_stack) -> bool:
 	return not in_expedition and sell_value(stack) > 0
 
 
-# What selling the whole stack pays: SELL_RATE of its value, in whole credits
-# (0 for things with no value).
+# What selling the whole stack pays: SELL_RATE of its value (price, scaled by
+# a part's grade), in whole credits (0 for things with no value).
 func sell_value(stack: item_stack) -> int:
 	if stack == null:
 		return 0
@@ -298,7 +316,7 @@ func sell_value(stack: item_stack) -> int:
 	var price = source.get("price") if source != null else null
 	if not (price is int or price is float) or price <= 0:
 		return 0
-	return int(floor(price * SELL_RATE * stack.quantity))
+	return int(floor(price * Grades.value_mult(stack.grade) * SELL_RATE * stack.quantity))
 
 
 # Removes the stack from inv and pays for it. Returns the credits earned
@@ -377,12 +395,13 @@ func lose_expedition(reason: String) -> Dictionary:
 		return {}
 	var report := {
 		"reason": reason,
-		"mecha": _describe_mecha(current_mecha),
+		"mecha": _describe_mecha(current_mecha, current_grades),
 		"cargo": _describe_inventory(mech_inventory),
 	}
 	in_expedition = false
 	pending_loss_report = report
 	mech_inventory = null  # the next core to be equipped sizes a fresh one
+	current_grades = {}  # the default mecha is all Standard
 	set_current_mecha(DEFAULT_MECHA.duplicate(), false)
 	_log("expedition lost (%s)" % reason)
 	_save()
@@ -431,13 +450,14 @@ func describe_cargo() -> Array:
 	return _describe_inventory(mech_inventory)
 
 
-# Part names of every equipped part, in DEFAULT_MECHA slot order.
-func _describe_mecha(design: Dictionary) -> Array:
+# Part names of every equipped part ("Refined X" for graded ones), in
+# DEFAULT_MECHA slot order.
+func _describe_mecha(design: Dictionary, grades := {}) -> Array:
 	var names := []
 	for slot in DEFAULT_MECHA:
 		var part_id = design.get(slot)
 		if typeof(part_id) == TYPE_STRING and part_id != "":
-			names.append(_part_display_name(_part_type_for_slot(slot), part_id))
+			names.append(Grades.label(grades.get(slot), _part_display_name(_part_type_for_slot(slot), part_id)))
 	return names
 
 
@@ -454,7 +474,7 @@ func _describe_inventory(inv: Inventory) -> Array:
 				continue
 			var item_name := "?"
 			if stack.kind == item_stack.ItemKind.PART:
-				item_name = _part_display_name(stack.item_type, stack.item_id)
+				item_name = Grades.label(stack.grade, _part_display_name(stack.item_type, stack.item_id))
 			elif stack.item != null and stack.item.get("display_name"):
 				item_name = stack.item.display_name
 			names.append(item_name if stack.quantity <= 1 else "%s x%d" % [item_name, stack.quantity])
@@ -483,6 +503,7 @@ func _part_display_name(part_type: String, part_id: String) -> String:
 func reset() -> void:
 	money = 0.0
 	current_mecha = DEFAULT_MECHA.duplicate()
+	current_grades = {}
 	stash_inventory = null
 	mech_inventory = null
 	materials = {}
@@ -497,6 +518,7 @@ func get_save_data() -> Dictionary:
 	return {
 		"money": money,
 		"current_mecha": current_mecha,
+		"current_grades": current_grades,
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
 		"materials": materials,
@@ -510,6 +532,7 @@ func set_save_data(data) -> void:
 		return
 	money = float(data.get("money", 0.0))
 	current_mecha = _with_default_slots(data.get("current_mecha"))
+	current_grades = _grades_from_dict(data.get("current_grades", {}))  # older saves: all Standard
 	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
 	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
 	materials = _materials_from_dict(data.get("materials", {}))
@@ -549,6 +572,18 @@ static func missing_parts(design) -> Array:
 # ["core", "head"] -> "CORE, HEAD", for messages about missing_parts.
 static func describe_missing_parts(missing: Array) -> String:
 	return ", ".join(missing.map(func(slot): return str(slot).to_upper()))
+
+
+# Design slot -> grade, keeping only real slots with a grade other than
+# Standard (Standard is what a missing entry means).
+func _grades_from_dict(data) -> Dictionary:
+	var result := {}
+	if typeof(data) != TYPE_DICTIONARY:
+		return result
+	for slot in data:
+		if DEFAULT_MECHA.has(str(slot)) and Grades.is_valid(data[slot]) and data[slot] != Grades.STANDARD:
+			result[str(slot)] = data[slot]
+	return result
 
 
 # Materials that were renamed or removed since the save are dropped.
@@ -600,6 +635,8 @@ func _inventory_to_dict(inv: Inventory) -> Dictionary:
 			if stack.kind == item_stack.ItemKind.PART:
 				entry["part_type"] = stack.item_type
 				entry["part_name"] = stack.item_id
+				if Grades.of(stack.grade) != Grades.STANDARD:
+					entry["grade"] = stack.grade
 			else:
 				var path := ""
 				if stack.item != null and stack.item.resource_path != "":
@@ -637,6 +674,7 @@ func _inventory_from_dict(data) -> Inventory:
 
 		if stack.kind == item_stack.ItemKind.PART:
 			stack.item_category = "part"
+			stack.grade = Grades.of(entry.get("grade"))  # older saves: Standard
 			stack.item_type = str(entry.get("part_type", ""))
 			stack.item_id = str(entry.get("part_name", ""))
 			# The old Profile loader wrote to non-existent fields, so parts

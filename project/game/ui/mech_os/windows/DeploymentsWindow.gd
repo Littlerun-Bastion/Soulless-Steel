@@ -184,7 +184,7 @@ func _refresh() -> void:
 	var cargo: Inventory = PlayerProgress.get_mech_inventory()
 	var cargo_weight := cargo.get_current_weight() if cargo != null else 0.0
 	var load_now := StatsPanel.sum_stat(build, "weight") + cargo_weight
-	var capacity := StatsPanel.sum_stat(build, "weight_capacity")
+	var capacity := StatsPanel.sum_stat(build, "weight_capacity", PlayerProgress.get_current_grades())
 	_weight_value.text = "%s / %s" % [StatsPanel._fmt(load_now), StatsPanel._fmt(capacity)]
 	_weight_value.theme_type_variation = &"LabelBodyBright" if load_now > capacity else &"LabelBody"
 	var items := cargo.get_stacks().size() if cargo != null else 0

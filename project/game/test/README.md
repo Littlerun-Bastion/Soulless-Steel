@@ -92,7 +92,8 @@ func _init() -> void:
 | ExpeditionHudTest | mission tracker, weight readout, exit marker, extraction debrief with its sale value, repair bill, credits and debt note |
 | ExpeditionRunTest *(slow)* | a real Expedition: spawn, the map's site name, shooting, wrecks and loot, extraction (with the repair bill charged), death and the written-off debrief, pause, quitting; Entities and Cysts placed, NPCs fighting them, carcasses |
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
-| HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout (debt shown inverted), leave guard, swapping parts, closing the game mid-refit |
+| GradesTest | part grades: the grade table, wreck weapon drops rolling grades at their odds, grade scaling value, recycling and repairs, grades scaling a real mecha's summed stats and walk speed (and the stats panel the same), saving and loading grades, old saves as Standard, names showing the grade, a lost run resetting them |
+| HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout (debt shown inverted), leave guard, swapping parts, a part keeping its grade on and off the mecha, closing the game mid-refit |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
 | MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, far NPCs thinking less often |
 | MapVehiclesTest | map vehicles: mechas shoving cars, fire engines holding them back, cars shunting each other and stopping at walls, vehicles blocking shots by chance, not blocking sight, collision only near mechas |

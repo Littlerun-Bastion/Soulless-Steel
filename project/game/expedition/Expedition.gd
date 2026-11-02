@@ -499,6 +499,7 @@ func _on_player_extracted(_mecha) -> void:
 	var kills := player_kills.size()
 	var details := _run_details(player.global_position)
 	details["damage"] = ExtractionSummary.collect_damage(player)
+	details["value"] = PlayerProgress.cargo_sell_value()
 	_remove_extracted_player()
 
 	var summary: ExtractionSummary = EXTRACTION_SUMMARY.instantiate()

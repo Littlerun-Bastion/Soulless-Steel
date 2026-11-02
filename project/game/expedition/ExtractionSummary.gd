@@ -46,7 +46,8 @@ func _ready() -> void:
 
 ## A real extraction. cargo: item names (PlayerProgress.describe_cargo).
 ## details (all optional): "exit" ("EXIT C5"), "time" (seconds),
-## "damage" (part -> state, from collect_damage).
+## "damage" (part -> state, from collect_damage), "value" (what selling the
+## cargo would pay, PlayerProgress.cargo_sell_value).
 func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -> void:
 	_fill_header(kills, details)
 	_fill_contract(mission)
@@ -55,6 +56,9 @@ func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -
 		_recovered_box.add_child(MechUI.label(&"LabelDim", "Nothing"))
 	for item in cargo:
 		_recovered_box.add_child(MechUI.label(&"LabelBody", str(item), true))
+	if int(details.get("value", 0)) > 0:
+		_recovered_box.add_child(HSeparator.new())
+		_recovered_box.add_child(_line("SALE VALUE", "%d CT" % int(details.value), true))
 	MechUI.clear(_damage_box)
 	var damage: Dictionary = details.get("damage", {})
 	for part in PARTS:

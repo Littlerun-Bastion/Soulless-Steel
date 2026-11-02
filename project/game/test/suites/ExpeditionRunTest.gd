@@ -200,7 +200,8 @@ func _test_field_rules() -> void:
 	var cargo: Inventory = _player().mech_inventory
 	var stack: item_stack = cargo.get_stacks()[0]
 	check(not PlayerProgress.can_recycle(stack), "nothing can be recycled mid-run")
-	check(not MechOS.recycling_enabled, "no Recycle in the menus")
+	check(not PlayerProgress.can_sell(stack), "or sold")
+	check(not MechOS.recycling_enabled, "no Recycle or Sell in the menus")
 
 
 func _test_extract() -> void:
@@ -215,6 +216,8 @@ func _test_extract() -> void:
 	check(summary != null and summary.visible, "the extraction summary shows")
 	if summary != null:
 		check(SALVAGE.display_name in summary.get_text(), "the summary lists the cargo")
+		check("SALE VALUE" in summary.get_text() and "%d CT" % PlayerProgress.cargo_sell_value() in summary.get_text(),
+				"and what it would sell for")
 		summary.continue_button.pressed.emit()
 		await wait_frames()
 		check(TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), "Continue returns to the main menu")

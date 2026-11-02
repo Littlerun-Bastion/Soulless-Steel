@@ -38,6 +38,23 @@ theme_type_variation = &"ScreenBar"
 layout_mode = 2
 theme_type_variation = &"BarRow"
 
+[node name="Credits" type="HBoxContainer" parent="HangarBar/Row"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"BarGroup"
+
+[node name="Heading" type="Label" parent="HangarBar/Row/Credits"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelMeta"
+text = "CREDITS"
+
+[node name="CreditsLabel" type="Label" parent="HangarBar/Row/Credits"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelBodyBright"
+text = "0 CT"
+
 [node name="Materials" type="HBoxContainer" parent="HangarBar/Row"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -60,7 +77,7 @@ text = "LOW 0   MID 0   HIGH 0"
 layout_mode = 2
 size_flags_vertical = 4
 theme_type_variation = &"LabelMeta"
-text = "MAT FOR THE FULL LIST · RIGHT-CLICK SALVAGE TO RECYCLE"
+text = "MAT FOR THE FULL LIST · RIGHT-CLICK TO RECYCLE OR SELL"
 
 [node name="WarningBox" type="PanelContainer" parent="HangarBar/Row"]
 visible = false

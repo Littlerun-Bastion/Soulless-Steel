@@ -103,6 +103,9 @@ func _test_new_profile() -> void:
 	check(FileAccess.file_exists(FileManager.profile_path), "a fresh profile was created")
 	check(FileManager.profile_loaded, "and counts as loaded")
 	check_eq(PlayerProgress.get_current_mecha(), PlayerProgress.DEFAULT_MECHA, "starting with the default mecha")
+	check_eq(PlayerProgress.get_money(), float(PlayerProgress.STARTING_MONEY), "and the starting credits")
+	check_eq(_read(FileManager.profile_path)["progress"]["money"], float(PlayerProgress.STARTING_MONEY),
+			"which are in the saved profile")
 
 
 # The backup is written first on every save; finding one means the last

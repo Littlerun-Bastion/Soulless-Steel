@@ -2,7 +2,8 @@ extends TestSuite
 
 # HangarTest loads the real Hangar (HangarScreen.tscn, built on Mech OS) and
 # checks it end to end: its three windows, recycling (with the Materials
-# window and the high-tech confirm), the leave guard, swapping parts, a
+# window and the high-tech confirm), selling (with the credits in the Hangar
+# bar), the leave guard, swapping parts, a
 # smaller core pushing cargo into the stash, and cleaning up Mech OS on exit.
 # The cases share one Hangar, opened at the start, in order.
 
@@ -24,6 +25,7 @@ func run_tests() -> void:
 	await case("Hangar windows", _test_windows)
 	await case("recycling in the Hangar", _test_recycling)
 	await case("high tech asks before recycling", func(): await _test_high_tech_confirm(PlayerProgress.get_stash_inventory()))
+	await case("selling in the Hangar", _test_selling)
 	await case("can't leave with a required part missing", func(): await _test_leave_guard(_hangar, _equipment))
 	await case("swapped-out part goes to the stash", func(): _test_swap_returns_to_stash(_hangar, _equipment))
 	await case("closing the game in the Hangar keeps the design", _test_close_game)
@@ -91,6 +93,48 @@ func _test_high_tech_confirm(stash: Inventory) -> void:
 	check(PlayerProgress.get_material_count("nt_engines") == 1, "high-tech materials added")
 	check(not menu.is_open(), "menu closes after recycling")
 	await wait_frames()
+
+
+# Through the real menu: a small sale goes through on one click, a big one
+# asks first, and the credits in the Hangar bar follow.
+func _test_selling() -> void:
+	var stash := PlayerProgress.get_stash_inventory()
+	var grid = MechOS.open_windows["stash"].inventory_grid
+	var menu: ContextMenu = MechOS.context_menu
+	var start := PlayerProgress.get_money()
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start), "the Hangar bar shows the credits")
+
+	var engine := item_stack.from_generic(load("res://database/items/salvage/damaged_nt_engine.tres"))
+	stash.add_stack_anywhere(engine)
+	var ctx := {"type": "item", "stack": engine, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled, "source": grid}
+	menu.open([_action("item", "sell")], ctx, Vector2(400, 400))
+	var button := _menu_button(menu)
+	check_eq(button.text, "Sell (110 ct)", "Sell says what it pays")
+	button.pressed.emit()
+	check(not stash.get_stacks().has(engine), "a small sale goes through on one click")
+	check_eq(PlayerProgress.get_money(), start + 110, "and is paid")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110), "the Hangar bar follows")
+	await wait_frames()
+
+	PlayerProgress.add_part("core", "Lancelot-Core", false)
+	var core: item_stack = stash.get_stacks().filter(func(s): return s.is_part() and s.item_id == "Lancelot-Core")[0]
+	ctx["stack"] = core
+	menu.open([_action("item", "sell")], ctx, Vector2(400, 400))
+	button = _menu_button(menu)
+	button.pressed.emit()
+	check(stash.get_stacks().has(core) and button.text.begins_with("Confirm"), "a big sale asks first")
+	button.pressed.emit()
+	check(not stash.get_stacks().has(core), "and sells on the second click")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110 + 1600), "the Hangar bar follows")
+	await wait_frames()
+
+
+# The menu's first button (ignoring ones from an earlier opening still being freed).
+func _menu_button(menu: ContextMenu) -> Button:
+	for child in menu._list.get_children():
+		if child is Button and not child.is_queued_for_deletion():
+			return child
+	return null
 
 
 func _action(target_type: String, id: String) -> Dictionary:

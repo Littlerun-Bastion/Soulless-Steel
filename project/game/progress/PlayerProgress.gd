@@ -1,7 +1,8 @@
 extends Node
 
 # PlayerProgress owns everything the player has earned or built up:
-#   - money          : credits, spent in the Store and earned from matches
+#   - money          : credits, spent in the Store, earned by selling in the
+#                      Hangar (and from Arena matches)
 #   - current mecha  : the design dictionary the player pilots
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
@@ -45,6 +46,12 @@ const DEFAULT_MECHA := {
 const STASH_SIZE := Vector2i(8, 20)
 # Slots a mecha can't deploy without; weapons are optional.
 const REQUIRED_SLOTS := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster"]
+# Credits a brand-new profile starts with.
+const STARTING_MONEY := 1000
+# Selling pays this share of an item's value (the Store sells at full value).
+const SELL_RATE := 0.5
+# Sales worth more than this (credits) ask before they go through.
+const SELL_CONFIRM_OVER := 1000
 
 var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
@@ -79,6 +86,12 @@ func spend_money(amount: float, should_save := true) -> bool:
 		return false
 	_set_money(money - amount, should_save)
 	return true
+
+
+# A profile created from nothing (no save on disk) starts with some credits.
+# Called by FileManager before it writes the new profile.
+func start_new_profile() -> void:
+	_set_money(STARTING_MONEY, false)
 
 
 func _set_money(value: float, should_save: bool) -> void:
@@ -251,6 +264,70 @@ func recycle_all(inv: Inventory) -> Dictionary:
 	if not gained.is_empty():
 		_save()
 	return gained
+
+
+# ---- Selling ----
+
+# Anything with a value can be sold — at home only, like recycling.
+func can_sell(stack: item_stack) -> bool:
+	return not in_expedition and sell_value(stack) > 0
+
+
+# What selling the whole stack pays: SELL_RATE of its value, in whole credits
+# (0 for things with no value).
+func sell_value(stack: item_stack) -> int:
+	if stack == null:
+		return 0
+	var source = stack.get_resource()
+	var price = source.get("price") if source != null else null
+	if not (price is int or price is float) or price <= 0:
+		return 0
+	return int(floor(price * SELL_RATE * stack.quantity))
+
+
+# Removes the stack from inv and pays for it. Returns the credits earned
+# (0 if it can't be sold).
+func sell_stack(inv: Inventory, stack: item_stack, should_save := true) -> int:
+	if inv == null or not can_sell(stack) or not inv.get_stacks().has(stack):
+		return 0
+	var earned := sell_value(stack)
+	inv.remove_item_stack(stack)
+	add_money(earned, should_save)
+	return earned
+
+
+# What "Sell all salvage" would pay for inv: everything but parts.
+func salvage_sell_value(inv: Inventory) -> int:
+	var total := 0
+	if inv == null:
+		return total
+	for stack in inv.get_stacks():
+		if not stack.is_part():
+			total += sell_value(stack)
+	return total
+
+
+# Sells every piece of salvage in inv. Parts stay, weapons included: they are
+# only sold one at a time. Saves once. Returns the credits earned.
+func sell_all_salvage(inv: Inventory) -> int:
+	var earned := 0
+	if inv == null:
+		return earned
+	for stack in inv.get_stacks():
+		if not stack.is_part():
+			earned += sell_stack(inv, stack, false)
+	if earned > 0:
+		_save()
+	return earned
+
+
+# What selling everything in the mecha's cargo would pay (the debrief shows it).
+func cargo_sell_value() -> int:
+	var total := 0
+	if mech_inventory != null:
+		for stack in mech_inventory.get_stacks():
+			total += sell_value(stack)
+	return total
 
 
 # ---- Expedition stakes ----

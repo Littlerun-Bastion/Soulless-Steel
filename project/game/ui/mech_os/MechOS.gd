@@ -414,6 +414,30 @@ func _register_context_actions() -> void:
 				_refresh_after_inventory_change(ctx),
 		})
 
+	# Selling (Hangar only, like recycling): items -> credits, at
+	# PlayerProgress.SELL_RATE of their value. Big sales ask first.
+	register_context_action("item", {
+		"id": "sell", "priority": 30, "group": "sell",
+		"label": func(ctx): return _sell_label(PlayerProgress.sell_value(ctx["stack"]), "Sell"),
+		"visible_if": func(ctx): return ctx.get("recycle_allowed", false),
+		"enabled_if": func(ctx): return "" if PlayerProgress.can_sell(ctx["stack"]) else "NO VALUE",
+		"confirm": func(ctx): return _sell_question(PlayerProgress.sell_value(ctx["stack"])),
+		"run": func(ctx):
+			PlayerProgress.sell_stack(ctx["inventory"], ctx["stack"])
+			_refresh_after_inventory_change(ctx),
+	})
+	for target_type in ["item", "inventory"]:
+		register_context_action(target_type, {
+			"id": "sell_all", "priority": 31, "group": "sell",
+			"label": func(ctx): return _sell_label(PlayerProgress.salvage_sell_value(ctx["inventory"]), "Sell all salvage"),
+			"visible_if": func(ctx): return ctx.get("recycle_allowed", false) and not ctx["inventory"].is_empty(),
+			"enabled_if": func(ctx): return "" if _has_sellable_salvage(ctx["inventory"]) else "NO SALVAGE",
+			"confirm": func(ctx): return _sell_question(PlayerProgress.salvage_sell_value(ctx["inventory"])),
+			"run": func(ctx):
+				PlayerProgress.sell_all_salvage(ctx["inventory"])
+				_refresh_after_inventory_change(ctx),
+		})
+
 
 # Salvage only: "Recycle all salvage" never takes weapons.
 func _has_recyclable(inv: Inventory) -> bool:
@@ -439,6 +463,23 @@ func _recycle_label(stack: item_stack) -> String:
 	if not PlayerProgress.can_recycle(stack):
 		return "Recycle"
 	return "Recycle (%s)" % Materials.describe(PlayerProgress.recycle_value(stack))
+
+
+# "Sell (120 ct)", or just "Sell" when it's worth nothing.
+func _sell_label(value: int, text: String) -> String:
+	return "%s (%d ct)" % [text, value] if value > 0 else text
+
+
+func _sell_question(value: int) -> String:
+	return "Confirm: sell for %d ct?" % value if value > PlayerProgress.SELL_CONFIRM_OVER else ""
+
+
+# Salvage only: "Sell all salvage" never takes parts or weapons.
+func _has_sellable_salvage(inv: Inventory) -> bool:
+	for stack in inv.get_stacks():
+		if not stack.is_part() and PlayerProgress.can_sell(stack):
+			return true
+	return false
 
 
 func _is_high_tech(stack: item_stack) -> bool:

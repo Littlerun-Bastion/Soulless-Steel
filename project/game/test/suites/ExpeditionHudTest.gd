@@ -145,6 +145,10 @@ func _test_summary() -> void:
 	check(not summary.visible, "hidden until shown")
 	summary.show_summary(["Damaged NT Engine"], 1, mission)
 	check(summary.visible and "Damaged NT Engine" in summary.get_text(), "shows the summary")
+	check(not "SALE VALUE" in summary.get_text(), "no sale value when none is given")
+	summary.show_summary(["Damaged NT Engine"], 1, mission, {"value": 110})
+	var valued := summary.get_text()
+	check("SALE VALUE" in valued and "110 CT" in valued, "what the cargo would sell for")
 	var continued := [false]
 	summary.continued.connect(func(): continued[0] = true)
 	summary.continue_button.pressed.emit()

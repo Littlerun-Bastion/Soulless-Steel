@@ -6,9 +6,9 @@ extends Control
 #   EQUIPMENT   the mecha's part slots (editable here; view-only mid-run)
 #   MECH CARGO  what the mecha carries into the next run (lost if it dies)
 #   STASH       everything kept at home (always safe)
-# Drag parts between the grids and the slots; right-click salvage in the cargo
-# or stash to recycle it into materials (totals in the bar along the bottom;
-# MAT on the sidebar opens the full list).
+# Drag parts between the grids and the slots; right-click things in the cargo
+# or stash to recycle them into materials or sell them for credits (both
+# totals in the bar along the bottom; MAT on the sidebar opens the full list).
 #
 # Inventories are the same objects PlayerProgress saves, and materials save as
 # they change. The design is handed to PlayerProgress on every equip, so any
@@ -29,6 +29,7 @@ const CARGO_SIZE := Vector2(440, 420)
 const STASH_HEIGHT := 900.0
 
 @onready var player_mecha: Mecha = $Mecha
+@onready var credits_label: Label = $HangarBar/Row/Credits/CreditsLabel
 @onready var materials_label: Label = $HangarBar/Row/Materials/MaterialsLabel
 @onready var warning_box: PanelContainer = $HangarBar/Row/WarningBox
 @onready var warning_label: Label = $HangarBar/Row/WarningBox/WarningLabel
@@ -55,6 +56,8 @@ func _ready() -> void:
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
+	PlayerProgress.money_changed.connect(_on_money_changed)
+	_on_money_changed(PlayerProgress.get_money())
 	leave_button.pressed.connect(_on_BackButton_pressed)
 	_update_leave_guard()
 
@@ -142,6 +145,10 @@ func _on_cargo_overflow(stacks: Array) -> void:
 		if not stash_inventory.add_stack_anywhere(stack):
 			push_warning("Hangar: no room in the stash for an item pushed out of the cargo; it was lost.")
 	MechOS.refresh_inventory_windows()
+
+
+func _on_money_changed(amount: float) -> void:
+	credits_label.text = "%d CT" % int(amount)
 
 
 # A short total per tech tier; the MAT window has the full list.

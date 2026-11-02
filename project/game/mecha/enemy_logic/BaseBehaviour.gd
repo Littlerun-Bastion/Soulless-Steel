@@ -12,6 +12,15 @@ extends RefCounted
 
 const POSITIONAL_ACCURACY = 400.0
 const THROTTLE_CHANGE_TIME = 1.0
+## How far round a lost target's last-known spot an NPC searches (px).
+const SEARCH_RADIUS = 600.0
+## The base tunables below are tuned for a 2000 px weapon range
+## (weapon.ai_engage_range's default). A balanced build scales them by its
+## own range (see _get_effective_distances).
+const BASE_WEAPON_RANGE = 2000.0
+## A target this much past max kite range still counts as in range for
+## entering combat.
+const COMBAT_ENTRY_SLACK = 1.1
 
 #Essential variables
 var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot", "extract"]
@@ -130,12 +139,41 @@ func alert_roam_to_defending_lock(enemy):
 	return priority
 
 # Shared by every lock/alert state that escalates into combat: a target we
-# can engage is either hard-locked or inside close-quarters range.
+# can engage is either hard-locked or within the build's kite range.
 func _combat_entry_priority(enemy):
 	if enemy.valid_target:
-		if enemy.get_locked_to() or enemy.global_position.distance_to(enemy.valid_target.global_position) < cqb_distance:
+		var eff = _get_effective_distances(enemy)
+		var distance = enemy.global_position.distance_to(enemy.get_target_position(enemy.valid_target))
+		if enemy.get_locked_to() or distance < eff.max_kite * COMBAT_ENTRY_SLACK:
 			return 6
 	return 0
+
+# Sight starts a fight: an NPC that spots a target it is willing to attack
+# (Enemy.check_for_targets, run by the do_* state) moves to engage it, as an
+# ambush would.
+func roam_to_ambush_lock(enemy):
+	return 3 if enemy.valid_target else 0
+
+func seek_to_ambush_lock(enemy):
+	return 3 if enemy.valid_target else 0
+
+func alert_roam_to_ambush_lock(enemy):
+	return 3 if enemy.valid_target else 0
+
+func loot_to_ambush_lock(enemy):
+	return 3 if enemy.valid_target else 0
+
+# Alert and not under fire, with a target in sight but out of range: close
+# in on it. Under fire it goes to defending_lock instead (priority 5).
+func alert_to_ambush_lock(enemy):
+	return 2 if enemy.valid_target else 0
+
+# The target was lost or forgotten before the fight started.
+func ambush_lock_to_alert_roam(enemy):
+	return 1 if not enemy.valid_target else 0
+
+func defending_lock_to_alert(enemy):
+	return 1 if not enemy.valid_target else 0
 
 func ambush_lock_to_in_combat(enemy):
 	return _combat_entry_priority(enemy)
@@ -273,6 +311,8 @@ func enter_in_combat(enemy):
 		enemy.current_target = enemy.get_locked_to()
 	else:
 		enemy.current_target = enemy.valid_target
+	if enemy.current_target and is_instance_valid(enemy.current_target):
+		AICombatLog.record_engage(enemy.global_position.distance_to(enemy.get_target_position(enemy.current_target)))
 
 
 func enter_loot(enemy):
@@ -382,6 +422,7 @@ func do_roam(dt, enemy):
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0.65, false)
 		_clear_arrival(enemy)
+		_check_targets(enemy)
 
 		# "Shift over": after staying long enough (courage-scaled threshold),
 		# roll a dt-scaled chance to decide to leave. Rate preserves the old
@@ -403,6 +444,7 @@ func do_seek(dt, enemy):
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
 		_clear_arrival(enemy)
+		_check_targets(enemy)
 
 func do_alert(dt, enemy):
 	if is_instance_valid(enemy):
@@ -411,7 +453,7 @@ func do_alert(dt, enemy):
 
 		shield_check(enemy)
 
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		if enemy.last_attack_position:
 			point_of_interest = enemy.last_attack_position
 			enemy.going_to_position = true
@@ -437,6 +479,7 @@ func do_alert_roam(dt, enemy):
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
 		_clear_arrival(enemy)
+		_check_targets(enemy)
 
 func do_ambush(dt, enemy):
 	if is_instance_valid(enemy):
@@ -452,24 +495,26 @@ func do_ambush(dt, enemy):
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0)
 		_clear_arrival(enemy)
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		shield_check(enemy)
 
 func do_ambush_lock(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		if not enemy.valid_target:
 			enemy.is_locking = false
 			return
 
 		else:
 			enemy.going_to_position = true
-			point_of_interest = enemy.valid_target.global_position
-			if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
+			point_of_interest = enemy.get_target_position(enemy.valid_target)
+			var eff = _get_effective_distances(enemy)
+			var distance = enemy.global_position.distance_to(point_of_interest)
+			if distance < eff.min_kite:
 				enemy.decrease_throttle(0.25, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif enemy.global_position.distance_to(enemy.valid_target.global_position) > max_kite_distance:
+			elif distance > eff.max_kite:
 				enemy.decrease_throttle(0.75, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
 			else:
@@ -481,18 +526,20 @@ func do_ambush_lock(dt, enemy):
 func do_defending_lock(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		if not enemy.valid_target:
 			enemy.is_locking = false
 			return
 		
 		else:
 			enemy.going_to_position = true
-			point_of_interest = enemy.valid_target.global_position
-			if enemy.global_position.distance_to(enemy.valid_target.global_position) < min_kite_distance:
+			point_of_interest = enemy.get_target_position(enemy.valid_target)
+			var eff = _get_effective_distances(enemy)
+			var distance = enemy.global_position.distance_to(point_of_interest)
+			if distance < eff.min_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif enemy.global_position.distance_to(enemy.valid_target.global_position) > max_kite_distance:
+			elif distance > eff.max_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65)
 			else:
@@ -517,6 +564,12 @@ func _get_effective_distances(enemy) -> Dictionary:
 		"cqb": cqb_distance,
 	}
 	match enemy.combat_style:
+		"balanced":
+			var k = enemy.preferred_combat_range / BASE_WEAPON_RANGE
+			eff.max_shoot = max_shooting_distance * k
+			eff.min_kite = min_kite_distance * k
+			eff.max_kite = max_kite_distance * k
+			eff.cqb = cqb_distance * k
 		"sniper":
 			eff.max_shoot = enemy.preferred_combat_range
 			eff.min_kite = enemy.preferred_combat_range * 0.75
@@ -632,6 +685,15 @@ func _effective_engage_distance(enemy) -> float:
 	return engage_distance * enemy.disabled_systems.sensors
 
 
+# Runs Enemy.check_for_targets with this behaviour's ranges: a target can be
+# picked up as far as the NPC can see (engage_distance, or its kite range if
+# that is longer, cut by sensor damage) and is kept up to its shooting range.
+func _check_targets(enemy) -> void:
+	var eff = _get_effective_distances(enemy)
+	var engage = maxf(_effective_engage_distance(enemy), eff.max_kite * enemy.disabled_systems.sensors)
+	enemy.check_for_targets(engage, maxf(max_shooting_distance, eff.max_shoot))
+
+
 func _should_flee(enemy) -> bool:
 	var state = _get_self_state(enemy)
 
@@ -685,7 +747,7 @@ func do_attack(dt, enemy):
 		# Mid-combat threat re-evaluation (interval-gated inside Enemy) — a
 		# flanker shooting us can displace the duel partner. A hard lock-on
 		# keeps priority over threat switching.
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		if not enemy.get_locked_to() and enemy.valid_target \
 				and enemy.valid_target != enemy.current_target:
 			enemy.current_target = enemy.valid_target
@@ -693,9 +755,17 @@ func do_attack(dt, enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt
-		# Lead the target so our weapons track its movement (see compute_lead_point).
-		if enemy.can_see_target(enemy.current_target):
-			enemy.ai_aim_point = enemy.compute_lead_point(enemy.current_target)
+		var target = enemy.current_target
+		# In sight: lead the target so our weapons track its movement (see
+		# compute_lead_point). Out of sight: face where it was last seen or
+		# heard, ready to fire blind or as it reappears.
+		var seen: bool = enemy.is_seeing(target)
+		var target_pos: Vector2 = enemy.get_target_position(target)
+		if seen and enemy.can_see_target(target):
+			enemy.ai_aim_point = enemy.compute_lead_point(target)
+		else:
+			enemy.ai_aim_point = target_pos
+		var distance: float = enemy.global_position.distance_to(target_pos)
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		if enemy.is_shielding:
@@ -703,44 +773,44 @@ func do_attack(dt, enemy):
 
 		# Shooting: check heat, ammo, distance, reaction time
 		var can_fire = reaction_timer >= reaction_speed \
-			and enemy.global_position.distance_to(enemy.current_target.global_position) < eff.max_shoot \
+			and distance < eff.max_shoot \
 			and not state.is_hot \
 			and not state.no_ammo
-		# Low ammo: conserve — only fire at close range
-		if state.low_ammo and enemy.global_position.distance_to(enemy.current_target.global_position) > eff.cqb:
+		# Low ammo: conserve — only fire at close range, and never blind
+		if state.low_ammo and (distance > eff.cqb or not seen):
 			can_fire = false
 		if can_fire:
-			enemy.shoot_weapons(enemy.current_target)
+			if seen:
+				enemy.shoot_weapons(target)
+			else:
+				enemy.blind_fire(target)
 		else:
 			reaction_timer += dt
 
 		_update_aggression(enemy, state)
 		enemy.going_to_position = true
 
-		if enemy.can_see_target(enemy.current_target):
-			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+		if seen:
+			point_of_interest = target_pos
 			aiming_at_enemy = true
 		else:
-			if aiming_at_enemy or not point_of_interest:
-				point_of_interest = enemy.get_random_point_on_radius(enemy.current_target.global_position, eff.cqb)
-				aiming_at_enemy = false
-				reaction_timer = 0.0
+			_search(enemy, target_pos)
 
 		# Don't sprint when hot — sprinting generates heat
 		var allow_sprint = not state.is_hot
 
 		if enemy.get_locked_to() and aiming_at_enemy and reaction_timer >= reaction_speed:
-			if enemy.global_position.distance_to(enemy.current_target.global_position) < eff.min_kite:
+			if distance < eff.min_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 1.0, 0.65, allow_sprint)
-			elif enemy.global_position.distance_to(enemy.current_target.global_position) > eff.max_kite:
+			elif distance > eff.max_kite:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
 			else:
 				enemy.decrease_throttle(0, 0.05)
 				enemy.navigate_to_target(dt, 1.0, 0.8)
 		elif aiming_at_enemy and reaction_timer >= reaction_speed:
-			if enemy.global_position.distance_to(enemy.current_target.global_position) > eff.cqb:
+			if distance > eff.cqb:
 				enemy.increase_throttle(1, 0.01)
 				enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
 			else:
@@ -758,10 +828,26 @@ func do_attack(dt, enemy):
 			enemy.going_to_position = false
 			point_of_interest = false
 
+
+# Out of sight: go to where the target was last seen or heard, then look
+# round that spot (within SEARCH_RADIUS) until it shows up or the NPC gives up
+# on it (Enemy.TARGET_MEMORY_TIME).
+func _search(enemy, last_known: Vector2) -> void:
+	if aiming_at_enemy:
+		# Just lost sight: half a reaction to re-aim at the last-known spot.
+		aiming_at_enemy = false
+		reaction_timer = minf(reaction_timer, reaction_speed * 0.5)
+		point_of_interest = last_known
+	elif not point_of_interest:
+		if enemy.global_position.distance_to(last_known) > SEARCH_RADIUS:
+			point_of_interest = last_known
+		else:
+			point_of_interest = enemy.get_random_point_on_radius(last_known, SEARCH_RADIUS)
+
 func do_defend(dt, enemy):
 	if is_instance_valid(enemy):
 		# Same mid-combat threat re-evaluation as do_attack.
-		enemy.check_for_targets(_effective_engage_distance(enemy), max_shooting_distance)
+		_check_targets(enemy)
 		if not enemy.get_locked_to() and enemy.valid_target \
 				and enemy.valid_target != enemy.current_target:
 			enemy.current_target = enemy.valid_target
@@ -769,45 +855,54 @@ func do_defend(dt, enemy):
 		if not is_instance_valid(enemy.current_target):
 			return
 		stance_time += dt
-		# Lead the target so our weapons track its movement (see compute_lead_point).
-		if enemy.can_see_target(enemy.current_target):
-			enemy.ai_aim_point = enemy.compute_lead_point(enemy.current_target)
+		var target = enemy.current_target
+		# Aim as in do_attack: lead it in sight, face its last-known spot out
+		# of sight. Defending holds range from where it is believed to be.
+		var seen: bool = enemy.is_seeing(target)
+		var target_pos: Vector2 = enemy.get_target_position(target)
+		if seen and enemy.can_see_target(target):
+			enemy.ai_aim_point = enemy.compute_lead_point(target)
+		else:
+			enemy.ai_aim_point = target_pos
+		var distance: float = enemy.global_position.distance_to(target_pos)
 		var eff = _get_effective_distances(enemy)
 		var state = _get_self_state(enemy)
 		shield_check(enemy)
 		enemy.going_to_position = true
 		_update_aggression(enemy, state)
-		if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+		point_of_interest = target_pos
 
 		# Overheating or out of ammo: retreat harder to create distance
 		var retreat_mult = 1.0
 		if state.is_overheating or state.no_ammo:
 			retreat_mult = 1.5
 
-		if enemy.global_position.distance_to(point_of_interest) < eff.max_kite * retreat_mult:
+		if distance < eff.max_kite * retreat_mult:
 			enemy.increase_throttle(1, 0.01)
 			enemy.navigate_to_target(dt, 1.0, 0.65)  # retreat when too close
 		else:
 			enemy.decrease_throttle(0, 0.05)
 			enemy.navigate_to_target(dt, 0.0, 0.8)  # approach to kite range
 
-		if enemy.can_see_target(enemy.current_target):
-			if is_instance_valid(enemy.current_target): point_of_interest = enemy.current_target.global_position
+		if seen:
 			aiming_at_enemy = true
-		else:
-			if aiming_at_enemy or not point_of_interest:
-				aiming_at_enemy = false
-				reaction_timer = 0.0
+		elif aiming_at_enemy:
+			# Just lost sight: half a reaction to re-aim at the last-known spot.
+			aiming_at_enemy = false
+			reaction_timer = minf(reaction_timer, reaction_speed * 0.5)
 
 		# Only shoot if not overheating and have ammo
 		var can_fire = not state.is_hot and not state.no_ammo
-		# Low ammo: conserve — only fire at close range
-		if state.low_ammo and enemy.global_position.distance_to(point_of_interest) > eff.cqb:
+		# Low ammo: conserve — only fire at close range, and never blind
+		if state.low_ammo and (distance > eff.cqb or not seen):
 			can_fire = false
 
-		if can_fire and enemy.global_position.distance_to(point_of_interest) < eff.max_kite:
+		if can_fire and distance < eff.max_kite:
 			if reaction_timer >= reaction_speed:
-				enemy.shoot_weapons(enemy.current_target)
+				if seen:
+					enemy.shoot_weapons(target)
+				else:
+					enemy.blind_fire(target)
 			else:
 				reaction_timer += dt
 
@@ -854,6 +949,7 @@ func do_flee(dt, enemy):
 
 func do_loot(dt, enemy):
 	if is_instance_valid(enemy):
+		_check_targets(enemy)
 		if target_container == null or not is_instance_valid(target_container):
 			target_container = null
 			return

@@ -17,6 +17,8 @@ var debug_settings = {
 	"disable_projectiles_light": false,
 	"use_debug_cam": false,
 	"draw_debug_lines": false,
+	"ai_overlay": false,  # per NPC: target, last-known position and destination
+	"ai_log": false,  # prints AICombatLog summaries (shot distances, stuck events)
 	"verbose_logging": true,  # gates diagnostic prints (ExpeditionDirector metrics, etc.)
 	"stage_scene": "demo",
 }

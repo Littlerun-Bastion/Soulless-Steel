@@ -124,6 +124,8 @@ func _physics_process(dt):
 		# If the behaviour re-sets it next tick and we still don't move, the
 		# timer keeps climbing toward Tier 2.
 		if stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
+			if going_to_position:
+				AICombatLog.record_stuck(self, "soft reset")
 			going_to_position = false
 		# Tier 2: hard relocate, off screen only.
 		elif stuck_timer >= STUCK_RELOCATE_TIME:
@@ -132,6 +134,7 @@ func _physics_process(dt):
 			else:
 				if arena and arena.has_method("get_safe_position"):
 					push_warning("[Enemy] " + mecha_name + " hard-relocated after being stuck for " + str(STUCK_RELOCATE_TIME) + "s")
+					AICombatLog.record_stuck(self, "teleported")
 					global_position = arena.get_safe_position()
 					if has_node("NavigationAgent2D"):
 						$NavigationAgent2D.target_position = global_position
@@ -149,10 +152,15 @@ func _physics_process(dt):
 		
 	if Debug.get_setting("enemy_state"):
 		var state = logic.get_current_state()
-		$Debug/StateLabel.text = str(state) if state else "?"
+		var text: String = str(state) if state else "?"
+		if Debug.get_setting("ai_overlay"):
+			text += _overlay_text()
+		$Debug/StateLabel.text = text
 		$Debug/StateLabel.visible = true
 	else:
 		$Debug/StateLabel.visible = false
+	if Debug.get_setting("ai_overlay") and thinking:
+		queue_redraw()
 	
 	under_fire_timer = max(under_fire_timer - dt, 0)
 
@@ -162,6 +170,8 @@ func _physics_process(dt):
 # direction in white, an active unstick direction in cyan and the rest of the
 # planned route in green.
 func _draw():
+	if Debug.get_setting("ai_overlay"):
+		_draw_ai_overlay()
 	if not Debug.get_setting("draw_debug_lines") or _steer_hard.is_empty():
 		return
 	var back := -global_rotation
@@ -181,6 +191,35 @@ func _draw():
 		for k in range(_route_index, _route.size()):
 			line.append(to_local(_route[k]))
 		draw_polyline(line, Color.GREEN, 4.0)
+
+
+# AI overlay (Debug setting "ai_overlay"): a line to the target, white while
+# in sight; once out of sight, a yellow line to where it was last seen or
+# heard, with a cross there; and a grey line to where the NPC is heading.
+func _draw_ai_overlay() -> void:
+	var t = current_target if current_target and is_instance_valid(current_target) else valid_target
+	if t and is_instance_valid(t):
+		if is_seeing(t):
+			draw_line(Vector2.ZERO, to_local(t.global_position), Color.WHITE, 3.0)
+		else:
+			var p := to_local(get_target_position(t))
+			draw_dashed_line(Vector2.ZERO, p, Color.YELLOW, 3.0, 40.0)
+			draw_line(p + Vector2(-60, -60), p + Vector2(60, 60), Color.YELLOW, 5.0)
+			draw_line(p + Vector2(-60, 60), p + Vector2(60, -60), Color.YELLOW, 5.0)
+	if going_to_position:
+		draw_line(Vector2.ZERO, to_local(NavAgent.target_position), Color(0.6, 0.6, 0.6, 0.6), 2.0)
+
+
+# Extra lines for the state label with the AI overlay on: the target, how
+# far away it is believed to be, and whether it is in sight.
+func _overlay_text() -> String:
+	var t = current_target if current_target and is_instance_valid(current_target) else valid_target
+	if not t or not is_instance_valid(t):
+		return ""
+	var who: String = t.mecha_name if "mecha_name" in t else str(t.name)
+	var metres := global_position.distance_to(get_target_position(t)) / 20.0
+	var sight := "seen" if is_seeing(t) else "lost %.0fs" % time_unseen(t)
+	return "\n%s %.0fm %s" % [who, metres, sight]
 
 
 func setup(arena_ref, design_data, _name):
@@ -211,14 +250,23 @@ func setup(arena_ref, design_data, _name):
 
 
 func _analyze_build():
+	# Preferred range: the average ai_engage_range of the direct-fire weapons.
+	# Lock-on and indirect-fire weapons only count when there is nothing else:
+	# they reach further than the guns the NPC actually fights with.
 	var ranges := []
+	var support_ranges := []
 	for weapon_key in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
 		var weapon = build[weapon_key]
 		if weapon == null:
 			continue
 		var r = weapon.get("ai_engage_range")
 		if r != null and r > 0:
-			ranges.append(r)
+			if weapon.requires_lock or weapon.get("is_indirect_fire"):
+				support_ranges.append(r)
+			else:
+				ranges.append(r)
+	if ranges.is_empty():
+		ranges = support_ranges
 
 	if ranges.size() > 0:
 		var total := 0.0
@@ -255,6 +303,10 @@ func _analyze_build():
 		ai_projectile_speed = total / speeds.size()
 	ai_lead_accuracy = _compute_lead_accuracy()
 
+	_weapon_ap.clear()
+	for weapon_key in WEAPON_SLOTS:
+		_weapon_ap[weapon_key] = _read_armor_pen(build[weapon_key])
+
 
 # Reads a projectile scene's muzzle_speed without side effects: instantiate()
 # builds the node but does not run _ready/_physics_process, so we can read the
@@ -272,6 +324,20 @@ func _read_muzzle_speed(weapon) -> float:
 	if ms == null:
 		return 0.0
 	return float(ms)
+
+
+# The armour pen of a weapon's round, read the same way as its muzzle speed.
+# 0 for weapons that never fire blind: melee, lock-on and indirect fire.
+func _read_armor_pen(weapon) -> int:
+	if weapon == null or weapon.is_melee or weapon.requires_lock or weapon.get("is_indirect_fire"):
+		return 0
+	var scene = weapon.get("projectile")
+	if scene == null or not (scene is PackedScene):
+		return 0
+	var inst = scene.instantiate()
+	var ap = inst.get("armor_pen")
+	inst.free()
+	return 0 if ap == null else int(ap)
 
 
 # How well this NPC leads a moving target. Sharpshooter styles and disciplined
@@ -460,31 +526,36 @@ func update_senses(dt):
 			to_remove.append(sound)
 	for sound in to_remove:
 		senses.sounds.erase(sound)
-	
-	#Tick down unseen bodies
+
+	# Age every remembered body. A body that is gone or dead, or that hasn't
+	# been seen or heard for BODY_LIFETIME s, is forgotten.
 	to_remove = []
 	for data in senses.bodies:
-		if data.is_seen:
-			data.is_seen = false
-			data.lifetime = BODY_LIFETIME
-		else:
-			data.lifetime -= dt
-			if data.lifetime <= 0:
-				to_remove.append(data)
+		var body = data.body
+		if not is_instance_valid(body) or ("is_dead" in body and body.is_dead):
+			to_remove.append(data)
+			continue
+		data.is_seen = false
+		data.unseen_time += dt
+		data.lifetime -= dt
+		if data.lifetime <= 0:
+			to_remove.append(data)
 	for data in to_remove:
 		senses.bodies.erase(data)
-	
-	#Check for nearby bodies
+
+	# Look for mechas and Entities in sight.
 	var own_sight_mult = MapSenses.sight_mult(self)
-	for target in arena.get_mechas():
-		if target == self:
+	for target in arena.get_mechas() + _get_entities():
+		if target == self or not is_instance_valid(target):
+			continue
+		if "is_dead" in target and target.is_dead:
 			continue
 		var distance = position.distance_to(target.position)
 		var thermal_range_mult = 1.0
 		if target.has_method("get_thermal_signature"):
 			# Cold targets detected at 60% range, hot targets at 140%
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
-		
+
 		# Foliage over the target, or over us, shortens the range; building
 		# walls block sight completely (see MapSenses). Cheapest checks first:
 		# the foliage and wall checks only run for targets in range.
@@ -492,24 +563,76 @@ func update_senses(dt):
 		if distance <= effective_engage_distance \
 				and distance <= effective_engage_distance * MapSenses.detection_mult(target) \
 				and not MapSenses.walls_between(get_world_2d(), global_position, target.global_position):
-			var found = false
-			for data in senses.bodies:
-				if data.body == target:
-					data.is_seen = true
-					data.last_position = target.global_position
-					found = true
-					break
-			if not found:
-				senses.bodies.append({
-					"body": target,
-					"last_position": target.global_position,
-					"is_seen": true,
-					"lifetime": BODY_LIFETIME,
-				})
-				# First-time sight: seed personality-based hostility so factions
-				# clash naturally instead of waiting to be provoked.
-				_seed_relationship(target)
-	
+			var data := _remember(target, target.global_position)
+			data.is_seen = true
+			data.velocity = target.velocity if "velocity" in target else Vector2.ZERO
+
+
+# Records that `body` was at `pos` just now (seen, or given away by its
+# shots), and returns its memory entry. A first-time mecha gets its
+# personality-based hostility seeded, so factions clash without waiting to
+# be provoked.
+func _remember(body, pos: Vector2) -> Dictionary:
+	for data in senses.bodies:
+		if data.body == body:
+			data.last_position = pos
+			data.unseen_time = 0.0
+			data.lifetime = BODY_LIFETIME
+			return data
+	var data := {
+		"body": body,
+		"last_position": pos,
+		"velocity": Vector2.ZERO,
+		"is_seen": false,
+		"unseen_time": 0.0,
+		"lifetime": BODY_LIFETIME,
+	}
+	senses.bodies.append(data)
+	if not body.is_in_group("entity"):
+		_seed_relationship(body)
+	return data
+
+
+# What this NPC knows about `target`: its senses entry, or {} if it has
+# never seen it or has forgotten it. Fields: last_position (where it was
+# last seen or heard), is_seen (in sight at the last senses update),
+# unseen_time (seconds since last_position was fresh) and velocity (as last
+# seen).
+func perceived(target) -> Dictionary:
+	for data in senses.bodies:
+		if data.body == target:
+			return data
+	return {}
+
+
+# Whether `target` was in sight at the last senses update. A scripted NPC
+# has no senses and is treated as seeing everything.
+func is_seeing(target) -> bool:
+	if scripted:
+		return is_instance_valid(target)
+	var data := perceived(target)
+	return not data.is_empty() and data.is_seen
+
+
+# Where this NPC believes `target` is: its real position while in sight,
+# otherwise where it was last seen or heard.
+func get_target_position(target) -> Vector2:
+	if not is_instance_valid(target):
+		return global_position
+	var data := perceived(target)
+	if data.is_empty() or data.is_seen or scripted:
+		return target.global_position
+	return data.last_position
+
+
+# Seconds since this NPC last saw or heard `target` (INF if it doesn't know
+# it).
+func time_unseen(target) -> float:
+	if scripted:
+		return 0.0
+	var data := perceived(target)
+	return INF if data.is_empty() else data.unseen_time
+
 
 func get_most_recent_loud_noise():
 	return get_recent_noise("volume_type", "loud")
@@ -538,6 +661,9 @@ func get_recent_noise(var_type, var_value):
 const TARGET_SWITCH_MARGIN := 0.75       # challenger must beat current by this
 const TARGET_SWITCH_COOLDOWN_MS := 1500  # min time between voluntary switches
 const TARGET_REEVAL_INTERVAL_MS := 300   # rescan rate while already engaged
+## Seconds an NPC keeps a target it can neither see nor hear before it gives
+## up on it.
+const TARGET_MEMORY_TIME := 12.0
 var _last_target_eval_ms := -100000
 var _last_target_switch_ms := -100000
 
@@ -553,10 +679,15 @@ func _threat_score(target, distance, eng_distance) -> float:
 	return score
 
 
+# Picks the target to fight from what this NPC perceives (see update_senses):
+# a new target must be in sight, or be shooting at it right now. The current
+# target is kept while it is remembered, even out of sight, until it hasn't
+# been seen or heard for TARGET_MEMORY_TIME s, dies, or is further than
+# max_shooting_distance from where it was last known to be.
 func check_for_targets(eng_distance, max_shooting_distance):
-	#Drop the current target if gone, dead, or out of range
-	if valid_target and is_instance_valid(valid_target):
-		if valid_target.is_dead or position.distance_to(valid_target.position) > max_shooting_distance:
+	if valid_target and is_instance_valid(valid_target) and not valid_target.is_dead:
+		if time_unseen(valid_target) > TARGET_MEMORY_TIME \
+				or position.distance_to(get_target_position(valid_target)) > max_shooting_distance:
 			valid_target = false
 	else:
 		valid_target = false
@@ -572,10 +703,8 @@ func check_for_targets(eng_distance, max_shooting_distance):
 	#Find the highest-threat permissible target (mechas and Entities)
 	var best = null
 	var best_score := -1.0
-	for target in arena.get_mechas() + _get_entities():
-		if target == self or not is_instance_valid(target) or target.is_dead:
-			continue
-		var distance = position.distance_to(target.position)
+	for target in _candidate_targets():
+		var distance = position.distance_to(get_target_position(target))
 		if distance > eng_distance:
 			continue
 		# Entities are monsters: always fair game, no flags or grudges.
@@ -595,11 +724,30 @@ func check_for_targets(eng_distance, max_shooting_distance):
 	elif best != valid_target:
 		# Switch only on a clear threat margin, rate-limited so two
 		# attackers can't ping-pong our attention every rescan.
-		var cur_score = _threat_score(valid_target, position.distance_to(valid_target.position), eng_distance)
+		var cur_score = _threat_score(valid_target, position.distance_to(get_target_position(valid_target)), eng_distance)
 		if best_score >= cur_score + TARGET_SWITCH_MARGIN \
 				and now - _last_target_switch_ms >= TARGET_SWITCH_COOLDOWN_MS:
 			valid_target = best
 			_last_target_switch_ms = now
+
+
+# Mechas and Entities this NPC could pick as a new target: those in sight,
+# and whoever is shooting at it right now. A scripted NPC has no senses and
+# may pick anything.
+func _candidate_targets() -> Array:
+	var found := []
+	if scripted:
+		for target in arena.get_mechas() + _get_entities():
+			if target != self and is_instance_valid(target) and not target.is_dead:
+				found.append(target)
+		return found
+	for data in senses.bodies:
+		if data.is_seen:
+			found.append(data.body)
+	if under_fire_timer > 0 and is_instance_valid(most_recent_attacker) \
+			and not most_recent_attacker.is_dead and not found.has(most_recent_attacker):
+		found.append(most_recent_attacker)
+	return found
 
 
 func _get_entities() -> Array:
@@ -616,6 +764,49 @@ func on_attacked_by(attacker) -> void:
 	under_fire_timer = 0.5
 	most_recent_attacker = attacker
 	last_attack_position = attacker.global_position
+	_remember(attacker, attacker.global_position)
+
+
+# Blind fire: an NPC that lost sight of its target keeps firing at where it
+# last saw or heard it, through walls, for BLIND_FIRE_TIME s. Each weapon
+# fires only if its round can get through the walls on the way (a round
+# loses 1 AP per wall and stops when it has none left, see
+# MapSenses.trace_shot), and only once the NPC faces that point.
+const BLIND_FIRE_TIME := 4.0
+const BLIND_FIRE_CONE := deg_to_rad(12.0)
+const WEAPON_SLOTS := ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]
+
+# Weapon slot -> the armour pen of its round; 0 for weapons that never fire
+# blind (melee, lock-on and indirect fire).
+var _weapon_ap := {}
+
+
+# Fires at where `target` was last seen or heard. Returns whether any weapon
+# fired.
+func blind_fire(target) -> bool:
+	var data := perceived(target)
+	if data.is_empty() or data.is_seen or data.unseen_time > BLIND_FIRE_TIME:
+		return false
+	var point: Vector2 = data.last_position
+	var to_point := point - global_position
+	if absf(Vector2.UP.rotated(global_rotation).angle_to(to_point)) > BLIND_FIRE_CONE:
+		return false
+	var walls := MapSenses.wall_hits(get_world_2d(), global_position, point).size()
+	var fired := false
+	for slot in WEAPON_SLOTS:
+		if _weapon_ap.get(slot, 0) <= walls:
+			continue
+		var node = get_weapon_part(slot)
+		if not node:
+			continue
+		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
+			node.reload()
+		elif node.can_shoot():
+			shoot(slot)
+			fired = true
+	if fired:
+		AICombatLog.record_shot(self, to_point.length(), true)
+	return fired
 
 
 func shoot_weapons(target):
@@ -633,6 +824,7 @@ func try_to_shoot(weapon_name, target):
 		elif node.can_shoot():
 			if can_see_target(target):
 				shoot(weapon_name)
+				AICombatLog.record_shot(self, global_position.distance_to(target.global_position), false)
 
 
 func can_see_target(target):
@@ -1107,7 +1299,7 @@ func _add_buildings() -> void:
 			skip[goal] = true
 	for t in [valid_target, current_target]:
 		if t and is_instance_valid(t):
-			var b := field.building_at(t.global_position)
+			var b := field.building_at(get_target_position(t))
 			if b >= 0:
 				skip[b] = true
 	var grow := _steer_self_radius + STEER_MARGIN
@@ -1423,6 +1615,13 @@ func _on_blocked() -> void:
 		if pushed >= 0:
 			_jammed[pushed] = Time.get_ticks_msec() + int(JAM_TIME * 1000.0)
 			car_jam = _vehicle_field.is_car(pushed)
+	if AICombatLog.enabled():
+		var what := "nothing pushed"
+		if car_jam:
+			what = "car"
+		elif is_instance_valid(_vehicle_field) and _vehicle_field.last_pushed_by(self) >= 0:
+			what = "truck"
+		AICombatLog.record_stuck(self, "blocked (%s, stage %d)" % [what, _unstick_stage])
 	# Rebuild now so a newly jammed vehicle counts straight away, and route
 	# the trip whatever its length.
 	_steer_built_frame = -100000
@@ -1628,7 +1827,7 @@ func _cruise_sprint(goal: Vector2, foe) -> bool:
 func _update_dashes(dt: float, foe, direction: float) -> void:
 	if not foe or combat_style != "brawler" or direction != 0.0:
 		return
-	var gap := global_position.distance_to(foe.global_position)
+	var gap := global_position.distance_to(get_target_position(foe))
 	if gap > preferred_combat_range * 1.5 and randf() < GAP_CLOSE_RATE * dt:
 		try_dash(chosen_dir)
 
@@ -1720,6 +1919,11 @@ func _on_nearby_projectile_area_entered(area):
 		under_fire_timer = 0.5
 		most_recent_attacker = attacker
 		last_attack_position = attacker.global_position
+		# The shot gives away where it came from.
+		if not scripted:
+			_remember(attacker, attacker.global_position)
+		if attacker.has_method("is_player") and attacker.is_player():
+			AICombatLog.record_player_shot(global_position.distance_to(attacker.global_position))
 		_try_dodge(attacker.global_position)
 
 		# Build hostility — 4 shots = max hostility

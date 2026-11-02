@@ -11,6 +11,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_nac44")
 part_name = "OM1810"
+ai_engage_range = 1800
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "copper": 1, "silicon": 1})
 manufacturer_name = "Orontes Constructions"

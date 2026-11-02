@@ -151,7 +151,7 @@ func set_site(site_name: String, bounds: Rect2) -> void:
 	top_strip.set_site(site_name, bounds)
 
 
-func set_pause(value):
+func set_pause(_value):
 	#Cursor.visible = not value
 	pass
 

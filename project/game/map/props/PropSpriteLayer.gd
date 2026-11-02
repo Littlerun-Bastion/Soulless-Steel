@@ -203,9 +203,9 @@ func _rebuild() -> void:
 		var picks := _pick_variants(s, tex_list.size(), h)
 		for k in picks.size():
 			var rot: float = s.rotation if k == 0 else s.rotation + float(absi(hash([h, k])) % 6283) / 1000.0
-			var scale := 1.0 if k == 0 else 0.8 + float(absi(hash([h, k, 1])) % 250) / 1000.0
+			var size_mult := 1.0 if k == 0 else 0.8 + float(absi(hash([h, k, 1])) % 250) / 1000.0
 			groups.get_or_add(s.kind, {}).get_or_add(picks[k], {}).get_or_add(chunk, []).append(
-				[s.position, rot, s.size.x * scale, tone, radius, si, rot - s.rotation])
+				[s.position, rot, s.size.x * size_mult, tone, radius, si, rot - s.rotation])
 	for kind in kinds:
 		if not groups.has(kind):
 			continue

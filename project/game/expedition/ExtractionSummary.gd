@@ -202,7 +202,7 @@ func _fill_header(kills: int, details: Dictionary) -> void:
 		parts.append(str(details.exit))
 	if details.has("time"):
 		var total := int(details.time)
-		parts.append("T+%02d:%02d" % [total / 60, total % 60])
+		parts.append("T+%02d:%02d" % [floori(total / 60.0), total % 60])
 	parts.append("%d KILL%s" % [kills, "" if kills == 1 else "S"])
 	_details_label.text = " · ".join(parts)
 

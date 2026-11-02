@@ -3,7 +3,7 @@ extends TestSuite
 # FabricatorTest: blueprints and the Fabricator (Fabricator, FAB app).
 # Recycling copies of a part teaches its blueprint (one Refined copy is
 # enough; salvage teaches nothing); a build costs twice the part's
-# composition plus a quarter of its price; the Fabricator refuses when it
+# composition plus half its price; the Fabricator refuses when it
 # isn't built, without a blueprint, for high tech below Mk II, without the
 # materials, credits or stash room, and then takes nothing; a build puts a Standard part in the stash and
 # pays for it; blueprints save; and the FAB window lists, explains and builds.
@@ -89,8 +89,13 @@ func _test_costs() -> void:
 	check(not cost.is_empty(), "a part costs materials")
 	for material_id in part.composition:
 		check_eq(cost[material_id], part.composition[material_id] * 2, "twice its %s" % material_id)
-	check_eq(Fabricator.credit_cost(CHEAP[0], CHEAP[1]), int(ceil(part.price * 0.25)), "plus a quarter of its price in credits")
+	check_eq(Fabricator.credit_cost(CHEAP[0], CHEAP[1]), int(ceil(part.price * 0.5)), "plus half its price in credits")
 	check(Fabricator.credit_cost(CHEAP[0], CHEAP[1]) < part.price, "far less than the Store")
+	# No money loop: every part costs at least what it sells for, materials aside.
+	for part_type in PlayerProgress.PART_TYPES:
+		for part_id in PartManager.get_parts(part_type):
+			check(Fabricator.credit_cost(part_type, part_id) >= PlayerProgress.sell_value(_part([part_type, part_id])),
+					"building %s costs at least what it sells for" % part_id)
 	check(Fabricator.material_cost("core", "no_such_core").is_empty(), "nothing for parts that don't exist")
 
 

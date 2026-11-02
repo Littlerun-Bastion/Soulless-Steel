@@ -89,8 +89,11 @@ func show_item(stack: item_stack) -> void:
 		lines.append("Tech: %s" % str(item_data.TechTier.keys()[tier_val]).capitalize())
 	var composition_val = res.get("composition")
 	if composition_val is Dictionary and not composition_val.is_empty():
-		# A part's grade scales what it gives (one part per stack).
-		var yields: Dictionary = PlayerProgress.recycle_value(stack) if graded else composition_val
+		# What one of them really gives: a part's grade and the Recycler
+		# (Facilities) scale it.
+		var one: item_stack = stack.duplicate()
+		one.quantity = 1
+		var yields := PlayerProgress.recycle_value(one)
 		lines.append("Recycles into: %s" % (Materials.describe(yields) if not yields.is_empty() else "nothing"))
 
 	if lines.is_empty():

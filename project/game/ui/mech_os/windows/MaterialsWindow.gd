@@ -76,25 +76,25 @@ func _make_group(tier) -> VBoxContainer:
 	_totals[tier] = total
 	group.add_child(heading)
 	group.add_child(HSeparator.new())
-	for material in Materials.of_tier(tier):
-		group.add_child(_make_row(material))
+	for mat in Materials.of_tier(tier):
+		group.add_child(_make_row(mat))
 	return group
 
 
-func _make_row(material: MaterialData) -> Control:
+func _make_row(mat: MaterialData) -> Control:
 	var row := MechUI.hbox()
 	row.mouse_filter = Control.MOUSE_FILTER_STOP
-	row.mouse_entered.connect(_show_detail.bind(material))
+	row.mouse_entered.connect(_show_detail.bind(mat))
 	row.mouse_exited.connect(_show_detail.bind(null))
-	var name_label := MechUI.label(&"LabelBody", material.display_name)
+	var name_label := MechUI.label(&"LabelBody", mat.display_name)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var count := MechUI.label(&"LabelBody")
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(name_label)
 	row.add_child(count)
-	_names[material.id] = name_label
-	_counts[material.id] = count
+	_names[mat.id] = name_label
+	_counts[mat.id] = count
 	return row
 
 
@@ -103,29 +103,29 @@ func _make_row(material: MaterialData) -> Control:
 func _on_materials_changed(materials: Dictionary) -> void:
 	for tier in Materials.TIERS:
 		var total := 0
-		for material in Materials.of_tier(tier):
-			var amount := int(materials.get(material.id, 0))
+		for mat in Materials.of_tier(tier):
+			var amount := int(materials.get(mat.id, 0))
 			total += amount
-			var count: Label = _counts[material.id]
+			var count: Label = _counts[mat.id]
 			var has_any := amount > 0
 			# No count to show and nothing gives it: say so instead of "0".
-			var no_source := not has_any and get_sources(material.id).is_empty()
+			var no_source := not has_any and get_sources(mat.id).is_empty()
 			count.text = "NO KNOWN SOURCE" if no_source else str(amount)
 			count.theme_type_variation = &"LabelMeta" if no_source else (&"LabelBody" if has_any else &"LabelDim")
-			_names[material.id].theme_type_variation = &"LabelBody" if has_any else &"LabelDim"
+			_names[mat.id].theme_type_variation = &"LabelBody" if has_any else &"LabelDim"
 		_totals[tier].text = str(total)
 
 
-func _show_detail(material: MaterialData) -> void:
-	if material == null:
+func _show_detail(mat: MaterialData) -> void:
+	if mat == null:
 		_detail_title.text = "DETAIL"
 		detail_label.text = DETAIL_HINT
 		_detail_sources.text = ""
 		return
-	_detail_title.text = "%s · %s TECH" % [material.display_name.to_upper(),
-			Materials.tier_name(material.tech_tier).to_upper()]
-	detail_label.text = material.description
-	var sources := get_sources(material.id)
+	_detail_title.text = "%s · %s TECH" % [mat.display_name.to_upper(),
+			Materials.tier_name(mat.tech_tier).to_upper()]
+	detail_label.text = mat.description
+	var sources := get_sources(mat.id)
 	_detail_sources.text = "SOURCES: " + (", ".join(sources) if not sources.is_empty() else "none known")
 
 

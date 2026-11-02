@@ -6,11 +6,11 @@ extends RefCounted
 ## per-node overrides.
 
 
-static func label(variation: StringName, text: String = "", wrap := false) -> Label:
+static func label(variation: StringName, text: String = "", wrapped := false) -> Label:
 	var node := Label.new()
 	node.theme_type_variation = variation
 	node.text = text
-	if wrap:
+	if wrapped:
 		node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return node
 

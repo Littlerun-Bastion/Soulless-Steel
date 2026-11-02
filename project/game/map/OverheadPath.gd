@@ -249,8 +249,8 @@ static func _offset_curve(pts: PackedVector2Array, d: float) -> PackedVector2Arr
 		if dir == Vector2.ZERO:
 			dir = next_dir if next_dir != Vector2.ZERO else prev_dir
 		var normal := Vector2(-dir.y, dir.x)
-		var scale := 1.0
+		var stretch := 1.0
 		if prev_dir != Vector2.ZERO and next_dir != Vector2.ZERO:
-			scale = 1.0 / maxf(normal.dot(Vector2(-next_dir.y, next_dir.x)), 0.5)
-		out.append(pts[i] + normal * d * scale)
+			stretch = 1.0 / maxf(normal.dot(Vector2(-next_dir.y, next_dir.x)), 0.5)
+		out.append(pts[i] + normal * d * stretch)
 	return out

@@ -59,5 +59,5 @@ func _draw() -> void:
 		draw_rect(Rect2(x, 0, 2, h + MARKER_OVERHANG * 2), _token(&"g6"))
 
 
-func _token(name: StringName) -> Color:
-	return get_theme_color(name, &"MechTokens")
+func _token(token: StringName) -> Color:
+	return get_theme_color(token, &"MechTokens")

@@ -2,7 +2,8 @@ extends TestSuite
 
 # FacilitiesTest: the Hangar facilities (Facilities, FAC app). Where they
 # start; what an upgrade costs and what stops it (credits, materials, the top
-# level), paying nothing when refused; the Recycler raising yields, the
+# level), paying nothing when refused; the Recycler raising yields (and the
+# tooltip saying so), the
 # Workshop cutting a real mecha's repair bill, the Stash growing with every
 # item left in place, the Fabricator's grade odds; levels saving; and the
 # FAC window showing and buying upgrades.
@@ -72,6 +73,13 @@ func _test_recycler() -> void:
 	PlayerProgress.set_facility_level(Facilities.RECYCLER, 2)
 	check_eq(PlayerProgress.recycle_value(item_stack.from_generic(PLATE)).get("steel", 0), 4,
 			"Mk II rounds 3.75 up, so one plate gains too")
+
+	# The tooltip says what one really gives, Recycler included.
+	var tooltip: ItemTooltip = load("res://game/mecha/ItemTooltip.tscn").instantiate()
+	add_child(tooltip)
+	tooltip.show_item(plates)
+	check("Recycles into: 4 Steel" in tooltip.stats_label.text, "the tooltip shows the Recycler's yield, per item (%s)" % tooltip.stats_label.text)
+	tooltip.queue_free()
 
 
 func _test_workshop() -> void:

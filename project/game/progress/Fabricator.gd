@@ -7,14 +7,16 @@ extends RefCounted
 #
 # A part costs MATERIAL_FACTOR times what it recycles into (its composition),
 # plus CREDIT_RATE of its price in credits. So recycling and rebuilding loses
-# half the materials, and building costs far fewer credits than the Store.
+# half the materials, and building costs half what the Store charges. Half is
+# also what selling pays, so building parts to sell them only breaks even
+# (before materials) unless they come out Refined or better.
 #
 # The Fabricator is a Hangar facility (Facilities): it has to be built first
 # (Mk I), high-tech parts need Mk II, and at Mk II and III some builds come
 # out Refined or Prototype.
 
 const MATERIAL_FACTOR := 2
-const CREDIT_RATE := 0.25
+const CREDIT_RATE := 0.5
 # The level a high-tech blueprint needs.
 const HIGH_TECH_LEVEL := 2
 

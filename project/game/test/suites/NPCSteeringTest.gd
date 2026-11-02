@@ -356,8 +356,8 @@ func _test_route() -> void:
 		var y := k * 500.0
 		row.append([Vector2(1900, y), Vector2(2650, y), Vector2(2650, y + 480), Vector2(1900, y + 480)])
 	await _setup([], row)
-	var ready := await wait_until(func(): return _buildings.routes_ready(), 5.0)
-	if not check(ready, "the route grid builds"):
+	var routed := await wait_until(func(): return _buildings.routes_ready(), 5.0)
+	if not check(routed, "the route grid builds"):
 		return
 	check(_buildings.route_cost_at(Vector2(2100, 100)) > 3.0, "a building square costs more")
 	check(is_equal_approx(_buildings.route_cost_at(Vector2(0, 0)), 1.0), "open ground costs 1")
@@ -535,8 +535,8 @@ func _test_route_walls() -> void:
 	_arena.add_child(wall)
 	_buildings._route_grid = null
 	_buildings._start_route_build()
-	var ready := await wait_until(func(): return _buildings.routes_ready(), 5.0)
-	if not check(ready, "the route grid builds"):
+	var routed := await wait_until(func(): return _buildings.routes_ready(), 5.0)
+	if not check(routed, "the route grid builds"):
 		return
 	var route: PackedVector2Array = _buildings.find_route(Vector2.ZERO, Vector2(4000, 0))
 	var round_north := false

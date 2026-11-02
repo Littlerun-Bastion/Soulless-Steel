@@ -737,7 +737,7 @@ func _update_feet(delta: float) -> void:
 			limb.foot = limb.foot.lerp(_rest_foot(limb, Vector2.ZERO), 1.0 - exp(-8.0 * delta))
 			limb.cycle = cycle
 		elif limb.foot.distance_to(_rest_foot(limb, Vector2.ZERO)) > limb_length * settle_distance \
-				and feet_up < maxi(_limbs.size() / 2, 1):
+				and feet_up < maxi(floori(_limbs.size() / 2.0), 1):
 			# Standing: tidy a stray foot, half the legs at a time.
 			limb.cycle = cycle
 			_start_swing(limb, 0.16)

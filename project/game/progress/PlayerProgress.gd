@@ -346,7 +346,7 @@ func fit_stash() -> void:
 
 # ---- Blueprints and spending materials (the Fabricator) ----
 
-static func blueprint_key(part_type: String, part_id: String) -> String:
+func blueprint_key(part_type: String, part_id: String) -> String:
 	return "%s:%s" % [part_type, part_id]
 
 
@@ -665,7 +665,7 @@ func migrate_legacy_save(data: Dictionary) -> Dictionary:
 
 # The required slots a design has nothing in, e.g. ["core"]. A mecha missing
 # any of these mustn't deploy (it spawns broken).
-static func missing_parts(design) -> Array:
+func missing_parts(design) -> Array:
 	var missing := []
 	for slot in REQUIRED_SLOTS:
 		var part_id = design.get(slot) if typeof(design) == TYPE_DICTIONARY else null
@@ -675,7 +675,7 @@ static func missing_parts(design) -> Array:
 
 
 # ["core", "head"] -> "CORE, HEAD", for messages about missing_parts.
-static func describe_missing_parts(missing: Array) -> String:
+func describe_missing_parts(missing: Array) -> String:
 	return ", ".join(missing.map(func(slot): return str(slot).to_upper()))
 
 

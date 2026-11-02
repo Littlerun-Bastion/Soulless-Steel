@@ -120,13 +120,13 @@ func _build() -> void:
 
 
 func _make_site_row(site: Dictionary) -> Button:
-	var has_signal := site.has("scene")
+	var reachable := site.has("scene")
 	var row := Button.new()
 	row.theme_type_variation = &"ContactRow"
 	row.toggle_mode = true
 	row.button_group = _site_group
 	row.button_pressed = site == _site
-	row.disabled = not has_signal
+	row.disabled = not reachable
 	row.focus_mode = Control.FOCUS_NONE
 	row.custom_minimum_size.y = 64
 	row.pressed.connect(_select_site.bind(site))
@@ -135,8 +135,8 @@ func _make_site_row(site: Dictionary) -> Button:
 	text.offset_left = 12
 	text.offset_right = -12
 	text.alignment = BoxContainer.ALIGNMENT_CENTER
-	text.add_child(MechUI.label(&"LabelBodyBright" if has_signal else &"LabelDim", site.name))
-	text.add_child(MechUI.label(&"LabelMeta", site.note.to_upper() if has_signal else "NO SIGNAL"))
+	text.add_child(MechUI.label(&"LabelBodyBright" if reachable else &"LabelDim", site.name))
+	text.add_child(MechUI.label(&"LabelMeta", site.note.to_upper() if reachable else "NO SIGNAL"))
 	row.add_child(text)
 	MechUI.ignore_mouse(text)
 	return row

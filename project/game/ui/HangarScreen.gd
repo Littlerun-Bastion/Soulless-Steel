@@ -164,8 +164,8 @@ func _on_materials_changed(materials: Dictionary) -> void:
 	var parts := []
 	for tier in Materials.TIERS:
 		var total := 0
-		for material in Materials.of_tier(tier):
-			total += int(materials.get(material.id, 0))
+		for mat in Materials.of_tier(tier):
+			total += int(materials.get(mat.id, 0))
 		parts.append("%s %d" % [Materials.tier_name(tier).to_upper(), total])
 	materials_label.text = "   ".join(parts)
 

@@ -1,0 +1,76 @@
+{
+	"_about": "NPC barks (game/mecha/Barks.gd). events: lines by event, then by personality type (scavenger, guardian, professional, hunter, rat) with an 'any' fallback. chances: how likely each event is to bark (0 to 1). named: lines for a named NPC (by its name), used before everything else. broadcasts: lines NPCs send to Local. {target} becomes the target's callsign, or 'someone'. All placeholder text.",
+	"chances": {
+		"spotted": 0.8,
+		"lost_target": 0.6,
+		"searching": 0.5,
+		"taking_fire": 0.7,
+		"reloading": 0.4,
+		"overheating": 0.6,
+		"retreating": 0.8,
+		"target_down": 1.0,
+		"looting": 0.5,
+		"extracting": 0.9,
+		"idle": 0.3
+	},
+	"events": {
+		"spotted": {
+			"any": ["Contact.", "Got eyes on {target}.", "There you are.", "Target sighted.", "Movement. Engaging."],
+			"hunter": ["Found you, {target}.", "Fresh tracks end here.", "{target}. You're mine."],
+			"scavenger": ["Oh no. Oh no no.", "Someone's here!"],
+			"guardian": ["Halt. You're not welcome.", "Hostile in the perimeter."],
+			"rat": ["Hey, friend! Hold still.", "Easy now, {target}..."]
+		},
+		"lost_target": {
+			"any": ["Lost them.", "Where'd they go?", "Lost visual.", "Gone dark."],
+			"hunter": ["You can't hide forever, {target}."],
+			"professional": ["Target lost. Holding."]
+		},
+		"searching": {
+			"any": ["Checking the last position.", "Come out.", "I know you're close.", "Sweeping the area."],
+			"hunter": ["I can smell your coolant, {target}."]
+		},
+		"taking_fire": {
+			"any": ["Taking fire!", "I'm hit!", "Where's that coming from?", "Contact, contact!"],
+			"scavenger": ["Don't shoot! Don't shoot!"],
+			"professional": ["Under fire. Returning."]
+		},
+		"reloading": {
+			"any": ["Reloading!", "Changing mags.", "Cover me, reloading.", "Dry. Reloading."]
+		},
+		"overheating": {
+			"any": ["Running hot.", "Heat's critical.", "Overheating!", "Venting, venting."]
+		},
+		"retreating": {
+			"any": ["Falling back!", "I'm out of here.", "Pulling back.", "Not worth it."],
+			"rat": ["Every pilot for themselves!"],
+			"guardian": ["Regrouping. This isn't over."]
+		},
+		"target_down": {
+			"any": ["Target down.", "Got them.", "That's one.", "{target} is scrap."],
+			"hunter": ["Another one for the wall."],
+			"scavenger": ["Is... is it dead?"]
+		},
+		"looting": {
+			"any": ["Let's see what's in here.", "Checking the crate.", "Anything good?", "Salvage."],
+			"scavenger": ["Mine, mine, all mine."]
+		},
+		"extracting": {
+			"any": ["Heading out.", "Making for the exit.", "I've had enough.", "Extracting."]
+		},
+		"idle": {
+			"any": ["Quiet out here.", "Grid's dead tonight.", "Hate this place.", "Keep moving."],
+			"professional": ["Sector clear."]
+		}
+	},
+	"named": {
+		"Lady Volk": {
+			"spotted": ["Volk sees you, {target}."],
+			"target_down": ["As expected."]
+		}
+	},
+	"broadcasts": {
+		"found_loot": ["Found loot here.", "Good salvage over here.", "Crates. Lots of them."],
+		"need_help": ["Need help!", "Anyone near? I'm going down!", "Help, I'm under fire!"]
+	}
+}

@@ -3,6 +3,9 @@ extends Mecha
 const LOGIC = preload("res://game/mecha/enemy_logic/EnemyLogic.gd")
 const SOUND_LIFETIME = 25
 const BODY_LIFETIME = 35
+## How long (s) a body this NPC saw stays a live sight contact after the last
+## senses update that saw it (see update_senses).
+const SIGHT_CONTACT_TTL = 0.5
 
 # Stuck watchdog, the last resort after the unstick moves in the steering
 # section. stuck_timer counts while the NPC wants to move but either barely
@@ -71,7 +74,12 @@ func _ready():
 		$NavigationAgent2D.debug_enabled = true
 	else:
 		$NavigationAgent2D.debug_enabled = false
-	
+
+	took_damage.connect(_on_took_damage_for_barks)
+	for node in [$ArmWeaponLeft, $ArmWeaponRight, $ShoulderWeaponLeft, $ShoulderWeaponRight]:
+		if node.has_signal("reloading_signal"):
+			node.reloading_signal.connect(_on_weapon_reloading_for_barks)
+
 
 
 func _physics_process(dt):
@@ -108,6 +116,7 @@ func _physics_process(dt):
 			logic.update(self)
 			logic.run(self, think_dt)
 			_coast_velocity = velocity if global_position != before else Vector2.ZERO
+			_watch_barks(think_dt)
 		elif _coast_velocity != Vector2.ZERO:
 			# Between thinking frames, keep going the way it was going.
 			move(_coast_velocity)
@@ -235,6 +244,14 @@ func setup(arena_ref, design_data, _name):
 		personality = design_data["personality"]
 	if personality == null:
 		personality = Personality.new()
+
+	# A named NPC brings its callsign and is never Anonymous; the rest get a
+	# callsign when they join Local and may be Anonymous.
+	if design_data.get("callsign") is String:
+		callsign = design_data["callsign"]
+	else:
+		var chance := HUNTER_ANONYMOUS_CHANCE if personality.type == Personality.Type.HUNTER else ANONYMOUS_CHANCE
+		is_anonymous = randf() < chance
 
 	if design_data.has("combat_behaviour") and typeof(design_data["combat_behaviour"]) == TYPE_STRING:
 		var new_behaviour = design_data["combat_behaviour"]
@@ -474,7 +491,8 @@ func should_attack(target) -> bool:
 	return should_engage(target)
 
 
-func should_engage(target: Mecha) -> bool:
+# `target` is a mecha, or a decoy passing for one (Decoy).
+func should_engage(target) -> bool:
 	if not is_instance_valid(target):
 		return false
 
@@ -543,9 +561,9 @@ func update_senses(dt):
 	for data in to_remove:
 		senses.bodies.erase(data)
 
-	# Look for mechas and Entities in sight.
+	# Look for mechas and Entities in sight; a decoy looks like a mecha.
 	var own_sight_mult = MapSenses.sight_mult(self)
-	for target in arena.get_mechas() + _get_entities():
+	for target in arena.get_mechas() + _get_entities() + _get_decoys():
 		if target == self or not is_instance_valid(target):
 			continue
 		if "is_dead" in target and target.is_dead:
@@ -567,6 +585,9 @@ func update_senses(dt):
 			var data := _remember(target, target.global_position)
 			data.is_seen = true
 			data.velocity = target.velocity if "velocity" in target else Vector2.ZERO
+			# Also kept as a contact, for NPC code and kill records; the
+			# decisions above still use senses.
+			contacts.report(target, ContactStore.kind_of(target), target.global_position, "sight", SIGHT_CONTACT_TTL)
 
 
 # Records that `body` was at `pos` just now (seen, or given away by its
@@ -755,6 +776,13 @@ func _get_entities() -> Array:
 	if arena and arena.has_method("get_entities"):
 		return arena.get_entities()
 	return []
+
+
+# Other mechas' decoys still out there (Decoy): NPC sight takes them for
+# mechas. Its own are left out.
+func _get_decoys() -> Array:
+	return get_tree().get_nodes_in_group("decoy").filter(
+			func(d): return d.owner_mecha != self and not d.is_gone())
 
 
 # An Entity's bite or acid (EntityAttack): react as to being shot. Shots
@@ -1941,3 +1969,190 @@ func _on_nearby_projectile_area_entered(area):
 		# Betrayal: if we're flagged and they shoot us, mark them traitor
 		if is_exposed and not get_relationship(attacker).is_traitor:
 			mark_traitor(attacker)
+
+
+# BARKS AND LOCAL
+#
+# What happens to an NPC becomes barks (bark, Barks.gd) and a few broadcasts
+# to Local. _watch_barks runs on thinking frames, after the behaviour, and
+# compares what the NPC is doing now with what it was doing at its last
+# think, so the behaviour code needs no hooks of its own:
+#   spotted       it enters in_combat with its target in sight
+#   lost_target   its target goes out of sight
+#   searching     the target is still out of sight SEARCH_BARK_DELAY s later
+#   taking_fire   the first hit of a fight
+#   reloading     a weapon starts reloading during a fight
+#   overheating   the overheating status comes on
+#   retreating    it enters defend or flee
+#   target_down   its target dies
+#   looting       it reaches a container, and may broadcast a loot shout
+#                 (chance: personality.greed x LOOT_SHOUT_GREED)
+#   extracting    it heads for an exit
+#   idle          now and then while roaming (IDLE_BARK_RATE per second)
+# Once per fight it also broadcasts a help call, when it is under fire below
+# HELP_CALL_HEALTH of its health. A fight starts when it enters a combat
+# state or is hit, and ends once it is in a calm state and no longer under
+# fire. Barks and broadcasts are placeholders for the AI work to replace.
+
+## Chance an NPC is Anonymous: Hunters, and everyone else. Placeholders.
+const HUNTER_ANONYMOUS_CHANCE := 0.6
+const ANONYMOUS_CHANCE := 0.05
+## Placeholders, see above.
+const SEARCH_BARK_DELAY := 3.0
+const IDLE_BARK_RATE := 0.02
+const LOOT_SHOUT_GREED := 0.3
+const HELP_CALL_HEALTH := 0.5
+const COMBAT_STATES := ["in_combat", "attack", "defend", "ambush_lock", "defending_lock", "flee"]
+const CALM_STATES := ["roam", "seek", "alert", "alert_roam", "ambush", "loot", "extract"]
+
+var _bark_ready_ms := 0
+var _bark_state := ""
+var _bark_target = null
+var _bark_target_seen := false
+var _bark_unseen_time := 0.0
+var _bark_searched := false
+var _bark_hit := false
+var _bark_reload := false
+var _bark_overheating := false
+var _bark_looted := 0
+var _in_fight := false
+var _fight_hit := false
+var _fight_help := false
+
+
+## Says a line for `event` (see Barks): only if the player is within
+## earshot, the cooldowns are over and the event's chance comes up. Returns
+## whether it spoke. NPC code can bark new events too; give them lines in
+## database/npcs/barks.json.
+func bark(event: String, target = null) -> bool:
+	if is_dead or not _player_in_earshot():
+		return false
+	if Time.get_ticks_msec() < _bark_ready_ms or randf() >= Barks.chance_for(event) or not Barks.global_ready():
+		return false
+	var line := Barks.line_for(event, Barks.type_name(personality), mecha_name, target)
+	if line == "":
+		return false
+	_bark_ready_ms = Time.get_ticks_msec() + int(Barks.NPC_COOLDOWN * 1000.0)
+	Barks.use_global()
+	say(line)
+	return true
+
+
+## Sends a broadcast to Local (LocalPilots.broadcast). With `text` "", one of
+## the kind's lines from barks.json, else its quick chat preset text.
+func broadcast(kind: String, text := "") -> void:
+	var local = _local_pilots()
+	if local == null:
+		return
+	if text == "":
+		text = Barks.broadcast_line(kind)
+	local.broadcast(self, kind, text)
+
+
+## Whether the NPC is in a fight (see BARKS AND LOCAL).
+func is_in_fight() -> bool:
+	return _in_fight
+
+
+func _local_pilots():
+	if arena is Node:
+		var local = arena.get("local_pilots")
+		if local is LocalPilots:
+			return local
+	return null
+
+
+func _player_in_earshot() -> bool:
+	if not (arena is Node):
+		return false
+	var player = arena.get("player")
+	return is_instance_valid(player) and global_position.distance_to(player.global_position) <= Barks.EARSHOT
+
+
+func _watch_barks(dt: float) -> void:
+	var state := str(logic.get_current_state())
+	var hit := _bark_hit
+	_bark_hit = false
+	if state in COMBAT_STATES and state != _bark_state and not _in_fight:
+		_start_fight()
+	if hit and not _in_fight:
+		_start_fight()
+	if state in CALM_STATES and under_fire_timer <= 0.0 and not hit:
+		_in_fight = false
+
+	if _bark_target != null and (not is_instance_valid(_bark_target) or _bark_target.is_dead):
+		if is_instance_valid(_bark_target):
+			bark("target_down", _bark_target)
+		_bark_target = null
+
+	if hit and not _fight_hit:
+		_fight_hit = true
+		bark("taking_fire", most_recent_attacker if is_instance_valid(most_recent_attacker) else null)
+
+	var target = current_target if is_instance_valid(current_target) and not current_target.is_dead else null
+	if state != _bark_state:
+		if state == "in_combat" and target != null and is_seeing(target):
+			bark("spotted", target)
+		elif state == "defend" or state == "flee":
+			bark("retreating")
+		elif state == "extract":
+			bark("extracting")
+		_bark_state = state
+
+	if target != _bark_target:
+		_bark_target = target
+		_bark_target_seen = target != null and is_seeing(target)
+		_bark_unseen_time = 0.0
+		_bark_searched = false
+	elif target != null:
+		var seen := is_seeing(target)
+		if _bark_target_seen and not seen:
+			bark("lost_target", target)
+			_bark_unseen_time = 0.0
+			_bark_searched = false
+		elif not seen and not _bark_searched:
+			_bark_unseen_time += dt
+			if _bark_unseen_time >= SEARCH_BARK_DELAY:
+				_bark_searched = true
+				bark("searching", target)
+		_bark_target_seen = seen
+
+	var hot: bool = has_status("overheating")
+	if hot and not _bark_overheating:
+		bark("overheating")
+	_bark_overheating = hot
+
+	if _bark_reload:
+		_bark_reload = false
+		if _in_fight:
+			bark("reloading")
+
+	var looted = logic.behaviour.get("times_looted") if logic.behaviour else null
+	if looted is int and looted > _bark_looted:
+		_bark_looted = looted
+		bark("looting")
+		if randf() < personality.greed * LOOT_SHOUT_GREED:
+			broadcast("found_loot")
+
+	if _in_fight and not _fight_help and (under_fire_timer > 0.0 or hit) \
+			and hp < max_hp * HELP_CALL_HEALTH:
+		_fight_help = true
+		broadcast("need_help")
+
+	if state == "roam" and randf() < IDLE_BARK_RATE * dt:
+		bark("idle")
+
+
+func _start_fight() -> void:
+	_in_fight = true
+	_fight_hit = false
+	_fight_help = false
+
+
+func _on_took_damage_for_barks(_mecha, is_status) -> void:
+	if not is_status:
+		_bark_hit = true
+
+
+func _on_weapon_reloading_for_barks(_reload_time) -> void:
+	_bark_reload = true

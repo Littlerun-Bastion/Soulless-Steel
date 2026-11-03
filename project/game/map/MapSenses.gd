@@ -167,9 +167,9 @@ static func join_sight_light(node: Node) -> void:
 
 
 # Where the line from `from` to `to` first meets a wall or another solid body,
-# or null if it is clear. Vehicles (lower than a shoulder mount), mechas and
-# Entities don't count. Used where something is stopped by walls only: a
-# direct-fire designator and the laser beam.
+# or null if it is clear. Vehicles (lower than a shoulder mount), mechas,
+# Entities and devices (wards, drones) don't count. Used where something is
+# stopped by walls only: a direct-fire designator and the laser beam.
 static func solid_hit(world: World2D, from: Vector2, to: Vector2, exclude: Array[RID] = []):
 	var space := world.direct_space_state
 	var skip: Array[RID] = exclude.duplicate()
@@ -179,7 +179,7 @@ static func solid_hit(world: World2D, from: Vector2, to: Vector2, exclude: Array
 		if hit.is_empty():
 			return null
 		var collider := hit.collider as Node
-		if collider and (collider.is_in_group("mecha") or collider.is_in_group("entity")):
+		if collider and (collider.is_in_group("mecha") or collider.is_in_group("entity") or collider.is_in_group("device")):
 			skip.append(hit.rid)
 			continue
 		return hit.position

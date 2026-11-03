@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/mecha/devices/Device.gd" id="1_device"]
+[ext_resource type="Texture2D" path="res://assets/images/light_sources/light_point_soft.png" id="2_light"]
+
+[node name="Flare" type="StaticBody2D"]
+z_index = 5
+script = ExtResource("1_device")
+kind = "flare"
+destructible = false
+reveal_everyone = true
+
+[node name="Glow" type="Sprite2D" parent="."]
+scale = Vector2(0.8, 0.8)
+texture = ExtResource("2_light")
+
+[node name="Light" type="PointLight2D" parent="."]
+energy = 1.6
+blend_mode = 2
+range_layer_max = 2
+range_item_cull_mask = 2
+texture = ExtResource("2_light")
+texture_scale = 32.0

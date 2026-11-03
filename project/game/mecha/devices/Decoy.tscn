@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/mecha/devices/Decoy.gd" id="1_decoy"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/TORI-ML_subprojectile.png" id="2_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_decoy"]
+radius = 30.0
+
+[node name="Decoy" type="StaticBody2D"]
+script = ExtResource("1_decoy")
+kind = "decoy"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("2_sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_decoy")

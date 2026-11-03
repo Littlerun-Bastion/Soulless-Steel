@@ -11,6 +11,10 @@ extends PanelContainer
 ## frame readout shows as gone reads LOST (struck through, dashed tag). An
 ## indirect-fire weapon can't fire from inside a building: its name dims and
 ## a dashed INDOORS tag shows.
+## The last row is the internal bay (INT): a device part's charges left, large
+## (dim at 0), "CHARGES" under them; a passive part ON or OFF (dim), or LOST
+## for a Seeker shot down, its function under it. While it can't be used yet
+## the label reads "INT · 0.6S".
 ## Rows are built once in setup(); values are read each frame.
 
 const SLOTS := [
@@ -18,6 +22,7 @@ const SLOTS := [
 	{"slot": "arm_weapon_right", "label": "R ARM", "action": "arm_weapon_right_shoot", "node": "ArmWeaponRight"},
 	{"slot": "shoulder_weapon_left", "label": "L SHD", "action": "shoulder_weapon_left_shoot", "node": "ShoulderWeaponLeft"},
 	{"slot": "shoulder_weapon_right", "label": "R SHD", "action": "shoulder_weapon_right_shoot", "node": "ShoulderWeaponRight"},
+	{"slot": "internal", "label": "INT", "action": "use_internal", "node": ""},
 ]
 const WIDTH := 380
 
@@ -146,6 +151,10 @@ func _update_row(row: Dictionary) -> void:
 		row.indoors.visible = false
 		return
 
+	if info.slot == "internal":
+		_update_internal_row(row, part)
+		return
+
 	var lost: bool = is_lost.call(info.slot)
 	row.lost.visible = lost
 	var indoors: bool = not lost and part.get("is_indirect_fire") == true and player.is_inside_building
@@ -182,3 +191,26 @@ func _update_row(row: Dictionary) -> void:
 	row.ammo.theme_type_variation = &"LabelDisplay" if clip_value > 0 else &"LabelDisplayDim"
 	var battery: bool = node != null and node.get("data") != null and node.data.uses_battery
 	row.reserve.text = "BATTERY" if battery else str(roundi(float(total)) if total is float or total is int else 0)
+
+
+func _update_internal_row(row: Dictionary, part) -> void:
+	var info: Dictionary = row.info
+	var cooldown: float = player.internal_cooldown
+	row.slot.text = info.label + (" · %sS" % MechUI.fmt(snappedf(cooldown, 0.1)) if cooldown > 0.0 else "")
+	row.name.text = str(part.get("part_name"))
+	row.name.theme_type_variation = &"LabelBody"
+	row.name.visible = true
+	row.reload.visible = false
+	row.lost.visible = false
+	row.indoors.visible = false
+	row.ammo_box.visible = true
+	if part.is_passive():
+		var on: bool = player.internal_on
+		row.ammo.text = "LOST" if player.internal_lost else ("ON" if on else "OFF")
+		row.ammo.theme_type_variation = &"LabelDisplay" if on else &"LabelDisplayDim"
+		row.reserve.text = str(part.function).to_upper()
+	else:
+		var charges: int = player.internal_charges
+		row.ammo.text = str(charges)
+		row.ammo.theme_type_variation = &"LabelDisplay" if charges > 0 else &"LabelDisplayDim"
+		row.reserve.text = "CHARGES"

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/mecha/devices/Ward.tscn" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/rivet_projectile.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+part_name = "WD-2 Ward"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Sensor post"
+description = "Two sensor posts. Drop one at your feet or throw it a short way; it pings mechas and creatures within 150 m through walls until someone shoots it."
+price = 600.0
+tech_tier = 1
+composition = Dictionary[String, int]({"silicon": 2, "copper": 2, "steel": 1})
+image = ExtResource("3")
+function = "ward"
+charges = 2
+use_cooldown = 1.0
+throw_range = 400.0
+device_scene = ExtResource("2")
+sensor_range = 3000.0
+update_interval = 2.0
+device_hp = 2.0
+weight = 1.0

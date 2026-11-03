@@ -64,6 +64,16 @@ extends Node2D
 # near it, becomes a static body again where it stopped, and its sprite goes
 # back to the layer there. At most MAX_AWAKE vehicles are awake at once.
 #
+# Car alarms: when a mecha first runs into an intact car (each new push
+# contact, not every frame it keeps pushing), the car starts its alarm with
+# chance alarm_chance (ALARM_CHANCE), at most once per car. Vans, trucks and
+# trampled or destroyed cars never do. An alarm lasts ALARM_TIME s: a light
+# on the car blinks (ALARM_BLINK s on, ALARM_BLINK off; a glow drawn in the
+# dark plus a 2D light on the ground), chirping each time it comes on, and
+# alarm_started tells the scene, which makes it a loud sound heard within
+# ALARM_SOUND_RANGE (CombatScene._on_car_alarm). start_alarm() sets one off
+# directly. A car trampled or destroyed while its alarm sounds goes quiet.
+#
 # masses, shot_blocks: kind -> PackedFloat32Array, one value per sprite
 # variant (from sprite_catalogue.json). A shot_block is the chance that a
 # shot passing through the vehicle stops in it (MapSenses.trace_shot).
@@ -107,6 +117,16 @@ const SETTLE_CLEARANCE := 150.0
 const WAKE_LOOKAHEAD := 0.25
 const CELL_SIZE := 1000.0
 const STREAM_INTERVAL := 10
+## Car alarms (see above).
+const ALARM_CHANCE := 0.05
+const ALARM_TIME := 10.0
+const ALARM_SOUND_RANGE := 3000.0
+const ALARM_BLINK := 0.4
+const ALARM_SFX := "rapid_beep"
+const ALARM_GLOW := preload("res://assets/images/light_sources/light_point_soft.png")
+const ALARM_GLOW_SCALE := 1.6
+const ALARM_LIGHT_SCALE := 6.0
+const ALARM_LIGHT_ENERGY := 1.4
 
 @export var spawner_path: NodePath
 ## The PropSpriteLayer that draws these vehicles.
@@ -128,9 +148,13 @@ const STREAM_INTERVAL := 10
 @export var trample_max_mass := 3000.0
 ## Damage points a car takes before it is destroyed.
 @export var vehicle_hp := 5.0
+## The chance a push contact starts a car's alarm.
+var alarm_chance := ALARM_CHANCE
 
 signal vehicle_trampled(index: int, by: Node)
 signal vehicle_destroyed(index: int, by: Node)
+## A car's alarm went off, at `at`.
+signal alarm_started(index: int, at: Vector2)
 
 var _layer: PropSpriteLayer
 var _spawn_index := PackedInt32Array()
@@ -168,6 +192,11 @@ var _built := false
 var _awake := {}
 var _still := {}
 var _pushed_on := {}
+# Car alarms: index -> true once a car has sounded; index -> seconds left
+# and its light node while it sounds.
+var _alarm_done := {}
+var _alarm_left := {}
+var _alarm_lights := {}
 
 
 func _ready() -> void:
@@ -242,6 +271,8 @@ func push(mecha: CharacterBody2D, intended: Vector2) -> void:
 		var target := pusher * v_n / (pusher + m)
 		if _pushed_on.get(i, -10) < frame - 1:
 			target = (pusher * v_n + m * u + pusher * RESTITUTION * (v_n - u)) / (pusher + m)
+			if can_alarm(i) and randf() < alarm_chance:
+				start_alarm(i)
 		_pushed_on[i] = frame
 		_still[i] = 0.0
 		if target > u:
@@ -312,6 +343,54 @@ func awake_count() -> int:
 
 func is_awake(i: int) -> bool:
 	return _awake.has(i)
+
+
+## Whether car i can still start its alarm: an intact car that hasn't yet.
+func can_alarm(i: int) -> bool:
+	return _state[i] == INTACT and is_car(i) and not _alarm_done.has(i)
+
+
+## Sets off car i's alarm now (see Car alarms above), if it can.
+func start_alarm(i: int) -> void:
+	if not can_alarm(i):
+		return
+	_alarm_done[i] = true
+	_alarm_left[i] = ALARM_TIME
+	var light := Node2D.new()
+	light.light_mask = 0
+	var glow := Sprite2D.new()
+	glow.texture = ALARM_GLOW
+	glow.scale = Vector2.ONE * ALARM_GLOW_SCALE
+	glow.light_mask = 0
+	var add := CanvasItemMaterial.new()
+	add.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	add.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	glow.material = add
+	light.add_child(glow)
+	var lamp := PointLight2D.new()
+	lamp.texture = ALARM_GLOW
+	lamp.texture_scale = ALARM_LIGHT_SCALE
+	lamp.energy = ALARM_LIGHT_ENERGY
+	lamp.blend_mode = Light2D.BLEND_MODE_MIX
+	lamp.range_item_cull_mask = MapSenses.SIGHT_LIGHT_MASK
+	light.add_child(lamp)
+	light.z_index = 5
+	light.visible = false
+	add_child(light)
+	light.global_position = vehicle_transform(i).origin
+	_alarm_lights[i] = light
+	_blink_alarm(i)
+	alarm_started.emit(i, vehicle_transform(i).origin)
+
+
+## Whether car i's alarm is sounding now.
+func is_alarm_on(i: int) -> bool:
+	return _alarm_left.has(i)
+
+
+## The cars sounding now.
+func sounding_alarms() -> Array:
+	return _alarm_left.keys()
 
 
 # Where vehicle i is now (global position and rotation).
@@ -460,6 +539,8 @@ func _physics_process(delta: float) -> void:
 	var mechas := get_tree().get_nodes_in_group("mecha")
 	if stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0:
 		_update_streaming(mechas)
+	if not _alarm_left.is_empty():
+		_update_alarms(delta)
 	if _awake.is_empty():
 		return
 	for i in _awake.keys():
@@ -675,6 +756,35 @@ func _trample(i: int, by: Node) -> void:
 # The physics layer for vehicle i: cars and heavy vehicles apart.
 func _layer_mask(i: int) -> int:
 	return MapSenses.CAR_MASK if is_car(i) else MapSenses.HEAVY_VEHICLE_MASK
+
+
+func _update_alarms(delta: float) -> void:
+	for i in _alarm_left.keys():
+		_alarm_left[i] -= delta
+		if _alarm_left[i] <= 0.0 or _state[i] != INTACT:
+			_stop_alarm(i)
+			continue
+		(_alarm_lights[i] as Node2D).global_position = vehicle_transform(i).origin
+		_blink_alarm(i)
+
+
+# The light is on for the first ALARM_BLINK s of every 2 × ALARM_BLINK, and
+# chirps as it comes on.
+func _blink_alarm(i: int) -> void:
+	var light: Node2D = _alarm_lights[i]
+	var elapsed: float = ALARM_TIME - float(_alarm_left[i])
+	var on := fmod(elapsed, ALARM_BLINK * 2.0) < ALARM_BLINK
+	if on and not light.visible:
+		AudioManager.play_sfx(ALARM_SFX, light.global_position, null, null, null, ALARM_SOUND_RANGE)
+	light.visible = on
+
+
+func _stop_alarm(i: int) -> void:
+	_alarm_left.erase(i)
+	var light: Node2D = _alarm_lights.get(i)
+	_alarm_lights.erase(i)
+	if is_instance_valid(light):
+		light.queue_free()
 
 
 # Trampled or destroyed where it is: its body goes, and its sprite changes.

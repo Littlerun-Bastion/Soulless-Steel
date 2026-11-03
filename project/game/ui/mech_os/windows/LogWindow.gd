@@ -8,6 +8,7 @@ const FILTERS := [
 	{"label": "ALL", "kind": -1},
 	{"label": "COMBAT", "kind": MechLog.Kind.COMBAT},
 	{"label": "LOOT", "kind": MechLog.Kind.LOOT},
+	{"label": "LOCAL", "kind": MechLog.Kind.LOCAL},
 	{"label": "SYSTEM", "kind": MechLog.Kind.SYSTEM},
 ]
 

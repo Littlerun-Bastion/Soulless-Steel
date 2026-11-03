@@ -8,7 +8,7 @@ extends TestSuite
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const BEHAVIOUR_PATH := "res://game/mecha/enemy_logic/behaviours/"
 const DESIGN_SLOTS := ["head", "core", "shoulders", "generator", "chipset", "chassis", "thruster",
-		"arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]
+		"arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right", "internal"]
 const PERSONALITIES := ["professional", "scavenger", "guardian", "hunter", "rat"]
 
 

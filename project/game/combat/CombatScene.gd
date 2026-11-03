@@ -74,6 +74,11 @@ var all_entities: Array = []
 # Names of NPCs the player downed (exposed) and killed this match.
 var player_downs: Array = []
 var player_kills: Array = []
+# Local, this match's chat channel (LocalPilots). Subclasses call
+# _join_local for each mecha once it is set up.
+var local_pilots := LocalPilots.new()
+# Warm marks moving mechas leave (HeatTrails); made by _setup_heatmap.
+var heat_trails: HeatTrails = null
 
 var current_stage: StageDirector = null
 
@@ -105,11 +110,21 @@ func _on_player_destroyed() -> String:
 	return ""
 
 
+# Whether killing pilots changes the player's reputation in this mode.
+func _applies_reputation() -> bool:
+	return true
+
+
 # ---- Frame / input ----
+
+func _enter_tree() -> void:
+	LocalPilots.current = local_pilots
+
 
 func _process(dt: float) -> void:
 	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
+	local_pilots.now += dt
 
 	# Debug overlays (cheap when disabled — single Debug.get_setting check)
 	if allow_debug_cam and ArenaCam.enabled:
@@ -155,12 +170,30 @@ func _connect_mecha_signals(mecha) -> void:
 	mecha.connect("died", Callable(self, "_on_mecha_died"))
 	mecha.connect("exposed", Callable(self, "_on_mecha_exposed"))
 	mecha.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
+	mecha.spoke.connect(_on_mecha_spoke)
+
+
+# Registers a mecha on Local, once its setup has given it its callsign and
+# Anonymous flag (named NPCs, the player).
+func _join_local(mecha) -> void:
+	local_pilots.applies_reputation = _applies_reputation()
+	local_pilots.join(mecha)
 
 
 # Heatmap depends on the player's head part; call after the player spawns.
+# Also sets up the rest of the world's information: the heat trails under the
+# mechas (HeatTrails, shown in that IR view) and car alarms (VehicleField).
 func _setup_heatmap() -> void:
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
+	if heat_trails == null:
+		heat_trails = HeatTrails.new()
+		heat_trails.name = "HeatTrails"
+		add_child(heat_trails)
+		move_child(heat_trails, Mechas.get_index())
+	var vehicles := VehicleField.find(self)
+	if vehicles != null and not vehicles.alarm_started.is_connected(_on_car_alarm):
+		vehicles.alarm_started.connect(_on_car_alarm)
 
 
 # Wire every ExitPoint in the tree (group "exit_point") so any mecha entering
@@ -291,7 +324,13 @@ func _was_hit_by_player(mecha) -> bool:
 
 
 func _on_mecha_died(mecha) -> void:
+	# An NPC that extracts arrives here too, without having died (die() sets
+	# is_dead): it leaves Local the same way, but isn't anyone's kill.
+	var was_killed: bool = mecha.is_dead
 	mecha.is_dead = true
+	local_pilots.leave(mecha)
+	if was_killed and mecha != player and _was_hit_by_player(mecha):
+		local_pilots.score_player_kill(player, mecha)
 	_before_mecha_removed(mecha)
 	FrameSpikeDetector.mark("died:scrap_spawn")
 	create_mecha_scraps(mecha)
@@ -382,6 +421,10 @@ func create_mecha_scraps(mecha) -> void:
 # ---- Sound ----
 
 func _on_mecha_made_sound(sound_data) -> void:
+	# A sweep (Mecha.sweep) is a sound only creatures hear.
+	if sound_data.get("entities_only", false):
+		_tell_entities(sound_data)
+		return
 	for m in all_mechas:
 		if m == sound_data.source or not is_instance_valid(m):
 			continue
@@ -390,11 +433,52 @@ func _on_mecha_made_sound(sound_data) -> void:
 			continue
 		if m.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
 			m.heard_sound(sound_data)
+	_tell_entities(sound_data)
+
+
+# A car alarm (VehicleField.start_alarm): a loud sound at the car that NPCs
+# and creatures hear, and a ping contact (kind and source "alarm", no body)
+# at the car for every mecha within earshot, live while it sounds.
+func _on_car_alarm(_index: int, at: Vector2) -> void:
+	_on_mecha_made_sound({
+		"volume_type": "loud",
+		"type": "car_alarm",
+		"position": at,
+		"max_distance": VehicleField.ALARM_SOUND_RANGE,
+		"source": null,
+		"entities_only": false,
+	})
+	for mecha in all_mechas:
+		if is_instance_valid(mecha) and not mecha.is_dead \
+				and mecha.global_position.distance_to(at) <= VehicleField.ALARM_SOUND_RANGE:
+			mecha.contacts.report(null, "alarm", at, "alarm", VehicleField.ALARM_TIME)
+	if is_instance_valid(player) and player.global_position.distance_to(at) <= VehicleField.ALARM_SOUND_RANGE:
+		MechLog.write("SNS", "Car alarm", MechLog.Kind.COMBAT)
+
+
+func _tell_entities(sound_data) -> void:
 	for entity in all_entities:
 		if entity == sound_data.source or not is_instance_valid(entity):
 			continue
 		if entity.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
 			entity.heard_sound(sound_data)
+
+
+# ---- Speech ----
+
+# Mecha.say: the player hears a speaker within Barks.EARSHOT (walls don't
+# stop it), always hears itself, and always hears always_heard speech. Heard
+# speech shows a box over the speaker and goes to Local as a bark line.
+func _on_mecha_spoke(mecha, text: String, seconds: float, always_heard: bool) -> void:
+	if not is_instance_valid(mecha) or not is_instance_valid(player):
+		return
+	var heard: bool = always_heard or mecha == player \
+			or mecha.global_position.distance_to(player.global_position) <= Barks.EARSHOT
+	if not heard:
+		return
+	if is_instance_valid(PlayerHUD):
+		PlayerHUD.show_speech(mecha, text, seconds)
+	local_pilots.post_bark(mecha, text)
 
 
 # ---- Extraction ----
@@ -496,8 +580,10 @@ func _on_PauseMenu_pause_toggle(paused: bool) -> void:
 
 
 func _on_IntroAnimation_animation_ending() -> void:
-	# Intro finished — unblock AI and start ambient BGM.
+	# Intro finished — unblock AI and start ambient BGM. Pilots who join Local
+	# from now on are announced.
 	set_mechas_block_status(false)
+	local_pilots.go_live()
 	# Tear down the Intro entirely. Two reasons:
 	#   1. VCREffect / VCREffect2 are full-screen canvas-item shaders
 	#      (noise + scanlines, noiseQuality up to 5000) that keep rendering
@@ -709,10 +795,12 @@ func _update_enemies_debug_navigation() -> void:
 # Run HUD and OS setups
 func _register_player() -> void:
 	PlayerHUD.setup(player, all_mechas)
+	PlayerHUD.setup_local(local_pilots)
 	MechOS.set_player(player)
 	MouseManager.set_aim_available(true)
 
 
 func _exit_tree() -> void:
+	local_pilots.close()
 	MechOS.close_all()
 	MouseManager.reset()

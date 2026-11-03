@@ -1,0 +1,26 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/mecha/devices/Flare.tscn" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/light_sources/light_point_soft.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+part_name = "FL-2 Spotter Flare"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Light them up"
+description = "Two flares. Fire one at a point up to 100 m away: for 10 s it lights 80 m round it and shows everything there to everyone, you included, through walls."
+price = 500.0
+tech_tier = 1
+composition = Dictionary[String, int]({"oil": 2, "fissile_materials": 1, "steel": 1})
+image = ExtResource("3")
+function = "flare"
+charges = 2
+use_cooldown = 1.0
+throw_range = 2000.0
+device_scene = ExtResource("2")
+sensor_range = 1600.0
+update_interval = 0.2
+device_lifetime = 10.0
+weight = 1.0

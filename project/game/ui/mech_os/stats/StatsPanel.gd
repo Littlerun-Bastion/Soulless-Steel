@@ -43,6 +43,7 @@ const GROUPS := [
 		{"id": "lock_on_speed", "label": "Lock speed"},
 		{"id": "radar_range", "label": "Radar range"},
 		{"id": "ECM", "label": "ECM"},
+		{"id": "sensor_reduction", "label": "Sensor reduction"},
 	]},
 ]
 

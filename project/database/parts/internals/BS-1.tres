@@ -1,0 +1,20 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+part_name = "BS-1 Biosensor"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Feel the swarm"
+description = "Passive while switched on. Shows you creatures within 100 m, through walls."
+price = 700.0
+tech_tier = 1
+composition = Dictionary[String, int]({"silicon": 2, "neural_biomatter": 1})
+function = "biosensor"
+charges = 0
+use_cooldown = 0.5
+sensor_range = 2000.0
+update_interval = 0.2
+weight = 1.0

@@ -108,6 +108,7 @@ func add_player():
 	player.connect("lost_health", Callable(self,"_on_player_lost_health"))
 	player.connect("mecha_extracted", Callable(self,"_on_player_mech_extracted"))
 	all_mechas.push_back(player)
+	_join_local(player)
 	_register_player()
 
 
@@ -121,6 +122,7 @@ func add_enemy(design_data, enemy_name, spawn_position = null) -> Mecha:
 	_connect_mecha_signals(enemy)
 	all_mechas.push_back(enemy)
 	enemy.setup(self, design_data, enemy_name)
+	_join_local(enemy)
 	return enemy
 
 
@@ -153,6 +155,11 @@ func get_random_position():
 # CombatScene hook: the tutorial runs without ambient music.
 func _plays_ambience() -> bool:
 	return not is_tutorial
+
+
+# CombatScene hook: ladder fights are sanctioned; kills cost no reputation.
+func _applies_reputation() -> bool:
+	return false
 
 
 func _on_player_mech_extracted(playerMech):

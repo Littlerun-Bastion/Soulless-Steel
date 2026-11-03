@@ -97,3 +97,9 @@ layout_mode = 2
 part_type = "shoulder_weapon"
 display_name = "LEFT SHOULDER"
 part_side = 0
+
+[node name="Internal" parent="Content/VBox/SlotContainer" index="11" instance=ExtResource("2_3bphn")]
+visible = false
+layout_mode = 2
+part_type = "internal"
+display_name = "INTERNAL"

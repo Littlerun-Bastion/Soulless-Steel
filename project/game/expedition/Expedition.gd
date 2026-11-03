@@ -188,6 +188,7 @@ func _spawn_wreck(mecha) -> void:
 	var wreck = WRECK.instantiate()
 	wreck.position = mecha.global_position
 	wreck.setup(mecha.mecha_name, WreckLoot.roll(mecha.get_design_data()))
+	wreck.kill_record = mecha.kill_record
 	wreck.copy_mecha_visuals(mecha)
 	Wrecks.add_child(wreck)
 	_trim_oldest(Wrecks, MAX_WRECKS)
@@ -279,6 +280,7 @@ func _add_player() -> void:
 	player.connect("lost_health", Callable(self, "_on_player_lost_health"))
 	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
 	all_mechas.append(player)
+	_join_local(player)
 	# Player.tscn has its own Camera2D — no extra setup needed
 	_register_player()
 	# The exits are out at the map's edges: point the way on the HUD.
@@ -306,6 +308,7 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	_connect_mecha_signals(enemy)
 	all_mechas.append(enemy)
 	enemy.setup(self, design_data, enemy_name)
+	_join_local(enemy)
 	return enemy
 
 
@@ -538,6 +541,7 @@ func _on_player_extracted(_mecha) -> void:
 func _remove_extracted_player() -> void:
 	MechOS.close_all()
 	activate_arena_cam()
+	local_pilots.leave(player)
 	all_mechas.erase(player)
 	player.queue_free()
 	player = null

@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/WorldInfoTest.gd" id="1_world"]
+
+[node name="WorldInfoTest" type="Node"]
+script = ExtResource("1_world")

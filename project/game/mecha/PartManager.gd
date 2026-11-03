@@ -13,6 +13,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @onready var GENERATORS = {}
 @onready var CHIPSETS = {}
 @onready var THRUSTERS = {}
+@onready var INTERNALS = {}
 @onready var PROJECTILES = {}
 
 var current_player_mech
@@ -32,6 +33,7 @@ func setup_parts():
 	load_parts("generators", GENERATORS)
 	load_parts("chipsets", CHIPSETS)
 	load_parts("thrusters", THRUSTERS)
+	load_parts("internals", INTERNALS)
 	load_parts("projectiles", PROJECTILES)
 	
 
@@ -73,6 +75,8 @@ func get_parts(type):
 			return CHIPSETS
 		"thruster":
 			return THRUSTERS
+		"internal":
+			return INTERNALS
 		"projectile":
 			return PROJECTILES
 		_:
@@ -101,7 +105,7 @@ func get_random_part_name(type):
 
 func get_max_stat_value(stat_name):
 	var max_value = 0.0
-	var categories = [ARM_WEAPONS, SHOULDER_WEAPONS, SHOULDERS, CORES, HEADS, CHASSIS, GENERATORS, CHIPSETS, THRUSTERS]
+	var categories = [ARM_WEAPONS, SHOULDER_WEAPONS, SHOULDERS, CORES, HEADS, CHASSIS, GENERATORS, CHIPSETS, THRUSTERS, INTERNALS]
 	for parts in categories:
 		var current_max = 0
 		for part in parts.values():

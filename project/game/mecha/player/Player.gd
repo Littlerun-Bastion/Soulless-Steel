@@ -6,6 +6,9 @@ signal update_building_status
 signal reloading
 signal finished_reloading
 signal lost_health
+# A sweep went out (result from Mecha.sweep), or couldn't ("cooldown").
+signal sweep_done(result: Dictionary)
+signal sweep_refused(reason: String)
 
 const INSIDE_BUILDING_ZOOM_MUL = 1.4
 const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
@@ -37,6 +40,15 @@ const VIEW_RANGE = 6000.0
 const VIEW_CONE_HALF_ANGLE = 15.0
 const VIEW_CONE_REACH = 0.44
 const VIEW_PERIPHERAL = 400.0
+## The vision source whose mechas are outlined rather than shown.
+const OUTLINE_SOURCE = "seeker"
+## How long (s) a body the player saw stays a live sight contact after the
+## last view check that saw it.
+const SIGHT_CONTACT_TTL = 0.3
+## The sweep cone's width at the start, and how much one mouse wheel notch
+## changes it (degrees). Placeholders.
+const SWEEP_START_WIDTH = 90.0
+const SWEEP_WIDTH_STEP = 10.0
 
 @onready var Cam = $Camera2D
 @onready var Light = $MechaLight
@@ -60,10 +72,18 @@ var _designating := {}
 var _pending_fire := {}
 var designator = null  # Designator.gd
 # The player's view (see _update_view): the mechas and Entities checked last,
-# and those hidden from the player (body -> true).
+# those hidden from the player, and of those the ones the Seeker outlines
+# (body -> true).
 var _view_bodies: Array = []
 var _view_hidden := {}
+var _view_outlined := {}
 var _view_timer := 0.0
+# The sweep cone (see SENSOR SWEEP): aimed while the sweep key is held; the
+# width is kept between sweeps.
+var sweep_width := SWEEP_START_WIDTH
+var _sweep_aiming := false
+# The internal key (see INTERNAL BAY): seconds it has been held, or -1.
+var _internal_held := -1.0
 
 func _ready():
 	super()
@@ -128,9 +148,34 @@ func _input(event):
 				_designating.erase(slot)
 			else:
 				release_designating(slot)
+	if event.is_action_released("sweep") and _sweep_aiming:
+		if paused or is_stunned() or controls_locked:
+			cancel_sweep()
+		else:
+			release_sweep()
+	if event.is_action_released("use_internal") and _internal_held >= 0.0:
+		if paused or is_stunned() or controls_locked:
+			cancel_internal()
+		else:
+			release_internal()
 	if paused or is_stunned() or controls_locked:
 		return
-	
+	if _sweep_aiming and _sweep_aim_input(event):
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("sweep"):
+		begin_sweep()
+		get_viewport().set_input_as_handled()
+		return
+	if _internal_held >= 0.0 and event.is_action_pressed("reload_mode"):
+		cancel_internal()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("use_internal"):
+		begin_internal()
+		get_viewport().set_input_as_handled()
+		return
+
 	# --- Inventory toggle (MechOS) ---
 	if event.is_action_pressed("toggle_inventory"):
 		if current_open_container != null:
@@ -233,6 +278,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				var container_win = MechOS.open_inventory("container", thing.inventory, thing.display_name)
 				if container_win != null:
 					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
+				# A wreck's kill record goes beside its loot (KillRecord).
+				if thing is Wreck and not thing.kill_record.is_empty():
+					MechOS.open_kill_record(thing.kill_record, container_win)
 				
 			get_viewport().set_input_as_handled()
 
@@ -333,6 +381,9 @@ func check_weapon_input(weapon_name):
 func setup(arena_ref):
 	arena = arena_ref
 	mecha_name = "Player"
+	# Set in the Hangar: the callsign in the LOC app, Anonymous in DEP.
+	callsign = PlayerProgress.get_callsign()
+	is_anonymous = PlayerProgress.deploy_anonymous
 	$MechaShadowGen.enabled = true
 
 	if Debug.get_setting("debug_loadout"):
@@ -493,7 +544,9 @@ func get_designator_aim(slot: String) -> Vector2:
 # Only while a fire button is held: one wall ray per direct-fire designator.
 func _update_designators(dt: float) -> void:
 	if is_dead or controls_locked:
-		if not _designating.is_empty() or not _pending_fire.is_empty():
+		if not _designating.is_empty() or not _pending_fire.is_empty() or _sweep_aiming or _internal_held >= 0.0:
+			cancel_sweep()
+			cancel_internal()
 			cancel_designating()
 		return
 	for slot in _pending_fire.keys():
@@ -532,8 +585,146 @@ func _update_designators(dt: float) -> void:
 			"direct": not weapon.is_indirect_fire,
 			"dashed": can_fire_at_point(slot, point) != "",
 		})
+	if _sweep_aiming:
+		marks.append(_sweep_mark())
+	if _internal_held >= 0.0:
+		_internal_held += dt
+		if _internal_held >= TAP_TIME:
+			marks.append(_internal_mark())
 	if designator:
 		designator.set_marks(marks)
+
+
+# INTERNAL BAY (see Mecha.use_internal)
+#
+# The internal key: a passive part (ECM, Seeker, Biosensor) switches on or
+# off when pressed. A device part: a tap (shorter than TAP_TIME) puts it out
+# at the mecha (a ward or decoy at its feet, a drone straight ahead, a flare
+# straight ahead as far as it goes); held, the designator shows where it
+# would go (a ward's or decoy's landing circle within its throw range, a
+# flare's lit circle, a drone's line toward the cursor) and releasing puts it
+# there; the reload key cancels. With no charges left, or a Seeker shot down,
+# it clicks like an empty gun.
+
+func begin_internal() -> void:
+	if not MouseManager.is_aiming() or build.internal == null:
+		return
+	if build.internal.is_passive():
+		_use_internal_feedback(use_internal())
+		return
+	_internal_held = 0.0
+
+
+func release_internal() -> void:
+	if _internal_held < 0.0:
+		return
+	var held := _internal_held
+	_internal_held = -1.0
+	_use_internal_feedback(use_internal(null if held < TAP_TIME else get_global_mouse_position()))
+
+
+func cancel_internal() -> void:
+	_internal_held = -1.0
+
+
+func is_internal_held() -> bool:
+	return _internal_held >= 0.0
+
+
+func _use_internal_feedback(reason: String) -> void:
+	if reason == "no_charges" or reason == "lost":
+		AudioManager.play_sfx("no_ammo", global_position)
+
+
+func _internal_mark() -> Dictionary:
+	var part = build.internal
+	var cursor := get_global_mouse_position()
+	var drone: bool = part != null and part.function == "drone"
+	var flare: bool = part != null and part.function == "flare"
+	var point := cursor if drone else internal_throw_point(cursor)
+	return {
+		"shape": "line" if drone else "circle",
+		"centre": global_position,
+		"origin": global_position,
+		"point": point,
+		"end": point,
+		"radius": float(part.sensor_range) if flare else Device.RING_RADIUS,
+		"width": 0.0,
+		"facing": get_facing(),
+		"gimbal": 180.0,
+		"min_range": 0.0,
+		"max_range": 0.0 if drone else float(part.throw_range),
+		"look_limits": false,
+		"direct": true,
+		"dashed": can_use_internal() != "",
+	}
+
+
+# SENSOR SWEEP (see Mecha.sweep)
+#
+# Holding the sweep key shows the cone from the mecha toward the cursor; the
+# mouse wheel changes its width (SWEEP_WIDTH_STEP a notch, between
+# SWEEP_MIN_WIDTH and 360, and not the throttle while aiming); releasing
+# sweeps; the reload key cancels. Pressed while the sweep is cooling down,
+# it doesn't aim and reports why (sweep_refused). The result goes to the HUD
+# (sweep_done) and the log.
+
+func begin_sweep() -> void:
+	if not MouseManager.is_aiming():
+		return
+	var reason := can_sweep()
+	if reason != "":
+		sweep_refused.emit(reason)
+		return
+	_sweep_aiming = true
+
+
+func release_sweep() -> void:
+	if not _sweep_aiming:
+		return
+	_sweep_aiming = false
+	var result := sweep(get_global_mouse_position() - global_position, sweep_width)
+	if not result.ok:
+		sweep_refused.emit(result.reason)
+		return
+	MechLog.write("SNS", "Sweep %d°: %s" % [roundi(result.width), describe_sweep(result.counts).to_lower()], MechLog.Kind.COMBAT)
+	sweep_done.emit(result)
+
+
+func cancel_sweep() -> void:
+	_sweep_aiming = false
+
+
+func is_sweep_aiming() -> bool:
+	return _sweep_aiming
+
+
+# The wheel and the reload key while aiming a sweep; true if it used `event`.
+func _sweep_aim_input(event: InputEvent) -> bool:
+	var button := event as InputEventMouseButton
+	if button != null and button.pressed:
+		if button.button_index == MOUSE_BUTTON_WHEEL_UP:
+			sweep_width = minf(sweep_width + SWEEP_WIDTH_STEP, SWEEP_MAX_WIDTH)
+			return true
+		if button.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			sweep_width = maxf(sweep_width - SWEEP_WIDTH_STEP, SWEEP_MIN_WIDTH)
+			return true
+	if event.is_action_pressed("reload_mode"):
+		cancel_sweep()
+		return true
+	return false
+
+
+func _sweep_mark() -> Dictionary:
+	var to_cursor := get_global_mouse_position() - global_position
+	return {
+		"shape": "cone",
+		"centre": global_position,
+		"facing": to_cursor.normalized() if to_cursor != Vector2.ZERO else Vector2.UP.rotated(global_rotation),
+		"width": sweep_width,
+		"radius": SWEEP_RANGE,
+		"dashed": false,
+	}
 
 
 # THE PLAYER'S VIEW
@@ -548,6 +739,16 @@ func _update_designators(dt: float) -> void:
 # VIEW_CHECK_TIME s (one wall ray, building and smoke lookups) and fades at
 # VIEW_FADE_SPEED. Nothing is hidden while controls are locked (cutscenes),
 # and dead ones are left alone (Entities fade their own corpses).
+#
+# A body under a live vision contact from a flare or the Biosensor
+# (ContactStore.has_live_vision) is shown whatever the checks say, and isn't
+# checked at all (no ray). A body the checks show becomes a sight contact.
+# A mecha or device the checks hide but the Seeker (OUTLINE_SOURCE) covers
+# stays hidden and is outlined instead: the HUD draws the edges of its
+# sprites (HudVisionOutlines, get_outlined_bodies). A creature the Seeker
+# covers has no sprites to outline and is shown in full. Other mechas'
+# devices (Device) are checked the same way, without contacts; the player's
+# own are always shown.
 
 func can_see_body(body: Node2D) -> bool:
 	if controls_locked or is_dead:
@@ -582,23 +783,61 @@ func is_hidden_from_view(body) -> bool:
 	return _view_hidden.has(body)
 
 
+## The mechas and devices hidden from view that the Seeker outlines.
+func get_outlined_bodies() -> Array:
+	return _view_outlined.keys().filter(func(b): return is_instance_valid(b) and b.get("is_dead") != true)
+
+
 func _update_view(dt: float) -> void:
 	_view_timer -= dt
 	if _view_timer <= 0.0:
 		_view_timer = VIEW_CHECK_TIME
 		_view_bodies.clear()
 		_view_hidden.clear()
+		_view_outlined.clear()
 		for group in ["mecha", "entity"]:
 			for body in get_tree().get_nodes_in_group(group):
 				if body == self or not (body is Node2D) or body.get("is_dead") == true:
 					continue
 				_view_bodies.append(body)
-				if not can_see_body(body):
+				if contacts.has_live_vision(body, OUTLINE_SOURCE):
+					continue
+				if can_see_body(body):
+					_report_sight(body)
+				elif not contacts.has_live_vision(body):
 					_view_hidden[body] = true
+				elif group == "mecha":
+					_view_hidden[body] = true
+					_view_outlined[body] = true
+		# Others' devices (wards, drones, decoys) are seen like mechas, or
+		# shown or outlined by a vision contact (a decoy a flare or the
+		# Seeker covers); the player always knows where its own are, and a
+		# burning flare is seen from anywhere. They make no sight contacts.
+		for device in get_tree().get_nodes_in_group("device"):
+			if device.get("owner_mecha") == self or not (device is Node2D) or device.get("reveal_everyone") == true:
+				continue
+			_view_bodies.append(device)
+			if contacts.has_live_vision(device, OUTLINE_SOURCE):
+				continue
+			if not can_see_body(device):
+				_view_hidden[device] = true
+				if contacts.has_live_vision(device):
+					_view_outlined[device] = true
 	for body in _view_bodies:
 		if is_instance_valid(body) and body.get("is_dead") != true:
 			var target := 0.0 if _view_hidden.has(body) else 1.0
 			body.modulate.a = move_toward(body.modulate.a, target, VIEW_FADE_SPEED * dt)
+
+
+# A body the view shows is a sight contact, unless it is past VIEW_RANGE
+# (shown only because it isn't checked) or the view is a cutscene's (controls
+# locked: everything is shown).
+func _report_sight(body: Node2D) -> void:
+	if controls_locked or is_dead:
+		return
+	if global_position.distance_to(body.global_position) > VIEW_RANGE:
+		return
+	contacts.report(body, ContactStore.kind_of(body), body.global_position, "sight", SIGHT_CONTACT_TTL)
 
 
 func _exit_tree() -> void:
@@ -635,6 +874,8 @@ func _on_cursor_mode_changed(_mode) -> void:
 				_awaiting_release[weapon_type] = true
 	else:
 		cancel_designating()
+		cancel_sweep()
+		cancel_internal()
 		for weapon_type in WeaponSFXs.keys():
 			stop_shooting(weapon_type)
 		if cur_mode == MODES.ACTIVATING_LOCK:

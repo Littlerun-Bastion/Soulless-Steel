@@ -3,7 +3,9 @@ extends TestSuite
 # ExpeditionRunTest plays the Expedition mode end to end on the real map
 # (Expedition.tscn, big_map) with the real player, enemies and director:
 #   - a successful run: spawn with the saved mecha and cargo, shoot an enemy,
-#     kill it, loot its wreck, extract through an exit, and the cargo is home
+#     kill it, loot its wreck (which carries its kill record), extract through
+#     an exit, and the cargo is home; the scene has heat trails and hears its
+#     car alarms
 #   - dying: everything brought out is lost, the game-over screen says what
 #   - pausing and resuming; quitting from the pause menu (warned first)
 #     abandons the run
@@ -173,13 +175,17 @@ func _test_kill_and_wreck() -> void:
 	var kills_before: int = _scene.player_kills.size()
 	var enemy_name: String = enemy.mecha_name
 	enemy.last_damage_source = {"body": _player(), "name": "Player"}
-	enemy.die({"name": "Player"}, "test")
+	enemy.die({"body": _player(), "name": "Player"}, "test")
 	var wrecked := await wait_until(func(): return _scene.Wrecks.get_child_count() > wrecks_before, 8.0)
 	if not check(wrecked, "a wreck appears where the enemy died"):
 		return
 	# (The shooting case can already have finished another enemy off.)
 	check(_scene.player_kills.size() > kills_before and enemy_name in _scene.player_kills, "the kill counts for the player")
 	var wreck = _scene.Wrecks.get_children()[-1]
+	check_eq(wreck.kill_record.get("killer"), LocalPilots.name_of(_player()), "the wreck carries its kill record (KillRecord)")
+	check(_scene.heat_trails != null and HeatTrails.find(_scene) == _scene.heat_trails, "the scene has its heat trails")
+	var vehicles := VehicleField.find(_scene)
+	check(vehicles == null or vehicles.alarm_started.is_connected(_scene._on_car_alarm), "and hears its car alarms")
 	# Salvage is random (30% per part); make sure there's something to take.
 	if wreck.inventory.is_empty():
 		wreck.populate_stacks([item_stack.from_generic(SALVAGE)])

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/mecha/devices/Decoy.tscn" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/TORI-ML_subprojectile.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+part_name = "DC-2 Decoy"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Not me"
+description = "Two decoys. Drop one or throw it a short way: for 30 s it gives off a mech's heat. Sweeps, wards, drones and NPCs take it for a mech; NPCs may shoot it."
+price = 500.0
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 2, "oil": 1, "copper": 1})
+image = ExtResource("3")
+function = "decoy"
+charges = 2
+use_cooldown = 1.0
+throw_range = 400.0
+device_scene = ExtResource("2")
+sensor_range = 0.0
+device_hp = 2.0
+device_lifetime = 30.0
+decoy_heat = 0.6
+weight = 1.0

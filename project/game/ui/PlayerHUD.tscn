@@ -18,6 +18,12 @@
 [ext_resource type="Script" uid="uid://dwqqiabcc3o6y" path="res://game/ui/hud/HudAlerts.gd" id="33_hud_alerts"]
 [ext_resource type="Script" uid="uid://c23q8wg2a12e3" path="res://game/ui/hud/InteractPrompt.gd" id="34_prompt"]
 [ext_resource type="Script" uid="uid://cr5sy27bx0kc1" path="res://game/ui/hud/HudTopStrip.gd" id="35_top_strip"]
+[ext_resource type="Script" path="res://game/ui/hud/HudContacts.gd" id="36_hud_contacts"]
+[ext_resource type="Script" path="res://game/ui/hud/HudWorldLabels.gd" id="37_world_labels"]
+[ext_resource type="Script" path="res://game/ui/hud/HudLocalFeed.gd" id="38_local_feed"]
+[ext_resource type="Script" path="res://game/ui/hud/HudQuickChat.gd" id="39_quick_chat"]
+[ext_resource type="Script" path="res://game/ui/hud/HudSweep.gd" id="40_sweep"]
+[ext_resource type="Script" path="res://game/ui/hud/HudVisionOutlines.gd" id="41_vision_outlines"]
 
 [sub_resource type="Animation" id="Animation_muj6a"]
 length = 0.001
@@ -235,6 +241,57 @@ theme = ExtResource("32_mech_theme")
 theme_type_variation = &"LabelMetaBright"
 text = "EXIT 0"
 horizontal_alignment = 1
+
+[node name="HudVisionOutlines" type="Control" parent="SubViewportContainer/SubViewport"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+script = ExtResource("41_vision_outlines")
+
+[node name="HudContacts" type="Control" parent="SubViewportContainer/SubViewport"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+theme = ExtResource("32_mech_theme")
+script = ExtResource("36_hud_contacts")
+
+[node name="HudWorldLabels" type="Control" parent="SubViewportContainer/SubViewport"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+theme = ExtResource("32_mech_theme")
+script = ExtResource("37_world_labels")
+
+[node name="HudLocalFeed" type="VBoxContainer" parent="SubViewportContainer/SubViewport"]
+offset_left = 31.0
+offset_top = 52.0
+offset_right = 31.0
+offset_bottom = 52.0
+mouse_filter = 2
+theme = ExtResource("32_mech_theme")
+script = ExtResource("38_local_feed")
+
+[node name="HudQuickChat" type="PanelContainer" parent="SubViewportContainer/SubViewport"]
+offset_left = 31.0
+offset_top = 180.0
+offset_right = 31.0
+offset_bottom = 180.0
+mouse_filter = 2
+theme = ExtResource("32_mech_theme")
+script = ExtResource("39_quick_chat")
+
+[node name="HudSweep" type="PanelContainer" parent="SubViewportContainer/SubViewport"]
+offset_top = 100.0
+offset_bottom = 100.0
+mouse_filter = 2
+theme = ExtResource("32_mech_theme")
+script = ExtResource("40_sweep")
 
 [node name="MissionTracker" parent="SubViewportContainer/SubViewport" unique_id=600968429 instance=ExtResource("19_mission")]
 anchors_preset = 1

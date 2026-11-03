@@ -49,6 +49,9 @@ const KNOCKBACK_SCALE := 20.0   # impact_force -> speed (px/s) added
 @export var regen_rate := 0.3
 ## Never moves (a Cyst): no movement, no knockback, not nudged by others.
 @export var rooted := false
+## Comes to investigate a mecha's sensor sweep (a loud sound only creatures
+## hear, Mecha.sweep).
+@export var hears_sweeps := true
 
 @export_group("Loot")
 ## What its carcass holds: loot_rolls (min, max) rolls on loot_table, plus
@@ -281,6 +284,8 @@ func heard_sound(sound_data: Dictionary) -> void:
 	if is_dead or paused or target != null:
 		return
 	if sound_data.get("volume_type") != "loud":
+		return
+	if sound_data.get("type") == "sweep" and not hears_sweeps:
 		return
 	if leash_radius > 0.0 and sound_data.position.distance_to(leash_center) > leash_radius:
 		return

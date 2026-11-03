@@ -4,12 +4,19 @@ extends PanelContainer
 ## Top centre: one alert at a time, the most urgent one.
 ##   critical (inverted)  capsule exposed, hull heat past the damage point,
 ##                        status effects, ECM interference on a lock
-##   notice (outlined)    extracting
+##   notice (outlined)    a passing event for NOTICE_TIME s (show_notice):
+##                        "YOU WERE SWEPT" (no bearing), "WARD DESTROYED";
+##                        extracting
 ## Replaces the old blinking WRN labels, the ECM readout, the exposed banner
 ## and the extracting label. Order of urgency is the order in _pick().
 
+## Placeholder.
+const NOTICE_TIME := 3.0
+
 var player = null
 var extracting := false
+var _notice := ""
+var _notice_time := 0.0
 
 const STATUS_WORDS := {"fire": "FIRE", "freezing": "FREEZING", "corrosion": "CORROSION",
 	"electrified": "ELECTRIFIED", "overheating": "OVERHEATING"}
@@ -38,7 +45,19 @@ func get_current() -> String:
 	return _label.text if visible else ""
 
 
-func _process(_delta: float) -> void:
+## A passing notice, outlined, for `seconds`; a newer one replaces it.
+func show_notice(text: String, seconds := NOTICE_TIME) -> void:
+	_notice = text
+	_notice_time = seconds
+
+
+## Someone's sweep found the player (Mecha.swept).
+func show_swept() -> void:
+	show_notice("YOU WERE SWEPT")
+
+
+func _process(delta: float) -> void:
+	_notice_time = maxf(_notice_time - delta, 0.0)
 	var alert := _pick()
 	visible = not alert.is_empty()
 	if not visible:
@@ -67,6 +86,8 @@ func _pick() -> Dictionary:
 			return {"text": "! " + " · ".join(statuses), "critical": true}
 		if player.get_locking_to() and player.ecm_strength_difference > 0.0:
 			return {"text": "! ECM INTERFERENCE −%d%%" % roundi(player.ecm_strength_difference * 100.0), "critical": true}
+	if _notice_time > 0.0:
+		return {"text": _notice, "critical": false}
 	if extracting:
 		return {"text": "EXTRACTING", "critical": false}
 	return {}

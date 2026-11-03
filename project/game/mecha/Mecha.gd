@@ -66,6 +66,15 @@ signal cockpit_exposed(hp: int)
 signal core_shell_destroyed()
 signal system_degraded(system_name: String, severity: float)  # For mobility, sensors, etc.
 signal flagged()
+# say(): CombatScene shows it to the player if they hear it.
+signal spoke(mecha, text: String, seconds: float, always_heard: bool)
+# Someone's sweep found this mecha (see sweep). Says nothing of who or where.
+signal swept
+# One of this mecha's devices (a ward, a drone) was destroyed (Device).
+signal device_destroyed(device)
+
+## How long (s) a speech box stays up by default. Placeholder.
+const SPEECH_TIME := 3.0
 
 
 @export var speed_modifier = 1.0
@@ -188,6 +197,30 @@ var target_inventory: Inventory = null
 @onready var VisibilityNode = $VisibleOnScreenNotifier2D
 
 var mecha_name = "Mecha Name"
+## What this mecha knows about where others are (see ContactStore). Its
+## clock runs in _physics_process, so it stops while the mecha is paused.
+var contacts := ContactStore.new()
+## The name other pilots see (Local, name tags, speech). mecha_name stays the
+## internal name (is_player, kill credit, stage actors). "" until the mecha
+## joins Local, which gives an NPC one from the callsign list.
+var callsign := ""
+## An Anonymous pilot isn't on the Local roster, gets no join or leave
+## lines, shows no name tag and is "Unknown" when it speaks. Fixed for the
+## match.
+var is_anonymous := false
+## Active sensors (sweeps; later drones, wards, the Seeker) find this mecha
+## only within (1 - sensor_reduction) of their range. Set by an ECM module.
+var sensor_reduction := 0.0
+## Seconds until this mecha can sweep again.
+var sweep_cooldown := 0.0
+## The internal bay part's state (see INTERNAL BAY): charges left, seconds
+## until it can be used again, and whether a passive part is switched on.
+var internal_charges := 0
+var internal_cooldown := 0.0
+var internal_on := false
+## A Seeker that was shot down is gone until the part is fitted again.
+var internal_lost := false
+var _biosensor_timer := randf()
 var paused = false
 var controls_locked = false
 var is_dead = false
@@ -256,6 +289,9 @@ var cur_rotation_speed = 0
 
 var last_damage_source
 var last_damage_weapon
+## Built when it dies (KillRecord): who killed it, with what, from where, and
+## what it knew. Empty while alive.
+var kill_record := {}
 var processed_hitboxes = []
 var lingering_hitboxes = []
 
@@ -300,6 +336,7 @@ var build = {
 	"chipset": null,
 	"thruster": null,
 	"chassis": null,
+	"internal": null,
 }
 # Grades of the fitted parts: build slot -> grade (Grades). Missing means
 # Standard. Set it before the parts are fitted (set_parts_from_design) so the
@@ -413,12 +450,17 @@ func _ready():
 	# Mechas bump into and push map vehicles (see VehicleField).
 	set_collision_mask_value(MapSenses.VEHICLE_LAYER, true)
 	set_collision_mask_value(MapSenses.HEAVY_VEHICLE_LAYER, true)
+	device_destroyed.connect(_on_own_device_destroyed)
 
 
 func _physics_process(dt):
 	if paused:
 		return
 	
+	contacts.advance(dt)
+	sweep_cooldown = maxf(sweep_cooldown - dt, 0.0)
+	internal_cooldown = maxf(internal_cooldown - dt, 0.0)
+	_update_biosensor(dt)
 	generate_passive_sounds(dt)
 
 	# Mines round this mecha react to it (mine.gd): a grid lookup, no physics.
@@ -642,9 +684,11 @@ func get_design_data():
 
 
 func set_parts_from_design(data):
+	# A design without an optional slot (older designs and saves have no
+	# "internal") leaves it empty.
 	for part_name in ["head", "core", "shoulders", "generator", "chipset", "chassis",\
 					"thruster", "arm_weapon_left", "arm_weapon_right", "shoulders", \
-					"shoulder_weapon_left", "shoulder_weapon_right",]:
+					"shoulder_weapon_left", "shoulder_weapon_right", "internal"]:
 		var type = part_name.replace("_left", "").replace("_right", "")
 		var side = false
 		if part_name.find("left") != -1:
@@ -653,9 +697,9 @@ func set_parts_from_design(data):
 			side = SIDE.RIGHT
 
 		if typeof(side) == TYPE_INT:
-			callv("set_" + type, [data[part_name], side])
+			callv("set_" + type, [data.get(part_name, false), side])
 		else:
-			callv("set_" + type, [data[part_name]])
+			callv("set_" + type, [data.get(part_name, false)])
 	
 	refresh_dynamic_components()
 
@@ -761,6 +805,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
+	_note_attack(source_info)
 
 	if hp <= 0 and not is_exposed:
 		is_exposed = true
@@ -881,11 +926,12 @@ func apply_movement_modifiers(speed):
 		speed *= ENTERING_BUILDING_SPEED_MOD
 	return speed
 
-func die(_source_info, _weapon_name):
+func die(source_info, weapon_name):
 	if is_dead:
 		return
 	is_dead = true
-	
+	kill_record = KillRecord.build(self, source_info, weapon_name)
+
 	#Update sfxs
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.stop()
@@ -1066,14 +1112,265 @@ func get_effective_cooling() -> float:
 	
 
 
-func create_sound(volume_type, type, max_distance):
+## entities_only: only creatures hear it (a sweep), not mechas.
+func create_sound(volume_type, type, max_distance, entities_only := false):
 	emit_signal("made_sound", {
 		"volume_type": volume_type,
 		"type": type,
 		"position": global_position,
 		"max_distance": max_distance,
-		"source": self
+		"source": self,
+		"entities_only": entities_only,
 	})
+
+
+# SENSOR SWEEP
+#
+# Every mecha has a sweep, like a directional scan: a cone from the mecha,
+# SWEEP_RANGE long and from SWEEP_MIN_WIDTH to 360 degrees wide. It reports
+# what is in the cone by kind ("mech", or an Entity's species) with counts,
+# and nothing else: no positions, directions or distances. A narrow cone
+# tells more only by what it leaves out. Walls don't block it. A mecha with
+# sensor_reduction (ECM) is only found within (1 - sensor_reduction) of the
+# range; further out it simply isn't there.
+#
+# It costs SWEEP_HEAT kJ (about a dash) and SWEEP_COOLDOWN s. Every mecha it
+# finds gets the swept signal (the player sees "YOU WERE SWEPT"); creatures
+# hear it as a loud sound at the sweeper (Entity.hears_sweeps), mechas don't.
+# Sweeps never write contacts. The player aims one with the sweep key
+# (Player, "SENSOR SWEEP"); NPC code calls sweep() directly.
+
+## Placeholders.
+const SWEEP_RANGE := 10000.0
+const SWEEP_MIN_WIDTH := 10.0
+const SWEEP_MAX_WIDTH := 360.0
+const SWEEP_HEAT := 650.0
+const SWEEP_COOLDOWN := 10.0
+## How far (px) creatures hear a sweep.
+const SWEEP_SOUND_RANGE := 10000.0
+
+
+## "" if this mecha can sweep now, else why not: "dead", "cooldown".
+func can_sweep() -> String:
+	if is_dead:
+		return "dead"
+	if sweep_cooldown > 0.0:
+		return "cooldown"
+	return ""
+
+
+## Sweeps a cone `width_deg` wide (clamped to SWEEP_MIN_WIDTH..360) along
+## `direction`. Returns {"ok": true, "width": degrees, "counts": {kind:
+## count}}, or {"ok": false, "reason": can_sweep()} if it can't sweep now.
+func sweep(direction: Vector2, width_deg: float) -> Dictionary:
+	var reason := can_sweep()
+	if reason != "":
+		return {"ok": false, "reason": reason}
+	var width := clampf(width_deg, SWEEP_MIN_WIDTH, SWEEP_MAX_WIDTH)
+	var counts := {}
+	for body in sweep_finds(direction, width):
+		var kind := ContactStore.kind_of(body)
+		counts[kind] = counts.get(kind, 0) + 1
+		if body.has_signal("swept"):
+			body.swept.emit()
+	increase_heat(SWEEP_HEAT)
+	sweep_cooldown = SWEEP_COOLDOWN
+	create_sound("loud", "sweep", SWEEP_SOUND_RANGE, true)
+	return {"ok": true, "width": width, "counts": counts}
+
+
+## A sweep's counts as text, mechs first, then species by name:
+## "2 MECH · 3 STALKER", or "NO RETURNS".
+static func describe_sweep(counts: Dictionary) -> String:
+	if counts.is_empty():
+		return "NO RETURNS"
+	var kinds: Array = counts.keys()
+	kinds.sort_custom(func(a, b): return (a == "mech" and b != "mech") or (a != "mech" and b != "mech" and str(a) < str(b)))
+	var parts: Array[String] = []
+	for kind in kinds:
+		parts.append("%d %s" % [counts[kind], str(kind).to_upper()])
+	return " · ".join(parts)
+
+
+## The living mechas, decoys (counted as mechas; not this mecha's own) and
+## Entities a sweep along `direction`, `width_deg` wide, would find. No side
+## effects.
+func sweep_finds(direction: Vector2, width_deg: float) -> Array:
+	var found := []
+	var half := deg_to_rad(width_deg) * 0.5
+	var forward := direction.normalized() if direction != Vector2.ZERO else Vector2.UP.rotated(global_rotation)
+	for group in ["mecha", "decoy", "entity"]:
+		for body in get_tree().get_nodes_in_group(group):
+			if body == self or not (body is Node2D) or body.get("is_dead") == true:
+				continue
+			if body.get("owner_mecha") == self:
+				continue
+			var offset: Vector2 = body.global_position - global_position
+			var reduction = body.get("sensor_reduction")
+			var reach := SWEEP_RANGE * (1.0 - clampf(float(reduction) if reduction != null else 0.0, 0.0, 1.0))
+			if offset.length() > reach:
+				continue
+			if width_deg < SWEEP_MAX_WIDTH and absf(forward.angle_to(offset)) > half:
+				continue
+			found.append(body)
+	return found
+
+
+# INTERNAL BAY
+#
+# One optional part (build.internal, database/parts/internal.gd). use_internal
+# is the one call for the player (the internal key, Player "INTERNAL BAY")
+# and NPC code alike:
+#   - a device part spends a charge and puts out its device (Device):
+#       ward, decoy  at the mecha on a tap; thrown toward a point, at most
+#                    throw_range away
+#       drone        straight ahead on a tap; toward a point
+#       flare        straight ahead at throw_range on a tap; at a point,
+#                    at most throw_range away
+#   - a passive part (ECM, Seeker, Biosensor) switches on or off.
+# Every use waits the part's use_cooldown. While on:
+#   - an ECM module gives the mecha its ECM / ECM_frequency (lock-on
+#     breaking, update_locking) and sensor_reduction (active sensors find it
+#     at (1 - reduction) of their range)
+#   - a Seeker follows the mecha (a Device that follows its owner). Only in a
+#     match (the mecha has an arena), so a Hangar display mecha has none.
+#     Shot down, it is lost (internal_lost) until the part is fitted again.
+#   - a Biosensor gives the mecha vision contacts (source "biosensor") of the
+#     Entities within sensor_range, every update_interval s (_update_biosensor)
+
+## "" if the internal part can be used now, else why not: "dead", "no_part",
+## "lost" (a Seeker shot down), "cooldown", "no_charges".
+func can_use_internal() -> String:
+	if is_dead:
+		return "dead"
+	if build.internal == null:
+		return "no_part"
+	if internal_lost:
+		return "lost"
+	if internal_cooldown > 0.0:
+		return "cooldown"
+	if not build.internal.is_passive() and internal_charges <= 0:
+		return "no_charges"
+	return ""
+
+
+## Uses the internal part (see INTERNAL BAY); `point` is where it is aimed,
+## or null for a tap. Returns "" if it was used, else can_use_internal's
+## reason.
+func use_internal(point = null) -> String:
+	var reason := can_use_internal()
+	if reason != "":
+		return reason
+	var part = build.internal
+	internal_cooldown = part.use_cooldown
+	if part.is_passive():
+		internal_on = not internal_on
+		_apply_internal()
+		return ""
+	internal_charges -= 1
+	if part.function == "drone":
+		var heading := get_facing()
+		if point is Vector2 and point != global_position:
+			heading = global_position.direction_to(point)
+		_put_device(part, global_position, heading)
+	elif part.function == "flare":
+		var aim: Vector2 = point if point is Vector2 else global_position + get_facing() * part.throw_range
+		_put_device(part, internal_throw_point(aim), Vector2.ZERO)
+	else:
+		var at := global_position
+		if point is Vector2:
+			at = internal_throw_point(point)
+		_put_device(part, at, Vector2.ZERO)
+	return ""
+
+
+## Where a held use aimed at `point` would put a ward, decoy or flare (at
+## most throw_range away).
+func internal_throw_point(point: Vector2) -> Vector2:
+	var part = build.internal
+	var reach: float = part.throw_range if part != null else 0.0
+	return global_position + (point - global_position).limit_length(reach)
+
+
+## This mecha's devices still out there.
+func get_devices() -> Array:
+	return Device.owned_by(self)
+
+
+func _put_device(part, at: Vector2, heading: Vector2) -> void:
+	if part.device_scene == null or get_parent() == null:
+		return
+	var device: Device = part.device_scene.instantiate()
+	device.setup(self, part, heading)
+	get_parent().add_child(device)
+	device.global_position = at
+
+
+func _apply_internal() -> void:
+	var part = build.internal
+	var ecm_on: bool = part != null and part.function == "ecm" and internal_on
+	ecm = part.ECM if ecm_on else 0.0
+	ecm_frequency = part.ECM_frequency if ecm_on else 0.0
+	sensor_reduction = part.sensor_reduction if ecm_on else 0.0
+	_update_seeker()
+
+
+# A Seeker part switched on puts its follower out; anything else takes it in.
+func _update_seeker() -> void:
+	if not is_inside_tree():
+		return
+	var part = build.internal
+	var wanted: bool = part != null and part.function == "seeker" and internal_on \
+			and not internal_lost and not is_dead and arena is Node
+	var followers := get_devices().filter(func(d): return d.follows_owner)
+	if wanted and followers.is_empty():
+		_put_device(part, global_position, Vector2.ZERO)
+	elif not wanted:
+		for follower in followers:
+			follower.expire()
+
+
+func _update_biosensor(dt: float) -> void:
+	var part = build.internal
+	if part == null or part.function != "biosensor" or not internal_on or is_dead:
+		return
+	_biosensor_timer -= dt
+	if _biosensor_timer > 0.0:
+		return
+	_biosensor_timer = part.update_interval
+	var ttl: float = part.update_interval + Device.PING_SLACK
+	for entity in get_tree().get_nodes_in_group("entity"):
+		if entity.get("is_dead") == true or not (entity is Node2D):
+			continue
+		if global_position.distance_to(entity.global_position) <= part.sensor_range:
+			contacts.report(entity, ContactStore.kind_of(entity), entity.global_position, "biosensor", ttl)
+
+
+func _on_own_device_destroyed(device) -> void:
+	if device.get("follows_owner") == true:
+		internal_lost = true
+		internal_on = false
+
+
+# SPEECH AND LOCAL
+
+## Says `text` out loud: a speech box over this mecha for `seconds`, shown
+## to the player if they are within earshot (Barks.EARSHOT), even through
+## walls, and added to the Local feed as a bark line. always_heard skips the
+## earshot check (cutscenes, StageActorSay).
+func say(text: String, seconds := SPEECH_TIME, always_heard := false) -> void:
+	if text == "":
+		return
+	spoke.emit(self, text, seconds, always_heard)
+
+
+# Tells the match's Local channel who hit whom first (reputation).
+func _note_attack(source_info) -> void:
+	if typeof(source_info) != TYPE_DICTIONARY or not (arena is Node):
+		return
+	var local = arena.get("local_pilots")
+	if local is LocalPilots:
+		local.note_attack(source_info.get("body"), self)
 
 
 #PARTS SETTERS
@@ -1284,11 +1581,10 @@ func set_chipset(part_name):
 	if part_name:
 		var part_data = PartManager.get_part("chipset", part_name)
 		build.chipset = part_data
-		# Flatten chipset stats onto the mecha so the lock-on/ECM code can read
-		# them as plain properties — including cross-mecha (locking_to.mecha.ecm).
-		# Mechs with no chipset keep the safe defaults these vars declare.
-		ecm = build.chipset.ECM
-		ecm_frequency = build.chipset.ECM_frequency
+		# Flatten chipset stats onto the mecha so the lock-on code can read
+		# them as plain properties. Mechs with no chipset keep the safe
+		# defaults these vars declare. ECM comes from an internal ECM module
+		# (set_internal), not the chipset.
 		lock_strength = build.chipset.lock_on_strength
 		lock_on_duration = build.chipset.lock_on_duration
 	else:
@@ -1301,6 +1597,22 @@ func set_thruster(part_name):
 		build.thruster = part_data
 	else:
 		build.thruster = null
+
+
+## The internal bay part (see INTERNAL BAY). Fitting one gives a full load
+## of charges; a passive part starts switched on.
+func set_internal(part_name):
+	if part_name:
+		build.internal = PartManager.get_part("internal", part_name)
+		internal_charges = build.internal.charges
+		internal_on = build.internal.is_passive()
+	else:
+		build.internal = null
+		internal_charges = 0
+		internal_on = false
+	internal_cooldown = 0.0
+	internal_lost = false
+	_apply_internal()
 
 
 func set_chassis(part_name):

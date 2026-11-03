@@ -13,6 +13,9 @@ class_name Wreck
 # Unlike the test container it doesn't block movement, and its interact
 # range is a comfortable circle around the hull.
 #
+# Opening it also shows the mecha's kill record (kill_record) beside the loot
+# (Player, KillRecordWindow).
+#
 # Use: instantiate, setup(), copy_mecha_visuals(), then add to the tree.
 
 enum State { UNSEARCHED, SEARCHED, EMPTY }
@@ -24,6 +27,9 @@ const MARKER_ALPHA_MAX := 0.55
 const MARKER_PULSE_TIME := 0.9
 
 var state: State = State.UNSEARCHED
+## The dead mecha's KillRecord, shown beside the loot when opened; {} for
+## none.
+var kill_record := {}
 # How the hull is tinted (Carcass draws a corpse, not grey metal).
 var hull_tint := HULL_TINT
 var empty_tint := EMPTY_TINT

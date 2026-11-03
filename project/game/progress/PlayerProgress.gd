@@ -12,6 +12,8 @@ extends Node
 #   - materials      : crafting materials from recycling salvage (Materials)
 #   - blueprints     : parts the Fabricator can build (learned by recycling)
 #   - facilities     : Hangar facility levels (Facilities)
+#   - Local          : the callsign other pilots see, whether the next
+#                      deployment is Anonymous, and reputation (LocalPilots)
 #
 # Story position lives in StoryDirector; settings live in Profile.
 # Profile only packs/unpacks this data into the save file under "progress".
@@ -38,6 +40,7 @@ signal expedition_lost(report)
 signal materials_changed(materials)
 signal blueprints_changed
 signal facilities_changed
+signal local_profile_changed  # callsign, Anonymous or reputation
 
 # Why an expedition was lost (the "reason" in a loss report).
 const LOSS_DESTROYED := "destroyed"   # the player's mecha was destroyed
@@ -49,10 +52,12 @@ const DEFAULT_MECHA := {
 	"thruster": "type_1_thruster",
 	"arm_weapon_left": "MA-L127", "arm_weapon_right": "MA-L127",
 	"shoulder_weapon_left": false, "shoulder_weapon_right": false,
+	"internal": false,
 }
 # The stash at the start; the Stash facility makes it bigger (Facilities).
 const STASH_SIZE := Vector2i(8, 20)
-# Slots a mecha can't deploy without; weapons are optional.
+# Slots a mecha can't deploy without; weapons and the internal bay are
+# optional.
 const REQUIRED_SLOTS := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster"]
 # Credits a brand-new profile starts with.
 const STARTING_MONEY := 1000
@@ -65,7 +70,10 @@ const SELL_CONFIRM_OVER := 1000
 const BLUEPRINT_COPIES := 3
 # Every PartManager part type.
 const PART_TYPES := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster",
-		"arm_weapon", "shoulder_weapon"]
+		"arm_weapon", "shoulder_weapon", "internal"]
+# The callsign of a new profile, and the longest one allowed. Placeholders.
+const DEFAULT_CALLSIGN := "Drifter"
+const MAX_CALLSIGN_LENGTH := 16
 
 var money: float = 0.0
 var current_mecha: Dictionary = DEFAULT_MECHA.duplicate()
@@ -85,8 +93,51 @@ var in_expedition := false
 # What the last lost expedition cost, until something shows it to the player
 # (game-over screen or main menu). Saved, so it survives a crash.
 var pending_loss_report: Dictionary = {}
+# Local (LocalPilots): the player's callsign, whether the next deployment is
+# Anonymous (fixed for the run once deployed), and reputation.
+var callsign := DEFAULT_CALLSIGN
+var deploy_anonymous := false
+var reputation := 0
 
 var autosave := true  # tests turn this off so the real profile isn't written
+
+
+# ---- Local ----
+
+func get_callsign() -> String:
+	return callsign
+
+
+# Trimmed and cut to MAX_CALLSIGN_LENGTH; an empty one keeps the old one.
+func set_callsign(value: String, should_save := true) -> void:
+	value = value.strip_edges().left(MAX_CALLSIGN_LENGTH)
+	if value == "" or value == callsign:
+		return
+	callsign = value
+	local_profile_changed.emit()
+	if should_save:
+		_save()
+
+
+func set_deploy_anonymous(value: bool, should_save := true) -> void:
+	deploy_anonymous = value
+	local_profile_changed.emit()
+	if should_save:
+		_save()
+
+
+func get_reputation() -> int:
+	return reputation
+
+
+func add_reputation(amount: int, should_save := true) -> void:
+	if amount == 0:
+		return
+	reputation += amount
+	_log("reputation = %d" % reputation)
+	local_profile_changed.emit()
+	if should_save:
+		_save()
 
 
 # ---- Money ----
@@ -609,9 +660,13 @@ func reset() -> void:
 	facilities = {}
 	in_expedition = false
 	pending_loss_report = {}
+	callsign = DEFAULT_CALLSIGN
+	deploy_anonymous = false
+	reputation = 0
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
 	materials_changed.emit(get_materials())
+	local_profile_changed.emit()
 
 
 func get_save_data() -> Dictionary:
@@ -626,6 +681,9 @@ func get_save_data() -> Dictionary:
 		"facilities": facilities,
 		"in_expedition": in_expedition,
 		"pending_loss_report": pending_loss_report,
+		"callsign": callsign,
+		"deploy_anonymous": deploy_anonymous,
+		"reputation": reputation,
 	}
 
 
@@ -644,9 +702,14 @@ func set_save_data(data) -> void:
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
+	var saved_callsign = data.get("callsign", DEFAULT_CALLSIGN)
+	callsign = saved_callsign if saved_callsign is String and saved_callsign != "" else DEFAULT_CALLSIGN
+	deploy_anonymous = bool(data.get("deploy_anonymous", false))
+	reputation = int(data.get("reputation", 0))
 	money_changed.emit(money)
 	mecha_changed.emit(current_mecha)
 	materials_changed.emit(get_materials())
+	local_profile_changed.emit()
 
 
 # Saves from before PlayerProgress kept money and the mecha in "stats" and the

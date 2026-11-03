@@ -23,6 +23,9 @@ extends Node2D
 #   direct       direct fire: a line runs from the muzzle to `end`
 #   dashed       the weapon can't fire at the point now (out of the look
 #                angle, reloading, indoors...): drawn in the disabled style
+# A sensor sweep's cone (Player, "SENSOR SWEEP") is a mark with shape "cone":
+# centre, facing (the cone's middle), width (degrees), radius (its range)
+# and dashed; two edges and the arc, or a full circle at 360 degrees.
 # Strokes are the theme's S1/S2 in screen pixels, whatever the zoom.
 
 const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
@@ -55,6 +58,9 @@ func _draw() -> void:
 		var dashed: bool = mark.dashed
 		var color := dim if dashed else bright
 		var width := s1 if dashed else s2
+		if mark.shape == "cone":
+			_cone(mark, color, width, dashed, px)
+			continue
 		_draw_range_arcs(mark, faint, s1, px)
 		var origin: Vector2 = mark.origin
 		var end: Vector2 = mark.end
@@ -87,6 +93,21 @@ func _draw_range_arcs(mark: Dictionary, color: Color, width: float, px: float) -
 		for side in [-half, half]:
 			var dir := facing.rotated(side)
 			_line(centre + dir * mark.min_range, centre + dir * mark.max_range, color, width, true, px)
+
+
+# A sweep cone: its two edges and the arc at its range; a circle at 360.
+func _cone(mark: Dictionary, color: Color, width: float, dashed: bool, px: float) -> void:
+	var centre: Vector2 = mark.centre
+	var facing: Vector2 = mark.facing
+	var radius: float = mark.radius
+	var degrees: float = mark.width
+	if degrees >= 360.0:
+		_circle(centre, radius, color, width, dashed, px)
+		return
+	var half := deg_to_rad(degrees) * 0.5
+	for side in [-half, half]:
+		_line(centre, centre + facing.rotated(side) * radius, color, width, dashed, px)
+	draw_arc(centre, radius, facing.angle() - half, facing.angle() + half, ARC_POINTS, color, width)
 
 
 func _line(a: Vector2, b: Vector2, color: Color, width: float, dashed: bool, px: float) -> void:

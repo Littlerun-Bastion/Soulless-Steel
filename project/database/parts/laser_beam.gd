@@ -81,7 +81,7 @@ func _start() -> void:
 	_wall_stopped = hit != null
 	_length = _origin.distance_to(hit if hit != null else _end)
 	var reach := _length + BODY_REACH + _width
-	for group in ["mecha", "entity"]:
+	for group in ["mecha", "entity", "device"]:
 		for body in get_tree().get_nodes_in_group(group):
 			if body != _firer and body is Node2D and _origin.distance_to(body.global_position) <= reach:
 				_bodies.append(body)
@@ -106,7 +106,7 @@ func _hit_bodies(prev_front: float) -> void:
 
 
 func _hit_body(body, at: Vector2) -> void:
-	if body.is_in_group("entity"):
+	if body.is_in_group("entity") or body.is_in_group("device"):
 		body.take_hit(base_damage, armor_pen, _dir, original_mecha_info, 0.0)
 		return
 	var pen_result: Dictionary = body.armor_check("core", at, _dir, armor_pen, base_damage)

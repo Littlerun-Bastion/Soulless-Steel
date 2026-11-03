@@ -14,9 +14,10 @@ const RATE := 0.25
 # Pips a fresh armour facing has (Mecha sets every fitted facing to this).
 const ARMOR_PIPS := 3
 # Section -> {build slot: share of that part's price}. A shoulder carries half
-# the shoulders part and the weapons on its side.
+# the shoulders part and the weapons on its side; the core carries the
+# internal bay.
 const SECTIONS := {
-	"core": {"core": 1.0, "generator": 1.0, "chipset": 1.0, "thruster": 1.0},
+	"core": {"core": 1.0, "generator": 1.0, "chipset": 1.0, "thruster": 1.0, "internal": 1.0},
 	"head": {"head": 1.0},
 	"chassis": {"chassis": 1.0},
 	"left_shoulder": {"shoulders": 0.5, "arm_weapon_left": 1.0, "shoulder_weapon_left": 1.0},

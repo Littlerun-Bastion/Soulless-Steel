@@ -2,6 +2,8 @@ extends CanvasLayer
 
 const ITEM_TOOLTIP := preload("res://game/mecha/ItemTooltip.tscn")
 const ICONS := "res://game/ui/mech_os/icons/"
+## Gap (px) between a kill record and the loot window it sits beside.
+const KILL_RECORD_GAP := 16.0
 
 # Registry of available apps: app_id -> PackedScene
 var app_registry: Dictionary = {}
@@ -111,6 +113,7 @@ func _register_apps() -> void:
 	register_app("messenger", preload("res://game/ui/mech_os/windows/MessengerWindow.tscn"), "MSG", preload(ICONS + "msg.svg"), "Messenger")
 	register_app("deployments", preload("res://game/ui/mech_os/windows/DeploymentsWindow.tscn"), "DEP", preload(ICONS + "dep.svg"), "Deployments")
 	register_app("log", preload("res://game/ui/mech_os/windows/LogWindow.tscn"), "LOG", preload(ICONS + "log.svg"), "Log")
+	register_app("local", preload("res://game/ui/mech_os/windows/LocalWindow.tscn"), "LOC", preload(ICONS + "loc.svg"), "Local")
 	register_app("system", preload("res://game/ui/mech_os/windows/SystemWindow.tscn"), "SYS", preload(ICONS + "sys.svg"), "System", true)
 	register_app("net", null, "NET", preload(ICONS + "net.svg"), "Browser", true)
 	taskbar.set_app_enabled("net", false, "Offline")
@@ -276,9 +279,36 @@ func open_inventory(app_id: String, inv: Inventory, title: String) -> MechWindow
 	window.setup(inv, title)
 	_center_window(window)
 	focus_window(window)
-	
+
 	return window
-	
+
+
+## Shows a wreck's kill record (KillRecordWindow) to the left of `beside`
+## (its loot window), or centred, and closes it when `beside` goes. One at a
+## time: a new one replaces the last.
+func open_kill_record(record: Dictionary, beside: MechWindow = null) -> MechWindow:
+	close_app("kill_record")
+	var window: KillRecordWindow = preload("res://game/ui/mech_os/windows/KillRecordWindow.tscn").instantiate()
+	window.app_id = "kill_record"
+	window_layer.add_child(window)
+	window.size = window.min_size
+	open_windows["kill_record"] = window
+	window.closed.connect(_on_window_closed)
+	window.focused.connect(_on_window_focused)
+	window.setup(record)
+	if is_instance_valid(beside):
+		window.position = Vector2(maxf(beside.position.x - window.size.x - KILL_RECORD_GAP, 0.0), beside.position.y)
+		beside.tree_exiting.connect(_close_kill_record_of.bind(window))
+		focus_window(beside)
+	else:
+		_center_window(window)
+	return window
+
+
+func _close_kill_record_of(window: MechWindow) -> void:
+	if open_windows.get("kill_record") == window:
+		close_app("kill_record")
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		close_all()

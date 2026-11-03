@@ -1,0 +1,27 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/mecha/devices/Seeker.tscn" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/GL44_projectile.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+part_name = "SK-1 Seeker"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Eyes over the shoulder"
+description = "Passive while switched on. A small drone hovers round you and shows you what is within 100 m of it, through walls: mechas as outlines, creatures in full. It hums: NPCs within 30 m hear it every few seconds. Shot down, it's gone for the run."
+price = 1000.0
+tech_tier = 2
+composition = Dictionary[String, int]({"silicon": 2, "copper": 2, "noble_metals": 1})
+image = ExtResource("3")
+function = "seeker"
+charges = 0
+use_cooldown = 0.5
+device_scene = ExtResource("2")
+sensor_range = 2000.0
+update_interval = 0.2
+device_hp = 1.0
+sound_interval = 3.0
+sound_range = 600.0
+weight = 1.0

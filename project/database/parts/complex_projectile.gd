@@ -181,6 +181,10 @@ var burst_on_landing := false
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
 	Collision = get_node("CollisionShape2D")
+	# The blast reaches devices (wards, drones) too, on their own layer.
+	var blast := get_node_or_null("Explosion") as Area2D
+	if blast != null:
+		blast.set_collision_mask_value(Device.DEVICE_LAYER, true)
 
 # Main physics loop - handles movement, guidance, and collision detection
 func _physics_process(dt):
@@ -485,11 +489,11 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 
 # Entities (creatures) have no armour parts: a direct hit is one hit, armour
 # pen against their armour rating. Only for contact-fused rounds, like mecha
-# hits; anything that isn't an Entity is ignored.
+# hits; anything that isn't an Entity or a device (Device) is ignored.
 func hit_entity(body) -> void:
 	if has_impacted or dying or not fuse_is_contact_enabled:
 		return
-	if not is_instance_valid(body) or not body.is_in_group("entity"):
+	if not is_instance_valid(body) or not (body.is_in_group("entity") or body.is_in_group("device")):
 		return
 	has_impacted = true
 	mech_hit = true
@@ -499,6 +503,12 @@ func hit_entity(body) -> void:
 # What sets off a proximity fuse and takes blast damage: mechas and Entities.
 func is_fuse_target(body) -> bool:
 	return body.is_in_group("mecha") or body.is_in_group("entity")
+
+
+# What a blast hurts: fuse targets, and devices (wards, drones), which don't
+# set fuses off.
+func is_blast_target(body) -> bool:
+	return is_fuse_target(body) or body.is_in_group("device")
 
 func get_image():
 	if texture_variations.is_empty() or randf() > 1.0/float(texture_variations.size() + 1):
@@ -758,8 +768,8 @@ func explosion():
 			if (not result or result.collider != body) and _blast_inside(body):
 				result = {"collider": body, "position": position}
 
-			# Entities: one blast hit, no parts to spread it over.
-			if result and result.collider and result.collider.is_in_group("entity"):
+			# Entities and devices: one blast hit, no parts to spread it over.
+			if result and result.collider and (result.collider.is_in_group("entity") or result.collider.is_in_group("device")):
 				result.collider.take_hit(base_damage, armor_pen, ray, original_mecha_info, payload_explosion_force)
 				continue
 
@@ -838,16 +848,16 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 
 	return parts_hit
 
-# Track mechas (and Entities) entering explosion radius
+# Track mechas (and Entities, devices) entering explosion radius
 func _on_explosion_body_entered(body):
-	if not is_fuse_target(body):
+	if not is_blast_target(body):
 		return
 	if not explosion_targets.has(body):
 		explosion_targets.append(body)
 
 # Track mechas leaving explosion radius
 func _on_explosion_body_exited(body):
-	if not is_fuse_target(body):
+	if not is_blast_target(body):
 		return
 	if explosion_targets.has(body):
 		explosion_targets.erase(body)

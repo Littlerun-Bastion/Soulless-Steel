@@ -10,7 +10,8 @@ extends "res://game/expedition/Expedition.gd"
 # by one of the same design RESPAWN_TIME s later, at a random spawn zone.
 #
 # F5 (debug_5) opens a weapon picker: every shoulder weapon, with buttons to
-# fit it to the player's left or right shoulder (free the cursor to click).
+# fit it to the player's left or right shoulder, and every internal bay part
+# with a FIT button (free the cursor to click).
 
 const RESPAWN_TIME := 5.0
 const EXTRA_TANKS := 1
@@ -100,6 +101,19 @@ func toggle_weapon_picker() -> void:
 			button.pressed.connect(equip_shoulder_weapon.bind(part_name, side))
 			row.add_child(button)
 		rows.add_child(row)
+	rows.add_child(MechUI.label(&"LabelMetaBright", "INTERNAL BAY"))
+	var internals: Array = PartManager.get_parts("internal").keys()
+	internals.sort()
+	internals.append(false)
+	for part_name in internals:
+		var row := MechUI.hbox(&"BarRow")
+		var name_label := MechUI.label(&"LabelBody", str(part_name) if part_name else "EMPTY")
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name_label)
+		var button := MechUI.button("FIT")
+		button.pressed.connect(equip_internal.bind(part_name))
+		row.add_child(button)
+		rows.add_child(row)
 	root.add_child(MechUI.pane(&"HudPanel", rows))
 	add_child(_weapon_picker)
 
@@ -111,6 +125,14 @@ func equip_shoulder_weapon(part_name, side: int) -> void:
 	player.cancel_designating()
 	player.set_shoulder_weapon(part_name, side)
 	player.refresh_dynamic_components()
+
+
+# Fits an internal bay part (false: none) to the player, with full charges.
+func equip_internal(part_name) -> void:
+	if not is_instance_valid(player):
+		return
+	player.cancel_internal()
+	player.set_internal(part_name)
 
 
 # ---- Expedition overrides: no stakes ----

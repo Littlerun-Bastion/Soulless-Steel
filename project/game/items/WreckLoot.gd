@@ -24,6 +24,7 @@ const PART_TABLES := {
 	"generator": preload("res://database/loot-tables/salvage_generator.tres"),
 	"head": preload("res://database/loot-tables/salvage_electronics.tres"),
 	"chipset": preload("res://database/loot-tables/salvage_electronics.tres"),
+	"internal": preload("res://database/loot-tables/salvage_electronics.tres"),
 	"chassis": preload("res://database/loot-tables/salvage_frame.tres"),
 	"shoulders": preload("res://database/loot-tables/salvage_frame.tres"),
 	"core": preload("res://database/loot-tables/salvage_core.tres"),

@@ -275,9 +275,12 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 
 
 # Entities (creatures) have no armour parts: one hit, armour pen against their
-# armour rating. Safe to call with anything; only Entities are hurt, once.
+# armour rating. Safe to call with anything; only Entities and devices (wards,
+# drones: Device) are hurt, once.
 func hit_entity(body) -> void:
-	if has_impacted or dying or not is_instance_valid(body) or not body.is_in_group("entity"):
+	if has_impacted or dying or not is_instance_valid(body):
+		return
+	if not body.is_in_group("entity") and not body.is_in_group("device"):
 		return
 	has_impacted = true
 	mech_hit = true

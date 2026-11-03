@@ -18,6 +18,7 @@ const NPCS = [
 		"arm_weapon_right": ["MA-L127"],
 		"shoulder_weapon_left": [],
 		"shoulder_weapon_right": [],
+		"internal": ["ECM-20"],
 	},
 	{
 		#Main Attributes
@@ -36,6 +37,7 @@ const NPCS = [
 		"arm_weapon_right": ["OM1810"],
 		"shoulder_weapon_left": ["TORI-ML"],
 		"shoulder_weapon_right": ["MA-GL44"],
+		"internal": [],
 	},
 ]
 

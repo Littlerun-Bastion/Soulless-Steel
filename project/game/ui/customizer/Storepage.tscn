@@ -286,6 +286,15 @@ text = "Thruster"
 alignment = 0
 icon_alignment = 2
 
+[node name="internal" type="Button" parent="PartCategories/Wetware"]
+custom_minimum_size = Vector2(275, 45)
+layout_mode = 2
+theme = ExtResource("6_1ptfd")
+theme_override_font_sizes/font_size = 30
+text = "Internal"
+alignment = 0
+icon_alignment = 2
+
 [node name="Equipment" type="GridContainer" parent="PartCategories"]
 visible = false
 layout_mode = 0
@@ -997,6 +1006,8 @@ offset_bottom = 1070.0
 [connection signal="pressed" from="PartCategories/Wetware/generator" to="." method="_on_Category_pressed" binds= ["generator", "Wetware"]]
 [connection signal="mouse_entered" from="PartCategories/Wetware/thruster" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="PartCategories/Wetware/thruster" to="." method="_on_Category_pressed" binds= ["thruster", "Wetware"]]
+[connection signal="mouse_entered" from="PartCategories/Wetware/internal" to="." method="_on_storebuttons_mouse_entered"]
+[connection signal="pressed" from="PartCategories/Wetware/internal" to="." method="_on_Category_pressed" binds= ["internal", "Wetware"]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_storebuttons_mouse_entered"]
 [connection signal="pressed" from="PartCategories/Equipment/arm_weapon_right" to="." method="_on_Category_pressed" binds= ["arm_weapon", "Equipment", "right"]]
 [connection signal="mouse_entered" from="PartCategories/Equipment/arm_weapon_left" to="." method="_on_storebuttons_mouse_entered"]

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+part_name = "ECM-20 ECM Module"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Stay off the scopes"
+description = "Passive while switched on. Breaks lock-ons like the old chipset ECM, and active sensors (sweeps, wards, drones, Seekers) only find you within 80% of their range."
+price = 500.0
+tech_tier = 1
+composition = Dictionary[String, int]({"silicon": 2, "copper": 2})
+function = "ecm"
+charges = 0
+use_cooldown = 0.5
+ECM = 6.0
+ECM_frequency = 0.3
+sensor_reduction = 0.2
+weight = 1.0

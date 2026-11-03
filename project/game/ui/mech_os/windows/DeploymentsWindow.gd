@@ -6,6 +6,8 @@ class_name DeploymentsWindow
 ## the brief on the right: active contract, loadout check and DEPLOY.
 ## DEPLOY does what the main menu's Expedition button does, and is
 ## disabled while a required part is missing or a run is already under way.
+## LOCAL sets whether the next deployment is Anonymous (off the Local roster,
+## "Unknown" when speaking, fixed for the run).
 ##
 ## The survey grid waits for the chunk map: until a site has survey data,
 ## the middle column says so.
@@ -26,6 +28,8 @@ var _weight_value: Label
 var _cargo_value: Label
 var _blocked_box: PanelContainer
 var _blocked_label: Label
+var _callsign_value: Label
+var anonymous_button: Button
 var deploy_button: Button
 
 
@@ -34,6 +38,7 @@ func _ready() -> void:
 	content.theme_type_variation = &"WindowContentFlush"
 	_build()
 	PlayerProgress.mecha_changed.connect(_refresh.unbind(1))
+	PlayerProgress.local_profile_changed.connect(_refresh)
 	MissionManager.mission_started.connect(_refresh.unbind(1))
 	_refresh()
 
@@ -107,6 +112,16 @@ func _build() -> void:
 		_value_row("CARGO CARRIED IN", _cargo_value),
 		MechUI.label(&"LabelMeta", STAKES, true),
 	]))
+
+	_callsign_value = MechUI.label(&"LabelBody")
+	anonymous_button = MechUI.button("", &"Tab")
+	anonymous_button.toggle_mode = true
+	anonymous_button.toggled.connect(func(on): PlayerProgress.set_deploy_anonymous(on))
+	var anonymous_row := MechUI.hbox()
+	anonymous_row.add_child(MechUI.label(&"LabelMeta", "ANONYMOUS"))
+	anonymous_row.add_child(MechUI.spacer())
+	anonymous_row.add_child(anonymous_button)
+	sections.add_child(_section("LOCAL", [_value_row("CALLSIGN", _callsign_value), anonymous_row]))
 
 	var footer := MechUI.vbox(&"ContractStack")
 	_blocked_label = MechUI.label(&"AlertCriticalText")
@@ -189,6 +204,10 @@ func _refresh() -> void:
 	_weight_value.theme_type_variation = &"LabelBodyBright" if load_now > capacity else &"LabelBody"
 	var items := cargo.get_stacks().size() if cargo != null else 0
 	_cargo_value.text = "%d ITEM%s" % [items, "" if items == 1 else "S"]
+
+	_callsign_value.text = PlayerProgress.get_callsign()
+	anonymous_button.set_pressed_no_signal(PlayerProgress.deploy_anonymous)
+	anonymous_button.text = "ON" if PlayerProgress.deploy_anonymous else "OFF"
 
 	var reason := get_block_reason()
 	_blocked_label.text = reason

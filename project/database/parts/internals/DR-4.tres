@@ -1,0 +1,27 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://database/parts/internal.gd" id="1"]
+[ext_resource type="PackedScene" path="res://game/mecha/devices/Drone.tscn" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/arend_missile_cone.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+part_name = "DR-4 Scout Drone"
+manufacturer_name = "Test"
+manufacturer_name_short = "TST"
+tagline = "Look ahead"
+description = "Four scout drones. Each flies straight toward your aim, over buildings, pinging mechas and creatures within 100 m of it, and self-destructs after 500 m."
+price = 800.0
+tech_tier = 1
+composition = Dictionary[String, int]({"silicon": 2, "copper": 1, "avi_polymer": 2})
+image = ExtResource("3")
+function = "drone"
+charges = 4
+use_cooldown = 1.0
+device_scene = ExtResource("2")
+sensor_range = 2000.0
+update_interval = 2.0
+device_hp = 1.0
+device_speed = 700.0
+device_max_distance = 10000.0
+weight = 1.0

@@ -370,16 +370,6 @@ layout_mode = 2
 stat_title = "Lock Strength"
 stat_name = "lock_on_strength"
 
-[node name="ECM" parent="parts/chipset" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "ECM Strength"
-stat_name = "ECM"
-
-[node name="ECM Frequency" parent="parts/chipset" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "ECM Frequency"
-stat_name = "ECM_frequency"
-
 [node name="StatcardStat2" parent="parts/chipset" instance=ExtResource("5")]
 layout_mode = 2
 stat_title = "Radar"

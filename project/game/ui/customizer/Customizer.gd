@@ -14,7 +14,7 @@ const WEAPON_NAMES = {
 # shoulder weapons that depend on its mounts).
 const DESIGN_SLOTS = ["head", "core", "shoulders", "generator", "chipset",
 		"chassis", "thruster", "arm_weapon_left", "arm_weapon_right",
-		"shoulder_weapon_left", "shoulder_weapon_right"]
+		"shoulder_weapon_left", "shoulder_weapon_right", "internal"]
 
 enum SIDE {LEFT, RIGHT, SINGLE}
 enum STAT {ELECTRONICS, DEFENSES, MOBILITY, ENERGY, RARM, LARM, RSHOULDER, LSHOULDER}

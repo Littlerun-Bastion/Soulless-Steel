@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/mecha/devices/Device.gd" id="1_device"]
+[ext_resource type="Texture2D" path="res://assets/images/mechas/projectiles/GL44_projectile.png" id="2_sprite"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_seeker"]
+radius = 22.0
+
+[node name="Seeker" type="StaticBody2D"]
+z_index = 5
+script = ExtResource("1_device")
+kind = "seeker"
+follows_owner = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("2_sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_seeker")

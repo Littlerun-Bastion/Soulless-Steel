@@ -16,6 +16,7 @@ const SLOTS := {
 	"head": "head", "core": "core", "shoulders": "shoulders", "chassis": "chassis",
 	"generator": "generator", "chipset": "chipset", "thruster": "thruster",
 	"arm_weapon": "arm_weapon_left", "shoulder_weapon": "shoulder_weapon_left",
+	"internal": "internal",
 }
 
 const VISIBLE_TYPES := ["head", "core", "shoulders", "chassis", "arm_weapon", "shoulder_weapon"]

@@ -34,6 +34,9 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Typing in a text field (the LOC app's callsign) isn't a shortcut.
+	if get_viewport().gui_get_focus_owner() is LineEdit:
+		return
 	if event.is_action_pressed("toggle_messenger"):
 		MechOS.toggle_app("messenger")
 		get_viewport().set_input_as_handled()

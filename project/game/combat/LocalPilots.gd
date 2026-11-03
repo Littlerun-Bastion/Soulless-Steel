@@ -1,0 +1,246 @@
+class_name LocalPilots
+extends RefCounted
+
+## Local: the chat channel of one match. CombatScene makes one
+## (local_pilots) and registers every mecha as it enters the map (join), and
+## takes it off when it dies or extracts (leave). The HUD feed, the LOC app
+## and NPC code read it; LocalPilots.current is the one of the latest match,
+## kept after it ends so the LOC app in the hub shows the last run's log.
+##
+## Pilots:
+##   - Each has a callsign (Mecha.callsign). NPCs without one are given one
+##     from database/npcs/callsigns.json, never two the same in a match.
+##   - The roster lists the pilots who aren't Anonymous (Mecha.is_anonymous).
+##   - After the intro (go_live) a pilot that joins is announced: "<name> has
+##     joined Local". Whoever leaves, dead or extracted, gets the same line:
+##     "<name> has left Local". Anonymous pilots get neither line, and their
+##     messages show "Unknown".
+##
+## Messages (signal message, the log, MechLog source "LOC"). Each is an
+## entry Dictionary:
+##   sender    the mecha (may since have been freed)
+##   callsign  the name shown: its callsign, or "Unknown"
+##   kind      "joined", "left", "bark", or a broadcast kind (QUICK_CHAT,
+##             "found_loot", "need_help"...)
+##   text      the line
+##   position  where the sender was; never shown to players
+##   time      game time (s) of the match when sent
+##   bark      true for speech the player heard (see Mecha.say)
+##
+## Reputation: the first hit between two pilots records who struck first
+## (note_attack). The player killing a pilot who didn't strike the player
+## first costs reputation (score_player_kill).
+
+signal message(entry: Dictionary)
+signal roster_changed
+
+const CALLSIGNS_PATH := "res://database/npcs/callsigns.json"
+const UNKNOWN := "Unknown"
+const MAX_LOG := 300
+## The player's quick chat presets, in menu order. Placeholder list.
+const QUICK_CHAT := [
+	{"kind": "need_help", "text": "Need help!"},
+	{"kind": "friendly", "text": "Friendly."},
+	{"kind": "found_loot", "text": "Found loot here."},
+	{"kind": "back_off", "text": "Back off."},
+	{"kind": "hostile_spotted", "text": "Hostile spotted."},
+]
+## Reputation for the player killing a pilot who didn't strike first, and
+## the share of it an Anonymous player pays. Placeholders.
+const UNPROVOKED_KILL_REPUTATION := -10
+const ANONYMOUS_REPUTATION_SHARE := 0.5
+
+## The latest match's channel (null before the first match).
+static var current: LocalPilots = null
+static var _callsign_pool: Array = []
+
+## While false (before the intro ends), joins are not announced.
+var live := false
+## Whether the match is still running (false once its scene has gone).
+var active := true
+## Whether kills change the player's reputation here (not in the Arena).
+var applies_reputation := true
+## Match time (s), advanced by the scene.
+var now := 0.0
+
+var _pilots: Array = []  # mechas that joined and haven't left
+var _log: Array[Dictionary] = []
+var _used_callsigns := {}
+var _first_strike := {}  # pair key -> instance id of who hit first
+
+
+## The name others see for `mecha`: its callsign, or "Unknown" if it is
+## Anonymous or gone.
+static func name_of(mecha) -> String:
+	if not is_instance_valid(mecha):
+		return UNKNOWN
+	if mecha.get("is_anonymous") == true:
+		return UNKNOWN
+	var callsign = mecha.get("callsign")
+	if callsign is String and callsign != "":
+		return callsign
+	return str(mecha.get("mecha_name"))
+
+
+## "Ash: Need help!", or the line itself for joins and leaves.
+static func format(entry: Dictionary) -> String:
+	if entry.kind == "joined" or entry.kind == "left":
+		return entry.text
+	return "%s: %s" % [entry.callsign, entry.text]
+
+
+## The callsign list (database/npcs/callsigns.json), loaded once.
+static func callsign_pool() -> Array:
+	if _callsign_pool.is_empty():
+		var data = JSON.parse_string(FileAccess.get_file_as_string(CALLSIGNS_PATH))
+		if data is Array:
+			_callsign_pool = data
+		else:
+			push_error("LocalPilots: %s isn't a JSON list of names" % CALLSIGNS_PATH)
+	return _callsign_pool
+
+
+func go_live() -> void:
+	live = true
+
+
+## The match is over (its scene is leaving): the roster empties and every
+## listener is let go, so nothing from the match outlives it. The log stays
+## for the LOC app, without its senders.
+func close() -> void:
+	active = false
+	_pilots.clear()
+	for entry in _log:
+		entry.sender = null
+	for signal_name in ["message", "roster_changed"]:
+		for connection in get_signal_connection_list(signal_name):
+			disconnect(signal_name, connection.callable)
+
+
+func join(mecha) -> void:
+	if not is_instance_valid(mecha) or _pilots.has(mecha):
+		return
+	if str(mecha.callsign) == "":
+		mecha.callsign = _free_callsign()
+	_used_callsigns[mecha.callsign] = true
+	_pilots.append(mecha)
+	if mecha.is_anonymous:
+		return
+	roster_changed.emit()
+	if live:
+		_post(mecha, "joined", "%s has joined Local" % name_of(mecha))
+
+
+func leave(mecha) -> void:
+	if not _pilots.has(mecha):
+		return
+	_pilots.erase(mecha)
+	if is_instance_valid(mecha) and mecha.is_anonymous:
+		return
+	roster_changed.emit()
+	_post(mecha, "left", "%s has left Local" % name_of(mecha))
+
+
+func is_in_local(mecha) -> bool:
+	return _pilots.has(mecha)
+
+
+## The callsigns of the pilots on the roster (not Anonymous), in join order.
+func get_roster() -> Array[String]:
+	var names: Array[String] = []
+	for mecha in _pilots:
+		if is_instance_valid(mecha) and not mecha.is_anonymous:
+			names.append(name_of(mecha))
+	return names
+
+
+## Every message so far, oldest first.
+func get_log() -> Array[Dictionary]:
+	return _log
+
+
+## A deliberate message to everyone on the map. `text` "" uses the preset
+## text of a QUICK_CHAT kind.
+func broadcast(sender, kind: String, text := "") -> Dictionary:
+	if text == "":
+		for preset in QUICK_CHAT:
+			if preset.kind == kind:
+				text = preset.text
+	return _post(sender, kind, text)
+
+
+## Speech the player heard (CombatScene._on_mecha_spoke).
+func post_bark(speaker, text: String) -> Dictionary:
+	return _post(speaker, "bark", text, true)
+
+
+# ---- Reputation ----
+
+## Records who struck first between `attacker` and `victim` (mechas only).
+func note_attack(attacker, victim) -> void:
+	if not _is_mecha(attacker) or not _is_mecha(victim) or attacker == victim:
+		return
+	var key := _pair_key(attacker, victim)
+	if not _first_strike.has(key):
+		_first_strike[key] = attacker.get_instance_id()
+
+
+## Whether `a` hit `b` before `b` hit `a`.
+func struck_first(a, b) -> bool:
+	if not is_instance_valid(a) or not is_instance_valid(b):
+		return false
+	return _first_strike.get(_pair_key(a, b), 0) == a.get_instance_id()
+
+
+## The reputation change for `player` killing `victim`: 0 when the victim
+## struck first, else UNPROVOKED_KILL_REPUTATION (a share of it while
+## Anonymous). Applies it to PlayerProgress when the match applies
+## reputation. Returns the change.
+func score_player_kill(player, victim) -> int:
+	if not applies_reputation or not _is_mecha(victim) or struck_first(victim, player):
+		return 0
+	var change := UNPROVOKED_KILL_REPUTATION
+	if is_instance_valid(player) and player.is_anonymous:
+		change = roundi(change * ANONYMOUS_REPUTATION_SHARE)
+	PlayerProgress.add_reputation(change)
+	MechLog.write("LOC", "Reputation %+d (unprovoked kill)" % change, MechLog.Kind.LOCAL)
+	return change
+
+
+func _post(sender, kind: String, text: String, bark := false) -> Dictionary:
+	var entry := {
+		"sender": sender,
+		"callsign": name_of(sender),
+		"kind": kind,
+		"text": text,
+		"position": sender.global_position if is_instance_valid(sender) else Vector2.ZERO,
+		"time": now,
+		"bark": bark,
+	}
+	_log.append(entry)
+	if _log.size() > MAX_LOG:
+		_log.pop_front()
+	MechLog.write("LOC", format(entry), MechLog.Kind.LOCAL)
+	message.emit(entry)
+	return entry
+
+
+func _free_callsign() -> String:
+	var free := callsign_pool().filter(func(n): return not _used_callsigns.has(n))
+	if not free.is_empty():
+		return str(free.pick_random())
+	var base := str(callsign_pool().pick_random()) if not callsign_pool().is_empty() else "Pilot"
+	var n := 2
+	while _used_callsigns.has("%s %d" % [base, n]):
+		n += 1
+	return "%s %d" % [base, n]
+
+
+static func _is_mecha(node) -> bool:
+	return is_instance_valid(node) and node is Node and (node as Node).is_in_group("mecha")
+
+
+static func _pair_key(a: Object, b: Object) -> String:
+	var x := a.get_instance_id()
+	var y := b.get_instance_id()
+	return "%d:%d" % [mini(x, y), maxi(x, y)]

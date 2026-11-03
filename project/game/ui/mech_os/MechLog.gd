@@ -7,9 +7,9 @@ extends RefCounted
 ##   MechLog.write("CBT", "Target destroyed", MechLog.Kind.COMBAT)
 ##   MechLog.write("HGR", "Can't leave: no head equipped", MechLog.Kind.SYSTEM, true)
 ## Lines last for the session (not saved). The source is a short code, cut
-## to three letters: MSG, HGR, SYS, CBT, LOT...
+## to three letters: MSG, HGR, SYS, CBT, LOT, LOC (Local, LocalPilots)...
 
-enum Kind { SYSTEM, COMBAT, LOOT }
+enum Kind { SYSTEM, COMBAT, LOOT, LOCAL }
 
 const MAX_LINES := 300
 

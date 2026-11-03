@@ -321,6 +321,8 @@ func _get_mecha_part_for_slot(slot: PartSlot):
 		return b.generator
 	elif p_type == "thruster":
 		return b.thruster
+	elif p_type == "internal":
+		return b.internal
 	elif p_type == "arm_weapon":
 		if side == PartSlot.SIDE.LEFT:
 			return b.arm_weapon_left
@@ -356,6 +358,8 @@ func _set_mecha_part_for_slot(slot: PartSlot, value, grade := Grades.STANDARD) -
 		mecha_ref.set_generator(value)
 	elif slot.part_type == "thruster":
 		mecha_ref.set_thruster(value)
+	elif slot.part_type == "internal":
+		mecha_ref.set_internal(value)
 	elif slot.part_type == "shoulders":
 		mecha_ref.set_shoulders(value)
 	elif slot.part_type == "arm_weapon":
@@ -393,7 +397,7 @@ func _on_hardware_pressed() -> void:
 	_filter_slots(["head", "core", "shoulders", "chassis"])
 
 func _on_wetware_pressed() -> void:
-	_filter_slots(["chipset", "thruster", "generator"])
+	_filter_slots(["chipset", "thruster", "generator", "internal"])
 
 func _on_weapons_pressed() -> void:
 	_filter_slots(["arm_weapon", "shoulder_weapon"])

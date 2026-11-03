@@ -18,3 +18,5 @@ extends Resource
 @export var arm_weapon_right : Array[String] = ["MA-L127"]
 @export var shoulder_weapon_left : Array[String] = ["TORI-ML"]
 @export var shoulder_weapon_right : Array[String] = ["TORI-ML"]
+## Internal bay part id (or tags), empty for none.
+@export var internal : Array[String] = []

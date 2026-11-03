@@ -18,8 +18,6 @@ extends Resource
 @export var lock_on_distance := 5000
 @export var lock_on_reticle_size := 15 #Radius of the reticle
 @export var lock_on_strength := 5
-@export var ECM := 10
-@export var ECM_frequency := .3
 @export var has_radar := true
 @export var radar_refresh_rate := 1.0
 @export var loot_search_time := 1.0

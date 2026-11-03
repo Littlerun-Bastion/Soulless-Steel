@@ -32,6 +32,17 @@ const BLINK_PITCH_TARGET_MOD = .40
 @onready var hud_alerts: HudAlerts = $SubViewportContainer/SubViewport/HudAlerts
 @onready var interact_prompt: InteractPrompt = $SubViewportContainer/SubViewport/InteractPrompt
 @onready var exit_marker: ExitMarker = $SubViewportContainer/SubViewport/ExitMarker
+# Ping contacts (wards, drones) as markers through walls (game/ui/hud/).
+@onready var hud_contacts: HudContacts = $SubViewportContainer/SubViewport/HudContacts
+# Mechas the Seeker covers, outlined (game/ui/hud/).
+@onready var hud_vision_outlines: HudVisionOutlines = $SubViewportContainer/SubViewport/HudVisionOutlines
+# Local: name tags and speech boxes over mechas, the feed (top left) and the
+# quick chat menu under it (game/ui/hud/).
+@onready var hud_world_labels: HudWorldLabels = $SubViewportContainer/SubViewport/HudWorldLabels
+@onready var hud_local_feed: HudLocalFeed = $SubViewportContainer/SubViewport/HudLocalFeed
+@onready var hud_quick_chat: HudQuickChat = $SubViewportContainer/SubViewport/HudQuickChat
+# The sensor sweep's aim and readout, under the alerts (game/ui/hud/).
+@onready var hud_sweep: HudSweep = $SubViewportContainer/SubViewport/HudSweep
 
 
 var player = false
@@ -44,8 +55,14 @@ var flagged_warning_active = false
 
 func toggle_inventory():
 	pass
-		
-	
+
+
+
+
+# The quick chat menu takes its keys before the game and the pause menu do.
+func _input(event: InputEvent) -> void:
+	if player and hud_quick_chat.handle_input(event):
+		get_viewport().set_input_as_handled()
 
 
 func _process(dt):
@@ -109,6 +126,13 @@ func setup(player_ref, mechas_ref):
 	hud_weapons.setup(player)
 	hud_alerts.setup(player)
 	interact_prompt.setup(player)
+	hud_contacts.setup(player, mechas)
+	hud_vision_outlines.setup(player)
+	hud_world_labels.setup(player, mechas)
+	hud_quick_chat.setup(player)
+	hud_sweep.setup(player)
+	player.swept.connect(_on_player_swept)
+	player.device_destroyed.connect(_on_player_device_destroyed)
 	top_strip.setup(player)
 	if player.build.chipset.has_radar:
 		PlayerRadar.setup(mechas, player, player.build.chipset.radar_range, player.build.chipset.radar_refresh_rate)
@@ -119,6 +143,31 @@ func setup(player_ref, mechas_ref):
 	hud_alerts.extracting = false
 	for bullethole in Bulletholes.get_children():
 		bullethole.modulate.a = 0
+
+# This match's Local channel: the feed and quick chat (CombatScene).
+func setup_local(local: LocalPilots) -> void:
+	hud_local_feed.setup(local)
+	hud_quick_chat.local = local
+
+
+# Mecha.say, once CombatScene has found the player hears it.
+func show_speech(mecha, text: String, seconds: float) -> void:
+	hud_world_labels.show_speech(mecha, text, seconds)
+
+
+# Someone's sweep found the player: an alert and a log line, no bearing.
+func _on_player_swept() -> void:
+	hud_alerts.show_swept()
+	MechLog.write("SNS", "You were swept", MechLog.Kind.COMBAT)
+
+
+# One of the player's devices was shot: only a mecha can do that, so someone
+# is there.
+func _on_player_device_destroyed(device) -> void:
+	var kind := str(device.kind)
+	hud_alerts.show_notice("%s DESTROYED" % kind.to_upper())
+	MechLog.write("SNS", "%s destroyed" % kind.capitalize(), MechLog.Kind.COMBAT)
+
 
 # Off unless a mode asks for it (Expedition, whose exits are far out).
 func setup_exit_marker(exits: Array) -> void:
@@ -157,6 +206,12 @@ func player_died():
 	hud_weapons.player_died()
 	hud_alerts.player_died()
 	interact_prompt.player_died()
+	hud_contacts.player_died()
+	hud_vision_outlines.player_died()
+	hud_world_labels.player_died()
+	hud_local_feed.player_died()
+	hud_quick_chat.player_died()
+	hud_sweep.player_died()
 	top_strip.player_died()
 	top_strip.visible = false
 	PlayerRadar.player_died()

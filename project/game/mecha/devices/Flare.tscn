@@ -15,8 +15,7 @@ scale = Vector2(0.8, 0.8)
 texture = ExtResource("2_light")
 
 [node name="Light" type="PointLight2D" parent="."]
-energy = 1.6
-blend_mode = 2
+energy = 1.3
 range_layer_max = 2
 range_item_cull_mask = 2
 texture = ExtResource("2_light")

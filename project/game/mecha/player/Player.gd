@@ -88,6 +88,7 @@ var _internal_held := -1.0
 
 func _ready():
 	super()
+	Illumination.ensure_key_action()
 	var layer := CanvasLayer.new()
 	layer.layer = DESIGNATOR_LAYER
 	layer.follow_viewport_enabled = true
@@ -176,7 +177,7 @@ func _input(event):
 		begin_internal()
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed("toggle_illuminator"):
+	if event.is_action_pressed(Illumination.KEY_ACTION):
 		toggle_illuminator()
 		get_viewport().set_input_as_handled()
 		return

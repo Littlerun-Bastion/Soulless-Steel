@@ -6,7 +6,10 @@ extends TestSuite
 # The player sees a lit body through walls, and with its own illuminator off
 # loses its cone; the illuminator key and the HUD row. An NPC sees a lit
 # target through walls, and with its own illuminator off sees unlit ones
-# only close by; its behaviour runs dark in its dark states.
+# only close by; its behaviour runs dark in its dark states. Every
+# illuminator, the player's darkness, flares and car alarm lamps add or take
+# light away rather than mix it (so the draw order can't hide a cone), the
+# player's and an NPC's alike, and a mecha's fire glow is off unless it burns.
 #
 # The player is held still (no physics) and its view is stepped by hand; NPCs
 # are paused and their senses stepped by hand. Illumination works out each
@@ -46,6 +49,7 @@ func run_tests() -> void:
 	await case("the illuminator key and the HUD row", _test_key_and_hud)
 	await case("an NPC sees lit targets through walls, and less with its own off", _test_npc_senses)
 	await case("an NPC's behaviour runs dark in its dark states", _test_npc_states)
+	await case("every light adds or takes away, the same for everyone", _test_light_style)
 
 
 func before_each() -> void:
@@ -216,6 +220,26 @@ func _test_key_and_hud() -> void:
 	check(InputMap.has_action("toggle_illuminator"), "the key is an input action")
 	weapons.queue_free()
 
+	# A project.godot without the action: the game adds it, on L.
+	var events := InputMap.action_get_events(Illumination.KEY_ACTION)
+	InputMap.erase_action(Illumination.KEY_ACTION)
+	Illumination.ensure_key_action()
+	var added := InputMap.action_get_events(Illumination.KEY_ACTION)
+	check(added.size() == 1 and added[0] is InputEventKey and (added[0] as InputEventKey).physical_keycode == KEY_L,
+			"with the action missing from the project, it is added on L")
+	var pressed := InputEventKey.new()
+	pressed.physical_keycode = KEY_L
+	pressed.pressed = true
+	_player._input(pressed)
+	check(not _player.illuminator_on, "and the key works")
+	_player.set_illuminator(true)
+	InputMap.erase_action(Illumination.KEY_ACTION)
+	InputMap.add_action(Illumination.KEY_ACTION)
+	for event in events:
+		InputMap.action_add_event(Illumination.KEY_ACTION, event)
+	Illumination.ensure_key_action()
+	check_eq(InputMap.action_get_events(Illumination.KEY_ACTION).size(), events.size(), "an action the project has is left alone")
+
 
 func _test_npc_senses() -> void:
 	var enemy := _enemy(Vector2(-3000, -3000))
@@ -267,3 +291,37 @@ func _test_npc_states() -> void:
 	enemy.set_illuminator(true)
 	enemy._update_illuminator()
 	check(enemy.illuminator_on, "with auto_illuminator off the behaviour leaves it alone")
+
+
+func _test_light_style() -> void:
+	var enemy := _enemy(Vector2(-3000, -3000))
+	var plain := _mecha(Vector2(3000, 3000), Vector2.UP, true)
+	for mecha in [_player, enemy, plain]:
+		var light := Illumination.light_of(mecha)
+		check(light.blend_mode == Light2D.BLEND_MODE_ADD and is_equal_approx(light.energy, Illumination.LIGHT_ENERGY)
+				and light.color == Color.WHITE, "%s's illuminator adds light at the shared energy" % mecha.name)
+	var darkness: PointLight2D = _player.get_node(Illumination.DARKNESS_NODE)
+	check(darkness.blend_mode == Light2D.BLEND_MODE_SUB and is_equal_approx(darkness.energy, Illumination.DARKNESS_ENERGY),
+			"the player's darkness takes light away")
+	var mix_lights := []
+	for mecha in [_player, enemy, plain]:
+		for light in mecha.find_children("*", "Light2D", true, false):
+			if (light as Light2D).blend_mode == Light2D.BLEND_MODE_MIX:
+				mix_lights.append(light.name)
+	check_eq(mix_lights, [], "no light on a mecha mixes")
+	var flare: Node = load("res://game/mecha/devices/Flare.tscn").instantiate()
+	check((flare.get_node("Light") as Light2D).blend_mode == Light2D.BLEND_MODE_ADD, "a flare's light adds")
+	flare.free()
+
+	var glow: PointLight2D = plain.get_node("FireGlow")
+	plain.set_physics_process(true)
+	await get_tree().physics_frame
+	check(not glow.enabled, "the fire glow is off while it isn't burning")
+	plain.set_status("fire", 5.0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(glow.enabled and glow.energy > 0.0, "and on while it burns")
+	plain.set_status("fire", 0.0)
+	await wait_until(func(): return glow.energy <= 0.0, 3.0)
+	await get_tree().physics_frame
+	check(not glow.enabled, "off again once it has faded")

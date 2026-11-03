@@ -371,7 +371,9 @@ func start_alarm(i: int) -> void:
 	lamp.texture = ALARM_GLOW
 	lamp.texture_scale = ALARM_LIGHT_SCALE
 	lamp.energy = ALARM_LIGHT_ENERGY
-	lamp.blend_mode = Light2D.BLEND_MODE_MIX
+	# Added, like the illuminators (see Illumination), so it doesn't paint over
+	# their light.
+	lamp.blend_mode = Light2D.BLEND_MODE_ADD
 	lamp.range_item_cull_mask = MapSenses.SIGHT_LIGHT_MASK
 	light.add_child(lamp)
 	light.z_index = 5

@@ -477,6 +477,9 @@ func _ready():
 				SingleChassisGlow, LeftChassisGlow, RightChassisGlow]:
 		node.material = CoreGlow.material.duplicate(false)
 	global_rotation_degrees = randf_range(0, 360)
+	Illumination.style_lights(self)
+	$FireGlow.energy = 0.0
+	$FireGlow.enabled = false
 
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
@@ -683,6 +686,9 @@ func _physics_process(dt):
 		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
 	else:
 		$FireGlow.energy = max($FireGlow.energy - dt*2, 0)
+	# Off while not burning: Godot lights each canvas item with at most 16
+	# lights, and a glow at zero energy would still take one.
+	$FireGlow.enabled = $FireGlow.energy > 0.0
 
 
 	#Thrusters cooldowns

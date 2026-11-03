@@ -251,6 +251,9 @@ func _test_alarm_life() -> void:
 	check(_field.is_alarm_on(0) and _field.sounding_alarms() == [0], "start_alarm sets one off")
 	var lights := _field.get_children().filter(func(n): return n is Node2D and n.find_children("*", "PointLight2D", true, false).size() == 1)
 	check_eq(lights.size(), 1, "with a light on the car")
+	if lights.size() == 1:
+		var lamp: PointLight2D = lights[0].find_children("*", "PointLight2D", true, false)[0]
+		check(lamp.blend_mode == Light2D.BLEND_MODE_ADD, "which adds light (see Illumination)")
 	var seen := {}
 	for _i in int(VehicleField.ALARM_BLINK * 4.0 / DT):
 		await get_tree().physics_frame

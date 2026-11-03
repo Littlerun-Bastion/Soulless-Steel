@@ -20,15 +20,60 @@ extends RefCounted
 ##
 ## is_lit is worked out once per physics frame per body, as every observer
 ## asks about the same bodies.
+##
+## How they are drawn (style_lights, from Mecha._ready): the player's darkness
+## (MechaShadowGen) takes light away (Light2D.BLEND_MODE_SUB) and every
+## illuminator adds it back (BLEND_MODE_ADD), all at the same energy. Adding
+## and taking away give the same picture whatever order Godot draws the lights
+## in; mixing (BLEND_MODE_MIX, as both were) paints each light over the ones
+## before it, so the order decided whether a cone showed at all.
 
 ## The cone each MechaLight lights: its aimed_glow texture is lit to about 15
 ## degrees either side and to 0.44 of its width from the centre.
 const CONE_HALF_ANGLE := 15.0
 const CONE_REACH := 0.44
 const LIGHT_NODE := "MechaLight"
+const DARKNESS_NODE := "MechaShadowGen"
+## How much light every illuminator adds, and how much the darkness round the
+## player takes away (at its centre). A cone shows the ground a little
+## brighter than it is with no darkness, about half as bright as the old
+## mixed NPC cones. Placeholders.
+const LIGHT_ENERGY := 1.2
+const DARKNESS_ENERGY := 0.6
+## The player's illuminator key (Player.toggle_illuminator), and the key it
+## gets if project.godot doesn't define the action.
+const KEY_ACTION := "toggle_illuminator"
+const DEFAULT_KEY := KEY_L
+
+
+## Adds the illuminator key action, bound to DEFAULT_KEY, if the project's
+## Input Map lacks it. One set in Project Settings is left as it is.
+static func ensure_key_action() -> void:
+	if InputMap.has_action(KEY_ACTION):
+		return
+	InputMap.add_action(KEY_ACTION)
+	var key := InputEventKey.new()
+	key.physical_keycode = DEFAULT_KEY
+	InputMap.action_add_event(KEY_ACTION, key)
 
 static var _lit_cache := {}
 static var _lit_cache_frame := -1
+
+
+## Gives a mecha's illuminator and darkness lights their blend modes and
+## energies (see above). Their textures, reach and shadows stay as the scene
+## has them.
+static func style_lights(mecha: Node) -> void:
+	var light := light_of(mecha)
+	if light:
+		light.blend_mode = Light2D.BLEND_MODE_ADD
+		light.color = Color.WHITE
+		light.energy = LIGHT_ENERGY
+	var darkness := mecha.get_node_or_null(DARKNESS_NODE) as PointLight2D
+	if darkness:
+		darkness.blend_mode = Light2D.BLEND_MODE_SUB
+		darkness.color = Color.WHITE
+		darkness.energy = DARKNESS_ENERGY
 
 
 static func light_of(mecha: Node) -> PointLight2D:

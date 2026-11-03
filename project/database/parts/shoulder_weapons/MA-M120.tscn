@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://deoagidknbecu" path="res://assets/images/mechas/shoulder_weapons/MA-RM7/MA-RM7.png" id="2_pv"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="3_flash"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/M120_shell.tscn" id="4_projectile"]
+[ext_resource type="Texture2D" uid="uid://temmb4ijbrfk" path="res://assets/images/mechas/shoulder_weapons/MA-RM7/MA-RM7_sub.png" id="5_sub"]
+[ext_resource type="Texture2D" uid="uid://dlqq0cmv4x4d2" path="res://assets/images/mechas/shoulder_weapons/MA-RM7/MA-RM7_main.png" id="6_main"]
+[ext_resource type="Texture2D" uid="uid://cvb4efocjmfy4" path="res://assets/images/mechas/shoulder_weapons/MA-RM7/MA-RM7_glow.png" id="7_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "MA-M120"
+ai_engage_range = 2800
+is_indirect_fire = true
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 4, "oil": 1})
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Mortar"
+price = 900.0
+weight = 2.0
+image = ExtResource("2_pv")
+muzzle_flash = ExtResource("3_flash")
+muzzle_flash_size = 1.5
+projectile = ExtResource("4_projectile")
+fire_rate = 1.0
+auto_fire = false
+total_ammo = 10
+max_ammo = 10
+clip_size = 1
+reload_speed = 6.0
+muzzle_heat = 450.0
+eject_casings = true
+casing_size = 2.0
+shoot_single_sfx = "large_shotA"
+designator = "circle"
+min_range = 1000.0
+max_range = 3200.0
+scatter_radius = 200.0
+barrage_count = 2
+barrage_interval = 0.6
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 20)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 20)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -60)

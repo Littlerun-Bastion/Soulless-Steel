@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bwy7ufraohasy" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Main.png" id="2_main"]
+[ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="3_flash"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/NS-H150_shell.tscn" id="4_projectile"]
+[ext_resource type="Texture2D" uid="uid://doplgo04pews1" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Sub.png" id="5_sub"]
+[ext_resource type="Texture2D" uid="uid://bcks1ln2j1e1l" path="res://assets/images/mechas/shoulder_weapons/HSM1_Carroballista_Glow.png" id="6_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "NS-H150"
+ai_engage_range = 2400
+is_indirect_fire = true
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 5, "copper": 1, "oil": 1})
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
+tagline = "Howitzer"
+price = 1400.0
+weight = 4.5
+image = ExtResource("2_main")
+muzzle_flash = ExtResource("3_flash")
+muzzle_flash_size = 2.0
+projectile = ExtResource("4_projectile")
+recoil_force = 3.0
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 10
+max_ammo = 10
+clip_size = 1
+reload_speed = 5.0
+muzzle_heat = 1000.0
+eject_casings = true
+casing_size = 2.0
+shoot_single_sfx = "large_shotA"
+sound_max_range = 15000
+sound_att = 1.75
+designator = "line_box"
+min_range = 800.0
+max_range = 3000.0
+scatter_radius = 60.0
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("2_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 17)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 17)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -55)

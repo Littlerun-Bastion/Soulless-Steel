@@ -8,7 +8,9 @@ extends PanelContainer
 ##   ammo    rounds in the clip (battery charge for battery weapons), large;
 ##           the reserve underneath, small. Dim at 0.
 ## While a weapon reloads its name gives way to a reload bar. A weapon the
-## frame readout shows as gone reads LOST (struck through, dashed tag).
+## frame readout shows as gone reads LOST (struck through, dashed tag). An
+## indirect-fire weapon can't fire from inside a building: its name dims and
+## a dashed INDOORS tag shows.
 ## Rows are built once in setup(); values are read each frame.
 
 const SLOTS := [
@@ -66,6 +68,8 @@ func get_row_text(slot: String) -> String:
 		parts.append("%s / %s" % [row.ammo.text, row.reserve.text])
 	if row.lost.visible:
 		parts.append("LOST")
+	if row.indoors.visible:
+		parts.append("INDOORS")
 	return " ".join(parts)
 
 
@@ -110,8 +114,14 @@ func _make_row(info: Dictionary) -> PanelContainer:
 	lost.visible = false
 	line.add_child(lost)
 
+	var indoors := MechUI.pane(&"NoticeDashed", MechUI.label(&"LabelMeta", "INDOORS"))
+	indoors.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	indoors.visible = false
+	line.add_child(indoors)
+
 	_rows[info.slot] = {"info": info, "key": key, "slot": slot_label, "name": name_label,
-			"reload": reload, "ammo": ammo, "reserve": reserve, "ammo_box": ammo_box, "lost": lost}
+			"reload": reload, "ammo": ammo, "reserve": reserve, "ammo_box": ammo_box, "lost": lost,
+			"indoors": indoors}
 	return row
 
 
@@ -133,10 +143,13 @@ func _update_row(row: Dictionary) -> void:
 		row.reload.visible = false
 		row.ammo_box.visible = false
 		row.lost.visible = false
+		row.indoors.visible = false
 		return
 
 	var lost: bool = is_lost.call(info.slot)
 	row.lost.visible = lost
+	var indoors: bool = not lost and part.get("is_indirect_fire") == true and player.is_inside_building
+	row.indoors.visible = indoors
 	row.ammo_box.visible = not lost
 	var weapon_name: String = str(part.get("part_name")) if part.get("part_name") else str(info.slot)
 	if lost:
@@ -158,7 +171,7 @@ func _update_row(row: Dictionary) -> void:
 		_reload_start.erase(info.slot)
 	row.slot.text = info.label + (" · RELOADING" if reloading else "")
 	row.name.text = weapon_name
-	row.name.theme_type_variation = &"LabelBody"
+	row.name.theme_type_variation = &"LabelDim" if indoors else &"LabelBody"
 	row.name.visible = not reloading
 	row.reload.visible = reloading
 

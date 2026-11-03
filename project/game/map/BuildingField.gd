@@ -15,6 +15,11 @@ extends Node2D
 # carries its building's id in UV.x; the roof material reads one fade value
 # per id from a small texture that this node keeps up to date.
 #
+# Buildings within occluder_radius of the player get a LightOccluder2D of
+# their outline, so walls cast shadows in the mechas' light cones (see
+# MapSenses); they are made and freed as the player moves, every
+# OCCLUDER_INTERVAL s, so a big map never has more than the ones in reach.
+#
 # Each building also gets its outline as a wall, on MapSenses.WALL_LAYER.
 # Nothing collides with that layer, so mechas still walk through walls; rays
 # see it, so walls stop shots by AP and block sight (see MapSenses). The
@@ -51,7 +56,7 @@ const FADE_TEX_SIZE := 128
 const WALL_CELL_SIZE := 5000.0
 ## Route grid square (px). 250 px is 12.5 m, a little more than a mecha.
 const ROUTE_CELL := 250.0
-## Extra cost for a square fully covered by building.
+## Extra cost for a square fully covered by building.	
 const ROUTE_BUILDING_WEIGHT := 6.0
 ## Extra cost per vehicle parked in a square, and per heavy vehicle (over
 ## ROUTE_HEAVY_MASS kg), up to ROUTE_VEHICLE_MAX in all.
@@ -65,6 +70,10 @@ const ROUTE_MARGIN := 4000.0
 ## Static bodies block route squares within this distance (px).
 const ROUTE_WALL_CLEARANCE := 100.0
 const ROUTE_SOLVES_PER_FRAME := 1
+const OCCLUDER_INTERVAL := 0.25
+## Occluders are freed only this far (px) past occluder_radius, so one at
+## the edge doesn't flicker in and out.
+const OCCLUDER_SLACK := 1000.0
 
 @export var footprints: BuildingFootprints
 @export var roof_material: ShaderMaterial
@@ -79,6 +88,11 @@ const ROUTE_SOLVES_PER_FRAME := 1
 ## Outline drawn round buildings read from a "Footprints" node.
 @export var outline_color := Color(0.75, 0.75, 0.75)
 @export var outline_width := 8.0
+## Buildings within this distance (px) of the player cast light shadows: a
+## little past the screen corners at the default zoom (about 2200 px), since
+## a shadow only shows on screen. Every light that casts shadows pays for
+## each occluder in its reach, so keep it tight.
+@export var occluder_radius := 3000.0
 
 var _polys: Array[PackedVector2Array] = []
 var _rects: Array[Rect2] = []
@@ -98,6 +112,9 @@ var _route_task := -1
 var _route_result: Array = []
 var _route_frame := -1
 var _route_solves := 0
+# Building id -> its LightOccluder2D, for buildings near the player.
+var _occluders := {}
+var _occluder_timer := 0.0
 
 
 func _ready() -> void:
@@ -187,10 +204,13 @@ func _physics_process(delta: float) -> void:
 	if _route_task >= 0 and WorkerThreadPool.is_task_completed(_route_task):
 		_finish_route_build()
 	var reveal_at = null
+	var player_at = null
 	var seen := {}
 	for mech in get_tree().get_nodes_in_group("mecha"):
 		if not (mech is Node2D) or not mech.has_method("entered_building"):
 			continue
+		if mech.has_method("is_player") and mech.is_player():
+			player_at = mech.global_position
 		var id: int = mech.get_instance_id()
 		seen[id] = true
 		var pos := to_local(mech.global_position)
@@ -212,6 +232,34 @@ func _physics_process(delta: float) -> void:
 		if not seen.has(id):
 			_mecha_state.erase(id)
 	_update_fades(reveal_at, delta)
+	_occluder_timer -= delta
+	if _occluder_timer <= 0.0 and player_at != null:
+		_occluder_timer = OCCLUDER_INTERVAL
+		update_occluders(player_at)
+
+
+# Gives the buildings within occluder_radius of `global_pos` an occluder and
+# frees those well past it.
+func update_occluders(global_pos: Vector2) -> void:
+	var keep := {}
+	for i in buildings_within(global_pos, occluder_radius):
+		keep[i] = true
+		if not _occluders.has(i):
+			var shape := OccluderPolygon2D.new()
+			shape.polygon = _polys[i]
+			shape.closed = true
+			var occluder := LightOccluder2D.new()
+			occluder.occluder = shape
+			add_child(occluder)
+			_occluders[i] = occluder
+	for i in _occluders.keys():
+		if not keep.has(i) and distance_to_building(i, global_pos) > occluder_radius + OCCLUDER_SLACK:
+			_occluders[i].queue_free()
+			_occluders.erase(i)
+
+
+func occluder_count() -> int:
+	return _occluders.size()
 
 
 # Building ids within `radius` of a map position.

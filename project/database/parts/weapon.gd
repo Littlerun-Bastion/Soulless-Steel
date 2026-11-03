@@ -91,9 +91,36 @@ extends Node
 @export var is_melee := false
 @export var melee_knockback := 20
 
+# Shoulder weapons with a designator work like skills: holding the fire button
+# shows the designator, releasing fires a salvo at it (Mecha.fire_at_point).
+# "none" keeps the plain firing path (Mecha.shoot). Fire type is
+# is_indirect_fire: indirect rounds fly over walls and vehicles and land on
+# the point. Ranges are measured from the mecha's centre, in px (20 px = 1 m).
+# A "line" or "rect" designator is a skillshot that always reaches
+# max_range: only its direction follows the aim. A "line_box" lands its rounds in a square of
+# half-side scatter_radius at the end of its line.
+@export_category("Designator")
+@export_enum("none", "circle", "line", "line_box", "rect", "point") var designator: String = "none"
+@export var min_range := 0.0
+@export var max_range := 2000.0
+## Radius (px) of the circle each round of a salvo lands in.
+@export var scatter_radius := 0.0
+## Rounds per salvo, and seconds between them.
+@export var barrage_count := 1
+@export var barrage_interval := 0.0
+## Degrees either side of the mecha's facing the weapon can aim.
+@export var gimbal := 5.0
+## Width (px) of a "rect" designator: the laser beam's width.
+@export var designator_width := 0.0
+## Tapping the fire button (shorter than Player.TAP_TIME) fires the salvo at
+## the mecha itself instead of the designator: the smoke launcher's screen.
+@export var tap_self := false
+
 var cur_stage = 0
 var firing_timer = 0.0
 var part_id
+# Projectile values read once by get_aoe_info().
+var _projectile_info := {}
 
 
 func get_sub():
@@ -129,5 +156,45 @@ func get_stat(stat_name):
 	var stat
 	stat = get(stat_name)
 	return stat
+
+
+func has_designator() -> bool:
+	return designator != "none"
+
+
+# What NPC code needs to use this weapon (see AoE weapons.md, "For NPC code").
+# The blast radius comes from the projectile scene, instantiated once and
+# cached: instantiate() doesn't run _ready, so it has no side effects.
+func get_aoe_info() -> Dictionary:
+	if _projectile_info.is_empty():
+		_projectile_info = {"blast_radius": 0.0, "muzzle_speed": 0.0, "submunitions": 0}
+		if projectile is PackedScene:
+			var inst: Node = projectile.instantiate()
+			var radius = inst.get("payload_explosion_radius")
+			var speed = inst.get("muzzle_speed")
+			var subs = inst.get("payload_subprojectile_count")
+			var has_subs: bool = inst.get("payload_subprojectile") != null
+			inst.free()
+			if radius != null:
+				_projectile_info.blast_radius = float(radius)
+			if speed != null:
+				_projectile_info.muzzle_speed = float(speed)
+			if subs != null and has_subs:
+				_projectile_info.submunitions = int(subs)
+	return {
+		"fire_type": "indirect" if is_indirect_fire else "direct",
+		"designator": designator,
+		"min_range": min_range,
+		"max_range": max_range,
+		"scatter_radius": scatter_radius,
+		"barrage_count": barrage_count,
+		"barrage_interval": barrage_interval,
+		"gimbal": gimbal,
+		"width": designator_width,
+		"blast_radius": _projectile_info.blast_radius,
+		"projectile_speed": _projectile_info.muzzle_speed,
+		"submunitions": _projectile_info.submunitions,
+		"requires_lock": requires_lock,
+	}
 
 	

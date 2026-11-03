@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/LaserTest.gd" id="1_laser"]
+
+[node name="LaserTest" type="Node"]
+script = ExtResource("1_laser")

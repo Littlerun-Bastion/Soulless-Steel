@@ -183,6 +183,22 @@ func shoot(amount := 1):
 		burst_cooldown()
 
 
+# One designator salvo (Mecha.fire_at_point): one clip round, the weapon's
+# fire_rate as cooldown, and the salvo's heat added to the mecha once.
+func shoot_salvo(heat_kj: float) -> void:
+	FrameSpikeDetector.mark("shoot")
+	clip_ammo -= 1
+	add_time(data.fire_rate)
+	heat = min(heat + data.muzzle_heat*4, 200)
+	mecha_ref.increase_heat(heat_kj)
+
+
+func play_shot_sound(at: Vector2) -> void:
+	if data.shoot_single_sfx:
+		AudioManager.play_sfx(data.shoot_single_sfx, at, null, null, data.sound_att, data.sound_max_range)
+		mecha_ref.create_sound("loud", "shooting", data.sound_max_range)
+
+
 func burst_cooldown():
 	add_time(data.fire_rate + data.burst_fire_rate)
 	burst_count = 0

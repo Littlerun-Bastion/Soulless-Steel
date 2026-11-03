@@ -3,7 +3,7 @@ class_name SystemWindow
 
 ## SYS: settings, controls, save and quit.
 ## Works on the options Profile already saves (volume, fullscreen, screen
-## shake), so changes apply at once and persist. CRT and UI-scale settings
+## shake, designator look limits), so changes apply at once and persist. CRT and UI-scale settings
 ## from the spec wait until those options exist.
 
 const VOLUME_STEP := 0.1
@@ -15,6 +15,7 @@ const AUDIO := [
 const TOGGLES := [
 	{"label": "FULLSCREEN", "option": "fullscreen"},
 	{"label": "SCREEN SHAKE", "option": "screen_shake"},
+	{"label": "DESIGNATOR LOOK LIMITS", "option": "designator_look_limits"},
 ]
 ## Input actions shown under CONTROLS (missing ones are skipped).
 const CONTROLS := [

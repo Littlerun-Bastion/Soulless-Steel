@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cefle3ia86hev" path="res://database/parts/complex_projectile.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cc4y6un446yr6" path="res://game/weapons/SmokeTrail.tscn" id="2_trail"]
+[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="3_impact"]
+[ext_resource type="Texture2D" uid="uid://boim570cv0bqw" path="res://assets/images/mechas/projectiles/RM7-rocket.png" id="4_tex"]
+[ext_resource type="PackedScene" uid="uid://dkj4mi4wpw7ww" path="res://game/weapons/MissileDirectedImpact.tscn" id="5_blast"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="6_light"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[node name="Projectile" type="Area2D" groups=["projectile"]]
+collision_layer = 2
+script = ExtResource("1_script")
+part_name = "RP6 Rocket"
+type = 2
+bullet_drag = 0.0
+muzzle_min_speed = 300.0
+muzzle_speed = 2200
+impact_effect = ExtResource("3_impact")
+impact_size = 1.5
+trail = ExtResource("2_trail")
+base_damage = 1
+armor_pen = 2
+heat_damage = 10.0
+stage_thrust_delay = Array[float]([99.0])
+stage_seeker_type = Array[String]([""])
+stage_seeker_angle = Array[float]([360.0])
+fuse_timer = 3.0
+payload_explosion = ExtResource("5_blast")
+payload_explosion_radius = 100.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("4_tex")
+
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+material = SubResource("1")
+position = Vector2(0, 9)
+scale = Vector2(4, 4)
+texture = ExtResource("6_light")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-3, -12, 3, -12, 3, 12, -3, 12)
+
+[node name="Fuse" type="Area2D" parent="."]
+
+[node name="FuseSensor" type="CollisionShape2D" parent="Fuse"]
+
+[node name="Explosion" type="Area2D" parent="."]
+
+[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion"]
+
+[node name="LifeTimer" type="Timer" parent="."]
+
+[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
+[connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]
+[connection signal="body_entered" from="Explosion" to="." method="_on_explosion_body_entered"]
+[connection signal="body_exited" from="Explosion" to="." method="_on_explosion_body_exited"]

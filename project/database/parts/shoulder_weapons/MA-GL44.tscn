@@ -12,6 +12,7 @@
 script = ExtResource("1_kq17r")
 part_name = "MA-GL44"
 ai_engage_range = 1800
+is_indirect_fire = true
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "oil": 1})
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
@@ -21,15 +22,24 @@ price = 520.0
 image = ExtResource("2_oov2b")
 muzzle_flash = ExtResource("3_qfmip")
 projectile = ExtResource("4_2431j")
-fire_rate = 2.0
-burst_size = 3
-burst_fire_rate = 0.1
+fire_rate = 0.5
+auto_fire = false
 base_accuracy = 5.0
 accuracy_bloom = 2.0
 max_bloom_angle = 15.0
-clip_size = 1000
+total_ammo = 12
+max_ammo = 12
+clip_size = 1
+reload_speed = 4.0
+muzzle_heat = 300.0
 eject_casings = true
 shoot_single_sfx = "medium_auto3"
+designator = "circle"
+min_range = 400.0
+max_range = 2000.0
+scatter_radius = 150.0
+barrage_count = 3
+barrage_interval = 0.15
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("5_qla44")

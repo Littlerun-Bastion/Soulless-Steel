@@ -575,6 +575,7 @@ func _wake(i: int) -> RigidBody2D:
 		sprite.scale = info.scale
 		sprite.modulate = Color(info.tone, info.tone, info.tone)
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		sprite.light_mask = _layer.light_mask
 		body.add_child(sprite)
 	add_child(body)
 	body.global_transform = Transform2D(_rot[i], _pos[i])
@@ -721,6 +722,7 @@ func _show_flat(i: int) -> void:
 	sprite.scale = size / tex.get_size()
 	sprite.modulate = Color(info.tone, info.tone, info.tone)
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	sprite.light_mask = _layer.light_mask
 	add_child(sprite)
 	sprite.global_position = _pos[i]
 	sprite.global_rotation = _rot[i]

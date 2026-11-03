@@ -22,8 +22,17 @@ image = ExtResource("2_8ajeq")
 muzzle_flash = ExtResource("3_dps17")
 projectile = ExtResource("4_pykmr")
 requires_lock = true
-fire_rate = 5.0
-clip_size = 1000
+fire_rate = 1.0
+auto_fire = false
+total_ammo = 8
+max_ammo = 8
+clip_size = 1
+reload_speed = 6.0
+muzzle_heat = 900.0
+designator = "circle"
+min_range = 600.0
+max_range = 3000.0
+scatter_radius = 300.0
 
 [node name="Sub" type="Sprite2D" parent="."]
 texture = ExtResource("3_5avpx")

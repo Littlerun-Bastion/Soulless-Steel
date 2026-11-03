@@ -8,13 +8,20 @@ extends "res://game/expedition/Expedition.gd"
 # are no Entities. One NPC of each generic design is put on the map, plus
 # EXTRA_TANKS more of the tank build; an NPC that dies or extracts is replaced
 # by one of the same design RESPAWN_TIME s later, at a random spawn zone.
+#
+# F5 (debug_5) opens a weapon picker: every shoulder weapon, with buttons to
+# fit it to the player's left or right shoulder (free the cursor to click).
 
 const RESPAWN_TIME := 5.0
 const EXTRA_TANKS := 1
+const MECH_THEME := preload("res://game/ui/mech_os/MechTheme.tres")
+const PICKER_LAYER := 5
+const PICKER_MARGIN := 40.0
 
 # Enemy -> the design it was made from, for its replacement.
 var _designs := {}
 var _next_name := 0
+var _weapon_picker: CanvasLayer = null
 
 
 func _ready() -> void:
@@ -22,6 +29,7 @@ func _ready() -> void:
 	randomize()
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
+	_setup_sight_lighting()
 	_setup_exits()
 	_setup_triggers()
 	_setup_wrecks()
@@ -55,6 +63,54 @@ func _spawn(design: Dictionary, pos = null) -> Mecha:
 	_next_name += 1
 	_designs[enemy] = design
 	return enemy
+
+
+# ---- Weapon picker ----
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_5"):
+		toggle_weapon_picker()
+		get_viewport().set_input_as_handled()
+
+
+func toggle_weapon_picker() -> void:
+	if is_instance_valid(_weapon_picker):
+		_weapon_picker.queue_free()
+		_weapon_picker = null
+		return
+	_weapon_picker = CanvasLayer.new()
+	_weapon_picker.layer = PICKER_LAYER
+	var root := Control.new()
+	root.theme = MECH_THEME
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.position = Vector2(PICKER_MARGIN, PICKER_MARGIN)
+	_weapon_picker.add_child(root)
+	var rows := MechUI.vbox(&"ListRows")
+	rows.add_child(MechUI.label(&"LabelMetaBright", "SHOULDER WEAPONS · F5"))
+	var names: Array = PartManager.get_parts("shoulder_weapon").keys()
+	names.sort()
+	names.append(false)
+	for part_name in names:
+		var row := MechUI.hbox(&"BarRow")
+		var name_label := MechUI.label(&"LabelBody", str(part_name) if part_name else "EMPTY")
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name_label)
+		for side in [Mecha.SIDE.LEFT, Mecha.SIDE.RIGHT]:
+			var button := MechUI.button("L" if side == Mecha.SIDE.LEFT else "R")
+			button.pressed.connect(equip_shoulder_weapon.bind(part_name, side))
+			row.add_child(button)
+		rows.add_child(row)
+	root.add_child(MechUI.pane(&"HudPanel", rows))
+	add_child(_weapon_picker)
+
+
+# Fits a shoulder weapon (false: none) to the player.
+func equip_shoulder_weapon(part_name, side: int) -> void:
+	if not is_instance_valid(player):
+		return
+	player.cancel_designating()
+	player.set_shoulder_weapon(part_name, side)
+	player.refresh_dynamic_components()
 
 
 # ---- Expedition overrides: no stakes ----

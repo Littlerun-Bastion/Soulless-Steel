@@ -13,9 +13,7 @@ const LOCKING_FINAL_SCALE = .25
 const LOCKING_INIT_BLINK = .7
 const LOCKING_FINAL_BLINK = 15.0
 const BLINK_PITCH_TARGET_MOD = .40
-const BUILDING_SPEED = 1.5
 
-@onready var Fog = $Fog
 @onready var Cursor = $SubViewportContainer/SubViewport/MechaCursorCrosshair
 @onready var PlayerRadar = $SubViewportContainer/SubViewport/PlayerRadar
 @onready var DashCooldown = $SubViewportContainer/SubViewport/DashCooldown
@@ -24,7 +22,6 @@ const BUILDING_SPEED = 1.5
 @onready var LockingAnim = $SubViewportContainer/SubViewport/LockingSprite/AnimationPlayer
 @onready var ConstantBlinkingSFX = $SubViewportContainer/SubViewport/ConstantBlinkingSFX
 @onready var StatusChirpSFX = $SubViewportContainer/SubViewport/StatusChirpSFX
-@onready var BuildingEffect = $BuildingEffectCanvas/BuildingEffect
 # Bottom left: frame readout + gauges (armour, shield, heat, battery, dash,
 # load). Bottom right: weapon list. Both are built in code (game/ui/hud/).
 @onready var hud_status: HudStatus = $SubViewportContainer/SubViewport/HudStatus
@@ -37,19 +34,12 @@ const BUILDING_SPEED = 1.5
 @onready var exit_marker: ExitMarker = $SubViewportContainer/SubViewport/ExitMarker
 
 
-var use_fog = false
 var player = false
 var mechas
-var building_effect_active = false
 
 var cockpit_warning_active = false
 var cockpit_warning_timer = 0.0
 var flagged_warning_active = false
-
-
-func _ready():
-	Fog.visible = use_fog
-	BuildingEffect.modulate.a = 0
 
 
 func toggle_inventory():
@@ -96,11 +86,6 @@ func _process(dt):
 			ConstantBlinkingSFX.stop()
 			LockingAnim.stop()
 			LockingSprite.hide()
-		
-		if building_effect_active:
-			BuildingEffect.modulate.a = min(1.0, BuildingEffect.modulate.a + BUILDING_SPEED*dt)
-		else:
-			BuildingEffect.modulate.a = max(0.0, BuildingEffect.modulate.a - BUILDING_SPEED*dt)
 
 func setup(player_ref, mechas_ref):
 	player = player_ref
@@ -111,7 +96,6 @@ func setup(player_ref, mechas_ref):
 	player.connect("update_lock_mode",Callable(self,"_on_lock_mode_update"))
 	player.connect("reloading",Callable(self,"_on_reloading"))
 	player.connect("finished_reloading",Callable(self,"update_cursor"))
-	player.connect("update_building_status",Callable(self,"_on_player_update_building_status"))
 	player.connect("component_damaged",Callable(self,"_on_component_damaged"))
 	player.connect("component_destroyed_alert",Callable(self,"_on_component_destroyed"))
 	player.connect("cockpit_exposed",Callable(self,"_on_cockpit_exposed"))
@@ -199,10 +183,6 @@ func _on_player_took_damage(_p, is_status):
 			var tween = create_tween()
 			hole.modulate.a = 0.0
 			tween.tween_property(hole, "modulate:a", 1.0, HOLE_FADE_DUR)
-
-
-func _on_player_update_building_status(value):
-	building_effect_active = value
 
 
 func _on_player_shoot():

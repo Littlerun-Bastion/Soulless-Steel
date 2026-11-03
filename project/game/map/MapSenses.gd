@@ -13,6 +13,16 @@ extends RefCounted
 #     the same building have no wall between them, so mechas inside one
 #     building see each other.
 #
+# Smoke (smoke_cloud.gd) blocks sight too: in_smoke, smoke_between, and
+# sight_blocked (walls or smoke) for NPCs and the player's view.
+#
+# Darkness and the vision cone are drawn with 2D lights (Mecha.tscn): the
+# player's MechaShadowGen dims everything on SIGHT_LIGHT_MASK, and every
+# mecha's MechaLight (its IR illuminator) lights a cone on it, shadowed by
+# LightOccluder2Ds (BuildingField streams them for its buildings, Building.tscn
+# has its own). Smoke casts no shadow; it hides things through the queries
+# above. join_sight_light puts a map on that light layer.
+#
 # Vehicles: VehicleField puts cars (vehicles a tank can trample) on
 # VEHICLE_LAYER and heavier vans and trucks on HEAVY_VEHICLE_LAYER.
 # VEHICLE_MASK covers both. Mechas collide with both and push vehicles; a
@@ -33,6 +43,7 @@ extends RefCounted
 # (detection_mult), and an observer under a tree sees less far (sight_mult).
 # Bushes are too small to hide a mecha, so they only hide Entities.
 
+const SMOKE := preload("res://game/weapons/smoke_cloud.gd")
 const WALL_LAYER := 10
 const WALL_MASK := 1 << (WALL_LAYER - 1)
 const VEHICLE_LAYER := 11
@@ -47,6 +58,9 @@ const SHOT_MASK := 0xFFFFFFFF & ~(WALL_MASK | VEHICLE_MASK)
 const SIGHT_MASK := 0xFFFFFFFF & ~VEHICLE_MASK
 const MAX_WALLS := 16
 const MAX_SHOT_HITS := 24
+const MAX_SOLID_SKIPS := 4
+## Light layer the darkness and the vision cones act on (light_mask bit 2).
+const SIGHT_LIGHT_MASK := 2
 
 ## Detection range multiplier for a target under a tree.
 const TREE_CONCEALMENT := 0.6
@@ -81,6 +95,22 @@ static func walls_between(world: World2D, a: Vector2, b: Vector2) -> bool:
 	var query := PhysicsRayQueryParameters2D.create(a, b, WALL_MASK)
 	query.collide_with_areas = false
 	return not world.direct_space_state.intersect_ray(query).is_empty()
+
+
+# Line of sight from `a` to `b`: blocked by a building wall or by smoke. The
+# shared sight check for NPCs (Enemy.update_senses) and the player's view.
+static func sight_blocked(world: World2D, a: Vector2, b: Vector2) -> bool:
+	return smoke_between(a, b) or walls_between(world, a, b)
+
+
+# Smoke (smoke_cloud.gd): whether `point` is in thick smoke, and whether
+# thick smoke lies between two points. Plain maths over the few live clouds.
+static func in_smoke(point: Vector2) -> bool:
+	return SMOKE.point_in_smoke(point)
+
+
+static func smoke_between(a: Vector2, b: Vector2) -> bool:
+	return SMOKE.blocks(a, b)
 
 
 # Moves a shot with `ap` armour pen from `from` to `to` through the walls and
@@ -124,6 +154,60 @@ static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop
 		if from.distance_squared_to(start) >= length_sq:
 			break
 	return {"ap": ap, "stop": null, "by": ""}
+
+
+# Puts `node` and everything under it (internal children too) on the sight
+# light layer, keeping the layers it already has. Once per map and per
+# streamed-in scene; nodes built later by map code copy their parent's mask.
+static func join_sight_light(node: Node) -> void:
+	if node is CanvasItem:
+		(node as CanvasItem).light_mask |= SIGHT_LIGHT_MASK
+	for child in node.get_children(true):
+		join_sight_light(child)
+
+
+# Where the line from `from` to `to` first meets a wall or another solid body,
+# or null if it is clear. Vehicles (lower than a shoulder mount), mechas and
+# Entities don't count. Used where something is stopped by walls only: a
+# direct-fire designator and the laser beam.
+static func solid_hit(world: World2D, from: Vector2, to: Vector2, exclude: Array[RID] = []):
+	var space := world.direct_space_state
+	var skip: Array[RID] = exclude.duplicate()
+	for _i in MAX_SOLID_SKIPS:
+		var query := PhysicsRayQueryParameters2D.create(from, to, SIGHT_MASK, skip)
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			return null
+		var collider := hit.collider as Node
+		if collider and (collider.is_in_group("mecha") or collider.is_in_group("entity")):
+			skip.append(hit.rid)
+			continue
+		return hit.position
+	return null
+
+
+# Which building `pos` is in, as a key two points can be compared by: ""
+# outside, "field:<id>" in a generated building (BuildingField), "node:<id>"
+# in a hand-made one (the BuildingArea polygon of Building.tscn). Blasts only
+# reach targets with the same key as the blast, and an indirect shell that
+# comes down where the key isn't "" hits the roof (complex_projectile).
+# Called per blast and per landing, not per frame.
+static func building_key_at(node: Node, pos: Vector2) -> String:
+	if node == null or not node.is_inside_tree():
+		return ""
+	var field := BuildingField.find(node)
+	if field:
+		var i := field.building_at(pos)
+		if i >= 0:
+			return "field:%d" % i
+	for area in node.get_tree().get_nodes_in_group("building_area"):
+		if not (area is Area2D):
+			continue
+		for child in area.get_children():
+			var poly := child as CollisionPolygon2D
+			if poly and Geometry2D.is_point_in_polygon(poly.global_transform.affine_inverse() * pos, poly.polygon):
+				return "node:%d" % area.get_parent().get_instance_id()
+	return ""
 
 
 # Detection range multiplier for `target`, from the foliage covering it.

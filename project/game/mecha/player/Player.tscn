@@ -8,8 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="6"]
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
-[ext_resource type="Texture2D" uid="uid://q747mpc0pxt" path="res://assets/images/light_sources/vision_cone1.png" id="9_nc772"]
-[ext_resource type="Material" uid="uid://5om27vep062v" path="res://assets/shaders/SightSharedMaterial.tres" id="9_ot5le"]
 
 [node name="Player" unique_id=1296425214 instance=ExtResource("5")]
 script = ExtResource("1")
@@ -48,19 +46,6 @@ position = Vector2(-49.7729, 16)
 [node name="RightShoulder" parent="." index="13" unique_id=843084311]
 position = Vector2(51.6457, 16)
 
-[node name="Sight" type="PointLight2D" parent="." index="26" unique_id=2040100245]
-light_mask = 2
-rotation = -1.5708
-range_layer_max = 3
-range_item_cull_mask = 4
-shadow_item_cull_mask = 0
-texture = ExtResource("9_nc772")
-
-[node name="SightDebugSprite" type="Sprite2D" parent="." index="27" unique_id=1857820096]
-visible = false
-material = ExtResource("9_ot5le")
-position = Vector2(-0.667419, 0)
-texture = ExtResource("9_nc772")
-
-[node name="MechaShadowGen" parent="." index="28" unique_id=1956748453]
+[node name="MechaShadowGen" parent="." unique_id=1956748453]
 enabled = false
+energy = 0.6

@@ -19,6 +19,10 @@ var options = {
 	"fullscreen": true,
 	"window_size": 3,
 	"screen_shake": true,
+	# On: a shoulder weapon's designator stays within the mecha's look angle.
+	# Off: it follows the cursor anywhere in range, dashed outside the look
+	# angle, and the weapon waits for the mecha to face it (Player).
+	"designator_look_limits": true,
 	"locale": 0,
 	"invert_x": true,
 	"invert_y": false,

@@ -267,8 +267,10 @@ func is_valid_prey(node) -> bool:
 
 
 # Line of sight; other Entities and vehicles don't block it (they're low to
-# the ground). Building walls do.
+# the ground). Building walls and smoke do.
 func can_see(node: Node2D) -> bool:
+	if MapSenses.smoke_between(global_position, node.global_position):
+		return false
 	var query := PhysicsRayQueryParameters2D.create(global_position, node.global_position, MapSenses.SIGHT_MASK)
 	query.exclude = [get_rid()]
 	var result := get_world_2d().direct_space_state.intersect_ray(query)

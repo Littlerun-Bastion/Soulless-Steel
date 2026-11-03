@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://byhs3c2r7l4l3" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x6/MA-RM9x6.png" id="2_pv"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="3_flash"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/AR8_rocket.tscn" id="4_projectile"]
+[ext_resource type="Texture2D" uid="uid://cednshikcowk7" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x6/MA-RM9x6_sub.png" id="5_sub"]
+[ext_resource type="Texture2D" uid="uid://fu60c7plq83t" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x6/MA-RM9x6_main.png" id="6_main"]
+[ext_resource type="Texture2D" uid="uid://cv213wjww7576" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x6/MA-RM9x6_glow.png" id="7_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "TORI-AR8"
+ai_engage_range = 3500
+is_indirect_fire = true
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 3, "copper": 2, "silicon": 2, "oil": 1})
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Tamaguchi"
+tagline = "Rocket Artillery"
+price = 2100.0
+weight = 3.0
+image = ExtResource("2_pv")
+muzzle_flash = ExtResource("3_flash")
+projectile = ExtResource("4_projectile")
+fire_rate = 1.0
+auto_fire = false
+total_ammo = 6
+max_ammo = 6
+clip_size = 1
+reload_speed = 10.0
+muzzle_heat = 120.0
+shoot_single_sfx = "medium_auto3"
+designator = "circle"
+min_range = 1400.0
+max_range = 4000.0
+scatter_radius = 350.0
+barrage_count = 8
+barrage_interval = 0.12
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 20)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 20)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-8, -60)
+
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(8, -60)
+
+[node name="ShootingPos3" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-8, -40)
+
+[node name="ShootingPos4" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(8, -40)

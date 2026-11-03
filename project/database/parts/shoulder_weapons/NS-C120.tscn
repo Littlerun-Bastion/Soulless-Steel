@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://g2gtvira2slt" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_main.png" id="2_main"]
+[ext_resource type="PackedScene" uid="uid://ceiqfceq2wtwi" path="res://game/ui/effects/SmallBallisticMuzzleFlash.tscn" id="3_flash"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/NS-C120_shell.tscn" id="4_projectile"]
+[ext_resource type="Texture2D" uid="uid://dbtbvevksievu" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_sub.png" id="5_sub"]
+[ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="6_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "NS-C120"
+ai_engage_range = 2600
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 5, "oil": 1})
+manufacturer_name = "Nomhoyi Superheavy"
+manufacturer_name_short = "Nomhoyi"
+tagline = "Shoulder Cannon"
+price = 1100.0
+weight = 4.0
+image = ExtResource("2_main")
+muzzle_flash = ExtResource("3_flash")
+muzzle_flash_size = 2.0
+projectile = ExtResource("4_projectile")
+recoil_force = 5.0
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 15
+max_ammo = 15
+clip_size = 1
+reload_speed = 3.5
+muzzle_heat = 900.0
+eject_casings = true
+casing_size = 2.0
+impact_force = 10.0
+shoot_single_sfx = "large_shotA"
+sound_max_range = 15000
+sound_att = 1.75
+designator = "line"
+min_range = 0.0
+max_range = 3000.0
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("2_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 25)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 25)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -90)

@@ -17,6 +17,7 @@ func _init() -> void:
 func run_tests() -> void:
 	await case("the test arena starts with its NPCs and no stakes", _test_start)
 	await case("a dead NPC is replaced", _test_respawn)
+	await case("the map is dark round the player's light cone, with wall shadows", _test_lighting)
 	await before_each()
 
 
@@ -70,6 +71,29 @@ func _test_respawn() -> void:
 	var replaced := await wait_until(func():
 		return _enemies().size() == before and not _enemies().any(func(e): return e.get_instance_id() == victim_id), 15.0)
 	check(replaced, "a new NPC takes its place")
+
+
+# The lights (Mecha.tscn) act on SIGHT_LIGHT_MASK: the map must be on it, the
+# player's darkness light on, and the buildings near the player must cast
+# shadows.
+func _test_lighting() -> void:
+	await _start()
+	var map: Node = _scene.get_node("Map")
+	var off_layer := []
+	for node in map.find_children("*", "CanvasItem", true, false):
+		# Occluders draw nothing; they cast shadows through occluder_light_mask.
+		if node is LightOccluder2D:
+			continue
+		if not (node.light_mask & MapSenses.SIGHT_LIGHT_MASK):
+			off_layer.append(node.name)
+	check(off_layer.is_empty(), "every map canvas item is on the sight light layer (off: %s)" % str(off_layer.slice(0, 5)))
+	var player = _scene.player
+	check(player.get_node("MechaShadowGen").enabled, "the player's darkness light is on")
+	check(player.get_node("MechaLight").enabled and player.get_node("MechaLight").shadow_enabled, "its cone light casts shadows")
+	var buildings := BuildingField.find(_scene)
+	var shadows := await wait_until(func(): return buildings.occluder_count() > 0, 3.0)
+	check(shadows, "the buildings near the player cast shadows (%d)" % buildings.occluder_count())
+	check(buildings.occluder_count() <= buildings.footprints.count(), "only the ones in reach")
 
 
 func _arena_script():

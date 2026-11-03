@@ -1627,14 +1627,13 @@ texture = ExtResource("9")
 texture_scale = 10.0
 
 [node name="MechaLight" type="PointLight2D" parent="." unique_id=1326455807]
-energy = 4.0
+energy = 2.5
 blend_mode = 2
 range_layer_max = 2
 range_item_cull_mask = 2
 shadow_enabled = true
 shadow_color = Color(0, 0, 0, 0.611765)
-shadow_filter = 1
-shadow_filter_smooth = 4.4
+shadow_filter = 2
 texture = ExtResource("44_7fvep")
 texture_scale = 5.0
 

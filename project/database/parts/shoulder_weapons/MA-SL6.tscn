@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://7mc5rja16ur5"]
+
+[ext_resource type="Script" uid="uid://oo5s1k62ue3h" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d0t7v1l6exdn5" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_pv.png" id="2_pv"]
+[ext_resource type="PackedScene" uid="uid://ochp211v1v88" path="res://database/parts/projectiles/SL6_canister.tscn" id="3_projectile"]
+[ext_resource type="Texture2D" uid="uid://dhdtto7p1da0q" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_sub.png" id="4_sub"]
+[ext_resource type="Texture2D" uid="uid://brs4otjcjk2u8" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_main.png" id="5_main"]
+[ext_resource type="Texture2D" uid="uid://nvblg20eaorr" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_glow.png" id="6_glow"]
+
+[node name="Part" type="Node" unique_id=1069699082]
+script = ExtResource("1_script")
+part_name = "MA-SL6"
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Smoke Launcher"
+price = 450.0
+image = ExtResource("2_pv")
+composition = Dictionary[String, int]({
+"oil": 2,
+"steel": 2
+})
+ai_engage_range = 800
+is_indirect_fire = true
+projectile = ExtResource("3_projectile")
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 6
+max_ammo = 6
+clip_size = 1
+reload_speed = 8.0
+muzzle_heat = 220.0
+shoot_single_sfx = "medium_auto3"
+designator = "circle"
+max_range = 1600.0
+scatter_radius = 250.0
+barrage_count = 6
+barrage_interval = 0.15
+tap_self = true
+
+[node name="Sub" type="Sprite2D" parent="." unique_id=1387260145]
+texture = ExtResource("4_sub")
+
+[node name="Main" type="Sprite2D" parent="." unique_id=1459030828]
+texture = ExtResource("5_main")
+
+[node name="Glow" type="Sprite2D" parent="." unique_id=1712233609]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="." unique_id=1774118321]
+position = Vector2(2, 12)
+
+[node name="EjectorPos" type="Marker2D" parent="." unique_id=1275423898]
+position = Vector2(2, 12)
+
+[node name="ShootingPosArray" type="Node2D" parent="." unique_id=1341510887]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray" unique_id=1663994665]
+position = Vector2(14, 2)

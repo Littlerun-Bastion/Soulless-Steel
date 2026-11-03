@@ -557,12 +557,13 @@ func update_senses(dt):
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 
 		# Foliage over the target, or over us, shortens the range; building
-		# walls block sight completely (see MapSenses). Cheapest checks first:
-		# the foliage and wall checks only run for targets in range.
+		# walls and smoke block sight completely (see MapSenses). Cheapest
+		# checks first: the foliage and sight checks only run for targets in
+		# range.
 		var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
 		if distance <= effective_engage_distance \
 				and distance <= effective_engage_distance * MapSenses.detection_mult(target) \
-				and not MapSenses.walls_between(get_world_2d(), global_position, target.global_position):
+				and not MapSenses.sight_blocked(get_world_2d(), global_position, target.global_position):
 			var data := _remember(target, target.global_position)
 			data.is_seen = true
 			data.velocity = target.velocity if "velocity" in target else Vector2.ZERO
@@ -807,6 +808,14 @@ func blind_fire(target) -> bool:
 	if fired:
 		AICombatLog.record_shot(self, to_point.length(), true)
 	return fired
+
+
+# A designator weapon fired through shoot() aims at where this NPC believes
+# its current target is (see Mecha.fire_at_point).
+func get_default_aim_point(slot: String) -> Vector2:
+	if is_instance_valid(current_target):
+		return get_target_position(current_target)
+	return super.get_default_aim_point(slot)
 
 
 func shoot_weapons(target):

@@ -258,6 +258,7 @@ func _build_group(kind: String, tex: Texture2D, span: float, list: Array) -> voi
 	node.multimesh = mm
 	node.texture = tex
 	node.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	node.light_mask = light_mask
 	add_child(node, false, Node.INTERNAL_MODE_BACK)
 	_nodes.append(node)
 

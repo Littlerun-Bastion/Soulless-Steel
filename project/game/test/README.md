@@ -85,7 +85,10 @@ func _init() -> void:
 
 | Suite | Covers |
 |---|---|
+| AoEDesignatorTest | shoulder weapons with a designator: the MA-GL44's data, the designator clamped to range and look angle, every reason a slot can't fire at a point, a salvo's rounds, ammo, heat, cooldown and reload, NPCs' plain shoot() going through the same rules, a direct-fire designator stopping at a wall, hold / release / reload-to-cancel, INDOORS on the HUD |
+| ArtilleryTest | the mortar, MLRS and rocket launcher: their data and salvo heat, minimum and maximum range (also for NPCs' shoot()), a barrage spread over time, barrels and the circle, mortar shells over a building onto their points, flat rockets stopping at a wall or a mecha in the way or going off on their points |
 | BootAndMenusTest | Intro loads the profile, main-menu buttons, incomplete-mecha guard, loss notice |
+| CannonTest | the shoulder cannon and howitzer: their data and shot heat, the cannon's line always reaching full range in the aimed direction (also for NPCs), its shell flying along the line into a mecha, howitzer rounds landing in a square box lined up with the line, a howitzer shell over a building into its box |
 | ContentScenesTest | every script compiles, every scene loads |
 | EconomyTest | credits: selling at half value (stacks, parts, weapons), never mid-run, nothing for worthless things, Sell all salvage leaving parts, what the cargo would sell for, the Sell menu actions; the repair bill on a real mecha (nothing undamaged, a quarter of what each damaged section is worth), debt from repairs and paying it off |
 | EntityTest | Entities (creatures): bullets, blasts and armour; bites by facing; Stalker pack hunting, fleeing, scattering, hearing gunfire; Spitter range and acid; Brute charge, ram, stomp, stun, rage; Cysts waking, hatching leashed guards, brood limit; death; bio loot and carcasses |
@@ -96,7 +99,11 @@ func _init() -> void:
 | GameLoopTest *(slow)* | Hangar -> Expedition -> Hangar with the player's gear and loot |
 | GradesTest | part grades: the grade table, wreck weapon drops rolling grades at their odds, grade scaling value, recycling and repairs, grades scaling a real mecha's summed stats and walk speed (and the stats panel the same), saving and loading grades, old saves as Standard, names showing the grade, a lost run resetting them |
 | HangarTest | Hangar windows, recycling, Materials window, selling and the credits readout (debt shown inverted), leave guard, swapping parts, a part keeping its grade on and off the mecha, closing the game mid-refit |
+| IndirectFireTest | indirect rounds flying over a building and a truck onto their point, roof bursts hurting no one, open-ground bursts, a shell landing right on a mecha hurting it, direct rounds going off at their landing point, building walls (generated and hand-made) blocking blasts both ways, a blast hurting its firer |
+| LaserTest | the sweep laser: its data, the rectangle always reaching full range, the beam hitting every mecha in it once for a fixed amount (and nothing beside or behind it, nor the firer), the front sweeping near to far, the beam stopping at a wall |
 | LootTableTest | loot tables, tiers, containers, bio salvage and Entity tables |
+| MineTest | mine layers and mines: their data, a contact mine going off only when driven over, a burst of sensor mines landing in the circle and going off when a mecha comes near, a magnetic mine crawling to a mecha, a direct-fire mine bouncing off a wall, mines lasting with no limit on their number, mines_near() for NPC code, a settled mine running no process or physics, mines bursting on a roof |
+| MissileTest | the cluster missile and VLS launchers: their data, firing at a locked target whatever the designator, gimbal or minimum range (up to max range), unlocked cluster submunitions dropping onto points in the circle (also when a wall stops the missile), locked VLS missiles over a building onto a target that moved, unlocked VLS missiles landing in the circle |
 | MapStreamingTest | map chunks hidden away from the camera, streamed scenes loading near a mecha and freed when it leaves, their loot crates keeping their contents across reloads (no refilling), far NPCs thinking less often |
 | MapVehiclesTest | map vehicles: mechas shoving cars, fire engines holding them back, cars shunting each other and stopping at walls, vehicles blocking shots by chance, not blocking sight, collision only near mechas |
 | MapWallsTest | building walls and foliage: walls block sight between outside and inside, each wall costs a shot 1 AP, grenades go off at walls, Entities can't see through walls, trees hide mechas, merged walls still count |
@@ -104,9 +111,11 @@ func _init() -> void:
 | NpcDesignsTest | every enemy design is valid and builds |
 | OtherModesTest *(slow)* | Store, Ladder, Arena fights start and run |
 | PartsTest | every part's data (name, image, weight, size, price, tech tier and composition), equipping, every weapon fires |
+| PlayerViewTest | what the player sees: mechas behind a building wall faded out, in-building and out-of-building sight (generated and hand-made buildings), Entities hidden too, nothing hidden while controls are locked |
 | PlayerProgressTest | money, stash, stakes, materials, recycling, required parts |
 | SandBodyTest | the sand creature looks (Coyote, Coyote Spitter, Fisher): building, walking, their attack moves, bursting into grains on death, the art bench |
 | SaveFileTest | saving/loading on disk, a new profile's starting credits, backup recovery, abandoned runs on boot |
+| SmokeTest | smoke clouds and the smoke launcher: a cloud thickening, blocking sight into, out of and through it and clearing, the player's view hiding mechas in and behind smoke, NPCs and Entities not seeing through it, tap screening the mecha itself and hold sending canisters to the designator, canisters leaving clouds |
 | StageDemoTest *(slow)* | the demo cutscene in a real Expedition: beats in order, the stage camera, frozen bystanders, the spawned NPC and obstacle, handing control and actors back, skipping, F4 and map triggers, ending on the player's death |
 | StageDirectorTest | cutscene building blocks: steps in order, waits, skipping, pausing, aborting, cinema bars, taking control, camera look-at/follow/hand-back, dialogue lines, actors walking and shooting |
 | StoryDirectorTest | story beats, flags, triggers, missions |

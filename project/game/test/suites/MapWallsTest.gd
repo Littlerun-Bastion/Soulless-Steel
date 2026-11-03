@@ -147,6 +147,10 @@ func _test_grenade() -> void:
 	var args: Dictionary = shots[0][0].duplicate()
 	args["pos"] = Vector2(-150, 200)
 	args["dir"] = Vector2.RIGHT
+	# The GL44 fires indirect (over walls); this checks the impact fuse of a
+	# round fired straight at a wall.
+	args.erase("indirect")
+	args.erase("target_pos")
 	var grenade = ProjectileManager.create(shooter, args, shots[0][1]).node
 	if not check(grenade.fuse_is_contact_enabled, "the GL44 grenade has an impact fuse"):
 		grenade.queue_free()

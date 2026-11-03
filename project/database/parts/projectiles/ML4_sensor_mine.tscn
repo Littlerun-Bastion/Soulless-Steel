@@ -1,0 +1,65 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/mine.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://b1umjsv3a1r2e" path="res://game/weapons/BallisticImpact.tscn" id="2_impact"]
+[ext_resource type="Texture2D" uid="uid://2836aqdu4232" path="res://assets/images/mechas/projectiles/rivet_projectile.png" id="3_tex"]
+[ext_resource type="PackedScene" uid="uid://dkj4mi4wpw7ww" path="res://game/weapons/MissileDirectedImpact.tscn" id="4_blast"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="5_light"]
+
+[sub_resource type="CanvasItemMaterial" id="1"]
+blend_mode = 1
+
+[node name="Projectile" type="Area2D" groups=["projectile"]]
+collision_layer = 2
+script = ExtResource("1_script")
+part_name = "Sensor Mine"
+type = 2
+projectile_size = 1.2
+bullet_drag = 0.0
+muzzle_min_speed = 300.0
+muzzle_speed = 900
+random_rotation = false
+impact_effect = ExtResource("2_impact")
+impact_size = 2.0
+base_damage = 2
+armor_pen = 3
+heat_damage = 10.0
+stage_thrust_delay = Array[float]([99.0])
+stage_seeker_type = Array[String]([""])
+stage_seeker_angle = Array[float]([360.0])
+fuse_timer = 0.0
+fuse_is_contact_enabled = false
+payload_explosion = ExtResource("4_blast")
+payload_explosion_radius = 160.0
+arc_height = 0.8
+mine_type = "sensor"
+trigger_radius = 220.0
+attract_radius = 0.0
+crawl_speed = 350.0
+arm_time = 1.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_tex")
+
+[node name="LightEffect" type="Sprite2D" parent="Sprite2D"]
+visible = false
+material = SubResource("1")
+texture = ExtResource("5_light")
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-8, -16, 8, -16, 8, 16, -8, 16)
+
+[node name="Fuse" type="Area2D" parent="."]
+
+[node name="FuseSensor" type="CollisionShape2D" parent="Fuse"]
+
+[node name="Explosion" type="Area2D" parent="."]
+
+[node name="ExplosionSensor" type="CollisionShape2D" parent="Explosion"]
+
+[node name="LifeTimer" type="Timer" parent="."]
+
+[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
+[connection signal="body_shape_entered" from="Fuse" to="." method="fuse"]
+[connection signal="body_entered" from="Explosion" to="." method="_on_explosion_body_entered"]
+[connection signal="body_exited" from="Explosion" to="." method="_on_explosion_body_exited"]

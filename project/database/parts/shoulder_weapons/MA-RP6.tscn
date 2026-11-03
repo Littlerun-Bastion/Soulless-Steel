@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cgg3uvgbgm8pg" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2.png" id="2_pv"]
+[ext_resource type="PackedScene" uid="uid://byovnld2knw84" path="res://game/ui/effects/SmallMissileMuzzleFlash.tscn" id="3_flash"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/RP6_rocket.tscn" id="4_projectile"]
+[ext_resource type="Texture2D" uid="uid://da0icna6o22o7" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2_sub.png" id="5_sub"]
+[ext_resource type="Texture2D" uid="uid://navhn1e854le" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2_main.png" id="6_main"]
+[ext_resource type="Texture2D" uid="uid://wv8sui1ntmi2" path="res://assets/images/mechas/shoulder_weapons/MA-RM9x2/MA-RM9x2_glow.png" id="7_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "MA-RP6"
+ai_engage_range = 1500
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 3, "copper": 1, "oil": 1})
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Rocket Pod"
+price = 780.0
+weight = 1.5
+image = ExtResource("2_pv")
+muzzle_flash = ExtResource("3_flash")
+projectile = ExtResource("4_projectile")
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 10
+max_ammo = 10
+clip_size = 1
+reload_speed = 5.0
+muzzle_heat = 150.0
+shoot_single_sfx = "medium_auto3"
+designator = "circle"
+min_range = 300.0
+max_range = 1800.0
+scatter_radius = 120.0
+barrage_count = 6
+barrage_interval = 0.08
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("5_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("6_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("7_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 20)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 20)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(-6, -60)
+
+[node name="ShootingPos2" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(6, -60)

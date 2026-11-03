@@ -58,6 +58,7 @@ func _ready() -> void:
 	randomize()
 	ShaderEffects.reset_shader_effect("arena")
 	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
+	_setup_sight_lighting()
 	_setup_exits()
 	_setup_triggers()
 	_setup_wrecks()
@@ -92,6 +93,22 @@ func _ready() -> void:
 	# ExpeditionDirector still tracks its own kills for tuning; this adds player-facing
 	# objectives on top.
 	_setup_mission()
+
+
+# The map joins the light layer the darkness and vision cones act on
+# (MapSenses.join_sight_light), and so does each hand-made scene the map
+# streams in.
+func _setup_sight_lighting() -> void:
+	if not has_node("Map"):
+		return
+	MapSenses.join_sight_light($Map)
+	for scene in get_tree().get_nodes_in_group("streamed_scene"):
+		if scene.has_signal("streamed_in") and not scene.streamed_in.is_connected(_on_scene_streamed_in):
+			scene.streamed_in.connect(_on_scene_streamed_in)
+
+
+func _on_scene_streamed_in(instance: Node) -> void:
+	MapSenses.join_sight_light(instance)
 
 
 func _setup_triggers() -> void:

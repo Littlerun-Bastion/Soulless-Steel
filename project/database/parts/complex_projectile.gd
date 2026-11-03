@@ -103,6 +103,30 @@ signal create_trail
 @export var payload_subprojectile_count := 0
 @export var payload_subprojectile_spread := 0.0
 @export var payload_subprojectile_rate := 0.0
+## A scene left where the round goes off (a smoke canister's cloud), put
+## beside the round. Not on a roof burst.
+@export var payload_spawn : PackedScene
+
+#---INDIRECT FLIGHT---#
+# A round fired by a designator weapon carries its landing point
+# (args.target_pos). An indirect round (args.indirect) flies straight to it
+# at muzzle_speed, over walls, vehicles and mechas, with no fuses running;
+# the sprite grows by up to arc_height (x its size) mid-flight to show the
+# arc. Where it comes down on a building it bursts on the roof and hurts
+# nothing; elsewhere an impact-fused round goes off and any other round
+# stays where it landed with its timer and proximity fuses starting. A
+# direct round with a landing point flies as usual and goes off there if it
+# hasn't hit anything first.
+@export var arc_height := 0.6
+## Airborne speed (px/s) of an indirect round; 0 uses muzzle_speed.
+@export var indirect_speed := 0.0
+#
+# A round with a blast-free payload of submunitions (a cluster missile)
+# fired by a designator spreads them over its target: each submunition drops
+# indirect onto a random point within args.cluster_radius of the round's
+# landing point and goes off where it lands (args.burst_on_landing), even
+# if the round released them early (its timer fuse) or was stopped by a
+# wall. A roof burst releases nothing.
 
 var args
 var original_mecha_info
@@ -143,6 +167,16 @@ var is_trail_created = false
 # round is going off; any other round's timer and proximity fuses keep
 # running.
 var cover_stopped = false
+# Landing point from the designator (null without one), where the flight
+# started and how far it is.
+var target_pos = null
+var flight_start := Vector2.ZERO
+var flight_distance := 0.0
+var flight_travelled := 0.0
+var is_airborne := false
+var roof_burst := false
+var cluster_radius := 0.0
+var burst_on_landing := false
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -160,6 +194,10 @@ func _physics_process(dt):
 	if cover_stopped:
 		lifetime += dt
 		_check_fuses()
+		return
+
+	if is_airborne:
+		_fly_indirect(dt)
 		return
 
 	# Update propulsion (thrust, acceleration) and guidance (homing)
@@ -211,7 +249,7 @@ func _physics_process(dt):
 			position = result.position
 			speed = 0
 			hit_entity(result.collider)
-			die(result.collider)
+			end_on_hit(result.collider)
 			return
 	else:
 		position += velocity*dt
@@ -227,7 +265,47 @@ func _physics_process(dt):
 		dir = true_dir
 		
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
+	if target_pos != null and position.distance_squared_to(flight_start) >= flight_distance * flight_distance:
+		position = target_pos
+		payload()
+		return
 	_check_fuses()
+
+
+# Airborne: straight at the landing point, or with a seeker target (a locked
+# VLS missile) at wherever that target is now.
+func _fly_indirect(dt: float) -> void:
+	if is_instance_valid(seeker_target) and seeker_target is Node2D:
+		target_pos = seeker_target.global_position
+	var to_target: Vector2 = target_pos - position
+	var step := maxf(indirect_speed if indirect_speed > 0.0 else float(muzzle_speed), 1.0) * dt
+	if to_target.length() <= step:
+		_land()
+		return
+	dir = to_target.normalized()
+	position += dir * step
+	flight_travelled += step
+	var t := flight_travelled / (flight_travelled + to_target.length() - step)
+	change_scaling(projectile_size * (1.0 + arc_height * sin(PI * t)))
+	if release_aligned:
+		rotation_degrees = rad_to_deg(dir.angle()) + 90
+
+
+func _land() -> void:
+	is_airborne = false
+	change_scaling(projectile_size)
+	position = target_pos
+	if MapSenses.building_key_at(self, global_position) != "":
+		roof_burst = true
+		payload()
+	elif fuse_is_contact_enabled or burst_on_landing:
+		payload()
+	else:
+		speed = 0
+		velocity = Vector2.ZERO
+		cover_stopped = true
+		var fuse_area := get_node_or_null("Fuse") as Area2D
+		fuse_waiting = fuse_area != null and fuse_area.has_overlapping_bodies()
 
 
 func _check_fuses():
@@ -282,12 +360,26 @@ func setup(mecha, _args, _weapon):
 		var explosion_radius = CircleShape2D.new()
 		explosion_radius.radius = payload_explosion_radius
 		$Explosion/ExplosionSensor.shape = explosion_radius
-	
+
+	flight_start = position
+	cluster_radius = float(args.get("cluster_radius", 0.0))
+	burst_on_landing = bool(args.get("burst_on_landing", false))
+	if args.get("target_pos") != null:
+		target_pos = args.target_pos
+		flight_distance = position.distance_to(target_pos)
+		if args.get("indirect", false):
+			is_airborne = true
+			if flight_distance > 0.0:
+				dir = position.direction_to(target_pos)
+				true_dir = dir
+
 	instance_trail()
 
 # Physics collision handler - handles direct mecha hits when fuse_is_contact_enabled
 # Uses Godot's physics system, allowing homing to work
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
+	if is_airborne:
+		return
 	if body.is_in_group("mecha"):
 		# Ignore chassis hits and non-contact projectiles
 		if body.is_shape_id_chassis(body_shape_id) or not fuse_is_contact_enabled:
@@ -388,7 +480,7 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 		if not body.is_in_group("mecha"):
 			mech_hit = false
 			hit_entity(body)
-		die(body)
+		end_on_hit(body)
 
 
 # Entities (creatures) have no armour parts: a direct hit is one hit, armour
@@ -417,6 +509,16 @@ func get_image():
 
 func get_collision():
 	return $CollisionShape3D.polygon
+
+# A round stopped by something it hit. A designator round with a blast goes
+# off there (it acts where it hits, not at its landing point); any other
+# round just ends, its direct hit already done.
+func end_on_hit(body) -> void:
+	if target_pos != null and (payload_explosion_radius > 0.0 or payload_subprojectile):
+		payload()
+	else:
+		die(body)
+
 
 func die(body):
 	if dying:
@@ -546,6 +648,8 @@ func guidance(dt):
 
 # Proximity fuse - triggers when enemy enters detection radius
 func fuse(_body_rid, body, _body_shape_index, _local_shape_index):
+	if is_airborne:
+		return
 	if is_fuse_target(body) and fuse_proximity_distance > 0.0:
 		# Wait for fuse to arm
 		if lifetime < fuse_arm_time:
@@ -583,41 +687,62 @@ func payload():
 		return
 	else:
 		payload_expended = true
-		
+
+	if payload_spawn and not roof_burst and get_parent():
+		var spawned: Node = payload_spawn.instantiate()
+		if spawned is Node2D:
+			spawned.position = position
+		get_parent().add_child(spawned)
+
 	# Spawn subprojectiles (submunitions, cluster bomblets, etc.)
-	if payload_subprojectile and payload_subprojectile_count > 0:
+	if payload_subprojectile and payload_subprojectile_count > 0 and not roof_burst:
 		for _i in range(payload_subprojectile_count):
 			await get_tree().create_timer(max(payload_subprojectile_rate,0.01)).timeout
 			var accuracy = deg_to_rad(randf_range(-payload_subprojectile_spread, payload_subprojectile_spread))
-			emit_signal("create_projectile", original_mecha_info.body,
-						{
-							"projectile":payload_subprojectile,
-							"pos": global_position,
-							"pos_reference": null,
-							"dir": dir.rotated(accuracy),
-							"align_dir":dir,
-							"seeker_target": seeker_target,
-							"inherited_velocity": speed*dir,
-							"node_reference": null,
-							"bullet_spread_delay": 0,
-							"muzzle_flash": null,
-						}, part_id)
+			var sub_args := {
+				"projectile":payload_subprojectile,
+				"pos": global_position,
+				"pos_reference": null,
+				"dir": dir.rotated(accuracy),
+				"align_dir":dir,
+				"seeker_target": seeker_target,
+				"inherited_velocity": speed*dir,
+				"node_reference": null,
+				"bullet_spread_delay": 0,
+				"muzzle_flash": null,
+			}
+			if cluster_radius > 0.0 and target_pos != null:
+				var landing: Vector2 = target_pos + Vector2.RIGHT.rotated(randf() * TAU) * cluster_radius * sqrt(randf())
+				sub_args["target_pos"] = landing
+				sub_args["indirect"] = true
+				sub_args["burst_on_landing"] = true
+				sub_args["seeker_target"] = false
+				sub_args["dir"] = global_position.direction_to(landing)
+			emit_signal("create_projectile", original_mecha_info.body, sub_args, part_id)
 	explosion()
 
-# AOE explosion damage - can hit multiple parts on multiple mechas
+# AOE explosion damage - can hit multiple parts on multiple mechas.
+# Building walls block blasts: a target is reached only from inside the same
+# building or when both are outside (MapSenses.building_key_at), and only
+# with no wall on the line between (the SIGHT_MASK ray below). A roof burst
+# reaches nothing. Every mecha in the blast is hurt, the firer included.
 func explosion():
 	var space_state = get_world_2d().direct_space_state
+	var blast_key := "roof" if roof_burst else MapSenses.building_key_at(self, global_position)
 
-	# Cars in the blast radius take blast damage (see VehicleField).
-	if payload_explosion_radius > 0.0:
+	# Cars in the blast radius take blast damage (see VehicleField). Cars are
+	# always outside.
+	if payload_explosion_radius > 0.0 and blast_key == "":
 		var vehicles := VehicleField.find(self)
 		if vehicles:
 			vehicles.damage_in_radius(global_position, payload_explosion_radius, VehicleField.BLAST_DAMAGE)
-	
-	# Process each mecha in explosion radius	
+
+	# Process each mecha in explosion radius
 	for body in explosion_targets.duplicate():
 		if not is_instance_valid(body):
 			continue  # destroyed before the blast went off
+		if MapSenses.building_key_at(self, body.global_position) != blast_key:
+			continue
 		var ray = body.position - position
 		ray = ray.normalized()
 		var explosion_angle = dir.angle_to(ray)
@@ -628,6 +753,10 @@ func explosion():
 			var query = PhysicsRayQueryParameters2D.create(position, body.position, MapSenses.SIGHT_MASK)
 			query.exclude = [self]
 			var result = space_state.intersect_ray(query)
+			# A blast inside the target's own shapes (a shell landing right on
+			# it) has no line to check: the ray starts inside and misses it.
+			if (not result or result.collider != body) and _blast_inside(body):
+				result = {"collider": body, "position": position}
 
 			# Entities: one blast hit, no parts to spread it over.
 			if result and result.collider and result.collider.is_in_group("entity"):
@@ -654,7 +783,8 @@ func explosion():
 						explosion_center,
 						ray,
 						armor_pen,
-						base_damage
+						base_damage,
+						true
 					)
 					
 					# Damage component if penetrated and one was selected
@@ -664,6 +794,17 @@ func explosion():
 				# Apply knockback
 				hit_mecha.knockback(payload_explosion_force, ray, true)
 	die(false)
+
+# Whether the blast point is inside one of `body`'s shapes.
+func _blast_inside(body) -> bool:
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = global_position
+	query.collide_with_bodies = true
+	query.collision_mask = self.collision_mask
+	for hit in get_world_2d().direct_space_state.intersect_point(query, 16):
+		if hit.collider == body:
+			return true
+	return false
 
 # Find all mech parts within explosion radius using physics area query
 func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: float) -> Array:

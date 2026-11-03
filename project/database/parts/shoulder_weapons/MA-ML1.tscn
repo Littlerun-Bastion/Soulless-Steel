@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://br7xqmhpqkbar" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_pv.png" id="2_pv"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/ML1_contact_mine.tscn" id="3_projectile"]
+[ext_resource type="Texture2D" uid="uid://dp82f5jd8e7tv" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_sub.png" id="4_sub"]
+[ext_resource type="Texture2D" uid="uid://dd6lcgv1a5ab2" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_main.png" id="5_main"]
+[ext_resource type="Texture2D" uid="uid://powv3oj3mtej" path="res://assets/images/mechas/shoulder_weapons/MA-GL44/MA-GL44_glow.png" id="6_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "MA-ML1"
+ai_engage_range = 1000
+is_indirect_fire = false
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 3, "oil": 1})
+manufacturer_name = "Martel Shipping and SAV Manufacturing"
+manufacturer_name_short = "Martel"
+tagline = "Mine Layer"
+price = 600.0
+weight = 1.5
+image = ExtResource("2_pv")
+projectile = ExtResource("3_projectile")
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 16
+max_ammo = 16
+clip_size = 1
+reload_speed = 2.0
+muzzle_heat = 650.0
+shoot_single_sfx = "medium_auto3"
+designator = "point"
+min_range = 200.0
+max_range = 1200.0
+scatter_radius = 0.0
+barrage_count = 1
+barrage_interval = 0.1
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 17)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(0, 17)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -46)

@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://vi3et2v1r6cr" path="res://assets/images/mechas/shoulder_weapons/Luan/Luan_pv.png" id="2_pv"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/LZ1_beam.tscn" id="3_projectile"]
+[ext_resource type="Texture2D" uid="uid://bqs84kkgnere" path="res://assets/images/mechas/shoulder_weapons/Luan/Luan_sub.png" id="4_sub"]
+[ext_resource type="Texture2D" uid="uid://c8ujx5e8p70m1" path="res://assets/images/mechas/shoulder_weapons/Luan/Luan_main.png" id="5_main"]
+[ext_resource type="Texture2D" uid="uid://dbqycnnywkmd7" path="res://assets/images/mechas/shoulder_weapons/Luan/Luan_glow.png" id="6_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "TORI-LZ1"
+ai_engage_range = 2000
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 2, "copper": 3, "silicon": 3})
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Tamaguchi"
+tagline = "Sweep Laser"
+price = 2300.0
+weight = 2.0
+image = ExtResource("2_pv")
+projectile = ExtResource("3_projectile")
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 12
+max_ammo = 12
+clip_size = 1
+reload_speed = 4.0
+muzzle_heat = 1100.0
+shoot_single_sfx = "en_shotgun_light"
+designator = "rect"
+max_range = 2400.0
+designator_width = 60.0
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(0, 30)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(8, 30)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(0, -110)

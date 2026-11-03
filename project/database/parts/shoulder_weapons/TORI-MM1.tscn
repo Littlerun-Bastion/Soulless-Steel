@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/parts/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d0t7v1l6exdn5" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_pv.png" id="2_pv"]
+[ext_resource type="PackedScene" path="res://database/parts/projectiles/MM1_magnetic_mine.tscn" id="3_projectile"]
+[ext_resource type="Texture2D" uid="uid://dhdtto7p1da0q" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_sub.png" id="4_sub"]
+[ext_resource type="Texture2D" uid="uid://brs4otjcjk2u8" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_main.png" id="5_main"]
+[ext_resource type="Texture2D" uid="uid://nvblg20eaorr" path="res://assets/images/mechas/shoulder_weapons/TORI-ML/TORI-ML_glow.png" id="6_glow"]
+
+[node name="Part" type="Node"]
+script = ExtResource("1_script")
+part_name = "TORI-MM1"
+ai_engage_range = 1100
+is_indirect_fire = false
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 2, "copper": 2, "silicon": 1})
+manufacturer_name = "Yamaguchi Heavy Industries"
+manufacturer_name_short = "Tamaguchi"
+tagline = "Magnetic Mine Layer"
+price = 1100.0
+weight = 1.5
+image = ExtResource("2_pv")
+projectile = ExtResource("3_projectile")
+fire_rate = 0.5
+auto_fire = false
+total_ammo = 12
+max_ammo = 12
+clip_size = 1
+reload_speed = 3.0
+muzzle_heat = 700.0
+shoot_single_sfx = "medium_auto3"
+designator = "point"
+min_range = 200.0
+max_range = 1400.0
+scatter_radius = 0.0
+barrage_count = 1
+barrage_interval = 0.1
+
+[node name="Sub" type="Sprite2D" parent="."]
+texture = ExtResource("4_sub")
+
+[node name="Main" type="Sprite2D" parent="."]
+texture = ExtResource("5_main")
+
+[node name="Glow" type="Sprite2D" parent="."]
+texture = ExtResource("6_glow")
+
+[node name="AttachPos" type="Marker2D" parent="."]
+position = Vector2(2, 12)
+
+[node name="EjectorPos" type="Marker2D" parent="."]
+position = Vector2(2, 12)
+
+[node name="ShootingPosArray" type="Node2D" parent="."]
+
+[node name="ShootingPos" type="Marker2D" parent="ShootingPosArray"]
+position = Vector2(14, 2)

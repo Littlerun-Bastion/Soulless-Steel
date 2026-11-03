@@ -1,8 +1,6 @@
 [gd_scene format=3 uid="uid://coobdqvll7004"]
 
 [ext_resource type="Script" uid="uid://x2t8no2dcqss" path="res://game/ui/PlayerHUD.gd" id="1"]
-[ext_resource type="Shader" uid="uid://b4r3smjmtsbuo" path="res://assets/shaders/Fog.tres" id="3_3y8od"]
-[ext_resource type="Texture2D" uid="uid://cpmc45grydn76" path="res://assets/images/ui/fog_effect.PNG" id="4_m1g1l"]
 [ext_resource type="Texture2D" uid="uid://bjsewyv2hkidw" path="res://assets/images/ui/player_ui/ui_vignette.png" id="6"]
 [ext_resource type="Texture2D" uid="uid://vup205tntx1e" path="res://assets/images/ui/player_ui/small_bullethole3.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://exlflvupk2ki" path="res://assets/images/ui/player_ui/small_bullethole1.png" id="8"]
@@ -20,9 +18,6 @@
 [ext_resource type="Script" uid="uid://dwqqiabcc3o6y" path="res://game/ui/hud/HudAlerts.gd" id="33_hud_alerts"]
 [ext_resource type="Script" uid="uid://c23q8wg2a12e3" path="res://game/ui/hud/InteractPrompt.gd" id="34_prompt"]
 [ext_resource type="Script" uid="uid://cr5sy27bx0kc1" path="res://game/ui/hud/HudTopStrip.gd" id="35_top_strip"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_bps1e"]
-shader = ExtResource("3_3y8od")
 
 [sub_resource type="Animation" id="Animation_muj6a"]
 length = 0.001
@@ -128,94 +123,9 @@ _data = {
 &"static": SubResource("19")
 }
 
-[sub_resource type="Shader" id="26"]
-code = "shader_type canvas_item;
-render_mode blend_mix;
-
-uniform float _size : hint_range(0, 10) = 5;
-uniform sampler2D noise;
-uniform vec2 moving_offset = vec2(.05,.03);
-uniform float shadow_strength = .5;
-uniform float shadow_factor = 0.3;
-uniform float brightness_anchor = .24;
-uniform float brightness_variance = .015;
-uniform float brightness_frequency = 2.0;
-uniform float rotation_intensity = 5.0;
-uniform float rotation_frequency = .25;
-
-float pascal_tra(int depth, int order) {
-	if (order < 1 || order == depth) {
-		return 1.0;
-	} else {
-		float Temp_o = 1.0;
-		for (int i = 1; i <= order; i++) {
-			Temp_o = Temp_o * float(i);
-		}
-		float Temp_d = 1.0;
-		for (int i = 1; i <= depth; i++) {
-			Temp_d = Temp_d * float(i);
-		}
-		float Temp_od = 1.0;
-		for (int i = 1; i <= (depth - order); i++) {
-			Temp_od = Temp_od * float(i);
-		}
-		return Temp_d / (Temp_o * Temp_od);
-	}
-}
-
-void fragment( )
-{
-	float intensity = sin(brightness_frequency*TIME)*brightness_variance + brightness_anchor;
-	float Count = pow(2.0, _size * 2.0) * pow(2.0, _size * 2.0);
-	vec4 col = vec4(0.0);
-	vec2 offset = vec2(moving_offset.x * rotation_intensity*cos(rotation_frequency*TIME), moving_offset.y * rotation_intensity*sin(rotation_frequency*TIME));
-	if (rotation_intensity <= 0.0){
-		offset = moving_offset*TIME;
-	}
-	float modi = 1.0 - pow(texture(noise, UV + offset).r, shadow_strength) * shadow_factor;
-	for (int i = int(-_size); i <= int(_size); i++) {
-		for (int j = int(-_size); j <= int(_size); j++) {
-			vec2 quat_xy = vec2( float(i) * SCREEN_PIXEL_SIZE.x, float(j) * SCREEN_PIXEL_SIZE.y );
-			float temp_x = (intensity + modi) * pascal_tra(int(_size) * 2, i + int(_size));
-			float temp_y = (intensity + modi) * pascal_tra(int(_size) * 2, j + int(_size));
-			col += textureLod(TEXTURE, UV + quat_xy, 0.0) * temp_x * temp_y / Count;
-		}
-	}
-	
-	COLOR = col;
-}"
-
-[sub_resource type="FastNoiseLite" id="23"]
-
-[sub_resource type="NoiseTexture2D" id="27"]
-width = 1024
-height = 1024
-noise = SubResource("23")
-seamless = true
-
-[sub_resource type="ShaderMaterial" id="25"]
-shader = SubResource("26")
-shader_parameter/_size = 5.0
-shader_parameter/noise = SubResource("27")
-shader_parameter/moving_offset = Vector2(0.05, 0.03)
-shader_parameter/shadow_strength = 0.5
-shader_parameter/shadow_factor = 0.6
-shader_parameter/brightness_anchor = 0.3
-shader_parameter/brightness_variance = 0.01
-shader_parameter/brightness_frequency = 4.0
-shader_parameter/rotation_intensity = 26.0
-shader_parameter/rotation_frequency = 0.03
-
 [node name="PlayerHUD" type="CanvasLayer" unique_id=1964501642]
 layer = 2
 script = ExtResource("1")
-
-[node name="Fog" type="TextureRect" parent="." unique_id=847667742]
-light_mask = 4
-material = SubResource("ShaderMaterial_bps1e")
-offset_right = 1920.0
-offset_bottom = 1080.0
-texture = ExtResource("4_m1g1l")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="." unique_id=1831736022]
 anchors_preset = 15
@@ -530,15 +440,3 @@ mouse_filter = 2
 [node name="TopStrip" type="CanvasLayer" parent="." unique_id=1280121022]
 layer = 11
 script = ExtResource("35_top_strip")
-
-[node name="BuildingEffectCanvas" type="CanvasLayer" parent="." unique_id=754669731]
-visible = false
-
-[node name="BuildingEffect" type="ColorRect" parent="BuildingEffectCanvas" unique_id=1687841309]
-modulate = Color(0, 0, 0, 1)
-light_mask = 16
-material = SubResource("25")
-offset_right = 1920.0
-offset_bottom = 1080.0
-mouse_filter = 2
-color = Color(0, 0, 0, 1)

@@ -12,6 +12,7 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 enum CALIBRE_TYPES {SMALL, MEDIUM, LARGE, FIRE}
 
 const DECAL = preload("res://game/mecha/Decal.tscn")
+const MINE = preload("res://database/parts/mine.gd")
 const HITBOX = preload("res://game/mecha/Hitbox.tscn")
 const PART_DESTRUCTION_EXPLOSION = preload("res://game/weapons/PartDestructionExplosion.tscn")
 const COMPONENT_EXPLOSION_THROTTLE_MS := 100
@@ -369,6 +370,10 @@ var disabled_systems = {
 	"shield_regen": 1.0,
 }
 
+# Designator salvos still firing: {"slot", "point", "left" (rounds), "wait" (s
+# until the next round)}. See fire_at_point.
+var _salvos: Array[Dictionary] = []
+
 var thruster_cooldown = 0.0
 
 var ecm_attempt_cooldown = 0.0
@@ -415,7 +420,11 @@ func _physics_process(dt):
 		return
 	
 	generate_passive_sounds(dt)
-	
+
+	# Mines round this mecha react to it (mine.gd): a grid lookup, no physics.
+	if not is_dead:
+		MINE.check_mecha(self)
+
 	if is_stunned():
 		return
 	
@@ -488,6 +497,9 @@ func _physics_process(dt):
 	else: right_shoulder_bloom_count = 0
 	if left_shoulder_bloom_time > 0: left_shoulder_bloom_time = max(left_shoulder_bloom_time - dt, 0.0)
 	else: left_shoulder_bloom_count = 0
+
+	if not _salvos.is_empty():
+		_process_salvos(dt)
 
 	#Handle shield
 	if build.generator and shield < max_shield:
@@ -1989,6 +2001,12 @@ func shoot(type, is_auto_fire = false):
 		return
 	if is_shielding:
 		return
+	# Designator weapons fire salvos at a point; callers that only say "shoot"
+	# (NPCs, scripted scenes) aim at get_default_aim_point, and don't fire
+	# when it is out of the weapon's range.
+	if build.get(type) and build[type].has_designator():
+		fire_at_point(type, get_default_aim_point(type))
+		return
 	if disabled_systems.has(type) and disabled_systems[type] == true:
 		return
 	
@@ -2131,6 +2149,249 @@ func apply_recoil(type, node, recoil):
 		target_rotation *= -1
 	rotation_degrees += target_rotation
 	node.rotation_degrees += rotation*WEAPON_RECOIL_MOD
+
+
+# DESIGNATOR WEAPONS
+#
+# A weapon with a designator (weapon.gd) fires salvos at a world point. The
+# same rules hold for the player and NPCs: the point must be within the
+# weapon's min and max range of the mecha's centre and within `gimbal`
+# degrees of its facing; indirect weapons can't fire from inside a building
+# (the roof is in the way); and the weapon needs ammo, no cooldown or reload
+# running and an internal temperature below the overheat point. A "line"
+# (the cannon) or "rect" (the laser) designator is a skillshot: only its
+# direction comes from the aim, and it always reaches max_range. A salvo
+# costs one clip round and muzzle_heat per round, added at once; the rounds
+# go out barrage_interval s apart, each aimed at a random point within
+# scatter_radius of the designated point. An empty clip starts the reload,
+# which is the weapon's cooldown.
+
+const DISABLED_WEAPON_KEYS := {
+	"arm_weapon_left": "left_arm_weapon",
+	"arm_weapon_right": "right_arm_weapon",
+	"shoulder_weapon_left": "left_shoulder_weapon",
+	"shoulder_weapon_right": "right_shoulder_weapon",
+}
+const DESIGNATOR_RANGE_SLACK := 1.0
+const DESIGNATOR_ANGLE_SLACK := 0.5
+
+
+func get_facing() -> Vector2:
+	return Vector2.UP.rotated(global_rotation)
+
+
+# Where `slot`'s designator goes for an aim at `target`: clamped to the
+# weapon's range and, with look_limits, to its gimbal either side of facing.
+func designator_point(slot: String, target: Vector2, look_limits := true) -> Vector2:
+	var weapon = build.get(slot)
+	if not weapon:
+		return target
+	var offset := target - global_position
+	var dist := clampf(offset.length(), weapon.min_range, weapon.max_range)
+	if weapon.designator == "line" or weapon.designator == "rect":
+		dist = weapon.max_range
+	var angle := 0.0
+	if offset.length() > 0.001:
+		angle = get_facing().angle_to(offset)
+	if look_limits:
+		var limit := deg_to_rad(weapon.gimbal)
+		angle = clampf(angle, -limit, limit)
+	return global_position + get_facing().rotated(angle) * dist
+
+
+# A direct-fire designator stops short of the first wall or solid body on
+# the way from the weapon to `point`, where the shot would really hit.
+# Vehicles (lower than a shoulder mount), mechas and Entities don't stop it.
+func designator_clip(slot: String, point: Vector2) -> Vector2:
+	var node = get_weapon_part(slot)
+	var from: Vector2 = global_position
+	if node and node.shooting_pos_array.size() > 0:
+		from = node.shooting_pos_array[node.shooting_pos_idx].global_position
+	var exclude: Array[RID] = [get_rid()]
+	var hit = MapSenses.solid_hit(get_world_2d(), from, point, exclude)
+	if hit == null:
+		return point
+	return hit - (point - from).normalized() * 4.0
+
+
+# Why `slot` can't fire at `point` now, or "" if it can. Reasons:
+# no_weapon, disabled, busy (dead, shielding or a salvo still going out),
+# indoors (indirect fire from inside a building), reloading (also the
+# cooldown), no_ammo, too_hot, too_close, too_far, not_facing.
+func can_fire_at_point(slot: String, point: Vector2) -> String:
+	var weapon = build.get(slot)
+	var node = get_weapon_part(slot) if weapon else null
+	if not weapon or not node:
+		return "no_weapon"
+	if disabled_systems.get(DISABLED_WEAPON_KEYS.get(slot, ""), false) == true:
+		return "disabled"
+	if is_dead or is_shielding or is_salvo_firing(slot):
+		return "busy"
+	if weapon.is_indirect_fire and is_inside_building:
+		return "indoors"
+	if node.clip_ammo is not bool and node.clip_ammo <= 0 and node.total_ammo <= 0:
+		return "no_ammo"
+	if node.is_reloading() or node.timer > 0.0 or (node.clip_ammo is not bool and node.clip_ammo <= 0):
+		return "reloading"
+	if internal_temp >= overheat_temp:
+		return "too_hot"
+	if weapon.has_designator() and fires_at_lock(slot):
+		if global_position.distance_to(get_locked_to().global_position) > weapon.max_range + DESIGNATOR_RANGE_SLACK:
+			return "too_far"
+	elif weapon.has_designator():
+		var offset := point - global_position
+		if offset.length() < weapon.min_range - DESIGNATOR_RANGE_SLACK:
+			return "too_close"
+		if offset.length() > weapon.max_range + DESIGNATOR_RANGE_SLACK:
+			return "too_far"
+		if offset.length() > 0.001 and\
+		absf(get_facing().angle_to(offset)) > deg_to_rad(weapon.gimbal + DESIGNATOR_ANGLE_SLACK):
+			return "not_facing"
+	return ""
+
+
+# Fires `slot` at `point` under the rules above. Returns "" if it fired,
+# else the reason it didn't (see can_fire_at_point; also "jammed" when an
+# overheated weapon jams). A weapon without a designator just shoots.
+func fire_at_point(slot: String, point: Vector2) -> String:
+	var reason := can_fire_at_point(slot, point)
+	if reason != "":
+		return reason
+	var weapon = build[slot]
+	if not weapon.has_designator():
+		shoot(slot)
+		return ""
+	var node = get_weapon_part(slot)
+	if not node.can_shoot(1):
+		return "jammed"
+	if fires_at_lock(slot):
+		point = get_locked_to().global_position
+	elif (weapon.designator == "line" or weapon.designator == "rect") and point != global_position:
+		point = global_position + global_position.direction_to(point) * weapon.max_range
+	node.shoot_salvo(weapon.muzzle_heat * weapon.barrage_count)
+	_fire_designator_round(slot, point)
+	if weapon.barrage_count > 1:
+		_salvos.append({"slot": slot, "point": point, "left": weapon.barrage_count - 1,
+				"wait": weapon.barrage_interval})
+	elif node.is_clip_empty():
+		node.reload()
+	emit_signal("shoot_signal")
+	return ""
+
+
+# A lock-on weapon (requires_lock) with a target locked fires at that target
+# wherever the designator is: no gimbal or minimum range, only max range.
+# Its rounds carry the target as their seeker; an indirect one (VLS) flies
+# over everything onto the target, a direct one flies as it always has.
+func fires_at_lock(slot: String) -> bool:
+	var weapon = build.get(slot)
+	return weapon and weapon.requires_lock and get_locked_to()
+
+
+# The mines within `radius` of `pos` (any owner): one Dictionary each with
+# "type" (contact, sensor, magnetic), "owner" (the mecha that laid it, or
+# null), "position", "trigger_radius", "attract_radius" (magnetic only),
+# "armed" and "node". A grid lookup, cheap enough to call every frame.
+func mines_near(pos: Vector2, radius: float) -> Array[Dictionary]:
+	return MINE.mines_near(pos, radius)
+
+
+func is_salvo_firing(slot: String) -> bool:
+	for salvo in _salvos:
+		if salvo.slot == slot:
+			return true
+	return false
+
+
+# Aim point for a designator weapon fired through shoot(), which has no
+# point: straight ahead at the weapon's AI engage range. Enemy aims at its
+# target instead.
+func get_default_aim_point(slot: String) -> Vector2:
+	var weapon = build.get(slot)
+	var dist: float = weapon.ai_engage_range if weapon else 0.0
+	return global_position + get_facing() * dist
+
+
+func _process_salvos(dt: float) -> void:
+	for salvo in _salvos.duplicate():
+		if is_dead or not build.get(salvo.slot):
+			_salvos.erase(salvo)
+			continue
+		salvo.wait -= dt
+		while salvo.wait <= 0.0 and salvo.left > 0:
+			_fire_designator_round(salvo.slot, salvo.point)
+			salvo.left -= 1
+			salvo.wait += build[salvo.slot].barrage_interval
+		if salvo.left <= 0:
+			_salvos.erase(salvo)
+			var node = get_weapon_part(salvo.slot)
+			if node and node.is_clip_empty():
+				node.reload()
+
+
+# One round of a salvo, aimed at a random point within the weapon's scatter
+# round `point`: a circle of scatter_radius, or for a line_box designator a
+# square of half-side scatter_radius lined up with the line of fire. The
+# round carries its landing point: indirect rounds fly to it over
+# everything, direct ones go off there unless they hit something first
+# (complex_projectile).
+func _fire_designator_round(slot: String, point: Vector2) -> void:
+	var weapon = build[slot]
+	var node = get_weapon_part(slot)
+	var locked := fires_at_lock(slot)
+	var cluster: bool = weapon.get_aoe_info().submunitions > 0
+	var landing := point
+	var r: float = weapon.scatter_radius
+	if locked:
+		landing = get_locked_to().global_position
+	elif cluster:
+		pass
+	elif r > 0.0 and weapon.designator == "line_box":
+		var along := global_position.direction_to(point)
+		landing += along * randf_range(-r, r) + along.orthogonal() * randf_range(-r, r)
+	elif r > 0.0:
+		landing += Vector2.RIGHT.rotated(randf() * TAU) * r * sqrt(randf())
+	var muzzle = node.get_shoot_position()
+	var from: Vector2 = muzzle.global_position
+	var dir := from.direction_to(landing)
+	if dir == Vector2.ZERO:
+		dir = get_facing()
+	var args := {
+		"projectile": weapon.projectile,
+		"pos": from,
+		"pos_reference": muzzle,
+		"dir": dir,
+		"align_dir": dir,
+		"seeker_target": get_locked_to() if locked else false,
+		"node_reference": node,
+		"inherited_velocity": velocity,
+		"bullet_spread_delay": 0,
+		"muzzle_flash": null if weapon.muzzle_flash == null else {
+			"flash_effect": weapon.muzzle_flash,
+			"flash_speed": weapon.muzzle_flash_speed,
+			"flash_size": weapon.muzzle_flash_size,
+		},
+		"target_pos": landing,
+		"indirect": weapon.is_indirect_fire,
+		"beam_width": weapon.designator_width,
+	}
+	# A locked direct missile has no landing point: it flies at its seeker
+	# target as lock-on missiles always have.
+	if locked and not weapon.is_indirect_fire:
+		args.erase("target_pos")
+	if cluster and not locked:
+		args["cluster_radius"] = r
+	emit_signal("create_projectile", self, args, weapon.part_id)
+	node.play_shot_sound(from)
+	if weapon.recoil_force > 0.0:
+		apply_recoil(slot, node, weapon.recoil_force)
+	if weapon.eject_casings:
+		emit_signal("create_casing",
+						{
+							"casing_ejector_pos": node.global_position,
+							"casing_eject_angle": (180.0 if "left" in slot else 0.0) + global_rotation_degrees,
+							"casing_size": weapon.casing_size,
+						})
 
 
 func shield_up():
@@ -2456,7 +2717,7 @@ func get_part_name_from_shape(shape_index: int) -> String:
 		push_error("Unknown collision node: " + str(collision_node))
 		return "core"  # Fallback
 
-func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir: Vector2, pen_level: int, damage_pips: int) -> Dictionary:
+func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir: Vector2, pen_level: int, damage_pips: int, is_aoe := false) -> Dictionary:
 	# Returns: {penetrated: bool, part_name: String, component_name: String, facing: String}
 
 	# The shield collision isn't a real armor part — it's a separate
@@ -2524,7 +2785,7 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 	# 8. Select component to damage (if penetrated or exposed)
 	var selected_component = ""
 	if penetrated or facing_exposed:
-		var eligible = get_eligible_components(hit_part_name, facing, penetrated, false)
+		var eligible = get_eligible_components(hit_part_name, facing, penetrated, is_aoe)
 		if eligible.size() > 0:
 			selected_component = select_component_by_weight(hit_part_name, eligible)
 	

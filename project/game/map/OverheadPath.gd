@@ -119,6 +119,7 @@ func _build_section(part: PackedVector2Array) -> Dictionary:
 		var n: Vector2 = t[1] * (half - 12.0)
 		m.line(PackedVector2Array([p - n, p + n]), 2.5, Color(0.13, 0.13, 0.13))
 	var node := _mesh_node(m.build())
+	node.light_mask = light_mask
 	add_child(node, false, Node.INTERNAL_MODE_BACK)
 	var hull := PackedVector2Array()
 	var rect := Rect2()
@@ -151,6 +152,7 @@ func _build_piers() -> Node2D:
 	# Ground level: below the mechas and roofs, whatever this node's z_index.
 	node.z_as_relative = false
 	node.z_index = 0
+	node.light_mask = light_mask
 	add_child(node, false, Node.INTERNAL_MODE_FRONT)
 	return node
 

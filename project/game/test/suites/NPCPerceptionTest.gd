@@ -86,13 +86,15 @@ func _enemy(pos: Vector2, design: Dictionary = PlayerProgress.DEFAULT_MECHA, run
 	return enemy
 
 
-# A plain mecha standing at `pos`, that the NPC is set on attacking.
+# A plain mecha standing at `pos`, that the NPC is set on attacking. Dark (its
+# illuminator off), so only plain sight finds it.
 func _foe(pos: Vector2, enemy) -> Mecha:
 	var mecha: Mecha = MECHA.instantiate()
 	mecha.mech_inventory = Inventory.new()
 	mecha.position = pos
 	_arena.add_child(mecha)
 	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	mecha.set_illuminator(false)
 	_arena.mechas.append(mecha)
 	enemy.mark_traitor(mecha)
 	return mecha

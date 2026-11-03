@@ -93,6 +93,8 @@ signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 signal swept
 # One of this mecha's devices (a ward, a drone) was destroyed (Device).
 signal device_destroyed(device)
+# Its IR illuminator went on or off (set_illuminator).
+signal illuminator_toggled(on: bool)
 
 ## How long (s) a speech box stays up by default. Placeholder.
 const SPEECH_TIME := 3.0
@@ -318,6 +320,8 @@ var last_damage_weapon
 ## Built when it dies (KillRecord): who killed it, with what, from where, and
 ## what it knew. Empty while alive.
 var kill_record := {}
+## Whether its IR illuminator is on (set_illuminator).
+var illuminator_on := true
 var processed_hitboxes = []
 var lingering_hitboxes = []
 
@@ -1164,6 +1168,27 @@ func create_sound(volume_type, type, max_distance, entities_only := false):
 		"source": self,
 		"entities_only": entities_only,
 	})
+
+
+# IR ILLUMINATOR
+#
+# Every mecha's MechaLight is its IR illuminator: a cone of light ahead of it.
+# On, the mecha and whatever its cone falls on are lit, and lit bodies are
+# seen from anywhere their light shows, walls between or not
+# (Illumination). Off, its cone goes dark and the mecha is seen only the
+# usual way, but it sees less itself: the player only by peripheral sight and
+# other mechas' light, an NPC at a shorter range (Enemy.DARK_SIGHT_MULT). The
+# player switches it with the illuminator key; NPC behaviours pick it by state
+# (BaseBehaviour.dark_states).
+
+func set_illuminator(on: bool) -> void:
+	if on == illuminator_on:
+		return
+	illuminator_on = on
+	var light := Illumination.light_of(self)
+	if light:
+		light.enabled = on
+	illuminator_toggled.emit(on)
 
 
 # SENSOR SWEEP

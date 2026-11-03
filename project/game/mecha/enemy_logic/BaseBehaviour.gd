@@ -35,6 +35,9 @@ var max_shooting_distance = 2000
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
 var reaction_speed = 2
+## States the NPC runs dark in, its IR illuminator off (Enemy._update_illuminator):
+## lying in wait, closing on a target it hasn't engaged yet, running away.
+var dark_states := ["ambush", "ambush_lock", "flee"]
 
 # Attack<->defend stance hysteresis. aggression sums quantized diffs
 # recomputed every frame, so near zero it flickers across the sign — without

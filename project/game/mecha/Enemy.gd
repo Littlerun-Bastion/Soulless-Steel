@@ -6,6 +6,9 @@ const BODY_LIFETIME = 35
 ## How long (s) a body this NPC saw stays a live sight contact after the last
 ## senses update that saw it (see update_senses).
 const SIGHT_CONTACT_TTL = 0.5
+## With its illuminator off, an NPC sees unlit targets only within this share
+## of its sight range (see update_senses). Placeholder.
+const DARK_SIGHT_MULT = 0.5
 
 # Stuck watchdog, the last resort after the unstick moves in the steering
 # section. stuck_timer counts while the NPC wants to move but either barely
@@ -57,6 +60,9 @@ var scripted_aim = null
 var ai_projectile_speed := 0.0    # avg direct-fire muzzle speed (0 = don't lead)
 var ai_lead_accuracy := 0.55      # 0 = aim at current pos, 1 = perfect intercept
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
+## Whether the behaviour switches the illuminator by state
+## (BaseBehaviour.dark_states). False for NPC code that switches it itself.
+var auto_illuminator := true
 
 
 func _ready():
@@ -116,6 +122,7 @@ func _physics_process(dt):
 			var before := global_position
 			logic.update(self)
 			logic.run(self, think_dt)
+			_update_illuminator()
 			_coast_velocity = velocity if global_position != before else Vector2.ZERO
 			_watch_barks(think_dt)
 		elif _coast_velocity != Vector2.ZERO:
@@ -536,6 +543,16 @@ func heard_sound(sound_data):
 	})
 
 
+# Off in the behaviour's dark states (sneaking up, lying in wait, running),
+# on otherwise. See Mecha.set_illuminator.
+func _update_illuminator() -> void:
+	if not auto_illuminator or logic.behaviour == null:
+		return
+	var dark = logic.behaviour.get("dark_states")
+	var state := str(logic.get_current_state())
+	set_illuminator(not (dark is Array and (dark as Array).has(state)))
+
+
 func update_senses(dt):
 	#Tick down sounds
 	var to_remove = []
@@ -576,13 +593,19 @@ func update_senses(dt):
 			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 
 		# Foliage over the target, or over us, shortens the range; building
-		# walls and smoke block sight completely (see MapSenses). Cheapest
-		# checks first: the foliage and sight checks only run for targets in
-		# range.
+		# walls and smoke block sight completely (see MapSenses). A target an
+		# illuminator lights is seen through walls (Illumination.seen_lit); with
+		# our own illuminator off, unlit ones are only seen at DARK_SIGHT_MULT
+		# of the range. Cheapest checks first: the foliage and sight checks
+		# only run for targets in range.
 		var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
-		if distance <= effective_engage_distance \
-				and distance <= effective_engage_distance * MapSenses.detection_mult(target) \
-				and not MapSenses.sight_blocked(get_world_2d(), global_position, target.global_position):
+		if distance > effective_engage_distance \
+				or distance > effective_engage_distance * MapSenses.detection_mult(target):
+			continue
+		var lit := Illumination.seen_lit(self, target)
+		if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
+			continue
+		if lit or not MapSenses.sight_blocked(get_world_2d(), global_position, target.global_position):
 			var data := _remember(target, target.global_position)
 			data.is_seen = true
 			data.velocity = target.velocity if "velocity" in target else Vector2.ZERO

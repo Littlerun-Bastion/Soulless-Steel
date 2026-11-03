@@ -15,6 +15,7 @@ extends PanelContainer
 ## (dim at 0), "CHARGES" under them; a passive part ON or OFF (dim), or LOST
 ## for a Seeker shot down, its function under it. While it can't be used yet
 ## the label reads "INT · 0.6S".
+## Under it the IR illuminator: ON, or OFF (dim) while the player runs dark.
 ## Rows are built once in setup(); values are read each frame.
 
 const SLOTS := [
@@ -23,6 +24,7 @@ const SLOTS := [
 	{"slot": "shoulder_weapon_left", "label": "L SHD", "action": "shoulder_weapon_left_shoot", "node": "ShoulderWeaponLeft"},
 	{"slot": "shoulder_weapon_right", "label": "R SHD", "action": "shoulder_weapon_right_shoot", "node": "ShoulderWeaponRight"},
 	{"slot": "internal", "label": "INT", "action": "use_internal", "node": ""},
+	{"slot": "illuminator", "label": "IR", "action": "toggle_illuminator", "node": ""},
 ]
 const WIDTH := 380
 
@@ -139,6 +141,9 @@ func _update() -> void:
 
 func _update_row(row: Dictionary) -> void:
 	var info: Dictionary = row.info
+	if info.slot == "illuminator":
+		_update_illuminator_row(row)
+		return
 	var part = player.build.get(info.slot)
 	if not part:
 		row.slot.text = info.label
@@ -214,3 +219,18 @@ func _update_internal_row(row: Dictionary, part) -> void:
 		row.ammo.text = str(charges)
 		row.ammo.theme_type_variation = &"LabelDisplay" if charges > 0 else &"LabelDisplayDim"
 		row.reserve.text = "CHARGES"
+
+
+func _update_illuminator_row(row: Dictionary) -> void:
+	var on: bool = player.illuminator_on
+	row.slot.text = row.info.label
+	row.name.text = "ILLUMINATOR"
+	row.name.theme_type_variation = &"LabelBody"
+	row.name.visible = true
+	row.reload.visible = false
+	row.lost.visible = false
+	row.indoors.visible = false
+	row.ammo_box.visible = true
+	row.ammo.text = "ON" if on else "OFF"
+	row.ammo.theme_type_variation = &"LabelDisplay" if on else &"LabelDisplayDim"
+	row.reserve.text = "LIT" if on else "DARK"

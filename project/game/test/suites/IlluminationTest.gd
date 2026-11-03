@@ -1,0 +1,269 @@
+extends TestSuite
+
+# IlluminationTest: IR illuminators (Mecha.set_illuminator, Illumination).
+# A mecha with its illuminator on, and whatever its cone falls on, is lit;
+# walls shadow the light and a building's inside is apart from the outside.
+# The player sees a lit body through walls, and with its own illuminator off
+# loses its cone; the illuminator key and the HUD row. An NPC sees a lit
+# target through walls, and with its own illuminator off sees unlit ones
+# only close by; its behaviour runs dark in its dark states.
+#
+# The player is held still (no physics) and its view is stepped by hand; NPCs
+# are paused and their senses stepped by hand. Illumination works out each
+# body once per physics frame, so every change waits a frame.
+
+const MECHA := preload("res://game/mecha/Mecha.tscn")
+const PLAYER := preload("res://game/mecha/player/Player.tscn")
+const ENEMY := preload("res://game/mecha/Enemy.tscn")
+
+# A generated building spanning x 0..400, y 0..400.
+const BUILDING := [Vector2(0, 0), Vector2(400, 0), Vector2(400, 400), Vector2(0, 400)]
+
+
+class FakeArena extends Node2D:
+	var mechas: Array = []
+	var player = null
+	func get_mechas() -> Array:
+		return mechas
+	func get_entities() -> Array:
+		return []
+	func get_lock_areas() -> Array:
+		return []
+	func get_safe_position() -> Vector2:
+		return Vector2(-5000, -5000)
+	func get_random_position() -> Vector2:
+		return Vector2(randf_range(-3000, 3000), randf_range(-3000, 3000))
+
+
+var _arena: FakeArena = null
+var _player = null
+
+
+func run_tests() -> void:
+	await case("a mecha's own light and its cone light things; walls shadow it", _test_lit)
+	await case("the player sees what is lit through walls", _test_view_lit)
+	await case("with its illuminator off the player loses its cone", _test_player_dark)
+	await case("the illuminator key and the HUD row", _test_key_and_hud)
+	await case("an NPC sees lit targets through walls, and less with its own off", _test_npc_senses)
+	await case("an NPC's behaviour runs dark in its dark states", _test_npc_states)
+
+
+func before_each() -> void:
+	if is_instance_valid(_arena):
+		_arena.queue_free()
+		await wait_frames(2)
+	_arena = FakeArena.new()
+	add_child(_arena)
+	var region := NavigationRegion2D.new()
+	var nav := NavigationPolygon.new()
+	nav.vertices = PackedVector2Array([Vector2(-8000, -8000), Vector2(8000, -8000), Vector2(8000, 8000), Vector2(-8000, 8000)])
+	nav.add_polygon(PackedInt32Array([0, 1, 2, 3]))
+	region.navigation_polygon = nav
+	_arena.add_child(region)
+	var footprints := BuildingFootprints.new()
+	footprints.points = PackedVector2Array(BUILDING)
+	footprints.starts = PackedInt32Array([0, 4])
+	var field := BuildingField.new()
+	field.footprints = footprints
+	_arena.add_child(field)
+	_player = _mecha(Vector2(-600, 200), Vector2.UP, true, PLAYER)
+	_player.mecha_name = "Player"
+	_player.set_physics_process(false)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+
+
+# A mecha held still (no physics) at `pos`, facing `facing`, lit or dark.
+func _mecha(pos: Vector2, facing: Vector2, lit: bool, scene: PackedScene = MECHA) -> Mecha:
+	var mecha: Mecha = scene.instantiate()
+	mecha.mech_inventory = Inventory.new()
+	mecha.position = pos
+	_arena.add_child(mecha)
+	mecha.set_physics_process(false)
+	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	mecha.global_rotation = Vector2.UP.angle_to(facing)
+	mecha.set_illuminator(lit)
+	_arena.mechas.append(mecha)
+	return mecha
+
+
+func _enemy(pos: Vector2) -> Mecha:
+	var enemy = ENEMY.instantiate()
+	enemy.mech_inventory = Inventory.new()
+	enemy.position = pos
+	_arena.add_child(enemy)
+	enemy.setup(_arena, PlayerProgress.DEFAULT_MECHA, "Illumination test")
+	enemy.global_rotation = 0.0
+	enemy.set_scripted(false)
+	enemy.paused = true
+	_arena.mechas.append(enemy)
+	return enemy
+
+
+# Puts the player at `pos` facing `facing`, then runs its view long enough
+# for a full fade.
+func _look(pos: Vector2, facing: Vector2) -> void:
+	_player.global_position = pos
+	_player.global_rotation = Vector2.UP.angle_to(facing)
+	await get_tree().physics_frame
+	for i in 12:
+		_player._update_view(0.1)
+
+
+func _shown(body) -> bool:
+	return not _player.is_hidden_from_view(body) and body.modulate.a > 0.95
+
+
+func _hidden(body) -> bool:
+	return _player.is_hidden_from_view(body) and body.modulate.a < 0.05
+
+
+func _action(action: String, pressed := true) -> InputEventAction:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = pressed
+	return event
+
+
+func _test_lit() -> void:
+	var o := Vector2(-4000, 4000)
+	var lamp := _mecha(o, Vector2.UP, true)
+	var light := Illumination.light_of(lamp)
+	var reach := Illumination.reach(light)
+	check(light != null and reach > 2000.0, "its MechaLight reaches well past the screen (%.0f px)" % reach)
+	var ahead := _mecha(o + Vector2(0, -1200), Vector2.UP, false)
+	var aside := _mecha(o + Vector2.UP.rotated(deg_to_rad(40.0)) * 1200.0, Vector2.UP, false)
+	var past := _mecha(o + Vector2(0, -(reach + 300.0)), Vector2.UP, false)
+	await get_tree().physics_frame
+	check(not Illumination.is_lit(aside), "a dark one off to the side isn't")
+	check(Illumination.is_lit(ahead), "a dark one in another's cone is")
+	check(not Illumination.is_lit(past), "but not past the light's reach")
+
+	var toggles := []
+	lamp.illuminator_toggled.connect(func(on: bool): toggles.append(on))
+	lamp.set_illuminator(false)
+	lamp.set_illuminator(false)
+	check(not lamp.illuminator_on and not light.enabled, "switching it off turns the light off")
+	check_eq(toggles, [false], "and says so once")
+	await get_tree().physics_frame
+	check(not Illumination.is_lit(lamp) and not Illumination.is_lit(ahead), "then neither is lit")
+	lamp.set_illuminator(true)
+	check(light.enabled and toggles == [false, true], "on again")
+
+	var by_wall := _mecha(Vector2(-600, 200), Vector2.RIGHT, true)
+	var behind := _mecha(Vector2(800, 200), Vector2.UP, false)
+	var inside := _mecha(Vector2(300, 300), Vector2.UP, false)
+	by_wall.global_rotation = Vector2.UP.angle_to(Vector2(900, 100).normalized())
+	await get_tree().physics_frame
+	check(Illumination.in_cone(Illumination.light_of(by_wall), inside.global_position), "(the building is in its cone)")
+	check(not Illumination.is_lit(behind), "the building's walls shadow what is behind it")
+	check(not Illumination.is_lit(inside), "and what is in it")
+	lamp.is_dead = true
+	await get_tree().physics_frame
+	check(not Illumination.is_shining(lamp) and not Illumination.is_lit(ahead), "a dead mecha lights nothing")
+	lamp.is_dead = false
+
+
+func _test_view_lit() -> void:
+	var lit := _mecha(Vector2(800, 200), Vector2.UP, true)
+	var dark := _mecha(Vector2(800, 330), Vector2.UP, false)
+	var inside := _mecha(Vector2(300, 300), Vector2.UP, true)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(lit), "a lit mecha behind the building is seen")
+	check(_hidden(dark), "a dark one beside it isn't")
+	check(_hidden(inside), "nor a lit one inside the building (the roof hides it)")
+	check(not _player.contacts.best_for(lit).is_empty(), "the lit one is a sight contact")
+	lit.set_illuminator(false)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(lit), "switching its illuminator off hides it")
+	var lamp := _mecha(Vector2(1500, 330), Vector2.LEFT, true)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(lamp), "a third mecha lit beyond the building is seen")
+	check(_shown(dark), "and so is the dark one its cone falls on")
+
+
+func _test_player_dark() -> void:
+	var o := Vector2(-4000, 4000)
+	var ahead := _mecha(o + Vector2(0, -1500), Vector2.UP, false)
+	var close := _mecha(o + Vector2(0, _player.VIEW_PERIPHERAL - 50.0), Vector2.UP, false)
+	await _look(o, Vector2.UP)
+	check(_shown(ahead), "with its illuminator on the player sees a dark mecha in its cone")
+	_player.toggle_illuminator()
+	check(not _player.illuminator_on and not _player.Light.enabled, "toggling switches it off")
+	await _look(o, Vector2.UP)
+	check(_hidden(ahead), "then the dark mecha ahead is hidden")
+	check(_shown(close), "but one within 20 m is still seen")
+	check(not Illumination.is_lit(_player), "and the player itself is dark")
+	var lamp := _mecha(o + Vector2(-1500, -1500), Vector2(1, 0), true)
+	await _look(o, Vector2.UP)
+	check(_shown(lamp), "it still sees a lit mecha")
+
+
+func _test_key_and_hud() -> void:
+	MouseManager.set_aim_available(true)
+	var weapons := HudWeapons.new()
+	add_child(weapons)
+	weapons.setup(_player)
+	var row := weapons.get_row_text("illuminator")
+	check(row.contains("IR") and row.contains("ILLUMINATOR") and row.ends_with("ON / LIT"), "the IR row reads ON (%s)" % row)
+	check(row.begins_with(MechUI.key_name("toggle_illuminator")), "under its key")
+	_player._input(_action("toggle_illuminator"))
+	check(not _player.illuminator_on, "the illuminator key switches it off")
+	weapons._update()
+	check(weapons.get_row_text("illuminator").ends_with("OFF / DARK"), "the row reads OFF (%s)" % weapons.get_row_text("illuminator"))
+	_player._input(_action("toggle_illuminator"))
+	check(_player.illuminator_on, "and on again")
+	check(InputMap.has_action("toggle_illuminator"), "the key is an input action")
+	weapons.queue_free()
+
+
+func _test_npc_senses() -> void:
+	var enemy := _enemy(Vector2(-3000, -3000))
+	enemy.auto_illuminator = false
+	enemy.global_rotation = 0.0
+	var foe := _mecha(Vector2(800, 200), Vector2.UP, true)
+	enemy.mark_traitor(foe)
+	enemy.global_position = Vector2(-250, 200)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "it sees a lit mecha behind a building")
+	foe.set_illuminator(false)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(not enemy.is_seeing(foe), "not once it goes dark")
+
+	var sight: float = enemy.engage_distance * lerpf(0.6, 1.4, foe.get_thermal_signature())
+	var o := Vector2(-4000, -4000)
+	enemy.global_position = o
+	foe.global_position = o + Vector2(0, sight * 0.75)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "with its own illuminator on it sees a dark mecha in the open (%.0f px)" % (sight * 0.75))
+	enemy.set_illuminator(false)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(not enemy.is_seeing(foe), "with it off, not that far")
+	foe.global_position = o + Vector2(0, sight * enemy.DARK_SIGHT_MULT * 0.8)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "only close by")
+	foe.global_position = o + Vector2(0, sight * 0.75)
+	foe.set_illuminator(true)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "but a lit one at the full range")
+
+
+func _test_npc_states() -> void:
+	var enemy := _enemy(Vector2(-3000, -3000))
+	var dark: Array = enemy.logic.behaviour.dark_states
+	check(dark.has("ambush") and dark.has("flee"), "lying in wait and running are dark states")
+	for state in ["roam", "ambush", "ambush_lock", "flee", "in_combat", "attack"]:
+		enemy.logic.g.set_state(state)
+		enemy._update_illuminator()
+		check_eq(enemy.illuminator_on, not dark.has(state), "%s: illuminator %s" % [state, "off" if dark.has(state) else "on"])
+	enemy.logic.g.set_state("ambush")
+	enemy.auto_illuminator = false
+	enemy.set_illuminator(true)
+	enemy._update_illuminator()
+	check(enemy.illuminator_on, "with auto_illuminator off the behaviour leaves it alone")

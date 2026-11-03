@@ -26,6 +26,7 @@ const CONTROLS := [
 	{"label": "QUICK CHAT", "action": "quick_chat"},
 	{"label": "SENSOR SWEEP", "action": "sweep"},
 	{"label": "INTERNAL BAY", "action": "use_internal"},
+	{"label": "IR ILLUMINATOR", "action": "toggle_illuminator"},
 	{"label": "LEFT ARM", "action": "arm_weapon_left_shoot"},
 	{"label": "RIGHT ARM", "action": "arm_weapon_right_shoot"},
 	{"label": "RELOAD MODE", "action": "reload_mode"},

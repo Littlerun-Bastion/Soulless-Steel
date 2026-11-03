@@ -33,13 +33,14 @@ const TAP_TIME = 0.2
 const VIEW_CHECK_TIME = 0.1
 const VIEW_FADE_SPEED = 5.0
 const VIEW_RANGE = 6000.0
-## The vision cone, matching the MechaLight (its aimed_glow texture is lit to
-## about 15 degrees either side and to 0.44 of its width from the centre),
-## and the distance (px) all round within which things are seen anyway
-## (20 m).
-const VIEW_CONE_HALF_ANGLE = 15.0
-const VIEW_CONE_REACH = 0.44
+## The vision cone, matching the MechaLight (Illumination), and the distance
+## (px) all round within which things are seen anyway (20 m).
+const VIEW_CONE_HALF_ANGLE = Illumination.CONE_HALF_ANGLE
+const VIEW_CONE_REACH = Illumination.CONE_REACH
 const VIEW_PERIPHERAL = 400.0
+## Sounds of the illuminator key switching it on and off. Placeholders.
+const ILLUMINATOR_ON_SFX = "select"
+const ILLUMINATOR_OFF_SFX = "back"
 ## The vision source whose mechas are outlined rather than shown.
 const OUTLINE_SOURCE = "seeker"
 ## How long (s) a body the player saw stays a live sight contact after the
@@ -173,6 +174,10 @@ func _input(event):
 		return
 	if event.is_action_pressed("use_internal"):
 		begin_internal()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("toggle_illuminator"):
+		toggle_illuminator()
 		get_viewport().set_input_as_handled()
 		return
 
@@ -631,6 +636,12 @@ func is_internal_held() -> bool:
 	return _internal_held >= 0.0
 
 
+# The illuminator key (see Mecha.set_illuminator): switches it on or off.
+func toggle_illuminator() -> void:
+	set_illuminator(not illuminator_on)
+	AudioManager.play_sfx(ILLUMINATOR_ON_SFX if illuminator_on else ILLUMINATOR_OFF_SFX)
+
+
 func _use_internal_feedback(reason: String) -> void:
 	if reason == "no_charges" or reason == "lost":
 		AudioManager.play_sfx("no_ammo", global_position)
@@ -732,13 +743,17 @@ func _sweep_mark() -> Dictionary:
 # The world is dark round the player except in its light cone, drawn by 2D
 # lights (see MapSenses). What the player can see matches it: a mecha or
 # Entity is shown only inside the cone (VIEW_CONE_HALF_ANGLE either side of
-# the light, out to its reach) or within VIEW_PERIPHERAL all round, and not
-# behind a building wall, in a different building from the player (generated
-# or hand-made), or in or behind smoke. Two in the same building see each
-# other. The rest are faded out (their modulate alpha). Each is checked every
-# VIEW_CHECK_TIME s (one wall ray, building and smoke lookups) and fades at
-# VIEW_FADE_SPEED. Nothing is hidden while controls are locked (cutscenes),
-# and dead ones are left alone (Entities fade their own corpses).
+# the light, out to its reach; none while the player's illuminator is off) or
+# within VIEW_PERIPHERAL all round, and not behind a building wall, in a
+# different building from the player (generated or hand-made), or in or
+# behind smoke. Two in the same building see each other. A body any
+# illuminator lights (its own, or another mecha's cone on it) is shown
+# wherever it is, walls between or not, unless it is in a different building
+# or in or behind smoke (Illumination.seen_lit). The rest are faded out (their modulate
+# alpha). Each is checked every VIEW_CHECK_TIME s (one wall ray, building and
+# smoke lookups) and fades at VIEW_FADE_SPEED. Nothing is hidden while
+# controls are locked (cutscenes), and dead ones are left alone (Entities
+# fade their own corpses).
 #
 # A body under a live vision contact from a flare or the Biosensor
 # (ContactStore.has_live_vision) is shown whatever the checks say, and isn't
@@ -757,6 +772,8 @@ func can_see_body(body: Node2D) -> bool:
 	var dist := global_position.distance_to(to)
 	if dist > VIEW_RANGE:
 		return true
+	if Illumination.seen_lit(self, body):
+		return true
 	if dist > VIEW_PERIPHERAL and not in_view_cone(to):
 		return false
 	if MapSenses.building_key_at(self, global_position) != MapSenses.building_key_at(self, to):
@@ -765,18 +782,13 @@ func can_see_body(body: Node2D) -> bool:
 
 
 # Whether `point` is inside the light cone (angle and reach only, no walls).
+# Never while the illuminator is off.
 func in_view_cone(point: Vector2) -> bool:
-	var offset: Vector2 = point - Light.global_position
-	if offset.length() > get_view_reach():
-		return false
-	var forward := Vector2.UP.rotated(Light.global_rotation)
-	return absf(rad_to_deg(forward.angle_to(offset))) <= VIEW_CONE_HALF_ANGLE
+	return illuminator_on and Illumination.in_cone(Light, point)
 
 
 func get_view_reach() -> float:
-	if Light.texture == null:
-		return 0.0
-	return Light.texture.get_width() * Light.texture_scale * VIEW_CONE_REACH
+	return Illumination.reach(Light)
 
 
 func is_hidden_from_view(body) -> bool:

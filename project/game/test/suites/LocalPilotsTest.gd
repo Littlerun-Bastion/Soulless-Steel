@@ -377,6 +377,12 @@ func _test_match() -> void:
 
 	# Speech within earshot shows over the speaker, even hidden from view.
 	var speaker = enemies[2]
+	# Every NPC dark: a lit speaker, or one in another's cone, would be seen
+	# from anywhere.
+	for npc in enemies:
+		if is_instance_valid(npc):
+			npc.auto_illuminator = false
+			npc.set_illuminator(false)
 	player.set_physics_process(false)
 	player.global_rotation = 0.0
 	speaker.global_position = player.global_position + Vector2(0, 1200)

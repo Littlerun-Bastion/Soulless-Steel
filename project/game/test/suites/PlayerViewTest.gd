@@ -76,12 +76,16 @@ func before_each() -> void:
 	await get_tree().physics_frame
 
 
+# Mechas other than the player are dark (illuminator off): a lit one is seen
+# from anywhere (IlluminationTest).
 func _mecha(pos: Vector2, scene: PackedScene = MECHA) -> Mecha:
 	var mecha: Mecha = scene.instantiate()
 	mecha.mech_inventory = Inventory.new()
 	mecha.position = pos
 	_arena.add_child(mecha)
 	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	if scene == MECHA:
+		mecha.set_illuminator(false)
 	_arena.mechas.append(mecha)
 	return mecha
 

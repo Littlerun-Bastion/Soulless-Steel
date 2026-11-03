@@ -188,6 +188,10 @@ func _hidden(body) -> bool:
 func _test_player_sight() -> void:
 	var ahead := _mecha(Vector2(-600, -1000))
 	var behind := _mecha(Vector2(800, 200))
+	# Both dark: lit, it would be seen through the wall, and the other's cone
+	# could light it.
+	behind.set_illuminator(false)
+	ahead.set_illuminator(false)
 	await _look(Vector2(-600, 200), Vector2.UP)
 	var seen: Dictionary = _player.contacts.best_for(ahead)
 	check(not seen.is_empty() and seen.source == "sight" and seen.live, "a mecha in view is a live sight contact")
@@ -220,6 +224,7 @@ func _test_npc_sight() -> void:
 
 func _test_vision() -> void:
 	var behind := _mecha(Vector2(800, 200))
+	behind.set_illuminator(false)
 	await _look(Vector2(-600, 200), Vector2.RIGHT)
 	check(_hidden(behind), "behind the building it is hidden")
 	_player.contacts.report(behind, "mech", behind.global_position, "flare", 0.5)

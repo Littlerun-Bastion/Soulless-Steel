@@ -365,6 +365,8 @@ func _test_hud_and_view() -> void:
 	check(weapons.get_row_text("internal").contains("INT · 1S"), "and the cooldown (%s)" % weapons.get_row_text("internal"))
 	var own: Device = _devices()[0]
 	var other_owner := _mecha(Vector2(-1000, 2500), "WD-2")
+	# Dark, so its cone doesn't light the ward.
+	other_owner.set_illuminator(false)
 	other_owner.use_internal()
 	var other: Device = other_owner.get_devices()[0]
 	for i in 12:

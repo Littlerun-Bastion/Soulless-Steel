@@ -359,6 +359,10 @@ func _test_flare() -> void:
 	owner.use_internal(Vector2(600, 0))
 	var burning: Device = _devices("flare")[0]
 	var ward_owner := _mecha(Vector2(600, 100), "WD-2")
+	# Every other mecha dark, so no cone lights the ward.
+	for mecha in get_tree().get_nodes_in_group("mecha"):
+		if mecha != player:
+			mecha.set_illuminator(false)
 	ward_owner.use_internal()
 	var ward: Device = Device.owned_by(ward_owner)[0]
 	for i in 12:

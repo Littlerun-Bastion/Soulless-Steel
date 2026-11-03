@@ -3,12 +3,14 @@ extends Node2D
 # CombatScene is the shared base for gameplay scenes where mechas fight:
 # Arena (game/arena/Arena.gd) and Expedition (game/expedition/Expedition.gd).
 # It holds everything both modes do the same way — projectile/FX spawning with
-# budget caps, casings, scraps, sound propagation, death and game over, pause,
+# budget caps, casings, bodies of the dead, sound propagation, death and game over, pause,
 # extraction, map triggers, the intro, FX prewarming and the debug camera /
 # navigation overlay — so fixes land in both modes at once.
 #
 # Subclasses own their _ready (map setup, spawning, missions) and can hook in:
 #   _before_mecha_removed(mecha)  called on death before the mecha is removed
+#   _leave_body(mecha)            leaves what's left of a dead mecha; by
+#                                 default a MechaBody with no loot
 #   _before_entity_removed(entity) called when an Entity (creature) dies
 #   _plays_ambience()             whether to start ambient BGM after the intro
 #   _on_player_lost_health()      override and call super to add reactions
@@ -22,7 +24,7 @@ extends Node2D
 
 const PLAYER = preload("res://game/mecha/player/Player.tscn")
 const ENEMY = preload("res://game/mecha/Enemy.tscn")
-const SCRAP_PART = preload("res://game/arena/ScrapPart.tscn")
+const PART_DESTRUCTION_EXPLOSION = preload("res://game/weapons/PartDestructionExplosion.tscn")
 const NAV_TARGET_SPRITE = preload("res://assets/images/decals/bullet_hole_large.png")
 
 # Impact / explosion scenes whose first render compiles a GPU pipeline
@@ -44,12 +46,17 @@ const MAX_ACTIVE_TRAILS := 40
 const MAX_ACTIVE_EXPLOSIONS := 20
 const MAX_ACTIVE_FLASHES := 12
 
-# Scrap debris protections against cascade overload:
-#   1. Skipped entirely for offscreen kills (>3000 from player)
-#   2. Hard cap on total active scraps: when reached, this death contributes
-#      NO new scraps (we'd rather lose visual fidelity than tank FPS)
+# Parts coming off a dead mecha's body (MechaBody.shed), protections against
+# cascade overload:
+#   1. Offscreen kills (>3000 from player) drop them straight where they
+#      land, with no throw and no explosion
+#   2. Hard cap on their explosions in ScrapParts: when reached, this death
+#      contributes NO new ones (we'd rather lose visual fidelity than tank FPS)
 const OFFSCREEN_SCRAP_DISTANCE := 3000.0
 const MAX_ACTIVE_SCRAPS := 16
+const SHED_EXPLOSION_SCALE := 0.6
+# Bodies left where no wreck is (_leave_body), oldest removed first.
+const MAX_BODIES := 12
 const STAGE_SCENE_DIR := "res://game/stage/scenes/"
 
 @onready var Mechas = $Mechas
@@ -77,8 +84,12 @@ var player_kills: Array = []
 # Local, this match's chat channel (LocalPilots). Subclasses call
 # _join_local for each mecha once it is set up.
 var local_pilots := LocalPilots.new()
-# Warm marks moving mechas leave (HeatTrails); made by _setup_heatmap.
+# Warm marks moving mechas leave (HeatTrails), and blood on the ground
+# (BloodStains); made by _setup_heatmap.
 var heat_trails: HeatTrails = null
+var blood_stains: BloodStains = null
+# Dead mechas' bodies outside wrecks (_leave_body); made when first needed.
+var Bodies: Node2D = null
 
 var current_stage: StageDirector = null
 
@@ -182,7 +193,8 @@ func _join_local(mecha) -> void:
 
 # Heatmap depends on the player's head part; call after the player spawns.
 # Also sets up the rest of the world's information: the heat trails under the
-# mechas (HeatTrails, shown in that IR view) and car alarms (VehicleField).
+# mechas (HeatTrails, shown in that IR view), the blood under the wrecks
+# (BloodStains) and car alarms (VehicleField).
 func _setup_heatmap() -> void:
 	if player and player.build.head and player.build.head.heatmap:
 		Heatmap.change_heatmap(player.build.head.heatmap)
@@ -191,6 +203,12 @@ func _setup_heatmap() -> void:
 		heat_trails.name = "HeatTrails"
 		add_child(heat_trails)
 		move_child(heat_trails, Mechas.get_index())
+	if blood_stains == null:
+		blood_stains = BloodStains.new()
+		blood_stains.name = "BloodStains"
+		var under: Node = get_node_or_null("Wrecks")
+		add_child(blood_stains)
+		move_child(blood_stains, (under if under else Mechas).get_index())
 	var vehicles := VehicleField.find(self)
 	if vehicles != null and not vehicles.alarm_started.is_connected(_on_car_alarm):
 		vehicles.alarm_started.connect(_on_car_alarm)
@@ -332,8 +350,10 @@ func _on_mecha_died(mecha) -> void:
 	if was_killed and mecha != player and _was_hit_by_player(mecha):
 		local_pilots.score_player_kill(player, mecha)
 	_before_mecha_removed(mecha)
-	FrameSpikeDetector.mark("died:scrap_spawn")
-	create_mecha_scraps(mecha)
+	FrameSpikeDetector.mark("died:body")
+	# The body is in the tree before the mecha is freed: no frame without it.
+	if was_killed:
+		_leave_body(mecha)
 	var idx = all_mechas.find(mecha)
 	if idx != -1:
 		all_mechas.remove_at(idx)
@@ -387,35 +407,48 @@ func _show_death_screen(game_over_text: String) -> void:
 	GameOver.killed(game_over_text)
 
 
-# Spawns debris particles from a dead mecha — visual feedback for kills.
-func create_mecha_scraps(mecha) -> void:
-	if not mecha.has_method("get_scrapable_parts"):
-		return
-	# Skip if the death happened well offscreen — invisible to the player.
-	if is_instance_valid(player) and mecha != player:
-		if player.global_position.distance_to(mecha.global_position) > OFFSCREEN_SCRAP_DISTANCE:
-			return
-	# Skip if we're already at the scrap-body budget — protects FPS during
-	# multi-NPC death cascades.
-	if ScrapParts.get_child_count() >= MAX_ACTIVE_SCRAPS:
-		return
-	for part in mecha.get_scrapable_parts():
-		var scrap = SCRAP_PART.instantiate()
-		scrap.setup(part.texture)
-		scrap.position = mecha.position
-		scrap.update_scale(mecha.scale)
-		var mat = part.material
-		if mat:
-			scrap.set_heat_parameters(mat.get_shader_parameter("heat"), mat.get_shader_parameter("min_darkness"))
+# Leaves the dead mecha's body (MechaBody) where it died, with no loot, and
+# sheds its parts. Expedition overrides this to leave a Wreck for NPCs.
+func _leave_body(mecha) -> void:
+	if Bodies == null:
+		Bodies = Node2D.new()
+		Bodies.name = "Bodies"
+		add_child(Bodies)
+		move_child(Bodies, Mechas.get_index())
+	var body := MechaBody.new()
+	body.position = mecha.global_position
+	body.copy_from(mecha)
+	Bodies.add_child(body)
+	_shed_parts(body, mecha, [])
+	while Bodies.get_child_count() > MAX_BODIES:
+		var oldest := Bodies.get_child(0)
+		Bodies.remove_child(oldest)
+		oldest.queue_free()
 
-		var impulse_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
-		var impulse_force = randf_range(400, 700)
-		var impulse_torque = randf_range(10, 20)
-		if randf() > 0.5:
-			impulse_torque = -impulse_torque
-		scrap.apply_impulse(impulse_dir * impulse_force, Vector2())
-		scrap.apply_torque_impulse(impulse_torque)
-		ScrapParts.call_deferred("add_child", scrap)
+
+# The one or two parts that come off a body (MechaBody.choose_shed), each with
+# a small explosion. `loot` is the wreck's, so its weapons stay on the body.
+func _shed_parts(body: MechaBody, mecha, loot: Array) -> void:
+	_shed(body, MechaBody.choose_shed(mecha, loot), _near_player(mecha))
+
+
+# Whether the player is near enough to see `mecha`'s parts come off.
+func _near_player(mecha) -> bool:
+	if is_instance_valid(player) and mecha != player:
+		return player.global_position.distance_to(mecha.global_position) <= OFFSCREEN_SCRAP_DISTANCE
+	return true
+
+
+# Sheds `slots` off a body in the tree: thrown, with an explosion each, when
+# on_screen; otherwise straight to where they land.
+func _shed(body: MechaBody, slots: Array, on_screen: bool) -> void:
+	for slot in slots:
+		var at := body.shed(slot, on_screen)
+		if on_screen and ScrapParts.get_child_count() < MAX_ACTIVE_SCRAPS:
+			var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()
+			explosion.scale = Vector2(SHED_EXPLOSION_SCALE, SHED_EXPLOSION_SCALE)
+			ScrapParts.add_child(explosion)
+			explosion.global_position = at
 
 
 # ---- Sound ----

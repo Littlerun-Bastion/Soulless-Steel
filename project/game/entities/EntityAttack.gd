@@ -32,7 +32,7 @@ static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, kn
 		mecha.last_damage_source = {"body": attacker, "name": attacker.mecha_name}
 		mecha.last_damage_weapon = attacker.mecha_name
 		if result.component_name != "":
-			mecha.damage_component(result.part_name, result.component_name, damage)
+			mecha.damage_component(result.part_name, result.component_name, damage, dir)
 	mecha.add_decal(0, impact_point, "bullet_hole", Vector2(40, 40))
 	if knockback > 0.0:
 		mecha.knockback(knockback, dir, true)

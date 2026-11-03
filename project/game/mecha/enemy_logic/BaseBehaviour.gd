@@ -746,10 +746,13 @@ func do_attack(dt, enemy):
 	if is_instance_valid(enemy):
 		# Mid-combat threat re-evaluation (interval-gated inside Enemy) — a
 		# flanker shooting us can displace the duel partner. A hard lock-on
-		# keeps priority over threat switching.
+		# keeps priority over threat switching. is_same, not !=: current_target
+		# is false after a Flagged target is dropped
+		# (Enemy.recheck_flagged_target), and != can't compare an Object with
+		# a bool.
 		_check_targets(enemy)
 		if not enemy.get_locked_to() and enemy.valid_target \
-				and enemy.valid_target != enemy.current_target:
+				and not is_same(enemy.valid_target, enemy.current_target):
 			enemy.current_target = enemy.valid_target
 			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
 		if not is_instance_valid(enemy.current_target):
@@ -849,7 +852,7 @@ func do_defend(dt, enemy):
 		# Same mid-combat threat re-evaluation as do_attack.
 		_check_targets(enemy)
 		if not enemy.get_locked_to() and enemy.valid_target \
-				and enemy.valid_target != enemy.current_target:
+				and not is_same(enemy.valid_target, enemy.current_target):
 			enemy.current_target = enemy.valid_target
 			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
 		if not is_instance_valid(enemy.current_target):

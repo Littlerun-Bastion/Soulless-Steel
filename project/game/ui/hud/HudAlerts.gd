@@ -2,7 +2,8 @@ class_name HudAlerts
 extends PanelContainer
 
 ## Top centre: one alert at a time, the most urgent one.
-##   critical (inverted)  capsule exposed, hull heat past the damage point,
+##   critical (inverted)  Flagged (capsule exposed, weapons locked), hull
+##                        heat past the damage point,
 ##                        status effects, ECM interference on a lock
 ##   notice (outlined)    a passing event for NOTICE_TIME s (show_notice):
 ##                        "YOU WERE SWEPT" (no bearing), "WARD DESTROYED";
@@ -75,7 +76,7 @@ func _process(delta: float) -> void:
 func _pick() -> Dictionary:
 	if is_instance_valid(player):
 		if player.is_exposed:
-			return {"text": "! CAPSULE EXPOSED", "critical": true}
+			return {"text": "! FLAGGED · CAPSULE EXPOSED · WEAPONS LOCKED", "critical": true}
 		if player.external_temp >= player.OVERHEAT_DAMAGE_TEMP:
 			return {"text": "! EXT HEAT CRITICAL — COMPONENT DAMAGE", "critical": true}
 		var statuses := []

@@ -224,7 +224,7 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		body.last_damage_weapon = part_id
 		# NEW: Only damage component if one was actually selected
 		if pen_result.component_name != "":
-			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage, dir)
 		
 		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
 		emit_signal("bullet_impact", self, impact_effect, false, body)

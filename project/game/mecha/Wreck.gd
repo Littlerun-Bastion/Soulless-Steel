@@ -2,16 +2,18 @@ extends LootContainer
 class_name Wreck
 
 # What's left of a destroyed mecha in Expedition: a loot container holding the
-# salvage WreckLoot rolled for it, drawn as a darkened copy of the mecha's
-# hull. Spawned by Expedition when an NPC dies.
+# salvage WreckLoot rolled for it, drawn as the mecha's own body in its last
+# pose (MechaBody, under $Hull). Spawned by Expedition when an NPC dies.
 #
 # States (shown on the wreck itself):
 #   UNSEARCHED  glowing marker, until the player first opens it
 #   SEARCHED    opened, still has something in it
 #   EMPTY       opened and nothing left: hull goes darker
+# The tints only dim the body, so its build stays readable.
 #
-# Unlike the test container it doesn't block movement, and its interact
-# range is a comfortable circle around the hull.
+# The hull is solid like the mecha was (MechaBody.solid): it blocks movement
+# and stops shots, so it is cover. The interact range is a comfortable circle
+# around the hull.
 #
 # Opening it also shows the mecha's kill record (kill_record) beside the loot
 # (Player, KillRecordWindow).
@@ -20,8 +22,8 @@ class_name Wreck
 
 enum State { UNSEARCHED, SEARCHED, EMPTY }
 
-const HULL_TINT := Color(0.38, 0.36, 0.34)
-const EMPTY_TINT := Color(0.18, 0.18, 0.18)
+const HULL_TINT := Color(0.85, 0.85, 0.85)
+const EMPTY_TINT := Color(0.6, 0.6, 0.6)
 const MARKER_ALPHA_MIN := 0.2
 const MARKER_ALPHA_MAX := 0.55
 const MARKER_PULSE_TIME := 0.9
@@ -33,6 +35,8 @@ var kill_record := {}
 # How the hull is tinted (Carcass draws a corpse, not grey metal).
 var hull_tint := HULL_TINT
 var empty_tint := EMPTY_TINT
+## The mecha's body (copy_mecha_visuals); null for a Carcass.
+var body: MechaBody = null
 var _pending_stacks: Array = []
 var _pulse: Tween = null
 
@@ -42,23 +46,14 @@ func setup(mecha_name: String, stacks: Array) -> void:
 	_pending_stacks = stacks
 
 
-# Copies the hull sprites (shoulders, core, chassis) where they were on the
-# dead mecha. Call before adding the wreck to the tree, while the mecha is
-# still valid; the wreck's own position should be the mecha's.
+# Copies the dead mecha's body into the hull (MechaBody.copy_from). Call
+# before adding the wreck to the tree, while the mecha is still valid; the
+# wreck's own position should be the mecha's. Shed parts once it is in the
+# tree (body.shed).
 func copy_mecha_visuals(mecha: Node2D) -> void:
-	var hull: Node2D = $Hull
-	hull.rotation = mecha.global_rotation
-	hull.scale = mecha.global_scale
-	var to_mecha := mecha.global_transform.affine_inverse()
-	for part in mecha.get_scrapable_parts():
-		var sprite := Sprite2D.new()
-		sprite.texture = part.texture
-		sprite.centered = part.centered
-		sprite.offset = part.offset
-		sprite.flip_h = part.flip_h
-		sprite.flip_v = part.flip_v
-		sprite.transform = to_mecha * part.global_transform
-		hull.add_child(sprite)
+	body = MechaBody.new()
+	body.copy_from(mecha)
+	$Hull.add_child(body)
 
 
 func _ready() -> void:

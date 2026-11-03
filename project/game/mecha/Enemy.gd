@@ -112,6 +112,7 @@ func _physics_process(dt):
 		if thinking:
 			# Fresh each think; the combat behaviour re-sets it while engaging.
 			ai_aim_point = null
+			recheck_flagged_target()
 			var before := global_position
 			logic.update(self)
 			logic.run(self, think_dt)
@@ -753,6 +754,35 @@ func check_for_targets(eng_distance, max_shooting_distance):
 			_last_target_switch_ms = now
 
 
+# Run every think: a target that is Flagged gets should_attack again. If this
+# NPC shouldn't attack it now, it drops it and stops firing, but keeps it in
+# its senses and contacts, so it stays wary of it; check_for_targets won't
+# pick it again while should_attack says no. If it still should (a Rat, a
+# traitor), it keeps it and holds fire until the grace window ends
+# (holds_fire_at).
+func recheck_flagged_target() -> void:
+	for target in [current_target, valid_target]:
+		if not is_instance_valid(target) or target.get("is_exposed") != true or target.get("is_dead") == true:
+			continue
+		if should_attack(target):
+			continue
+		if is_same(valid_target, target):
+			valid_target = false
+		if is_same(current_target, target):
+			current_target = false
+		if is_same(locked_to, target):
+			locked_to = false
+			lock_timer = 0.0
+		for slot in WEAPON_SLOTS:
+			stop_shooting(slot)
+
+
+# Whether this NPC holds its fire at `target`: it is in the Flag's grace
+# window, when no damage counts.
+func holds_fire_at(target) -> bool:
+	return is_instance_valid(target) and target.has_method("is_in_flag_grace") and target.is_in_flag_grace()
+
+
 # Mechas and Entities this NPC could pick as a new target: those in sight,
 # and whoever is shooting at it right now. A scripted NPC has no senses and
 # may pick anything.
@@ -813,6 +843,8 @@ var _weapon_ap := {}
 # Fires at where `target` was last seen or heard. Returns whether any weapon
 # fired.
 func blind_fire(target) -> bool:
+	if holds_fire_at(target):
+		return false
 	var data := perceived(target)
 	if data.is_empty() or data.is_seen or data.unseen_time > BLIND_FIRE_TIME:
 		return false
@@ -847,6 +879,10 @@ func get_default_aim_point(slot: String) -> Vector2:
 
 
 func shoot_weapons(target):
+	if holds_fire_at(target):
+		for slot in WEAPON_SLOTS:
+			stop_shooting(slot)
+		return
 	try_to_shoot("arm_weapon_left", target)
 	try_to_shoot("arm_weapon_right", target)
 	try_to_shoot("shoulder_weapon_left", target)

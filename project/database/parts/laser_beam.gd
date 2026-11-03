@@ -115,7 +115,7 @@ func _hit_body(body, at: Vector2) -> void:
 		body.last_damage_source = original_mecha_info
 		body.last_damage_weapon = part_id
 		if pen_result.component_name != "":
-			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+			body.damage_component(pen_result.part_name, pen_result.component_name, base_damage, _dir)
 	body.increase_heat(heat_damage)
 
 

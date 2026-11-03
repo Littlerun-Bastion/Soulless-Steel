@@ -32,6 +32,24 @@ const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
 const AI_TURN_DEADZONE = 5
 const EXPOSED_INVULN_WINDOW = 1
+## The emergency Flag (enter_flagged_state): how long (s) the mecha takes no
+## damage of any kind after entering it, and how often (s) the wound spurts
+## while it stays Flagged. Placeholders.
+const FLAG_GRACE_TIME := 4.0
+const FLAG_HEARTBEAT_TIME := 1.0
+const FLAG_SPURT_AMOUNT := 12
+const FLAG_SPURT_LIFETIME := 1.5
+const FLAG_SFX := "large_impact1"
+## Bleeding from the Hardware parts' internal components (the tag below on
+## any component of these parts). The mecha drips (Blood1) once WOUND_BLEED
+## of their internal hp is gone, and more (Blood2) past WOUND_HEAVY_BLEED.
+## Each hit on one leaks a few drops (WOUND_LEAK of a full spray), and a hit
+## that destroys one throws a small splatter. Placeholders.
+const WOUND_PARTS := ["chassis", "left_shoulder", "right_shoulder", "core", "head"]
+const WOUND_TAG := "internal"
+const WOUND_BLEED := 0.1
+const WOUND_HEAVY_BLEED := 0.4
+const WOUND_LEAK := 0.2
 const SHIELD_PARTICLE_AMOUNT = 5
 const SHIELD_PARRY_TIME = 0.15
 const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
@@ -66,6 +84,9 @@ signal cockpit_exposed(hp: int)
 signal core_shell_destroyed()
 signal system_degraded(system_name: String, severity: float)  # For mobility, sensors, etc.
 signal flagged()
+# The emergency Flag began (enter_flagged_state). attacker is the mecha (or
+# Entity) whose damage caused it, from last_damage_source, or null.
+signal emergency_flagged(mecha, attacker)
 # say(): CombatScene shows it to the player if they hear it.
 signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 # Someone's sweep found this mecha (see sweep). Says nothing of who or where.
@@ -254,6 +275,11 @@ var lock_strength = 1.0
 var weight = 0.0
 var exposed_hits = 3.0
 var exposed_invuln_timer = 0.0
+## Seconds left of the emergency Flag's grace window (0 outside it).
+var flag_grace := 0.0
+var _heartbeat := 0.0
+var _flag_marker: FlagMarker = null
+var _spurt: GPUParticles2D = null
 var spooling = {
 	"arm_weapon_left": false,
 	"arm_weapon_right": false,
@@ -417,6 +443,10 @@ var ecm_attempt_cooldown = 0.0
 var ecm_strength_difference = 0.0
 
 var bleed_timer = 0.0
+## How much of the Hardware parts' internal component hp is gone, 0 to 1
+## (get_internal_wound), kept up to date when components change.
+var internal_wound := 0.0
+var _wound_dirty := true
 
 func _ready():
 	# duplicate(false) keeps the underlying Shader resource shared across
@@ -458,6 +488,7 @@ func _physics_process(dt):
 		return
 	
 	contacts.advance(dt)
+	flag_grace = maxf(flag_grace - dt, 0.0)
 	sweep_cooldown = maxf(sweep_cooldown - dt, 0.0)
 	internal_cooldown = maxf(internal_cooldown - dt, 0.0)
 	_update_biosensor(dt)
@@ -497,19 +528,28 @@ func _physics_process(dt):
 	if is_dead:
 		return
 
-	#Blood
-	if hp/float(max_hp) < 0.66:
+	#Blood: drips from damaged internal components
+	if _wound_dirty:
+		_wound_dirty = false
+		internal_wound = get_internal_wound()
+	if internal_wound >= WOUND_BLEED:
 		bleed_timer = max(bleed_timer - dt, 0.0)
 		if bleed_timer <= 0.0:
-			bleed_timer = randf_range(1, 1.1*max_hp/hp)
+			bleed_timer = randf_range(1, 1.1 / internal_wound)
 			Particle.blood[0].emitting = !Particle.blood[0].emitting
-			if hp/float(max_hp) < 0.33:
+			if internal_wound >= WOUND_HEAVY_BLEED:
 				Particle.blood[1].emitting = !Particle.blood[1].emitting
 			else:
 				Particle.blood[1].emitting = false
 	
 	if is_exposed:
 		exposed_invuln_timer = min(exposed_invuln_timer + dt, EXPOSED_INVULN_WINDOW)
+		# The wound spurts in time with a heartbeat while Flagged.
+		_heartbeat -= dt
+		if _heartbeat <= 0.0:
+			_heartbeat = FLAG_HEARTBEAT_TIME
+			if _spurt:
+				_spurt.restart()
 
 	#ECM
 	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
@@ -776,7 +816,7 @@ func set_max_energy(value):
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
-	if is_dead:
+	if is_dead or is_in_flag_grace():
 		return
 
 	if hitstop:
@@ -808,8 +848,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	_note_attack(source_info)
 
 	if hp <= 0 and not is_exposed:
-		is_exposed = true
-		emit_signal("exposed",self)
+		enter_flagged_state()
 	elif hp <= 0 and is_exposed:
 		if exposed_invuln_timer == EXPOSED_INVULN_WINDOW:
 			exposed_hits -= 1
@@ -855,7 +894,7 @@ func decrease_status(status_name, amount):
 
 
 func take_status_damage(dt):
-	if is_dead:
+	if is_dead or is_in_flag_grace():
 		return
 
 	if has_status("overheating"):
@@ -879,7 +918,7 @@ func take_status_damage(dt):
 
 	if has_status("corrosion"):
 		if hp <= 0:
-			is_exposed = true
+			enter_flagged_state()
 		else:
 			hp = round(max(hp - (dt * (hp/100.0)), 1))
 		emit_signal("took_damage", self, true)
@@ -891,6 +930,8 @@ func overheat_damage_tick():
 		for comp_name in components[part_name]:
 			var comp = components[part_name][comp_name]
 			if not comp.disabled and comp.hp > 0:
+				if is_protected(part_name, comp_name):
+					continue
 				if comp_name == "cockpit" and disabled_systems.heat_dispersion >= 1.0:
 					comp_name = "radiator" #Targets the radiator instead of the cockpit while we still have heat dispersion up
 				candidates.append({
@@ -932,6 +973,16 @@ func die(source_info, weapon_name):
 	is_dead = true
 	kill_record = KillRecord.build(self, source_info, weapon_name)
 
+	# The Flag is over; the blood pools under what will be the wreck.
+	if _flag_marker:
+		_flag_marker.queue_free()
+		_flag_marker = null
+	if _spurt:
+		_spurt.emitting = false
+	var stains := BloodStains.find(self)
+	if stains:
+		stains.add_pool(global_position)
+
 	#Update sfxs
 	if ChassisAmbientSFX.stream:
 		ChassisAmbientSFX.stop()
@@ -948,15 +999,6 @@ func die(source_info, weapon_name):
 	#	"weapon_name": weapon_name,
 	#	})
 	emit_signal("died", self)
-
-
-#Return all parts that should be generated when mecha dies
-func get_scrapable_parts():
-	var scraps = []
-	for node in [LeftShoulder, RightShoulder, Core, LeftChassis, RightChassis]:
-		if node.texture:
-			scraps.append(node)
-	return scraps
 
 
 func is_shape_id_chassis(id):
@@ -2311,7 +2353,8 @@ func decrease_throttle(set_value, step):
 func shoot(type, is_auto_fire = false):
 	if is_dead:
 		return
-	if is_shielding:
+	# The Flag locks the weapons.
+	if is_shielding or is_exposed:
 		return
 	# Designator weapons fire salvos at a point; callers that only say "shoot"
 	# (NPCs, scripted scenes) aim at get_default_aim_point, and don't fire
@@ -2528,6 +2571,7 @@ func designator_clip(slot: String, point: Vector2) -> Vector2:
 
 # Why `slot` can't fire at `point` now, or "" if it can. Reasons:
 # no_weapon, disabled, busy (dead, shielding or a salvo still going out),
+# flagged (the Flag locks the weapons),
 # indoors (indirect fire from inside a building), reloading (also the
 # cooldown), no_ammo, too_hot, too_close, too_far, not_facing.
 func can_fire_at_point(slot: String, point: Vector2) -> String:
@@ -2539,6 +2583,8 @@ func can_fire_at_point(slot: String, point: Vector2) -> String:
 		return "disabled"
 	if is_dead or is_shielding or is_salvo_firing(slot):
 		return "busy"
+	if is_exposed:
+		return "flagged"
 	if weapon.is_indirect_fire and is_inside_building:
 		return "indoors"
 	if node.clip_ammo is not bool and node.clip_ammo <= 0 and node.total_ammo <= 0:
@@ -3038,6 +3084,11 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 	if hit_part_name == "shield":
 		return {"penetrated": false, "part_name": "", "component_name": "", "facing": ""}
 
+	# In the Flag's grace window a hit lands (the round stops on the hull) but
+	# strips no armour and picks no component.
+	if is_in_flag_grace():
+		return {"penetrated": true, "part_name": hit_part_name, "component_name": "", "facing": "", "deflection_type": ""}
+
 	# 1. Get global facing (front/side/rear of mech)
 	var facing = get_global_facing_from_angle(impact_position)
 
@@ -3180,10 +3231,10 @@ func get_eligible_components(part_name: String, _facing: String, penetrated: boo
 	for comp_name in components[part_name]:
 		var comp = components[part_name][comp_name]
 		
-		# Skip if already destroyed
-		if comp.disabled:
+		# Skip if already destroyed, or shielded by its part's shell
+		if comp.disabled or is_protected(part_name, comp_name):
 			continue
-		
+
 		# Determine eligibility based on penetration and tags
 		if penetrated:
 			# Full penetration - can hit both internal and external
@@ -3194,6 +3245,15 @@ func get_eligible_components(part_name: String, _facing: String, penetrated: boo
 				eligible.append(comp_name)
 	
 	return eligible
+
+# Whether a component can't be hit yet: a critical one (the cockpit, the only
+# lethal component) while its part's core_shell is intact.
+func is_protected(part_name: String, comp_name: String) -> bool:
+	var comp: Dictionary = components[part_name][comp_name]
+	if not "critical" in comp.tags:
+		return false
+	var shell = components[part_name].get("core_shell")
+	return shell != null and not shell.disabled
 
 func select_component_by_weight(part_name: String, eligible_components: Array) -> String:
 	if eligible_components.size() == 0:
@@ -3236,7 +3296,7 @@ func get_default_components(part_type: String) -> Dictionary:
 				},
 				"cockpit": {
 					"hp": 1, "max_hp": 1,
-					"tags": ["internal"],
+					"tags": ["internal", "critical"],
 					"weight": 0.5,
 					"disabled": false
 				},
@@ -3318,6 +3378,7 @@ func get_default_components(part_type: String) -> Dictionary:
 			return {}
 
 func initialize_components(part_type: String, part_data) -> Dictionary:
+	_wound_dirty = true
 	# Start with defaults
 	var result = get_default_components(part_type)
 	
@@ -3335,16 +3396,23 @@ func initialize_components(part_type: String, part_data) -> Dictionary:
 	
 	return result
 
-func damage_component(part_name: String, component_name: String, damage_pips: int):
+# hit_dir: the way the hit travelled (a shot's direction, a blast's from its
+# centre); ZERO for damage with no direction, like overheating.
+func damage_component(part_name: String, component_name: String, damage_pips: int, hit_dir := Vector2.ZERO):
+	if is_in_flag_grace():
+		return
 	if not components.has(part_name) or not components[part_name].has(component_name):
 		push_error("Invalid component: " + part_name + "." + component_name)
 		return
-	
+
 	var comp = components[part_name][component_name]
-	
+
 	# Apply damage
 	comp.hp = max(comp.hp - damage_pips, 0)
+	_wound_dirty = true
 	spawn_component_damage_explosion(part_name, comp.hp <= 0)
+	if part_name in WOUND_PARTS and WOUND_TAG in comp.tags:
+		_show_wound(part_name, comp.hp <= 0 and not comp.disabled, hit_dir)
 	# Emit damage signal for UI updates
 	emit_signal("component_damaged", part_name, component_name, comp.hp, comp.max_hp)
 	
@@ -3365,13 +3433,13 @@ func component_destroyed(part_name: String, comp_name: String):
 	emit_signal("component_destroyed_alert", part_name, comp_name)
 	
 	# CRITICAL COMPONENTS - Instant effects
-	if comp_name == "cockpit":
+	if "critical" in comp.tags:
 		die(last_damage_source, last_damage_weapon)
 		return
-	
+
 	if comp_name == "core_shell":
 		emit_signal("core_shell_destroyed")
-		enter_flagged_state()  # Use the new function
+		enter_flagged_state()
 		return
 	
 	# MOBILITY COMPONENTS
@@ -3429,6 +3497,7 @@ func component_destroyed(part_name: String, comp_name: String):
 		# Thruster already checked in dash() function via build.thruster
 		
 func refresh_dynamic_components():
+	_wound_dirty = true
 	# Refresh wetware components in core
 	if build.core:
 		# Remove old wetware if present
@@ -3575,13 +3644,97 @@ func debug_print_components():
 	
 	print("=============================\n")
 
+# The emergency Flag. Both ways in come here: hp reaching 0 (take_damage) and
+# the core shell destroyed (component_destroyed). The grace window starts at
+# once, inside the damage that caused it, so the rest of that blast or burst
+# does nothing (take_damage, armor_check, damage_component and
+# take_status_damage all check it). The weapons lock (shoot,
+# can_fire_at_point) and a salvo still going out stops. After the window the
+# cockpit can be hit (is_protected) and the exposed_hits rule counts.
 func enter_flagged_state():
-	if is_exposed:
-		return  # Already flagged
-	
+	if is_exposed or is_dead:
+		return
 	is_exposed = true
+	flag_grace = FLAG_GRACE_TIME
+	exposed_invuln_timer = 0.0
+	_heartbeat = FLAG_HEARTBEAT_TIME
+	_salvos.clear()
+	for slot in WeaponSFXs:
+		stop_shooting(slot)
+	var attacker = get_last_attacker()
+	_show_flag_entry(attacker)
 	emit_signal("flagged")
-	emit_signal("exposed", self)  # Keep old signal for compatibility
+	emit_signal("exposed", self)
+	emergency_flagged.emit(self, attacker)
+
+
+func is_in_flag_grace() -> bool:
+	return flag_grace > 0.0
+
+
+# The mecha (or Entity) whose damage hit this one last, or null.
+func get_last_attacker():
+	if typeof(last_damage_source) == TYPE_DICTIONARY:
+		var body = last_damage_source.get("body")
+		if is_instance_valid(body):
+			return body
+	return null
+
+
+# The moment the Flag starts, made visible: the marker (FlagMarker), a sound,
+# a burst of blood from the core and a splatter on the ground thrown away from
+# the attacker (BloodStains). The spurt emitter then pulses with the heartbeat.
+func _show_flag_entry(attacker) -> void:
+	if not is_inside_tree():
+		return
+	_flag_marker = FlagMarker.new()
+	add_child(_flag_marker)
+	AudioManager.play_sfx(FLAG_SFX, global_position)
+	var burst: GPUParticles2D = Particle.blood[2]
+	burst.restart()
+	if _spurt == null:
+		_spurt = burst.duplicate()
+		_spurt.amount = FLAG_SPURT_AMOUNT
+		_spurt.lifetime = FLAG_SPURT_LIFETIME
+		burst.get_parent().add_child(_spurt)
+	var away := Vector2.RIGHT.rotated(randf() * TAU)
+	if attacker is Node2D and attacker.global_position != global_position:
+		away = (global_position - attacker.global_position).normalized()
+	var stains := BloodStains.find(self)
+	if stains:
+		stains.add_splatter(global_position, away)
+		stains.spray(global_position, away)
+
+
+## How much of the Hardware parts' internal component hp is gone, 0 to 1
+## (WOUND_PARTS, WOUND_TAG).
+func get_internal_wound() -> float:
+	var lost := 0.0
+	var total := 0.0
+	for part_name in WOUND_PARTS:
+		for comp in components.get(part_name, {}).values():
+			if WOUND_TAG in comp.tags:
+				total += comp.max_hp
+				lost += comp.max_hp - comp.hp
+	return lost / total if total > 0.0 else 0.0
+
+
+# A hit on an internal component, made visible at its part: a few drops
+# thrown out the way the hit went (any way for one with no direction), or,
+# when the hit destroyed it, a full spray and a small splatter on the ground.
+# Damage with no direction (overheating) only ever leaks drops.
+func _show_wound(part_name: String, destroyed: bool, hit_dir: Vector2) -> void:
+	var stains := BloodStains.find(self)
+	if stains == null:
+		return
+	var at := get_part_global_position(part_name)
+	if hit_dir == Vector2.ZERO:
+		stains.spray(at, Vector2.RIGHT.rotated(randf() * TAU), WOUND_LEAK)
+	elif destroyed:
+		stains.spray(at, hit_dir)
+		stains.add_small_splatter(at, hit_dir)
+	else:
+		stains.spray(at, hit_dir, WOUND_LEAK)
 
 func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	# Throttle rapid same-part hits to avoid spawn storms during cascading damage.

@@ -123,12 +123,18 @@ func _setup_triggers() -> void:
 
 # ---- CombatScene hooks ----
 
-# Tell ExpeditionDirector before removal so it can attribute the kill, and
-# leave a wreck for NPCs (the player's mecha is simply lost).
+# Tell ExpeditionDirector before removal so it can attribute the kill.
 func _before_mecha_removed(mecha) -> void:
 	if ExpeditionDirector:
 		ExpeditionDirector.notify_mecha_died(mecha)
-	if mecha != player:
+
+
+# A dead NPC leaves a wreck; the player's mecha is lost, and leaves only its
+# body.
+func _leave_body(mecha) -> void:
+	if mecha == player:
+		super._leave_body(mecha)
+	else:
 		_spawn_wreck(mecha)
 
 
@@ -184,13 +190,27 @@ func _setup_wrecks() -> void:
 	move_child(Carcasses, Mechas.get_index())
 
 
+# The loot is rolled first, so the parts that come off the body are ones not
+# in it (MechaBody.choose_shed). Built now, from the dying mecha; added to the
+# map later in the same frame, before the mecha is freed, like a carcass:
+# a round kills from inside a collision callback, where adding the wreck's
+# interact range (an Area2D) is an engine error.
 func _spawn_wreck(mecha) -> void:
 	var wreck = WRECK.instantiate()
 	wreck.position = mecha.global_position
-	wreck.setup(mecha.mecha_name, WreckLoot.roll(mecha.get_design_data()))
+	var loot := WreckLoot.roll(mecha.get_design_data())
+	wreck.setup(mecha.mecha_name, loot)
 	wreck.kill_record = mecha.kill_record
 	wreck.copy_mecha_visuals(mecha)
+	_add_wreck.call_deferred(wreck, MechaBody.choose_shed(mecha, loot), _near_player(mecha))
+
+
+func _add_wreck(wreck: Wreck, shed: Array, on_screen: bool) -> void:
+	if not is_inside_tree():
+		wreck.free()
+		return
 	Wrecks.add_child(wreck)
+	_shed(wreck.body, shed, on_screen)
 	_trim_oldest(Wrecks, MAX_WRECKS)
 
 

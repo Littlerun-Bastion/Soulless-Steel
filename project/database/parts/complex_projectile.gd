@@ -465,7 +465,7 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 
 				# Damage component if penetrated and a component was selected
 				if pen_result.penetrated and pen_result.component_name != "":
-					body.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+					body.damage_component(pen_result.part_name, pen_result.component_name, base_damage, dir)
 				
 				# Always add visual decal and impact effect
 				body.add_decal(body_shape_id, collision_point, decal_type, Vector2(40, 40))
@@ -799,7 +799,7 @@ func explosion():
 					
 					# Damage component if penetrated and one was selected
 					if pen_result.penetrated and pen_result.component_name != "":
-						hit_mecha.damage_component(pen_result.part_name, pen_result.component_name, base_damage)
+						hit_mecha.damage_component(pen_result.part_name, pen_result.component_name, base_damage, ray)
 				
 				# Apply knockback
 				hit_mecha.knockback(payload_explosion_force, ray, true)

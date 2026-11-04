@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://trailstabl01"]
+
+[ext_resource type="Script" path="res://game/weapons/RibbonTrail.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/images/fx/trail_cloudy.png" id="2"]
+
+[node name="SmokeTrailStable" type="Line2D"]
+width = 16.0
+texture = ExtResource("2")
+script = ExtResource("1")
+point_spacing = 10.0
+drift_speed = 4.0
+tail_width = 1.25
+lifetime_scale = 0.6

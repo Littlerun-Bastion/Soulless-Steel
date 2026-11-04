@@ -49,4 +49,4 @@ func add_new_point(point_pos:Vector2, at_pos := -1):
 		return
 	
 	point_age.append(0.0)
-	add_new_point(point_pos, at_pos) #TODO: CHECK IF THIS IS RIGHT
+	add_point(point_pos, at_pos)

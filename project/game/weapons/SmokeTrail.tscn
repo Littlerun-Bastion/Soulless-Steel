@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://cc4y6un446yr6"]
 
-[ext_resource type="Script" uid="uid://c3xl18k6ryuxy" path="res://game/weapons/SmokeTrail.gd" id="1"]
-[ext_resource type="Material" uid="uid://cx2ecgkt0ia6a" path="res://game/fx/BasicMissileSmoke.tres" id="2"]
-[ext_resource type="Texture2D" uid="uid://pvf64pd23xda" path="res://assets/images/fx/fire_cloud.png" id="2_4ubgf"]
+[ext_resource type="Script" path="res://game/weapons/RibbonTrail.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/images/fx/trail_cloudy_hi.png" id="2"]
 
-[node name="GPUParticles2D" type="GPUParticles2D" unique_id=167029]
-amount = 400
-texture = ExtResource("2_4ubgf")
-fixed_fps = 240
-visibility_rect = Rect2(-5000000000, -5000000000, 10000000000, 10000000000)
-process_material = ExtResource("2")
+[node name="SmokeTrail" type="Line2D"]
+width = 28.0
+texture = ExtResource("2")
 script = ExtResource("1")
+point_spacing = 14.0
+drift_speed = 12.0
+tail_width = 1.6
+lifetime_scale = 1.0

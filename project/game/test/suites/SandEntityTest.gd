@@ -86,6 +86,7 @@ func run_tests() -> void:
 	await case("a glob flies as a drop of fluid and splashes into droplets", _test_glob_look)
 	await case("a Coyote rips a part off a Flagged mecha instead of biting", _test_rip_flagged)
 	await case("a shield covers only the front and breaks when its pips run out", _test_shield)
+	await case("carried parts look as on a mecha; a shield's broad outer face is forward", _test_carried_look)
 	await case("a gun fires the weapon's own rounds at the target, credited to the Coyote", _test_gun)
 	await case("a Coyote's carcass holds the parts it scavenged", _test_scavenged_loot)
 	await case("sweeps and the Biosensor report Coyotes, Fishers and ticks; what they leave fades with them", _test_sensed_and_seen)
@@ -719,7 +720,7 @@ func _test_scavenge_wreck() -> void:
 			"it's gone from the body")
 	check(not wreck.body.taken_slots.any(func(s): return s.begins_with("shoulder_weapon")), "never a shoulder weapon")
 	var carrier: Coyote = pack.filter(func(c): return not c.gun.is_empty() or not c.shield.is_empty())[0]
-	check(carrier.coyote_body._gun_sprite != null or carrier.coyote_body._shield_sprite != null, "it carries the part's own sprite")
+	check(carrier.coyote_body._gun_look != null or carrier.coyote_body._shield_look != null, "it carries the part's own sprite")
 
 
 # A Coyote with a shield wants only a gun: both arm weapons lie shed on the
@@ -810,6 +811,43 @@ func _test_rip_flagged() -> void:
 	biter._set_state(Coyote.State.STRIKE)
 	biter._on_bite_closed()
 	check(biter.bites == 1 and biter.gun.is_empty() and biter.shield.is_empty(), "a mecha that isn't Flagged just gets bitten")
+
+
+func _test_carried_look() -> void:
+	var mecha := _mecha(Vector2.ZERO, 0.0)
+	var coyote: Coyote = _spawn(COYOTE, Vector2(600, 0), true)
+	coyote._carry({"slot": "arm_weapon_left", "part_id": str(mecha.build.arm_weapon_left.part_id),
+			"texture": mecha.LeftArmWeaponMain.texture, "look": MechaBody.look_of(mecha.get_node("ArmWeaponLeft"))})
+	coyote._carry({"slot": "left_shoulder", "part_id": str(mecha.build.shoulders.part_id), "texture": mecha.LeftShoulder.texture,
+			"look": MechaBody.look_of(mecha.LeftShoulder), "armor": {"level": 2, "pips": 3}})
+	var other: Coyote = _spawn(COYOTE, Vector2(600, 600), true)
+	other._carry({"slot": "right_shoulder", "part_id": str(mecha.build.shoulders.part_id), "texture": mecha.RightShoulder.texture,
+			"look": MechaBody.look_of(mecha.RightShoulder), "armor": {"level": 2, "pips": 3}})
+	await _physics_frames(3)
+	var body := coyote.coyote_body
+	if not check(body._gun_look != null and body._shield_look != null, "it holds both"):
+		return
+	var sprites: Array = body._gun_look.find_children("*", "Sprite2D", true, false)
+	var layers: Array = sprites.map(func(s): return String(s.name))
+	check(layers.has("Main") and layers.has("Sub"), "the gun is every layer of the weapon, not just its outline (%s)" % str(layers))
+	check(not layers.has("Glow"), "without its glow")
+	check(body._gun_look.global_scale.abs().is_equal_approx(Vector2.ONE * CoyoteBody.CARRY_SCALE), "as big as on a mecha")
+	var heated: Array = sprites.filter(func(s): return s.material is ShaderMaterial and MechaBody._has_heat(s.material.shader))
+	var own_material: Material = mecha.LeftArmWeaponMain.material
+	var all_cold := heated.all(func(s): return float(s.material.get_shader_parameter("heat")) == 0.0 and s.material != own_material)
+	check(not heated.is_empty() and all_cold, "with its own shader, cold")
+	var weapon_length: float = mecha.LeftArmWeaponMain.texture.get_height() * 0.5
+	check(body.gun_muzzle().distance_to(body._gun_look.global_position) > weapon_length,
+			"its rounds leave from the far end (%.0f px out)" % body.gun_muzzle().distance_to(body._gun_look.global_position))
+	for pair in [[coyote, -1.0, "left"], [other, 1.0, "right"]]:
+		var holder: CoyoteBody = (pair[0] as Coyote).coyote_body
+		var fwd := Vector2.from_angle(holder.global_rotation)
+		var shield: Node2D = holder._shield_look
+		var long_side: Vector2 = shield.global_transform.y.normalized()
+		var outer: Vector2 = shield.global_transform.x.normalized() * float(pair[1])
+		check(absf(long_side.dot(fwd)) < 0.05, "a %s shoulder's long side runs across the Coyote's front" % pair[2])
+		check(outer.dot(fwd) > 0.95, "and its outer face points forward")
+		check(holder.to_local(shield.global_position).x > holder.body_length * 0.4, "out in front of the head")
 
 
 func _test_shield() -> void:
@@ -934,7 +972,7 @@ func _test_sensed_and_seen() -> void:
 	mecha.attach_tick(swarm.group_id, _arena, Vector2(0, 200), 30.0)
 	check(mecha._tick_layer != null and mecha._tick_layer.get_parent() == mecha, "ticks on a mecha are drawn under it")
 	coyote._carry({"slot": "arm_weapon_left", "part_id": design.arm_weapon_left, "texture": mecha.LeftArmWeaponMain.texture})
-	var gun_sprite: Sprite2D = coyote.coyote_body._gun_sprite
+	var gun_sprite: Sprite2D = coyote.coyote_body._gun_look
 	check(gun_sprite != null and coyote.is_ancestor_of(gun_sprite), "a carried part is drawn under its Coyote")
 	coyote.modulate.a = 0.0
 	coyote.die()

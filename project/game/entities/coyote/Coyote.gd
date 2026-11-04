@@ -100,8 +100,8 @@ var state: State = State.WANDER
 var whips := 0  # whips that landed (tests, tuning)
 var bites := 0  # bites that landed
 var gun_shots := 0  # rounds the carried gun fired
-## The shoulder it carries as a shield: {"part_id", "texture", "level",
-## "pips"}, or {} for none.
+## The shoulder it carries as a shield: {"part_id", "texture", "outer_x"
+## (CoyoteBody.carry_shield), "level", "pips"}, or {} for none.
 var shield := {}
 ## The arm weapon it carries as a gun: {"part_id", "weapon", "texture"}, or
 ## {} for none.
@@ -477,8 +477,12 @@ func _scavenge() -> void:
 	var at: Vector2 = body.part_position(_scavenge_slot)
 	if global_position.distance_to(at) <= take_reach:
 		stop()
+		var look := body.part_look(_scavenge_slot)
 		var taken: Dictionary = body.take_part(_scavenge_slot)
-		if not taken.is_empty():
+		if taken.is_empty():
+			_free_look({"look": look})
+		else:
+			taken["look"] = look
 			_carry(taken)
 			AudioManager.play_sfx("mech_impact_light%d" % randi_range(1, 5), global_position)
 		_end_scavenge()
@@ -520,13 +524,17 @@ func rip_part(mecha: Node2D) -> String:
 		taken["part_id"] = str(mecha.build[slot].part_id)
 		var main: Sprite2D = (mecha.LeftArmWeaponMain if slot == "arm_weapon_left" else mecha.RightArmWeaponMain)
 		taken["texture"] = main.texture
+		taken["look"] = MechaBody.look_of(mecha.get_node("ArmWeaponLeft" if slot == "arm_weapon_left" else "ArmWeaponRight"))
 	else:
 		taken["part_id"] = str(mecha.build.shoulders.part_id)
-		taken["texture"] = (mecha.LeftShoulder if slot == "left_shoulder" else mecha.RightShoulder).texture
+		var shoulder_sprite: Sprite2D = mecha.LeftShoulder if slot == "left_shoulder" else mecha.RightShoulder
+		taken["texture"] = shoulder_sprite.texture
+		taken["look"] = MechaBody.look_of(shoulder_sprite)
 		var front: Dictionary = mecha.armor[slot].front
 		taken["armor"] = {"level": int(front.level), "pips": int(front.pips)}
 	EntityAttack._credit(self, mecha)
 	if not mecha.lose_part(slot, true):
+		_free_look(taken)
 		return ""
 	_carry(taken)
 	var to_me := (global_position - mecha.global_position).normalized()
@@ -541,18 +549,38 @@ func _carry(taken: Dictionary) -> void:
 	if slot in SHIELD_SLOTS:
 		var front: Dictionary = taken.get("armor", {"level": 1, "pips": 1})
 		if int(front.pips) <= 0:
+			_free_look(taken)
 			return
-		shield = {"part_id": taken.part_id, "texture": taken.get("texture"), "level": int(front.level), "pips": int(front.pips)}
-		coyote_body.carry_shield(shield.texture)
+		shield = {"part_id": taken.part_id, "texture": taken.get("texture"),
+				"outer_x": -1.0 if slot == "left_shoulder" else 1.0, "level": int(front.level), "pips": int(front.pips)}
+		coyote_body.carry_shield(_look_or_texture(taken), shield.outer_x)
 	elif slot in GUN_SLOTS:
 		var weapon = _weapon_of(taken.part_id)
 		if not is_usable_gun(weapon):
+			_free_look(taken)
 			return
 		gun = {"part_id": taken.part_id, "weapon": weapon, "texture": taken.get("texture")}
 		_gun_left = maxi(int(weapon.clip_size), 1)
 		_gun_cool = 0.0
-		coyote_body.carry_gun(gun.texture)
+		coyote_body.carry_gun(_look_or_texture(taken))
+	else:
+		_free_look(taken)
+		return
 	carcass_grid = carcass_grid.max(carry_grid)
+
+
+# How a taken part is drawn: its look (every layer, MechaBody.look_of) if it
+# came with one, else its main texture.
+static func _look_or_texture(taken: Dictionary):
+	var look = taken.get("look")
+	return look if look is Node2D else taken.get("texture")
+
+
+# A look nothing will carry is freed (looks are made fresh for each take).
+static func _free_look(taken: Dictionary) -> void:
+	var look = taken.get("look")
+	if look is Node2D and is_instance_valid(look) and look.get_parent() == null:
+		look.free()
 
 
 # The shield takes a hit travelling along dir if it comes at the front.
@@ -578,19 +606,20 @@ func take_hit(damage: float, pen: int, dir := Vector2.ZERO, source_info = null, 
 # The shield breaks: it falls from its tendrils and fades on the ground.
 func _drop_shield() -> void:
 	var at := coyote_body.shield_position()
-	var texture = shield.get("texture")
+	var turned := coyote_body.shield_rotation()
 	shield = {}
-	coyote_body.carry_shield(null)
+	var piece := coyote_body.let_go_of_shield()
 	var world := get_parent()
-	if texture == null or world == null:
+	if piece == null:
 		return
-	var piece := Sprite2D.new()
-	piece.texture = texture
-	piece.scale = Vector2.ONE * coyote_body.carried_scale(texture, CoyoteBody.SHIELD_SIZE)
+	if world == null:
+		piece.free()
+		return
+	piece.z_index = 0
 	piece.modulate = Color(0.7, 0.7, 0.7)
 	world.add_child(piece)
 	piece.global_position = at
-	piece.global_rotation = global_rotation + PI * 0.5 + randf_range(-0.6, 0.6)
+	piece.global_rotation = turned + randf_range(-0.6, 0.6)
 	var fade := piece.create_tween()
 	fade.tween_interval(1.5)
 	fade.tween_property(piece, "modulate:a", 0.0, 1.0)

@@ -8,14 +8,16 @@ const WHIP_TIME := 0.8
 ## Fraction of the whip at which the tail lashes past the head.
 const WHIP_STRIKE_AT := 0.45
 const BITE_TIME := 0.25
-## Carried parts (carry_shield, carry_gun): their own sprites, scaled to
-## about this many px across, the shield in front of the head, the gun over
-## it, each held by a loose tendril wrapped round it. Placeholders.
-const SHIELD_SIZE := 70.0
-const GUN_SIZE := 64.0
-const SHIELD_AHEAD := 0.5     # fractions of body_length ahead of the centre
+## Carried parts (carry_shield, carry_gun): each part's own look, every layer
+## of it, as big as on a mecha (CARRY_SCALE), cold (MechaBody.look_of). The
+## shield is in front of the head, its long side across the Coyote's front
+## and its outer, armoured face forward; the gun is over it, held by its
+## mount and pointing at gun_aim. Each is held by a loose tendril wrapped
+## round it. Placeholders.
+const CARRY_SCALE := 1.0
+const SHIELD_AHEAD := 0.6     # fractions of body_length ahead of the centre
 const GUN_AHEAD := 0.12
-const GUN_LIFT := 26.0        # px the gun sits off the centre line, over the head
+const GUN_LIFT := 40.0        # px the gun sits off the centre line, over the head
 const WRAP_RADIUS := 12.0
 const WRAP_SHARE := 0.3       # of the tendril, wound round the part
 const HOLD_WEIGHT := 0.85
@@ -26,8 +28,9 @@ var gun_aim := Vector2.ZERO
 var _whip_t := -1.0
 var _whip_side := 1.0
 var _bite_t := -1.0
-var _shield_sprite: Sprite2D = null
-var _gun_sprite: Sprite2D = null
+var _shield_look: Node2D = null
+var _shield_turn := 0.0  # the shield's rotation in body space (carry_shield)
+var _gun_look: Node2D = null
 var _loose: Array[int] = []  # the loose tendrils: indices in _tails
 
 
@@ -113,63 +116,93 @@ func _ready() -> void:
 			_loose.append(i)
 
 
-## Carries a shoulder as a shield (its sprite), or nothing (null).
-func carry_shield(texture: Texture2D) -> void:
-	_shield_sprite = _carried(_shield_sprite, texture, SHIELD_SIZE)
+## Carries a shoulder as a shield, or nothing (null). The part is its look
+## (MechaBody.look_of, which this body then owns) or just its texture.
+## outer_x is the way the shoulder's outer face points in its own sprite: -1
+## for a left shoulder, +1 for a right one (mecha sprites face -Y, a left
+## shoulder's armour on its left). That face is turned forward.
+func carry_shield(part, outer_x := -1.0) -> void:
+	_shield_turn = PI if outer_x < 0.0 else 0.0
+	_shield_look = _carried(_shield_look, part, false)
 
 
-## Carries an arm weapon as a gun (its sprite), or nothing (null).
-func carry_gun(texture: Texture2D) -> void:
-	_gun_sprite = _carried(_gun_sprite, texture, GUN_SIZE)
+## Carries an arm weapon as a gun, or nothing (null): its look (owned from
+## then on) or its texture, held by its mount.
+func carry_gun(part) -> void:
+	_gun_look = _carried(_gun_look, part, true)
 
 
 ## Where the shield is (world).
 func shield_position() -> Vector2:
-	return _shield_sprite.global_position if _shield_sprite != null else to_global(Vector2(body_length * SHIELD_AHEAD, 0.0))
+	return _shield_look.global_position if _shield_look != null else to_global(Vector2(body_length * SHIELD_AHEAD, 0.0))
 
 
-## Where the carried gun's rounds leave it (world).
+## How the shield is turned (world).
+func shield_rotation() -> float:
+	return global_rotation + _shield_turn
+
+
+## Lets go of the shield: hands its look over (to drop on the ground), or
+## null if it held none.
+func let_go_of_shield() -> Node2D:
+	var look := _shield_look
+	_shield_look = null
+	if look != null and look.get_parent() != null:
+		look.get_parent().remove_child(look)
+	return look
+
+
+## Where the carried gun's rounds leave it (world): its reach ahead of the
+## mount, the way it points.
 func gun_muzzle() -> Vector2:
-	if _gun_sprite == null:
+	if _gun_look == null:
 		return global_position
-	var to_aim := gun_aim - _gun_sprite.global_position
+	var to_aim := gun_aim - _gun_look.global_position
 	var dir := to_aim.normalized() if to_aim.length() > 1.0 else Vector2.from_angle(global_rotation)
-	return _gun_sprite.global_position + dir * GUN_SIZE * 0.5
+	return _gun_look.global_position + dir * float(_gun_look.get_meta("reach", 0.0)) * CARRY_SCALE
 
 
-## The scale that makes a part's sprite about `size` px across.
-func carried_scale(texture: Texture2D, size: float) -> float:
-	var longest := maxf(texture.get_width(), texture.get_height())
-	return size / longest if longest > 0.0 else 1.0
-
-
-func _carried(sprite: Sprite2D, texture: Texture2D, size: float) -> Sprite2D:
-	if sprite != null:
-		sprite.queue_free()
-	if texture == null or dead:
+# A look as given, or a plain sprite for a texture (by its mount, the bottom
+# edge, for a gun; by its centre otherwise), at CARRY_SCALE.
+func _carried(old: Node2D, part, by_mount: bool) -> Node2D:
+	if old != null:
+		old.queue_free()
+	var look: Node2D = null
+	if part is Node2D:
+		look = part
+	elif part is Texture2D:
+		var sprite := Sprite2D.new()
+		sprite.texture = part
+		var height: float = part.get_height()
+		if by_mount:
+			sprite.offset = Vector2(0.0, -height * 0.5)
+		sprite.set_meta("reach", height if by_mount else height * 0.5)
+		look = sprite
+	if look == null:
 		return null
-	sprite = Sprite2D.new()
-	sprite.texture = texture
-	sprite.scale = Vector2.ONE * carried_scale(texture, size)
-	sprite.z_index = 1
-	_body_layer.add_child(sprite)
-	return sprite
+	if dead:
+		look.queue_free()
+		return null
+	look.scale *= CARRY_SCALE
+	look.z_index = 1
+	_body_layer.add_child(look)
+	return look
 
 
 # The parts it carries sit in front of and over the head; a loose tendril
 # reaches out to each and winds round it. (Mecha sprites face -Y.)
 func _hold_parts() -> void:
 	var holding := 0
-	if _shield_sprite != null:
-		_shield_sprite.position = Vector2(body_length * SHIELD_AHEAD, 0.0)
-		_shield_sprite.rotation = PI * 0.5
-		_wrap(holding, _shield_sprite.global_position)
+	if _shield_look != null:
+		_shield_look.position = Vector2(body_length * SHIELD_AHEAD, 0.0)
+		_shield_look.rotation = _shield_turn
+		_wrap(holding, _shield_look.global_position)
 		holding += 1
-	if _gun_sprite != null:
-		_gun_sprite.position = Vector2(body_length * GUN_AHEAD, -GUN_LIFT)
-		var to_aim := gun_aim - _gun_sprite.global_position
-		_gun_sprite.global_rotation = (to_aim.angle() if to_aim.length() > 1.0 else global_rotation) + PI * 0.5
-		_wrap(holding, _gun_sprite.global_position)
+	if _gun_look != null:
+		_gun_look.position = Vector2(body_length * GUN_AHEAD, -GUN_LIFT)
+		var to_aim := gun_aim - _gun_look.global_position
+		_gun_look.global_rotation = (to_aim.angle() if to_aim.length() > 1.0 else global_rotation) + PI * 0.5
+		_wrap(holding, _gun_look.global_position)
 		holding += 1
 	for k in range(holding, _loose.size()):
 		if _tails[_loose[k]].pose_weight > 0.0 and _whip_t < 0.0:

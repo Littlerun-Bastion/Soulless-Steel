@@ -312,9 +312,11 @@ func _ready() -> void:
 	_tail_taper = _curve([Vector2(0.0, 1.0), Vector2(0.6, 0.65), Vector2(1.0, 0.05)])
 	_last_rotation = global_rotation
 
+	# Everything is drawn at z 0 or above, so nothing goes under the map's
+	# ground (z 0). Within that, the order of children layers it: legs,
+	# tails, grains, then the body over them (_layer_body_on_top).
 	_limb_layer = Node2D.new()
 	_limb_layer.top_level = true  # leg points are in world space
-	_limb_layer.z_index = -1      # legs under the body
 	add_child(_limb_layer)
 	_shadow_layer = Node2D.new()  # first child, so drawn under the legs
 	_shadow_layer.draw.connect(_draw_shadows)
@@ -328,11 +330,18 @@ func _ready() -> void:
 	_build_head()
 	_tail_layer = Node2D.new()
 	_tail_layer.top_level = true
-	_tail_layer.z_index = -1
 	add_child(_tail_layer)
 	_build_tails()
 	_grains = _make_particles(700, false)
 	_death = _make_particles(death_grains, true)
+	_layer_body_on_top()
+
+
+# The body layer goes after the legs, tails and grains, so it draws over
+# them; the death burst goes last.
+func _layer_body_on_top() -> void:
+	move_child(_body_layer, -1)
+	move_child(_death, -1)
 
 
 ## Every physics frame, from the Entity.
@@ -403,7 +412,6 @@ class SandCorpse extends Node2D:
 	var _grains: Array[Vector3] = []  # x, y, size
 
 	func _ready() -> void:
-		z_index = -1
 		for k in GRAINS:
 			# Denser in the middle, thinning out, a little lopsided.
 			var r := radius * pow(randf(), 0.7)
@@ -1072,8 +1080,9 @@ func _simulate_tails(delta: float) -> void:
 		tail.prev = prev
 		tail.heights = heights
 		raised = raised or tail.raise > 0.3
-	# A raised tail draws over the body; a trailing one under it.
-	_tail_layer.z_index = 1 if raised else -1
+	# A raised tail draws over the body; a trailing one under it (by child
+	# order, at z 0).
+	_tail_layer.z_index = 1 if raised else 0
 
 
 # --- Drawing helpers 
@@ -1284,7 +1293,6 @@ func _make_particles(amount: int, death: bool) -> GPUParticles2D:
 		p.z_index = 1
 	else:
 		p.lifetime = 1.1
-		p.z_index = -1
 	add_child(p)
 	return p
 

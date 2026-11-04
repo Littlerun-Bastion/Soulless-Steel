@@ -182,11 +182,14 @@ func die() -> void:
 	var alpha := _entity_alpha()
 	super()
 	var world := _world_parent()
+	# Left in the world first among its children, so the living draw over it
+	# (at z 0: below that is under the map's ground).
 	if world != null:
 		_shell.reparent(world)
+		world.move_child(_shell, 0)
 	_shell.modulate = Color(0.85, 0.85, 0.85, alpha)
 	_shell.material = null
-	_shell.z_index = -1
+	_shell.z_index = 0
 	# Unless a Carcass takes it (make_corpse), it fades with the Entity's
 	# corpse rather than littering the ground.
 	_shell_fade = _shell.create_tween()

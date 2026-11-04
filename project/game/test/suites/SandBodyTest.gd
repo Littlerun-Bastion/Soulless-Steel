@@ -6,7 +6,10 @@ extends TestSuite
 # Node2D. Every body builds, walks faster when it moves faster, and bursts
 # into grains that outlive the Entity when it dies. The Coyote's whip and
 # bite, the Spitter's charge and the Fisher's stages, harpoon and leap pose
-# all play through and say when they land. The art bench
+# all play through and say when they land. Nothing a body draws (legs,
+# tails, grains, shadows, carried parts, its corpse or a Fisher's dead
+# shell) sits below z 0, where the map's ground would cover it, and the body
+# draws over its legs and trailing tails. The art bench
 # (game/test/sand_bench) runs every species without errors.
 
 const BODIES := {
@@ -28,6 +31,7 @@ func run_tests() -> void:
 	await case("a Fisher wakes, spiders out and curls back up", _test_fisher_stages)
 	await case("a Fisher's harpoon, recoil and leap play through", _test_fisher_moves)
 	await case("a dead Fisher leaves its shell behind", _test_fisher_shell)
+	await case("nothing is drawn under the ground, and the body is over its legs", _test_layers)
 	await case("the art bench runs every species", _test_bench)
 
 
@@ -178,6 +182,50 @@ func _test_fisher_shell() -> void:
 	await wait_frames(2)
 	var shells: Array = _world.get_children().filter(func(n): return n is Sprite2D)
 	check(shells.size() == 1, "the shell is left in the world")
+
+
+func _test_layers() -> void:
+	for species in BODIES:
+		var body := _make(species)
+		if body is FisherBody:
+			(body as FisherBody).stage = FisherBody.Stage.ACTIVE
+		if body is CoyoteBody:
+			var tex := ImageTexture.create_from_image(Image.create(40, 20, false, Image.FORMAT_RGBA8))
+			(body as CoyoteBody).carry_shield(tex)
+			(body as CoyoteBody).carry_gun(tex)
+		await _drive(body, Vector2(200.0, 0.0), 10)
+		check_eq(_lowest_z(body.get_parent()), 0, "%s: nothing alive is drawn below z 0" % species)
+		var body_at: int = body._body_layer.get_index()
+		check(body_at > body._limb_layer.get_index() and body_at > body._tail_layer.get_index()
+				and body_at > body._grains.get_index(), "%s: the body is drawn over its legs, tails and grains" % species)
+		body.die()
+		await wait_frames(2)
+		check_eq(_lowest_z(_world), 0, "%s: nor what it leaves when it dies" % species)
+		var corpse := body.make_corpse()
+		_world.add_child(corpse)
+		await wait_frames(1)
+		check_eq(_lowest_z(corpse), 0, "%s: nor its corpse" % species)
+		corpse.queue_free()
+		body.get_parent().queue_free()
+		await wait_frames(2)
+
+
+# The lowest z any CanvasItem under `root` is drawn at, counting relative z
+# up to `root`.
+func _lowest_z(root: Node) -> int:
+	var lowest := 0
+	for node in root.find_children("*", "CanvasItem", true, false):
+		var z := 0
+		var at: Node = node
+		while at is CanvasItem and at != root.get_parent():
+			z += (at as CanvasItem).z_index
+			if not (at as CanvasItem).z_as_relative:
+				break
+			at = at.get_parent()
+		lowest = mini(lowest, z)
+	if root is CanvasItem:
+		lowest = mini(lowest, (root as CanvasItem).z_index)
+	return lowest
 
 
 func _test_bench() -> void:

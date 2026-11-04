@@ -1781,9 +1781,11 @@ func _effective_engage_distance(enemy) -> float:
 # picked up as far as the NPC can see (engage_distance, or its kite range if
 # that is longer, cut by sensor damage) and is kept up to its shooting range.
 func _check_targets(enemy) -> void:
+	var profile_start := FrameProfiler.start()
 	var eff = _get_effective_distances(enemy)
 	var engage = maxf(_effective_engage_distance(enemy), eff.max_kite * enemy.disabled_systems.sensors)
 	enemy.check_for_targets(engage, maxf(max_shooting_distance, eff.max_shoot))
+	FrameProfiler.add("  targets (in behaviour)", profile_start)
 	# The player's attack order: its target, once the callout has landed
 	# (fairness: the squad contact), over whatever the threat scores said.
 	var squad = enemy.knowledge.squad

@@ -191,23 +191,60 @@ static func solid_hit(world: World2D, from: Vector2, to: Vector2, exclude: Array
 # in a hand-made one (the BuildingArea polygon of Building.tscn). Blasts only
 # reach targets with the same key as the blast, and an indirect shell that
 # comes down where the key isn't "" hits the roof (complex_projectile).
-# Called per blast and per landing, not per frame.
+# Sight checks ask it many times a frame (every NPC about every body, the
+# player's view, lit bodies), so the field and the hand-made areas are looked
+# up once per physics frame, and a body's own key once per frame
+# (building_key_of).
 static func building_key_at(node: Node, pos: Vector2) -> String:
 	if node == null or not node.is_inside_tree():
 		return ""
-	var field := BuildingField.find(node)
-	if field:
-		var i := field.building_at(pos)
+	_refresh_scene_cache(node)
+	if _field_cache != null:
+		var i: int = _field_cache.building_at(pos)
 		if i >= 0:
 			return "field:%d" % i
-	for area in node.get_tree().get_nodes_in_group("building_area"):
-		if not (area is Area2D):
+	for area in _areas_cache:
+		if not is_instance_valid(area):
 			continue
 		for child in area.get_children():
 			var poly := child as CollisionPolygon2D
 			if poly and Geometry2D.is_point_in_polygon(poly.global_transform.affine_inverse() * pos, poly.polygon):
 				return "node:%d" % area.get_parent().get_instance_id()
 	return ""
+
+
+# The building `body` stands in, worked out once per physics frame per body.
+static func building_key_of(body: Node2D) -> String:
+	if body == null or not body.is_inside_tree():
+		return ""
+	var frame := Engine.get_physics_frames()
+	if frame != _key_cache_frame:
+		_key_cache.clear()
+		_key_cache_frame = frame
+	var id := body.get_instance_id()
+	if _key_cache.has(id):
+		return _key_cache[id]
+	var key := building_key_at(body, body.global_position)
+	_key_cache[id] = key
+	return key
+
+
+static var _field_cache: BuildingField = null
+static var _areas_cache: Array = []
+static var _scene_cache_frame := -1
+static var _key_cache := {}
+static var _key_cache_frame := -1
+
+
+# The building field and the hand-made building areas, once per physics
+# frame (two group look-ups otherwise paid per sight check).
+static func _refresh_scene_cache(node: Node) -> void:
+	var frame := Engine.get_physics_frames()
+	if frame == _scene_cache_frame and (_field_cache == null or is_instance_valid(_field_cache)):
+		return
+	_scene_cache_frame = frame
+	_field_cache = BuildingField.find(node)
+	_areas_cache = node.get_tree().get_nodes_in_group("building_area").filter(func(a): return a is Area2D)
 
 
 # Detection range multiplier for `target`, from the foliage covering it.
@@ -223,6 +260,22 @@ static func detection_mult(target: Node2D) -> float:
 # Sight range multiplier for `observer`, from a tree above it.
 static func sight_mult(observer: Node2D) -> float:
 	return TREE_SIGHT if _foliage_at(observer) == "tree" else 1.0
+
+
+# The screen's rectangle in world space (the current camera's view), worked
+# out once per physics frame for everything that asks whether it is on
+# screen (NPC looks, sand creatures' animation), grown by `margin` px.
+static var _screen_rect_cache := Rect2()
+static var _screen_rect_frame := -1
+
+
+static func screen_rect(node: Node, margin := 0.0) -> Rect2:
+	var frame := Engine.get_physics_frames()
+	if frame != _screen_rect_frame:
+		_screen_rect_frame = frame
+		var vp := node.get_viewport()
+		_screen_rect_cache = vp.get_canvas_transform().affine_inverse() * vp.get_visible_rect()
+	return _screen_rect_cache.grow(margin)
 
 
 # Foliage over a node, looked up once per physics frame per node: many

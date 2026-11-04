@@ -240,6 +240,7 @@ func _add_batch(texture: Texture2D, per_slot: int, mat: Material, custom: bool) 
 
 
 func _process(dt: float) -> void:
+	var profile_start := FrameProfiler.start()
 	now += dt
 	for slot in _used.size():
 		if _used[slot] and now - _born[slot] < _grow_time[slot]:
@@ -248,6 +249,7 @@ func _process(dt: float) -> void:
 	if _refresh <= 0.0:
 		_refresh = REFRESH_TIME
 		_redraw()
+	FrameProfiler.add("blood", profile_start)
 
 
 ## A splatter at `at`, the mecha entering the Flag, thrown along `away` (from

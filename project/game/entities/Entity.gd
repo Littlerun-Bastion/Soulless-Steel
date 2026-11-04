@@ -127,6 +127,12 @@ func set_pause(value: bool) -> void:
 func _physics_process(dt: float) -> void:
 	if is_dead or paused:
 		return
+	var profile_start := FrameProfiler.start()
+	_physics_step(dt)
+	FrameProfiler.add("entities", profile_start)
+
+
+func _physics_step(dt: float) -> void:
 	if scripted:
 		_drive_scripted()
 	else:

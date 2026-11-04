@@ -136,17 +136,29 @@ func _ready():
 
 
 func _physics_process(dt):
-	if paused:
+	if paused or is_dead:
 		return
-	
-	if is_dead:
+	# Physics LOD (see lod_tier): a far NPC runs its whole step, the Mecha
+	# base included, every step_interval() frames; the skipped frames' time
+	# is folded into dt and their distance into its moves (Mecha._step_scale).
+	var interval := step_interval()
+	if interval > 1 and (Engine.get_physics_frames() + _think_offset) % interval != 0:
+		_step_dt += dt
 		return
-	
-	super(dt)
-	
+	_step_scale = float(interval)
+	_physics_frame(dt + _step_dt)
+	_step_dt = 0.0
+	_step_scale = 1.0
+
+
+# One physics step of the NPC: the Mecha base, then its senses and thinking
+# on thinking frames, coasting on the others.
+func _physics_frame(dt):
+	super._physics_process(dt)
+
 	if is_stunned():
 		return
-	
+
 	# Thinking LOD: see is_thinking_frame(). think_dt is the game time since
 	# the last thinking frame.
 	_think_dt += dt
@@ -156,14 +168,19 @@ func _physics_process(dt):
 		_think_dt = 0.0
 
 	# The think-time probe (AICombatLog, Debug setting "ai_log"): senses,
-	# intent scoring, behaviour and illuminator of one thinking frame.
+	# intent scoring, behaviour and illuminator of one thinking frame. The
+	# frame profiler counts the same under "npc_think", and the drive (a
+	# scripted walker, or the coasting between thinks) under "npc_drive".
 	var probing := thinking and AICombatLog.enabled()
 	var probe_start := Time.get_ticks_usec() if probing else 0
+	var profile_start := FrameProfiler.start()
 
 	if scripted:
 		contacts.advance(dt)
 	elif thinking:
+		var senses_start := FrameProfiler.start()
 		update_senses(think_dt)
+		FrameProfiler.add("npc_senses", senses_start)
 		positioning.tick(think_dt)
 		# Squadmates' callouts that are due land now.
 		if knowledge.squad != null:
@@ -174,14 +191,19 @@ func _physics_process(dt):
 		_drive_scripted(dt)
 		if probing:
 			AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "scripted")
+		FrameProfiler.add("npc_drive", profile_start)
 	elif not wait_for_map_sync and not is_dead:
 		if thinking:
 			# Fresh each think; the combat behaviour re-sets it while engaging.
 			ai_aim_point = null
 			recheck_flagged_target()
 			var before := global_position
+			var scores_start := FrameProfiler.start()
 			logic.update(self)
+			FrameProfiler.add("npc_scores", scores_start)
+			var behaviour_start := FrameProfiler.start()
 			logic.run(self, think_dt)
+			FrameProfiler.add("npc_behaviour", behaviour_start)
 			_update_illuminator(think_dt)
 			_coast_velocity = velocity if global_position != before else Vector2.ZERO
 			_watch_barks(think_dt)
@@ -190,9 +212,11 @@ func _physics_process(dt):
 			_tick_sweep_back(think_dt)
 			if probing:
 				AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "near" if is_near_player() else "far")
+			FrameProfiler.add("npc_think", profile_start)
 		elif _coast_velocity != Vector2.ZERO:
 			# Between thinking frames, keep going the way it was going.
 			move(_coast_velocity)
+			FrameProfiler.add("npc_drive", profile_start)
 
 	# Stuck watchdog. Only fires when the NPC is actively trying to reach a
 	# position (going_to_position == true) but stays near still or makes no
@@ -903,38 +927,69 @@ func _update_illuminator(dt := 0.0) -> void:
 # bodies in sight. A body in sight becomes a live sight contact; one that
 # drops out of sight stays as a ghost where it was last seen or heard,
 # until the store drops it (BODY_LIFETIME).
+## A wall ray between this NPC and a body is cast again only after this many
+## physics frames (a mecha moves a few px a frame; the ray's answer holds).
+const SIGHT_RECHECK_FRAMES := 3
+## ... and at once when either end moved further than this (px) since.
+const SIGHT_RECHECK_MOVE := 40.0
+
+# The bodies every NPC looks at (mechas and Entities, then the decoys still
+# out there), gathered once per physics frame for all of them. Each NPC
+# leaves its own decoys out as it looks (update_senses).
+static var _sense_bodies: Array = []
+static var _sense_decoys: Array = []
+static var _sense_bodies_frame := -1
+# Body instance id -> [frame of the last wall ray, blocked].
+var _sight_cache := {}
+
+
+func _sense_candidates() -> Array:
+	var frame := Engine.get_physics_frames()
+	if frame != _sense_bodies_frame:
+		_sense_bodies_frame = frame
+		_sense_bodies = arena.get_mechas() + _get_entities()
+		_sense_decoys = get_tree().get_nodes_in_group("decoy").filter(func(d): return not d.is_gone())
+	return _sense_bodies
+
+
+# Whether a wall (or smoke) blocks the line to `target`, the ray cast at most
+# every SIGHT_RECHECK_FRAMES frames per target; smoke is checked every time
+# (clouds grow and go).
+func _sight_to_blocked(target) -> bool:
+	var frame := Engine.get_physics_frames()
+	var id: int = target.get_instance_id()
+	var from := global_position
+	var to: Vector2 = target.global_position
+	var entry = _sight_cache.get(id)
+	# The ray is cast again after SIGHT_RECHECK_FRAMES, or at once when either
+	# end has moved more than SIGHT_RECHECK_MOVE px since it was cast (a dash,
+	# a knockback, a test moving a mecha): a few frames of ordinary walking
+	# never move that far.
+	if entry == null or frame - int(entry[0]) >= SIGHT_RECHECK_FRAMES \
+			or from.distance_squared_to(entry[2]) > SIGHT_RECHECK_MOVE * SIGHT_RECHECK_MOVE \
+			or to.distance_squared_to(entry[3]) > SIGHT_RECHECK_MOVE * SIGHT_RECHECK_MOVE:
+		entry = [frame, MapSenses.walls_between(get_world_2d(), from, to), from, to]
+		_sight_cache[id] = entry
+	if entry[1]:
+		return true
+	return MapSenses.smoke_between(from, to)
+
+
 func update_senses(dt):
 	contacts.advance(dt)
 	knowledge.age(dt)
 
 	# Look for mechas and Entities in sight; a decoy looks like a mecha.
 	var own_sight_mult = MapSenses.sight_mult(self)
-	for target in arena.get_mechas() + _get_entities() + _get_decoys():
-		if target == self or not is_instance_valid(target):
+	var max_reach: float = engage_distance * 1.4 * own_sight_mult
+	var max_reach_sq := max_reach * max_reach
+	for target in _sense_candidates():
+		if target == self:
 			continue
-		if "is_dead" in target and target.is_dead:
-			continue
-		var distance = position.distance_to(target.position)
-		var thermal_range_mult = 1.0
-		if target.has_method("get_thermal_signature"):
-			# Cold targets detected at 60% range, hot targets at 140%
-			thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
-
-		# Foliage over the target, or over us, shortens the range; building
-		# walls and smoke block sight completely (see MapSenses). A target an
-		# illuminator lights is seen through walls (Illumination.seen_lit); with
-		# our own illuminator off, unlit ones are only seen at DARK_SIGHT_MULT
-		# of the range. Cheapest checks first: the foliage and sight checks
-		# only run for targets in range.
-		var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
-		if distance > effective_engage_distance \
-				or distance > effective_engage_distance * MapSenses.detection_mult(target):
-			continue
-		var lit := Illumination.seen_lit(self, target)
-		if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
-			continue
-		if lit or not MapSenses.sight_blocked(get_world_2d(), global_position, target.global_position):
-			knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
+		_look_at(target, max_reach_sq, own_sight_mult)
+	for decoy in _sense_decoys:
+		if decoy.owner_mecha != self:
+			_look_at(decoy, max_reach_sq, own_sight_mult)
 	knowledge.end_sight_update()
 	# Mines near, with the one roll to miss each; panic for the frame; the
 	# aim it allows.
@@ -945,6 +1000,40 @@ func update_senses(dt):
 		positioning.request()
 	knowledge.tick_panic(dt, under_fire_timer > 0.0, _hostiles_seen(), has_status("overheating"))
 	extra_bloom = knowledge.panic * PANIC_BLOOM
+
+
+# One body of the senses update: in range (the cheap squared-distance test
+# first), then foliage, light and walls, it is seen.
+func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
+	if not is_instance_valid(target):
+		return
+	# Nothing is seen past the hottest target's range: the cheap test first,
+	# before even the (string-keyed) is_dead look-up.
+	if position.distance_squared_to(target.position) > max_reach_sq:
+		return
+	if "is_dead" in target and target.is_dead:
+		return
+	var distance = position.distance_to(target.position)
+	var thermal_range_mult = 1.0
+	if target.has_method("get_thermal_signature"):
+		# Cold targets detected at 60% range, hot targets at 140%
+		thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
+
+	# Foliage over the target, or over us, shortens the range; building
+	# walls and smoke block sight completely (see MapSenses). A target an
+	# illuminator lights is seen through walls (Illumination.seen_lit); with
+	# our own illuminator off, unlit ones are only seen at DARK_SIGHT_MULT
+	# of the range. Cheapest checks first: the foliage and sight checks
+	# only run for targets in range.
+	var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
+	if distance > effective_engage_distance \
+			or distance > effective_engage_distance * MapSenses.detection_mult(target):
+		return
+	var lit := Illumination.seen_lit(self, target)
+	if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
+		return
+	if lit or not _sight_to_blocked(target):
+		knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
 
 
 # How many living mechas in sight this NPC holds a grudge against or was
@@ -1332,7 +1421,13 @@ func get_navigation_path():
 
 
 func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
-	#Forward when direction = 0, Backwards when direction = 1, 
+	var profile_start := FrameProfiler.start()
+	_navigate(dt, direction, wander, sprint)
+	FrameProfiler.add("  navigate (in behaviour)", profile_start)
+
+
+func _navigate(dt, direction: float, wander: float, sprint: bool) -> void:
+	#Forward when direction = 0, Backwards when direction = 1,
 	#Clockwise when direction = -0.5, Anticlockwise when direction = 0.5
 	if going_to_position:
 		var pos := global_position
@@ -1342,7 +1437,9 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		# the context map takes it round what is in the way. The navigation
 		# agent only paths on maps with no route grid.
 		var foe = _combat_target()
+		var route_start := FrameProfiler.start()
 		var target: Vector2 = _route_next(goal, dt)
+		FrameProfiler.add("    route (in navigate)", route_start)
 		var dir := (target - pos).normalized()
 		var heading := dir.rotated(PI * direction)
 		if foe and wander > 0.0:
@@ -1359,11 +1456,14 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		var interval := STEER_NEAR_INTERVAL if engaged or is_near_player() else STEER_FAR_INTERVAL
 		_update_car_burst(dt)
 		var frame := Engine.get_physics_frames()
+		var steer_start := FrameProfiler.start()
 		if _steer_hard.is_empty() or frame - _steer_built_frame >= interval:
 			_steer_built_frame = frame
 			_build_context()
+			FrameProfiler.add("  steer_build", steer_start)
 		_track_progress(dt, foe != null)
 		choose_direction(dt)
+		FrameProfiler.add("  steer (in behaviour)", steer_start)
 		_update_orbit(dt, foe)
 		var want_sprint := sprint or _car_burst_time > 0.0 or _cruise_sprint(goal, foe)
 		if want_sprint:
@@ -1373,14 +1473,20 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		# Tanks steer by world direction; other chassis move relative to the
 		# body, so they get the direction in the body's frame.
 		var move_dir: Vector2 = chosen_dir if movement_type == "tank" else chosen_dir.rotated(-global_rotation)
+		var move_start := FrameProfiler.start()
 		apply_movement(dt, move_dir)
+		FrameProfiler.add("    move (in navigate)", move_start)
+		var dash_start := FrameProfiler.start()
 		_update_dashes(dt, foe, direction)
+		FrameProfiler.add("    dashes (in navigate)", dash_start)
+		var rotate_start := FrameProfiler.start()
 		if ai_aim_point != null:
 			apply_rotation_by_point(dt, ai_aim_point, false)
 		elif valid_target and is_instance_valid(valid_target) and is_seeing(valid_target):
 			apply_rotation_by_point(dt, get_target_position(valid_target), false)
 		else:
 			apply_rotation_by_point(dt, target, false)
+		FrameProfiler.add("    rotate (in navigate)", rotate_start)
 
 
 func get_target_navigation_pos():
@@ -1410,31 +1516,71 @@ func _on_NavigationAgent2D_navigation_finished():
 func _on_NavigationAgent2D_target_reached():
 	going_to_position = false
 
-#-------- Thinking LOD
+#-------- Physics and thinking LOD
 
-# NPCs more than THINK_FULL_DISTANCE from the player update their senses and
-# run their behaviour every FAR_THINK_INTERVAL physics frames, with the time
-# since their last think as dt. In between they keep moving with their last
-# velocity, so motion stays smooth; aiming, decisions and shooting wait for
-# the next think. Near the player (on screen and round it) every frame thinks.
+# By its distance to the player an NPC runs at one of three rates:
+#   near (within THINK_FULL_DISTANCE): steps and thinks every frame
+#   far: steps every FAR_STEP_INTERVAL frames, thinks every FAR_THINK_STEPS
+#        of those steps (every FAR_THINK_INTERVAL frames)
+#   very far (beyond VERY_FAR_DISTANCE): VERY_FAR_STEP_INTERVAL and
+#        VERY_FAR_THINK_STEPS the same way
+# A step is the whole physics callback, the Mecha base included (heat,
+# statuses, collisions, the move); the time of the frames skipped is folded
+# into its dt and its moves cover their distance (Mecha._step_scale), so
+# motion stays smooth. Between thinks the NPC coasts with its last velocity;
+# aiming, decisions and shooting wait for the next think. With no player on
+# the map (tests, benches) every NPC is near. Placeholders.
 const THINK_FULL_DISTANCE := 4000.0
-const FAR_THINK_INTERVAL := 3
-var _think_offset := randi() % FAR_THINK_INTERVAL
+const VERY_FAR_DISTANCE := 8000.0
+const FAR_STEP_INTERVAL := 2
+const FAR_THINK_STEPS := 2
+const VERY_FAR_STEP_INTERVAL := 3
+const VERY_FAR_THINK_STEPS := 2
+## Frames between a far NPC's thinks.
+const FAR_THINK_INTERVAL := FAR_STEP_INTERVAL * FAR_THINK_STEPS
+# Spreads the NPCs' step and think frames so they don't all land together.
+var _think_offset := randi() % (FAR_STEP_INTERVAL * VERY_FAR_STEP_INTERVAL * 2)
 var _think_dt := 0.0
+var _step_dt := 0.0
 var _coast_velocity := Vector2.ZERO
 
 
 func is_near_player() -> bool:
+	return lod_tier() == 0
+
+
+## 0 near, 1 far, 2 very far (see above).
+func lod_tier() -> int:
 	if arena == null or not ("player" in arena):
-		return false
+		return 0
 	var p = arena.player
-	return p != null and is_instance_valid(p) \
-		and global_position.distance_to(p.global_position) < THINK_FULL_DISTANCE
+	if p == null or not is_instance_valid(p):
+		return 0
+	var d := global_position.distance_squared_to(p.global_position)
+	if d < THINK_FULL_DISTANCE * THINK_FULL_DISTANCE:
+		return 0
+	return 1 if d < VERY_FAR_DISTANCE * VERY_FAR_DISTANCE else 2
 
 
+## Frames between this NPC's physics steps, by its tier.
+func step_interval() -> int:
+	var tier := lod_tier()
+	if tier == 1:
+		return FAR_STEP_INTERVAL
+	if tier == 2:
+		return VERY_FAR_STEP_INTERVAL
+	return 1
+
+
+# Asked on step frames only: a far NPC thinks on every Nth of its steps.
 func is_thinking_frame() -> bool:
-	return think_interval(is_near_player()) == 1 \
-		or (Engine.get_physics_frames() + _think_offset) % FAR_THINK_INTERVAL == 0
+	var tier := lod_tier()
+	if tier == 0:
+		return true
+	var interval := FAR_STEP_INTERVAL if tier == 1 else VERY_FAR_STEP_INTERVAL
+	var steps := FAR_THINK_STEPS if tier == 1 else VERY_FAR_THINK_STEPS
+	var step_index := floori(float(Engine.get_physics_frames() + _think_offset) / interval)
+	return step_index % steps == 0
 
 
 static func think_interval(near_player: bool) -> int:
@@ -1445,9 +1591,25 @@ static func think_interval(near_player: bool) -> int:
 func is_on_screen() -> bool:
 	if not is_inside_tree():
 		return false
-	var vp := get_viewport()
-	var view := vp.get_canvas_transform().affine_inverse() * vp.get_visible_rect()
-	return view.grow(ON_SCREEN_MARGIN).has_point(global_position)
+	return _screen_rect().has_point(global_position)
+
+
+# The screen's rectangle in world space, with the margin (MapSenses works
+# it out once per physics frame for everything that asks).
+func _screen_rect() -> Rect2:
+	return MapSenses.screen_rect(self, ON_SCREEN_MARGIN)
+
+
+## An NPC off screen refreshes its looks every VISUALS_FAR_INTERVAL frames
+## (particles, glows, cooldown visuals: Mecha._physics_step), on screen every
+## frame.
+const VISUALS_FAR_INTERVAL := 10
+
+
+func wants_visuals() -> bool:
+	if is_on_screen():
+		return true
+	return (Engine.get_physics_frames() + _think_offset) % VISUALS_FAR_INTERVAL == 0
 
 
 #-------- Context Steering

@@ -107,6 +107,14 @@ func due(enemy, foe_position: Vector2) -> bool:
 ## Returns the point (the NPC's own position when nothing beats it).
 func choose(enemy, foe_position: Vector2, wanted_range: float, weights: Dictionary,
 		goal := Vector2.INF, watch := Vector2.INF, foe_facing := Vector2.ZERO, anchor := Vector2.INF) -> Vector2:
+	var profile_start := FrameProfiler.start()
+	var picked := _choose(enemy, foe_position, wanted_range, weights, goal, watch, foe_facing, anchor)
+	FrameProfiler.add("  pick (in behaviour)", profile_start)
+	return picked
+
+
+func _choose(enemy, foe_position: Vector2, wanted_range: float, weights: Dictionary,
+		goal: Vector2, watch: Vector2, foe_facing: Vector2, anchor: Vector2) -> Vector2:
 	_timer = REPICK_TIME + randf_range(-REPICK_JITTER, REPICK_JITTER)
 	_dirty = false
 	_picked_for = foe_position

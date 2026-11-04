@@ -125,6 +125,12 @@ func _ready() -> void:
 func _physics_process(dt: float) -> void:
 	if _gone:
 		return
+	var profile_start := FrameProfiler.start()
+	_physics_step(dt)
+	FrameProfiler.add("devices", profile_start)
+
+
+func _physics_step(dt: float) -> void:
 	if follows_owner:
 		if not is_instance_valid(owner_mecha) or owner_mecha.get("is_dead") == true:
 			expire()

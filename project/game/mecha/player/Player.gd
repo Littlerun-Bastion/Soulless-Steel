@@ -108,13 +108,14 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
-	
+
 	super(dt)
-	
-	
+
+
 	if is_stunned():
 		return
-	
+
+	var profile_start := FrameProfiler.start()
 	if controls_locked:
 		apply_movement(dt, scripted_move)
 	else:
@@ -122,6 +123,7 @@ func _physics_process(dt):
 		apply_movement(dt, get_input())
 	_update_designators(dt)
 	_update_view(dt)
+	FrameProfiler.add("player", profile_start)
 
 	#Update sprinting timer
 	if sprinting_timer > 0.0:
@@ -875,7 +877,7 @@ func can_see_body(body: Node2D) -> bool:
 		return true
 	if dist > VIEW_PERIPHERAL and not in_view_cone(to):
 		return false
-	if MapSenses.building_key_at(self, global_position) != MapSenses.building_key_at(self, to):
+	if MapSenses.building_key_of(self) != MapSenses.building_key_of(body):
 		return false
 	return not MapSenses.sight_blocked(get_world_2d(), global_position, to)
 
@@ -937,7 +939,10 @@ func _update_view(dt: float) -> void:
 	for body in _view_bodies:
 		if is_instance_valid(body) and body.get("is_dead") != true:
 			var target := 0.0 if _view_hidden.has(body) else 1.0
-			body.modulate.a = move_toward(body.modulate.a, target, VIEW_FADE_SPEED * dt)
+			# Only a body still fading is written: a modulate set marks the
+			# item for redraw, and most bodies sit at their target.
+			if body.modulate.a != target:
+				body.modulate.a = move_toward(body.modulate.a, target, VIEW_FADE_SPEED * dt)
 
 
 # A body the view shows is a sight contact, unless it is past VIEW_RANGE

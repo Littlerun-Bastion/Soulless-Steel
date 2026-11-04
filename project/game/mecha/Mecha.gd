@@ -171,6 +171,7 @@ const SPEECH_TIME := 3.0
 @onready var RightChassisSub = $Chassis/Right/Sub
 @onready var RightChassisGlow = $Chassis/Right/Glow
 @onready var ChassisSprintGlow = $Chassis/SprintGlow
+@onready var FireGlow = $FireGlow
 
 @onready var mech_inventory: Inventory
 var target_inventory: Inventory = null
@@ -526,7 +527,13 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
+	var profile_start := FrameProfiler.start()
+	_physics_step(dt)
+	FrameProfiler.add("mecha", profile_start)
 
+
+# The body of _physics_process (one return point for the profiler).
+func _physics_step(dt):
 	if contacts_auto_advance:
 		contacts.advance(dt)
 	flag_grace = maxf(flag_grace - dt, 0.0)
@@ -538,12 +545,16 @@ func _physics_process(dt):
 			_finish_lowering()
 	sweep_cooldown = maxf(sweep_cooldown - dt, 0.0)
 	internal_cooldown = maxf(internal_cooldown - dt, 0.0)
+	var sounds_start := FrameProfiler.start()
 	_update_biosensor(dt)
 	generate_passive_sounds(dt)
+	FrameProfiler.add("    sounds (in mecha)", sounds_start)
 
 	# Mines round this mecha react to it (mine.gd): a grid lookup, no physics.
 	if not is_dead:
+		var mines_start := FrameProfiler.start()
 		MINE.check_mecha(self)
+		FrameProfiler.add("    mines (in mecha)", mines_start)
 
 	if is_stunned():
 		return
@@ -652,11 +663,8 @@ func _physics_process(dt):
 
 	#Handle collisions with other mechas and movement
 	if not is_stunned() and not is_movement_locked():
-		var all_collisions = []
 		for i in get_slide_collision_count():
-			all_collisions.append(get_slide_collision(i))
-
-		for collision in all_collisions:
+			var collision := get_slide_collision(i)
 			var other = collision.get_collider() if collision else null
 			if other and other.is_in_group("mecha"):
 				lock_movement(0.1)
@@ -668,9 +676,10 @@ func _physics_process(dt):
 			apply_movement(dt, Vector2())
 
 	#Update shoulder weapons rotation
-	for data in [[build.shoulder_weapon_left, LeftShoulderWeapon], [build.shoulder_weapon_right, RightShoulderWeapon]]:
-		if data[0]:
-			data[1].rotation_degrees += get_best_rotation_diff(data[1].rotation_degrees, 0)*data[0].rotation_acc*dt
+	if build.shoulder_weapon_left:
+		LeftShoulderWeapon.rotation_degrees += get_best_rotation_diff(LeftShoulderWeapon.rotation_degrees, 0) * build.shoulder_weapon_left.rotation_acc * dt
+	if build.shoulder_weapon_right:
+		RightShoulderWeapon.rotation_degrees += get_best_rotation_diff(RightShoulderWeapon.rotation_degrees, 0) * build.shoulder_weapon_right.rotation_acc * dt
 
 	#Handle dash movement
 	if not is_stunned() and dash_velocity.length() > 0:
@@ -689,6 +698,7 @@ func _physics_process(dt):
 			dash_velocity = Vector2()
 
 	#Walking animation
+	var anim_start := FrameProfiler.start()
 	if build.chassis and build.chassis.is_legs:
 		if moving and not MovementAnimation.is_playing() and\
 		not is_sprinting and dash_velocity.length() <= 0.0:
@@ -698,7 +708,8 @@ func _physics_process(dt):
 			MovementAnimation.stop()
 		if not MovementAnimation.is_playing():
 			speed_modifier = min(speed_modifier + SPEED_MOD_CORRECTION*dt, 1.0)
-			
+	FrameProfiler.add("    anim (in mecha)", anim_start)
+
 	# --- Movement Heat ---
 	if build.thruster and moving and not is_dead:
 		if is_sprinting and not has_status("freezing"):
@@ -712,39 +723,54 @@ func _physics_process(dt):
 		apply_rotation_by_point(dt, target_pos, false)
 
 	#Status Effects
+	var heat_start := FrameProfiler.start()
 	update_heat(dt)
+	FrameProfiler.add("    heat (in mecha)", heat_start)
 	if battery < battery_capacity and not has_status("electrified"):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
-	for status in status_time.keys():
+	for status in status_time:
 		if status == "overheating":
 			continue  # Managed by thermal system, not timer
 		decrease_status(status, dt)
-	for status in ["fire", "electrified", "freezing", "corrosion", "overheating"]:
-		for node in Particle[status]:
-			node.emitting =  has_status(status)
+	# The looks of it (particles, glows), skipped on frames a mecha off
+	# screen doesn't need them (wants_visuals); the state they show is kept
+	# in the fields above, so they catch up when it is next drawn.
+	var visuals: bool = wants_visuals()
+	if visuals:
+		for status in STATUS_PARTICLES:
+			var on: bool = has_status(status)
+			for node in Particle[status]:
+				if node.emitting != on:
+					node.emitting = on
 	if has_status("fire"):
-		$FireGlow.energy = min($FireGlow.energy + dt*2, 3)
-	else:
-		$FireGlow.energy = max($FireGlow.energy - dt*2, 0)
+		FireGlow.energy = min(FireGlow.energy + dt*2, 3)
+	elif FireGlow.energy > 0.0:
+		FireGlow.energy = max(FireGlow.energy - dt*2, 0)
 	# Off while not burning: Godot lights each canvas item with at most 16
 	# lights, and a glow at zero energy would still take one.
-	$FireGlow.enabled = $FireGlow.energy > 0.0
+	var glowing: bool = FireGlow.energy > 0.0
+	if FireGlow.enabled != glowing:
+		FireGlow.enabled = glowing
 
 
 	#Thrusters cooldowns
-	for dir in ["fwd", "rwd", "left", "right"]:
+	for dir in DASH_DIRS:
 		var is_ready = dash_cooldown[dir] <= 0
 		dash_cooldown[dir] = max(dash_cooldown[dir] - dt, 0.0)
-		Particle.dash[dir].cooldown.emitting = dash_cooldown[dir] > 0
+		if visuals:
+			var cooling: bool = dash_cooldown[dir] > 0
+			if Particle.dash[dir].cooldown.emitting != cooling:
+				Particle.dash[dir].cooldown.emitting = cooling
 		if dash_cooldown[dir] <= 0 and not is_ready:
 			Particle.dash[dir].ready.emitting = true
-	update_dash_cooldown_visuals()
+	if visuals:
+		update_dash_cooldown_visuals()
 
 	take_status_damage(dt)
-	
+
 	process_hitboxes(dt)
-	
-	if build.chassis and build.chassis.hover_particles and not display_mode:
+
+	if visuals and build.chassis and build.chassis.hover_particles and not display_mode:
 		Particle.chassis_hover[0].speed_scale = max(0.2,velocity.length()/100)
 		Particle.chassis_hover[0].modulate = Color(1.0, 1.0, 1.0,max(0.05,velocity.length()/1000))
 	
@@ -759,6 +785,19 @@ func _physics_process(dt):
 
 func is_player():
 	return mecha_name == "Player"
+
+
+## The statuses with particle effects, and the dash directions, as constants
+## so the frame loop allocates no lists.
+const STATUS_PARTICLES := ["fire", "electrified", "freezing", "corrosion", "overheating"]
+const DASH_DIRS := ["fwd", "rwd", "left", "right"]
+
+
+## Whether this frame's looks (particles, glows, cooldown visuals) are worth
+## updating: always for a mecha that may be on screen. An NPC off screen
+## updates them now and then (Enemy.wants_visuals).
+func wants_visuals() -> bool:
+	return true
 
 
 func set_pause(value):
@@ -922,8 +961,12 @@ func do_hitstop():
 		)
 
 
+# The status checks run many times a frame per mecha; the assert's message
+# is only built once a name is wrong (an assert's arguments are evaluated
+# every call in a debug build).
 func has_status(status_name):
-	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
+	if not status_time.has(status_name):
+		assert(false, "Not a valid status name: " + str(status_name))
 	return status_time[status_name] > 0.0
 
 
@@ -935,12 +978,14 @@ func has_any_status():
 
 
 func set_status(status_name, amount):
-	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
+	if not status_time.has(status_name):
+		assert(false, "Not a valid status name: " + str(status_name))
 	status_time[status_name] = amount
 
 
 func decrease_status(status_name, amount):
-	assert(status_time.has(status_name),"Not a valid status name: " + str(status_name))
+	if not status_time.has(status_name):
+		assert(false, "Not a valid status name: " + str(status_name))
 	status_time[status_name] = max(status_time[status_name] - amount, 0.0)
 
 
@@ -1166,26 +1211,44 @@ func update_heat(dt):
 			set_status("overheating", 0.0)
 	
 	# --- Weapon Heat ---
-	# Pass external_temp as the visual glow reference for now
-	for weapon in [LeftArmWeapon, RightArmWeapon, LeftShoulderWeapon, RightShoulderWeapon]:
-		weapon.update_heat(get_effective_cooling(), external_temp, dt)
-	
+	# Pass external_temp as the visual glow reference for now. The weapons'
+	# heat tint is only written on frames the mecha is drawn (wants_visuals).
+	var visuals: bool = wants_visuals()
+	var cooling: float = get_effective_cooling()
+	LeftArmWeapon.update_heat(cooling, external_temp, dt, visuals)
+	RightArmWeapon.update_heat(cooling, external_temp, dt, visuals)
+	LeftShoulderWeapon.update_heat(cooling, external_temp, dt, visuals)
+	RightShoulderWeapon.update_heat(cooling, external_temp, dt, visuals)
+
 	# --- Shader Visuals ---
 	# Bridge to old shader system: map external_temp to the range shaders expect
 	# Old system used 0-300 range. Scale external_temp so ambient=0, hot combat~150-200
 	var target_visible = external_temp * 2.0  # Tuning scalar — adjust to taste
 	if has_status("overheating"):
 		target_visible = 300
-	
+
 	# Smooth transition (keeps the old visual feel)
 	if target_visible > shader_heat_value:
 		shader_heat_value = min(shader_heat_value + 200 * dt, target_visible)
 	else:
 		shader_heat_value = max(shader_heat_value - 100 * dt, target_visible)
-	for node in [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
-				SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
-				RightChassis, RightChassisSub, RightChassisGlow]:
-		node.material.set_shader_parameter("heat", shader_heat_value)
+	# The heat tint of the body sprites: 18 shader parameter writes, so only
+	# when the value changed, and only on frames the mecha is drawn. A mecha
+	# coming back on screen catches up on its first drawn frame.
+	if visuals and shader_heat_value != _shader_heat_shown:
+		_shader_heat_shown = shader_heat_value
+		if _heat_nodes.is_empty():
+			_heat_nodes = [Core, CoreSub, CoreGlow, Head, HeadSub, HeadGlow, HeadPort, LeftShoulder, RightShoulder,\
+					SingleChassis, SingleChassisSub, SingleChassisGlow, LeftChassis, LeftChassisSub, LeftChassisGlow,\
+					RightChassis, RightChassisSub, RightChassisGlow]
+		for node in _heat_nodes:
+			node.material.set_shader_parameter("heat", shader_heat_value)
+
+
+# The heat value last written to the body sprites' shaders, and those sprites
+# (gathered on first use; see update_heat).
+var _shader_heat_shown := -1.0
+var _heat_nodes: Array = []
 
 # Returns a 0-1 normalized thermal signature for detection systems
 # 0.0 = at ambient (invisible), 1.0 = extremely hot
@@ -1490,6 +1553,7 @@ func _note_attack(source_info) -> void:
 #PARTS SETTERS
 
 func set_arm_weapon(part_name, side):
+	_stats_changed()
 	if part_name and not build.core:
 		push_error("Mecha doesn't have a core to assign arm weapon")
 		return
@@ -1525,6 +1589,7 @@ func set_arm_weapon(part_name, side):
 
 
 func set_shoulder_weapon(part_name, side):
+	_stats_changed()
 	if part_name and not build.core:
 		push_error("Mecha doesn't have a core to assign shoulder weapon")
 		return
@@ -1566,6 +1631,7 @@ func set_weapon_sfx_nodes(sfx_node, part_data):
 
 
 func set_core(part_name):
+	_stats_changed()
 	# CHANGED: handle null/false instead of falling back to "Null"
 	if not part_name:
 		build.core = null
@@ -1576,7 +1642,7 @@ func set_core(part_name):
 		return
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
-	$CoreCollision.polygon = part_data.get_collision()
+	$CoreCollision.polygon = collision_shape_of(part_data.get_collision())
 	build.core = part_data
 	if build.core.get_head_port() != null:
 		$HeadPort.texture = build.core.get_head_port()
@@ -1668,6 +1734,7 @@ func set_core(part_name):
 		overheat_temp = 110.0
 
 func set_generator(part_name):
+	_stats_changed()
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
 		build.generator = part_data
@@ -1692,6 +1759,7 @@ func set_generator(part_name):
 
 
 func set_chipset(part_name):
+	_stats_changed()
 	if part_name:
 		var part_data = PartManager.get_part("chipset", part_name)
 		build.chipset = part_data
@@ -1706,6 +1774,7 @@ func set_chipset(part_name):
 
 
 func set_thruster(part_name):
+	_stats_changed()
 	if part_name:
 		var part_data = PartManager.get_part("thruster", part_name)
 		build.thruster = part_data
@@ -1716,6 +1785,7 @@ func set_thruster(part_name):
 ## The internal bay part (see INTERNAL BAY). Fitting one gives a full load
 ## of charges; a passive part starts switched on.
 func set_internal(part_name):
+	_stats_changed()
 	if part_name:
 		build.internal = PartManager.get_part("internal", part_name)
 		internal_charges = build.internal.charges
@@ -1730,6 +1800,7 @@ func set_internal(part_name):
 
 
 func set_chassis(part_name):
+	_stats_changed()
 	if part_name == null or not (part_name is String or part_name is StringName):
 		remove_chassis("single")
 		remove_chassis("pair")
@@ -1809,7 +1880,7 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	main.texture = chassis.get_image(side)
 	sub.texture = chassis.get_sub(side)
 	glow.texture = chassis.get_glow(side)
-	collision.polygon = chassis.get_collision(side)
+	collision.polygon = collision_shape_of(chassis.get_collision(side))
 	movement_type = chassis.movement_type
 	var walk_speed: float = chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
 	update_speed(walk_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
@@ -1834,6 +1905,7 @@ func remove_chassis(type):
 
 
 func set_head(part_name):
+	_stats_changed()
 	if part_name:
 		var part_data = PartManager.get_part("head", part_name)
 		Head.texture = part_data.get_image()
@@ -1863,6 +1935,7 @@ func set_head(part_name):
 
 
 func set_shoulders(part_name):
+	_stats_changed()
 	if part_name:
 		var part_data = PartManager.get_part("shoulders", part_name)
 		build.shoulders = part_data
@@ -1893,8 +1966,8 @@ func set_shoulders(part_name):
 			push_error("No core for putting on shoulders.")
 		$LeftShoulder.texture = part_data.get_image(SIDE.LEFT)
 		$RightShoulder.texture = part_data.get_image(SIDE.RIGHT)
-		$LeftShoulderCollision.polygon = part_data.get_collision(SIDE.LEFT)
-		$RightShoulderCollision.polygon = part_data.get_collision(SIDE.RIGHT)
+		$LeftShoulderCollision.polygon = collision_shape_of(part_data.get_collision(SIDE.LEFT))
+		$RightShoulderCollision.polygon = collision_shape_of(part_data.get_collision(SIDE.RIGHT))
 	else:
 		build.shoulders = null
 		$LeftShoulder.texture = null
@@ -1944,7 +2017,36 @@ func get_cargo_space():
 			total_cargo_space[1] += _cg[1]
 	return total_cargo_space
 
+# The stat sums, cached for the physics frame: movement reads several of
+# them a frame (thrust_max_speed, and the overweight check's weight and
+# weight_capacity, which the speed stats read again), each a walk of every
+# part. The cache is dropped when a part is fitted (_stats_changed), so a
+# read in the same frame as the swap is right. A display mecha (the garage,
+# the store) is never cached: its parts and grades change while the UI reads.
+var _stat_cache := {}
+var _stat_cache_frame := -1
+
+
+## Called by every part setter: the next get_stat sums afresh.
+func _stats_changed() -> void:
+	_stat_cache_frame = -1
+
+
 func get_stat(stat_name):
+	if display_mode:
+		return _sum_stat(stat_name)
+	var frame := Engine.get_physics_frames()
+	if frame != _stat_cache_frame:
+		_stat_cache_frame = frame
+		_stat_cache.clear()
+	elif _stat_cache.has(stat_name):
+		return _stat_cache[stat_name]
+	var total: float = _sum_stat(stat_name)
+	_stat_cache[stat_name] = total
+	return total
+
+
+func _sum_stat(stat_name) -> float:
 	var total_stat = 0.0
 	for slot in build:
 		var part = build[slot]
@@ -1956,7 +2058,7 @@ func get_stat(stat_name):
 		if weight_capacity > 0.0:
 			total_stat /= (total_weight / weight_capacity) * OVERWEIGHT_SPEED_MOD
 			total_stat = round(total_stat)
-		
+
 	if stat_name == "thrust_max_speed":
 		total_stat += get_stat("max_speed")
 	return float(total_stat)
@@ -1968,9 +2070,21 @@ func get_inventory_weight() -> float:
 
 
 func get_total_weight() -> float:
-	# Parts weight (from build) + cargo weight (inventory)
+	# Parts weight (from build) + cargo weight (inventory). The cargo weight
+	# is a walk of the whole inventory grid, so it is read once a physics
+	# frame (the stat cache; a pick-up shows the next frame).
 	var parts_weight = get_stat("weight")
-	return parts_weight + get_inventory_weight()
+	if display_mode:
+		return parts_weight + get_inventory_weight()
+	var cargo = _stat_cache.get(CARGO_WEIGHT_KEY)
+	if cargo == null:
+		cargo = get_inventory_weight()
+		_stat_cache[CARGO_WEIGHT_KEY] = cargo
+	return parts_weight + cargo
+
+
+## The stat cache's key for the cargo weight (no part has a stat so named).
+const CARGO_WEIGHT_KEY := "__cargo_weight"
 
 
 
@@ -2084,10 +2198,19 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 # Moves by `vec` this frame. The NavigationAgent2D gets no velocity: its
 # avoidance is off (NPCs keep apart through their context steering, see
 # Enemy._add_mechas), so there is nothing for it to compute.
+# Frames of motion one move() covers: 1, or the step interval of an NPC
+# running at a lower physics rate (Enemy.step_interval), which moves the
+# distance of the frames it skipped. The velocity is scaled for the move and
+# restored after, so the speed the next frame starts from is unchanged.
+var _step_scale := 1.0
+
+
 func move(vec):
 	_update_car_collision()
-	set_velocity(vec)
+	set_velocity(vec * _step_scale)
 	move_and_slide()
+	if _step_scale != 1.0:
+		velocity /= _step_scale
 	VehicleField.push_from(self, vec)
 
 
@@ -2310,35 +2433,45 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, rot_acc)
 
 	
-	#Rotate Head and Shoulders
-	for data in [[$Head, build.head], [$LeftShoulder, build.shoulders], [$RightShoulder, build.shoulders]]:
-		var node_ref = data[1]
-		if node_ref:
-			var node = data[0]
-			var actual_rot = node.rotation_degrees + rotation_degrees
-			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
-			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
+	# Head, shoulders, arm weapons and chassis halves each turn towards the
+	# point at their part's rate, within its range. Each is written once (a
+	# node's rotation set is a transform update) and no lists are built: this
+	# runs every frame for every mecha with a target.
+	if build.head:
+		_turn_part_to(Head, build.head.rotation_acc, build.head.rotation_range, target_pos, dt)
+	if build.shoulders:
+		_turn_part_to(LeftShoulder, build.shoulders.rotation_acc, build.shoulders.rotation_range, target_pos, dt)
+		_turn_part_to(RightShoulder, build.shoulders.rotation_acc, build.shoulders.rotation_range, target_pos, dt)
 
 	#Rotate Non-Melee Arm Weapons
-	for data in [[$ArmWeaponLeft, build.arm_weapon_left], [$ArmWeaponRight, build.arm_weapon_right]]:
-		var node_ref = data[1]
-		if node_ref and not node_ref.is_melee:
-			var node = data[0]
-			var actual_rot = node.rotation_degrees + rotation_degrees
-			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.rotation_acc)
-			if node == $ArmWeaponLeft:
-				node.rotation_degrees += node_ref.parallax_offset
-			else:
-				node.rotation_degrees -= node_ref.parallax_offset
-			node.rotation_degrees = clamp(node.rotation_degrees, -build.core.rotation_range, build.core.rotation_range)
+	if build.arm_weapon_left and not build.arm_weapon_left.is_melee:
+		_turn_weapon_to(LeftArmWeapon, build.arm_weapon_left, 1.0, target_pos, dt)
+	if build.arm_weapon_right and not build.arm_weapon_right.is_melee:
+		_turn_weapon_to(RightArmWeapon, build.arm_weapon_right, -1.0, target_pos, dt)
 
-	for data in	[[$Chassis/Left, build.chassis], [$Chassis/Right, build.chassis]]:
-		var node_ref = data[1]
-		if node_ref:
-			var node = data[0]
-			var actual_rot = node.rotation_degrees + rotation_degrees
-			node.rotation_degrees += get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, node_ref.trim_acc)
-			node.rotation_degrees = clamp(node.rotation_degrees, -node_ref.rotation_range, node_ref.rotation_range)
+	if build.chassis:
+		_turn_part_to(LeftChassisRoot, build.chassis.trim_acc, build.chassis.rotation_range, target_pos, dt)
+		_turn_part_to(RightChassisRoot, build.chassis.trim_acc, build.chassis.rotation_range, target_pos, dt)
+
+
+# Turns `node` (a part of this mecha) towards `target_pos` at `acc`, clamped
+# to ±`range` degrees from the body.
+func _turn_part_to(node: Node2D, acc: float, range_degrees: float, target_pos: Vector2, dt: float) -> void:
+	var actual_rot = node.rotation_degrees + rotation_degrees
+	node.rotation_degrees = clamp(node.rotation_degrees \
+			+ get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, acc), \
+			-range_degrees, range_degrees)
+
+
+# An arm weapon turns like a part, plus its parallax offset (to the left
+# for the left arm, `parallax_sign` 1; to the right for the right arm, -1),
+# within the core's range.
+func _turn_weapon_to(node: Node2D, part, parallax_sign: float, target_pos: Vector2, dt: float) -> void:
+	var actual_rot = node.rotation_degrees + rotation_degrees
+	node.rotation_degrees = clamp(node.rotation_degrees \
+			+ get_rotation_diff_by_point(dt, node.global_position, target_pos, actual_rot, part.rotation_acc) \
+			+ part.parallax_offset * parallax_sign, \
+			-build.core.rotation_range, build.core.rotation_range)
 
 #Return the proper direction diff to rotate given a current and target rotation
 func get_best_rotation_diff(cur_rot, target_rot):
@@ -2386,12 +2519,17 @@ func update_chassis_visuals(dt):
 			left_target_angle = 0
 			right_target_angle = 0
 
+		# Written only when the angle moves: a rotation set is a transform
+		# update for the leg and everything under it, and a standing mecha's
+		# legs sit at their angle.
 		for child in LeftChassisRoot.get_children():
-			child.rotation_degrees = lerp(float(child.rotation), float(left_target_angle),\
-										dt*CHASSIS_SPEED)
+			var angle: float = lerp(float(child.rotation), float(left_target_angle), dt*CHASSIS_SPEED)
+			if angle != child.rotation_degrees:
+				child.rotation_degrees = angle
 		for child in RightChassisRoot.get_children():
-			child.rotation_degrees = lerp(float(child.rotation), float(right_target_angle),\
-										dt*CHASSIS_SPEED)
+			var angle: float = lerp(float(child.rotation), float(right_target_angle), dt*CHASSIS_SPEED)
+			if angle != child.rotation_degrees:
+				child.rotation_degrees = angle
 
 func stop_sprinting(sprint_dir):
 	if is_sprinting and sprint_dir != Vector2(0,0):
@@ -2853,22 +2991,28 @@ func get_stability():
 		sum *= 0.5
 	return max((1.5 - sum), 0)
 
+# The two timers, looked up once: these checks run several times a frame
+# for every mecha.
+@onready var StunTimer: Timer = $StunTimer
+@onready var LockMovementTimer: Timer = $LockMovementTimer
+
+
 func is_stunned():
-	return not $StunTimer.is_stopped()
+	return not StunTimer.is_stopped()
 
 
 func is_movement_locked():
-	return not $LockMovementTimer.is_stopped()
+	return not LockMovementTimer.is_stopped()
 
 
 func stun(time):
-	$StunTimer.wait_time += time * get_stability()
-	$StunTimer.start()
+	StunTimer.wait_time += time * get_stability()
+	StunTimer.start()
 
 
 func lock_movement(time):
-	$LockMovementTimer.wait_time = time
-	$LockMovementTimer.start()
+	LockMovementTimer.wait_time = time
+	LockMovementTimer.start()
 
 
 #LOCK ON METHODS
@@ -3247,6 +3391,27 @@ func get_global_facing_from_angle(impact_position: Vector2) -> String:
 	else:
 		return "side"	
 	
+## With SIMPLE_COLLISION on, a part collides as the rectangle round its
+## outline (one convex shape of four points) instead of the outline itself,
+## which the physics engine cuts into several convex pieces. Measured with
+## FrameCostProbe's walkers case: half the collision pairs, no change in
+## the frame time within the noise, so it is off; the switch stays for a
+## map or a count of mechas where it might pay. On, hits still land on the
+## right part (each keeps its own shape); a round can land a little outside
+## the drawn outline, in the rectangle's corners.
+const SIMPLE_COLLISION := false
+
+
+static func collision_shape_of(outline) -> PackedVector2Array:
+	var poly := PackedVector2Array(outline) if outline != null else PackedVector2Array()
+	if not SIMPLE_COLLISION or poly.size() < 3:
+		return poly
+	var rect := Rect2(poly[0], Vector2.ZERO)
+	for p in poly:
+		rect = rect.expand(p)
+	return PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)])
+
+
 func get_collision_shape_for_part(part_name: String) -> CollisionPolygon2D:
 	match part_name:
 		"core":

@@ -119,6 +119,7 @@ func _ready() -> void:
 
 
 func _physics_process(dt: float) -> void:
+	var profile_start := FrameProfiler.start()
 	now += dt
 	for mecha in get_tree().get_nodes_in_group("mecha"):
 		if mecha is Node2D and mecha.get("is_dead") != true:
@@ -127,6 +128,7 @@ func _physics_process(dt: float) -> void:
 	if _refresh <= 0.0:
 		_refresh = REFRESH_TIME
 		_redraw()
+	FrameProfiler.add("heat_trails", profile_start)
 
 
 ## The marks within `radius` of `point` still warm: {"position", "age" (s),

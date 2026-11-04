@@ -545,6 +545,12 @@ func static_body_count() -> int:
 func _physics_process(delta: float) -> void:
 	if not _built:
 		return
+	var profile_start := FrameProfiler.start()
+	_physics_step(delta)
+	FrameProfiler.add("vehicles", profile_start)
+
+
+func _physics_step(delta: float) -> void:
 	var mechas := get_tree().get_nodes_in_group("mecha")
 	if stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0:
 		_update_streaming(mechas)

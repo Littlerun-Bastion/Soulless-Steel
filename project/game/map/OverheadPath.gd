@@ -69,19 +69,34 @@ func _process(delta: float) -> void:
 		_rebuild()
 	if Engine.is_editor_hint():
 		return
+	var profile_start := FrameProfiler.start()
 	var player = _find_player()
 	var at := to_local(player.global_position) if player else Vector2.INF
 	for s in _sections:
 		var under: bool = player != null and s.rect.has_point(at) and Geometry2D.is_point_in_polygon(at, s.hull)
 		var node: Node2D = s.node
 		node.modulate.a = move_toward(node.modulate.a, ghost_alpha if under else 1.0, FADE_SPEED * delta)
+	FrameProfiler.add("overhead_paths", profile_start)
+
+
+# The player, looked up again every PLAYER_LOOKUP_TIME s (a group walk a
+# frame is a waste for one node that rarely changes).
+const PLAYER_LOOKUP_TIME := 1.0
+var _player = null
+var _player_lookup := 0.0
 
 
 func _find_player():
+	_player_lookup -= get_process_delta_time()
+	if _player_lookup > 0.0 and is_instance_valid(_player):
+		return _player
+	_player_lookup = PLAYER_LOOKUP_TIME
+	_player = null
 	for m in get_tree().get_nodes_in_group("mecha"):
 		if m.has_method("is_player") and m.is_player():
-			return m
-	return null
+			_player = m
+			break
+	return _player
 
 
 func _rebuild() -> void:

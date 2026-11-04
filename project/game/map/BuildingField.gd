@@ -210,6 +210,12 @@ func _build_walls() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var profile_start := FrameProfiler.start()
+	_physics_step(delta)
+	FrameProfiler.add("buildings", profile_start)
+
+
+func _physics_step(delta: float) -> void:
 	if _route_task >= 0 and WorkerThreadPool.is_task_completed(_route_task):
 		_finish_route_build()
 	var reveal_at = null
@@ -509,12 +515,60 @@ func walls_crossed(a: Vector2, b: Vector2) -> int:
 		return 0
 	var mid := (a + b) * 0.5
 	var walls := 0
+	# buildings_within gathers every building near the segment's midpoint,
+	# most of them nowhere near the line itself; the footprint's rectangle is
+	# tested against the segment first, so only the buildings it actually
+	# passes have their edges checked (a cold position pick asks this for
+	# dozens of segments at once, and this is what made it a frame hitch).
+	var la := to_local(a)
+	var lb := to_local(b)
 	for i in buildings_within(mid, a.distance_to(b) * 0.5 + 1.0):
+		if not segment_hits_rect(la, lb, _rects[i]):
+			continue
 		var poly := global_polygon(i)
 		for k in poly.size():
 			if Geometry2D.segment_intersects_segment(a, b, poly[k], poly[(k + 1) % poly.size()]) != null:
 				walls += 1
 	return walls
+
+
+# Whether the segment a-b passes through `rect` (Liang-Barsky clipping).
+static func segment_hits_rect(a: Vector2, b: Vector2, rect: Rect2) -> bool:
+	var d := b - a
+	var t0 := 0.0
+	var t1 := 1.0
+	var lo := rect.position
+	var hi := rect.end
+	# Each of the four edges clips the parameter range [t0, t1].
+	for side in 4:
+		var p: float
+		var q: float
+		if side == 0:
+			p = -d.x
+			q = a.x - lo.x
+		elif side == 1:
+			p = d.x
+			q = hi.x - a.x
+		elif side == 2:
+			p = -d.y
+			q = a.y - lo.y
+		else:
+			p = d.y
+			q = hi.y - a.y
+		if p == 0.0:
+			if q < 0.0:
+				return false
+			continue
+		var t := q / p
+		if p < 0.0:
+			if t > t1:
+				return false
+			t0 = maxf(t0, t)
+		else:
+			if t < t0:
+				return false
+			t1 = minf(t1, t)
+	return t0 <= t1
 
 
 func _route_cell(local_pos: Vector2) -> Vector2i:

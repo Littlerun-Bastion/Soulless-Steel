@@ -369,7 +369,24 @@ func _world_parent() -> Node:
 	return entity.get_parent() if entity != null and entity.get_parent() != null else entity
 
 
+## A body off screen (OFF_SCREEN_MARGIN px past the view) animates every
+## OFF_SCREEN_INTERVAL frames instead of every frame: its legs, braids and
+## grains are the dearest per-frame drawing on the map, and nobody sees
+## them. The clocks still run every frame, so it is in step when it comes
+## into view. Placeholders.
+const OFF_SCREEN_MARGIN := 600.0
+const OFF_SCREEN_INTERVAL := 6
+var _frame_offset := randi() % OFF_SCREEN_INTERVAL
+var _skipped_frames := 0.0
+
+
 func _process(delta: float) -> void:
+	var profile_start := FrameProfiler.start()
+	_process_step(delta)
+	FrameProfiler.add("sand_bodies", profile_start)
+
+
+func _process_step(delta: float) -> void:
 	# The animation clock slows almost to a stop while the legs are folded,
 	# so a resting Entity is still.
 	_time += delta * (1.0 - 0.9 * _retract)
@@ -384,6 +401,13 @@ func _process(delta: float) -> void:
 		return
 	intensity = move_toward(intensity, 1.0 if alarm else 0.2, delta * 2.5)
 	flow_phase += delta * lerpf(idle_flow, hunt_flow, intensity) * (1.0 - 0.9 * _retract)
+	if is_inside_tree() and not MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position):
+		_skipped_frames += delta
+		if (Engine.get_physics_frames() + _frame_offset) % OFF_SCREEN_INTERVAL != 0:
+			return
+		# One animation step for the frames skipped, so the gait keeps pace.
+		delta += _skipped_frames
+	_skipped_frames = 0.0
 	_update_feet(delta)
 	_animate(delta)
 	_simulate_limbs()

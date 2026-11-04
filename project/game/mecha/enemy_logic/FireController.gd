@@ -79,6 +79,13 @@ func role(slot: String) -> String:
 ## `state`: the NPC's own state; `disciplined`: hold fire on a poor shot.
 ## Returns whether anything fired.
 func engage(dt: float, target, seen: bool, eff: Dictionary, state: Dictionary, disciplined: bool) -> bool:
+	var profile_start := FrameProfiler.start()
+	var fired := _engage(dt, target, seen, eff, state, disciplined)
+	FrameProfiler.add("  fire (in behaviour)", profile_start)
+	return fired
+
+
+func _engage(dt: float, target, seen: bool, eff: Dictionary, state: Dictionary, disciplined: bool) -> bool:
 	if not is_instance_valid(target) or npc.holds_fire_at(target):
 		cease()
 		return false

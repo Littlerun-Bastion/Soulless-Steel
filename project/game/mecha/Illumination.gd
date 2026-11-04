@@ -131,7 +131,21 @@ static func seen_lit(observer: Node2D, body: Node2D) -> bool:
 		return false
 	if MapSenses.smoke_between(observer.global_position, body.global_position) or MapSenses.in_smoke(body.global_position):
 		return false
-	return MapSenses.building_key_at(observer, observer.global_position) == MapSenses.building_key_at(observer, body.global_position)
+	return MapSenses.building_key_of(observer) == MapSenses.building_key_of(body)
+
+
+# The mechas with their illuminator on, once per physics frame: every lit
+# check walks them.
+static var _shining_cache: Array = []
+static var _shining_cache_frame := -1
+
+
+static func _shining_mechas(node: Node) -> Array:
+	var frame := Engine.get_physics_frames()
+	if frame != _shining_cache_frame:
+		_shining_cache_frame = frame
+		_shining_cache = node.get_tree().get_nodes_in_group("mecha").filter(func(m): return is_shining(m))
+	return _shining_cache
 
 
 static func _lit_lookup(body: Node2D) -> bool:
@@ -140,16 +154,16 @@ static func _lit_lookup(body: Node2D) -> bool:
 	var to := body.global_position
 	var body_key := ""
 	var key_known := false
-	for mecha in body.get_tree().get_nodes_in_group("mecha"):
-		if mecha == body or not is_shining(mecha):
+	for mecha in _shining_mechas(body):
+		if mecha == body or not is_instance_valid(mecha):
 			continue
 		if not in_cone(light_of(mecha), to):
 			continue
 		var from: Vector2 = mecha.global_position
 		if not key_known:
-			body_key = MapSenses.building_key_at(body, to)
+			body_key = MapSenses.building_key_of(body)
 			key_known = true
-		if MapSenses.building_key_at(body, from) != body_key:
+		if MapSenses.building_key_of(mecha) != body_key:
 			continue
 		if not MapSenses.walls_between(body.get_world_2d(), from, to):
 			return true

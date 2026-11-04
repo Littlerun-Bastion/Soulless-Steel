@@ -43,11 +43,13 @@ func _process(delta: float) -> void:
 	_timer -= delta
 	if _timer > 0.0 and not _dirty:
 		return
+	var profile_start := FrameProfiler.start()
 	_timer = INTERVAL
 	if _dirty:
 		_collect()
 	_update_chunks()
 	_update_scenes()
+	FrameProfiler.add("map_streamer", profile_start)
 
 
 func mark_dirty() -> void:

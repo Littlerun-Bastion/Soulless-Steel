@@ -324,7 +324,8 @@ func _test_probe() -> void:
 	AICombatLog.reset()
 	var enemy := _enemy(Vector2.ZERO, Personality.Type.PROFESSIONAL, true)
 	await wait_frames(10)
-	var stats := AICombatLog.think_stats("think_far")
+	# With no player on the map every NPC is "near" (Enemy.lod_tier).
+	var stats := AICombatLog.think_stats("think_near")
 	check(not stats.is_empty() and stats.n > 0, "thinking frames were timed")
 	if not stats.is_empty():
 		check(stats.median >= 0.0 and stats.max >= stats.median, "with a median and a worst time")
@@ -332,6 +333,6 @@ func _test_probe() -> void:
 	enemy.logic.force_intent(enemy, "roam")
 	check(AICombatLog.switches_per_minute() >= 2, "intent switches are counted")
 	var report := AICombatLog.report()
-	check(report.contains("think_far") and report.contains("intent switches"), "and reported")
+	check(report.contains("think_near") and report.contains("intent switches"), "and reported")
 	AICombatLog.reset()
 	Debug.debug_settings["ai_log"] = saved_log

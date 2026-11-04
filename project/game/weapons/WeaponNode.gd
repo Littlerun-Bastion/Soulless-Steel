@@ -88,11 +88,25 @@ func set_offsets(off):
 	offset = off
 
 
-func update_heat(_heat_dispersion, mecha_heat, dt):
+# The heat values last written to the sprites' shaders (see update_heat).
+var _shown_mecha_heat := -1.0
+var _shown_heat := -1.0
+
+
+## `show` false (the mecha is off screen) skips the shader writes; they
+## catch up on the next shown frame, as each is compared with the last value
+## written.
+func update_heat(_heat_dispersion, mecha_heat, dt, show := true):
 	heat = max(heat - WEAPON_HEAT_DECAY * dt, 0.0)
-	Main.material.set_shader_parameter("heat", mecha_heat) 
-	Sub.material.set_shader_parameter("heat", heat)
-	Glow.material.set_shader_parameter("heat", heat)
+	if not show:
+		return
+	if mecha_heat != _shown_mecha_heat:
+		_shown_mecha_heat = mecha_heat
+		Main.material.set_shader_parameter("heat", mecha_heat)
+	if heat != _shown_heat:
+		_shown_heat = heat
+		Sub.material.set_shader_parameter("heat", heat)
+		Glow.material.set_shader_parameter("heat", heat)
 
 
 func add_time(time):

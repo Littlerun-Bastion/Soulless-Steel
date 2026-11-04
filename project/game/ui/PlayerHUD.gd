@@ -71,6 +71,12 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(dt):
+	var profile_start := FrameProfiler.start()
+	_process_step(dt)
+	FrameProfiler.add("hud", profile_start)
+
+
+func _process_step(dt):
 	if player:
 		update_cursor()
 		

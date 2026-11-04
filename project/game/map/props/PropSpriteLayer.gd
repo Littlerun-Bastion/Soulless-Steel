@@ -109,7 +109,9 @@ func _process(delta: float) -> void:
 		_rebuild()
 	if Engine.is_editor_hint() or not fade_near_player:
 		return
+	var profile_start := FrameProfiler.start()
 	_update_fades(_find_player(), delta)
+	FrameProfiler.add("prop_layers", profile_start)
 
 
 func mark_dirty() -> void:
@@ -290,11 +292,24 @@ func _entry_id(e: Array) -> int:
 	return e[0].get_instance_id() * 65536 + e[1]
 
 
+# The player, looked up again every PLAYER_LOOKUP_TIME s (a group walk a
+# frame is a waste for one node that rarely changes).
+const PLAYER_LOOKUP_TIME := 1.0
+var _player = null
+var _player_lookup := 0.0
+
+
 func _find_player():
+	_player_lookup -= get_process_delta_time()
+	if _player_lookup > 0.0 and is_instance_valid(_player):
+		return _player
+	_player_lookup = PLAYER_LOOKUP_TIME
+	_player = null
 	for m in get_tree().get_nodes_in_group("mecha"):
 		if m.has_method("is_player") and m.is_player():
-			return m
-	return null
+			_player = m
+			break
+	return _player
 
 
 func _cell_of(pos: Vector2) -> Vector2i:

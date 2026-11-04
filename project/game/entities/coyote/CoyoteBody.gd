@@ -8,10 +8,27 @@ const WHIP_TIME := 0.8
 ## Fraction of the whip at which the tail lashes past the head.
 const WHIP_STRIKE_AT := 0.45
 const BITE_TIME := 0.25
+## Carried parts (carry_shield, carry_gun): their own sprites, scaled to
+## about this many px across, the shield in front of the head, the gun over
+## it, each held by a loose tendril wrapped round it. Placeholders.
+const SHIELD_SIZE := 70.0
+const GUN_SIZE := 64.0
+const SHIELD_AHEAD := 0.5     # fractions of body_length ahead of the centre
+const GUN_AHEAD := 0.12
+const GUN_LIFT := 26.0        # px the gun sits off the centre line, over the head
+const WRAP_RADIUS := 12.0
+const WRAP_SHARE := 0.3       # of the tendril, wound round the part
+const HOLD_WEIGHT := 0.85
+
+## Where the carried gun points (world), set by the Coyote.
+var gun_aim := Vector2.ZERO
 
 var _whip_t := -1.0
 var _whip_side := 1.0
 var _bite_t := -1.0
+var _shield_sprite: Sprite2D = null
+var _gun_sprite: Sprite2D = null
+var _loose: Array[int] = []  # the loose tendrils: indices in _tails
 
 
 func _init() -> void:
@@ -89,6 +106,98 @@ func _tail_layout() -> Array:
 	return tails
 
 
+func _ready() -> void:
+	super()
+	for i in _tails.size():
+		if _tails[i].thrashes:
+			_loose.append(i)
+
+
+## Carries a shoulder as a shield (its sprite), or nothing (null).
+func carry_shield(texture: Texture2D) -> void:
+	_shield_sprite = _carried(_shield_sprite, texture, SHIELD_SIZE)
+
+
+## Carries an arm weapon as a gun (its sprite), or nothing (null).
+func carry_gun(texture: Texture2D) -> void:
+	_gun_sprite = _carried(_gun_sprite, texture, GUN_SIZE)
+
+
+## Where the shield is (world).
+func shield_position() -> Vector2:
+	return _shield_sprite.global_position if _shield_sprite != null else to_global(Vector2(body_length * SHIELD_AHEAD, 0.0))
+
+
+## Where the carried gun's rounds leave it (world).
+func gun_muzzle() -> Vector2:
+	if _gun_sprite == null:
+		return global_position
+	var to_aim := gun_aim - _gun_sprite.global_position
+	var dir := to_aim.normalized() if to_aim.length() > 1.0 else Vector2.from_angle(global_rotation)
+	return _gun_sprite.global_position + dir * GUN_SIZE * 0.5
+
+
+## The scale that makes a part's sprite about `size` px across.
+func carried_scale(texture: Texture2D, size: float) -> float:
+	var longest := maxf(texture.get_width(), texture.get_height())
+	return size / longest if longest > 0.0 else 1.0
+
+
+func _carried(sprite: Sprite2D, texture: Texture2D, size: float) -> Sprite2D:
+	if sprite != null:
+		sprite.queue_free()
+	if texture == null or dead:
+		return null
+	sprite = Sprite2D.new()
+	sprite.texture = texture
+	sprite.scale = Vector2.ONE * carried_scale(texture, size)
+	sprite.z_index = 1
+	_body_layer.add_child(sprite)
+	return sprite
+
+
+# The parts it carries sit in front of and over the head; a loose tendril
+# reaches out to each and winds round it. (Mecha sprites face -Y.)
+func _hold_parts() -> void:
+	var holding := 0
+	if _shield_sprite != null:
+		_shield_sprite.position = Vector2(body_length * SHIELD_AHEAD, 0.0)
+		_shield_sprite.rotation = PI * 0.5
+		_wrap(holding, _shield_sprite.global_position)
+		holding += 1
+	if _gun_sprite != null:
+		_gun_sprite.position = Vector2(body_length * GUN_AHEAD, -GUN_LIFT)
+		var to_aim := gun_aim - _gun_sprite.global_position
+		_gun_sprite.global_rotation = (to_aim.angle() if to_aim.length() > 1.0 else global_rotation) + PI * 0.5
+		_wrap(holding, _gun_sprite.global_position)
+		holding += 1
+	for k in range(holding, _loose.size()):
+		if _tails[_loose[k]].pose_weight > 0.0 and _whip_t < 0.0:
+			_tails[_loose[k]].pose_weight = 0.0
+
+
+# The k-th loose tendril: out from its root to `at`, the last WRAP_SHARE of
+# it wound round the part.
+func _wrap(k: int, at: Vector2) -> void:
+	if k >= _loose.size():
+		return
+	var tail := _tails[_loose[k]]
+	var root := _body_to_world(tail.root)
+	var reach_end := int((TAIL_POINTS - 1) * (1.0 - WRAP_SHARE))
+	var side := Vector2(0.0, -1.0 if k % 2 == 0 else 1.0).rotated(global_rotation) * 30.0
+	var ctrl := root.lerp(at, 0.5) + side
+	for i in TAIL_POINTS:
+		if i <= reach_end:
+			var t := float(i) / reach_end
+			tail.pose[i] = root.lerp(ctrl, t).lerp(ctrl.lerp(at, t), t)
+		else:
+			var u := float(i - reach_end) / (TAIL_POINTS - 1 - reach_end)
+			tail.pose[i] = at + Vector2.from_angle(u * TAU * 1.2 + _time * 2.0) * WRAP_RADIUS
+	tail.pose_weight = HOLD_WEIGHT
+	tail.pose_falloff = 0.0
+	tail.raise = 0.6
+
+
 func whip() -> void:
 	if dead or _whip_t >= 0.0:
 		return
@@ -110,6 +219,7 @@ func _animate(delta: float) -> void:
 	# Tendrils thrash for the whole attack, easing in fast and out slower.
 	var attacking := is_attacking()
 	thrash = move_toward(thrash, 1.0 if attacking else 0.0, delta * (8.0 if attacking else 2.5))
+	_hold_parts()
 	if _whip_t >= 0.0:
 		var before := _whip_t
 		_whip_t = minf(_whip_t + delta / WHIP_TIME, 1.0)

@@ -4,7 +4,9 @@ extends TestSuite
 # Mode) starts with one NPC of each generic design (every personality type
 # among them), an extra tank and a squad, spaced apart and clear of vehicles,
 # has its buildings, vehicles and route grid, puts nothing at stake, and
-# replaces an NPC that dies.
+# replaces an NPC that dies. It also keeps a Coyote pack, a Fisher and tick
+# swarms, replaces them when they die, and lets the swarms breed without the
+# director running.
 
 const TEST_ARENA := preload("res://game/arena/TestArena.tscn")
 
@@ -18,6 +20,7 @@ func _init() -> void:
 func run_tests() -> void:
 	await case("the test arena starts with its NPCs and no stakes", _test_start)
 	await case("a dead NPC is replaced", _test_respawn)
+	await case("the test arena has its Entities, and replaces them", _test_entities)
 	await case("the map is dark round the player's light cone, with wall shadows", _test_lighting)
 	await before_each()
 
@@ -77,6 +80,51 @@ func _test_respawn() -> void:
 	var replaced := await wait_until(func():
 		return _enemies().size() == before and not _enemies().any(func(e): return e.get_instance_id() == victim_id), 15.0)
 	check(replaced, "a new NPC takes its place")
+
+
+func _test_entities() -> void:
+	await _start()
+	var arena_script = _arena_script()
+	var kinds = arena_script.EntityKind
+	var entities: Array = _scene.get_entities()
+	var coyotes := entities.filter(func(e): return e is Coyote)
+	var fishers := entities.filter(func(e): return e is Fisher)
+	var swarms := entities.filter(func(e): return e is TickSwarm)
+	var pack: Array = _scene.entities_of_kind(kinds.COYOTE_PACK)
+	check(pack.size() >= 2 and pack.size() == coyotes.size(), "a Coyote pack is on the map (%d)" % coyotes.size())
+	check(coyotes.any(func(e): return e is CoyoteSpitter), "with a Spitter among them")
+	check(coyotes.all(func(e): return e.pack != null and e.pack == coyotes[0].pack), "all in one pack")
+	check_eq(fishers.size(), arena_script.ENTITY_FISHERS, "Fishers")
+	check_eq(swarms.size(), arena_script.ENTITY_TICK_SWARMS, "tick swarms")
+	var player_pos: Vector2 = _scene.player.global_position
+	var closest := INF
+	for e in fishers + swarms:
+		closest = minf(closest, e.global_position.distance_to(player_pos))
+	check(closest >= arena_script.ENTITY_MIN_DISTANCE * 0.5, "away from the player (closest %.0f px)" % closest)
+	check(not _scene.ExpeditionDirector.initial_population_done, "the director isn't started")
+
+	var brood = TickSwarm.spawn_brood(_scene, swarms[0].global_position, [swarms[0].global_position])
+	check(brood is TickSwarm and brood.brood, "a swarm can breed a brood")
+	check(not (brood in _scene.entities_of_kind(kinds.TICK_SWARM)), "which the arena doesn't replace")
+
+	var fisher = fishers[0]
+	var fisher_id: int = fisher.get_instance_id()
+	fisher.die()
+	check(_scene.entities_of_kind(kinds.FISHER).is_empty(), "a dead Fisher is let go")
+	var replaced := await wait_until(func():
+		var now: Array = _scene.entities_of_kind(kinds.FISHER)
+		return now.size() == arena_script.ENTITY_FISHERS and now.all(func(e): return e.get_instance_id() != fisher_id),
+		arena_script.ENTITY_RESPAWN_TIME + 10.0)
+	check(replaced, "and a new one takes its place")
+
+	for coyote in coyotes:
+		if not coyote.is_dead:
+			coyote.die()
+	var new_pack := await wait_until(func():
+		var now: Array = _scene.entities_of_kind(kinds.COYOTE_PACK)
+		return now.size() >= 2 and now.all(func(e): return is_instance_valid(e) and not e.is_dead),
+		arena_script.ENTITY_RESPAWN_TIME + 10.0)
+	check(new_pack, "a pack that's all dead is replaced")
 
 
 # The lights (Mecha.tscn) act on SIGHT_LIGHT_MASK: the map must be on it, the

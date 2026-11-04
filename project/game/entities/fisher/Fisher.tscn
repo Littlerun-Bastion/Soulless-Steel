@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://game/entities/fisher/Fisher.gd" id="1_fisher"]
+[ext_resource type="Script" path="res://game/entities/fisher/FisherBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_fisher.tres" id="3_loot"]
+[ext_resource type="Resource" path="res://database/items/bio/nt_engine_heart.tres" id="4_heart"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 55.0
+
+[node name="Fisher" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_fisher")
+species = "Fisher"
+max_hp = 20.0
+armor_rating = 2
+radius = 60.0
+walk_speed = 170.0
+run_speed = 200.0
+acceleration = 700.0
+turn_rate = 3.5
+sight_range = 1400.0
+lose_range = 2400.0
+heat_sense_min = 0.12
+heat_sense_scale = Vector2(0.6, 1.4)
+release_below = 0.04
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(2, 3)
+rare_drop = ExtResource("4_heart")
+rare_chance = 0.15
+carcass_grid = Vector2i(5, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")

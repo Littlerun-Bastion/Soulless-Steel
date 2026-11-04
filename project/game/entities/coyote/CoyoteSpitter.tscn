@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://game/entities/coyote/CoyoteSpitter.gd" id="1_coyote"]
+[ext_resource type="Script" path="res://game/entities/coyote/CoyoteSpitterBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_coyote_spitter.tres" id="3_loot"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 45.0
+
+[node name="CoyoteSpitter" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_coyote")
+species = "Coyote Spitter"
+orbit_radius = 650.0
+flee_below = 0.4
+max_hp = 6.0
+armor_rating = 1
+radius = 45.0
+walk_speed = 220.0
+run_speed = 480.0
+acceleration = 2400.0
+turn_rate = 7.0
+sight_range = 1800.0
+lose_range = 3200.0
+heat_sense_min = 0.1
+heat_sense_scale = Vector2(0.6, 1.4)
+release_below = 0.04
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(1, 2)
+carcass_grid = Vector2i(4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Body" type="Node2D" parent="."]
+script = ExtResource("2_body")

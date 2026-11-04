@@ -23,6 +23,10 @@ var damage := 1
 var pen := 2
 var splash_radius := 110.0
 var mecha_name := "Spitter" # who's credited if the Spitter died mid-flight
+## Its look: the colour, and how high the arc goes (a lower arc reads as a
+## shot rather than a lob).
+var color := COLOR
+var arc_height := ARC_HEIGHT
 
 var _from := Vector2.ZERO
 var _to := Vector2.ZERO
@@ -59,7 +63,7 @@ func _physics_process(dt: float) -> void:
 	_t += dt
 	var k := clampf(_t / _flight_time, 0.0, 1.0)
 	global_position = _from.lerp(_to, k)
-	_height = sin(k * PI) * ARC_HEIGHT
+	_height = sin(k * PI) * arc_height
 	queue_redraw()
 	if k >= 1.0:
 		_splash()
@@ -78,11 +82,11 @@ func _splash() -> void:
 func _draw() -> void:
 	if _landed:
 		var k := _splash_t / SPLASH_TIME
-		var ring := COLOR
+		var ring := color
 		ring.a = 0.7 * (1.0 - k)
 		draw_circle(Vector2.ZERO, splash_radius * (0.4 + 0.6 * k), Color(ring, ring.a * 0.4))
 		draw_arc(Vector2.ZERO, splash_radius * (0.4 + 0.6 * k), 0.0, TAU, 24, ring, 4.0)
 		return
 	draw_circle(Vector2.ZERO, 12.0, Color(0, 0, 0, 0.35))  # shadow on the ground
-	draw_circle(Vector2(0, -_height), 14.0, COLOR)
-	draw_circle(Vector2(-4, -_height - 4), 5.0, COLOR.lightened(0.5))
+	draw_circle(Vector2(0, -_height), 14.0, color)
+	draw_circle(Vector2(-4, -_height - 4), 5.0, color.lightened(0.5))

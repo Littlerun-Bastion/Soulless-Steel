@@ -558,6 +558,25 @@ func lose_expedition(reason: String) -> Dictionary:
 	return report
 
 
+# A part that came off in the field (RepairBill.written_off_slots) is
+# written off: each slot gets DEFAULT_MECHA's standard part (no grade).
+# Returns the names of the parts written off.
+func write_off_slots(slots: Array, should_save := true) -> Array:
+	var names := []
+	if slots.is_empty():
+		return names
+	var design := current_mecha.duplicate()
+	for slot in slots:
+		var part_id = design.get(slot)
+		if typeof(part_id) == TYPE_STRING and part_id != "":
+			names.append(Grades.label(current_grades.get(slot), _part_display_name(_part_type_for_slot(slot), part_id)))
+		design[slot] = DEFAULT_MECHA.get(slot, false)
+		current_grades.erase(slot)
+	_log("written off: %s" % ", ".join(names))
+	set_current_mecha(design, should_save)
+	return names
+
+
 # Called once the profile is loaded at boot: a run that was still going when
 # the game closed is lost.
 func resolve_abandoned_expedition() -> bool:

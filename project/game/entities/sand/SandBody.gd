@@ -135,6 +135,8 @@ void fragment() {
 ## Grain flow speed along the limbs, idle and hunting.
 @export var idle_flow := 0.6
 @export var hunt_flow := 3.0
+## Flow speed multiplier in frenzy.
+@export var frenzy_flow := 1.8
 
 @export_group("Death")
 @export var death_grains := 1600
@@ -145,6 +147,7 @@ void fragment() {
 # Set by the Entity:
 var velocity := Vector2.ZERO   # from update_motion()
 var alarm := false    # true while it hunts
+var frenzy := false   # true in frenzy: faster sand, tendrils always thrashing
 var flash := 0.0      # 0..1, white when hit
 var crouch := 0.0     # 0..1, sinks the body on its legs
 var dead := false
@@ -359,8 +362,58 @@ func die() -> void:
 	# moving it up the tree doesn't move them.
 	var world := _world_parent()
 	if world != null:
+		# Hidden from the player's view (Player._update_view fades the
+		# Entity), the burst stays hidden once it leaves the Entity.
+		_death.modulate.a = _entity_alpha()
 		_death.reparent(world)
 		get_tree().create_timer(scatter_time + 0.5).timeout.connect(_death.queue_free)
+
+
+# How visible the Entity is to the player (its modulate alpha).
+func _entity_alpha() -> float:
+	var entity := get_parent() as CanvasItem
+	return entity.modulate.a if entity != null else 1.0
+
+
+## What a Carcass shows for this Entity once it's dead (see Carcass): a
+## patch of settled sand where it burst, with the head lying in it.
+func make_corpse() -> Node2D:
+	var corpse := SandCorpse.new()
+	corpse.color = grain_color
+	corpse.radius = maxf(body_length, limb_length) * 0.45
+	if has_head and _head != null:
+		var head := Sprite2D.new()
+		head.texture = _head.texture
+		head.offset = _head.offset
+		head.position = _head.position
+		head.scale = _head.scale
+		head.rotation = randf_range(-0.6, 0.6)
+		head.modulate = Color(0.8, 0.8, 0.8)
+		corpse.add_child(head)
+	return corpse
+
+
+## A dead sand Entity's corpse: grains settled in a rough patch, drawn in
+## one pass.
+class SandCorpse extends Node2D:
+	const GRAINS := 260
+	var dead := true  # read like a dead body's
+	var color := Color(0.05, 0.05, 0.05)
+	var radius := 70.0
+	var _grains: Array[Vector3] = []  # x, y, size
+
+	func _ready() -> void:
+		z_index = -1
+		for k in GRAINS:
+			# Denser in the middle, thinning out, a little lopsided.
+			var r := radius * pow(randf(), 0.7)
+			var p := Vector2.from_angle(randf() * TAU) * r * Vector2(1.0, 0.75)
+			_grains.append(Vector3(p.x, p.y, randf_range(1.5, 3.5)))
+
+	func _draw() -> void:
+		for g in _grains:
+			var fade := 1.0 - Vector2(g.x, g.y).length() / radius
+			draw_rect(Rect2(g.x, g.y, g.z, g.z), Color(color, 0.35 + 0.55 * fade))
 
 
 # The node the Entity lives in (where dead parts are left behind).
@@ -400,7 +453,8 @@ func _process_step(delta: float) -> void:
 			queue_redraw()
 		return
 	intensity = move_toward(intensity, 1.0 if alarm else 0.2, delta * 2.5)
-	flow_phase += delta * lerpf(idle_flow, hunt_flow, intensity) * (1.0 - 0.9 * _retract)
+	flow_phase += delta * lerpf(idle_flow, hunt_flow, intensity) * (1.0 - 0.9 * _retract) \
+			* (frenzy_flow if frenzy else 1.0)
 	if is_inside_tree() and not MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position):
 		_skipped_frames += delta
 		if (Engine.get_physics_frames() + _frame_offset) % OFF_SCREEN_INTERVAL != 0:
@@ -410,6 +464,8 @@ func _process_step(delta: float) -> void:
 	_skipped_frames = 0.0
 	_update_feet(delta)
 	_animate(delta)
+	if frenzy:
+		thrash = 1.0
 	_simulate_limbs()
 	_simulate_tails(delta)
 	var leg_taper := _paw_taper if paw_size > 0.0 else _taper
@@ -1150,8 +1206,13 @@ func _draw_claws() -> void:
 			var p_perp := d.orthogonal()
 			var mid := tip_base + d * length * 0.55 + p_perp * f * length * 0.12
 			var tip := tip_base + d * length + p_perp * -f * length * 0.1
-			_claw_layer.draw_colored_polygon(PackedVector2Array([tip_base + p_perp * w, mid + p_perp * w * 0.6,
-					tip, mid - p_perp * w * 0.6, tip_base - p_perp * w]), col)
+			# Polygons are triangulated in single precision, which fails for
+			# a claw this small at world coordinates far from the origin, so
+			# it is drawn relative to its base.
+			_claw_layer.draw_set_transform(tip_base)
+			_claw_layer.draw_colored_polygon(PackedVector2Array([p_perp * w, mid - tip_base + p_perp * w * 0.6,
+					tip - tip_base, mid - tip_base - p_perp * w * 0.6, -p_perp * w]), col)
+			_claw_layer.draw_set_transform(Vector2.ZERO)
 			_claw_layer.draw_line(tip_base, mid, hi, 1.0)
 
 
@@ -1176,10 +1237,14 @@ func _draw_shadows() -> void:
 	var off := Vector2.from_angle(deg_to_rad(light_angle)) * SHADOW_PER_HEIGHT
 	var col := Color(0.0, 0.0, 0.0, shadow_strength)
 	var hip_z := _hip_z()
+	# Relative to the body, like the claws (single-precision triangulation).
 	var body := PackedVector2Array()
 	for v in _outline():
-		body.append(_body_to_world(v * 0.85) + off * hip_z)
-	_shadow_layer.draw_colored_polygon(body, col)
+		body.append(_body_to_world(v * 0.85) + off * hip_z - global_position)
+	if body.size() >= 3:
+		_shadow_layer.draw_set_transform(global_position)
+		_shadow_layer.draw_colored_polygon(body, col)
+		_shadow_layer.draw_set_transform(Vector2.ZERO)
 	for limb in _limbs:
 		if limb.extend > 0.02:
 			_draw_chain_shadow(limb.points, limb.heights, off, col, limb.width * 0.45 * limb.extend)

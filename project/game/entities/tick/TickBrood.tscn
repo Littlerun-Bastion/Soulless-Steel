@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://game/entities/tick/TickSwarm.tscn" id="1_swarm"]
+
+[node name="TickBrood" instance=ExtResource("1_swarm")]
+brood = true

@@ -4,10 +4,18 @@ extends "res://game/expedition/Expedition.gd"
 # navigation, vehicles and buildings, opened from the main menu's Arena Mode
 # button. It runs on Expedition's systems (route grid, vehicle field, NPC
 # behaviour) without its stakes: nothing is lost on death or when leaving, and
-# extracting just goes back to the main menu. There is no director and there
-# are no Entities. One NPC of each generic design is put on the map, plus
-# EXTRA_TANKS more of the tank build; an NPC that dies or extracts is replaced
-# by one of the same design RESPAWN_TIME s later, at a random spawn zone.
+# extracting just goes back to the main menu. One NPC of each generic design
+# is put on the map, plus EXTRA_TANKS more of the tank build; an NPC that dies
+# or extracts is replaced by one of the same design RESPAWN_TIME s later, at a
+# random spawn zone.
+#
+# Entities: ENTITY_PACKS Coyote packs, ENTITY_FISHERS Fishers and
+# ENTITY_TICK_SWARMS tick swarms, put down at random at least
+# ENTITY_MIN_DISTANCE from the player. Each is replaced ENTITY_RESPAWN_TIME s
+# after it's gone (a pack once all its members are). Broods the swarms breed
+# come on top of these and aren't replaced.
+# The ExpeditionDirector is never started: the arena only uses its Entity
+# spawners, and spawn_tick_brood keeps broods within its population cap.
 #
 # F5 (debug_5) opens a weapon picker: every shoulder weapon, with buttons to
 # fit it to the player's left or right shoulder, and every internal bay part
@@ -24,8 +32,22 @@ const MECH_THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const PICKER_LAYER := 5
 const PICKER_MARGIN := 40.0
 
+enum EntityKind { COYOTE_PACK, FISHER, TICK_SWARM }
+
+const ENTITY_PACKS := 1
+const ENTITY_FISHERS := 1
+const ENTITY_TICK_SWARMS := 2
+const ENTITY_RESPAWN_TIME := 10.0
+const ENTITY_MIN_DISTANCE := 2500.0
+## Random points tried for one far enough from the player; after that the
+## last one is used.
+const ENTITY_SPAWN_TRIES := 20
+
 # Enemy -> the design it was made from, for its replacement.
 var _designs := {}
+# Entity -> its group, {"kind": EntityKind, "members": Array}, shared by the
+# members of a pack.
+var _entity_groups := {}
 var _next_name := 0
 var _weapon_picker: CanvasLayer = null
 
@@ -45,6 +67,7 @@ func _ready() -> void:
 	IntroAnimation.play("Entrance")
 	await _prewarm_fx()
 	_spawn_lineup()
+	_spawn_entities()
 	set_mechas_block_status(true)
 	if Debug.get_setting("skip_intro"):
 		await get_tree().create_timer(.01).timeout
@@ -77,6 +100,51 @@ func _spawn(design: Dictionary, pos = null) -> Mecha:
 	_next_name += 1
 	_designs[enemy] = design
 	return enemy
+
+
+# ---- Entities ----
+
+func _spawn_entities() -> void:
+	ExpeditionDirector.arena = self
+	for i in ENTITY_PACKS:
+		_spawn_entity_group(EntityKind.COYOTE_PACK)
+	for i in ENTITY_FISHERS:
+		_spawn_entity_group(EntityKind.FISHER)
+	for i in ENTITY_TICK_SWARMS:
+		_spawn_entity_group(EntityKind.TICK_SWARM)
+
+
+func _spawn_entity_group(kind: EntityKind) -> void:
+	var pos := _entity_position()
+	var members: Array = []
+	match kind:
+		EntityKind.COYOTE_PACK:
+			members = ExpeditionDirector.spawn_coyote_pack(pos).members.duplicate()
+		EntityKind.FISHER:
+			members = [ExpeditionDirector.spawn_fisher(pos)]
+		EntityKind.TICK_SWARM:
+			members = [ExpeditionDirector.spawn_tick_swarm(pos)]
+	var group := {"kind": kind, "members": members}
+	for entity in members:
+		_entity_groups[entity] = group
+
+
+func _entity_position() -> Vector2:
+	var pos := get_random_position()
+	for i in ENTITY_SPAWN_TRIES:
+		if not is_instance_valid(player) or pos.distance_to(player.global_position) >= ENTITY_MIN_DISTANCE:
+			break
+		pos = get_random_position()
+	return pos
+
+
+# The Entities of one kind the arena keeps, whether alive or not yet freed.
+func entities_of_kind(kind: EntityKind) -> Array:
+	var found := []
+	for entity in _entity_groups:
+		if _entity_groups[entity].kind == kind:
+			found.append(entity)
+	return found
 
 
 # ---- Weapon picker ----
@@ -190,3 +258,19 @@ func _before_mecha_removed(mecha) -> void:
 		return
 	var zones := get_spawn_zones()
 	_spawn(design, zones.pick_random().global_position if not zones.is_empty() else null)
+
+
+# An Entity group with no members left is replaced by a new one of its kind.
+func _before_entity_removed(entity) -> void:
+	super._before_entity_removed(entity)
+	if not _entity_groups.has(entity):
+		return
+	var group: Dictionary = _entity_groups[entity]
+	_entity_groups.erase(entity)
+	group.members.erase(entity)
+	if not group.members.is_empty():
+		return
+	await get_tree().create_timer(ENTITY_RESPAWN_TIME, false).timeout
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
+	_spawn_entity_group(group.kind)

@@ -49,30 +49,42 @@ extends Node
 @export var ambient_event_max_distance: float = 8000.0   # but not so far it's pointless
 @export var ambient_event_sound_radius: float = 4000.0   # how far NPCs can hear the synthetic gunshot
 
-# Entities (creatures, game/entities/) — Stalker packs, a Spitter or two and
-# sometimes a Brute roam the map from the start, well away from the player,
-# and a Cyst (nest) grows on each of the map's cyst sites.
-# While the population is low, newcomers wander in now and then: mostly
-# Stalker packs, sometimes a Spitter or a Brute.
+# Entities (creatures, game/entities/) — Coyote packs (each with one or two
+# Coyote Spitters) and a Fisher or two roam the map from the start, well
+# away from the player. While the population is low, newcomers wander in now
+# and then: mostly Coyote packs, sometimes a Fisher.
+# The first species (Stalker, Spitter, Brute and Cyst) have their scenes in
+# game/entities/, but nothing here spawns them, and the map's cyst sites are
+# unused.
 @export_group("Entities")
 @export var min_initial_packs: int = 2
 @export var max_initial_packs: int = 4
-@export var min_pack_size: int = 3
-@export var max_pack_size: int = 5
-@export var min_initial_spitters: int = 1
-@export var max_initial_spitters: int = 2
-@export var initial_brute_chance: float = 0.5
+## Coyotes in a pack, Spitters included.
+@export var min_pack_size: int = 4
+@export var max_pack_size: int = 6
+@export var min_pack_spitters: int = 1
+@export var max_pack_spitters: int = 2
+@export var min_initial_fishers: int = 1
+@export var max_initial_fishers: int = 2
 @export var min_entity_distance_from_player: float = 3500.0
 @export var target_entity_population: int = 10           # below this, newcomers may arrive
 @export var pack_respawn_cooldown: float = 75.0          # seconds between arrivals
 @export var max_pack_respawns: int = 6                   # hard cap per run
-@export var arrival_spitter_chance: float = 0.2          # an arrival is a Spitter...
-@export var arrival_brute_chance: float = 0.1            # ...or a Brute, else a Stalker pack
+@export var arrival_fisher_chance: float = 0.25          # an arrival is a Fisher, else a Coyote pack
+## Tick swarms at the start (placeholder). They don't arrive later; they
+## breed (TickSwarm.spawn_brood comes through spawn_tick_brood).
+@export var min_initial_tick_swarms: int = 3
+@export var max_initial_tick_swarms: int = 5
+## Most Entities on the map (tick swarms count). A brood that would go over
+## it makes the oldest tick swarm the player can't see fade out
+## (placeholder).
+@export var entity_population_cap: int = 40
 
-const STALKER = preload("res://game/entities/Stalker.tscn")
-const SPITTER = preload("res://game/entities/Spitter.tscn")
-const BRUTE = preload("res://game/entities/Brute.tscn")
-const CYST = preload("res://game/entities/Cyst.tscn")
+const COYOTE = preload("res://game/entities/coyote/Coyote.tscn")
+const COYOTE_SPITTER = preload("res://game/entities/coyote/CoyoteSpitter.tscn")
+const FISHER = preload("res://game/entities/fisher/Fisher.tscn")
+const TICK_SWARM = preload("res://game/entities/tick/TickSwarm.tscn")
+const TICK_BROOD = preload("res://game/entities/tick/TickBrood.tscn")
 
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
@@ -128,25 +140,24 @@ func _populate_initial_world() -> void:
 	for i in randi_range(min_initial_packs, max_initial_packs):
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
-			spawn_stalker_pack(pos)
+			spawn_coyote_pack(pos)
 			packs += 1
-	var loners := []
-	for i in randi_range(min_initial_spitters, max_initial_spitters):
-		loners.append(SPITTER)
-	if randf() < initial_brute_chance:
-		loners.append(BRUTE)
-	for scene in loners:
+	var fishers := 0
+	for i in randi_range(min_initial_fishers, max_initial_fishers):
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
-			arena.add_entity(scene, pos)
-	# A Cyst (nest) on each of the map's sites; it hatches its guards itself.
-	var cyst_sites: Array = arena.get_cyst_sites() if arena.has_method("get_cyst_sites") else []
-	for site in cyst_sites:
-		arena.add_entity(CYST, site.global_position)
+			spawn_fisher(pos)
+			fishers += 1
+	var swarms := 0
+	for i in randi_range(min_initial_tick_swarms, max_initial_tick_swarms):
+		var pos = _pick_entity_spawn_position()
+		if pos != null:
+			spawn_tick_swarm(pos)
+			swarms += 1
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Stalker packs, ",
-				loners.size(), " Spitters/Brutes and ", cyst_sites.size(), " Cysts")
+		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Coyote packs, ",
+				fishers, " Fishers and ", swarms, " tick swarms")
 
 
 func _process(dt: float) -> void:
@@ -348,15 +359,56 @@ func _pick_offscreen_spawn_position():
 
 # ---- Entities ----
 
-# A Stalker pack around center. size -1 = random (min_pack_size..max_pack_size).
-func spawn_stalker_pack(center: Vector2, size := -1) -> EntityPack:
+# A Coyote pack around center: size Coyotes (-1 = random, min_pack_size..
+# max_pack_size), min_pack_spitters..max_pack_spitters of them Spitters, and
+# always at least one Spitter and one Coyote to lead.
+func spawn_coyote_pack(center: Vector2, size := -1) -> EntityPack:
 	if size < 0:
 		size = randi_range(min_pack_size, max_pack_size)
+	size = maxi(size, 2)
+	var spitters := clampi(randi_range(min_pack_spitters, max_pack_spitters), 1, size - 1)
 	var pack := EntityPack.new()
+	# The leader is the first living member: Coyotes go in first.
 	for i in size:
 		var offset := Vector2(randf_range(-250.0, 250.0), randf_range(-250.0, 250.0))
-		pack.add(arena.add_entity(STALKER, center + offset))
+		var scene: PackedScene = COYOTE_SPITTER if i >= size - spitters else COYOTE
+		pack.add(arena.add_entity(scene, center + offset))
 	return pack
+
+
+# A Fisher, dormant in its shell, on the nav mesh near pos.
+func spawn_fisher(pos: Vector2) -> Entity:
+	return arena.add_entity(FISHER, pos)
+
+
+func spawn_tick_swarm(pos: Vector2) -> Entity:
+	return arena.add_entity(TICK_SWARM, pos)
+
+
+# A brood (TickSwarm.spawn_brood), within the population cap: over it, the
+# oldest tick swarm the player can't see fades out first. If the player can
+# see every one, the brood forms anyway.
+func spawn_tick_brood(pos: Vector2) -> Entity:
+	if arena.get_entities().size() + 1 > entity_population_cap:
+		var oldest: TickSwarm = null
+		for entity in arena.get_entities():
+			if entity is TickSwarm and not entity.is_dead and not _player_sees(entity) \
+					and (oldest == null or entity.born < oldest.born):
+				oldest = entity
+		if oldest != null:
+			oldest.fade_out()
+	return arena.add_entity(TICK_BROOD, pos)
+
+
+# Whether the player can see this body now: on screen and not hidden from
+# its view (Player.is_hidden_from_view).
+func _player_sees(body: Node2D) -> bool:
+	var player = arena.get("player")
+	if not is_instance_valid(player):
+		return false
+	if player.has_method("is_hidden_from_view") and player.is_hidden_from_view(body):
+		return false
+	return MapSenses.screen_rect(player).has_point(body.global_position)
 
 
 func notify_entity_died(entity) -> void:
@@ -390,16 +442,12 @@ func _try_pack_respawn() -> void:
 	var pos = _pick_offscreen_spawn_position()
 	if pos == null:
 		return
-	var roll := randf()
-	var arrival := "Stalker pack"
-	if roll < arrival_brute_chance:
-		arena.add_entity(BRUTE, pos)
-		arrival = "Brute"
-	elif roll < arrival_brute_chance + arrival_spitter_chance:
-		arena.add_entity(SPITTER, pos)
-		arrival = "Spitter"
+	var arrival := "Coyote pack"
+	if randf() < arrival_fisher_chance:
+		spawn_fisher(pos)
+		arrival = "Fisher"
 	else:
-		spawn_stalker_pack(pos)
+		spawn_coyote_pack(pos)
 	total_pack_respawns += 1
 	time_since_pack_respawn = 0.0
 	if Debug.get_setting("verbose_logging"):

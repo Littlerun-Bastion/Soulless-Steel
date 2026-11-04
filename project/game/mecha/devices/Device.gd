@@ -213,7 +213,8 @@ func make_sound() -> void:
 
 ## Shots, blasts and beams (the same call as Entity.take_hit). Only a
 ## mecha's attack hurts it, and only a destructible device.
-func take_hit(damage: float, _pen := 0, _dir := Vector2.ZERO, source_info = null, _knockback := 0.0) -> void:
+func take_hit(damage: float, _pen := 0, _dir := Vector2.ZERO, source_info = null, _knockback := 0.0,
+		_is_aoe := false, _impact := Vector2.INF) -> void:
 	if _gone or not destructible or typeof(source_info) != TYPE_DICTIONARY:
 		return
 	var by = source_info.get("body")

@@ -482,6 +482,14 @@ func _analyze_build():
 		_weapon_roles[weapon_key] = _weapon_role(build[weapon_key])
 
 
+# Weapons that came off with their part (Mecha.lose_part) have no role: the
+# fire controller and blind fire leave them be.
+func _on_weapons_lost(slots: Array) -> void:
+	for slot in slots:
+		_weapon_roles[slot] = ""
+		_weapon_ap[slot] = 0
+
+
 # A weapon's role for the fire controller: "" (none), "melee", "gun" (the
 # plain firing path), "smoke" (the smoke launcher, tap_self), "mine" (a mine
 # layer), "lock" (lock-on), "skillshot" (a line or rect designator: cannon,

@@ -19,6 +19,11 @@ const HARPOON := 4
 @export var recoil_time := 0.35
 @export var leap_height := 90.0
 
+## Seconds a dead Fisher's shell lies there before fading, unless a Carcass
+## takes it: as long as an Entity's corpse.
+const SHELL_LINGER := 3.0
+const SHELL_FADE := 1.5
+
 var stage := Stage.DORMANT:
 	set(value):
 		if value == stage:
@@ -40,6 +45,7 @@ var harpoon_tip := Vector2.ZERO
 var drain_phase := 0.0
 
 var _shell: Sprite2D
+var _shell_fade: Tween
 var _shell_scale := 1.0
 var _stage_t := 0.0
 var _leg_delay: Array[float] = []
@@ -173,13 +179,37 @@ func _end_air() -> void:
 func die() -> void:
 	if dead:
 		return
+	var alpha := _entity_alpha()
 	super()
 	var world := _world_parent()
 	if world != null:
 		_shell.reparent(world)
-	_shell.modulate = Color(0.85, 0.85, 0.85)
+	_shell.modulate = Color(0.85, 0.85, 0.85, alpha)
 	_shell.material = null
 	_shell.z_index = -1
+	# Unless a Carcass takes it (make_corpse), it fades with the Entity's
+	# corpse rather than littering the ground.
+	_shell_fade = _shell.create_tween()
+	_shell_fade.tween_interval(SHELL_LINGER)
+	_shell_fade.tween_property(_shell, "modulate:a", 0.0, SHELL_FADE)
+	_shell_fade.tween_callback(_shell.queue_free)
+
+
+## The Carcass shows the empty shell where it fell, in its patch of sand.
+func make_corpse() -> Node2D:
+	var corpse := super()
+	if is_instance_valid(_shell):
+		if _shell_fade != null:
+			_shell_fade.kill()
+		var shell_rotation := _shell.global_rotation - global_rotation
+		if _shell.get_parent() != null:
+			_shell.get_parent().remove_child(_shell)
+		_shell.position = Vector2.ZERO
+		_shell.rotation = shell_rotation
+		_shell.modulate = Color(0.85, 0.85, 0.85)
+		_shell.z_index = 0
+		corpse.add_child(_shell)
+	return corpse
 
 
 func _animate(delta: float) -> void:

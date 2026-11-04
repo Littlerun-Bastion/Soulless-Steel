@@ -25,6 +25,16 @@ extends Node2D
 ##
 ## Use: new(), position it, copy_from(mecha) while the mecha is still valid,
 ## add it to the tree, then shed() the parts choose_shed() picked.
+##
+## A part that comes off a live mecha (Mecha.lose_part) leaves a body of just
+## that part (copy_parts_from, not solid), shed beside it. A part the mecha
+## lost before it died isn't shown, so it isn't copied.
+##
+## Coyotes scavenge from a body (Coyote): a shoulder (as a shield) or an arm
+## weapon (as a gun), from the body or its debris. takeable_slots() lists
+## what's there; take_part() removes it (a shoulder takes its arm weapon with
+## it) and says what it was: its part id, the sprite, and for a shoulder its
+## front armour.
 
 ## Mecha child -> the part (design slot, or "core"/"chassis") it draws.
 const PART_NODES := {
@@ -69,13 +79,22 @@ const SHED_TIME := 0.45
 ## How many stripped armour pips one destroyed component counts as when
 ## choosing what comes off.
 const DESTROYED_WEIGHT := 2
+## What a Coyote can take from a body.
+const TAKEABLE := ["left_shoulder", "right_shoulder", "arm_weapon_left", "arm_weapon_right"]
 
 ## Parts that came off, including arm weapons that went with a shoulder.
 var shed_slots: Array[String] = []
+## Parts taken from the body or its debris (take_part).
+var taken_slots: Array[String] = []
+## Slot -> the part id it carried, and for each shoulder its front armour
+## ({level, pips}), from the mecha (copy_from).
+var part_ids := {}
+var shoulder_armor := {}
 ## What makes the body solid (copy_from).
 var solid: StaticBody2D = null
 var _parts := {}  # part -> copied top-level nodes
 var _shapes := {}  # part -> its CollisionPolygon2D copies in solid
+var _debris := {}  # part -> the Debris node it was shed into
 var _material_copies := {}
 var _heat_materials: Array[ShaderMaterial] = []
 var _start_heat := START_HEAT
@@ -85,12 +104,27 @@ static var _heat_shaders := {}
 
 
 func copy_from(mecha: Node2D) -> void:
+	_copy_parts(mecha, [])
+	_copy_shapes(mecha)
+	_set_heat(_start_heat)
+
+
+## Only these parts (PART_NODES values), with no solid body: a part that came
+## off a live mecha.
+func copy_parts_from(mecha: Node2D, parts: Array) -> void:
+	_copy_parts(mecha, parts)
+	_set_heat(_start_heat)
+
+
+# The mecha's drawn parts (all of them for an empty `only`), and what a
+# scavenger needs to know about them.
+func _copy_parts(mecha: Node2D, only: Array) -> void:
 	rotation = mecha.global_rotation
 	scale = mecha.global_scale
 	_start_heat = maxf(START_HEAT, float(mecha.get("shader_heat_value")))
 	for child in mecha.get_children():
 		var part: String = PART_NODES.get(String(child.name), "")
-		if part == "":
+		if part == "" or (not only.is_empty() and not part in only):
 			continue
 		var copy := _copy(child)
 		if copy == null:
@@ -99,8 +133,16 @@ func copy_from(mecha: Node2D) -> void:
 		if not _parts.has(part):
 			_parts[part] = []
 		_parts[part].append(copy)
-	_copy_shapes(mecha)
-	_set_heat(_start_heat)
+	var build = mecha.get("build")
+	if build is Dictionary:
+		for slot in ["arm_weapon_left", "arm_weapon_right"]:
+			if build.get(slot):
+				part_ids[slot] = str(build[slot].part_id)
+		if build.get("shoulders"):
+			for slot in ["left_shoulder", "right_shoulder"]:
+				part_ids[slot] = str(build.shoulders.part_id)
+				var front: Dictionary = mecha.armor[slot].front
+				shoulder_armor[slot] = {"level": int(front.level), "pips": int(front.pips)}
 
 
 func _notification(what: int) -> void:
@@ -126,14 +168,15 @@ func _copy_shapes(mecha: Node2D) -> void:
 	add_child.call_deferred(solid)
 	for shape_name in SOLID_SHAPES:
 		var source := mecha.get_node_or_null(shape_name) as CollisionPolygon2D
-		if source == null or source.disabled or _area(source.polygon) < 1.0:
+		var part: String = SOLID_SHAPES[shape_name]
+		if source == null or source.disabled or _area(source.polygon) < 1.0 \
+				or (mecha.has_method("is_part_lost") and mecha.is_part_lost(part)):
 			continue
 		var shape := CollisionPolygon2D.new()
 		shape.name = shape_name
 		shape.polygon = source.polygon
 		shape.transform = source.transform
 		solid.add_child(shape)
-		var part: String = SOLID_SHAPES[shape_name]
 		if not _shapes.has(part):
 			_shapes[part] = []
 		_shapes[part].append(shape)
@@ -168,7 +211,7 @@ func get_heat() -> float:
 func get_part_slots() -> Array[String]:
 	var found: Array[String] = []
 	for part in _parts:
-		if part in shed_slots:
+		if part in shed_slots or part in taken_slots:
 			continue
 		for node in _parts[part]:
 			if _has_texture(node):
@@ -208,6 +251,9 @@ func shed(slot: String, animate := true) -> Vector2:
 		remove_child(node)
 		node.position -= centre
 		debris.add_child(node)
+	for part in [slot] + SHED_WITH.get(slot, []):
+		if _parts.has(part):
+			_debris[part] = debris
 	var out := centre.normalized() if centre.length() > 1.0 else Vector2.RIGHT.rotated(randf() * TAU)
 	var lands := centre + out.rotated(randf_range(-0.6, 0.6)) * randf_range(SHED_DISTANCE.x, SHED_DISTANCE.y)
 	var spin := randf_range(-SHED_SPIN, SHED_SPIN)
@@ -297,8 +343,68 @@ static func damage_of(mecha, slot: String) -> int:
 
 
 static func _is_fitted(mecha, slot: String) -> bool:
+	if mecha.has_method("is_part_lost") and mecha.is_part_lost(slot):
+		return false
 	var part = mecha.build.get("shoulders" if slot in ["left_shoulder", "right_shoulder"] else slot)
 	return true if part else false
+
+
+## What a Coyote could take here: TAKEABLE parts on the body or its debris,
+## with a sprite, not taken yet.
+func takeable_slots() -> Array[String]:
+	var found: Array[String] = []
+	for slot in TAKEABLE:
+		if slot in taken_slots or not part_ids.has(slot) or not _parts.has(slot):
+			continue
+		for node in _parts[slot]:
+			if is_instance_valid(node) and _has_texture(node):
+				found.append(slot)
+				break
+	return found
+
+
+## Where a part is now (world): on the body, or where its debris lies.
+func part_position(slot: String) -> Vector2:
+	for node in _parts.get(slot, []):
+		if is_instance_valid(node):
+			return node.global_position
+	return global_position
+
+
+## Takes a part off the body or its debris (a shoulder takes its arm weapon
+## with it). Returns {"slot", "part_id", "texture"} and, for a shoulder,
+## "armor" (its front {level, pips}); {} if it isn't there to take.
+func take_part(slot: String) -> Dictionary:
+	if not slot in takeable_slots():
+		return {}
+	var taken := {"slot": slot, "part_id": part_ids[slot], "texture": _texture_of(slot)}
+	if shoulder_armor.has(slot):
+		taken["armor"] = shoulder_armor[slot].duplicate()
+	for part in [slot] + SHED_WITH.get(slot, []):
+		if part in taken_slots:
+			continue
+		taken_slots.append(part)
+		for shape in _shapes.get(part, []):
+			if is_instance_valid(shape):
+				shape.queue_free()
+		_shapes.erase(part)
+		for node in _parts.get(part, []):
+			if is_instance_valid(node):
+				node.queue_free()
+		var debris = _debris.get(part)
+		if is_instance_valid(debris) and debris.get_children().all(func(n): return n.is_queued_for_deletion()):
+			debris.queue_free()
+	return taken
+
+
+func _texture_of(slot: String) -> Texture2D:
+	for node in _parts.get(slot, []):
+		if node is Sprite2D and node.texture != null:
+			return node.texture
+		for child in node.find_children("*", "Sprite2D", true, false):
+			if child.texture != null:
+				return child.texture
+	return null
 
 
 static func _goes_with(slot: String, chosen: Array) -> bool:

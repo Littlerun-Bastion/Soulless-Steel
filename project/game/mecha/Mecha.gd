@@ -726,6 +726,10 @@ func _physics_step(dt):
 	var heat_start := FrameProfiler.start()
 	update_heat(dt)
 	FrameProfiler.add("    heat (in mecha)", heat_start)
+	if not entity_slow_stacks.is_empty():
+		_update_entity_slow(dt)
+	if not ticks.is_empty() or not _fading_ticks.is_empty():
+		_update_ticks(dt)
 	if battery < battery_capacity and not has_status("electrified"):
 		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
 	for status in status_time:
@@ -931,6 +935,8 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 			Particle.blood[2].emitting = true
 
 	emit_signal("took_damage", self, false)
+	if amount > 0:
+		_shake_ticks(1)
 
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
@@ -1068,6 +1074,7 @@ func die(source_info, weapon_name):
 		return
 	is_dead = true
 	kill_record = KillRecord.build(self, source_info, weapon_name)
+	_drop_all_ticks()
 
 	# The Flag is over; the blood pools under what will be the wreck.
 	if _flag_marker:
@@ -1134,6 +1141,57 @@ func add_decal(id, decal_position, type, size):
 
 func increase_heat(amount_kj: float):
 	pending_heat_kj += amount_kj
+
+
+## Heat an Entity sucks out of the mecha (a Coyote's bite, a Fisher's drain,
+## a tick), in kJ: first the heat still waiting to enter the system, then the
+## external layer (its signature), then the coolant. external_only takes it
+## from the external layer alone. Never below ambient. Returns the kJ taken.
+func drain_heat(amount_kj: float, external_only := false) -> float:
+	var left := maxf(amount_kj, 0.0)
+	if not external_only:
+		var from_pending := minf(pending_heat_kj, left)
+		pending_heat_kj -= from_pending
+		left -= from_pending
+	var from_external := minf(external_temp * external_capacity, left)
+	external_temp = maxf(external_temp - from_external / external_capacity, 0.0)
+	left -= from_external
+	if not external_only:
+		var from_internal := minf(internal_temp * internal_capacity, left)
+		internal_temp = maxf(internal_temp - from_internal / internal_capacity, 0.0)
+		left -= from_internal
+	return maxf(amount_kj, 0.0) - left
+
+
+# ---- Entity slow ----
+# A Coyote's bite drags at the mecha: each one adds a stack of slow that wears
+# off on its own after its duration. Stacks add up to ENTITY_SLOW_MAX_STACKS;
+# past that a new one replaces the one closest to wearing off. Applied once to
+# the target speed in apply_movement(), whatever the movement type.
+
+const ENTITY_SLOW_PER_STACK := 0.12
+const ENTITY_SLOW_MAX_STACKS := 4
+
+var entity_slow_stacks: Array[float] = []  # seconds left on each stack
+
+
+func add_entity_slow(duration: float) -> void:
+	entity_slow_stacks.append(duration)
+	if entity_slow_stacks.size() > ENTITY_SLOW_MAX_STACKS:
+		entity_slow_stacks.sort()
+		entity_slow_stacks.remove_at(0)
+
+
+## Speed multiplier from Entity slow: 1.0 with none.
+func get_entity_slow() -> float:
+	return 1.0 - ENTITY_SLOW_PER_STACK * entity_slow_stacks.size()
+
+
+func _update_entity_slow(dt: float) -> void:
+	for i in range(entity_slow_stacks.size() - 1, -1, -1):
+		entity_slow_stacks[i] -= dt
+		if entity_slow_stacks[i] <= 0.0:
+			entity_slow_stacks.remove_at(i)
 
 func update_heat(dt):
 	if display_mode:
@@ -1252,10 +1310,11 @@ var _heat_nodes: Array = []
 
 # Returns a 0-1 normalized thermal signature for detection systems
 # 0.0 = at ambient (invisible), 1.0 = extremely hot
+# Each tick on the mecha glows TICK_GLOW on top of its real heat.
 func get_thermal_signature() -> float:
 	# Normalize against a reference "very hot" value
 	# 150°C above ambient is considered max detection signature
-	return clamp(external_temp / 150.0, 0.0, 1.0)
+	return clamp(external_temp / 150.0 + TICK_GLOW * ticks.size(), 0.0, 1.0)
 
 # Returns absolute external temperature in °C (for display / fuse checks)
 func get_external_temp_absolute() -> float:
@@ -2048,10 +2107,12 @@ func get_stat(stat_name):
 
 func _sum_stat(stat_name) -> float:
 	var total_stat = 0.0
+	var weight: bool = stat_name == "weight"
 	for slot in build:
 		var part = build[slot]
 		if part and part.get(stat_name):
-			total_stat += part[stat_name] * Grades.stat_mult(part_grades.get(slot), stat_name)
+			var share := _weight_share(slot) if weight else 1.0
+			total_stat += part[stat_name] * Grades.stat_mult(part_grades.get(slot), stat_name) * share
 
 	if stat_name.contains("max_speed") and is_overweight():
 		var total_weight = get_total_weight()
@@ -2062,6 +2123,16 @@ func _sum_stat(stat_name) -> float:
 	if stat_name == "thrust_max_speed":
 		total_stat += get_stat("max_speed")
 	return float(total_stat)
+
+# How much of a slot's part is still on the mecha (lose_part): none of a lost
+# one, half the shoulders per shoulder lost.
+func _weight_share(slot: String) -> float:
+	if lost_parts.is_empty():
+		return 1.0
+	if slot == "shoulders":
+		return 1.0 - 0.5 * (int(is_part_lost("left_shoulder")) + int(is_part_lost("right_shoulder")))
+	return 0.0 if is_part_lost(slot) else 1.0
+
 
 func get_inventory_weight() -> float:
 	if mech_inventory:
@@ -2298,7 +2369,7 @@ func apply_movement(dt, direction):
 				direction.x = 0
 			direction.y = min(direction.y, 0.0)
 	var target_move_acc = clamp(move_acc*dt, 0, 1)
-	var target_speed = direction.normalized() * (max_speed * throttle)
+	var target_speed = direction.normalized() * (max_speed * throttle) * get_entity_slow()
 	var mult = 1.0
 	if build.thruster:
 		var _thrust_max_speed = get_stat("thrust_max_speed")
@@ -2366,7 +2437,7 @@ func apply_movement(dt, direction):
 				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
 				global_rotation_degrees -= target_rotation_acc*dt
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
-			target_speed *= WHEELS_SPEED_FACTOR
+			target_speed *= WHEELS_SPEED_FACTOR * get_entity_slow()
 			velocity = lerp(velocity, target_speed, target_move_acc)
 			increase_heat(get_chassis_move_heat() * throttle * dt)
 			move(apply_movement_modifiers(velocity))
@@ -2387,6 +2458,7 @@ func apply_movement(dt, direction):
 				var _thrust_max_speed = get_stat("thrust_max_speed")
 				if target_speed.length() > (target_speed.normalized() * _thrust_max_speed).length():
 					target_speed = target_speed.normalized() * _thrust_max_speed * WHEELS_SPEED_FACTOR
+			target_speed *= get_entity_slow()
 			var target_rotation_acc = apply_movement_modifiers(get_chassis_rotation_acc() * 50)
 			if direction.y == 0:
 				target_rotation_acc *= 2
@@ -2567,6 +2639,9 @@ func shoot(type, is_auto_fire = false):
 		return
 	# The Flag locks the weapons (the smoke launcher excepted).
 	if is_shielding or (is_flagged() and not flag_allows(type)):
+		return
+	# A weapon that came off with its part.
+	if is_part_lost(type):
 		return
 	# Designator weapons fire salvos at a point; callers that only say "shoot"
 	# (NPCs, scripted scenes) aim at get_default_aim_point, and don't fire
@@ -3307,6 +3382,10 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 	if is_in_flag_grace():
 		return {"penetrated": true, "part_name": hit_part_name, "component_name": "", "facing": "", "deflection_type": ""}
 
+	# A part that came off isn't there to hit.
+	if is_part_lost(hit_part_name):
+		return {"penetrated": false, "part_name": "", "component_name": "", "facing": ""}
+
 	# 1. Get global facing (front/side/rear of mech)
 	var facing = get_global_facing_from_angle(impact_position)
 
@@ -3369,7 +3448,15 @@ func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir
 		var eligible = get_eligible_components(hit_part_name, facing, penetrated, is_aoe)
 		if eligible.size() > 0:
 			selected_component = select_component_by_weight(hit_part_name, eligible)
-	
+
+	# The damage_component that follows a hit on a component counts its pips
+	# against the ticks; armour stripped without reaching one counts here.
+	_hit_facing[hit_part_name] = facing
+	_aoe_part = hit_part_name if is_aoe and selected_component != "" else ""
+	if selected_component == "":
+		_shake_ticks(armor_pip_damage * (TICK_AOE_SHAKE if is_aoe else 1))
+	_check_part_loss(hit_part_name, facing)
+
 	return {
 		"penetrated": penetrated or facing_exposed,
 		"part_name": hit_part_name,
@@ -3463,8 +3550,8 @@ func get_surface_normal_at_point(point: Vector2, collision_polygon: CollisionPol
 	
 func get_eligible_components(part_name: String, _facing: String, penetrated: bool, _is_aoe: bool = false) -> Array:
 	var eligible = []
-	
-	if not components.has(part_name):
+
+	if not components.has(part_name) or is_part_lost(part_name):
 		return eligible
 	
 	for comp_name in components[part_name]:
@@ -3643,12 +3730,17 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	if not components.has(part_name) or not components[part_name].has(component_name):
 		push_error("Invalid component: " + part_name + "." + component_name)
 		return
+	var aoe := _aoe_part == part_name
+	_aoe_part = ""
+	if is_part_lost(part_name):
+		return
 
 	var comp = components[part_name][component_name]
 
 	# Apply damage
 	comp.hp = max(comp.hp - damage_pips, 0)
 	_wound_dirty = true
+	_shake_ticks(damage_pips * (TICK_AOE_SHAKE if aoe else 1))
 	_note_pressure(last_damage_source, float(damage_pips) * PRESSURE_PER_PIP)
 	spawn_component_damage_explosion(part_name, comp.hp <= 0)
 	if part_name in WOUND_PARTS and WOUND_TAG in comp.tags:
@@ -3664,6 +3756,13 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	if comp.hp <= 0 and not comp.disabled:
 		comp.disabled = true
 		component_destroyed(part_name, component_name)
+
+	# The facing the hit came in on (from its direction, else the last armour
+	# check on this part) decides whether the part comes off.
+	var facing: String = get_global_facing_from_angle(global_position - hit_dir * 100.0) \
+			if hit_dir != Vector2.ZERO else str(_hit_facing.get(part_name, ""))
+	if facing != "":
+		_check_part_loss(part_name, facing)
 
 func component_destroyed(part_name: String, comp_name: String):
 	var comp = components[part_name][comp_name]
@@ -4124,6 +4223,511 @@ func spawn_component_damage_explosion(part_name: String, is_destroyed: bool):
 	# Random offset
 	var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
 	explosion.global_position += offset
+
+
+# TICKS
+#
+# A tick swarm's motes jump on a hot mecha (TickSwarm) and become the
+# mecha's own: attach_tick() adds one, and the mecha keeps it, whatever
+# happens to its swarm. Each tick sits on a part (in that part node's space,
+# so it moves with the mecha), stays on its own time, and while on:
+#   - drains TICK_DRAIN kJ/s from the external layer (drain_heat)
+#   - bleeds at its spot now and then (BloodStains.spray, visual only)
+#   - adds TICK_GLOW to the thermal signature (get_thermal_signature)
+#   - every TICK_BITE_PERIOD s, a TICK_BITE_CHANCE of one pip: an external
+#     component of its part or an armour pip of its facing, even chance
+# Damage from anything else shakes them off: one tick per point of damage,
+# TICK_AOE_SHAKE per point of a blast's (_shake_ticks). Cooling doesn't.
+#
+# TICK_SYNC_MIN or more from one swarm on one mecha sync: their timers are
+# pulled within TICK_SYNC_SPREAD s of the middle one's. When the middle one
+# drops off, a brood forms on the ground here (TickSwarm.spawn_brood) with
+# the group's ticks that are done; the rest join it as they drop off. A
+# synced tick that is done before the middle one holds on until it goes. A
+# group shaken down below TICK_SYNC_MIN unsyncs, and a tick in no group just
+# fades when its time ends.
+#
+# All the ticks on a mecha are drawn by one node over it (_tick_layer), in
+# one pass, and only on frames the mecha is drawn (wants_visuals).
+
+## Placeholders.
+const TICK_DRAIN := 100.0
+const TICK_GLOW := 0.1
+const TICK_BITE_PERIOD := 3.0
+const TICK_BITE_CHANCE := 0.33
+const TICK_AOE_SHAKE := 3
+const TICK_SYNC_MIN := 3
+const TICK_SYNC_SPREAD := 1.0
+const TICK_BLEED_INTERVAL := Vector2(1.2, 2.5)
+const TICK_JUMP_TIME := 0.1
+const TICK_FADE_TIME := 0.5
+const TICK_PULSE_PERIOD := 0.9
+const TICK_RADIUS := 4.0
+## Where a tick lands on its part: this far (px) out from the part's centre
+## towards where it jumped from.
+const TICK_SPOT := Vector2(8.0, 26.0)
+const TICK_PARTS := ["core", "head", "left_shoulder", "right_shoulder", "chassis"]
+
+
+class Tick:
+	var group := 0              # the swarm it came from (TickSwarm.group_id)
+	var arena = null            # where its brood would go
+	var part := ""
+	var node: Node2D            # the part node it sits on
+	var local := Vector2.ZERO   # its spot, in node's space
+	var from := Vector2.ZERO    # world point it jumped from
+	var jump := 0.0             # 0..1 through the jump
+	var time_left := 12.0
+	var bite_timer := 3.0
+	var bleed_timer := 1.0
+	var phase := 0.0
+	var synced := false
+	var middle := false
+
+
+var ticks: Array[Tick] = []
+# Ticks falling off: [world position, seconds left].
+var _fading_ticks: Array = []
+var _tick_layer: Node2D = null
+# Each synced group's brood once it has formed: group -> TickSwarm.
+var _tick_broods := {}
+# Damage the ticks do themselves doesn't shake ticks off.
+var _tick_damage := false
+# A blast's armour check (armor_check, is_aoe) names its part here for the
+# damage_component that follows it.
+var _aoe_part := ""
+
+
+func get_tick_count() -> int:
+	return ticks.size()
+
+
+## A tick jumping on from `from` (world): it lands on the part nearest to it
+## and stays `duration` s. group: its swarm's TickSwarm.group_id; arena_ref:
+## where a brood would form. Returns false if there's nowhere to land.
+func attach_tick(group: int, arena_ref, from: Vector2, duration: float) -> bool:
+	if is_dead:
+		return false
+	var part := ""
+	var best := INF
+	for part_name in TICK_PARTS:
+		if is_part_lost(part_name) or not _part_fitted(part_name):
+			continue
+		var d := get_part_global_position(part_name).distance_squared_to(from)
+		if d < best:
+			best = d
+			part = part_name
+	if part == "":
+		return false
+	var tick := Tick.new()
+	tick.group = group
+	tick.arena = arena_ref
+	tick.part = part
+	tick.node = _part_node(part)
+	var centre := get_part_global_position(part)
+	var out := (from - centre).normalized() if from.distance_to(centre) > 1.0 else Vector2.RIGHT.rotated(randf() * TAU)
+	var spot := centre + out.rotated(randf_range(-0.7, 0.7)) * randf_range(TICK_SPOT.x, TICK_SPOT.y)
+	tick.local = tick.node.to_local(spot)
+	tick.from = from
+	tick.time_left = duration
+	tick.bite_timer = TICK_BITE_PERIOD * randf_range(0.5, 1.0)
+	tick.bleed_timer = randf_range(TICK_BLEED_INTERVAL.x, TICK_BLEED_INTERVAL.y)
+	tick.phase = randf()
+	ticks.append(tick)
+	_sync_ticks(group)
+	if _tick_layer == null:
+		_tick_layer = Node2D.new()
+		_tick_layer.name = "Ticks"
+		_tick_layer.z_index = 8
+		var unshaded := CanvasItemMaterial.new()
+		unshaded.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		_tick_layer.material = unshaded
+		_tick_layer.draw.connect(_draw_ticks)
+		add_child(_tick_layer)
+	return true
+
+
+## The world position of a tick on this mecha.
+func tick_position(tick: Tick) -> Vector2:
+	var spot := tick.node.to_global(tick.local)
+	return tick.from.lerp(spot, tick.jump) if tick.jump < 1.0 else spot
+
+
+func _part_fitted(part_name: String) -> bool:
+	match part_name:
+		"head": return build.head != null
+		"left_shoulder", "right_shoulder": return build.shoulders != null
+		"chassis": return build.chassis != null
+	return build.core != null
+
+
+func _part_node(part_name: String) -> Node2D:
+	match part_name:
+		"head": return Head
+		"left_shoulder": return LeftShoulder
+		"right_shoulder": return RightShoulder
+		"chassis": return $Chassis
+	return Core
+
+
+# A group of TICK_SYNC_MIN or more pulls its timers together round its middle
+# tick; a smaller one isn't synced.
+func _sync_ticks(group: int) -> void:
+	var members: Array[Tick] = []
+	for tick in ticks:
+		if tick.group == group:
+			members.append(tick)
+	if members.size() < TICK_SYNC_MIN:
+		for tick in members:
+			tick.synced = false
+			tick.middle = false
+		return
+	members.sort_custom(func(a, b): return a.time_left < b.time_left)
+	var middle: Tick = members[members.size() / 2]
+	for tick in members:
+		tick.time_left = clampf(tick.time_left, middle.time_left - TICK_SYNC_SPREAD, middle.time_left + TICK_SYNC_SPREAD)
+		tick.synced = true
+		tick.middle = tick == middle
+
+
+func _update_ticks(dt: float) -> void:
+	var drain := 0.0
+	var visuals: bool = wants_visuals()
+	var i := ticks.size() - 1
+	while i >= 0:
+		var tick := ticks[i]
+		tick.jump = minf(tick.jump + dt / TICK_JUMP_TIME, 1.0)
+		tick.phase += dt / TICK_PULSE_PERIOD
+		tick.time_left -= dt
+		drain += TICK_DRAIN * dt
+		tick.bleed_timer -= dt
+		if tick.bleed_timer <= 0.0:
+			tick.bleed_timer = randf_range(TICK_BLEED_INTERVAL.x, TICK_BLEED_INTERVAL.y)
+			if visuals:
+				var stains := BloodStains.find(self)
+				if stains:
+					var at := tick_position(tick)
+					stains.spray(at, at - get_part_global_position(tick.part), WOUND_LEAK)
+		tick.bite_timer -= dt
+		if tick.bite_timer <= 0.0:
+			tick.bite_timer = TICK_BITE_PERIOD
+			if randf() < TICK_BITE_CHANCE:
+				_tick_bite(tick)
+		if tick.time_left <= 0.0:
+			_tick_done(tick)
+		i = mini(i - 1, ticks.size() - 1)
+	if drain > 0.0:
+		drain_heat(drain, true)
+	for k in range(_fading_ticks.size() - 1, -1, -1):
+		_fading_ticks[k][1] -= dt
+		if _fading_ticks[k][1] <= 0.0:
+			_fading_ticks.remove_at(k)
+	if _tick_layer != null and visuals:
+		_tick_layer.queue_redraw()
+
+
+# A tick whose time is up: a lone one fades; a synced one forms its group's
+# brood (the middle one), joins it, or holds on until the middle one goes.
+func _tick_done(tick: Tick) -> void:
+	if not tick.synced:
+		_remove_tick(tick)
+		return
+	var brood = _tick_broods.get(tick.group)
+	if is_instance_valid(brood) and not brood.is_dead:
+		brood.add_motes([tick_position(tick)])
+		_remove_tick(tick, false)
+		return
+	if not tick.middle:
+		tick.time_left = 0.0
+		return
+	var points := []
+	var leaving: Array[Tick] = []
+	for other in ticks:
+		if other.group == tick.group and other.time_left <= 0.0:
+			points.append(tick_position(other))
+			leaving.append(other)
+	brood = TickSwarm.spawn_brood(tick.arena, global_position, points)
+	if brood != null:
+		_tick_broods[tick.group] = brood
+	for other in leaving:
+		_remove_tick(other, brood == null)
+
+
+func _remove_tick(tick: Tick, fade := true) -> void:
+	if fade:
+		_fading_ticks.append([tick_position(tick), TICK_FADE_TIME])
+	ticks.erase(tick)
+	var left_in_group := false
+	for other in ticks:
+		if other.group == tick.group:
+			left_in_group = true
+			break
+	if not left_in_group:
+		_tick_broods.erase(tick.group)
+
+
+# Damage from anything but the ticks: `points` ticks fall off, at random. A
+# group left with fewer than TICK_SYNC_MIN stops being synced (no brood).
+func _shake_ticks(points: int) -> void:
+	if _tick_damage or points <= 0 or ticks.is_empty():
+		return
+	var groups := {}
+	for k in mini(points, ticks.size()):
+		var tick: Tick = ticks.pick_random()
+		groups[tick.group] = true
+		_remove_tick(tick)
+	for group in groups:
+		if not _tick_broods.has(group):
+			_sync_ticks(group)
+
+
+# One pip from a tick: an external component of its part, or an armour pip
+# of the facing it sits on (even chance, the other if one has nothing left).
+func _tick_bite(tick: Tick) -> void:
+	if is_in_flag_grace() or is_part_lost(tick.part):
+		return
+	var at := tick_position(tick)
+	var facing := get_global_facing_from_angle(at)
+	var externals := get_eligible_components(tick.part, facing, false)
+	var plate: Dictionary = armor[tick.part][facing]
+	var can_plate: bool = plate.level > 0 and plate.pips > 0
+	if externals.is_empty() and not can_plate:
+		return
+	last_damage_source = {"body": null, "name": "Tick Swarm"}
+	last_damage_weapon = "Tick Swarm"
+	_tick_damage = true
+	if not externals.is_empty() and (not can_plate or randf() < 0.5):
+		var dir := (get_part_global_position(tick.part) - at).normalized()
+		damage_component(tick.part, select_component_by_weight(tick.part, externals), 1, dir)
+	else:
+		plate.pips -= 1
+		_check_part_loss(tick.part, facing)
+	_tick_damage = false
+
+
+# Everything on the mecha is gone when it dies (its update stops).
+func _drop_all_ticks() -> void:
+	ticks.clear()
+	_fading_ticks.clear()
+	_tick_broods.clear()
+	if _tick_layer != null:
+		_tick_layer.queue_redraw()
+
+
+func _draw_ticks() -> void:
+	for tick in ticks:
+		var p := _tick_layer.to_local(tick_position(tick))
+		var pulse := 0.5 + 0.5 * sin(tick.phase * TAU)
+		_draw_tick(p, 0.55 + 0.45 * pulse)
+	for fading in _fading_ticks:
+		_draw_tick(_tick_layer.to_local(fading[0]), 0.6 * fading[1] / TICK_FADE_TIME)
+
+
+func _draw_tick(p: Vector2, bright: float) -> void:
+	_tick_layer.draw_circle(p, TICK_RADIUS * 2.6, Color(1.0, 1.0, 1.0, 0.14 * bright))
+	_tick_layer.draw_circle(p, TICK_RADIUS, Color(0.88, 0.88, 0.88, bright))
+	_tick_layer.draw_circle(p, TICK_RADIUS * 0.45, Color(1.0, 1.0, 1.0, bright))
+
+
+# PARTS COMING OFF
+#
+# A shoulder (taking the arm and shoulder weapon on its side with it) or the
+# head comes off when the facing that just took a hit is at 0 pips and every
+# internal component of the part is destroyed (_check_part_loss). The core
+# and chassis never do. A Coyote can tear a shoulder or the head off, or an
+# arm weapon on its own (lose_part with torn).
+#
+# The part is hidden, not freed (much keeps references to its nodes). Its
+# collision shapes are off and it is in lost_parts, with the weapon slots
+# that went with it, which everything that picks a part to damage skips. Its
+# components are destroyed (the head's do what destroying them does). Its
+# weapons can't fire (shoot, can_fire_at_point), are offline in
+# disabled_systems, show as gone on the HUD (WireframeDisplay) and NPCs stop
+# using them (_on_weapons_lost); its weight goes (_sum_stat). A blown-off
+# part goes up in a large PartDestructionExplosion, a torn-off one sprays
+# blood. A copy of it lands on the ground beside the mecha (MechaBody, like a
+# wreck's shed parts) and fades after DEBRIS_TIME s. A wreck copies only what
+# is still shown, so it keeps the lost parts missing.
+
+const LOSABLE_PARTS := ["left_shoulder", "right_shoulder", "head"]
+## What goes when each part comes off: the part and the build slots on it.
+const LOST_WITH := {
+	"left_shoulder": ["left_shoulder", "arm_weapon_left", "shoulder_weapon_left"],
+	"right_shoulder": ["right_shoulder", "arm_weapon_right", "shoulder_weapon_right"],
+	"head": ["head"],
+	"arm_weapon_left": ["arm_weapon_left"],
+	"arm_weapon_right": ["arm_weapon_right"],
+}
+## Placeholders.
+const PART_LOSS_EXPLOSION_SCALE := 1.6
+const DEBRIS_TIME := 90.0
+const DEBRIS_FADE_TIME := 3.0
+
+signal part_lost(part_name: String)
+
+## Parts that came off (lose_part), and the weapon slots that went with
+## them: name -> true.
+var lost_parts := {}
+# The facing each part was last armour-checked on (armor_check).
+var _hit_facing := {}
+
+
+func is_part_lost(part_name: String) -> bool:
+	return lost_parts.has(part_name)
+
+
+## The design (get_design_data) less what came off: lost slots are empty.
+func get_intact_design_data() -> Dictionary:
+	var data: Dictionary = get_design_data()
+	for slot in data:
+		if is_part_lost(slot):
+			data[slot] = false
+	return data
+
+
+func _check_part_loss(part_name: String, facing: String) -> void:
+	if is_dead or not part_name in LOSABLE_PARTS or is_part_lost(part_name) or not armor.has(part_name):
+		return
+	if not armor[part_name].has(facing) or int(armor[part_name][facing].pips) > 0:
+		return
+	var internals := 0
+	for comp in components[part_name].values():
+		if WOUND_TAG in comp.tags:
+			internals += 1
+			if not comp.disabled:
+				return
+	if internals > 0:
+		lose_part(part_name)
+
+
+## Takes a part off: one of LOSABLE_PARTS, or an arm weapon slot on its own.
+## Blown off (an explosion), or torn off (a spray of blood). Returns false if
+## it isn't fitted or is already gone.
+func lose_part(part_name: String, torn := false) -> bool:
+	if is_dead or is_part_lost(part_name) or not LOST_WITH.has(part_name):
+		return false
+	if part_name.begins_with("arm_weapon"):
+		if build.get(part_name) == null:
+			return false
+	elif not _part_fitted(part_name):
+		return false
+	var at := _lost_part_position(part_name)
+	var slots: Array = LOST_WITH[part_name]
+	# What a Coyote tears off it carries away; the rest falls.
+	_leave_debris(slots.filter(func(s): return not (torn and s == part_name)))
+	for slot in slots:
+		lost_parts[slot] = true
+	_stats_changed()
+	_hide_lost(part_name)
+	var weapons := []
+	for slot in slots:
+		if DISABLED_WEAPON_KEYS.has(slot):
+			weapons.append(slot)
+			disabled_systems[DISABLED_WEAPON_KEYS[slot]] = true
+			stop_shooting(slot)
+	if not weapons.is_empty():
+		_salvos = _salvos.filter(func(s): return not s.slot in weapons)
+		_on_weapons_lost(weapons)
+	# Ticks on it go with it.
+	for tick in ticks.duplicate():
+		if is_part_lost(tick.part):
+			_remove_tick(tick)
+	if part_name in LOSABLE_PARTS:
+		_destroy_components(part_name, func(_comp_name, _comp): return true)
+	else:
+		var shoulder := "left_shoulder" if part_name == "arm_weapon_left" else "right_shoulder"
+		_destroy_components(shoulder, func(_comp_name, comp): return "weapon" in comp.tags)
+	_show_part_loss(at, torn)
+	part_lost.emit(part_name)
+	return true
+
+
+# Every living component of a part that `which(name, comp)` picks is
+# destroyed, with the effects destroying it has.
+func _destroy_components(part_name: String, which: Callable) -> void:
+	for comp_name in components[part_name].keys():
+		var comp: Dictionary = components[part_name][comp_name]
+		if comp.disabled or not which.call(comp_name, comp):
+			continue
+		comp.hp = 0
+		comp.disabled = true
+		_wound_dirty = true
+		component_destroyed(part_name, comp_name)
+		if is_dead:
+			return
+
+
+func _lost_part_position(part_name: String) -> Vector2:
+	match part_name:
+		"arm_weapon_left": return LeftArmWeapon.global_position
+		"arm_weapon_right": return RightArmWeapon.global_position
+	return get_part_global_position(part_name)
+
+
+func _hide_lost(part_name: String) -> void:
+	match part_name:
+		"left_shoulder":
+			for node in [LeftShoulder, LeftArmWeapon, LeftShoulderWeapon]:
+				node.visible = false
+			$LeftShoulderCollision.set_deferred("disabled", true)
+		"right_shoulder":
+			for node in [RightShoulder, RightArmWeapon, RightShoulderWeapon]:
+				node.visible = false
+			$RightShoulderCollision.set_deferred("disabled", true)
+		"head":
+			Head.visible = false
+			$HeadCollision.set_deferred("disabled", true)
+		"arm_weapon_left":
+			LeftArmWeapon.visible = false
+		"arm_weapon_right":
+			RightArmWeapon.visible = false
+
+
+func _show_part_loss(at: Vector2, torn: bool) -> void:
+	if not is_inside_tree():
+		return
+	if torn:
+		var stains := BloodStains.find(self)
+		if stains:
+			var away := (at - global_position).normalized()
+			stains.spray(at, away)
+			stains.add_small_splatter(at, away)
+		AudioManager.play_sfx("medium_impact1", at)
+		return
+	var explosion = PART_DESTRUCTION_EXPLOSION.instantiate()
+	get_parent().add_child(explosion)
+	explosion.global_position = at
+	explosion.scale = Vector2.ONE * PART_LOSS_EXPLOSION_SCALE
+	AudioManager.play_sfx(FLAG_SFX, at)
+
+
+# A copy of the part, thrown down beside the mecha, under the mechas, fading
+# after DEBRIS_TIME. Copied while still shown.
+func _leave_debris(slots: Array) -> void:
+	if not is_inside_tree() or get_parent() == null:
+		return
+	var debris := MechaBody.new()
+	debris.name = "PartDebris"
+	debris.position = global_position
+	debris.copy_parts_from(self, slots)
+	if debris.get_part_slots().is_empty():
+		debris.free()
+		return
+	var parent := get_parent()
+	parent.add_child.call_deferred(debris)
+	parent.move_child.call_deferred(debris, 0)
+	debris.ready.connect(func():
+		for slot in slots:
+			debris.shed(slot)
+		var fade := debris.create_tween()
+		fade.tween_interval(DEBRIS_TIME)
+		fade.tween_property(debris, "modulate:a", 0.0, DEBRIS_FADE_TIME)
+		fade.tween_callback(debris.queue_free), CONNECT_ONE_SHOT)
+
+
+## Weapons that came off (Enemy forgets them).
+func _on_weapons_lost(_slots: Array) -> void:
+	pass
 
 
 func get_part_global_position(part_name: String) -> Vector2:

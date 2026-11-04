@@ -855,11 +855,42 @@ func _test_gun() -> void:
 	var fresh = weapon.projectile.instantiate()
 	check(round.base_damage == fresh.base_damage, "at the weapon's damage")
 	fresh.free()
+	var start: Vector2 = coyote.global_position
+	var hp_before := coyote.hp
+	var impact := _impact_of(round)
+	var landed := await wait_until(func(): return impact[0] != null, 3.0)
+	check(landed, "the round goes somewhere")
+	var reached: float = (impact[0] as Vector2).distance_to(start) if landed else 0.0
+	check(reached > 200.0, "it flies out past the Coyote, to %.0f px" % reached)
+	check(is_equal_approx(coyote.hp, hp_before), "the Coyote doesn't shoot itself")
 	coyote.set_pause(true)
 	coyote._gun_left = weapon.clip_size
 	for _i in weapon.clip_size:
 		coyote.fire_gun()
 	check(is_equal_approx(coyote._gun_cool, weapon.reload_speed), "a magazine's worth, then it waits the reload time")
+	# A packmate right in the line of fire: the rounds go through it.
+	await wait_seconds(0.5)
+	var to_prey: Vector2 = mecha.global_position - coyote.global_position
+	var mate: Coyote = _spawn(COYOTE, coyote.global_position + to_prey * 0.4, true)
+	var mate_hp := mate.hp
+	rounds.clear()
+	coyote.gun_spread = 0.0
+	coyote.fire_gun()
+	await _physics_frames(1)
+	var shot_impact := _impact_of(rounds.back()) if not rounds.is_empty() else [null]
+	await wait_until(func(): return shot_impact[0] != null, 2.0)
+	check(is_equal_approx(mate.hp, mate_hp), "a packmate in the line of fire isn't hit")
+	check(shot_impact[0] != null and (shot_impact[0] - coyote.global_position).length() > to_prey.length() * 0.6,
+			"the round flies on past it")
+
+
+# Where a round ends (its bullet_impact as it dies); [null] until then.
+func _impact_of(round) -> Array:
+	var at := [null]
+	round.bullet_impact.connect(func(projectile, _effect, clear, _body):
+		if clear:
+			at[0] = projectile.global_position)
+	return at
 
 
 func _test_scavenged_loot() -> void:

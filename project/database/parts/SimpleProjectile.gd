@@ -72,6 +72,13 @@ var distance = 0.0
 var has_impacted = false
 var deflection_cooldown = 0.0
 var deflected_from_body = null
+# Fired by an Entity (a Coyote's carried gun, Coyote.fire_gun): it flies
+# through Entities, its shooter and its pack included, as a Spitter's glob
+# doesn't hurt them either (AcidGlob). A mecha's round still stops in the
+# first Entity it meets.
+var _from_entity := false
+## Entities the movement ray looks past in one step, for an Entity's round.
+const MAX_ENTITY_SKIPS := 6
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -104,9 +111,9 @@ func _physics_process(dt):
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt), MapSenses.SHOT_MASK)
 	query.exclude = [self]
-	
-	var result = space_state.intersect_ray(query)
-	
+
+	var result = _cast(space_state, query)
+
 	if result and result.collider:
 		var is_mecha = result.collider.is_in_group("mecha")
 		var distance_to_hit = result.position.distance_to(position)
@@ -137,7 +144,22 @@ func _physics_process(dt):
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, ($LifeTimer.time_left/(life_time/4)))
-		
+
+
+# The movement ray's first hit; an Entity's round looks past Entities.
+func _cast(space_state: PhysicsDirectSpaceState2D, query: PhysicsRayQueryParameters2D) -> Dictionary:
+	var result := space_state.intersect_ray(query)
+	if not _from_entity:
+		return result
+	var skipped: Array[RID] = []
+	for _i in MAX_ENTITY_SKIPS:
+		if result.is_empty() or not (result.collider is Node and result.collider.is_in_group("entity")):
+			return result
+		skipped.append(result.rid)
+		query.exclude = skipped
+		result = space_state.intersect_ray(query)
+	return {} if not result.is_empty() and result.collider is Node and result.collider.is_in_group("entity") else result
+
 func setup(mecha, _args, _weapon):
 	if random_rotation:
 		$Image.rotation_degrees = randf_range(0,360)
@@ -151,8 +173,9 @@ func setup(mecha, _args, _weapon):
 		"body": mecha,
 		"name": mecha.mecha_name,
 	}
+	_from_entity = mecha is Node and mecha.is_in_group("entity")
 	change_scaling(projectile_size)
-	
+
 	part_id = _weapon
 	$Sprite2D/LightEffect.modulate.a = light_energy
 	if life_time > 0 :
@@ -237,6 +260,8 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		die(body)
 
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
+	if _from_entity and body.is_in_group("entity"):
+		return
 	# This now only handles shields and parries, armor system uses raycast
 	if body.is_in_group("mecha"):
 		if deflection_cooldown > 0:

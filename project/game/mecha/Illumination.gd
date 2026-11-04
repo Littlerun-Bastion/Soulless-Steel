@@ -27,6 +27,12 @@ extends RefCounted
 ## and taking away give the same picture whatever order Godot draws the lights
 ## in; mixing (BLEND_MODE_MIX, as both were) paints each light over the ones
 ## before it, so the order decided whether a cone showed at all.
+##
+## Only the player's darkness is on (Player.setup switches it on). Every
+## mecha has the node and Mecha.tscn has it on, so without this every NPC
+## took its own darkness away round it too: taken away once per mecha nearby,
+## the ground went black and the cones with it, and moving NPCs made the
+## darkness flicker and cut cones off at the edges of their darkness.
 
 ## The cone each MechaLight lights: its aimed_glow texture is lit to about 15
 ## degrees either side and to 0.44 of its width from the centre.
@@ -61,8 +67,9 @@ static var _lit_cache_frame := -1
 
 
 ## Gives a mecha's illuminator and darkness lights their blend modes and
-## energies (see above). Their textures, reach and shadows stay as the scene
-## has them.
+## energies (see above), and switches its darkness off: the player switches
+## its own back on. Their textures, reach and shadows stay as the scene has
+## them.
 static func style_lights(mecha: Node) -> void:
 	var light := light_of(mecha)
 	if light:
@@ -74,6 +81,7 @@ static func style_lights(mecha: Node) -> void:
 		darkness.blend_mode = Light2D.BLEND_MODE_SUB
 		darkness.color = Color.WHITE
 		darkness.energy = DARKNESS_ENERGY
+		darkness.enabled = false
 
 
 static func light_of(mecha: Node) -> PointLight2D:

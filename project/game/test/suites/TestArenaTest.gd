@@ -95,6 +95,8 @@ func _test_lighting() -> void:
 	check(off_layer.is_empty(), "every map canvas item is on the sight light layer (off: %s)" % str(off_layer.slice(0, 5)))
 	var player = _scene.player
 	check(player.get_node("MechaShadowGen").enabled, "the player's darkness light is on")
+	var dark_npcs: Array = _scene.all_mechas.filter(func(m): return is_instance_valid(m) and m != player and m.get_node(Illumination.DARKNESS_NODE).enabled)
+	check(dark_npcs.is_empty(), "and no NPC's is (on: %s)" % str(dark_npcs.map(func(m): return m.name)))
 	check(player.get_node("MechaLight").enabled and player.get_node("MechaLight").shadow_enabled, "its cone light casts shadows")
 	var buildings := BuildingField.find(_scene)
 	var shadows := await wait_until(func(): return buildings.occluder_count() > 0, 3.0)

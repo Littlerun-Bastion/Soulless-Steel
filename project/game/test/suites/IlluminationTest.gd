@@ -341,6 +341,8 @@ func _test_light_style() -> void:
 	var darkness: PointLight2D = _player.get_node(Illumination.DARKNESS_NODE)
 	check(darkness.blend_mode == Light2D.BLEND_MODE_SUB and is_equal_approx(darkness.energy, Illumination.DARKNESS_ENERGY),
 			"the player's darkness takes light away")
+	check(not enemy.get_node(Illumination.DARKNESS_NODE).enabled and not plain.get_node(Illumination.DARKNESS_NODE).enabled,
+			"an NPC's and a plain mecha's darkness are off (one per mecha would stack up)")
 	var mix_lights := []
 	for mecha in [_player, enemy, plain]:
 		for light in mecha.find_children("*", "Light2D", true, false):

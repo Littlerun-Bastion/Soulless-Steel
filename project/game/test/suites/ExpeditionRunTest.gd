@@ -253,7 +253,8 @@ func _test_death() -> void:
 	var summary = _find_child_of_type(ExtractionSummary)
 	if summary != null:
 		var text: String = summary.get_text()
-		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists what was lost as written off")
+		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists the lost cargo as written off")
+		check("UNSALVAGEABLE" in text, "and the mecha's parts as unsalvageable")
 		check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
 		summary.continue_button.pressed.emit()
 		await wait_frames()

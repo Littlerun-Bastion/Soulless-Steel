@@ -300,6 +300,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				
 				var container_win = MechOS.open_inventory("container", thing.inventory, thing.display_name)
 				if container_win != null:
+					# A wreck's shed parts, crossed out under its loot.
+					if container_win.has_method("show_unsalvageable"):
+						container_win.show_unsalvageable(thing)
 					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
 				# A wreck's kill record goes beside its loot (KillRecord).
 				if thing is Wreck and not thing.kill_record.is_empty():

@@ -31,11 +31,19 @@ extends Node2D
 ## lost before it died isn't shown, so it isn't copied.
 ##
 ## Coyotes scavenge from a body (Coyote): a shoulder (as a shield) or an arm
-## weapon (as a gun), from the body or its debris. takeable_slots() lists
-## what's there; take_part() removes it (a shoulder takes its arm weapon with
-## it) and says what it was: its part id, the sprite, and for a shoulder its
-## front armour.
+## weapon (as a gun), from the body or its debris on the ground, a wreck's or
+## a live mecha's lost part alike. Every body is in SCAVENGE_GROUP for them
+## to find. takeable_slots() lists what's there; take_part() removes it (a
+## shoulder takes its arm weapon with it) and says what it was: its part id,
+## the sprite, and for a shoulder its front armour.
+##
+## parts_changed fires when parts come off (shed) or are taken (take_part):
+## a Wreck lists its shed parts from it (Wreck.unsalvageable).
 
+signal parts_changed
+
+## Every body, for scavengers to find.
+const SCAVENGE_GROUP := "mecha_body"
 ## Mecha child -> the part (design slot, or "core"/"chassis") it draws.
 const PART_NODES := {
 	"Chassis": "chassis",
@@ -86,8 +94,9 @@ const TAKEABLE := ["left_shoulder", "right_shoulder", "arm_weapon_left", "arm_we
 var shed_slots: Array[String] = []
 ## Parts taken from the body or its debris (take_part).
 var taken_slots: Array[String] = []
-## Slot -> the part id it carried, and for each shoulder its front armour
-## ({level, pips}), from the mecha (copy_from).
+## Slot (SHED_OPTIONS) -> the part id it carried (both shoulders carry the
+## one shoulders part), and for each shoulder its front armour ({level,
+## pips}), from the mecha (copy_from).
 var part_ids := {}
 var shoulder_armor := {}
 ## What makes the body solid (copy_from).
@@ -101,6 +110,10 @@ var _start_heat := START_HEAT
 var _age := 0.0
 var _refresh := 0.0
 static var _heat_shaders := {}
+
+
+func _ready() -> void:
+	add_to_group(SCAVENGE_GROUP)
 
 
 func copy_from(mecha: Node2D) -> void:
@@ -135,7 +148,7 @@ func _copy_parts(mecha: Node2D, only: Array) -> void:
 		_parts[part].append(copy)
 	var build = mecha.get("build")
 	if build is Dictionary:
-		for slot in ["arm_weapon_left", "arm_weapon_right"]:
+		for slot in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right", "head"]:
 			if build.get(slot):
 				part_ids[slot] = str(build[slot].part_id)
 		if build.get("shoulders"):
@@ -264,6 +277,7 @@ func shed(slot: String, animate := true) -> Vector2:
 	else:
 		debris.position = lands
 		debris.rotation = spin
+	parts_changed.emit()
 	return to_global(centre) if is_inside_tree() else global_position + centre
 
 
@@ -394,6 +408,7 @@ func take_part(slot: String) -> Dictionary:
 		var debris = _debris.get(part)
 		if is_instance_valid(debris) and debris.get_children().all(func(n): return n.is_queued_for_deletion()):
 			debris.queue_free()
+	parts_changed.emit()
 	return taken
 
 

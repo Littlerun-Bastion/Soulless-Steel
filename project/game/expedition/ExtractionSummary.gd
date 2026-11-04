@@ -13,9 +13,12 @@ class_name ExtractionSummary
 #                          the pilot (an AVIS Entity that doesn't know it)
 #                          crawls the wreck to an exit, so this is an ordinary
 #                          extraction screen, except everything in RECOVERED
-#                          and DAMAGE REPORT is WRITTEN OFF. Nothing on it says
-#                          the pilot died. Expedition shows it after the
-#                          death fade to black.
+#                          is WRITTEN OFF and every part in DAMAGE REPORT is
+#                          UNSALVAGEABLE. Nothing on it says the pilot died.
+#                          Expedition shows it after the death fade to black.
+#
+# A part that can't come home is UNSALVAGEABLE, the word a wreck's loot
+# window uses for its shed parts (InventoryWindow).
 
 signal continued
 
@@ -24,10 +27,12 @@ const WINDOW_SIZE := Vector2(1120, 600)
 const PARTS := {"core": "CORE", "head": "HEAD", "left_shoulder": "L SHOULDER",
 	"right_shoulder": "R SHOULDER", "chassis": "CHASSIS"}
 const STATE_WORDS := {3: "OK", 2: "DAMAGED", 1: "CRITICAL", 0: "DESTROYED", -1: "LOST"}
+## Cargo lost with the frame, and parts that can't come home.
 const WRITTEN_OFF := "WRITTEN OFF"
+const UNSALVAGEABLE := "UNSALVAGEABLE"
 const BOOT_TIME := 1.5   # seconds for the screen to come back after a death
 const WRITE_OFF_NOTE := "Frame beyond repair. A standard mecha has been issued. Your stash and credits are safe."
-const PART_WRITE_OFF_NOTE := "Lost in the field. A standard part has been fitted in each written-off slot."
+const PART_WRITE_OFF_NOTE := "Lost in the field. A standard part has been fitted in each unsalvageable slot."
 const DEBT_NOTE := "Repairs exceeded your credits. Sales pay off the debt; the Store is closed to you until then."
 
 var window: MechWindow
@@ -51,9 +56,10 @@ func _ready() -> void:
 ## "damage" (part -> state, from collect_damage), "value" (what selling the
 ## cargo would pay, PlayerProgress.cargo_sell_value), "repairs" (the repair
 ## bill charged, RepairBill) and "balance" (the credits after it). Sections
-## that came off in the field ("lost": PARTS keys) read WRITTEN OFF, with no
+## that came off in the field ("lost": PARTS keys) read UNSALVAGEABLE, with no
 ## repair bill, and the parts written off with them ("written_off": names,
-## PlayerProgress.write_off_slots) are listed under the report.
+## PlayerProgress.write_off_slots) are listed under the report, UNSALVAGEABLE
+## too.
 func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -> void:
 	_fill_header(kills, details)
 	_fill_contract(mission)
@@ -70,7 +76,7 @@ func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -
 	var lost: Array = details.get("lost", [])
 	for part in PARTS:
 		if part in lost:
-			_damage_box.add_child(_line(PARTS[part], WRITTEN_OFF, true))
+			_damage_box.add_child(_line(PARTS[part], UNSALVAGEABLE, true))
 			continue
 		var state: int = damage.get(part, 3)
 		_damage_box.add_child(_line(PARTS[part], STATE_WORDS.get(state, "OK"), state <= 1))
@@ -78,14 +84,15 @@ func show_summary(cargo: Array, kills: int, mission, details: Dictionary = {}) -
 	if not written_off.is_empty():
 		_damage_box.add_child(HSeparator.new())
 		for part_name in written_off:
-			_damage_box.add_child(_line(str(part_name), WRITTEN_OFF, true))
+			_damage_box.add_child(_line(str(part_name), UNSALVAGEABLE, true))
 		_damage_box.add_child(MechUI.label(&"LabelMeta", PART_WRITE_OFF_NOTE, true))
 	_fill_repairs(details)
 	MechLog.write("DEP", "Extraction complete")
 	_open()
 
 
-## The mecha went down: the same screen, everything written off.
+## The mecha went down: the same screen, the cargo written off and the parts
+## unsalvageable.
 ## report: PlayerProgress's loss report ("mecha": part names, "cargo": item names).
 func show_written_off(report: Dictionary, kills: int, mission, details: Dictionary = {}) -> void:
 	_fill_header(kills, details)
@@ -102,7 +109,7 @@ func show_written_off(report: Dictionary, kills: int, mission, details: Dictiona
 	if parts.is_empty():
 		parts = PARTS.values()
 	for part_name in parts:
-		_damage_box.add_child(_line(str(part_name), WRITTEN_OFF, true))
+		_damage_box.add_child(_line(str(part_name), UNSALVAGEABLE, true))
 	_damage_box.add_child(MechUI.label(&"LabelMeta", WRITE_OFF_NOTE, true))
 	MechLog.write("DEP", "Frame written off", MechLog.Kind.SYSTEM, true)
 	_open(true)

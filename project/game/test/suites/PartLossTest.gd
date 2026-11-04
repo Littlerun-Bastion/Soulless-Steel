@@ -8,8 +8,8 @@ extends TestSuite
 # shots pass through the gap. The head comes off the same way, with the
 # effect of every head component destroyed; the core and chassis never do. A
 # wreck keeps lost parts missing. On extraction the debrief writes a lost
-# section off (no repair bill for it) and a standard part is fitted in each
-# written-off slot.
+# section off (no repair bill for it), shows it and its parts UNSALVAGEABLE,
+# and a standard part is fitted in each written-off slot.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const WIREFRAME := preload("res://game/ui/WireframeDisplay.tscn")
@@ -239,6 +239,7 @@ func _test_write_off() -> void:
 	summary.show_summary([], 0, null, {"damage": ExtractionSummary.collect_damage(mecha), "repairs": bill,
 			"lost": ["left_shoulder"], "written_off": names})
 	var text := summary.get_text()
-	check("L SHOULDER\nWRITTEN OFF" in text, "the debrief shows the section WRITTEN OFF")
-	check(names.all(func(n): return str(n) + "\nWRITTEN OFF" in text), "and each part written off (%s)" % ", ".join(names))
+	check("L SHOULDER\nUNSALVAGEABLE" in text, "the debrief shows the section UNSALVAGEABLE")
+	check(names.all(func(n): return str(n) + "\nUNSALVAGEABLE" in text), "and each part written off as UNSALVAGEABLE (%s)" % ", ".join(names))
+	check(not "WRITTEN OFF" in text, "with no WRITTEN OFF left on it")
 	summary.queue_free()

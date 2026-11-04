@@ -20,8 +20,11 @@ class_name Coyote
 #
 # Scavenging: a Coyote takes parts from downed mechas, a shoulder as a shield
 # and an arm weapon as a gun, never a shoulder weapon, one of each at most.
-# Wandering (not hunting), it goes for a wreck's parts near it, on the body or
-# shed beside it (MechaBody.take_part). Striking a Flagged mecha, it rips a
+# Wandering (not hunting), it goes for parts near it: on a wreck's body, shed
+# beside it, or lying where a live mecha lost them (any MechaBody, in
+# MechaBody.SCAVENGE_GROUP; MechaBody.take_part). Parts a wreck shed are
+# unsalvageable to the player (Wreck.unsalvageable), but a Coyote carries
+# and uses them like any other. Striking a Flagged mecha, it rips a
 # part off instead of biting, if it has a free hand for it (Mecha.lose_part,
 # torn). The shield covers only its front: a hit from there meets the
 # shoulder's front armour level, and strips one of its pips; at 0 it breaks
@@ -71,11 +74,11 @@ enum State { WANDER, INVESTIGATE, STALK, WINDUP, LUNGE, STRIKE, RECOVER, FLEE, S
 @export_group("Wandering")
 @export var wander_radius := 1500.0
 @export_group("Scavenging")
-## Wandering, it goes for a wreck's part this far away.
+## Wandering, it goes for a part on the ground this far away.
 @export var scavenge_range := 1400.0
 ## How close to the part it has to get to take it.
 @export var take_reach := 120.0
-## Seconds between looks for wrecks while wandering.
+## Seconds between looks for parts while wandering.
 @export var scavenge_look := 1.0
 ## Gives up on a part it can't reach after this long.
 @export var scavenge_time := 15.0
@@ -88,7 +91,8 @@ enum State { WANDER, INVESTIGATE, STALK, WINDUP, LUNGE, STRIKE, RECOVER, FLEE, S
 ## How often (s) a carried gun checks it can see its target.
 @export var gun_sight_check := 0.25
 
-## What a wreck or a mecha's armour can give it, and what it's used for.
+## What a body on the ground or a mecha's armour can give it, and what it's
+## used for.
 const SHIELD_SLOTS := ["left_shoulder", "right_shoulder"]
 const GUN_SLOTS := ["arm_weapon_left", "arm_weapon_right"]
 
@@ -112,7 +116,7 @@ var _investigate_point := Vector2.ZERO
 var _formation_offset := Vector2.ZERO
 var _orbit_offset := 0.0   # its own spot in the ring round the prey
 var _flee_from := Vector2.ZERO
-var _scavenge_wreck: Wreck = null
+var _scavenge_body: MechaBody = null
 var _scavenge_slot := ""
 var _scavenge_wait := 0.0
 var _gun_left := 0       # rounds left in the gun's magazine
@@ -209,7 +213,7 @@ func _wander(dt: float) -> void:
 	_scavenge_wait -= dt
 	if _scavenge_wait <= 0.0:
 		_scavenge_wait = scavenge_look
-		if _look_for_wreck():
+		if _look_for_parts():
 			return
 	# Followers keep loosely to the leader.
 	var leader: Node2D = pack.leader() if pack != null else null
@@ -430,33 +434,34 @@ func _weapon_of(part_id: String):
 	return PartManager.get_part("arm_weapon", part_id)
 
 
-# Looks round for a wreck with a part it has a hand free for; true if it
-# set off for one.
-func _look_for_wreck() -> bool:
+# Looks round for a part on the ground (a wreck's body, its shed parts, or
+# a live mecha's lost part) it has a hand free for; true if it set off for
+# one.
+func _look_for_parts() -> bool:
 	if not shield.is_empty() and not gun.is_empty():
 		return false
-	var best: Wreck = null
+	var best: MechaBody = null
 	var best_slot := ""
 	var best_d := scavenge_range
-	for node in get_tree().get_nodes_in_group("wreck"):
-		var wreck := node as Wreck
-		if wreck == null or wreck.body == null or not is_instance_valid(wreck.body):
+	for node in get_tree().get_nodes_in_group(MechaBody.SCAVENGE_GROUP):
+		var body := node as MechaBody
+		if body == null or body.is_queued_for_deletion():
 			continue
-		if global_position.distance_to(wreck.global_position) > scavenge_range + 400.0:
+		if global_position.distance_to(body.global_position) > scavenge_range + 400.0:
 			continue
-		for slot in wreck.body.takeable_slots():
+		for slot in body.takeable_slots():
 			if not wants_part(slot):
 				continue
-			if slot in GUN_SLOTS and not is_usable_gun(_weapon_of(wreck.body.part_ids[slot])):
+			if slot in GUN_SLOTS and not is_usable_gun(_weapon_of(body.part_ids[slot])):
 				continue
-			var d := global_position.distance_to(wreck.body.part_position(slot))
+			var d := global_position.distance_to(body.part_position(slot))
 			if d < best_d:
 				best_d = d
-				best = wreck
+				best = body
 				best_slot = slot
 	if best == null:
 		return false
-	_scavenge_wreck = best
+	_scavenge_body = best
 	_scavenge_slot = best_slot
 	_set_state(State.SCAVENGE)
 	return true
@@ -464,15 +469,15 @@ func _look_for_wreck() -> bool:
 
 func _scavenge() -> void:
 	face_point = null
-	var wreck := _scavenge_wreck
-	if not is_instance_valid(wreck) or not is_instance_valid(wreck.body) or _state_time > scavenge_time \
-			or not _scavenge_slot in wreck.body.takeable_slots() or not wants_part(_scavenge_slot):
+	var body := _scavenge_body
+	if not is_instance_valid(body) or body.is_queued_for_deletion() or _state_time > scavenge_time \
+			or not _scavenge_slot in body.takeable_slots() or not wants_part(_scavenge_slot):
 		_end_scavenge()
 		return
-	var at: Vector2 = wreck.body.part_position(_scavenge_slot)
+	var at: Vector2 = body.part_position(_scavenge_slot)
 	if global_position.distance_to(at) <= take_reach:
 		stop()
-		var taken: Dictionary = wreck.body.take_part(_scavenge_slot)
+		var taken: Dictionary = body.take_part(_scavenge_slot)
 		if not taken.is_empty():
 			_carry(taken)
 			AudioManager.play_sfx("mech_impact_light%d" % randi_range(1, 5), global_position)
@@ -482,7 +487,7 @@ func _scavenge() -> void:
 
 
 func _end_scavenge() -> void:
-	_scavenge_wreck = null
+	_scavenge_body = null
 	_scavenge_slot = ""
 	settle_home()
 	_wander_point = null

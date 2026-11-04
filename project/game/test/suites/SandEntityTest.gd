@@ -11,7 +11,10 @@ extends TestSuite
 # six seconds or when the tether is stretched too far, leaps when rushed, and
 # can't hurt a mecha in the Flag's grace window. Their carcasses show what's
 # left of them, and the Expedition director spawns Coyote packs that always
-# have a Spitter.
+# have a Spitter. Coyotes scavenge parts from wrecks and off the ground (a
+# wreck's shed parts, which then leave its unsalvageable list, and parts a
+# live mecha lost). A Spitter's glob flies as a drop of fluid and splashes
+# into droplets.
 # (The first species are covered by EntityTest.)
 
 const COYOTE := preload("res://game/entities/coyote/Coyote.tscn")
@@ -78,6 +81,9 @@ func run_tests() -> void:
 	await case("over the cap, the oldest unseen swarm fades out for a brood", _test_swarm_cap)
 	await case("an Entity hunting a mecha with ticks on it is in frenzy", _test_frenzy)
 	await case("a wandering pack takes a part from a wreck, and the wreck loses it", _test_scavenge_wreck)
+	await case("a Coyote takes a part a wreck shed, and it leaves the unsalvageable list", _test_scavenge_shed)
+	await case("a Coyote takes a part a live mecha lost, off the ground", _test_scavenge_lost_part)
+	await case("a glob flies as a drop of fluid and splashes into droplets", _test_glob_look)
 	await case("a Coyote rips a part off a Flagged mecha instead of biting", _test_rip_flagged)
 	await case("a shield covers only the front and breaks when its pips run out", _test_shield)
 	await case("a gun fires the weapon's own rounds at the target, credited to the Coyote", _test_gun)
@@ -714,6 +720,70 @@ func _test_scavenge_wreck() -> void:
 	check(not wreck.body.taken_slots.any(func(s): return s.begins_with("shoulder_weapon")), "never a shoulder weapon")
 	var carrier: Coyote = pack.filter(func(c): return not c.gun.is_empty() or not c.shield.is_empty())[0]
 	check(carrier.coyote_body._gun_sprite != null or carrier.coyote_body._shield_sprite != null, "it carries the part's own sprite")
+
+
+# A Coyote with a shield wants only a gun: both arm weapons lie shed on the
+# ground, and it takes one of them.
+func _test_scavenge_shed() -> void:
+	var wreck := _wreck_of(_mecha(Vector2.ZERO, 0.0))
+	await wait_frames(2)
+	wreck.body.shed("arm_weapon_left", false)
+	wreck.body.shed("arm_weapon_right", false)
+	var listed := wreck.unsalvageable.map(func(e): return e.slot)
+	check_eq(listed, ["arm_weapon_left", "arm_weapon_right"], "the shed arm weapons are listed unsalvageable")
+	var coyote: Coyote = _spawn(COYOTE, Vector2(700, 0))
+	coyote.shield = {"part_id": PlayerProgress.DEFAULT_MECHA.shoulders, "texture": null, "level": 1, "pips": 3}
+	var took := await wait_until(func(): return not coyote.gun.is_empty(), 15.0)
+	if not check(took, "it goes and picks a shed arm weapon up"):
+		return
+	var taken: Array = wreck.body.taken_slots.filter(func(s): return s.begins_with("arm_weapon"))
+	check(taken.size() == 1 and taken[0] in wreck.body.shed_slots, "one that was lying on the ground (%s)" % str(taken))
+	check_eq(wreck.unsalvageable.map(func(e): return e.slot), listed.filter(func(s): return not s in taken),
+			"it's gone from the unsalvageable list; the other stays")
+	check(not wreck.body.taken_slots.has("left_shoulder") and not wreck.body.taken_slots.has("right_shoulder"),
+			"with its shield already held, it leaves the shoulders")
+
+
+func _test_scavenge_lost_part() -> void:
+	var mecha := _mecha(Vector2.ZERO, 0.0)
+	var added := []
+	_arena.child_entered_tree.connect(func(n): if n is MechaBody: added.append(n))
+	check(mecha.lose_part("left_shoulder"), "a live mecha loses its left shoulder")
+	await wait_frames(2)
+	if not check(added.size() == 1, "it lies on the ground beside the mecha"):
+		return
+	var debris: MechaBody = added[0]
+	check(debris.is_in_group(MechaBody.SCAVENGE_GROUP), "where scavengers can find it")
+	check(debris.takeable_slots().has("left_shoulder") and debris.takeable_slots().has("arm_weapon_left"),
+			"the shoulder and its arm weapon can be taken (%s)" % str(debris.takeable_slots()))
+	mecha.global_position = Vector2(-6000, 0)
+	var coyote: Coyote = _spawn(COYOTE, debris.global_position + Vector2(700, 0))
+	var took := await wait_until(func(): return not coyote.gun.is_empty() or not coyote.shield.is_empty(), 15.0)
+	check(took, "a wandering Coyote picks it up")
+	check(not debris.taken_slots.is_empty(), "off the ground (%s)" % str(debris.taken_slots))
+
+
+func _test_glob_look() -> void:
+	var mecha := _mecha(Vector2.ZERO)
+	var glob: AcidGlob = AcidGlob.new()
+	glob.color = Color(0.12, 0.12, 0.12)
+	_arena.add_child(glob)
+	var splashes := []
+	glob.splashed.connect(func(g, _hit): splashes.append(g.get_splash()))
+	glob.launch(null, _arena, Vector2(-600, 0), mecha.global_position, 1.2)
+	await _physics_frames(2)
+	check(glob.get_splash() == null, "in flight, no splash yet")
+	check(glob._heading > -PI * 0.5 and glob._heading < 0.0, "rising, the drop heads up and along (%.2f rad)" % glob._heading)
+	var landed := await wait_until(func(): return not splashes.is_empty(), 3.0)
+	if not check(landed, "it lands"):
+		return
+	var splash: CPUParticles2D = splashes[0]
+	check(splash != null and splash.emitting and splash.one_shot, "and bursts into a spray of droplets")
+	if splash == null:
+		return
+	check(splash.texture != null and splash.texture.get_size() == AcidGlob.DROPLET.get_size(), "each one the blood droplet sprite")
+	check(splash.particle_flag_align_y and splash.spread >= 180.0, "pointing the way it flies, all round")
+	check(splash.color.is_equal_approx(glob.color), "in the glob's colour")
 
 
 func _test_rip_flagged() -> void:

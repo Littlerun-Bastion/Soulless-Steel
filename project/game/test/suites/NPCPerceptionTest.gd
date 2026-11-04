@@ -179,13 +179,13 @@ func _test_blind_fire() -> void:
 	foe.global_position = Vector2(500, 0)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
-	enemy.perceived(foe).last_position = foe.global_position
+	enemy.knowledge.place(foe, foe.global_position)
 	enemy.global_rotation = PI / 2.0
 	check(enemy.blind_fire(foe), "it fires blind through one wall with 2 AP rounds")
 	# Behind the building: two walls, too many for 2 AP.
-	enemy.perceived(foe).last_position = Vector2(800, 0)
+	enemy.knowledge.place(foe, Vector2(800, 0))
 	check(not enemy.blind_fire(foe), "it doesn't fire through two walls")
-	enemy.perceived(foe).last_position = Vector2(500, 0)
+	enemy.knowledge.place(foe, Vector2(500, 0))
 	enemy.global_rotation = 0.0
 	check(not enemy.blind_fire(foe), "it doesn't fire before it faces the spot")
 	enemy.global_rotation = PI / 2.0
@@ -198,15 +198,16 @@ func _test_combat_entry() -> void:
 	var enemy := _enemy(Vector2.ZERO)
 	var foe := _foe(Vector2(1650, 0), enemy)
 	# Spotted (a cold mecha this far away would only be seen once it heats up).
-	enemy._remember(foe, foe.global_position).is_seen = true
+	enemy.knowledge.see(foe, foe.global_position)
 	enemy.check_for_targets(1800.0, 2000.0)
 	check(is_same(enemy.valid_target, foe), "it has the mecha as its target")
 	var behaviour = enemy.logic.behaviour
-	check(behaviour._combat_entry_priority(enemy) > 0,
+	check(behaviour.score_engage(enemy) >= behaviour.SCORE_ENGAGE_IN_RANGE,
 		"it enters combat at its kite range (1650 px), not only at close quarters")
 	foe.global_position = Vector2(2600, 0)
-	enemy._remember(foe, foe.global_position).is_seen = true
-	check(behaviour._combat_entry_priority(enemy) == 0, "but not from far beyond it")
+	enemy.knowledge.see(foe, foe.global_position)
+	check(is_equal_approx(behaviour.score_engage(enemy), behaviour.SCORE_ENGAGE_CLOSING),
+		"from far beyond it, it only closes in")
 
 
 func _test_build_range() -> void:

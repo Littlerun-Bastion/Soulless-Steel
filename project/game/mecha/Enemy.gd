@@ -34,10 +34,19 @@ var chosen_dir = Vector2()
 
 var going_to_position = false
 var logic
+## What this NPC knows (NPCKnowledge): bodies through its contact store,
+## sounds, where it took fire from, its own state.
+var knowledge := NPCKnowledge.new()
+## Where to stand (Positioning) and when to fire (FireController): the
+## tactics every intent shares.
+var positioning := Positioning.new()
+var fire := FireController.new()
+## Weapon slot -> its role for the fire controller (see _weapon_role).
+var _weapon_roles := {}
 var engage_distance = 2000 #How far to see other mechas
+## Sounds heard, with lifetimes. The same Array as knowledge.sounds.
 var senses = {
 	"sounds": [],
-	"bodies": [],
 }
 var valid_target = false
 var current_target = false
@@ -60,13 +69,51 @@ var scripted_aim = null
 var ai_projectile_speed := 0.0    # avg direct-fire muzzle speed (0 = don't lead)
 var ai_lead_accuracy := 0.55      # 0 = aim at current pos, 1 = perfect intercept
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
-## Whether the behaviour switches the illuminator by state
-## (BaseBehaviour.dark_states). False for NPC code that switches it itself.
+## Whether the behaviour switches the illuminator by intent
+## (BaseBehaviour.wants_illuminator). False for NPC code that switches it
+## itself.
 var auto_illuminator := true
+## An illuminator setting is held this long (s) before the behaviour may
+## change it again, unless the NPC is hit or Flags. Placeholder.
+const ILLUMINATOR_HOLD_TIME := 3.0
+var _illuminator_hold := 0.0
+## Panic (NPCKnowledge.panic): how much of the lead it takes away, the aim
+## bloom (degrees) it adds at full panic, and above what panic the barks use
+## their panicked lines. Placeholders.
+const PANIC_LEAD_LOSS := 0.5
+const PANIC_BLOOM := 2.0
+const PANIC_BARK := 0.6
+## The Flag: the chance per point of negative reputation that an NPC ignores
+## the player's Flag, and its cap; the treachery window (s) after a Flag
+## raised by choice comes down; the hostility a witness gains toward whoever
+## shoots a Flagged mech (Guardians more). Placeholders.
+const FLAG_IGNORE_PER_REPUTATION := 0.01
+const FLAG_IGNORE_MAX := 0.8
+const TREACHERY_WINDOW := 10.0
+const WITNESS_HOSTILITY := 0.25
+const WITNESS_HOSTILITY_GUARDIAN := 0.5
+## A seen mine is kept clear of by its trigger reach plus this (px).
+const MINE_AVOID_MARGIN := 60.0
 
 
 func _ready():
 	super()
+
+	# The NPC's memory ages with its thinking time (update_senses), not with
+	# every physics frame, and lasts longer than the player's HUD fade.
+	contacts_auto_advance = false
+	contacts.ghost_time = BODY_LIFETIME
+	knowledge.setup(self)
+	knowledge.sounds = senses.sounds
+	fire.setup(self)
+	flagged.connect(func(): _illuminator_hold = 0.0)
+	# What frightens an NPC (NPCKnowledge.raise_panic), and its own Flag
+	# events for the log.
+	component_damaged.connect(func(_p, _c, _hp, _max): knowledge.raise_panic(knowledge.PANIC_HIT))
+	component_destroyed_alert.connect(func(_p, _c): knowledge.raise_panic(knowledge.PANIC_COMPONENT_LOST))
+	swept.connect(_on_swept)
+	device_destroyed.connect(_on_device_lost)
+	flag_raised.connect(func(_m, voluntary, _by): AICombatLog.record_flag("raised_voluntary" if voluntary else "raised_emergency"))
 
 	steering_setup()
 
@@ -108,12 +155,25 @@ func _physics_process(dt):
 	if thinking:
 		_think_dt = 0.0
 
-	if not scripted and thinking:
+	# The think-time probe (AICombatLog, Debug setting "ai_log"): senses,
+	# intent scoring, behaviour and illuminator of one thinking frame.
+	var probing := thinking and AICombatLog.enabled()
+	var probe_start := Time.get_ticks_usec() if probing else 0
+
+	if scripted:
+		contacts.advance(dt)
+	elif thinking:
 		update_senses(think_dt)
+		positioning.tick(think_dt)
+		# Squadmates' callouts that are due land now.
+		if knowledge.squad != null:
+			knowledge.squad.deliver()
 
 	wait_for_map_sync = max(wait_for_map_sync - dt, 0)
 	if scripted:
 		_drive_scripted(dt)
+		if probing:
+			AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "scripted")
 	elif not wait_for_map_sync and not is_dead:
 		if thinking:
 			# Fresh each think; the combat behaviour re-sets it while engaging.
@@ -122,9 +182,14 @@ func _physics_process(dt):
 			var before := global_position
 			logic.update(self)
 			logic.run(self, think_dt)
-			_update_illuminator()
+			_update_illuminator(think_dt)
 			_coast_velocity = velocity if global_position != before else Vector2.ZERO
 			_watch_barks(think_dt)
+			_tick_companion(think_dt)
+			_tick_provocation(think_dt)
+			_tick_sweep_back(think_dt)
+			if probing:
+				AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "near" if is_near_player() else "far")
 		elif _coast_velocity != Vector2.ZERO:
 			# Between thinking frames, keep going the way it was going.
 			move(_coast_velocity)
@@ -225,18 +290,60 @@ func _draw_ai_overlay() -> void:
 			draw_line(p + Vector2(-60, 60), p + Vector2(60, -60), Color.YELLOW, 5.0)
 	if going_to_position:
 		draw_line(Vector2.ZERO, to_local(NavAgent.target_position), Color(0.6, 0.6, 0.6, 0.6), 2.0)
+	# The position picker: its candidates as dots, brighter the better they
+	# scored, and the chosen point as a ring.
+	if not positioning.candidates.is_empty():
+		var best: float = positioning.candidates[0].score
+		var worst: float = positioning.candidates[positioning.candidates.size() - 1].score
+		for entry in positioning.candidates:
+			var share: float = 1.0 if best <= worst else (float(entry.score) - worst) / (best - worst)
+			draw_circle(to_local(entry.position), 10.0, Color(0.5, 1.0, 0.5, 0.25 + 0.75 * share))
+	if positioning.has_pick():
+		draw_arc(to_local(positioning.pick_position()), 40.0, 0.0, TAU, 24, Color(0.5, 1.0, 0.5, 0.9), 4.0)
 
 
-# Extra lines for the state label with the AI overlay on: the target, how
-# far away it is believed to be, and whether it is in sight.
+# Extra lines for the state label with the AI overlay on: the top intent
+# scores, the illuminator, then the target, how far away it is believed to
+# be, and whether it is in sight.
 func _overlay_text() -> String:
+	var text := ""
+	if not logic.last_scores.is_empty():
+		var parts := PackedStringArray()
+		for pair in logic.last_scores:
+			parts.append("%s %.2f" % [pair[0], pair[1]])
+		text += "\n" + " ".join(parts)
+	text += "\nlit" if illuminator_on else "\ndark"
+	text += " panic %.2f" % knowledge.panic
+	if is_lowering_flag():
+		text += " flag lowering"
+	elif flag_up:
+		text += " flag " + ("voluntary" if flag_voluntary else "emergency")
+	var traitors := 0
+	for rel in relationships.values():
+		if rel.is_traitor:
+			traitors += 1
+	if traitors > 0 or not knowledge.flag_memory.is_empty():
+		text += "\ntraitors %d, flags seen %d" % [traitors, knowledge.flag_memory.size()]
+	if not knowledge.known_mines.is_empty():
+		text += "\nmines %d" % knowledge.known_mines.size()
+	var squad = knowledge.squad
+	if squad != null:
+		if squad.is_player_led():
+			text += "\nbuddy %s, order %s" % [squad.role_of(self), squad.order]
+		else:
+			text += "\nsquad %s %s%s" % [squad.tag if not squad.anonymous else "anon", squad.role_of(self), " leader" if squad.is_leader(self) else ""]
+	elif _offered:
+		text += "\noffered"
+	if not knowledge.local_leads.is_empty() or knowledge.swept_count > 0 or knowledge.avoids(global_position, INF):
+		text += "\nleads %d, swept %d%s" % [knowledge.local_leads.size(), knowledge.swept_count,
+				", avoiding" if knowledge.avoids(global_position, INF) else ""]
 	var t = current_target if current_target and is_instance_valid(current_target) else valid_target
 	if not t or not is_instance_valid(t):
-		return ""
+		return text
 	var who: String = t.mecha_name if "mecha_name" in t else str(t.name)
 	var metres := global_position.distance_to(get_target_position(t)) / 20.0
 	var sight := "seen" if is_seeing(t) else "lost %.0fs" % time_unseen(t)
-	return "\n%s %.0fm %s" % [who, metres, sight]
+	return text + "\n%s %.0fm %s" % [who, metres, sight]
 
 
 func setup(arena_ref, design_data, _name):
@@ -260,6 +367,22 @@ func setup(arena_ref, design_data, _name):
 	else:
 		var chance := HUNTER_ANONYMOUS_CHANCE if personality.type == Personality.Type.HUNTER else ANONYMOUS_CHANCE
 		is_anonymous = randf() < chance
+
+	# Whether this pilot respects the player's Flag: rolled once, by the
+	# player's reputation; a Rat never does.
+	var ignore_chance := clampf(-float(PlayerProgress.get_reputation()) * FLAG_IGNORE_PER_REPUTATION, 0.0, FLAG_IGNORE_MAX)
+	knowledge.ignores_player_flag = personality.type == Personality.Type.RAT or randf() < ignore_chance
+	if knowledge.ignores_player_flag and personality.type != Personality.Type.RAT:
+		AICombatLog.record_flag("ignored")
+
+	# Witnessing attacks (treachery, shooting a Flagged mech) and the Flag's
+	# own events, for the log.
+	var local = _local_pilots()
+	if local != null and not local.attack_noted.is_connected(_on_attack_witnessed):
+		local.attack_noted.connect(_on_attack_witnessed)
+	# Local's messages: help calls and loot shouts are leads (NPCKnowledge).
+	if local != null and not local.message.is_connected(_on_local_message):
+		local.message.connect(_on_local_message)
 
 	if design_data.has("combat_behaviour") and typeof(design_data["combat_behaviour"]) == TYPE_STRING:
 		var new_behaviour = design_data["combat_behaviour"]
@@ -329,8 +452,63 @@ func _analyze_build():
 	ai_lead_accuracy = _compute_lead_accuracy()
 
 	_weapon_ap.clear()
+	_weapon_roles.clear()
 	for weapon_key in WEAPON_SLOTS:
 		_weapon_ap[weapon_key] = _read_armor_pen(build[weapon_key])
+		_weapon_roles[weapon_key] = _weapon_role(build[weapon_key])
+
+
+# A weapon's role for the fire controller: "" (none), "melee", "gun" (the
+# plain firing path), "smoke" (the smoke launcher, tap_self), "mine" (a mine
+# layer), "lock" (lock-on), "skillshot" (a line or rect designator: cannon,
+# laser), "indirect" (mortar, MLRS, howitzer) or "aoe" (a direct-fire circle
+# designator: rockets, grenades).
+func _weapon_role(weapon) -> String:
+	if weapon == null:
+		return ""
+	if weapon.is_melee:
+		return "melee"
+	if weapon.get("tap_self") == true:
+		return "smoke"
+	if weapon.requires_lock:
+		return "lock"
+	if not weapon.has_designator():
+		return "gun"
+	if _projectile_is_mine(weapon):
+		return "mine"
+	if weapon.designator == "line" or weapon.designator == "rect":
+		return "skillshot"
+	if weapon.get("is_indirect_fire"):
+		return "indirect"
+	return "aoe"
+
+
+# Whether a weapon's round is a mine (mine.gd), read the way the muzzle
+# speed is: instantiated once, never readied.
+func _projectile_is_mine(weapon) -> bool:
+	var scene = weapon.get("projectile")
+	if scene == null or not (scene is PackedScene):
+		return false
+	var inst = scene.instantiate()
+	var mine: bool = "trigger_radius" in inst and "arm_time" in inst
+	inst.free()
+	return mine
+
+
+# The best armour pen among this NPC's guns (0 with none): how many walls
+# its direct fire can get through.
+func best_armor_pen() -> int:
+	var best := 0
+	for slot in WEAPON_SLOTS:
+		best = maxi(best, int(_weapon_ap.get(slot, 0)))
+	return best
+
+
+# The map's building field, if it has one (cached).
+func get_building_field() -> BuildingField:
+	if not is_instance_valid(_building_field):
+		_building_field = BuildingField.find(self)
+	return _building_field
 
 
 # Reads a projectile scene's muzzle_speed without side effects: instantiate()
@@ -407,6 +585,9 @@ func _seed_relationship(target):
 		return
 	if not is_instance_valid(target) or target == self:
 		return
+	# A squadmate starts with no grudge, whatever its type.
+	if knowledge.squad != null and knowledge.squad.is_in(target):
+		return
 	# Player gets no seeded hostility — they earn it by shooting first.
 	if target.has_method("is_player") and target.is_player():
 		relationships[target] = { "hostility": 0.0, "is_traitor": false }
@@ -419,6 +600,9 @@ func _seed_relationship(target):
 	var base = _initial_hostility_toward(target.personality)
 	# Small randf jitter so identical matchups don't all play out the same.
 	var seeded = clampf(base + randf_range(-0.1, 0.1), 0.0, 1.0)
+	# Suspicion: a pilot with no name shows up as more of a threat.
+	if target.get("is_anonymous") == true:
+		seeded = clampf(seeded + SUSPICION_ANONYMOUS, 0.0, 1.0)
 	relationships[target] = { "hostility": seeded, "is_traitor": false }
 
 
@@ -463,6 +647,9 @@ func _initial_hostility_toward(other_personality: Personality) -> float:
 func should_attack(target) -> bool:
 	if not is_instance_valid(target):
 		return false
+	# Never a squadmate, nor the leader it follows.
+	if knowledge.squad != null and knowledge.squad.is_in(target):
+		return false
 
 	var rel = get_relationship(target)
 
@@ -470,8 +657,8 @@ func should_attack(target) -> bool:
 	if rel.is_traitor:
 		return true
 
-	# Target is flagged/exposed — personality decides
-	if target.is_exposed:
+	# Target's Flag is up — personality decides
+	if target.is_flagged() and not ignores_flag_of(target):
 		# Betrayal tendency: high treachery + low loyalty = more willing to break the code.
 		# Range 0.0 (never betray) to 1.0 (always betray).
 		var betrayal = clampf(personality.treachery - personality.loyalty, 0.0, 1.0)
@@ -499,13 +686,75 @@ func should_attack(target) -> bool:
 	return should_engage(target)
 
 
+# Whether this NPC treats `target`'s Flag as if it weren't there: the
+# player's, when the reputation roll said so (or for a Rat).
+func ignores_flag_of(target) -> bool:
+	return knowledge.ignores_player_flag and target.has_method("is_player") and target.is_player()
+
+
+# Whether this NPC saw `body` raise its Flag by choice (NPCKnowledge).
+func saw_flag_raised(body) -> bool:
+	return knowledge.saw_flag_raised(body)
+
+
+# Another mecha's attack (LocalPilots.attack_noted): treachery and shooting
+# a Flagged mech are judged by whoever saw it. A mech this NPC saw raise its
+# Flag by choice that lowers it and attacks anyone in the NPC's sight (or
+# the NPC itself) is a traitor for good; anyone seen shooting a Flagged mech
+# earns hostility, Guardians' the most.
+func _on_attack_witnessed(attacker, victim) -> void:
+	if scripted or is_dead or attacker == self or not is_instance_valid(attacker) or not is_instance_valid(victim):
+		return
+	# The player answering this NPC's help call: shooting the foe it called
+	# about, within HELP_WINDOW (an offer may follow, _consider_offer).
+	if _help_foe != null and is_same(victim, _help_foe) and attacker.has_method("is_player") and attacker.is_player() \
+			and knowledge.now() - _help_called_at <= HELP_WINDOW:
+		_help_answered = true
+	if not (is_seeing(attacker) or is_seeing(victim) or victim == self):
+		return
+	# Answering a help call and seeing the caller hit: whoever hits it is
+	# the one it came for.
+	if logic.behaviour != null and logic.behaviour.has_method("helping") \
+			and is_same(victim, logic.behaviour.helping()) and not (knowledge.squad != null and knowledge.squad.is_in(attacker)):
+		add_hostility(attacker, HELP_HOSTILITY)
+	# A Guardian that sees a pilot it has nothing against attacked may stand
+	# with it: it joins that pilot's squad (CombatScene.buddy_up).
+	if personality.type == Personality.Type.GUARDIAN and knowledge.squad == null and not _joined \
+			and victim != self and "knowledge" in victim and is_seeing(victim) \
+			and get_relationship(victim).hostility <= STANDING_HOSTILITY and get_relationship(attacker).hostility > 0.0 \
+			and randf() < GUARDIAN_JOIN_CHANCE and arena is Node and arena.has_method("buddy_up"):
+		_joined = true
+		if arena.buddy_up(self, victim):
+			AICombatLog.record_squad("joined_npc")
+			bark("buddy_accept", victim)
+	var rel = get_relationship(attacker)
+	if not rel.is_traitor and knowledge.flag_lowered_recently(attacker, TREACHERY_WINDOW):
+		mark_traitor(attacker)
+		AICombatLog.record_flag("traitor")
+		bark("traitor", attacker)
+	if victim != self and victim.get("flag_up") == true and not rel.is_traitor:
+		var amount := WITNESS_HOSTILITY_GUARDIAN if personality.type == Personality.Type.GUARDIAN else WITNESS_HOSTILITY
+		add_hostility(attacker, amount)
+
+
+# How big `target`'s squad is as far as Local shows (its tag on the
+# roster): 1 for a pilot with no tag, or an Anonymous one.
+func known_squad_size(target) -> int:
+	var tag = target.get("squad_tag")
+	if not (tag is String) or tag == "" or target.get("is_anonymous") == true:
+		return 1
+	var local = _local_pilots()
+	return maxi(local.count_tag(tag), 1) if local != null else 1
+
+
 # `target` is a mecha, or a decoy passing for one (Decoy).
 func should_engage(target) -> bool:
 	if not is_instance_valid(target):
 		return false
 
 	var my_threat = estimate_threat_level()
-	var their_threat = target.estimate_threat_level()
+	# A tagged squad's size is on Local's roster: its members count for more.
+	var their_threat = target.estimate_threat_level() * (1.0 + SQUAD_THREAT_PER_MEMBER * maxi(known_squad_size(target) - 1, 0))
 	var difference = their_threat - my_threat  # positive = they're stronger
 
 	# Courage determines how much stronger the target can be before we bail
@@ -534,6 +783,13 @@ func should_engage(target) -> bool:
 #AI METHODS
 
 func heard_sound(sound_data):
+	# A car alarm (CombatScene._on_car_alarm) is heard like any sound; what
+	# it is worth is the behaviour's call (cares_about_alarms). A Scavenger
+	# keeps away from the car.
+	if sound_data.type == "car_alarm":
+		if personality != null and personality.type == Personality.Type.SCAVENGER:
+			knowledge.set_avoid(sound_data.position)
+		bark("heard_alarm")
 	senses.sounds.append({
 		"volume_type": sound_data.volume_type,
 		"type": sound_data.type,
@@ -543,41 +799,113 @@ func heard_sound(sound_data):
 	})
 
 
-# Off in the behaviour's dark states (sneaking up, lying in wait, running),
-# on otherwise. See Mecha.set_illuminator.
-func _update_illuminator() -> void:
+# Whether a car alarm is a lead for this NPC: Hunters and the greedy go to
+# see; Scavengers keep away (heard_sound); nobody else cares.
+func cares_about_alarms() -> bool:
+	if personality == null:
+		return false
+	return personality.type == Personality.Type.HUNTER \
+			or (personality.type != Personality.Type.SCAVENGER and personality.greed > ALARM_GREED)
+
+
+# The newest loud noise this NPC acts on: a car alarm only if it cares
+# about them (cares_about_alarms).
+func get_loud_lead():
+	var recent = get_most_recent_loud_noise()
+	if recent and recent.type == "car_alarm" and not cares_about_alarms():
+		var best = false
+		var best_lifetime := -INF
+		for sound in senses.sounds:
+			if sound.volume_type == "loud" and sound.type != "car_alarm" and sound.lifetime > best_lifetime:
+				best = sound
+				best_lifetime = sound.lifetime
+		return best
+	return recent
+
+
+# A Local message (LocalPilots.message): someone else's help call or loot
+# shout becomes a lead at a blurred position (NPCKnowledge.heard_local).
+func _on_local_message(entry: Dictionary) -> void:
+	if scripted or is_dead or is_same(entry.get("sender"), self):
+		return
+	var lead := knowledge.heard_local(entry)
+	if not lead.is_empty():
+		AICombatLog.record_info("lead_" + lead.kind)
+
+
+# A sweep found this NPC (Mecha.swept): it knows when, not from where. It
+# frightens (panic) and makes it suspicious of everyone in sight; a
+# Scavenger keeps away from the spot it was swept on; a Hunter sweeps back,
+# all round, on its next think (_tick_sweep_back). Never from inside the
+# signal: the sweeper's cooldown isn't set until its sweep is over, so two
+# Hunters sweeping back at once would call each other without end.
+func _on_swept() -> void:
+	knowledge.raise_panic(knowledge.PANIC_SWEPT)
+	knowledge.noted_sweep()
+	bark("swept")
+	if scripted:
+		return
+	for body in knowledge.seen_bodies():
+		if not body.is_in_group("entity") and not (knowledge.squad != null and knowledge.squad.is_in(body)):
+			add_hostility(body, SWEPT_SUSPICION)
+	var type = personality.type if personality else Personality.Type.PROFESSIONAL
+	if type == Personality.Type.SCAVENGER:
+		knowledge.set_avoid(global_position)
+		going_to_position = false
+	elif type == Personality.Type.HUNTER:
+		_sweep_back_due = true
+
+
+# A Hunter's sweep back, once its sweep is ready and not within
+# SWEEP_BACK_COOLDOWN of the last one (two Hunters would otherwise trade
+# sweeps every cooldown and cook themselves).
+func _tick_sweep_back(_dt: float) -> void:
+	if not _sweep_back_due:
+		return
+	if knowledge.now() - _swept_back_at < SWEEP_BACK_COOLDOWN:
+		_sweep_back_due = false
+		return
+	if not fire.can_sweep():
+		return
+	_sweep_back_due = false
+	_swept_back_at = knowledge.now()
+	fire.sweep(get_facing(), SWEEP_BACK_WIDTH)
+	AICombatLog.record_info("swept_back")
+
+
+# One of its devices was shot (Mecha.device_destroyed): only a mecha does
+# that, so somebody was there. A loud lead at the device, to investigate.
+func _on_device_lost(device) -> void:
+	knowledge.raise_panic(knowledge.PANIC_DEVICE_LOST)
+	if scripted or not is_instance_valid(device):
+		return
+	heard_sound({"volume_type": "loud", "type": "device", "position": device.global_position, "source": null})
+	bark("device_destroyed")
+
+
+# The behaviour chooses the illuminator for its intent (wants_illuminator),
+# and the choice is held for ILLUMINATOR_HOLD_TIME s; being hit or Flagging
+# ends the hold. See Mecha.set_illuminator.
+func _update_illuminator(dt := 0.0) -> void:
 	if not auto_illuminator or logic.behaviour == null:
 		return
-	var dark = logic.behaviour.get("dark_states")
-	var state := str(logic.get_current_state())
-	set_illuminator(not (dark is Array and (dark as Array).has(state)))
+	_illuminator_hold = maxf(_illuminator_hold - dt, 0.0)
+	if not logic.behaviour.has_method("wants_illuminator"):
+		return
+	var wanted: bool = logic.behaviour.wants_illuminator(self, str(logic.get_current_state()))
+	if wanted == illuminator_on or _illuminator_hold > 0.0:
+		return
+	set_illuminator(wanted)
+	_illuminator_hold = ILLUMINATOR_HOLD_TIME
 
 
+# Ages what the NPC knows by `dt` (its thinking time), then looks for
+# bodies in sight. A body in sight becomes a live sight contact; one that
+# drops out of sight stays as a ghost where it was last seen or heard,
+# until the store drops it (BODY_LIFETIME).
 func update_senses(dt):
-	#Tick down sounds
-	var to_remove = []
-	for sound in senses.sounds:
-		sound.lifetime -= dt
-		if sound.lifetime <= 0:
-			to_remove.append(sound)
-	for sound in to_remove:
-		senses.sounds.erase(sound)
-
-	# Age every remembered body. A body that is gone or dead, or that hasn't
-	# been seen or heard for BODY_LIFETIME s, is forgotten.
-	to_remove = []
-	for data in senses.bodies:
-		var body = data.body
-		if not is_instance_valid(body) or ("is_dead" in body and body.is_dead):
-			to_remove.append(data)
-			continue
-		data.is_seen = false
-		data.unseen_time += dt
-		data.lifetime -= dt
-		if data.lifetime <= 0:
-			to_remove.append(data)
-	for data in to_remove:
-		senses.bodies.erase(data)
+	contacts.advance(dt)
+	knowledge.age(dt)
 
 	# Look for mechas and Entities in sight; a decoy looks like a mecha.
 	var own_sight_mult = MapSenses.sight_mult(self)
@@ -606,49 +934,50 @@ func update_senses(dt):
 		if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
 			continue
 		if lit or not MapSenses.sight_blocked(get_world_2d(), global_position, target.global_position):
-			var data := _remember(target, target.global_position)
-			data.is_seen = true
-			data.velocity = target.velocity if "velocity" in target else Vector2.ZERO
-			# Also kept as a contact, for NPC code and kill records; the
-			# decisions above still use senses.
-			contacts.report(target, ContactStore.kind_of(target), target.global_position, "sight", SIGHT_CONTACT_TTL)
+			knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
+	knowledge.end_sight_update()
+	# Mines near, with the one roll to miss each; panic for the frame; the
+	# aim it allows.
+	var fleeing: bool = str(logic.get_current_state()) == "flee"
+	var spotted: Array = knowledge.spot_mines(is_sprinting or fleeing)
+	if not spotted.is_empty():
+		bark("mine_spotted")
+		positioning.request()
+	knowledge.tick_panic(dt, under_fire_timer > 0.0, _hostiles_seen(), has_status("overheating"))
+	extra_bloom = knowledge.panic * PANIC_BLOOM
 
 
-# Records that `body` was at `pos` just now (seen, or given away by its
-# shots), and returns its memory entry. A first-time mecha gets its
-# personality-based hostility seeded, so factions clash without waiting to
-# be provoked.
+# How many living mechas in sight this NPC holds a grudge against or was
+# last attacked by.
+func _hostiles_seen() -> int:
+	var count := 0
+	for body in knowledge.seen_bodies():
+		if body.is_in_group("entity"):
+			count += 1
+		elif is_same(body, most_recent_attacker) or get_relationship(body).hostility > 0.0:
+			count += 1
+	return count
+
+
+# Records that `body` gave itself away at `pos` (its round came from there),
+# and returns the contact.
 func _remember(body, pos: Vector2) -> Dictionary:
-	for data in senses.bodies:
-		if data.body == body:
-			data.last_position = pos
-			data.unseen_time = 0.0
-			data.lifetime = BODY_LIFETIME
-			return data
-	var data := {
-		"body": body,
-		"last_position": pos,
-		"velocity": Vector2.ZERO,
-		"is_seen": false,
-		"unseen_time": 0.0,
-		"lifetime": BODY_LIFETIME,
-	}
-	senses.bodies.append(data)
-	if not body.is_in_group("entity"):
-		_seed_relationship(body)
-	return data
+	return knowledge.heard_shot(body, pos)
 
 
-# What this NPC knows about `target`: its senses entry, or {} if it has
-# never seen it or has forgotten it. Fields: last_position (where it was
-# last seen or heard), is_seen (in sight at the last senses update),
-# unseen_time (seconds since last_position was fresh) and velocity (as last
-# seen).
+# What this NPC knows about `target`, as a read-only view, or {} if it has
+# never perceived it or has forgotten it: last_position (where it was last
+# seen or heard), is_seen (in sight at the last senses update), unseen_time
+# (seconds since last_position was fresh) and velocity (as last seen).
 func perceived(target) -> Dictionary:
-	for data in senses.bodies:
-		if data.body == target:
-			return data
-	return {}
+	if not knowledge.knows(target):
+		return {}
+	return {
+		"last_position": knowledge.position_of(target),
+		"is_seen": knowledge.is_seen(target),
+		"unseen_time": knowledge.age_of(target),
+		"velocity": knowledge.velocity_of(target),
+	}
 
 
 # Whether `target` was in sight at the last senses update. A scripted NPC
@@ -656,19 +985,18 @@ func perceived(target) -> Dictionary:
 func is_seeing(target) -> bool:
 	if scripted:
 		return is_instance_valid(target)
-	var data := perceived(target)
-	return not data.is_empty() and data.is_seen
+	return knowledge.is_seen(target)
 
 
 # Where this NPC believes `target` is: its real position while in sight,
-# otherwise where it was last seen or heard.
+# otherwise where it was last seen or heard. With no contact on it at all,
+# the NPC's own position: it never reads a position it hasn't perceived.
 func get_target_position(target) -> Vector2:
 	if not is_instance_valid(target):
 		return global_position
-	var data := perceived(target)
-	if data.is_empty() or data.is_seen or scripted:
+	if scripted:
 		return target.global_position
-	return data.last_position
+	return knowledge.position_of(target)
 
 
 # Seconds since this NPC last saw or heard `target` (INF if it doesn't know
@@ -676,8 +1004,7 @@ func get_target_position(target) -> Vector2:
 func time_unseen(target) -> float:
 	if scripted:
 		return 0.0
-	var data := perceived(target)
-	return INF if data.is_empty() else data.unseen_time
+	return knowledge.age_of(target)
 
 
 func get_most_recent_loud_noise():
@@ -750,6 +1077,8 @@ func check_for_targets(eng_distance, max_shooting_distance):
 	var best = null
 	var best_score := -1.0
 	for target in _candidate_targets():
+		if not scripted and not knowledge.knows(target):
+			continue
 		var distance = position.distance_to(get_target_position(target))
 		if distance > eng_distance:
 			continue
@@ -767,6 +1096,8 @@ func check_for_targets(eng_distance, max_shooting_distance):
 	if not valid_target:
 		valid_target = best
 		_last_target_switch_ms = now
+		positioning.request()
+		_call_contact(best)
 	elif best != valid_target:
 		# Switch only on a clear threat margin, rate-limited so two
 		# attackers can't ping-pong our attention every rescan.
@@ -775,6 +1106,28 @@ func check_for_targets(eng_distance, max_shooting_distance):
 				and now - _last_target_switch_ms >= TARGET_SWITCH_COOLDOWN_MS:
 			valid_target = best
 			_last_target_switch_ms = now
+			positioning.request()
+
+
+# A new target is called out to the squad (Squad.share_contact): a "contact"
+# bark, and the contact lands in squadmates' stores after Squad.SHARE_DELAY.
+func _call_contact(target) -> void:
+	var squad = knowledge.squad
+	if squad == null or scripted:
+		return
+	squad.share_contact(self, target, get_target_position(target))
+	squad.callout(self, "contact", target)
+
+
+# A squadmate died (Squad.on_member_died): panic, a "man down" bark, and the
+# behaviour judges what to do about it (BaseBehaviour.on_mate_died).
+func on_squadmate_died(member, killer, was_leader: bool) -> void:
+	if is_dead:
+		return
+	knowledge.raise_panic(knowledge.PANIC_SQUADMATE_LOST)
+	bark("man_down", member)
+	if logic.behaviour and logic.behaviour.has_method("on_mate_died"):
+		logic.behaviour.on_mate_died(self, member, killer, was_leader)
 
 
 # Run every think: a target that is Flagged gets should_attack again. If this
@@ -785,7 +1138,7 @@ func check_for_targets(eng_distance, max_shooting_distance):
 # (holds_fire_at).
 func recheck_flagged_target() -> void:
 	for target in [current_target, valid_target]:
-		if not is_instance_valid(target) or target.get("is_exposed") != true or target.get("is_dead") == true:
+		if not is_instance_valid(target) or target.get("flag_up") != true or target.get("is_dead") == true:
 			continue
 		if should_attack(target):
 			continue
@@ -816,12 +1169,18 @@ func _candidate_targets() -> Array:
 			if target != self and is_instance_valid(target) and not target.is_dead:
 				found.append(target)
 		return found
-	for data in senses.bodies:
-		if data.is_seen:
-			found.append(data.body)
+	found = knowledge.seen_bodies()
 	if under_fire_timer > 0 and is_instance_valid(most_recent_attacker) \
 			and not most_recent_attacker.is_dead and not found.has(most_recent_attacker):
 		found.append(most_recent_attacker)
+	# Squadmates' callouts (Squad.share_contact), and never a squadmate or
+	# the squad's leader.
+	var squad = knowledge.squad
+	if squad != null:
+		for body in knowledge.squad_bodies():
+			if not found.has(body):
+				found.append(body)
+		found = found.filter(func(b): return not squad.is_in(b))
 	return found
 
 
@@ -847,15 +1206,11 @@ func on_attacked_by(attacker) -> void:
 	most_recent_attacker = attacker
 	last_attack_position = attacker.global_position
 	_remember(attacker, attacker.global_position)
+	knowledge.took_fire_from(attacker.global_position)
+	_illuminator_hold = 0.0
+	positioning.request()
 
 
-# Blind fire: an NPC that lost sight of its target keeps firing at where it
-# last saw or heard it, through walls, for BLIND_FIRE_TIME s. Each weapon
-# fires only if its round can get through the walls on the way (a round
-# loses 1 AP per wall and stops when it has none left, see
-# MapSenses.trace_shot), and only once the NPC faces that point.
-const BLIND_FIRE_TIME := 4.0
-const BLIND_FIRE_CONE := deg_to_rad(12.0)
 const WEAPON_SLOTS := ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]
 
 # Weapon slot -> the armour pen of its round; 0 for weapons that never fire
@@ -863,34 +1218,10 @@ const WEAPON_SLOTS := ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_l
 var _weapon_ap := {}
 
 
-# Fires at where `target` was last seen or heard. Returns whether any weapon
-# fired.
+# Blind fire at where `target` was last seen or heard (FireController).
+# Returns whether any weapon fired.
 func blind_fire(target) -> bool:
-	if holds_fire_at(target):
-		return false
-	var data := perceived(target)
-	if data.is_empty() or data.is_seen or data.unseen_time > BLIND_FIRE_TIME:
-		return false
-	var point: Vector2 = data.last_position
-	var to_point := point - global_position
-	if absf(Vector2.UP.rotated(global_rotation).angle_to(to_point)) > BLIND_FIRE_CONE:
-		return false
-	var walls := MapSenses.wall_hits(get_world_2d(), global_position, point).size()
-	var fired := false
-	for slot in WEAPON_SLOTS:
-		if _weapon_ap.get(slot, 0) <= walls:
-			continue
-		var node = get_weapon_part(slot)
-		if not node:
-			continue
-		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
-			node.reload()
-		elif node.can_shoot():
-			shoot(slot)
-			fired = true
-	if fired:
-		AICombatLog.record_shot(self, to_point.length(), true)
-	return fired
+	return fire.blind_fire(target)
 
 
 # A designator weapon fired through shoot() aims at where this NPC believes
@@ -901,26 +1232,19 @@ func get_default_aim_point(slot: String) -> Vector2:
 	return super.get_default_aim_point(slot)
 
 
+# Fires every weapon it can at a target in sight (FireController.engage
+# with no discipline and no heat bursts: the plain call).
 func shoot_weapons(target):
 	if holds_fire_at(target):
-		for slot in WEAPON_SLOTS:
-			stop_shooting(slot)
+		fire.cease()
 		return
-	try_to_shoot("arm_weapon_left", target)
-	try_to_shoot("arm_weapon_right", target)
-	try_to_shoot("shoulder_weapon_left", target)
-	try_to_shoot("shoulder_weapon_right", target)
+	var eff: Dictionary = logic.behaviour._get_effective_distances(self) if logic.behaviour and logic.behaviour.has_method("_get_effective_distances") else {"max_shoot": INF}
+	fire.engage(0.0, target, true, eff, {"heat_ratio": 0.0}, false)
 
 
 func try_to_shoot(weapon_name, target):
-	var node = get_weapon_part(weapon_name)
-	if node:
-		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
-			node.reload()
-		elif node.can_shoot():
-			if can_see_target(target):
-				shoot(weapon_name)
-				AICombatLog.record_shot(self, global_position.distance_to(target.global_position), false)
+	if fire._try_to_shoot(weapon_name, target):
+		AICombatLog.record_shot(self, global_position.distance_to(target.global_position), false)
 
 
 func can_see_target(target):
@@ -937,18 +1261,23 @@ func can_see_target(target):
 
 
 # Predicted intercept point for leading a moving target with our average
-# projectile speed, scaled by this NPC's skill (ai_lead_accuracy). Falls back
-# to the target's current position when we can't or shouldn't lead. Bullet drag
-# is ignored, so this slightly over-leads slow/draggy rounds — acceptable.
+# projectile speed, scaled by this NPC's skill (ai_lead_accuracy), from the
+# target's position and velocity as this NPC knows them. Falls back to the
+# believed position when it can't or shouldn't lead. Bullet drag is ignored,
+# so this slightly over-leads slow rounds.
 func compute_lead_point(target) -> Vector2:
 	if not is_instance_valid(target):
 		return global_position
-	var tpos = target.global_position
-	if ai_projectile_speed <= 0.0 or ai_lead_accuracy <= 0.0:
+	var tpos := get_target_position(target)
+	# Panic spoils the lead (NPCKnowledge.panic).
+	var accuracy: float = ai_lead_accuracy * (1.0 - knowledge.panic * PANIC_LEAD_LOSS)
+	if ai_projectile_speed <= 0.0 or accuracy <= 0.0:
 		return tpos
-	var tvel = Vector2.ZERO
-	if "velocity" in target:
-		tvel = target.velocity
+	var tvel := Vector2.ZERO
+	if scripted:
+		tvel = target.velocity if "velocity" in target else Vector2.ZERO
+	else:
+		tvel = knowledge.velocity_of(target)
 	if tvel == Vector2.ZERO:
 		return tpos
 	# Iterative intercept — converges in a few steps.
@@ -956,21 +1285,10 @@ func compute_lead_point(target) -> Vector2:
 	for i in 3:
 		t = global_position.distance_to(tpos + tvel * t) / ai_projectile_speed
 	var full_lead = tpos + tvel * t
-	return tpos + (full_lead - tpos) * ai_lead_accuracy
+	return tpos + (full_lead - tpos) * accuracy
 
 
 # Navigation
-
-#Assumes enemy has a valid target
-func random_targeting_pos(min_dist, max_dist):
-	var rand_pos = Vector2()
-	var angle = randf_range(0, 2.0*PI)
-	var direction = Vector2(cos(angle), sin(angle)).normalized()
-	var rand_radius = randf_range(min_dist, max_dist)
-	rand_pos = valid_target.position + direction * rand_radius
-	
-	return rand_pos
-
 
 func set_scripted(value: bool) -> void:
 	scripted = value
@@ -1019,10 +1337,12 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 	if going_to_position:
 		var pos := global_position
 		var goal: Vector2 = NavAgent.target_position
-		# In a fight the NPC moves relative to its foe; otherwise it follows a
-		# planned route on long trips (see Routes).
+		# On long trips the NPC follows a planned route (see Routes); on short
+		# ones, a fight's kiting included, it heads straight for the goal and
+		# the context map takes it round what is in the way. The navigation
+		# agent only paths on maps with no route grid.
 		var foe = _combat_target()
-		var target: Vector2 = NavAgent.get_next_path_position() if foe else _route_next(goal, dt)
+		var target: Vector2 = _route_next(goal, dt)
 		var dir := (target - pos).normalized()
 		var heading := dir.rotated(PI * direction)
 		if foe and wander > 0.0:
@@ -1057,8 +1377,8 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 		_update_dashes(dt, foe, direction)
 		if ai_aim_point != null:
 			apply_rotation_by_point(dt, ai_aim_point, false)
-		elif valid_target and is_instance_valid(valid_target) and can_see_target(valid_target):
-			apply_rotation_by_point(dt, valid_target.position, false)
+		elif valid_target and is_instance_valid(valid_target) and is_seeing(valid_target):
+			apply_rotation_by_point(dt, get_target_position(valid_target), false)
 		else:
 			apply_rotation_by_point(dt, target, false)
 
@@ -1067,6 +1387,14 @@ func get_target_navigation_pos():
 	if going_to_position:
 		return NavAgent.get_final_location()
 	return false
+
+
+# Whether the NPC has reached where it was going (within the agent's
+# target_desired_distance), or isn't going anywhere.
+func arrived() -> bool:
+	if not going_to_position:
+		return true
+	return global_position.distance_to(NavAgent.target_position) <= NavAgent.target_desired_distance
 
 #Gets an randomly (uniformed) position within a circle
 func get_random_point_on_radius(pos : Vector2, radius : float):
@@ -1165,6 +1493,10 @@ func is_on_screen() -> bool:
 # The map is rebuilt every STEER_NEAR_INTERVAL physics frames near the
 # player or when engaged, and every STEER_FAR_INTERVAL frames otherwise,
 # staggered per NPC. The choice itself runs on every steering update.
+## 24 slots, 15° apart. Fewer would change the driving: a soft obstacle
+## straight ahead (a vehicle the mecha could push) is worth going round only
+## while the next clear direction is a slot or two away; at 22.5° a slot,
+## pushing through becomes the better score.
 const STEER_SLOTS := 24
 ## Look-ahead: this many seconds of travel at full speed, clamped.
 ## Vehicles are only looked for within VEHICLE_RANGE_MAX of that: they are
@@ -1180,8 +1512,8 @@ const WEIGHT_REFRESH_INTERVAL := 120
 const STEER_MARGIN := 20.0
 ## The mecha's own radius is its outline's furthest point times this.
 const SELF_RADIUS_SCALE := 0.85
-const STEER_NEAR_INTERVAL := 6
-const STEER_FAR_INTERVAL := 30
+const STEER_NEAR_INTERVAL := 10
+const STEER_FAR_INTERVAL := 60
 const HARD_TOLERANCE := 0.3
 const HARD_COST := 1.0
 const COMMIT_BONUS := 0.15
@@ -1233,8 +1565,14 @@ var _static_probe_frame := -100000
 var _static_near := false
 var _static_exclude: Array[RID] = []
 var _static_shape: CircleShape2D = null
+var _static_probe: PhysicsShapeQueryParameters2D = null
+var _static_cast: PhysicsShapeQueryParameters2D = null
 var _vehicle_field: VehicleField = null
 var _building_field: BuildingField = null
+# Buffers reused by every rebuild (no allocation per rebuild).
+var _obstacle_buffer := PackedFloat32Array()
+var _cost_by_mass := {}
+var _skip_buildings := {}
 
 
 func steering_setup():
@@ -1308,8 +1646,23 @@ func _build_context() -> void:
 	if _building_field:
 		_add_buildings()
 	_add_static_bodies()
+	_add_mines()
 	if Debug.get_setting("draw_debug_lines"):
 		queue_redraw()
+
+
+# Mines this NPC has seen (NPCKnowledge.known_mines) are hard obstacles,
+# each as wide as its trigger reach plus a margin. Mines it missed, or has
+# never been near, aren't here: it walks onto them.
+func _add_mines() -> void:
+	if knowledge.known_mines.is_empty():
+		return
+	var pos := global_position
+	for entry in knowledge.known_mines.values():
+		var at: Vector2 = entry.position
+		if at.distance_squared_to(pos) > (_steer_range + MINE_AVOID_MARGIN) * (_steer_range + MINE_AVOID_MARGIN):
+			continue
+		_project_circle(at, float(entry.trigger_radius) + MINE_AVOID_MARGIN, true, 0.0)
 
 
 func _add_vehicles() -> void:
@@ -1325,8 +1678,10 @@ func _add_vehicles() -> void:
 	var over_cars: bool = is_sprinting
 	# Cost per vehicle mass (the few sprite variants share a handful of
 	# masses); -1 marks a vehicle that is hard for this mecha.
-	var costs := {}
-	var data := _vehicle_field.steering_obstacles(pos, reach + grow)
+	var costs := _cost_by_mass
+	costs.clear()
+	_vehicle_field.steering_obstacles_into(pos, reach + grow, _obstacle_buffer)
+	var data := _obstacle_buffer
 	var stride := VehicleField.STEER_STRIDE
 	for k in range(0, data.size(), stride):
 		var centre := Vector2(data[k], data[k + 1])
@@ -1385,7 +1740,8 @@ func _add_mechas() -> void:
 func _add_buildings() -> void:
 	var field := _building_field
 	var pos := global_position
-	var skip := {}
+	var skip := _skip_buildings
+	skip.clear()
 	var own := field.building_at(pos)
 	if own >= 0:
 		skip[own] = true
@@ -1406,42 +1762,55 @@ func _add_buildings() -> void:
 		var clearance := dist - grow
 		if clearance > _steer_range:
 			continue
-		var poly := field.global_polygon(b)
-		var centre := Vector2.ZERO
-		for p in poly:
-			centre += p
-		centre /= poly.size()
-		var ref := (centre - pos).angle()
-		var lo := 0.0
-		var hi := 0.0
-		for p in poly:
-			var a := angle_difference(ref, (p - pos).angle())
-			lo = minf(lo, a)
-			hi = maxf(hi, a)
-		var inflate := asin(clampf(grow / maxf(dist, 1.0), 0.0, 1.0))
 		var prox := 1.0 - clampf(clearance / _steer_range, 0.0, 1.0)
-		_mark(ref + (lo + hi) * 0.5, (hi - lo) * 0.5 + inflate, MARK_SOFT,
+		_project_polygon(field.global_polygon(b), field.polygon_centre(b), dist, grow, MARK_SOFT,
 				BUILDING_COST * (0.4 + 0.6 * prox))
 
 
-# Hand-made static bodies: one probe every STATIC_PROBE_INTERVAL frames; when
-# something static is near, the mecha's circle is cast along each slot.
+# Marks the slots a polygon (global points, with its centre and its distance
+# from the mecha) covers, inflated by `grow`, as `kind` at `value`.
+func _project_polygon(poly: PackedVector2Array, centre: Vector2, dist: float, grow: float, kind: int, value: float) -> void:
+	var pos := global_position
+	var ref := (centre - pos).angle()
+	var lo := 0.0
+	var hi := 0.0
+	for p in poly:
+		var a := angle_difference(ref, (p - pos).angle())
+		lo = minf(lo, a)
+		hi = maxf(hi, a)
+	var inflate := asin(clampf(grow / maxf(dist, 1.0), 0.0, 1.0))
+	_mark(ref + (lo + hi) * 0.5, (hi - lo) * 0.5 + inflate, kind, value)
+
+
+# Static bodies (walls, barriers, hand-made props). On a map whose building
+# field gathered their outlines (BuildingField.solids_ready), they are
+# projected from those outlines like buildings, hard, with no physics at all;
+# standing inside an outline's clearance, only the directions into its
+# nearest edge are blocked. Otherwise (hand-made maps with no field, older
+# maps with tile walls): one probe every STATIC_PROBE_INTERVAL frames, and
+# when something static is near, the mecha's circle is cast along each slot.
 func _add_static_bodies() -> void:
+	if _building_field and _building_field.solids_ready():
+		_add_static_outlines()
+		return
 	var space := get_world_2d().direct_space_state
 	var frame := Engine.get_physics_frames()
 	if _static_shape == null:
 		_static_shape = CircleShape2D.new()
+		_static_probe = PhysicsShapeQueryParameters2D.new()
+		_static_probe.shape = _static_shape
+		_static_probe.collision_mask = STATIC_MASK
+		_static_cast = PhysicsShapeQueryParameters2D.new()
+		_static_cast.shape = _static_shape
+		_static_cast.collision_mask = STATIC_MASK
 	if frame - _static_probe_frame >= STATIC_PROBE_INTERVAL:
 		_static_probe_frame = frame
 		_static_near = false
 		_static_exclude.clear()
 		_static_exclude.append(get_rid())
 		_static_shape.radius = _steer_range + _steer_self_radius
-		var probe := PhysicsShapeQueryParameters2D.new()
-		probe.shape = _static_shape
-		probe.transform = Transform2D(0.0, global_position)
-		probe.collision_mask = STATIC_MASK
-		for hit in space.intersect_shape(probe, 32):
+		_static_probe.transform = Transform2D(0.0, global_position)
+		for hit in space.intersect_shape(_static_probe, 32):
 			var col: Object = hit.collider
 			if col is StaticBody2D or col is TileMapLayer:
 				_static_near = true
@@ -1450,25 +1819,46 @@ func _add_static_bodies() -> void:
 	if not _static_near:
 		return
 	_static_shape.radius = _steer_self_radius * STATIC_CAST_SCALE
-	var cast := PhysicsShapeQueryParameters2D.new()
-	cast.shape = _static_shape
+	var cast := _static_cast
 	cast.transform = Transform2D(0.0, global_position)
-	cast.collision_mask = STATIC_MASK
 	cast.exclude = _static_exclude
 	# Already touching something: a cast in any direction stops at once, so
 	# only the directions into it are blocked (from the contact normal).
 	var touching := space.get_rest_info(cast)
 	if not touching.is_empty():
 		var normal: Vector2 = touching.normal
-		for i in STEER_SLOTS:
-			if _slot_dirs[i].dot(normal) < 0.2:
-				_steer_hard[i] = 1.0
+		_block_into(normal)
 		return
 	for i in STEER_SLOTS:
 		cast.motion = _slot_dirs[i] * _steer_range
 		var safe: float = space.cast_motion(cast)[0]
 		if safe < 1.0:
 			_steer_hard[i] = maxf(_steer_hard[i], 1.0 - safe)
+
+
+func _add_static_outlines() -> void:
+	var field := _building_field
+	var pos := global_position
+	var grow := _steer_self_radius + STEER_MARGIN
+	for s in field.solids_within(pos, _steer_range + grow):
+		var poly := field.solid_polygon(s)
+		if Geometry2D.is_point_in_polygon(pos, poly):
+			_block_into(field.solid_outward_normal(s, pos))
+			continue
+		var dist := field.distance_to_solid(s, pos)
+		var clearance := dist - grow
+		if clearance > _steer_range:
+			continue
+		var prox := 1.0 - clampf(clearance / _steer_range, 0.0, 1.0)
+		_project_polygon(poly, field.solid_centre(s), dist, grow, MARK_HARD, prox)
+
+
+# Blocks every direction that leads into a surface whose outward normal is
+# `normal` (the mecha is touching it or inside its clearance).
+func _block_into(normal: Vector2) -> void:
+	for i in STEER_SLOTS:
+		if _slot_dirs[i].dot(normal) < 0.2:
+			_steer_hard[i] = 1.0
 
 
 # Projects a circle obstacle (global centre, radius) onto the slots.
@@ -2018,16 +2408,32 @@ func _on_nearby_projectile_area_entered(area):
 		# The shot gives away where it came from.
 		if not scripted:
 			_remember(attacker, attacker.global_position)
+			knowledge.took_fire_from(attacker.global_position)
+			positioning.request()
 		if attacker.has_method("is_player") and attacker.is_player():
 			AICombatLog.record_player_shot(global_position.distance_to(attacker.global_position))
 		_try_dodge(attacker.global_position)
 
+		# A squadmate's stray round is forgiven; anyone else's turns the
+		# whole squad on the shooter. A companion shot by the player it
+		# follows leaves the player's squad, and from here on takes the
+		# shot as anyone would.
+		var squad = knowledge.squad
+		if squad != null:
+			if squad.is_member(attacker):
+				return
+			if squad.is_leader(attacker):
+				leave_squad("shot")
+			else:
+				squad.hostile_to(attacker)
+
 		# Build hostility — 4 shots = max hostility
 		add_hostility(attacker, 0.25)
 
-		# Betrayal: if we're flagged and they shoot us, mark them traitor
-		if is_exposed and not get_relationship(attacker).is_traitor:
+		# Betrayal: if we're Flagged and they shoot us, mark them traitor
+		if is_flagged() and not get_relationship(attacker).is_traitor:
 			mark_traitor(attacker)
+			AICombatLog.record_flag("traitor")
 
 
 # BARKS AND LOCAL
@@ -2036,13 +2442,14 @@ func _on_nearby_projectile_area_entered(area):
 # to Local. _watch_barks runs on thinking frames, after the behaviour, and
 # compares what the NPC is doing now with what it was doing at its last
 # think, so the behaviour code needs no hooks of its own:
-#   spotted       it enters in_combat with its target in sight
+#   spotted       it starts fighting (the engage intent's fighting stance)
+#                 with its target in sight
 #   lost_target   its target goes out of sight
 #   searching     the target is still out of sight SEARCH_BARK_DELAY s later
 #   taking_fire   the first hit of a fight
 #   reloading     a weapon starts reloading during a fight
 #   overheating   the overheating status comes on
-#   retreating    it enters defend or flee
+#   retreating    it takes the defend stance or flees
 #   target_down   its target dies
 #   looting       it reaches a container, and may broadcast a loot shout
 #                 (chance: personality.greed x LOOT_SHOUT_GREED)
@@ -2050,8 +2457,232 @@ func _on_nearby_projectile_area_entered(area):
 #   idle          now and then while roaming (IDLE_BARK_RATE per second)
 # Once per fight it also broadcasts a help call, when it is under fire below
 # HELP_CALL_HEALTH of its health. A fight starts when it enters a combat
-# state or is hit, and ends once it is in a calm state and no longer under
+# intent or is hit, and ends once it is in a calm intent and no longer under
 # fire. Barks and broadcasts are placeholders for the AI work to replace.
+
+## BUDDYING UP (Phase 5): an NPC with a good standing with the player
+## (standing_with_player: less than STANDING_HOSTILITY toward it, and the
+## player's reputation at or above STANDING_REPUTATION; a pilot the player
+## spared always) that sees the player within OFFER_RANGE may offer to buddy
+## up, at OFFER_RATE per second by personality (doubled for a pilot that was
+## spared, halved for an Anonymous player), once per NPC. An NPC whose help
+## call the player answered (shooting the foe it called about within
+## HELP_WINDOW s) offers once the fight is over, with HELP_OFFER_CHANCE by
+## personality. The offer is a bark and a Local line, and the scene puts the
+## prompt up (CombatScene.offer_buddy). A companion leaves when the player
+## shoots it, or is further than LEAVE_DISTANCE for LEAVE_TIME s
+## (leave_squad); a Rat companion betrays a player it sees at or under
+## BETRAY_PLAYER_HEALTH with no other companion about, at BETRAY_PLAYER_RATE
+## x treachery per second (betray_player). A Guardian that sees a pilot it
+## has nothing against attacked joins it with GUARDIAN_JOIN_CHANCE. All
+## placeholders.
+const STANDING_HOSTILITY := 0.1
+const STANDING_REPUTATION := 0
+## THE INFORMATION SYSTEMS (Phase 6). Suspicion: hostility toward a pilot
+## with no name on first sight, and toward everyone in sight when a sweep
+## finds this NPC. A tagged squad's size (Local's roster) weighs on whether
+## to fight one of its members. A car alarm is a lead for Hunters and the
+## greedy (greed over ALARM_GREED); a Hunter swept sweeps back this wide. A
+## helper that sees the caller it answers hit turns on the attacker by
+## HELP_HOSTILITY. Placeholders.
+const SUSPICION_ANONYMOUS := 0.2
+const SWEPT_SUSPICION := 0.1
+const SQUAD_THREAT_PER_MEMBER := 0.3
+const ALARM_GREED := 0.5
+const SWEEP_BACK_WIDTH := 360.0
+const SWEEP_BACK_COOLDOWN := 30.0
+const HELP_HOSTILITY := 0.5
+
+var _sweep_back_due := false
+var _swept_back_at := -INF
+const OFFER_RANGE := 1500.0
+const OFFER_RATE := {
+	Personality.Type.GUARDIAN: 0.03,
+	Personality.Type.PROFESSIONAL: 0.015,
+	Personality.Type.SCAVENGER: 0.015,
+	Personality.Type.RAT: 0.02,
+	Personality.Type.HUNTER: 0.005,
+}
+const SPARED_OFFER_MULT := 2.0
+const ANONYMOUS_OFFER_MULT := 0.5
+const HELP_WINDOW := 30.0
+const HELP_OFFER_CHANCE := {
+	Personality.Type.GUARDIAN: 0.8,
+	Personality.Type.HUNTER: 0.3,
+}
+const HELP_OFFER_CHANCE_DEFAULT := 0.6
+const LEAVE_DISTANCE := 6000.0
+const LEAVE_TIME := 60.0
+const BETRAY_PLAYER_HEALTH := 0.4
+const BETRAY_PLAYER_RATE := 0.1
+const GUARDIAN_JOIN_CHANCE := 0.6
+const LEAVE_LINES := {
+	"shot": "You shot me. We're done.",
+	"far": "Lost you. Going my own way.",
+	"betrayal": "Nothing personal.",
+}
+
+var _offered := false
+var _joined := false
+var _help_called_at := -INF
+var _help_foe = null
+var _help_answered := false
+var _far_time := 0.0
+
+
+## Whether this NPC thinks well enough of the player to buddy up.
+func standing_with_player() -> bool:
+	var player = arena.get("player") if arena is Node else null
+	if not is_instance_valid(player):
+		return false
+	if knowledge.spared_by.has(player.get_instance_id()):
+		return true
+	return get_relationship(player).hostility < STANDING_HOSTILITY \
+			and PlayerProgress.get_reputation() >= STANDING_REPUTATION
+
+
+## The chance this NPC offers after the player answered its help call.
+func help_offer_chance() -> float:
+	return float(HELP_OFFER_CHANCE.get(personality.type, HELP_OFFER_CHANCE_DEFAULT))
+
+
+## Each think: a companion watches its distance from the player and, a Rat,
+## its chance; anyone else may offer.
+func _tick_companion(dt: float) -> void:
+	var squad = knowledge.squad
+	if squad != null and squad.is_player_led():
+		var player = squad.leader
+		if global_position.distance_to(player.global_position) > LEAVE_DISTANCE:
+			_far_time += dt
+			if _far_time >= LEAVE_TIME:
+				leave_squad("far")
+		else:
+			_far_time = 0.0
+		if would_betray_player() and randf() < BETRAY_PLAYER_RATE * personality.treachery * dt:
+			betray_player()
+		return
+	if squad == null:
+		_consider_offer(dt)
+
+
+func _consider_offer(dt: float) -> void:
+	if _offered or scripted or is_dead or is_flagged():
+		return
+	var player = arena.get("player") if arena is Node else null
+	if not is_instance_valid(player) or player.is_dead or not is_seeing(player):
+		return
+	if global_position.distance_to(player.global_position) > OFFER_RANGE or not standing_with_player():
+		return
+	if _help_answered:
+		if _in_fight:
+			return
+		_help_answered = false
+		if randf() < help_offer_chance():
+			offer_buddy()
+		else:
+			_offered = true
+		return
+	var rate: float = float(OFFER_RATE.get(personality.type, 0.01))
+	if knowledge.spared_by.has(player.get_instance_id()):
+		rate *= SPARED_OFFER_MULT
+	if player.get("is_anonymous") == true:
+		rate *= ANONYMOUS_OFFER_MULT
+	if randf() < rate * dt:
+		offer_buddy()
+
+
+## Offers to buddy up: a bark, a Local line and the scene's prompt.
+func offer_buddy() -> void:
+	_offered = true
+	bark("buddy_offer")
+	broadcast("buddy_offer")
+	AICombatLog.record_squad("offered")
+	if arena is Node and arena.has_method("offer_buddy"):
+		arena.offer_buddy(self)
+
+
+## The player took the offer (CombatScene.accept_offer): it is in the
+## player's squad now.
+func on_buddy_accepted() -> void:
+	_far_time = 0.0
+	bark("buddy_accept")
+	broadcast("buddy_accept")
+	logic.evaluate_now(self)
+
+
+## The player gave the squad an order (Squad.give_order).
+func on_order(_kind: String) -> void:
+	bark("order_ack")
+	logic.evaluate_now(self)
+
+
+## Leaves its squad; a companion tells Local why (LEAVE_LINES).
+func leave_squad(reason: String) -> void:
+	var squad = knowledge.squad
+	if squad == null:
+		return
+	var led: bool = squad.is_player_led()
+	squad.remove(self)
+	if led:
+		broadcast("buddy_left", str(LEAVE_LINES.get(reason, "")))
+		AICombatLog.record_squad("left")
+
+
+## Whether a Rat companion would turn on the player now: the player, as it
+## last saw it, at or under BETRAY_PLAYER_HEALTH, and no other companion.
+func would_betray_player() -> bool:
+	var squad = knowledge.squad
+	if personality.type != Personality.Type.RAT or squad == null or not squad.is_player_led():
+		return false
+	if squad.alive_members().size() > 1:
+		return false
+	return knowledge.knows(squad.leader) and knowledge.hp_fraction_of(squad.leader) <= BETRAY_PLAYER_HEALTH
+
+
+## A Rat companion turns on the player: leaves the squad, hates the player,
+## and knows where it is.
+func betray_player() -> void:
+	var squad = knowledge.squad
+	if squad == null or not squad.is_player_led():
+		return
+	var player = squad.leader
+	leave_squad("betrayal")
+	bark("betrayal", player)
+	add_hostility(player, 1.0)
+	_remember(player, player.global_position)
+	AICombatLog.record_squad("betrayed_player")
+	logic.evaluate_now(self)
+
+
+## A Hunter is easily provoked (Phase 7): a Flagged mech that stays within
+## HUNTER_PROVOKE_RANGE of it, or keeps facing it (within HUNTER_PROVOKE_FACING
+## of straight on) within HUNTER_PROVOKE_FACING_RANGE, earns
+## HUNTER_PROVOKE_RATE hostility a second, until should_attack lets the
+## Hunter finish it. Placeholders.
+const HUNTER_PROVOKE_RANGE := 800.0
+const HUNTER_PROVOKE_FACING_RANGE := 1500.0
+const HUNTER_PROVOKE_FACING := 0.8
+const HUNTER_PROVOKE_RATE := 0.08
+
+
+# Each think: a Hunter's patience with a Flagged mech that crowds it or
+# stares it down wears thin.
+func _tick_provocation(dt: float) -> void:
+	if personality == null or personality.type != Personality.Type.HUNTER or is_flagged():
+		return
+	for body in knowledge.seen_bodies():
+		if body.get("flag_up") != true or body.is_in_group("entity"):
+			continue
+		if knowledge.squad != null and knowledge.squad.is_in(body):
+			continue
+		var distance: float = global_position.distance_to(body.global_position)
+		var provoked: bool = distance <= HUNTER_PROVOKE_RANGE
+		if not provoked and distance <= HUNTER_PROVOKE_FACING_RANGE and body.has_method("get_facing"):
+			var facing: Vector2 = body.get_facing()
+			provoked = facing.dot(body.global_position.direction_to(global_position)) >= HUNTER_PROVOKE_FACING
+		if provoked:
+			add_hostility(body, HUNTER_PROVOKE_RATE * dt)
+
 
 ## Chance an NPC is Anonymous: Hunters, and everyone else. Placeholders.
 const HUNTER_ANONYMOUS_CHANCE := 0.6
@@ -2061,11 +2692,12 @@ const SEARCH_BARK_DELAY := 3.0
 const IDLE_BARK_RATE := 0.02
 const LOOT_SHOUT_GREED := 0.3
 const HELP_CALL_HEALTH := 0.5
-const COMBAT_STATES := ["in_combat", "attack", "defend", "ambush_lock", "defending_lock", "flee"]
-const CALM_STATES := ["roam", "seek", "alert", "alert_roam", "ambush", "loot", "extract"]
+const COMBAT_STATES := ["engage", "search", "disengage", "flee"]
+const CALM_STATES := ["roam", "investigate", "ambush", "loot", "extract", "follow", "help", "vulture", "scout"]
 
 var _bark_ready_ms := 0
 var _bark_state := ""
+var _bark_stance := ""
 var _bark_target = null
 var _bark_target_seen := false
 var _bark_unseen_time := 0.0
@@ -2086,9 +2718,13 @@ var _fight_help := false
 func bark(event: String, target = null) -> bool:
 	if is_dead or not _player_in_earshot():
 		return false
+	# Panicked, an event's panicked lines (event_panicked) come first.
+	var type_name := Barks.type_name(personality)
+	if knowledge.panic > PANIC_BARK and Barks.has_lines(event + "_panicked", type_name):
+		event = event + "_panicked"
 	if Time.get_ticks_msec() < _bark_ready_ms or randf() >= Barks.chance_for(event) or not Barks.global_ready():
 		return false
-	var line := Barks.line_for(event, Barks.type_name(personality), mecha_name, target)
+	var line := Barks.line_for(event, type_name, mecha_name, target)
 	if line == "":
 		return false
 	_bark_ready_ms = Time.get_ticks_msec() + int(Barks.NPC_COOLDOWN * 1000.0)
@@ -2149,14 +2785,24 @@ func _watch_barks(dt: float) -> void:
 		bark("taking_fire", most_recent_attacker if is_instance_valid(most_recent_attacker) else null)
 
 	var target = current_target if is_instance_valid(current_target) and not current_target.is_dead else null
+	# The engage intent's stance (closing, attack, defend): a fight starts
+	# when it leaves closing, and retreating is the defend stance.
+	var stance: String = str(logic.behaviour.get("stance")) if state == "engage" and logic.behaviour else ""
 	if state != _bark_state:
-		if state == "in_combat" and target != null and is_seeing(target):
-			bark("spotted", target)
-		elif state == "defend" or state == "flee":
+		if state == "flee":
 			bark("retreating")
 		elif state == "extract":
 			bark("extracting")
 		_bark_state = state
+		_bark_stance = ""
+	if stance != _bark_stance:
+		var fighting := stance == "attack" or stance == "defend"
+		var was_fighting := _bark_stance == "attack" or _bark_stance == "defend"
+		if fighting and not was_fighting and target != null and is_seeing(target):
+			bark("spotted", target)
+		elif stance == "defend":
+			bark("retreating")
+		_bark_stance = stance
 
 	if target != _bark_target:
 		_bark_target = target
@@ -2197,6 +2843,9 @@ func _watch_barks(dt: float) -> void:
 			and hp < max_hp * HELP_CALL_HEALTH:
 		_fight_help = true
 		broadcast("need_help")
+		# Who it called for help against, for the player answering it.
+		_help_called_at = knowledge.now()
+		_help_foe = valid_target if is_instance_valid(valid_target) else most_recent_attacker
 
 	if state == "roam" and randf() < IDLE_BARK_RATE * dt:
 		bark("idle")
@@ -2211,6 +2860,7 @@ func _start_fight() -> void:
 func _on_took_damage_for_barks(_mecha, is_status) -> void:
 	if not is_status:
 		_bark_hit = true
+		_illuminator_hold = 0.0
 
 
 func _on_weapon_reloading_for_barks(_reload_time) -> void:

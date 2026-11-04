@@ -89,6 +89,8 @@ var _internal_held := -1.0
 func _ready():
 	super()
 	Illumination.ensure_key_action()
+	ensure_flag_key_action()
+	ensure_squad_key_actions()
 	var layer := CanvasLayer.new()
 	layer.layer = DESIGNATOR_LAYER
 	layer.follow_viewport_enabled = true
@@ -179,6 +181,19 @@ func _input(event):
 		return
 	if event.is_action_pressed(Illumination.KEY_ACTION):
 		toggle_illuminator()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed(FLAG_ACTION):
+		toggle_flag()
+		get_viewport().set_input_as_handled()
+		return
+	# A buddy-up offer's answer (CombatScene.offer_buddy).
+	if event.is_action_pressed(ACCEPT_ACTION) and arena is Node and arena.has_method("accept_offer"):
+		arena.accept_offer()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed(DECLINE_ACTION) and arena is Node and arena.has_method("decline_offer"):
+		arena.decline_offer()
 		get_viewport().set_input_as_handled()
 		return
 
@@ -641,6 +656,89 @@ func is_internal_held() -> bool:
 func toggle_illuminator() -> void:
 	set_illuminator(not illuminator_on)
 	AudioManager.play_sfx(ILLUMINATOR_ON_SFX if illuminator_on else ILLUMINATOR_OFF_SFX)
+
+
+## The Flag key (raise_flag): raises the Flag at once, or starts lowering it
+## (Mecha.lower_flag's wind-up). While the capsule is exposed, raising it
+## again is the emergency Flag, not a choice.
+const FLAG_ACTION := "raise_flag"
+const FLAG_DEFAULT_KEY := KEY_X
+
+
+func toggle_flag() -> void:
+	if is_flagged() and not is_lowering_flag():
+		lower_flag()
+	else:
+		raise_flag(not is_exposed)
+
+
+## Adds the Flag key action, bound to FLAG_DEFAULT_KEY, if the project's
+## Input Map lacks it. One set in Project Settings is left as it is.
+static func ensure_flag_key_action() -> void:
+	_ensure_key_action(FLAG_ACTION, FLAG_DEFAULT_KEY)
+
+
+## The companion keys (Phase 5): the squad orders menu (HudSquadOrders),
+## and the answer to a buddy-up offer (CombatScene.offer_buddy).
+const ORDERS_ACTION := "squad_orders"
+const ORDERS_DEFAULT_KEY := KEY_Z
+const ACCEPT_ACTION := "accept_offer"
+const ACCEPT_DEFAULT_KEY := KEY_Y
+const DECLINE_ACTION := "decline_offer"
+const DECLINE_DEFAULT_KEY := KEY_N
+## How far (px) from the reticle a mecha may be to count as the player's
+## target for an attack order, when nothing is locked. Placeholder.
+const TARGET_PICK_RADIUS := 600.0
+
+
+static func ensure_squad_key_actions() -> void:
+	_ensure_key_action(ORDERS_ACTION, ORDERS_DEFAULT_KEY)
+	_ensure_key_action(ACCEPT_ACTION, ACCEPT_DEFAULT_KEY)
+	_ensure_key_action(DECLINE_ACTION, DECLINE_DEFAULT_KEY)
+
+
+static func _ensure_key_action(action: String, default_key: Key) -> void:
+	if InputMap.has_action(action):
+		return
+	InputMap.add_action(action)
+	var key := InputEventKey.new()
+	key.physical_keycode = default_key
+	InputMap.action_add_event(action, key)
+
+
+## What the player means by "my target": the mecha it is locked on to, else
+## the living mecha or creature nearest the reticle within
+## TARGET_PICK_RADIUS, never a companion. Null for none.
+func pointed_target():
+	var locked = get_locked_to()
+	if locked and is_instance_valid(locked) and not locked.is_dead:
+		return locked
+	if not (arena is Node) or not arena.has_method("get_mechas"):
+		return null
+	var cursor := get_global_mouse_position()
+	var squad = arena.player_squad(false) if arena.has_method("player_squad") else null
+	var best = null
+	var best_dist := TARGET_PICK_RADIUS
+	var bodies: Array = arena.get_mechas()
+	if arena.has_method("get_entities"):
+		bodies = bodies + arena.get_entities()
+	for body in bodies:
+		if body == self or not is_instance_valid(body) or body.is_dead:
+			continue
+		if squad != null and squad.is_in(body):
+			continue
+		var d: float = cursor.distance_to(body.global_position)
+		if d < best_dist:
+			best = body
+			best_dist = d
+	return best
+
+
+## The orders menu's pick (HudSquadOrders): the scene passes it on.
+func give_order(kind: String) -> bool:
+	if arena is Node and arena.has_method("give_order"):
+		return arena.give_order(kind)
+	return false
 
 
 func _use_internal_feedback(reason: String) -> void:

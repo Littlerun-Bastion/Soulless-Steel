@@ -450,6 +450,9 @@ func _test_wreck_solid() -> void:
 	var sight := space.intersect_ray(PhysicsRayQueryParameters2D.create(Vector2(0, -800), Vector2(0, 800), MapSenses.SIGHT_MASK))
 	check(not sight.is_empty() and sight.collider == body.solid, "and a blast's (or an NPC's) line to a mecha behind it")
 	var mover := _mecha(PlayerProgress.DEFAULT_MECHA, Vector2(-900, 0))
+	# Two frames: the mover's shapes reach the physics server a step after it
+	# is added, and one frame now and then isn't enough.
+	await get_tree().physics_frame
 	await get_tree().physics_frame
 	var hit := mover.move_and_collide(Vector2(1800, 0))
 	check(hit != null and hit.get_collider() == body.solid, "a mecha driving into it is stopped")
@@ -596,15 +599,17 @@ func _test_npcs() -> void:
 	check(not enemy.perceived(victim).is_empty(), "but stays wary of it")
 	enemy.shoot_weapons(enemy.current_target)
 	check_eq(shots[0], 0, "and doesn't fire at it")
-	# Mid-fight it takes on someone else: attack and defend switch to them
-	# from the dropped target (current_target false) without a script error.
+	# Mid-fight it takes on someone else: the attack and defend stances switch
+	# to them from the dropped target (current_target false) without a script
+	# error.
 	var other := _mecha(PlayerProgress.DEFAULT_MECHA, Vector2(700, 0))
-	enemy._remember(other, other.global_position)
-	for state in ["do_attack", "do_defend"]:
+	enemy.knowledge.see(other, other.global_position)
+	for stance in ["attack", "defend"]:
 		enemy.valid_target = other
 		enemy.current_target = false
-		enemy.logic.behaviour.call(state, 0.016, enemy)
-		check(is_same(enemy.current_target, other), "%s takes the new target" % state)
+		enemy.logic.behaviour.stance = stance
+		enemy.logic.behaviour.do_engage(0.016, enemy)
+		check(is_same(enemy.current_target, other), "the %s stance takes the new target" % stance)
 
 	# A Rat keeps it, but holds fire through the grace window.
 	var rat = _enemy(Personality.Type.RAT)

@@ -1,5 +1,5 @@
 {
-	"_about": "NPC barks (game/mecha/Barks.gd). events: lines by event, then by personality type (scavenger, guardian, professional, hunter, rat) with an 'any' fallback. chances: how likely each event is to bark (0 to 1). named: lines for a named NPC (by its name), used before everything else. broadcasts: lines NPCs send to Local. {target} becomes the target's callsign, or 'someone'. All placeholder text.",
+	"_about": "NPC barks (game/mecha/Barks.gd). events: lines by event, then by personality type (scavenger, guardian, professional, hunter, rat) with an 'any' fallback; an event's '_panicked' variant is used above Enemy.PANIC_BARK where it exists. chances: how likely each event (and each panicked variant) is to bark (0 to 1). named: lines for a named NPC (by its name), used before everything else. broadcasts: lines NPCs send to Local. {target} becomes the target's callsign, or 'someone'. All placeholder text.",
 	"chances": {
 		"spotted": 0.8,
 		"lost_target": 0.6,
@@ -11,56 +11,419 @@
 		"target_down": 1.0,
 		"looting": 0.5,
 		"extracting": 0.9,
-		"idle": 0.3
+		"idle": 0.3,
+		"execute": 1.0,
+		"traitor": 1.0,
+		"surrender_plea": 1.0,
+		"spared": 0.8,
+		"flag_raised": 0.6,
+		"flag_lowered": 0.6,
+		"mine_spotted": 0.6,
+		"swept": 0.5,
+		"contact": 0.8,
+		"flanking": 0.7,
+		"covering": 0.8,
+		"moving_up": 0.6,
+		"falling_back": 0.8,
+		"man_down": 1.0,
+		"regroup": 0.8,
+		"buddy_offer": 1.0,
+		"buddy_accept": 1.0,
+		"order_ack": 0.8,
+		"betrayal": 1.0,
+		"investigating": 0.5,
+		"heard_alarm": 0.6,
+		"device_destroyed": 0.7,
+		"scouting": 0.5,
+		"vulturing": 0.6,
+		"found_trail": 0.7,
+		"lost_trail": 0.5,
+		"spotted_panicked": 0.9,
+		"lost_target_panicked": 0.7,
+		"searching_panicked": 0.6,
+		"taking_fire_panicked": 0.8,
+		"reloading_panicked": 0.6,
+		"overheating_panicked": 0.8,
+		"retreating_panicked": 0.9,
+		"target_down_panicked": 1.0,
+		"contact_panicked": 0.9,
+		"covering_panicked": 0.8,
+		"moving_up_panicked": 0.7,
+		"falling_back_panicked": 0.9,
+		"man_down_panicked": 1.0,
+		"regroup_panicked": 0.9,
+		"investigating_panicked": 0.6,
+		"device_destroyed_panicked": 0.8,
+		"mine_spotted_panicked": 0.8,
+		"swept_panicked": 0.7,
+		"order_ack_panicked": 0.8,
+		"flag_raised_panicked": 0.8,
+		"surrender_plea_panicked": 1.0
 	},
 	"events": {
 		"spotted": {
 			"any": ["Contact.", "Got eyes on {target}.", "There you are.", "Target sighted.", "Movement. Engaging."],
+			"scavenger": ["Oh no. Oh no no.", "Someone's here!", "Maybe they haven't seen me."],
+			"guardian": ["Halt. You're not welcome.", "Hostile in the perimeter.", "Stand down, {target}, or I put you down."],
+			"professional": ["Target acquired.", "Engaging {target}.", "Visual. Going weapons hot."],
 			"hunter": ["Found you, {target}.", "Fresh tracks end here.", "{target}. You're mine."],
-			"scavenger": ["Oh no. Oh no no.", "Someone's here!"],
-			"guardian": ["Halt. You're not welcome.", "Hostile in the perimeter."],
-			"rat": ["Hey, friend! Hold still.", "Easy now, {target}..."]
+			"rat": ["Hey, friend! Hold still.", "Easy now, {target}...", "Well, well. Look who it is."]
+		},
+		"spotted_panicked": {
+			"any": ["Another one! Another one!", "No, no, not now!", "They're everywhere!"],
+			"scavenger": ["Please, not again!"],
+			"guardian": ["Hold... hold the line!"]
 		},
 		"lost_target": {
 			"any": ["Lost them.", "Where'd they go?", "Lost visual.", "Gone dark."],
-			"hunter": ["You can't hide forever, {target}."],
-			"professional": ["Target lost. Holding."]
+			"scavenger": ["Gone? Good. Good.", "Please stay gone."],
+			"guardian": ["Lost the hostile. Stay sharp."],
+			"professional": ["Target lost. Holding."],
+			"hunter": ["You can't hide forever, {target}.", "Slippery. I like that."],
+			"rat": ["Hide and seek, is it?", "Come back, friend, I wasn't done."]
+		},
+		"lost_target_panicked": {
+			"any": ["Where is it? Where IS it?", "Lost it, lost it, lost it.", "It could be anywhere!"]
 		},
 		"searching": {
 			"any": ["Checking the last position.", "Come out.", "I know you're close.", "Sweeping the area."],
-			"hunter": ["I can smell your coolant, {target}."]
+			"scavenger": ["I'm just... looking. Carefully."],
+			"guardian": ["Clearing this sector."],
+			"professional": ["Sweeping. Methodical.", "Checking corners."],
+			"hunter": ["I can smell your coolant, {target}.", "Every hunt ends."],
+			"rat": ["Nowhere to run, friend.", "Come out, come out."]
+		},
+		"searching_panicked": {
+			"any": ["Show yourself! Please!", "I can't see anything!"]
 		},
 		"taking_fire": {
 			"any": ["Taking fire!", "I'm hit!", "Where's that coming from?", "Contact, contact!"],
-			"scavenger": ["Don't shoot! Don't shoot!"],
-			"professional": ["Under fire. Returning."]
+			"scavenger": ["Don't shoot! Don't shoot!", "Why me?!"],
+			"guardian": ["Taking hits. Holding.", "That all you've got?"],
+			"professional": ["Under fire. Returning.", "Incoming. Adjusting."],
+			"hunter": ["Good. Now I know where you are.", "You'll pay for that one."],
+			"rat": ["Ow! Hey!", "Rude. Very rude."]
+		},
+		"taking_fire_panicked": {
+			"any": ["No no no, I'm hit!", "They're everywhere!", "Get it off me!"],
+			"scavenger": ["Please, I've got nothing!"],
+			"rat": ["Not fair, not fair!"]
 		},
 		"reloading": {
-			"any": ["Reloading!", "Changing mags.", "Cover me, reloading.", "Dry. Reloading."]
+			"any": ["Reloading!", "Changing mags.", "Cover me, reloading.", "Dry. Reloading."],
+			"scavenger": ["Empty! Oh no, empty!"],
+			"guardian": ["Reloading. Hold them."],
+			"professional": ["Mag change."],
+			"hunter": ["Fresh belt."],
+			"rat": ["One second, friend. Reloading."]
+		},
+		"reloading_panicked": {
+			"any": ["Come on, come on, reload!", "Empty! Why now?!"]
 		},
 		"overheating": {
-			"any": ["Running hot.", "Heat's critical.", "Overheating!", "Venting, venting."]
+			"any": ["Running hot.", "Heat's critical.", "Overheating!", "Venting, venting."],
+			"scavenger": ["It's cooking me alive in here!"],
+			"guardian": ["Heat warning. Pushing through."],
+			"professional": ["Thermal limit. Easing off."],
+			"hunter": ["Too hot. Patience."],
+			"rat": ["Hot, hot, hot!"]
+		},
+		"overheating_panicked": {
+			"any": ["It's going to blow!", "Can't cool it, can't cool it!"]
 		},
 		"retreating": {
 			"any": ["Falling back!", "I'm out of here.", "Pulling back.", "Not worth it."],
-			"rat": ["Every pilot for themselves!"],
-			"guardian": ["Regrouping. This isn't over."]
+			"scavenger": ["Leaving! Leaving!", "This isn't my fight!"],
+			"guardian": ["Regrouping. This isn't over."],
+			"professional": ["Breaking contact.", "Withdrawing to cover."],
+			"hunter": ["Another day, {target}.", "Living to hunt again."],
+			"rat": ["Every pilot for themselves!", "Bye now!"]
+		},
+		"retreating_panicked": {
+			"any": ["I can't do this!", "Out, out, out!", "I'm not dying here!"],
+			"scavenger": ["Run, run, run!"]
 		},
 		"target_down": {
 			"any": ["Target down.", "Got them.", "That's one.", "{target} is scrap."],
-			"hunter": ["Another one for the wall."],
-			"scavenger": ["Is... is it dead?"]
+			"scavenger": ["Is... is it dead?", "I did that? I did that."],
+			"guardian": ["Threat neutralised.", "Rest easy, {target}."],
+			"professional": ["Target eliminated.", "Clean kill."],
+			"hunter": ["Another one for the wall.", "The hunt is over, {target}."],
+			"rat": ["Thanks for the parts, {target}.", "Sorry, friend. Not sorry."]
+		},
+		"target_down_panicked": {
+			"any": ["It's down! It's down! Is it down?", "Stay down!"]
 		},
 		"looting": {
 			"any": ["Let's see what's in here.", "Checking the crate.", "Anything good?", "Salvage."],
-			"scavenger": ["Mine, mine, all mine."]
+			"scavenger": ["Mine, mine, all mine.", "Ooh, what's this?"],
+			"guardian": ["Checking supplies."],
+			"professional": ["Inventory check."],
+			"hunter": ["Scraps. Not what I'm here for."],
+			"rat": ["Finders keepers.", "Somebody won't miss this."]
 		},
 		"extracting": {
-			"any": ["Heading out.", "Making for the exit.", "I've had enough.", "Extracting."]
+			"any": ["Heading out.", "Making for the exit.", "I've had enough.", "Extracting."],
+			"scavenger": ["Got my haul. Going home."],
+			"guardian": ["Patrol's over. Pulling out."],
+			"professional": ["Schedule's up. Extracting."],
+			"hunter": ["Enough trophies for today."],
+			"rat": ["Time to vanish."]
 		},
 		"idle": {
 			"any": ["Quiet out here.", "Grid's dead tonight.", "Hate this place.", "Keep moving."],
-			"professional": ["Sector clear."]
+			"scavenger": ["Nobody around. Good.", "Just me and the crates."],
+			"guardian": ["Perimeter's quiet.", "Nothing on the line."],
+			"professional": ["Sector clear.", "Nothing to report."],
+			"hunter": ["Where are you all hiding?", "Too quiet. I like it loud."],
+			"rat": ["Nobody to talk to. Shame.", "Such a lonely grid."]
+		},
+		"execute": {
+			"any": ["Flag or no flag.", "Nothing personal.", "Should've run faster."],
+			"scavenger": ["I'm sorry. I'm so sorry."],
+			"guardian": ["You crossed the line. This is the price."],
+			"professional": ["No mercy for traitors."],
+			"hunter": ["A trophy's a trophy.", "Flags don't stop bullets."],
+			"rat": ["Thanks for holding still.", "That flag's a nice touch."]
+		},
+		"traitor": {
+			"any": ["You raised it, then you shot. No mercy.", "A white flag and a bullet. Not twice.", "Liar!"],
+			"scavenger": ["You lied! You lied!"],
+			"guardian": ["The Flag means something. You'll learn."],
+			"professional": ["Treachery has a price."],
+			"hunter": ["Dishonest prey. The best kind."],
+			"rat": ["Ha! I'd have done the same."]
+		},
+		"surrender_plea": {
+			"any": ["I yield! I'm done!", "Flag's up, don't shoot!", "Enough! Let me go!"],
+			"scavenger": ["Take whatever you want, just let me leave!"],
+			"guardian": ["I yield. Honour it."],
+			"professional": ["Standing down. Flag's up."],
+			"hunter": ["I don't yield. I leave."],
+			"rat": ["Easy, easy, I'm out of it!"]
+		},
+		"surrender_plea_panicked": {
+			"any": ["Please! Please! Flag's up!", "Don't kill me! Don't!"]
+		},
+		"spared": {
+			"any": ["I won't forget this.", "You're alright.", "I owe you one."],
+			"scavenger": ["Thank you, thank you."],
+			"guardian": ["Honour kept. I remember that."],
+			"professional": ["Noted. Professional of you."],
+			"hunter": ["Mercy. Interesting."],
+			"rat": ["Soft. I'll remember that too."]
+		},
+		"flag_raised": {
+			"any": ["Flag's up.", "I'm out of the fight.", "Not fighting. Flag."],
+			"scavenger": ["Flag! Flag! See it?"],
+			"guardian": ["Flag raised. I'll hold to it."],
+			"professional": ["Flag up. Standing down."],
+			"hunter": ["Flag. Don't make me regret it."],
+			"rat": ["Just passing through, friend."]
+		},
+		"flag_raised_panicked": {
+			"any": ["Flag! Flag! I give up!", "I'm Flagged, I'm Flagged!"]
+		},
+		"flag_lowered": {
+			"any": ["Flag's coming down.", "Back in it.", "Flag down."],
+			"scavenger": ["Okay. Okay. Flag down."],
+			"guardian": ["Flag down. Back on duty."],
+			"professional": ["Resuming."],
+			"hunter": ["Hunt's back on."],
+			"rat": ["Oops. Dropped it."]
+		},
+		"mine_spotted": {
+			"any": ["Mine! Watch your step.", "Mines here.", "Careful. Mine."],
+			"scavenger": ["Mines! I hate mines!"],
+			"guardian": ["Mine ahead. Going round."],
+			"professional": ["Mine ahead. Marking it."],
+			"hunter": ["Somebody's been busy. Mines."],
+			"rat": ["Mine. Nice try."]
+		},
+		"mine_spotted_panicked": {
+			"any": ["Mines! Where do I step?!", "Don't move, don't move!"]
+		},
+		"swept": {
+			"any": ["Someone's scanning.", "I just got swept.", "Sensor ping. Someone knows I'm here."],
+			"scavenger": ["They're looking for me.", "Swept! Hide!"],
+			"guardian": ["Swept. Someone's probing the line."],
+			"professional": ["Swept. Repositioning."],
+			"hunter": ["Scan me again. I dare you."],
+			"rat": ["Peekaboo yourself."]
+		},
+		"swept_panicked": {
+			"any": ["They see me! They see me!", "Swept again! Where are they?!"]
+		},
+		"contact": {
+			"any": ["Contact! {target}, on me.", "Eyes on {target}. Calling it.", "Got one. Marking {target}."],
+			"scavenger": ["Someone's out there! {target}!"],
+			"guardian": ["Hostile. {target}, my front."],
+			"professional": ["Contact. Position sent."],
+			"hunter": ["Prey. {target}, marking."],
+			"rat": ["Friend ahead. {target}. Heh."]
+		},
+		"contact_panicked": {
+			"any": ["Contact! Contact! Too many!", "{target}! Right there! Do something!"]
+		},
+		"flanking": {
+			"any": ["Going round.", "Flanking. Keep them busy.", "Swinging wide on {target}."],
+			"scavenger": ["Going... round. I think."],
+			"guardian": ["Taking the flank. Hold their eyes."],
+			"professional": ["Flanking right. Suppress."],
+			"hunter": ["I'll come in from the side."],
+			"rat": ["Round the back. Where I belong."]
+		},
+		"covering": {
+			"any": ["Smoke out. Pull back.", "Covering you, {target}.", "Screen's up, go!"],
+			"scavenger": ["Smoke! Run while you can!"],
+			"guardian": ["I've got you. Move."],
+			"professional": ["Smoke deployed. Withdraw."],
+			"hunter": ["Smoke. Get clear."],
+			"rat": ["Smoke's up. You owe me."]
+		},
+		"covering_panicked": {
+			"any": ["Smoke! Smoke! Go, go!", "Get out of there, {target}!"]
+		},
+		"moving_up": {
+			"any": ["Moving up.", "On my way.", "Coming to you."],
+			"scavenger": ["Wait for me!"],
+			"guardian": ["Closing up. Hold on."],
+			"professional": ["Advancing."],
+			"hunter": ["Joining the hunt."],
+			"rat": ["Right behind you. Mostly."]
+		},
+		"moving_up_panicked": {
+			"any": ["Coming! Don't leave me!", "Wait, wait, I'm coming!"]
+		},
+		"falling_back": {
+			"any": ["Falling back, cover me.", "Breaking off.", "I need to pull out."],
+			"scavenger": ["I'm done, I'm done, cover me!"],
+			"guardian": ["Falling back to you. Hold."],
+			"professional": ["Disengaging. Cover."],
+			"hunter": ["Pulling out. For now."],
+			"rat": ["I'm out. Good luck!"]
+		},
+		"falling_back_panicked": {
+			"any": ["Cover me! Cover me!", "I'm falling back, don't shoot me!"]
+		},
+		"man_down": {
+			"any": ["{target} is down!", "We lost {target}.", "Man down!"],
+			"scavenger": ["{target}'s dead. Oh no."],
+			"guardian": ["{target}... I'll hold them."],
+			"professional": ["{target} is down. Adjusting."],
+			"hunter": ["{target} fell. Their killer's mine."],
+			"rat": ["{target}'s gone. Shame."]
+		},
+		"man_down_panicked": {
+			"any": ["{target}'s dead! We're next!", "No! Not {target}!"]
+		},
+		"regroup": {
+			"any": ["Regroup on me.", "Form up.", "Where are you? Get back here."],
+			"scavenger": ["Come back! Don't leave me alone!"],
+			"guardian": ["Form on me. Now."],
+			"professional": ["Close up the formation."],
+			"hunter": ["Back to the pack."],
+			"rat": ["Stick close, friends. Closer."]
+		},
+		"regroup_panicked": {
+			"any": ["Get back here! Now!", "Everyone on me! Please!"]
+		},
+		"buddy_offer": {
+			"any": ["Want to team up? Say the word.", "Two guns beat one. I'm in if you are.", "Could use a wingman. You?"],
+			"scavenger": ["Safer together, right? Right?"],
+			"guardian": ["You handle yourself well. Let me cover you."],
+			"professional": ["Proposing a partnership. Your call."],
+			"hunter": ["You're not bad. Hunt with me."],
+			"rat": ["Hey, friend. Let's stick together a while."]
+		},
+		"buddy_accept": {
+			"any": ["Alright, I'm with you.", "Lead on.", "Your call, boss."],
+			"scavenger": ["Oh thank goodness. Okay. Okay."],
+			"guardian": ["I've got your back."],
+			"professional": ["Partnership accepted."],
+			"hunter": ["Let's hunt."],
+			"rat": ["Good choice, friend."]
+		},
+		"order_ack": {
+			"any": ["Copy.", "On it.", "Understood.", "Moving."],
+			"scavenger": ["Okay, okay."],
+			"guardian": ["Yes. Holding to it."],
+			"professional": ["Acknowledged."],
+			"hunter": ["As you say."],
+			"rat": ["Sure thing, boss."]
+		},
+		"order_ack_panicked": {
+			"any": ["I... yes! Okay!", "Doing it, doing it!"]
+		},
+		"betrayal": {
+			"any": ["Nothing personal.", "Should've watched your back.", "Sorry about this."],
+			"scavenger": ["I'm sorry, I'm sorry, I need it more than you!"],
+			"guardian": ["I never thought I'd do this."],
+			"professional": ["The contract changed."],
+			"hunter": ["Prey is prey."],
+			"rat": ["Thanks for the ride, {target}.", "You looked tired. I'll take it from here."]
+		},
+		"investigating": {
+			"any": ["Heard the call. Moving.", "Hold on, I'm coming.", "Somebody's in trouble. On my way."],
+			"scavenger": ["I'll... have a look. From a distance."],
+			"guardian": ["Hold the line. Help's coming."],
+			"professional": ["Responding."],
+			"hunter": ["Somebody's in trouble. Let's see who."],
+			"rat": ["Help's coming, friend. Sort of."]
+		},
+		"investigating_panicked": {
+			"any": ["Coming! Hold on! Please hold on!"]
+		},
+		"heard_alarm": {
+			"any": ["Car alarm. Somebody's clumsy.", "An alarm. Worth a look.", "That racket means someone's about."],
+			"scavenger": ["Alarm. Not going near that."],
+			"guardian": ["An alarm. Checking it."],
+			"professional": ["Alarm. Noting the position."],
+			"hunter": ["An alarm. Something blundered into it."],
+			"rat": ["An alarm! Somebody's careless. Lovely."]
+		},
+		"device_destroyed": {
+			"any": ["Lost my ward.", "Something took out my drone.", "My sensor's gone. Someone's out there."],
+			"scavenger": ["They shot my little ward!"],
+			"guardian": ["Device destroyed. Hostile near the line."],
+			"professional": ["Device down. Hostile in the area."],
+			"hunter": ["Somebody shot my eyes out. Clever."],
+			"rat": ["My gadget! That cost money!"]
+		},
+		"device_destroyed_panicked": {
+			"any": ["They're taking my gear out! They're close!"]
+		},
+		"scouting": {
+			"any": ["Checking what's ahead.", "Sweeping before we go in.", "Let me see what's out there first."],
+			"scavenger": ["Just... checking. Carefully."],
+			"guardian": ["Scanning the approach."],
+			"professional": ["Recon sweep."],
+			"hunter": ["Sending the drone ahead."],
+			"rat": ["Having a peek."]
+		},
+		"vulturing": {
+			"any": ["Let them tire each other out.", "I'll wait for the winner.", "Somebody's fighting. Let's see who's left."],
+			"scavenger": ["Fighting... maybe they'll drop something."],
+			"guardian": ["A fight. Watching before I commit."],
+			"professional": ["Engagement ahead. Observing."],
+			"hunter": ["Wounded prey is the best prey."],
+			"rat": ["Patience. Then easy pickings."]
+		},
+		"found_trail": {
+			"any": ["Fresh tracks.", "Warm prints. It went this way.", "Got a trail."],
+			"scavenger": ["Tracks. Hope they're going away."],
+			"guardian": ["Trail. Following."],
+			"professional": ["Heat trail. Tracking."],
+			"hunter": ["Still warm. You can't be far."],
+			"rat": ["Footprints. Someone's sloppy."]
+		},
+		"lost_trail": {
+			"any": ["Trail's cold.", "Lost the tracks.", "Nothing here."],
+			"scavenger": ["Cold. Good."],
+			"guardian": ["Trail's gone."],
+			"professional": ["Trail cold. Ending the track."],
+			"hunter": ["Cold. For now."],
+			"rat": ["Lost it. Oh well."]
 		}
 	},
 	"named": {
@@ -71,6 +434,9 @@
 	},
 	"broadcasts": {
 		"found_loot": ["Found loot here.", "Good salvage over here.", "Crates. Lots of them."],
-		"need_help": ["Need help!", "Anyone near? I'm going down!", "Help, I'm under fire!"]
+		"need_help": ["Need help!", "Anyone near? I'm going down!", "Help, I'm under fire!"],
+		"surrender": ["Flag up. I'm leaving, don't shoot.", "I yield. Heading for the exit.", "Done fighting. Let me go."],
+		"buddy_offer": ["Want to team up?", "Looking for a wingman. Interested?"],
+		"buddy_accept": ["Teaming up. I'm on your side now.", "Squadding up with you."]
 	}
 }

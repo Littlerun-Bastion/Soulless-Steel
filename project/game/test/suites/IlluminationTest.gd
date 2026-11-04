@@ -48,7 +48,7 @@ func run_tests() -> void:
 	await case("with its illuminator off the player loses its cone", _test_player_dark)
 	await case("the illuminator key and the HUD row", _test_key_and_hud)
 	await case("an NPC sees lit targets through walls, and less with its own off", _test_npc_senses)
-	await case("an NPC's behaviour runs dark in its dark states", _test_npc_states)
+	await case("an NPC's behaviour runs dark by intent, and holds the setting", _test_npc_states)
 	await case("every light adds or takes away, the same for everyone", _test_light_style)
 
 
@@ -280,14 +280,52 @@ func _test_npc_senses() -> void:
 
 func _test_npc_states() -> void:
 	var enemy := _enemy(Vector2(-3000, -3000))
-	var dark: Array = enemy.logic.behaviour.dark_states
-	check(dark.has("ambush") and dark.has("flee"), "lying in wait and running are dark states")
-	for state in ["roam", "ambush", "ambush_lock", "flee", "in_combat", "attack"]:
-		enemy.logic.g.set_state(state)
+	var behaviour = enemy.logic.behaviour
+	check(not behaviour.wants_illuminator(enemy, "ambush") and not behaviour.wants_illuminator(enemy, "flee"),
+			"lying in wait and running are dark")
+	for intent in ["roam", "ambush", "flee", "loot", "investigate", "extract"]:
+		enemy.logic.g.set_state(intent)
+		enemy._illuminator_hold = 0.0
 		enemy._update_illuminator()
-		check_eq(enemy.illuminator_on, not dark.has(state), "%s: illuminator %s" % [state, "off" if dark.has(state) else "on"])
+		var wanted: bool = behaviour.wants_illuminator(enemy, intent)
+		check_eq(enemy.illuminator_on, wanted, "%s: illuminator %s" % [intent, "on" if wanted else "off"])
+	# Engaging: dark while closing on a target that hasn't fired, lit once it
+	# has, and lit while trading shots.
+	behaviour.stance = "closing"
+	check(not behaviour.wants_illuminator(enemy, "engage"), "closing on a quiet target: dark")
+	enemy.under_fire_timer = 0.5
+	check(behaviour.wants_illuminator(enemy, "engage"), "closing under fire: lit")
+	enemy.under_fire_timer = 0.0
+	behaviour.stance = "attack"
+	check(behaviour.wants_illuminator(enemy, "engage"), "trading shots: lit")
+	behaviour.stance = "closing"
+	# Flagged, it leaves dark.
+	enemy.is_exposed = true
+	check(not behaviour.wants_illuminator(enemy, "extract"), "leaving Flagged: dark")
+	enemy.is_exposed = false
+	# Hunters and Rats wander dark.
+	enemy.personality.type = Personality.Type.HUNTER
+	check(not behaviour.wants_illuminator(enemy, "roam") and not behaviour.wants_illuminator(enemy, "investigate"),
+			"a Hunter roams and investigates dark")
+	enemy.personality.type = Personality.Type.PROFESSIONAL
+	# A setting is held for ILLUMINATOR_HOLD_TIME s.
 	enemy.logic.g.set_state("ambush")
+	enemy._illuminator_hold = 0.0
+	enemy._update_illuminator()
+	check(not enemy.illuminator_on, "dark in ambush")
+	enemy.logic.g.set_state("roam")
+	enemy._update_illuminator(0.1)
+	check(not enemy.illuminator_on, "still dark right after the change (the hold)")
+	enemy._update_illuminator(enemy.ILLUMINATOR_HOLD_TIME)
+	check(enemy.illuminator_on, "lit once the hold is over")
+	enemy.logic.g.set_state("ambush")
+	enemy._update_illuminator(0.1)
+	check(enemy.illuminator_on, "held lit")
+	enemy.took_damage.emit(enemy, false)
+	enemy._update_illuminator(0.0)
+	check(not enemy.illuminator_on, "being hit ends the hold")
 	enemy.auto_illuminator = false
+	enemy._illuminator_hold = 0.0
 	enemy.set_illuminator(true)
 	enemy._update_illuminator()
 	check(enemy.illuminator_on, "with auto_illuminator off the behaviour leaves it alone")

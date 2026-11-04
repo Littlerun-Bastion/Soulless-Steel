@@ -33,6 +33,8 @@ extends RefCounted
 
 signal message(entry: Dictionary)
 signal roster_changed
+## A mecha hit another (every hit, from Mecha.take_damage): NPCs witness it.
+signal attack_noted(attacker, victim)
 
 const CALLSIGNS_PATH := "res://database/npcs/callsigns.json"
 const UNKNOWN := "Unknown"
@@ -49,6 +51,15 @@ const QUICK_CHAT := [
 ## the share of it an Anonymous player pays. Placeholders.
 const UNPROVOKED_KILL_REPUTATION := -10
 const ANONYMOUS_REPUTATION_SHARE := 0.5
+## The Flag's reputation: attacking within TREACHERY_WINDOW s of lowering a
+## Flag raised by choice, or attacking a pilot that saw the player Flagged
+## (once per pilot); killing a Flagged pilot (in place of the unprovoked
+## kill's cost); sparing a pilot that raised its Flag (NPC code says when,
+## note_spared). Placeholders.
+const TREACHERY_REPUTATION := -15
+const TREACHERY_WINDOW := 10.0
+const FLAGGED_KILL_REPUTATION := -20
+const SPARED_REPUTATION := 5
 
 ## The latest match's channel (null before the first match).
 static var current: LocalPilots = null
@@ -67,19 +78,48 @@ var _pilots: Array = []  # mechas that joined and haven't left
 var _log: Array[Dictionary] = []
 var _used_callsigns := {}
 var _first_strike := {}  # pair key -> instance id of who hit first
+# The player's Flag: when it last came down, whether it was raised by
+# choice, and whether that lowering has been charged; pilots already charged
+# for being attacked after seeing the player Flagged.
+var _player_flag_down_at := -INF
+var _player_flag_voluntary := false
+var _player_flag_charged := true
+var _charged_witnesses := {}
 
 
-## The name others see for `mecha`: its callsign, or "Unknown" if it is
-## Anonymous or gone.
+## The name others see for `mecha`: its callsign, with its squad's tag before
+## it ("[HLX] Viktor"), or "Unknown" if it is Anonymous or gone.
 static func name_of(mecha) -> String:
 	if not is_instance_valid(mecha):
 		return UNKNOWN
 	if mecha.get("is_anonymous") == true:
 		return UNKNOWN
 	var callsign = mecha.get("callsign")
-	if callsign is String and callsign != "":
-		return callsign
-	return str(mecha.get("mecha_name"))
+	var name: String = callsign if callsign is String and callsign != "" else str(mecha.get("mecha_name"))
+	var tag = mecha.get("squad_tag")
+	if tag is String and tag != "":
+		return "[%s] %s" % [tag, name]
+	return name
+
+
+## How many pilots on the roster carry squad tag `tag` (a tagged squad's
+## size, which the roster gives away; an Anonymous squad shows none).
+func count_tag(tag: String) -> int:
+	if tag == "":
+		return 0
+	var count := 0
+	for mecha in _pilots:
+		if is_instance_valid(mecha) and not mecha.is_anonymous and mecha.get("squad_tag") == tag:
+			count += 1
+	return count
+
+
+## The pilot on the roster whose name (as others see it) is `name`, or null.
+func pilot_named(name: String):
+	for mecha in _pilots:
+		if is_instance_valid(mecha) and name_of(mecha) == name:
+			return mecha
+	return null
 
 
 ## "Ash: Need help!", or the line itself for joins and leaves.
@@ -176,13 +216,64 @@ func post_bark(speaker, text: String) -> Dictionary:
 
 # ---- Reputation ----
 
-## Records who struck first between `attacker` and `victim` (mechas only).
+## Records who struck first between `attacker` and `victim` (mechas only),
+## tells the NPCs (attack_noted), and charges the player's treachery: an
+## attack within TREACHERY_WINDOW s of lowering a Flag raised by choice, or
+## on a pilot that saw the player Flagged.
 func note_attack(attacker, victim) -> void:
 	if not _is_mecha(attacker) or not _is_mecha(victim) or attacker == victim:
 		return
 	var key := _pair_key(attacker, victim)
 	if not _first_strike.has(key):
 		_first_strike[key] = attacker.get_instance_id()
+	if attacker.has_method("is_player") and attacker.is_player():
+		if _player_flag_voluntary and now - _player_flag_down_at <= TREACHERY_WINDOW:
+			# Within the window, one charge for the lowering, whoever is hit.
+			if not _player_flag_charged:
+				_player_flag_charged = true
+				_change_reputation(attacker, TREACHERY_REPUTATION, "attacked after lowering the Flag")
+		elif victim.has_method("saw_flag_raised") and victim.saw_flag_raised(attacker) \
+				and not _charged_witnesses.has(victim.get_instance_id()):
+			_charged_witnesses[victim.get_instance_id()] = true
+			_change_reputation(attacker, TREACHERY_REPUTATION, "attacked a pilot that saw you Flagged")
+	attack_noted.emit(attacker, victim)
+
+
+## A mecha's Flag went up (by choice or the emergency state).
+func note_flag_raised(mecha, voluntary: bool) -> void:
+	if mecha.has_method("is_player") and mecha.is_player():
+		_player_flag_voluntary = voluntary
+		_player_flag_charged = true
+
+
+## A mecha's Flag came down: for the player, the treachery window starts.
+func note_flag_lowered(mecha) -> void:
+	if mecha.has_method("is_player") and mecha.is_player():
+		_player_flag_down_at = now
+		_player_flag_charged = not _player_flag_voluntary
+
+
+## `sparer` left `npc` alone after it raised its Flag (NPC code decides
+## when): the player gains reputation, and the pilot's hostility toward the
+## player goes.
+func note_spared(npc, sparer) -> void:
+	if not is_instance_valid(sparer) or not sparer.has_method("is_player") or not sparer.is_player():
+		return
+	_change_reputation(sparer, SPARED_REPUTATION, "spared a pilot that raised its Flag")
+	if npc.has_method("add_hostility"):
+		npc.add_hostility(sparer, -1.0)
+	if "knowledge" in npc:
+		npc.knowledge.spared_by[sparer.get_instance_id()] = true
+
+
+func _change_reputation(player, change: int, why: String) -> int:
+	if not applies_reputation:
+		return 0
+	if is_instance_valid(player) and player.is_anonymous and change < 0:
+		change = roundi(change * ANONYMOUS_REPUTATION_SHARE)
+	PlayerProgress.add_reputation(change)
+	MechLog.write("LOC", "Reputation %+d (%s)" % [change, why], MechLog.Kind.LOCAL)
+	return change
 
 
 ## Whether `a` hit `b` before `b` hit `a`.
@@ -192,19 +283,19 @@ func struck_first(a, b) -> bool:
 	return _first_strike.get(_pair_key(a, b), 0) == a.get_instance_id()
 
 
-## The reputation change for `player` killing `victim`: 0 when the victim
-## struck first, else UNPROVOKED_KILL_REPUTATION (a share of it while
+## The reputation change for `player` killing `victim`:
+## FLAGGED_KILL_REPUTATION for a pilot whose Flag was up, else 0 when the
+## victim struck first, else UNPROVOKED_KILL_REPUTATION (a share of it while
 ## Anonymous). Applies it to PlayerProgress when the match applies
 ## reputation. Returns the change.
 func score_player_kill(player, victim) -> int:
-	if not applies_reputation or not _is_mecha(victim) or struck_first(victim, player):
+	if not applies_reputation or not _is_mecha(victim):
 		return 0
-	var change := UNPROVOKED_KILL_REPUTATION
-	if is_instance_valid(player) and player.is_anonymous:
-		change = roundi(change * ANONYMOUS_REPUTATION_SHARE)
-	PlayerProgress.add_reputation(change)
-	MechLog.write("LOC", "Reputation %+d (unprovoked kill)" % change, MechLog.Kind.LOCAL)
-	return change
+	if victim.get("flag_up") == true:
+		return _change_reputation(player, FLAGGED_KILL_REPUTATION, "killed a Flagged pilot")
+	if struck_first(victim, player):
+		return 0
+	return _change_reputation(player, UNPROVOKED_KILL_REPUTATION, "unprovoked kill")
 
 
 func _post(sender, kind: String, text: String, bark := false) -> Dictionary:

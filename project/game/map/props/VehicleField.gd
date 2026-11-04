@@ -476,8 +476,16 @@ func vehicles_near(pos: Vector2, radius: float) -> PackedInt32Array:
 # update, so steering doesn't pay a method call per vehicle.
 func steering_obstacles(pos: Vector2, radius: float) -> PackedFloat32Array:
 	var out := PackedFloat32Array()
+	steering_obstacles_into(pos, radius, out)
+	return out
+
+
+# The same, written into `out` (cleared first), so an NPC can reuse one
+# buffer rebuild after rebuild.
+func steering_obstacles_into(pos: Vector2, radius: float, out: PackedFloat32Array) -> void:
+	out.clear()
 	if not _built:
-		return out
+		return
 	var reach := radius + 120.0
 	var c0 := _cell_of(pos - Vector2(reach, reach))
 	var c1 := _cell_of(pos + Vector2(reach, reach))
@@ -494,7 +502,6 @@ func steering_obstacles(pos: Vector2, radius: float) -> PackedFloat32Array:
 		var r := radius + _size[j].x * 0.5
 		if p.distance_squared_to(pos) <= r * r:
 			_append_obstacle(out, j, p, body.global_rotation)
-	return out
 
 
 func _append_obstacle(out: PackedFloat32Array, j: int, p: Vector2, rot: float) -> void:

@@ -60,6 +60,12 @@ static func line_for(event: String, personality_type: String, npc_name := "", ta
 	return fill(str(lines.pick_random()), target)
 
 
+## Whether `event` has lines for this personality type or "any".
+static func has_lines(event: String, personality_type: String) -> bool:
+	var by_type: Dictionary = data().get("events", {}).get(event, {})
+	return not by_type.get(personality_type, by_type.get("any", [])).is_empty()
+
+
 ## A line for an NPC broadcast kind ("found_loot", "need_help"); "" if none.
 static func broadcast_line(kind: String) -> String:
 	var lines: Array = data().get("broadcasts", {}).get(kind, [])

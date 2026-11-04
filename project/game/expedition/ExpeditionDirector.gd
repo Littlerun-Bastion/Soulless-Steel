@@ -11,6 +11,13 @@ extends Node
 @export var min_initial_enemies: int = 6
 @export var max_initial_enemies: int = 10
 @export var metrics_print_interval: float = 5.0
+## How many spawns are squads (Expedition.add_squad), and how many of those
+## are threes rather than pairs. Placeholders.
+@export var squad_chance: float = 0.4
+@export var squad_three_chance: float = 0.34
+## Companions the player deploys with (Expedition.add_companion), for a
+## mission that provides them. Placeholder.
+@export var starting_companions: int = 0
 
 # Soft-spawn tunables — the world replenishes itself as NPCs die or extract.
 @export_group("Soft Spawns")
@@ -103,12 +110,20 @@ func start(arena_ref) -> void:
 
 func _populate_initial_world() -> void:
 	var count = randi_range(min_initial_enemies, max_initial_enemies)
-	for i in count:
-		var npc = NPCManager.get_random_npc()
-		if not npc:
-			continue
-		var design = NPCManager.get_design_data(npc)
-		arena.add_enemy(design, "NPC_" + str(i))
+	var spawned := 0
+	var spawn_index := 0
+	while spawned < count:
+		if arena.has_method("add_squad") and randf() < squad_chance:
+			var size := 3 if randf() < squad_three_chance else 2
+			var squad: Squad = arena.add_squad(size, "NPC_" + str(spawn_index))
+			spawned += squad.members.size()
+		else:
+			arena.add_enemy(NPCManager.random_design_data(), "NPC_" + str(spawn_index))
+			spawned += 1
+		spawn_index += 1
+	if arena.has_method("add_companion"):
+		for k in starting_companions:
+			arena.add_companion()
 	var packs := 0
 	for i in randi_range(min_initial_packs, max_initial_packs):
 		var pos = _pick_entity_spawn_position()
@@ -270,14 +285,14 @@ func _try_soft_spawn() -> void:
 	if pos == null:
 		return  # no zone is far enough from the player right now
 
-	var npc = NPCManager.get_random_npc()
-	if not npc:
-		return
-	var design = NPCManager.get_design_data(npc)
 	var enemy_name = "Soft_" + str(total_soft_spawns)
-	var enemy = arena.add_enemy(design, enemy_name, pos)
-	if enemy == null:
-		return
+	if arena.has_method("add_squad") and randf() < squad_chance:
+		var size := 3 if randf() < squad_three_chance else 2
+		arena.add_squad(size, enemy_name, pos)
+	else:
+		var enemy = arena.add_enemy(NPCManager.random_design_data(), enemy_name, pos)
+		if enemy == null:
+			return
 
 	total_soft_spawns += 1
 	time_since_last_spawn = 0.0

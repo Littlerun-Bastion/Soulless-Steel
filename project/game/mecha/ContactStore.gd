@@ -35,10 +35,13 @@ extends RefCounted
 ## Expiry is worked out when the store is read and every PRUNE_INTERVAL s,
 ## never per contact per frame.
 
-## Seconds a ghost stays (the ping marker's fade). Placeholder.
+## Seconds a ghost stays (the ping marker's fade), unless the store sets its
+## own ghost_time. Placeholder.
 const GHOST_TIME := 8.0
 const PRUNE_INTERVAL := 1.0
-## Source -> how the player is shown its contacts.
+## Source -> how the player is shown its contacts. The last four are what
+## NPC knowledge writes (NPCKnowledge): a round that gave its shooter away,
+## a body heard, a squadmate's callout, a Local message's blurred position.
 const REVEALS := {
 	"sight": "sight",
 	"ward": "ping",
@@ -47,8 +50,23 @@ const REVEALS := {
 	"seeker": "vision",
 	"flare": "vision",
 	"biosensor": "vision",
+	"shot": "ping",
+	"sound": "ping",
+	"squad": "ping",
+	"local": "ping",
+}
+## Details a report may carry on the contact, with their defaults when a
+## report leaves them out: the body's velocity as seen, and how whole it
+## looked (structural health and hp fraction, for NPC aggression).
+const DETAIL_DEFAULTS := {
+	"velocity": Vector2.ZERO,
+	"health": 1.0,
+	"hp_fraction": 1.0,
 }
 
+## Seconds a ghost stays in this store. An NPC's store keeps its memories
+## longer than the player's HUD fade (Enemy.BODY_LIFETIME).
+var ghost_time := GHOST_TIME
 ## Store time, in game seconds.
 var now := 0.0
 ## Goes up whenever a contact is reported, turns into a ghost or is dropped.
@@ -78,8 +96,9 @@ func advance(dt: float) -> void:
 
 
 ## Records that `source` puts `body` (null for none) at `position` now, live
-## for `ttl` s. Returns the contact.
-func report(body: Object, kind: String, position: Vector2, source: String, ttl: float) -> Dictionary:
+## for `ttl` s. `details` may carry DETAIL_DEFAULTS keys (a report without
+## them keeps the contact's last values). Returns the contact.
+func report(body: Object, kind: String, position: Vector2, source: String, ttl: float, details := {}) -> Dictionary:
 	if not REVEALS.has(source):
 		push_error("ContactStore: unknown source '%s'" % source)
 		return {}
@@ -87,6 +106,7 @@ func report(body: Object, kind: String, position: Vector2, source: String, ttl: 
 	var contact := _find(body, source)
 	if contact.is_empty():
 		contact = {"body": body, "body_id": 0, "source": source, "reveal": REVEALS[source]}
+		contact.merge(DETAIL_DEFAULTS)
 		if body != null:
 			contact.body_id = body.get_instance_id()
 			if not _by_body.has(contact.body_id):
@@ -98,7 +118,10 @@ func report(body: Object, kind: String, position: Vector2, source: String, ttl: 
 	contact.time = now
 	contact.live = true
 	contact.live_until = now + ttl
-	contact.ghost_until = now + ttl + GHOST_TIME
+	contact.ghost_until = now + ttl + ghost_time
+	for key in details:
+		if DETAIL_DEFAULTS.has(key):
+			contact[key] = details[key]
 	revision += 1
 	return contact
 
@@ -141,6 +164,16 @@ func query(filter := {}) -> Array[Dictionary]:
 	return result
 
 
+## The live contacts from `source` (one Array, no filter Dictionary).
+func live_from(source: String) -> Array[Dictionary]:
+	_update()
+	var result: Array[Dictionary] = []
+	for contact in _contacts:
+		if contact.live and contact.source == source:
+			result.append(contact)
+	return result
+
+
 ## The best contact on `body`: a live one before a ghost, then the latest.
 ## {} if there is none.
 func best_for(body: Object) -> Dictionary:
@@ -176,7 +209,18 @@ func age(contact: Dictionary) -> float:
 func ghost_fade(contact: Dictionary) -> float:
 	if contact.live:
 		return 0.0
-	return clampf((now - float(contact.live_until)) / GHOST_TIME, 0.0, 1.0)
+	return clampf((now - float(contact.live_until)) / ghost_time, 0.0, 1.0)
+
+
+## Turns every live contact from `source` that wasn't reported at the
+## current store time into a ghost now (an NPC's sight at the end of a
+## senses update). No allocation: it walks the contacts in place.
+func expire_unrefreshed(source: String) -> void:
+	for contact in _contacts:
+		if contact.live and contact.source == source and float(contact.time) < now:
+			contact.live = false
+			contact.live_until = now
+			revision += 1
 
 
 ## Drops every contact on `body`.

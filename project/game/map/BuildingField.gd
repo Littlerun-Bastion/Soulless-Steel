@@ -115,6 +115,15 @@ var _route_solves := 0
 # Building id -> its LightOccluder2D, for buildings near the player.
 var _occluders := {}
 var _occluder_timer := 0.0
+# Footprints in global space and their centres, filled as asked for.
+var _global_polys: Array[PackedVector2Array] = []
+var _centres: Array[Vector2] = []
+# The static bodies' outlines (see solids_ready).
+var _solid_polys: Array[PackedVector2Array] = []
+var _solid_rects: Array[Rect2] = []
+var _solid_global: Array[PackedVector2Array] = []
+var _solid_centres: Array[Vector2] = []
+var _solids_gathered := false
 
 
 func _ready() -> void:
@@ -333,13 +342,110 @@ func building_at(global_pos: Vector2) -> int:
 	return -1
 
 
+# Building i's footprint in global space, worked out once: buildings don't
+# move, and NPC steering asks for the same ones every rebuild.
 func global_polygon(i: int) -> PackedVector2Array:
-	return global_transform * _polys[i]
+	if _global_polys.is_empty():
+		_global_polys.resize(_polys.size())
+		_centres.resize(_polys.size())
+		_centres.fill(Vector2.INF)
+	var poly: PackedVector2Array = _global_polys[i]
+	if poly.is_empty():
+		poly = global_transform * _polys[i]
+		_global_polys[i] = poly
+	return poly
+
+
+# The centre of building i's footprint (global), the mean of its points.
+func polygon_centre(i: int) -> Vector2:
+	global_polygon(i)
+	if _centres[i] == Vector2.INF:
+		_centres[i] = _mean(_global_polys[i])
+	return _centres[i]
 
 
 # Distance from a global position to building i's footprint (0 inside).
 func distance_to_building(i: int, global_pos: Vector2) -> float:
 	return _distance_to(i, to_local(global_pos))
+
+
+# ---- Static bodies (solids) ----
+# The outlines of the scene's static bodies, grown by ROUTE_WALL_CLEARANCE,
+# as gathered for the route grid (_static_outlines). NPC steering projects
+# them as hard obstacles instead of casting shapes against the bodies.
+
+# True once the outlines are gathered (with the route grid's build).
+func solids_ready() -> bool:
+	return _solids_gathered
+
+
+# Ids of the solids whose outline comes within `radius` of a global position.
+func solids_within(global_pos: Vector2, radius: float) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	var pos := to_local(global_pos)
+	for i in _solid_polys.size():
+		if _solid_rects[i].grow(radius).has_point(pos):
+			out.append(i)
+	return out
+
+
+# Solid i's outline in global space (cached).
+func solid_polygon(i: int) -> PackedVector2Array:
+	var poly: PackedVector2Array = _solid_global[i]
+	if poly.is_empty():
+		poly = global_transform * _solid_polys[i]
+		_solid_global[i] = poly
+	return poly
+
+
+func solid_centre(i: int) -> Vector2:
+	if _solid_centres[i] == Vector2.INF:
+		_solid_centres[i] = _mean(solid_polygon(i))
+	return _solid_centres[i]
+
+
+# Distance from a global position to solid i's outline (0 inside).
+func distance_to_solid(i: int, global_pos: Vector2) -> float:
+	var pos := to_local(global_pos)
+	var poly := _solid_polys[i]
+	if Geometry2D.is_point_in_polygon(pos, poly):
+		return 0.0
+	var best := INF
+	for k in poly.size():
+		best = minf(best, pos.distance_to(Geometry2D.get_closest_point_to_segment(pos, poly[k], poly[(k + 1) % poly.size()])))
+	return best
+
+
+# For a global position inside solid i's outline: the direction away from
+# its nearest edge (the way out).
+func solid_outward_normal(i: int, global_pos: Vector2) -> Vector2:
+	var poly := solid_polygon(i)
+	var best := INF
+	var nearest := global_pos
+	var edge := Vector2.RIGHT
+	for k in poly.size():
+		var a := poly[k]
+		var b := poly[(k + 1) % poly.size()]
+		var p := Geometry2D.get_closest_point_to_segment(global_pos, a, b)
+		var d := global_pos.distance_squared_to(p)
+		if d < best:
+			best = d
+			nearest = p
+			edge = b - a
+	var away := global_pos - nearest
+	if away.length_squared() < 0.0001:
+		# On the edge itself: perpendicular to it, toward the outline's centre.
+		away = edge.orthogonal()
+		if away.dot(solid_centre(i) - global_pos) < 0.0:
+			away = -away
+	return away.normalized()
+
+
+static func _mean(poly: PackedVector2Array) -> Vector2:
+	var centre := Vector2.ZERO
+	for p in poly:
+		centre += p
+	return centre / maxf(poly.size(), 1.0)
 
 
 # ---- Route planning ----
@@ -384,6 +490,31 @@ func route_cost_at(global_pos: Vector2) -> float:
 	if _route_grid == null:
 		return 1.0
 	return _route_grid.get_point_weight_scale(_route_cell(to_local(global_pos)))
+
+
+# The route grid square (ROUTE_CELL px) a global position is in, as a key for
+# caches; a square of the same size over the map when the grid isn't built.
+func route_cell(global_pos: Vector2) -> Vector2i:
+	var local := to_local(global_pos)
+	if _route_grid == null:
+		return Vector2i((local / ROUTE_CELL).floor())
+	return _route_cell(local)
+
+
+# How many building walls the segment from `a` to `b` (global) crosses: each
+# footprint edge it cuts is one wall, so passing through a building counts
+# two. Plain maths over the footprints near the segment, no physics.
+func walls_crossed(a: Vector2, b: Vector2) -> int:
+	if _polys.is_empty():
+		return 0
+	var mid := (a + b) * 0.5
+	var walls := 0
+	for i in buildings_within(mid, a.distance_to(b) * 0.5 + 1.0):
+		var poly := global_polygon(i)
+		for k in poly.size():
+			if Geometry2D.segment_intersects_segment(a, b, poly[k], poly[(k + 1) % poly.size()]) != null:
+				walls += 1
+	return walls
 
 
 func _route_cell(local_pos: Vector2) -> Vector2i:
@@ -452,8 +583,25 @@ func _start_route_build() -> void:
 	for poly in solids:
 		for v in poly:
 			bounds = bounds.expand(v)
+	_keep_solids(solids)
 	bounds = bounds.grow(ROUTE_MARGIN)
 	_route_task = WorkerThreadPool.add_task(_build_route_grid.bind(bounds, veh_pos, veh_mass, solids), false, "BuildingField routes")
+
+
+# Keeps the static outlines for NPC steering (solids_within and friends).
+func _keep_solids(solids: Array[PackedVector2Array]) -> void:
+	_solid_polys = solids
+	_solid_rects.clear()
+	_solid_global.clear()
+	_solid_centres.clear()
+	for poly in solids:
+		var rect := Rect2(poly[0], Vector2.ZERO)
+		for v in poly:
+			rect = rect.expand(v)
+		_solid_rects.append(rect)
+		_solid_global.append(PackedVector2Array())
+		_solid_centres.append(Vector2.INF)
+	_solids_gathered = true
 
 
 # Outlines (this node's space) of the collision shapes of every static body in

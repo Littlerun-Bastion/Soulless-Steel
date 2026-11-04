@@ -15,6 +15,11 @@ extends "res://game/expedition/Expedition.gd"
 
 const RESPAWN_TIME := 5.0
 const EXTRA_TANKS := 1
+## Members of the squad the arena spawns (not replaced when they die), and
+## companions the player starts with (Expedition.add_companion; not replaced
+## either).
+const SQUAD_SIZE := 2
+const STARTING_COMPANIONS := 1
 const MECH_THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const PICKER_LAYER := 5
 const PICKER_MARGIN := 40.0
@@ -47,16 +52,24 @@ func _ready() -> void:
 	_setup_mission()
 
 
-# One NPC of each generic design, and extra tanks.
+# One NPC of each generic design, with the personalities dealt round so every
+# type is on the map; extra tanks; one squad (SQUAD_SIZE), tagged; and the
+# player's starting companions.
 func _spawn_lineup() -> void:
 	var tank_design := {}
+	var types: Array = NPCManager.PERSONALITY_WEIGHTS.keys()
+	var k := 0
 	for npc in NPCManager.NPCS:
-		var design: Dictionary = NPCManager.get_design_data(npc)
+		var design: Dictionary = NPCManager.get_design_data(npc, types[k % types.size()])
+		k += 1
 		if _spawn(design).movement_type == "tank":
 			tank_design = design
 	if not tank_design.is_empty():
 		for i in EXTRA_TANKS:
 			_spawn(tank_design)
+	add_squad(SQUAD_SIZE, "Squad")
+	for i in STARTING_COMPANIONS:
+		add_companion()
 
 
 func _spawn(design: Dictionary, pos = null) -> Mecha:

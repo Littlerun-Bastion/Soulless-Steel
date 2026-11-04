@@ -38,11 +38,79 @@ func get_special_npc(npc_name):
 	return false
 
 
+## How often each personality is picked for a generic NPC (pick_personality_name).
+## Placeholders.
+const PERSONALITY_WEIGHTS := {"professional": 0.3, "scavenger": 0.3, "guardian": 0.15, "hunter": 0.15, "rat": 0.1}
+
+
 func get_random_npc():
 	return NPCS.pick_random()
 
 
-func get_design_data(npc):
+## A personality type name drawn by PERSONALITY_WEIGHTS.
+static func pick_personality_name() -> String:
+	var total := 0.0
+	for weight in PERSONALITY_WEIGHTS.values():
+		total += float(weight)
+	var roll := randf() * total
+	for name in PERSONALITY_WEIGHTS:
+		roll -= float(PERSONALITY_WEIGHTS[name])
+		if roll <= 0.0:
+			return name
+	return "professional"
+
+
+## A generic NPC's design data with a personality drawn by the weights, not
+## the design's own.
+func random_design_data() -> Dictionary:
+	return get_design_data(get_random_npc(), pick_personality_name())
+
+
+## Whether a design (its data) fights with direct-fire arm weapons.
+func is_direct_fire(data: Dictionary) -> bool:
+	for slot in ["arm_weapon_left", "arm_weapon_right"]:
+		var id = data.get(slot)
+		if id is String and PartManager.is_valid_part("arm_weapon", id):
+			var weapon = PartManager.get_part("arm_weapon", id)
+			if not weapon.is_indirect_fire and not weapon.requires_lock:
+				return true
+	return false
+
+
+## Whether a design (its data) is a support build: an indirect shoulder
+## weapon, or a sensing part in the bay.
+func is_support(data: Dictionary) -> bool:
+	for slot in ["shoulder_weapon_left", "shoulder_weapon_right"]:
+		var id = data.get(slot)
+		if id is String and PartManager.is_valid_part("shoulder_weapon", id) \
+				and PartManager.get_part("shoulder_weapon", id).is_indirect_fire:
+			return true
+	var internal = data.get("internal")
+	if internal is String and PartManager.is_valid_part("internal", internal):
+		return PartManager.get_part("internal", internal).function in ["ward", "drone", "seeker", "flare"]
+	return false
+
+
+## Design data for a squad of `size`: at least one direct-fire build first,
+## then any, a third that prefers support. Personalities drawn by the
+## weights.
+func pick_squad_designs(size: int) -> Array:
+	var all: Array = []
+	for npc in NPCS:
+		all.append(get_design_data(npc, pick_personality_name()))
+	var direct: Array = all.filter(func(d): return is_direct_fire(d))
+	var support: Array = all.filter(func(d): return is_support(d))
+	var picked: Array = []
+	picked.append((direct if not direct.is_empty() else all).pick_random())
+	if size >= 2:
+		picked.append(all.pick_random())
+	if size >= 3:
+		picked.append((support if not support.is_empty() else all).pick_random())
+	return picked
+
+
+## `personality_name` ("rat", ...) replaces the design's own personality.
+func get_design_data(npc, personality_name := ""):
 	var data = {}
 	# The internal bay is optional: a design without it (older special NPCs)
 	# leaves it empty.
@@ -55,7 +123,9 @@ func get_design_data(npc):
 		data[part_type] = part.part_id if part else false
 
 	# Pass personality through to Enemy.setup()
-	if npc is Resource and npc.get("personality") is Personality:
+	if personality_name != "":
+		data["personality"] = _personality_from_string(personality_name)
+	elif npc is Resource and npc.get("personality") is Personality:
 		data["personality"] = npc.personality
 	elif npc is Dictionary and npc.has("personality"):
 		data["personality"] = _personality_from_string(npc.personality)

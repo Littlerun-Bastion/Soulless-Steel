@@ -30,7 +30,12 @@ var ecm := 0.0
 var ecm_frequency := 0.0
 var sensor_reduction := 0.0
 var is_exposed := false
+var flag_up := false
 var personality = null
+
+
+func is_flagged() -> bool:
+	return false
 var max_hp := 2.0
 
 var _heat := 0.6

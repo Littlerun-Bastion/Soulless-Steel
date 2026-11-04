@@ -40,6 +40,16 @@ const FLAG_HEARTBEAT_TIME := 1.0
 const FLAG_SPURT_AMOUNT := 12
 const FLAG_SPURT_LIFETIME := 1.5
 const FLAG_SFX := "large_impact1"
+## The Flag (raise_flag, lower_flag): lowering it takes this long (s), a
+## visible wind-up; raising it is instant. The pilot whose damage pressed the
+## mecha into its Flag is the one that did the most in the last
+## PRESSURE_WINDOW s. Placeholders.
+const FLAG_LOWER_TIME := 1.5
+const PRESSURE_WINDOW := 15.0
+## What a pip of component damage counts for against hp damage, in pressure.
+const PRESSURE_PER_PIP := 5.0
+const FLAG_RAISE_SFX := "select"
+const FLAG_LOWER_SFX := "back"
 ## Bleeding from the Hardware parts' internal components (the tag below on
 ## any component of these parts). The mecha drips (Blood1) once WOUND_BLEED
 ## of their internal hp is gone, and more (Blood2) past WOUND_HEAVY_BLEED.
@@ -87,6 +97,13 @@ signal flagged()
 # The emergency Flag began (enter_flagged_state). attacker is the mecha (or
 # Entity) whose damage caused it, from last_damage_source, or null.
 signal emergency_flagged(mecha, attacker)
+# The Flag went up (raise_flag, or the emergency state): `voluntary` is
+# whether the pilot chose it; `pressured_by` the mecha (or Entity) whose
+# damage pressed it most in the last PRESSURE_WINDOW s, or null.
+signal flag_raised(mecha, voluntary: bool, pressured_by)
+# The pilot started lowering its Flag (the wind-up), and the Flag is down.
+signal flag_lowering_started(mecha)
+signal flag_lowered(mecha)
 # say(): CombatScene shows it to the player if they hear it.
 signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 # Someone's sweep found this mecha (see sweep). Says nothing of who or where.
@@ -222,7 +239,12 @@ var target_inventory: Inventory = null
 var mecha_name = "Mecha Name"
 ## What this mecha knows about where others are (see ContactStore). Its
 ## clock runs in _physics_process, so it stops while the mecha is paused.
+## An NPC advances it itself, with its thinking time (Enemy.update_senses).
 var contacts := ContactStore.new()
+var contacts_auto_advance := true
+## The tag of this mecha's squad, shown before its callsign in Local ("" for
+## none, and for an Anonymous squad).
+var squad_tag := ""
 ## The name other pilots see (Local, name tags, speech). mecha_name stays the
 ## internal name (is_player, kill credit, stage actors). "" until the mecha
 ## joins Local, which gives an NPC one from the callsign list.
@@ -279,6 +301,17 @@ var exposed_hits = 3.0
 var exposed_invuln_timer = 0.0
 ## Seconds left of the emergency Flag's grace window (0 outside it).
 var flag_grace := 0.0
+## The Flag: up (weapons locked, others expected to hold fire), whether the
+## pilot raised it by choice, and the seconds left of the wind-up while it is
+## being lowered (0 otherwise). is_exposed is the emergency state (the cockpit
+## exposed, exposed_hits counting), which lowering the Flag doesn't end.
+var flag_up := false
+var flag_voluntary := false
+var flag_lowering := 0.0
+## Damage taken lately, for pressured_by: [{body, time, amount}].
+var _pressure: Array[Dictionary] = []
+## Extra aim bloom (degrees) an NPC adds under panic (Enemy).
+var extra_bloom := 0.0
 var _heartbeat := 0.0
 var _flag_marker: FlagMarker = null
 var _spurt: GPUParticles2D = null
@@ -493,9 +526,16 @@ func _ready():
 func _physics_process(dt):
 	if paused:
 		return
-	
-	contacts.advance(dt)
+
+	if contacts_auto_advance:
+		contacts.advance(dt)
 	flag_grace = maxf(flag_grace - dt, 0.0)
+	if flag_lowering > 0.0:
+		flag_lowering = maxf(flag_lowering - dt, 0.0)
+		if _flag_marker:
+			_flag_marker.lowering = 1.0 - flag_lowering / FLAG_LOWER_TIME
+		if flag_lowering <= 0.0:
+			_finish_lowering()
 	sweep_cooldown = maxf(sweep_cooldown - dt, 0.0)
 	internal_cooldown = maxf(internal_cooldown - dt, 0.0)
 	_update_biosensor(dt)
@@ -856,6 +896,7 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
 	_note_attack(source_info)
+	_note_pressure(source_info, float(amount) * float(health_mult))
 
 	if hp <= 0 and not is_exposed:
 		enter_flagged_state()
@@ -2040,9 +2081,11 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 			return "downright"
 
 
+# Moves by `vec` this frame. The NavigationAgent2D gets no velocity: its
+# avoidance is off (NPCs keep apart through their context steering, see
+# Enemy._add_mechas), so there is nothing for it to compute.
 func move(vec):
 	_update_car_collision()
-	NavAgent.set_velocity(vec)
 	set_velocity(vec)
 	move_and_slide()
 	VehicleField.push_from(self, vec)
@@ -2384,8 +2427,8 @@ func decrease_throttle(set_value, step):
 func shoot(type, is_auto_fire = false):
 	if is_dead:
 		return
-	# The Flag locks the weapons.
-	if is_shielding or is_exposed:
+	# The Flag locks the weapons (the smoke launcher excepted).
+	if is_shielding or (is_flagged() and not flag_allows(type)):
 		return
 	# Designator weapons fire salvos at a point; callers that only say "shoot"
 	# (NPCs, scripted scenes) aim at get_default_aim_point, and don't fire
@@ -2475,7 +2518,7 @@ func shoot(type, is_auto_fire = false):
 				bloom /= arm_accuracy_mod
 			if locked_to:
 				max_angle = max_angle/chipset_accuracy
-			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head_accuracy
+			var total_accuracy = min(weapon_ref.base_accuracy + bloom, max_angle)/head_accuracy + extra_bloom
 			var current_accuracy = randf_range(-total_accuracy, total_accuracy)
 			for _i in range(weapon_ref.number_projectiles):
 				var fire_dir = node.get_direction(weapon_ref.bullet_spread, current_accuracy)
@@ -2614,7 +2657,7 @@ func can_fire_at_point(slot: String, point: Vector2) -> String:
 		return "disabled"
 	if is_dead or is_shielding or is_salvo_firing(slot):
 		return "busy"
-	if is_exposed:
+	if is_flagged() and not flag_allows(slot):
 		return "flagged"
 	if weapon.is_indirect_fire and is_inside_building:
 		return "indoors"
@@ -3441,6 +3484,7 @@ func damage_component(part_name: String, component_name: String, damage_pips: in
 	# Apply damage
 	comp.hp = max(comp.hp - damage_pips, 0)
 	_wound_dirty = true
+	_note_pressure(last_damage_source, float(damage_pips) * PRESSURE_PER_PIP)
 	spawn_component_damage_explosion(part_name, comp.hp <= 0)
 	if part_name in WOUND_PARTS and WOUND_TAG in comp.tags:
 		_show_wound(part_name, comp.hp <= 0 and not comp.disabled, hit_dir)
@@ -3689,11 +3733,9 @@ func enter_flagged_state():
 	flag_grace = FLAG_GRACE_TIME
 	exposed_invuln_timer = 0.0
 	_heartbeat = FLAG_HEARTBEAT_TIME
-	_salvos.clear()
-	for slot in WeaponSFXs:
-		stop_shooting(slot)
 	var attacker = get_last_attacker()
 	_show_flag_entry(attacker)
+	_set_flag_up(false)
 	emit_signal("flagged")
 	emit_signal("exposed", self)
 	emergency_flagged.emit(self, attacker)
@@ -3701,6 +3743,119 @@ func enter_flagged_state():
 
 func is_in_flag_grace() -> bool:
 	return flag_grace > 0.0
+
+
+# ---- The Flag ----
+
+## Whether the Flag is up (voluntary or emergency), the wind-up included.
+func is_flagged() -> bool:
+	return flag_up
+
+
+func is_lowering_flag() -> bool:
+	return flag_lowering > 0.0
+
+
+## Raises the Flag at once, by choice unless `voluntary` is false (the
+## emergency state raises it itself). A Flag being lowered goes back up.
+func raise_flag(voluntary := true) -> void:
+	if is_dead:
+		return
+	if flag_up and flag_lowering <= 0.0:
+		return
+	var was_lowering := flag_lowering > 0.0
+	flag_lowering = 0.0
+	if was_lowering:
+		if _flag_marker:
+			_flag_marker.lowering = 0.0
+		return
+	if is_inside_tree():
+		if _flag_marker == null:
+			_flag_marker = FlagMarker.new()
+			add_child(_flag_marker)
+		AudioManager.play_sfx(FLAG_RAISE_SFX, global_position)
+	_set_flag_up(voluntary)
+	emit_signal("flagged")
+
+
+## Starts lowering the Flag: the wind-up (FLAG_LOWER_TIME) is visible on the
+## marker, and the Flag is down when it ends (flag_lowered). Lowering the
+## emergency Flag doesn't end the emergency state.
+func lower_flag() -> void:
+	if not flag_up or flag_lowering > 0.0 or is_dead:
+		return
+	flag_lowering = FLAG_LOWER_TIME
+	if _flag_marker:
+		_flag_marker.lowering = 0.0
+	if is_inside_tree():
+		AudioManager.play_sfx(FLAG_LOWER_SFX, global_position)
+	flag_lowering_started.emit(self)
+
+
+## Whether a weapon slot still fires under the Flag: only the smoke launcher
+## (a tap_self designator).
+func flag_allows(slot: String) -> bool:
+	var weapon = build.get(slot)
+	return weapon != null and weapon.get("tap_self") == true
+
+
+## The mecha (or Entity) whose damage pressed this mecha most in the last
+## PRESSURE_WINDOW s, or null.
+func pressured_by():
+	var now := contacts.now
+	var totals := {}
+	var bodies := {}
+	for entry in _pressure:
+		if now - float(entry.time) > PRESSURE_WINDOW:
+			continue
+		var body = entry.body
+		if not is_instance_valid(body):
+			continue
+		var id: int = body.get_instance_id()
+		totals[id] = float(totals.get(id, 0.0)) + float(entry.amount)
+		bodies[id] = body
+	var best = null
+	var most := 0.0
+	for id in totals:
+		if totals[id] > most:
+			most = totals[id]
+			best = bodies[id]
+	return best
+
+
+func _set_flag_up(voluntary: bool) -> void:
+	flag_up = true
+	flag_voluntary = voluntary
+	flag_lowering = 0.0
+	_salvos.clear()
+	for slot in WeaponSFXs:
+		if not flag_allows(slot):
+			stop_shooting(slot)
+	if _flag_marker:
+		_flag_marker.voluntary = voluntary
+		_flag_marker.lowering = 0.0
+	flag_raised.emit(self, voluntary, pressured_by())
+
+
+func _finish_lowering() -> void:
+	flag_up = false
+	flag_voluntary = false
+	if _flag_marker:
+		_flag_marker.queue_free()
+		_flag_marker = null
+	flag_lowered.emit(self)
+
+
+func _note_pressure(source_info, amount: float) -> void:
+	if typeof(source_info) != TYPE_DICTIONARY or amount <= 0.0:
+		return
+	var body = source_info.get("body")
+	if not is_instance_valid(body) or body == self:
+		return
+	var now := contacts.now
+	_pressure.append({"body": body, "time": now, "amount": amount})
+	while not _pressure.is_empty() and now - float(_pressure[0].time) > PRESSURE_WINDOW:
+		_pressure.pop_front()
 
 
 # The mecha (or Entity) whose damage hit this one last, or null.
@@ -3718,8 +3873,10 @@ func get_last_attacker():
 func _show_flag_entry(attacker) -> void:
 	if not is_inside_tree():
 		return
-	_flag_marker = FlagMarker.new()
-	add_child(_flag_marker)
+	if _flag_marker == null:
+		_flag_marker = FlagMarker.new()
+		add_child(_flag_marker)
+	_flag_marker.restart_entry()
 	AudioManager.play_sfx(FLAG_SFX, global_position)
 	var burst: GPUParticles2D = Particle.blood[2]
 	burst.restart()
@@ -3876,7 +4033,7 @@ func estimate_threat_level() -> float:
 		threat += 0.15
 
 	# Flagged/status (15%)
-	if is_exposed:
+	if is_exposed or flag_up:
 		pass  # 0.0 contribution
 	elif has_any_status():
 		threat += 0.075  # halved

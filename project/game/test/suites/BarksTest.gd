@@ -197,10 +197,12 @@ func _test_watcher() -> void:
 	foe.callsign = "Rook"
 	var g = npc.logic.g
 
-	# Spotted: enters in_combat with the target in sight.
+	# Spotted: the fight starts (the engage intent's attack stance) with the
+	# target in sight.
 	npc.update_senses(0.1)
 	npc.current_target = foe
-	g.set_state("in_combat")
+	g.set_state("engage")
+	npc.logic.behaviour.stance = "attack"
 	_ready_to_bark(npc)
 	npc._watch_barks(0.1)
 	check_eq(_last_text(), "spotted", "spotted")
@@ -227,8 +229,8 @@ func _test_watcher() -> void:
 	npc._watch_barks(npc.SEARCH_BARK_DELAY)
 	check_eq(_last_text(), "searching", "searching")
 
-	# Retreating: enters defend.
-	g.set_state("defend")
+	# Retreating: takes the defend stance.
+	npc.logic.behaviour.stance = "defend"
 	_ready_to_bark(npc)
 	npc._watch_barks(0.1)
 	check_eq(_last_text(), "retreating", "retreating")
@@ -299,7 +301,7 @@ func _test_broadcasts() -> void:
 	check_eq(got.size(), 1, "no greed, no shout")
 
 	# Help call: in a fight, under fire, below half health; once a fight.
-	g.set_state("attack")
+	g.set_state("engage")
 	npc._watch_barks(0.1)
 	npc.hp = npc.max_hp * 0.4
 	npc.under_fire_timer = 0.5
@@ -312,7 +314,7 @@ func _test_broadcasts() -> void:
 	npc.under_fire_timer = 0.0
 	g.set_state("roam")
 	npc._watch_barks(0.1)
-	g.set_state("attack")
+	g.set_state("engage")
 	npc.under_fire_timer = 0.5
 	npc._watch_barks(0.1)
 	npc._watch_barks(0.1)

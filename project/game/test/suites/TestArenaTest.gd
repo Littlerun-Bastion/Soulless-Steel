@@ -1,9 +1,10 @@
 extends TestSuite
 
 # TestArenaTest: the test arena (game/arena/TestArena.tscn, opened by Arena
-# Mode) starts with one NPC of each generic design plus an extra tank, spaced
-# apart and clear of vehicles, has its buildings, vehicles and route grid,
-# puts nothing at stake, and replaces an NPC that dies.
+# Mode) starts with one NPC of each generic design (every personality type
+# among them), an extra tank and a squad, spaced apart and clear of vehicles,
+# has its buildings, vehicles and route grid, puts nothing at stake, and
+# replaces an NPC that dies.
 
 const TEST_ARENA := preload("res://game/arena/TestArena.tscn")
 
@@ -42,9 +43,14 @@ func _start() -> void:
 
 func _test_start() -> void:
 	await _start()
-	var expected: int = NPCManager.NPCS.size() + _arena_script().EXTRA_TANKS
-	check_eq(_enemies().size(), expected, "one NPC per generic design plus the extra tank")
+	var expected: int = NPCManager.NPCS.size() + _arena_script().EXTRA_TANKS + _arena_script().SQUAD_SIZE + _arena_script().STARTING_COMPANIONS
+	check_eq(_enemies().size(), expected, "one NPC per generic design, the extra tank, the squad and the player's companion")
 	check(_enemies().any(func(e): return e.movement_type == "tank"), "a tank is among them")
+	check_eq(_scene.squads.size(), 2, "one NPC squad and the player's are on the map")
+	var types := {}
+	for e in _enemies():
+		types[e.personality.type] = true
+	check_eq(types.size(), Personality.Type.size(), "every personality type is on the map")
 	check(not PlayerProgress.is_in_expedition(), "nothing is at stake")
 	var vehicles := VehicleField.find(_scene)
 	check(vehicles != null and vehicles.vehicle_count() > 100, "the arena has its vehicles (%d)" % (vehicles.vehicle_count() if vehicles else 0))

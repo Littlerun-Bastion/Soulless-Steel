@@ -84,6 +84,14 @@ var player_kills: Array = []
 # Local, this match's chat channel (LocalPilots). Subclasses call
 # _join_local for each mecha once it is set up.
 var local_pilots := LocalPilots.new()
+# The NPC squads on the map (Squad), made by Expedition.add_squad; the
+# player's companions are the squad the player leads (player_squad).
+var squads: Array = []
+# A buddy-up offer waiting for the player's answer: {"npc", "until" (match
+# time)}, empty for none (offer_buddy, accept_offer, decline_offer).
+var pending_offer := {}
+## How long (s) an offer waits for an answer. Placeholder.
+const OFFER_TIME := 15.0
 # Warm marks moving mechas leave (HeatTrails), and blood on the ground
 # (BloodStains); made by _setup_heatmap.
 var heat_trails: HeatTrails = null
@@ -136,6 +144,10 @@ func _process(dt: float) -> void:
 	if player and not PauseMenu.is_paused():
 		ShaderEffects.update_shader_effect(player)
 	local_pilots.now += dt
+	# An offer nobody answered lapses.
+	if not pending_offer.is_empty() and local_pilots.now > float(pending_offer.until):
+		pending_offer = {}
+		AICombatLog.record_squad("offer_lapsed")
 
 	# Debug overlays (cheap when disabled — single Debug.get_setting check)
 	if allow_debug_cam and ArenaCam.enabled:
@@ -182,6 +194,9 @@ func _connect_mecha_signals(mecha) -> void:
 	mecha.connect("exposed", Callable(self, "_on_mecha_exposed"))
 	mecha.connect("made_sound", Callable(self, "_on_mecha_made_sound"))
 	mecha.spoke.connect(_on_mecha_spoke)
+	# The Flag, for reputation (LocalPilots): who raised it, who lowered it.
+	mecha.flag_raised.connect(func(m, voluntary, _pressured_by): local_pilots.note_flag_raised(m, voluntary))
+	mecha.flag_lowered.connect(func(m): local_pilots.note_flag_lowered(m))
 
 
 # Registers a mecha on Local, once its setup has given it its callsign and
@@ -341,12 +356,133 @@ func _was_hit_by_player(mecha) -> bool:
 			and mecha.last_damage_source.get("name") == "Player"
 
 
+# ---- Companions (Squad, Phase 5) ----
+
+## The squad the player leads, or null; made when `create`.
+func player_squad(create := false) -> Squad:
+	for squad in squads:
+		if squad.is_player_led():
+			return squad
+	if not create or not is_instance_valid(player):
+		return null
+	var squad := Squad.new()
+	squad.setup("", false)
+	squad.leader = player
+	squads.append(squad)
+	return squad
+
+
+## `npc` offers to buddy up (Enemy.offer_buddy): the prompt goes up for
+## OFFER_TIME s. One offer at a time. Returns whether it was put up.
+func offer_buddy(npc) -> bool:
+	if not is_instance_valid(player) or player.is_dead or not pending_offer.is_empty() or not is_instance_valid(npc):
+		return false
+	pending_offer = {"npc": npc, "until": local_pilots.now + OFFER_TIME}
+	if is_instance_valid(PlayerHUD):
+		PlayerHUD.show_offer(LocalPilots.name_of(npc), OFFER_TIME)
+	return true
+
+
+## The player takes the pending offer (the accept key): the NPC joins the
+## player's squad. Returns the new companion, or null.
+func accept_offer():
+	if pending_offer.is_empty():
+		return null
+	var npc = pending_offer.npc
+	pending_offer = {}
+	if not is_instance_valid(npc) or npc.is_dead or not is_instance_valid(player):
+		return null
+	var squad := player_squad(true)
+	squad.add(npc)
+	AICombatLog.record_squad("accepted")
+	if npc.has_method("on_buddy_accepted"):
+		npc.on_buddy_accepted()
+	if is_instance_valid(PlayerHUD):
+		PlayerHUD.show_squad_notice("%s JOINED YOUR SQUAD" % LocalPilots.name_of(npc).to_upper())
+	return npc
+
+
+## The player declines the pending offer (the decline key).
+func decline_offer() -> void:
+	if pending_offer.is_empty():
+		return
+	pending_offer = {}
+	AICombatLog.record_squad("declined")
+	if is_instance_valid(PlayerHUD):
+		PlayerHUD.show_squad_notice("")
+
+
+## The player's order to its companions (HudSquadOrders): `kind` is one of
+## Squad.ORDERS; "hold" is where the player stands, "attack" the target
+## under the player's reticle or lock (Player.pointed_target). Returns
+## whether anyone was there to take it.
+func give_order(kind: String) -> bool:
+	var squad := player_squad(false)
+	if squad == null or squad.alive_members().is_empty():
+		if is_instance_valid(PlayerHUD):
+			PlayerHUD.show_squad_notice("NO SQUAD")
+		return false
+	var target = player.pointed_target() if kind == "attack" and player.has_method("pointed_target") else null
+	if kind == "attack" and target == null:
+		if is_instance_valid(PlayerHUD):
+			PlayerHUD.show_squad_notice("NO TARGET")
+		return false
+	squad.give_order(kind, player.global_position, target)
+	AICombatLog.record_squad("order_" + kind)
+	if is_instance_valid(PlayerHUD):
+		var label: String = str(Squad.ORDER_LABELS.get(kind, kind.to_upper()))
+		if target != null:
+			label += " · " + LocalPilots.name_of(target).to_upper()
+		PlayerHUD.show_squad_notice("ORDER: " + label)
+	return true
+
+
+## `npc` joins `other`'s squad (made for it if it has none), as a Guardian
+## standing with a pilot it saw attacked. Returns whether it joined.
+func buddy_up(npc, other) -> bool:
+	if not is_instance_valid(npc) or not is_instance_valid(other) or not ("knowledge" in other):
+		return false
+	if npc.knowledge.squad != null:
+		return false
+	var squad: Squad = other.knowledge.squad
+	if squad == null:
+		squad = Squad.new()
+		squad.setup("", false)
+		squad.add(other)
+		squads.append(squad)
+	elif squad.members.size() >= 3:
+		return false
+	squad.add(npc)
+	return true
+
+
+# The body behind a mecha's last damage source (what killed it), or null.
+func _killer_of(mecha):
+	var source = mecha.get("last_damage_source")
+	if typeof(source) == TYPE_DICTIONARY:
+		var body = source.get("body")
+		return body if is_instance_valid(body) else null
+	if source is Node and is_instance_valid(source):
+		return source
+	return null
+
+
 func _on_mecha_died(mecha) -> void:
 	# An NPC that extracts arrives here too, without having died (die() sets
 	# is_dead): it leaves Local the same way, but isn't anyone's kill.
 	var was_killed: bool = mecha.is_dead
 	mecha.is_dead = true
 	local_pilots.leave(mecha)
+	# Its squad is told (Squad.on_member_died), with who killed it; the
+	# player's companions too, when the player dies.
+	for squad in squads:
+		if squad.is_in(mecha):
+			squad.on_member_died(mecha, _killer_of(mecha) if was_killed else null, was_killed)
+			if squad.members.is_empty():
+				squads.erase(squad)
+			break
+	if not pending_offer.is_empty() and (mecha == player or pending_offer.npc == mecha):
+		pending_offer = {}
 	if was_killed and mecha != player and _was_hit_by_player(mecha):
 		local_pilots.score_player_kill(player, mecha)
 	_before_mecha_removed(mecha)

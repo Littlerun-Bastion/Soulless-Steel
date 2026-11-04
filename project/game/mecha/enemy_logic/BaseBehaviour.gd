@@ -1,11 +1,33 @@
 extends RefCounted
 
-# Base AI behaviour: the full state-machine — nodes, transitions, do_* states,
-# and helpers — plus the tunables that shape them. Concrete behaviours in
-# behaviours/ (default, aggressive, cautious, ...) extend this and override only
-# the tunable vars in their _init(). Pure data + methods; held by EnemyLogic
-# (RefCounted), never in the scene tree, so the whole AI chain auto-frees with
-# the NPC.
+# Base AI behaviour: the intents an NPC can have, with a score and a do_
+# method for each, the entry and exit hooks, the shared helpers, and the
+# tunables that shape them. Concrete behaviours in behaviours/ (default,
+# aggressive, cautious, ...) extend this and override only the tunable vars
+# in their _init(). Pure data + methods; held by EnemyLogic (RefCounted),
+# never in the scene tree, so the whole AI chain auto-frees with the NPC.
+#
+# Intents (EnemyLogic scores every one each evaluation; the highest wins):
+#   roam         wander, and in time decide to leave ("shift over")
+#   investigate  go to a sound, or to where it was shot from; wary wandering
+#                once the lead is used up
+#   loot         go to a container and search it
+#   extract      go to an exit and leave
+#   ambush       hold at half throttle where something quiet was heard
+#   engage       fight a target: close in and lock on (stance "closing"),
+#                then the attack or defend stance with the kite bands,
+#                blind fire, shield use and stance hysteresis
+#   flee         run from every known threat to an exit, dark and sprinting,
+#                until it is far from them and left alone for a while
+# Scores are on a 0 to 1 ladder (the SCORE_ constants) that keeps the order
+# the old transition priorities had, so the same intent wins in the same
+# situation. An NPC in the emergency Flag (Mecha.is_exposed) flees above
+# everything; its weapons are locked, so engage never scores for it.
+#
+# The illuminator is chosen per intent (wants_illuminator): on while
+# wandering, looting and investigating (Hunters and Rats run dark), dark
+# while lying in wait, closing on a target that hasn't fired yet, fleeing and
+# leaving Flagged; lit while trading shots.
 #
 # NOT selectable on its own — it lives outside behaviours/ so combat_behaviour
 # names never resolve to it. Add a variant by subclassing, not by editing here.
@@ -22,8 +44,210 @@ const BASE_WEAPON_RANGE = 2000.0
 ## entering combat.
 const COMBAT_ENTRY_SLACK = 1.1
 
+## The score ladder (see above). Each step that must win at once over the
+## intent below it is more than EnemyLogic.COMMIT_BONUS above it.
+## Placeholders.
+const SCORE_ROAM := 0.01
+const SCORE_EXTRACT_SHIFT := 0.15
+const SCORE_INVESTIGATE := 0.2
+const SCORE_LOOT := 0.25
+const SCORE_AMBUSH := 0.35
+const SCORE_EXTRACT_AFTER_FLIGHT := 0.35
+const SCORE_INVESTIGATE_FIRE := 0.4
+const SCORE_EXTRACT_CASH_OUT := 0.45
+const SCORE_ENGAGE_CLOSING := 0.55
+const SCORE_ENGAGE_IN_RANGE := 0.65
+const SCORE_ENGAGE_FIGHTING := 0.75
+const SCORE_EXTRACT_COMMITTED := 0.8
+const SCORE_FLEE := 0.9
+const SCORE_FLEE_FOR_LIFE := 1.0
+
+## Fleeing: the flight ends once every known threat is further than
+## FLEE_SAFE_DISTANCE (px, 300 m) and the NPC has seen no threat and taken no
+## hit for FLEE_SAFE_TIME s (scaled by courage unless it flees for its life).
+## It picks its exit again every FLEE_EXIT_REPICK_TIME s, runs
+## FLEE_RUN_DISTANCE px past the threats when there is no exit, and after a
+## flight takes an exit within FLEE_EXTRACT_RANGE px. Placeholders.
+const FLEE_SAFE_DISTANCE := 6000.0
+const FLEE_SAFE_TIME := 20.0
+const FLEE_EXIT_REPICK_TIME := 5.0
+const FLEE_RUN_DISTANCE := 2000.0
+const FLEE_EXTRACT_RANGE := 3000.0
+## How long (s) an alarmed NPC stays wary, wandering with its illuminator on
+## and shield ready, after its leads are used up. Placeholder.
+const WARY_TIME := 30.0
+## Scans of the scene for containers and exits are refreshed this often (s).
+const SCAN_INTERVAL := 1.0
+
+## Searching and disengaging: a target unseen for SEARCH_AFTER s turns the
+## fight into a search; a fight it is losing (aggression at or under
+## DISENGAGE_AGGRESSION while under fire) or overheating into a disengage,
+## held for DISENGAGE_MIN_TIME s and until the guns are cool, then not again
+## for DISENGAGE_COOLDOWN s. Placeholders.
+const SCORE_ENGAGE_LOST := 0.5
+const SCORE_SEARCH := 0.65
+const SCORE_DISENGAGE := 0.88
+const SEARCH_AFTER := 2.0
+const DISENGAGE_MIN_TIME := 4.0
+const DISENGAGE_AGGRESSION := -2.0
+const DISENGAGE_COOLDOWN := 8.0
+## A picked position counts as reached within this distance (px).
+const PICK_ARRIVE := 250.0
+## A mine is laid this far (px) toward the foe, on the way it will come.
+const MINE_LAY_DISTANCE := 400.0
+## A flare goes out before closing on a target unseen this far away (px).
+const FLARE_PUSH_DISTANCE := 1000.0
+## The position picker's weights per intent (Positioning). Placeholders.
+const ENGAGE_WEIGHTS := {"range": 1.0, "cover": 0.5, "fire_line": 1.5, "travel": 0.3, "way": 0.2,
+		"open": 0.4, "spacing": -0.5, "mines": -1.0, "smoke": -0.5, "travel_scale": 1500.0}
+const DEFEND_WEIGHTS := {"range": 1.0, "cover": 0.8, "fire_line": 1.2, "travel": 0.3, "way": 0.3,
+		"open": 0.4, "spacing": -0.5, "mines": -1.0, "smoke": -0.3, "travel_scale": 1500.0}
+const SEARCH_WEIGHTS := {"range": 0.4, "view": 0.8, "cover": 0.3, "travel": 0.5, "open": 0.5,
+		"mines": -1.0, "travel_scale": 1200.0}
+const AMBUSH_WEIGHTS := {"range": 0.4, "cover": 1.0, "view": 0.8, "travel": 0.5, "open": 0.5,
+		"mines": -1.0, "travel_scale": 1500.0}
+const DISENGAGE_WEIGHTS := {"cover": 1.2, "far": 1.0, "travel": 0.3, "way": 0.5, "open": 0.3,
+		"smoke": 0.5, "mines": -1.0, "travel_scale": 2000.0, "far_scale": 3000.0}
+
+## The Flag and panic (Phase 3):
+##   execute     finishing a Flagged mech it is willing to shoot (a Rat, a
+##               Hunter it provoked, a traitor): a bark, then it closes in,
+##               lit, for at least the grace window before it fires
+##   stalk       a Rat following a distracted target with its Flag up, to
+##               lower it and strike from behind
+##   protect     a Guardian standing by a Flagged or badly damaged mech that
+##               isn't hostile
+##   raise_flag  surrender: losing and panicked, it raises its Flag, pleads
+##               in Local, and runs the flight to an exit; a Rat may lower it
+##               again when its sparer comes close and looks away
+## Placeholders.
+const SCORE_PROTECT := 0.5
+const SCORE_EXECUTE := 0.7
+const SCORE_STALK := 0.7
+const SCORE_RAISE_FLAG := 0.95
+## Panic at which each personality surrenders (none for Hunters), when its
+## aggression is negative (a Professional's clearly so: SURRENDER_AGGRESSION).
+const SURRENDER_PANIC := {
+	Personality.Type.SCAVENGER: 0.6,
+	Personality.Type.RAT: 0.6,
+	Personality.Type.PROFESSIONAL: 0.7,
+	Personality.Type.GUARDIAN: 0.85,
+}
+const SURRENDER_AGGRESSION := -2.0
+## A Guardian with a living squadmate yields only at this panic (Phase 7).
+const SURRENDER_PANIC_GUARDIAN_WITH_MATES := 0.98
+## A Professional extracts on schedule: this long (s) after it arrived,
+## whatever its greed. Placeholder.
+const PRO_EXTRACT_TIME := 300.0
+## Panic above which a fight under fire becomes a disengage, and above which
+## the NPC sprints where it would walk.
+const PANIC_DISENGAGE := 0.6
+const PANIC_SPRINT := 0.5
+## How much panic raises the health share at which it flees.
+const PANIC_FLEE_HEALTH := 0.3
+## Sparing: a surrendered NPC left alone this long (s) by the pilot it
+## yielded to tells Local it was spared.
+const SPARE_TIME := 10.0
+## A Rat's fake surrender: it lowers its Flag again when its sparer is within
+## this distance (px, 40 m) and facing away.
+const FAKE_SURRENDER_RANGE := 800.0
+## A Rat wandering raises its Flag at this rate per second times treachery.
+const RAT_WANDER_FLAG_RATE := 0.05
+## A Guardian protects a mech at or under this hp share, from this far (px).
+const PROTECT_DAMAGE := 0.4
+const PROTECT_RANGE := 600.0
+const STALK_WEIGHTS := {"range": 0.8, "behind": 1.5, "travel": 0.4, "open": 0.3, "mines": -1.0, "travel_scale": 1500.0}
+const PROTECT_WEIGHTS := {"range": 1.0, "cover": 0.3, "travel": 0.3, "open": 0.4, "mines": -1.0, "travel_scale": 1500.0}
+
+## Squads (Phase 4, see Squad):
+##   follow      a member keeps its travel slot beside or behind the leader
+##               while the leader is calm (not in a fight), and stands by it
+##               while it loots; it loots a crate of its own if there is one
+## In a fight each member runs its own tactics in its role: the flanker's
+## picker weighs the flank term (FLANK_WEIGHTS, at least Squad.FLANK_ANGLE
+## off the anchor's bearing to the foe); the support member screens a
+## squadmate that is breaking off with smoke (_support_cover). The leader
+## calls stragglers back (Squad.call_regroup). A member's death is judged in
+## on_mate_died: the leader's death by loyalty, and a treacherous Rat leaves
+## or turns on a hurt mate. Placeholders.
+const SCORE_FOLLOW := 0.45
+## A companion under the player's follow, hold or regroup order (Squad.order)
+## keeps to it above any fight; flee and raise_flag still win.
+const SCORE_ORDER := 0.87
+## A member closer than this (px) to its slot stands.
+const FOLLOW_SLACK := 150.0
+## Support smoke for a squadmate at most this often (s), for a mate within
+## this range (px); beyond the launcher's reach the smoke lands on the way.
+const SUPPORT_COVER_COOLDOWN := 10.0
+const SUPPORT_COVER_RANGE := 4000.0
+## The least rate (deg/s) the support member turns at to cover a mate.
+const COVER_TURN_RATE := 60.0
+## Loyalty under which a member breaks when its leader dies (if its courage
+## is under LOYALTY_FLEE_COURAGE), and at or over which it avenges.
+const LOYALTY_FLEE := 0.3
+const LOYALTY_FLEE_COURAGE := 0.5
+const LOYALTY_AVENGE := 0.6
+## Treachery over which a Rat leaves its squad when a member dies, turning
+## on a mate at or under this health share (or Flagged) on the way out.
+const BETRAY_TREACHERY := 0.7
+const BETRAY_HEALTH := 0.4
+const FLANK_WEIGHTS := {"range": 0.8, "flank": 1.5, "fire_line": 1.0, "cover": 0.3, "travel": 0.3,
+		"open": 0.4, "spacing": -0.8, "mines": -1.0, "smoke": -0.5, "travel_scale": 1500.0}
+
+## The information systems (Phase 6):
+##   help      go to a squadmate in trouble (under fire and hurt: always),
+##             or to a Local help call it decided to answer (by personality,
+##             HELP_CHANCE, and its standing with the caller), at the
+##             call's blurred position; seeing the caller hit, it turns on
+##             the attacker (Enemy._on_attack_witnessed)
+##   vulture   Hunters and Rats: toward a fight heard (gunfire, or a help
+##             call) while in good shape, to a covered spot VULTURE_STANDOFF
+##             from it, dark, until the shooting has stopped for
+##             VULTURE_QUIET s; then whoever it sees there is prey
+##   scout     Professionals and Hunters: before a trip further than
+##             SCOUT_TRIP, or into ground it took fire on, a sweep toward the
+##             goal or a drone, at most every SCOUT_INTERVAL s
+## Investigate reads loot shouts too (Scavengers always, others by greed),
+## car alarms (Enemy.heard_sound) and a destroyed device's spot; Search
+## follows heat trails (Hunters, Professionals: the warmest mark near the
+## spot, a step along its heading, TRAIL_RADIUS and TRAIL_STEP). Rats lie
+## in Local: a fake loot shout from an ambush and, now and then, a fake help
+## call that lures (RAT_LIE_CHANCE, RAT_LURE_RATE). Placeholders.
+const SCORE_SCOUT := 0.3
+const SCORE_VULTURE := 0.45
+const SCORE_HELP := 0.5
+const SCORE_HELP_SQUAD := 0.6
+const HELP_CHANCE := {
+	Personality.Type.GUARDIAN: 0.9,
+	Personality.Type.PROFESSIONAL: 0.5,
+	Personality.Type.SCAVENGER: 0.1,
+	Personality.Type.HUNTER: 0.0,
+	Personality.Type.RAT: 0.0,
+}
+const HELP_RANGE := 6000.0
+const HELP_MATE_HEALTH := 0.5
+const VULTURE_RANGE := 6000.0
+const VULTURE_STANDOFF := 2500.0
+const VULTURE_QUIET := 8.0
+const VULTURE_PATIENCE := 45.0
+const VULTURE_HEALTH := 0.6
+const VULTURE_HOSTILITY := 1.0
+const SCOUT_TRIP := 2500.0
+const SCOUT_DANGER := 1500.0
+const SCOUT_INTERVAL := 30.0
+const SCOUT_SWEEP_WIDTH := 90.0
+const LOOT_SHOUT_GREED := 0.5
+const TRAIL_RADIUS := 600.0
+const TRAIL_STEP := 500.0
+const RAT_LIE_CHANCE := 0.5
+const RAT_LURE_RATE := 0.01
+const LURE_TIME := 40.0
+const AVOID_RADIUS := 2500.0
+const VULTURE_WEIGHTS := {"range": 0.6, "cover": 1.0, "view": 0.8, "travel": 0.4, "open": 0.5, "mines": -1.0, "travel_scale": 2000.0}
+
 #Essential variables
-var nodes = ["roam", "seek", "alert", "alert_roam", "ambush", "ambush_lock", "defending_lock", "in_combat", "attack", "defend", "flee", "loot", "extract"]
+var intents = ["roam", "investigate", "loot", "extract", "follow", "ambush", "engage", "search", "disengage",
+		"execute", "stalk", "protect", "raise_flag", "flee", "help", "vulture", "scout"]
 var initial_state = "roam"
 
 #Custom variables
@@ -35,16 +259,13 @@ var max_shooting_distance = 2000
 var weapon_heat_threshold = 0.75
 var general_heat_threshold = 0.9
 var reaction_speed = 2
-## States the NPC runs dark in, its IR illuminator off (Enemy._update_illuminator):
-## lying in wait, closing on a target it hasn't engaged yet, running away.
-var dark_states := ["ambush", "ambush_lock", "flee"]
 
 # Attack<->defend stance hysteresis. aggression sums quantized diffs
 # recomputed every frame, so near zero it flickers across the sign — without
 # damping, the stance (and its movement regime) thrashes frame to frame.
 # Swapping requires BOTH: aggression clear of the +/- band, and at least
-# MIN_DWELL seconds in the current stance. The initial pick from in_combat
-# stays a plain sign check, and flee / target-lost exits are never gated.
+# MIN_DWELL seconds in the current stance. The first pick when the fight
+# starts is a plain sign check, and flee / target-lost exits are never gated.
 const STANCE_HYSTERESIS = 0.5
 const STANCE_MIN_DWELL = 1.0
 
@@ -57,291 +278,730 @@ var target_container = null
 var target_exit = null
 var times_looted = 0
 var _wants_to_extract := false  # "shift over" decision, made in do_roam (dt-scaled)
+var _cash_out := false  # a greedy NPC leaving after a successful loot
+var _leave_after_flight := false  # a flight ended near an exit, or Flagged
+## The engage intent's stance: "closing" (locking on and moving into range),
+## "attack" or "defend".
+var stance := "closing"
 var stance_time = 0.0  # seconds in the current attack/defend stance
 var _start_tick_msec = 0  # lazy-initialized; tracks behaviour lifetime
+var _wary_time := 0.0
+# Tools used once per fight, search, ambush, loot or disengage.
+var _flare_used := false
+var _search_swept := false
+var _search_drone := false
+var _ambush_ward := false
+var _ambush_mine := false
+var _loot_ward := false
+var _disengage_time := 0.0
+var _disengage_ok_at := -INF
+var _disengage_smoke := false
+var _disengage_decoy := false
+var _disengage_mine := false
+var _was_seen := false
+# The information systems.
+var _help_lead: Dictionary = {}
+var _help_mate = null
+var _vulture_lead = null
+var _vulture_point := Vector2.INF
+var _vulture_time := 0.0
+var _scouted_at := -INF
+var _scout_goal := Vector2.INF
+var _trail_point := Vector2.INF
+var _trail_found := false
+var _trail_said := false
+var _lure_until := -INF
+var _lure_point := Vector2.INF
+var _loot_lead: Dictionary = {}
+# The squad.
+var _flank_reached := false
+var _anchor_at_pick = null
+var _cover_ok_at := -INF
+var _cover_aim = null
+# The Flag intents.
+var _execute_time := 0.0
+var _execute_barked := false
+var _stalk_raised := false
+var _protege = null
+var _surrendered_to = null
+var _spare_time := 0.0
+var _spare_hurt := false
+var _spared_noted := false
+# The flight (do_flee).
+var _flight_over := false
+var _flee_calm := 0.0
+var _flee_time := 0.0
+var _flee_exit_timer := 0.0
+var _flee_smoke_used := false
+var _flee_decoy_used := false
+var _flee_point = null
+# Scene scans, refreshed every SCAN_INTERVAL s of the NPC's time.
+var _loot_scan_time := -INF
+var _loot_found = null
+var _exit_scan_time := -INF
+var _exits_found: Array = []
+var _exit_nearest = null
 
 func get_nodes():
-	return nodes
-
-## CONNECTION METHODS ##
+	return intents
 
 
-func roam_to_seek(enemy):
-	var priority = 0
-	if enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise():
-		priority = 1
-	return priority
+## INTENT SCORES ##
+# Pure and cheap: they read the NPC and its knowledge, never the scene.
 
-func seek_to_roam(enemy):
-	var priority = 0
-	if not enemy.get_most_recent_loud_noise():
-		priority = 1
-	return priority
+func score_roam(_enemy) -> float:
+	return SCORE_ROAM
 
-func seek_to_alert(enemy):
-	var priority = 0
-	if enemy.under_fire_timer:
-		priority = 3
-	return priority
 
-func seek_to_ambush(enemy):
-	var priority = 0
-	if enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
-		priority = 3
-	return priority
+func score_investigate(enemy) -> float:
+	var current := _current(enemy)
+	if enemy.under_fire_timer > 0 or (current == "investigate" and enemy.last_attack_position):
+		return SCORE_INVESTIGATE_FIRE
+	if enemy.get_loud_lead() or enemy.get_most_recent_quiet_noise():
+		return SCORE_INVESTIGATE
+	if current == "investigate" and _wary_time > 0.0:
+		return SCORE_INVESTIGATE
+	# A loot shout in Local it believes (Scavengers always, others by greed).
+	if not enemy.valid_target and not _loot_lead_for(enemy).is_empty():
+		return SCORE_INVESTIGATE
+	return 0.0
 
-func roam_to_alert(enemy):
-	var priority = 0
-	if enemy.under_fire_timer:
-		priority = 3
-	return priority
 
-func alert_to_alert_roam(_enemy):
-	var priority = 0
-	if point_of_interest:
-		pass
-	else:
-		priority = 4
-	return priority
-	
-func alert_roam_to_alert(enemy):
-	var priority = 0
-	if enemy.under_fire_timer:
-		priority = 3
-	return priority
+# The loot shout this NPC would go to: the newest one it believes, within
+# HELP_RANGE, from a pilot it has nothing against. {} for none.
+func _loot_lead_for(enemy) -> Dictionary:
+	if not _loot_lead.is_empty() and enemy.knowledge.local_leads.has(_loot_lead):
+		return _loot_lead
+	var type = enemy.personality.type
+	if type == Personality.Type.HUNTER:
+		return {}
+	if type != Personality.Type.SCAVENGER and enemy.personality.greed <= LOOT_SHOUT_GREED:
+		return {}
+	for lead in enemy.knowledge.loot_leads():
+		if enemy.global_position.distance_to(lead.position) > HELP_RANGE:
+			continue
+		if is_instance_valid(lead.sender) and enemy.get_relationship(lead.sender).hostility > enemy.STANDING_HOSTILITY:
+			continue
+		return lead
+	return {}
 
-func ambush_to_roam(enemy):
-	var priority = 0
-	# De-escalate if no sounds remain
-	if not enemy.get_most_recent_loud_noise() and not enemy.get_most_recent_quiet_noise():
-		priority = 1
-	return priority
 
-func ambush_to_ambush_lock(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.under_fire_timer <= 0:
-		priority = 5
-	return priority
+func score_help(enemy) -> float:
+	if enemy.is_flagged() or enemy.is_exposed or enemy.under_fire_timer > 0:
+		return 0.0
+	if enemy.valid_target and is_instance_valid(enemy.valid_target):
+		return 0.0
+	var current := _current(enemy)
+	if current == "help":
+		if _help_mate != null:
+			return SCORE_HELP_SQUAD if _mate_in_trouble(enemy, _help_mate) else 0.0
+		return SCORE_HELP if enemy.knowledge.local_leads.has(_help_lead) else 0.0
+	if _find_mate_in_trouble(enemy) != null:
+		return SCORE_HELP_SQUAD
+	return SCORE_HELP if not _help_lead_for(enemy).is_empty() else 0.0
 
-func ambush_lock_to_defending_lock(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.under_fire_timer > 0:
-		priority = 5
-	return priority
 
-func alert_to_defending_lock(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.under_fire_timer > 0:
-		priority = 5
-	return priority
+# A squadmate under fire and hurt, the nearest, or null.
+func _find_mate_in_trouble(enemy):
+	var squad = enemy.knowledge.squad
+	if squad == null:
+		return null
+	var best = null
+	var best_dist := INF
+	for mate in squad.mates_of(enemy):
+		if not _mate_in_trouble(enemy, mate):
+			continue
+		var d: float = enemy.global_position.distance_to(mate.global_position)
+		if d < best_dist:
+			best = mate
+			best_dist = d
+	return best
 
-func alert_roam_to_defending_lock(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.under_fire_timer > 0:
-		priority = 5
-	return priority
 
-# Shared by every lock/alert state that escalates into combat: a target we
-# can engage is either hard-locked or within the build's kite range.
-func _combat_entry_priority(enemy):
+# A squadmate's trouble is squad radio: it says it is under fire and hurt.
+func _mate_in_trouble(enemy, mate) -> bool:
+	if not is_instance_valid(mate) or mate.is_dead or not ("under_fire_timer" in mate):
+		return false
+	var squad = enemy.knowledge.squad
+	if squad == null or not squad.is_in(mate):
+		return false
+	return mate.under_fire_timer > 0.0 and float(mate.hp) < float(mate.max_hp) * HELP_MATE_HEALTH
+
+
+# The help call this NPC answers: the newest within HELP_RANGE from a pilot
+# it has nothing against, each rolled once by personality (HELP_CHANCE; the
+# player's by its standing). {} for none.
+func _help_lead_for(enemy) -> Dictionary:
+	for lead in enemy.knowledge.help_leads():
+		if lead.answer == false:
+			continue
+		if lead.answer == null:
+			lead.answer = _answers_call(enemy, lead)
+			if lead.answer:
+				AICombatLog.record_info("help_answered")
+			else:
+				continue
+		return lead
+	return {}
+
+
+func _answers_call(enemy, lead: Dictionary) -> bool:
+	if enemy.global_position.distance_to(lead.position) > HELP_RANGE:
+		return false
+	var sender = lead.sender
+	if is_instance_valid(sender):
+		if sender.has_method("is_player") and sender.is_player() and not enemy.standing_with_player():
+			return false
+		if enemy.get_relationship(sender).hostility > enemy.STANDING_HOSTILITY:
+			return false
+	return randf() < float(HELP_CHANCE.get(enemy.personality.type, 0.0))
+
+
+## The pilot this NPC is on its way to help (the help intent clears it on
+## leaving), for the witness rule; null for none.
+func helping():
+	if _help_mate != null:
+		return _help_mate
+	return _help_lead.get("sender") if not _help_lead.is_empty() else null
+
+
+func score_vulture(enemy) -> float:
+	var type = enemy.personality.type
+	if type != Personality.Type.HUNTER and type != Personality.Type.RAT:
+		return 0.0
+	if enemy.is_flagged() or enemy.is_exposed or enemy.under_fire_timer > 0:
+		return 0.0
+	if enemy.valid_target and is_instance_valid(enemy.valid_target):
+		return 0.0
+	var current := _current(enemy)
+	if current == "vulture":
+		return SCORE_VULTURE if _vulture_time < VULTURE_PATIENCE and _vulture_point != Vector2.INF else 0.0
+	var state = _get_self_state(enemy)
+	if state.is_hot or state.no_ammo or _structural_health(enemy) < VULTURE_HEALTH:
+		return 0.0
+	return SCORE_VULTURE if _fight_heard(enemy) != Vector2.INF else 0.0
+
+
+# Where a fight is, as far as this NPC can tell: the newest gunfire heard,
+# else the newest help call's blurred spot, within VULTURE_RANGE.
+func _fight_heard(enemy) -> Vector2:
+	var newest = null
+	for sound in enemy.knowledge.sounds:
+		if sound.volume_type == "loud" and _is_gunfire(sound) \
+				and (newest == null or sound.lifetime > newest.lifetime):
+			newest = sound
+	if newest != null and enemy.global_position.distance_to(newest.position) <= VULTURE_RANGE:
+		return newest.position
+	for lead in enemy.knowledge.help_leads():
+		if enemy.global_position.distance_to(lead.position) <= VULTURE_RANGE:
+			return lead.position
+	return Vector2.INF
+
+
+func score_scout(enemy) -> float:
+	var type = enemy.personality.type
+	if type != Personality.Type.PROFESSIONAL and type != Personality.Type.HUNTER:
+		return 0.0
+	var current := _current(enemy)
+	if current == "scout":
+		return SCORE_SCOUT if _scout_goal != Vector2.INF else 0.0
+	if current != "roam" and current != "investigate" and current != "help":
+		return 0.0
+	if enemy.under_fire_timer > 0 or (enemy.valid_target and is_instance_valid(enemy.valid_target)):
+		return 0.0
+	if enemy.knowledge.now() - _scouted_at < SCOUT_INTERVAL:
+		return 0.0
+	if not (enemy.fire.can_sweep() or enemy.fire.has_internal("drone")):
+		return 0.0
+	return SCORE_SCOUT if _trip_worth_scouting(enemy) else 0.0
+
+
+# A trip worth a look first: further than SCOUT_TRIP, or into ground this
+# NPC took fire on.
+func _trip_worth_scouting(enemy) -> bool:
+	if not point_of_interest:
+		return false
+	var goal: Vector2 = point_of_interest
+	if enemy.global_position.distance_to(goal) > SCOUT_TRIP:
+		return true
+	for pos in enemy.knowledge.recent_fire_positions():
+		if goal.distance_to(pos) < SCOUT_DANGER:
+			return true
+	return false
+
+
+func score_loot(enemy) -> float:
+	# A Hunter hunts pilots; crates are beneath it.
+	if enemy.personality.type == Personality.Type.HUNTER:
+		return 0.0
+	var current := _current(enemy)
+	if current == "loot":
+		return SCORE_LOOT if _container_usable(target_container) else 0.0
+	if (current != "roam" and current != "follow") or enemy.under_fire_timer > 0 or enemy.valid_target:
+		return 0.0
+	return SCORE_LOOT if _find_loot_target(enemy) else 0.0
+
+
+func score_extract(enemy) -> float:
+	var current := _current(enemy)
+	var exit = target_exit if is_instance_valid(target_exit) else _find_nearest_exit(enemy)
+	if exit == null:
+		return 0.0
+	if current == "extract":
+		return SCORE_EXTRACT_COMMITTED
+	if _cash_out:
+		return SCORE_EXTRACT_CASH_OUT
+	if _leave_after_flight:
+		return SCORE_EXTRACT_AFTER_FLIGHT
+	# A squad member leaves when its leader does (follow), not on its own.
+	if _wants_to_extract and not _follows(enemy):
+		return SCORE_EXTRACT_SHIFT
+	return 0.0
+
+
+func score_follow(enemy) -> float:
+	if not _follows(enemy):
+		return 0.0
+	if enemy.is_flagged() or enemy.is_exposed:
+		return 0.0
+	# A companion under a standing order (follow, hold, regroup) keeps to it
+	# over any fight; only fleeing and surrendering come before it. Under an
+	# attack order it fights its target and otherwise moves up.
+	var squad = enemy.knowledge.squad
+	if squad.order == "follow" or squad.order == "hold" or squad.order == "regroup":
+		return SCORE_ORDER
+	if enemy.under_fire_timer > 0:
+		return 0.0
+	if enemy.valid_target and is_instance_valid(enemy.valid_target):
+		return 0.0
+	var current := _current(enemy)
+	# Looting a crate of its own: finish it first.
+	if current == "loot" and _container_usable(target_container):
+		return 0.0
+	# The leader looting: a member with a crate within reach loots too.
+	if current == "follow" and enemy.knowledge.squad.intent() == "loot" and _find_loot_target(enemy) != null:
+		return 0.0
+	return SCORE_FOLLOW
+
+
+# Whether `enemy` is a squad member with a living leader to follow.
+func _follows(enemy) -> bool:
+	var squad = enemy.knowledge.squad
+	return squad != null and not squad.is_leader(enemy) and squad.leader_alive()
+
+
+func score_ambush(enemy) -> float:
 	if enemy.valid_target:
-		var eff = _get_effective_distances(enemy)
-		var distance = enemy.global_position.distance_to(enemy.get_target_position(enemy.valid_target))
-		if enemy.get_locked_to() or distance < eff.max_kite * COMBAT_ENTRY_SLACK:
-			return 6
-	return 0
+		return 0.0
+	var current := _current(enemy)
+	# A Rat waiting for whoever its fake help call brings.
+	if enemy.knowledge.now() < _lure_until and enemy.under_fire_timer <= 0:
+		return SCORE_AMBUSH
+	if current == "ambush":
+		return SCORE_AMBUSH if (enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise()) else 0.0
+	if current == "investigate" and enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
+		return SCORE_AMBUSH
+	return 0.0
 
-# Sight starts a fight: an NPC that spots a target it is willing to attack
-# (Enemy.check_for_targets, run by the do_* state) moves to engage it, as an
-# ambush would.
-func roam_to_ambush_lock(enemy):
-	return 3 if enemy.valid_target else 0
 
-func seek_to_ambush_lock(enemy):
-	return 3 if enemy.valid_target else 0
+func score_engage(enemy) -> float:
+	# The Flag locks the weapons: nothing to fight with.
+	if enemy.is_flagged():
+		return 0.0
+	if not enemy.valid_target or not is_instance_valid(enemy.valid_target):
+		return 0.0
+	# A target whose Flag it respects isn't fought; one it doesn't respect is
+	# executed (score_execute), unless it ignores the Flag outright.
+	if enemy.valid_target.get("flag_up") == true and not enemy.ignores_flag_of(enemy.valid_target):
+		return 0.0
+	var current := _current(enemy)
+	# A target out of sight for a while: the fight becomes a search.
+	if current == "engage" and not enemy.is_seeing(enemy.valid_target) \
+			and enemy.time_unseen(enemy.valid_target) >= SEARCH_AFTER:
+		return SCORE_ENGAGE_LOST
+	if current == "engage" and stance != "closing" and enemy.current_target:
+		return SCORE_ENGAGE_FIGHTING
+	if enemy.get_locked_to() or _in_combat_range(enemy):
+		return SCORE_ENGAGE_IN_RANGE
+	return SCORE_ENGAGE_CLOSING
 
-func alert_roam_to_ambush_lock(enemy):
-	return 3 if enemy.valid_target else 0
 
-func loot_to_ambush_lock(enemy):
-	return 3 if enemy.valid_target else 0
+func score_execute(enemy) -> float:
+	if enemy.is_flagged():
+		return 0.0
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target) or target.get("flag_up") != true:
+		return 0.0
+	if enemy.ignores_flag_of(target) or not enemy.should_attack(target):
+		return 0.0
+	return SCORE_EXECUTE
 
-# Alert and not under fire, with a target in sight but out of range: close
-# in on it. Under fire it goes to defending_lock instead (priority 5).
-func alert_to_ambush_lock(enemy):
-	return 2 if enemy.valid_target else 0
 
-# The target was lost or forgotten before the fight started.
-func ambush_lock_to_alert_roam(enemy):
-	return 1 if not enemy.valid_target else 0
+func score_stalk(enemy) -> float:
+	if enemy.personality.type != Personality.Type.RAT or enemy.is_exposed:
+		return 0.0
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target):
+		return 0.0
+	var current := _current(enemy)
+	if current == "stalk":
+		# Until it lowers the Flag and strikes.
+		return SCORE_STALK if enemy.is_flagged() and enemy.is_seeing(target) else 0.0
+	if enemy.under_fire_timer > 0 or not enemy.is_seeing(target):
+		return 0.0
+	if current == "engage" and stance != "closing":
+		return 0.0
+	return SCORE_STALK if _is_distracted(enemy, target) else 0.0
 
-func defending_lock_to_alert(enemy):
-	return 1 if not enemy.valid_target else 0
 
-func ambush_lock_to_in_combat(enemy):
-	return _combat_entry_priority(enemy)
+func score_protect(enemy) -> float:
+	if enemy.personality.type != Personality.Type.GUARDIAN or enemy.is_flagged():
+		return 0.0
+	if enemy.valid_target and is_instance_valid(enemy.valid_target) and enemy.valid_target.get("flag_up") != true:
+		return 0.0
+	var current := _current(enemy)
+	if current == "protect":
+		return SCORE_PROTECT if _protege_valid(enemy, _protege) else 0.0
+	return SCORE_PROTECT if _find_protege(enemy) != null else 0.0
 
-func defending_lock_to_in_combat(enemy):
-	return _combat_entry_priority(enemy)
 
-func alert_to_in_combat(enemy):
-	return _combat_entry_priority(enemy)
+func score_raise_flag(enemy) -> float:
+	var current := _current(enemy)
+	if current == "raise_flag":
+		# Until the flight is over (then it leaves), or the Flag came down
+		# again (a Rat's strike).
+		return SCORE_RAISE_FLAG if enemy.is_flagged() and not _flight_over else 0.0
+	if enemy.is_flagged() or enemy.is_exposed:
+		return 0.0
+	if not (current == "engage" or current == "search" or current == "disengage" or current == "flee"):
+		return 0.0
+	var type = enemy.personality.type
+	if not SURRENDER_PANIC.has(type):
+		return 0.0
+	var threshold: float = float(SURRENDER_PANIC[type])
+	# A Guardian with a squadmate still standing all but never yields.
+	if type == Personality.Type.GUARDIAN and enemy.knowledge.squad != null \
+			and not enemy.knowledge.squad.mates_of(enemy).is_empty():
+		threshold = SURRENDER_PANIC_GUARDIAN_WITH_MATES
+	if enemy.knowledge.panic < threshold:
+		return 0.0
+	var losing: bool = aggression < 0.0
+	if type == Personality.Type.PROFESSIONAL:
+		losing = aggression <= SURRENDER_AGGRESSION
+	return SCORE_RAISE_FLAG if losing else 0.0
 
-func in_combat_to_attack(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.current_target and aggression > 0:
-		priority = 7
-	return priority
 
-func in_combat_to_defend(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.current_target and aggression <= 0:
-		priority = 7
-	return priority
+func score_search(enemy) -> float:
+	if enemy.is_flagged():
+		return 0.0
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target) or enemy.is_seeing(target):
+		return 0.0
+	if enemy.time_unseen(target) < SEARCH_AFTER:
+		return 0.0
+	return SCORE_SEARCH
 
-func attack_to_defend(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.current_target \
-			and stance_time >= STANCE_MIN_DWELL and aggression <= -STANCE_HYSTERESIS:
-		priority = 7
-	return priority
 
-func defend_to_attack(enemy):
-	var priority = 0
-	if enemy.valid_target and enemy.current_target \
-			and stance_time >= STANCE_MIN_DWELL and aggression >= STANCE_HYSTERESIS:
-		priority = 7
-	return priority
+func score_disengage(enemy) -> float:
+	if enemy.is_flagged():
+		return 0.0
+	var current := _current(enemy)
+	var state = _get_self_state(enemy)
+	if current == "disengage":
+		if _disengage_time < DISENGAGE_MIN_TIME or state.is_hot:
+			return SCORE_DISENGAGE
+		return 0.0
+	if enemy.knowledge.now() < _disengage_ok_at:
+		return 0.0
+	if current == "engage" and stance != "closing" and enemy.current_target:
+		if state.is_overheating:
+			return SCORE_DISENGAGE
+		if aggression <= DISENGAGE_AGGRESSION and enemy.under_fire_timer > 0:
+			return SCORE_DISENGAGE
+		# Panic: it breaks off sooner.
+		if enemy.knowledge.panic >= PANIC_DISENGAGE and enemy.under_fire_timer > 0:
+			return SCORE_DISENGAGE
+	return 0.0
 
-func attack_to_roam(enemy):
-	var priority = 0
+
+func score_flee(enemy) -> float:
+	var current := _current(enemy)
+	var rat: bool = enemy.personality != null and enemy.personality.type == Personality.Type.RAT
+	if enemy.is_exposed and not rat:
+		# One more hit may kill it: it runs for its life from any intent,
+		# until the flight is over (then it leaves, carefully) or it is shot
+		# at again.
+		if current == "flee":
+			return 0.0 if _flight_over else SCORE_FLEE_FOR_LIFE
+		if _flight_over and enemy.under_fire_timer <= 0:
+			return 0.0
+		return SCORE_FLEE_FOR_LIFE
+	if current == "flee":
+		return 0.0 if _flight_over else SCORE_FLEE
+	if current == "engage" and _should_flee(enemy):
+		return SCORE_FLEE
+	return 0.0
+
+
+func _current(enemy) -> String:
+	return str(enemy.logic.get_current_state())
+
+
+# A target the NPC can fight from where it stands: hard-locked, or within
+# the build's kite range.
+func _in_combat_range(enemy) -> bool:
 	if not enemy.valid_target:
-		priority = 8
-	return priority
-
-func defend_to_roam(enemy):
-	var priority = 0
-	if not enemy.valid_target:
-		priority = 8
-	return priority
-
-func attack_to_flee(enemy):
-	return 9 if _should_flee(enemy) else 0
-
-func defend_to_flee(enemy):
-	return 9 if _should_flee(enemy) else 0
-
-func in_combat_to_flee(enemy):
-	return 9 if _should_flee(enemy) else 0
-
-func flee_to_roam(enemy):
-	var priority = 0
-	if not enemy.valid_target and not enemy.under_fire_timer:
-		priority = 2
-	return priority
-
-func roam_to_loot(enemy):
-	var priority = 0
-	if _find_loot_target(enemy):
-		priority = 2
-	return priority
-
-func loot_to_roam(_enemy):
-	var priority = 0
-	if target_container == null or not is_instance_valid(target_container):
-		priority = 2
-	return priority
-
-func loot_to_alert(enemy):
-	var priority = 0
-	if enemy.under_fire_timer:
-		priority = 3
-	return priority
-
-
-# Greedy NPCs cash out after a successful loot. Probability scales with greed:
-# greed 0.0 -> never; greed 1.0 -> always (provided an exit exists).
-func loot_to_extract(enemy):
-	var priority = 0
-	if times_looted >= 1 and target_container == null:
-		if randf() < enemy.personality.greed:
-			if _find_nearest_exit(enemy):
-				priority = 4
-	return priority
-
-
-# After fleeing, if we're no longer under fire and an exit is reasonably close,
-# leave the arena entirely instead of looping back to roam.
-func flee_to_extract(enemy):
-	var priority = 0
-	if not enemy.under_fire_timer:
-		var exit = _find_nearest_exit(enemy)
-		if exit:
-			# Only commit to extract if we're already within escape range.
-			if enemy.global_position.distance_to(exit.global_position) < 3000.0:
-				priority = 3
-	return priority
-
-
-# "Shift over" — long-alive NPCs eventually wander toward an exit. The
-# decision itself is rolled in do_roam (dt-scaled, frame-rate independent,
-# and keeps this condition pure); here we only read the committed flag.
-# Once decided, the intent persists through interruptions (fights, loot) —
-# the NPC resumes leaving afterward. Priority 1 = anything else overrides.
-func roam_to_extract(enemy):
-	if _wants_to_extract and _find_nearest_exit(enemy):
-		return 1
-	return 0
-
-
-# Bail out if our chosen exit became invalid and there are no others.
-func extract_to_roam(enemy):
-	var priority = 0
-	if target_exit == null or not is_instance_valid(target_exit):
-		if _find_nearest_exit(enemy) == null:
-			priority = 1
-	return priority
-
-## ENTRY HOOKS ##
-# Called once by EnemyLogic when the FSM actually enters the state — this is
-# where on-enter mutations live. Transition conditions above are evaluated
-# every frame for scoring (including frames where they lose), so they must
-# stay pure: no assignments to behaviour or enemy state inside them.
-
-func enter_in_combat(enemy):
-	# Commit to a target. Lock takes precedence over proximity sighting.
+		return false
 	if enemy.get_locked_to():
-		enemy.current_target = enemy.get_locked_to()
-	else:
-		enemy.current_target = enemy.valid_target
-	if enemy.current_target and is_instance_valid(enemy.current_target):
-		AICombatLog.record_engage(enemy.global_position.distance_to(enemy.get_target_position(enemy.current_target)))
+		return true
+	var eff = _get_effective_distances(enemy)
+	var distance = enemy.global_position.distance_to(enemy.get_target_position(enemy.valid_target))
+	return distance < eff.max_kite * COMBAT_ENTRY_SLACK
 
 
-func enter_loot(enemy):
-	# Claim the container found during scoring. Same-frame re-query returns
-	# the same container _find_loot_target saw in roam_to_loot.
-	target_container = _find_loot_target(enemy)
+## ILLUMINATOR ##
+
+# Whether the NPC runs lit in `intent` (Enemy._update_illuminator): see the
+# table at the top.
+func wants_illuminator(enemy, intent: String) -> bool:
+	var type = enemy.personality.type if enemy.personality else Personality.Type.PROFESSIONAL
+	var sneaky: bool = type == Personality.Type.HUNTER or type == Personality.Type.RAT
+	if intent == "roam" or intent == "loot" or intent == "investigate" or intent == "follow" or intent == "help":
+		return not sneaky
+	if intent == "ambush" or intent == "flee" or intent == "disengage" or intent == "stalk" or intent == "raise_flag" \
+			or intent == "vulture":
+		return false
+	if intent == "scout":
+		# Sneaking a look at what is ahead.
+		return not (type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL)
+	if intent == "execute" or intent == "protect":
+		# An execution must be seen; a guard wants to see what comes.
+		return true
+	if intent == "search":
+		# Sneaking up on a last-known spot.
+		return not (type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL)
+	if intent == "extract":
+		# Leaving Flagged, or with the capsule exposed: dark.
+		return not (enemy.is_flagged() or enemy.is_exposed)
+	if intent == "engage":
+		# In a squad the anchor is the spotter, lit so its cone lights the
+		# foe for the others; the flanker runs dark.
+		var role: String = enemy.knowledge.role()
+		if role == Squad.ROLE_ANCHOR:
+			return true
+		if role == Squad.ROLE_FLANKER:
+			return false
+		# Closing on a target that isn't shooting yet: sneak up. Trading
+		# shots: lit, it needs to see.
+		return not (stance == "closing" and enemy.under_fire_timer <= 0)
+	return true
 
 
-func enter_alert(_enemy):
-	# Escalating to alert abandons any loot plan (covers loot_to_alert, and
-	# is harmlessly redundant for the other entry paths).
+## ENTRY AND EXIT HOOKS ##
+# Called once by EnemyLogic when the intent changes. Scores are evaluated
+# every time for ranking, so they stay pure; on-enter mutations live here.
+
+func enter_investigate(_enemy):
+	_wary_time = WARY_TIME
 	target_container = null
 
 
-func enter_attack(_enemy):
-	stance_time = 0.0
+func enter_loot(enemy):
+	# Claim the container found during scoring. The scan is cached, so this
+	# is the container score_loot saw.
+	target_container = _find_loot_target(enemy)
+	_loot_ward = false
 
 
-func enter_defend(_enemy):
+func enter_ambush(enemy):
+	_ambush_ward = false
+	_ambush_mine = false
+	enemy.positioning.request()
+	# A Rat baits its ambush with a loot shout that isn't true.
+	if enemy.personality.type == Personality.Type.RAT and randf() < RAT_LIE_CHANCE * enemy.personality.treachery \
+			and enemy.knowledge.now() >= _lure_until:
+		enemy.broadcast("found_loot")
+		AICombatLog.record_info("rat_lie")
+
+
+func enter_search(enemy):
+	_search_swept = false
+	_search_drone = false
+	_trail_point = Vector2.INF
+	_trail_found = false
+	_trail_said = false
+	aiming_at_enemy = false
+	enemy.fire.cease()
+	enemy.positioning.request()
+
+
+func enter_help(enemy):
+	_help_mate = _find_mate_in_trouble(enemy)
+	_help_lead = {} if _help_mate != null else _help_lead_for(enemy)
+	aiming_at_enemy = false
+	enemy.going_to_position = false
+	point_of_interest = false
+	enemy.bark("investigating")
+
+
+func exit_help(enemy):
+	if not _help_lead.is_empty():
+		enemy.knowledge.drop_lead(_help_lead)
+	_help_lead = {}
+	_help_mate = null
+	enemy.going_to_position = false
+	point_of_interest = false
+
+
+func enter_vulture(enemy):
+	_vulture_point = _fight_heard(enemy)
+	_vulture_time = 0.0
+	_vulture_lead = null
+	aiming_at_enemy = false
+	enemy.positioning.request()
+	enemy.bark("vulturing")
+	AICombatLog.record_info("vultured")
+
+
+func exit_vulture(enemy):
+	_vulture_point = Vector2.INF
+	enemy.going_to_position = false
+	point_of_interest = false
+
+
+func enter_scout(enemy):
+	_scout_goal = point_of_interest if point_of_interest else Vector2.INF
+	enemy.going_to_position = false
+	enemy.bark("scouting")
+
+
+func exit_scout(enemy):
+	_scout_goal = Vector2.INF
+	# The trip goes on from where it was.
+	if point_of_interest:
+		enemy.going_to_position = true
+
+
+func enter_disengage(enemy):
+	_disengage_time = 0.0
+	_disengage_smoke = false
+	_disengage_decoy = false
+	_disengage_mine = false
+	aiming_at_enemy = false
+	enemy.is_locking = false
+	enemy.fire.cease()
+	enemy.positioning.request()
+	if enemy.knowledge.squad != null:
+		enemy.knowledge.squad.callout(enemy, "falling_back")
+
+
+func enter_follow(enemy):
+	aiming_at_enemy = false
+	enemy.going_to_position = false
+	point_of_interest = false
+	var squad = enemy.knowledge.squad
+	if squad != null and squad.order == "free" and not (squad.intent() in ["roam", "investigate", "loot", "extract", "ambush", "follow"]):
+		squad.callout(enemy, "moving_up")
+
+
+func exit_follow(enemy):
+	enemy.going_to_position = false
+	point_of_interest = false
+	enemy.fire.cease()
+
+
+func exit_disengage(enemy):
+	_disengage_ok_at = enemy.knowledge.now() + DISENGAGE_COOLDOWN
+
+
+func enter_extract(_enemy):
+	_cash_out = false
+	_leave_after_flight = false
+	target_exit = null
+
+
+func enter_engage(enemy):
+	stance = "closing"
 	stance_time = 0.0
+	aiming_at_enemy = false
+	_flare_used = false
+	_was_seen = false
+	_flank_reached = false
+	enemy.current_target = false
+	enemy.positioning.request()
+	if enemy.knowledge.role() == Squad.ROLE_FLANKER and _anchor_position(enemy) != Vector2.INF:
+		enemy.knowledge.squad.callout(enemy, "flanking", enemy.valid_target)
+
+
+func exit_engage(enemy):
+	stance = "closing"
+	enemy.is_locking = false
+	enemy.current_target = false
+	enemy.fire.cease()
+
+
+func enter_flee(enemy):
+	_begin_flight(enemy)
+	# A Rat on the run puts its Flag back up.
+	if enemy.personality.type == Personality.Type.RAT and not enemy.is_flagged():
+		enemy.raise_flag(true)
+
+
+func _begin_flight(enemy) -> void:
+	_flight_over = false
+	_flee_calm = 0.0
+	_flee_time = 0.0
+	_flee_exit_timer = 0.0
+	_flee_smoke_used = false
+	_flee_decoy_used = false
+	_flee_point = null
+	_leave_after_flight = false
+	aiming_at_enemy = false
+	enemy.valid_target = false
+	enemy.current_target = false
+	enemy.is_locking = false
+	enemy.going_to_position = false
+
+
+func enter_execute(enemy):
+	_execute_time = 0.0
+	_execute_barked = false
+	enemy.current_target = enemy.valid_target
+	enemy.fire.cease()
+
+
+func exit_execute(enemy):
+	enemy.current_target = false
+	enemy.fire.cease()
+
+
+func enter_stalk(enemy):
+	_stalk_raised = false
+	enemy.positioning.request()
+
+
+func enter_protect(enemy):
+	_protege = _find_protege(enemy)
+	enemy.positioning.request()
+
+
+func exit_protect(_enemy):
+	_protege = null
+
+
+func enter_raise_flag(enemy):
+	_surrendered_to = enemy.pressured_by()
+	_spare_time = 0.0
+	_spare_hurt = false
+	_spared_noted = false
+	_begin_flight(enemy)
+	enemy.raise_flag(true)
+	enemy.broadcast("surrender")
+	enemy.bark("surrender_plea")
+	AICombatLog.record_flag("surrender")
 
 
 ## SHARED STATE HELPERS ##
-# Mechanical extractions of blocks that were copy-pasted across do_* states.
-# Behaviour-preserving: each helper is byte-equivalent to the block it
-# replaced, including evaluation order.
 
 # Standard movement preamble: ramp throttle up to full cruise.
 func _ramp_throttle_full(dt, enemy):
@@ -351,16 +1011,22 @@ func _ramp_throttle_full(dt, enemy):
 		enemy.decrease_throttle(1.0, 1.0)
 
 
-# Wander: pick a random map point when we have nowhere to go.
+# Wander: pick a random map point when we have nowhere to go, clear of the
+# spot it keeps away from (a few tries).
 func _wander_if_idle(enemy):
 	if not enemy.going_to_position:
-		point_of_interest = enemy.arena.get_random_position()
+		var point: Vector2 = enemy.arena.get_random_position()
+		for i in 8:
+			if not enemy.knowledge.avoids(point, AVOID_RADIUS):
+				break
+			point = enemy.arena.get_random_position()
+		point_of_interest = point
 		enemy.going_to_position = true
 
 
-# Head toward the most recent loud noise; on arrival consume it.
+# Head toward the most recent loud noise it acts on; on arrival consume it.
 func _investigate_loud_noise(enemy):
-	var recent = enemy.get_most_recent_loud_noise()
+	var recent = enemy.get_loud_lead()
 	if not recent:
 		return
 	if enemy.global_position.distance_to(recent.position) > POSITIONAL_ACCURACY:
@@ -401,9 +1067,9 @@ func _push_poi_to_nav(enemy):
 			enemy.NavAgent.target_position = point_of_interest
 
 
-# On nav arrival, clear movement intent.
+# On arrival, clear movement intent.
 func _clear_arrival(enemy):
-	if enemy.NavAgent.is_navigation_finished():
+	if enemy.arrived():
 		enemy.going_to_position = false
 		point_of_interest = false
 
@@ -415,7 +1081,7 @@ func _update_aggression(enemy, state):
 	aggression = base_aggression + personality_mod + _self_state_aggression_mod(state)
 
 
-## STATE METHODS ##
+## INTENT METHODS ##
 
 func do_roam(dt, enemy):
 	if is_instance_valid(enemy):
@@ -423,67 +1089,282 @@ func do_roam(dt, enemy):
 		_ramp_throttle_full(dt, enemy)
 		_wander_if_idle(enemy)
 		_push_poi_to_nav(enemy)
+		_check_targets(enemy)
+		enemy.fire.shoot_devices(dt)
 		enemy.navigate_to_target(dt, 0, 0.65, false)
 		_clear_arrival(enemy)
-		_check_targets(enemy)
+		_lead_squad(enemy)
+		# A treacherous Rat wanders with its Flag up, a disguise for a stalk,
+		# and now and then calls for help it doesn't need, to lure whoever
+		# answers into an ambush where it stands.
+		if enemy.personality.type == Personality.Type.RAT:
+			if not enemy.is_flagged() and randf() < RAT_WANDER_FLAG_RATE * enemy.personality.treachery * dt:
+				enemy.raise_flag(true)
+			if randf() < RAT_LURE_RATE * enemy.personality.treachery * dt:
+				_lure(enemy)
 
 		# "Shift over": after staying long enough (courage-scaled threshold),
 		# roll a dt-scaled chance to decide to leave. Rate preserves the old
 		# tuning as observed at 144fps (0.001+greed*0.002 per frame ~=
-		# 0.15+greed*0.3 per second). roam_to_extract reads the flag.
+		# 0.15+greed*0.3 per second). score_extract reads the flag.
 		if not _wants_to_extract:
-			# Min 30s, max 300s alive before this even starts firing.
-			var shift_duration = lerpf(300.0, 30.0, 1.0 - enemy.personality.courage)
-			if _time_alive_seconds() > shift_duration:
-				var leave_rate_per_sec = 0.15 + enemy.personality.greed * 0.3
-				if randf() < leave_rate_per_sec * dt:
+			if enemy.personality.type == Personality.Type.PROFESSIONAL:
+				# On schedule: a fixed time on the ground, then out.
+				if _time_alive_seconds() > PRO_EXTRACT_TIME:
 					_wants_to_extract = true
+			else:
+				# Min 30s, max 300s alive before this even starts firing.
+				var shift_duration = lerpf(300.0, 30.0, 1.0 - enemy.personality.courage)
+				if _time_alive_seconds() > shift_duration:
+					var leave_rate_per_sec = 0.15 + enemy.personality.greed * 0.3
+					if randf() < leave_rate_per_sec * dt:
+						_wants_to_extract = true
 
-func do_seek(dt, enemy):
-	if is_instance_valid(enemy):
-		aiming_at_enemy = false
+
+# A squad member's travel: to its slot beside or behind the leader
+# (Squad.travel_goal; round the hold point under a hold order), on the
+# leader's heels when it is leaving, at a pace that closes the gap,
+# sprinting after it when far behind or ordered to regroup. In its slot it
+# stands and watches for targets. A companion under orders fires on the move
+# at a target in sight (the fire controller), without leaving its slot.
+func do_follow(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	aiming_at_enemy = false
+	_check_targets(enemy)
+	var squad = enemy.knowledge.squad
+	var target = enemy.valid_target if enemy.valid_target and is_instance_valid(enemy.valid_target) else null
+	if target != null and enemy.is_seeing(target) and not enemy.holds_fire_at(target):
+		var state = _get_self_state(enemy)
+		enemy.ai_aim_point = enemy.compute_lead_point(target) if enemy.can_see_target(target) else enemy.get_target_position(target)
+		if not state.is_hot and not state.no_ammo:
+			_fire(dt, enemy, target, true, _get_effective_distances(enemy), state)
+		else:
+			enemy.fire.cease()
+	else:
+		enemy.fire.cease()
+		enemy.fire.shoot_devices(dt)
+	if squad == null or not squad.leader_alive():
+		return
+	var goal: Vector2 = squad.leader.global_position if squad.intent() == "extract" else squad.travel_goal(enemy)
+	if goal == Vector2.INF:
+		return
+	var dist: float = enemy.global_position.distance_to(goal)
+	if dist <= FOLLOW_SLACK:
+		enemy.going_to_position = false
+		point_of_interest = false
+		enemy.decrease_throttle(0, 0.05)
+		enemy.navigate_to_target(dt, 0.0, 0.0, false)
+		return
+	enemy.going_to_position = true
+	point_of_interest = goal
+	enemy.NavAgent.target_position = goal
+	# Pace: full ahead when the gap is a spacing or more, easing in near it.
+	var pace := clampf(dist / Squad.SPACING, 0.4, 1.0)
+	if enemy.throttle < pace:
+		enemy.increase_throttle(pace, dt / THROTTLE_CHANGE_TIME)
+	else:
+		enemy.decrease_throttle(pace, dt / THROTTLE_CHANGE_TIME)
+	enemy.navigate_to_target(dt, 0.0, 0.0, dist > Squad.REGROUP_DISTANCE or squad.order == "regroup")
+
+
+# A Rat's lure: a fake help call in Local, then it lies in wait where it
+# stands for LURE_TIME (score_ambush, do_ambush).
+func _lure(enemy) -> void:
+	enemy.broadcast("need_help")
+	_lure_until = enemy.knowledge.now() + LURE_TIME
+	_lure_point = enemy.global_position
+	AICombatLog.record_info("rat_lie")
+
+
+# Going to help: a squadmate in trouble, where it is (squad radio), or a
+# help call's blurred spot; lit, watching for targets, dropping the lead on
+# arrival or once it has gone stale.
+func do_help(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	aiming_at_enemy = false
+	_check_targets(enemy)
+	enemy.fire.shoot_devices(dt)
+	var goal := Vector2.INF
+	if _help_mate != null and is_instance_valid(_help_mate):
+		goal = _help_mate.global_position
+	elif not _help_lead.is_empty():
+		goal = _help_lead.position
+	if goal == Vector2.INF:
+		return
+	_ramp_throttle_full(dt, enemy)
+	if enemy.global_position.distance_to(goal) > POSITIONAL_ACCURACY:
+		enemy.going_to_position = true
+		point_of_interest = goal
+		enemy.NavAgent.target_position = goal
+		enemy.navigate_to_target(dt, 0.0, 0.0, enemy.knowledge.panic < PANIC_SPRINT)
+	else:
+		# There: the call is answered as far as it can be.
+		if not _help_lead.is_empty():
+			enemy.knowledge.drop_lead(_help_lead)
+			_help_lead = {}
+		enemy.going_to_position = false
+		point_of_interest = false
+	shield_check(enemy)
+
+
+# Vulturing: to a covered spot VULTURE_STANDOFF from the fight, dark, at
+# half throttle, watching it, until the shooting has stopped for
+# VULTURE_QUIET s; then whoever it sees there is prey (hostility, so the
+# target rules let it engage).
+func do_vulture(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_vulture_time += dt
+	aiming_at_enemy = false
+	_check_targets(enemy)
+	var heard := _fight_heard(enemy)
+	if heard != Vector2.INF:
+		_vulture_point = heard
+	if _vulture_point == Vector2.INF:
+		return
+	enemy.ai_aim_point = _vulture_point
+	if enemy.throttle > 0.5:
+		enemy.decrease_throttle(false, dt / THROTTLE_CHANGE_TIME)
+	else:
+		enemy.increase_throttle(0.5, 0.5)
+	# The fight over: the survivors it sees are prey. It stands off further
+	# than its engage range, so it closes on the nearest to its kite range,
+	# where the target rules pick it up and engage takes over.
+	var prey = null
+	if _quiet_for(enemy) >= VULTURE_QUIET:
+		var prey_dist := INF
+		for body in enemy.knowledge.seen_bodies():
+			if body.is_in_group("entity") or (enemy.knowledge.squad != null and enemy.knowledge.squad.is_in(body)):
+				continue
+			enemy.add_hostility(body, VULTURE_HOSTILITY)
+			var d: float = enemy.global_position.distance_to(enemy.get_target_position(body))
+			if d < prey_dist:
+				prey = body
+				prey_dist = d
+	var standoff := VULTURE_STANDOFF
+	if prey != null:
+		_vulture_point = enemy.get_target_position(prey)
+		standoff = _get_effective_distances(enemy).max_kite
 		_ramp_throttle_full(dt, enemy)
+	if not _tactical_move(dt, enemy, _vulture_point, standoff, VULTURE_WEIGHTS, false, _vulture_point):
+		enemy.going_to_position = false
+		point_of_interest = false
+	shield_check(enemy)
+
+
+# A sound that is a fight: gunfire or a blast.
+static func _is_gunfire(sound: Dictionary) -> bool:
+	return sound.type == "shooting" or sound.type == "gunshot" or sound.type == "explosion"
+
+
+# Seconds since the last gunfire this NPC heard (INF for none remembered).
+func _quiet_for(enemy) -> float:
+	var newest := -INF
+	for sound in enemy.knowledge.sounds:
+		if sound.volume_type == "loud" and _is_gunfire(sound):
+			newest = maxf(newest, float(sound.lifetime))
+	if newest == -INF:
+		return INF
+	return float(enemy.SOUND_LIFETIME) - newest
+
+
+# Scouting: a sweep toward the trip's goal, else a drone that way, once;
+# then the trip goes on.
+func do_scout(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	enemy.decrease_throttle(0, 0.05)
+	enemy.navigate_to_target(dt, 0.0, 0.0, false)
+	if _scout_goal == Vector2.INF:
+		return
+	var dir: Vector2 = enemy.global_position.direction_to(_scout_goal)
+	enemy.ai_aim_point = _scout_goal
+	var done := false
+	if enemy.fire.can_sweep():
+		done = enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing(), SCOUT_SWEEP_WIDTH)
+	elif enemy.fire.has_internal("drone"):
+		done = enemy.fire.launch_drone(_scout_goal)
+	if done:
+		AICombatLog.record_info("scouted")
+	_scouted_at = enemy.knowledge.now()
+	_scout_goal = Vector2.INF
+
+
+# The leader calls a straggler back (Squad.call_regroup).
+func _lead_squad(enemy) -> void:
+	var squad = enemy.knowledge.squad
+	if squad == null or not squad.is_leader(enemy):
+		return
+	for mate in squad.mates_of(enemy):
+		if squad.strayed(mate):
+			squad.call_regroup(enemy)
+			return
+
+
+# Three leads, in order: where it was shot from (alert: shield ready, go
+# there, then look round for quiet sounds), a loud noise (seek), and
+# otherwise wary wandering that follows quiet sounds (alert roam).
+func do_investigate(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	aiming_at_enemy = false
+	_ramp_throttle_full(dt, enemy)
+	_wary_time = maxf(_wary_time - dt, 0.0)
+	if enemy.under_fire_timer > 0:
+		_wary_time = WARY_TIME
+	if enemy.under_fire_timer > 0 or enemy.last_attack_position:
+		shield_check(enemy)
+		_check_targets(enemy)
+		if enemy.last_attack_position:
+			if enemy.global_position.distance_to(enemy.last_attack_position) > POSITIONAL_ACCURACY:
+				point_of_interest = enemy.last_attack_position
+				enemy.going_to_position = true
+			else:
+				# The lead is used up.
+				enemy.last_attack_position = false
+		_investigate_quiet_noise(enemy)
+		_push_poi_to_nav(enemy)
+		_clear_arrival(enemy)
+		enemy.navigate_to_target(dt, 0, 0, false)
+	elif enemy.get_loud_lead():
 		_investigate_loud_noise(enemy)
 		_push_poi_to_nav(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
 		_clear_arrival(enemy)
 		_check_targets(enemy)
-
-func do_alert(dt, enemy):
-	if is_instance_valid(enemy):
-		aiming_at_enemy = false
-		_ramp_throttle_full(dt, enemy)
-
-		shield_check(enemy)
-
-		_check_targets(enemy)
-		if enemy.last_attack_position:
-			point_of_interest = enemy.last_attack_position
+	elif not _loot_lead_for(enemy).is_empty():
+		# A loot shout: to its blurred spot, then the lead is used up.
+		_loot_lead = _loot_lead_for(enemy)
+		if enemy.global_position.distance_to(_loot_lead.position) > POSITIONAL_ACCURACY:
+			point_of_interest = _loot_lead.position
 			enemy.going_to_position = true
-
-		_investigate_quiet_noise(enemy)
+		else:
+			enemy.knowledge.drop_lead(_loot_lead)
+			_loot_lead = {}
+			enemy.going_to_position = false
+			point_of_interest = false
 		_push_poi_to_nav(enemy)
-		# NOTE: arrival check intentionally precedes navigate in this state
-		# (preserved from the original ordering).
-		_clear_arrival(enemy)
+		_check_targets(enemy)
 		enemy.navigate_to_target(dt, 0, 0, false)
-
-
-func do_alert_roam(dt, enemy):
-	if is_instance_valid(enemy):
-		aiming_at_enemy = false
-		_ramp_throttle_full(dt, enemy)
+		_clear_arrival(enemy)
+	else:
 		_wander_if_idle(enemy)
 		_investigate_quiet_noise(enemy)
-
 		if enemy.is_shielding:
 			enemy.shield_down()
-
 		_push_poi_to_nav(enemy)
+		_check_targets(enemy)
+		enemy.fire.shoot_devices(dt)
 		enemy.navigate_to_target(dt, 0, 0, false)
 		_clear_arrival(enemy)
-		_check_targets(enemy)
 
+
+# Lying in wait where something quiet was heard: a covered spot with a view
+# of where it will come from (the position picker), a ward out, a mine on
+# the approach, at half throttle.
 func do_ambush(dt, enemy):
 	if is_instance_valid(enemy):
 		aiming_at_enemy = false
@@ -492,72 +1373,343 @@ func do_ambush(dt, enemy):
 			enemy.decrease_throttle(false, dt/THROTTLE_CHANGE_TIME)
 		else:
 			enemy.increase_throttle(0.5, 0.5)
-		_wander_if_idle(enemy)
-		_investigate_loud_noise(enemy)
-		_investigate_quiet_noise(enemy)
-		_push_poi_to_nav(enemy)
-		enemy.navigate_to_target(dt, 0, 0)
-		_clear_arrival(enemy)
 		_check_targets(enemy)
+		var noise = enemy.get_most_recent_quiet_noise()
+		if not noise:
+			noise = enemy.get_most_recent_loud_noise()
+		if not noise and enemy.knowledge.now() < _lure_until:
+			# Lying in wait for whoever its fake call brings: it watches the
+			# way it came from, where it stands.
+			noise = {"position": _lure_point + enemy.get_facing() * 600.0}
+		if noise:
+			var approach: Vector2 = noise.position
+			enemy.ai_aim_point = approach
+			if not _ambush_ward:
+				_ambush_ward = true
+				enemy.fire.place_ward()
+			if not _ambush_mine:
+				_ambush_mine = true
+				enemy.fire.lay_mine(enemy.global_position + enemy.global_position.direction_to(approach) * MINE_LAY_DISTANCE)
+			var eff = _get_effective_distances(enemy)
+			if not _tactical_move(dt, enemy, approach, eff.max_kite * 0.8, AMBUSH_WEIGHTS, false, approach):
+				# In position: hold here and watch.
+				enemy.going_to_position = false
+				point_of_interest = false
+		else:
+			_wander_if_idle(enemy)
+			_push_poi_to_nav(enemy)
+			enemy.navigate_to_target(dt, 0, 0)
+			_clear_arrival(enemy)
 		shield_check(enemy)
 
-func do_ambush_lock(dt, enemy):
-	if is_instance_valid(enemy):
-		aiming_at_enemy = false
-		_check_targets(enemy)
-		if not enemy.valid_target:
-			enemy.is_locking = false
+
+# Moves toward the position picker's choice against a foe believed at
+# `foe_pos` (see Positioning.choose). Returns false when the NPC is already
+# there, or nothing beats where it stands. Panicked, it sprints.
+func _tactical_move(dt, enemy, foe_pos: Vector2, wanted_range: float, weights: Dictionary, sprint: bool,
+		watch := Vector2.INF, foe_facing := Vector2.ZERO, anchor := Vector2.INF) -> bool:
+	var picker: Positioning = enemy.positioning
+	if picker.due(enemy, foe_pos):
+		picker.choose(enemy, foe_pos, wanted_range, weights, foe_pos, watch, foe_facing, anchor)
+	if not picker.has_pick():
+		return false
+	var target: Vector2 = picker.pick_position()
+	if enemy.global_position.distance_to(target) <= PICK_ARRIVE:
+		return false
+	enemy.going_to_position = true
+	point_of_interest = target
+	enemy.NavAgent.target_position = target
+	enemy.increase_throttle(1, 0.01)
+	enemy.navigate_to_target(dt, 0.0, 0.0, sprint or enemy.knowledge.panic >= PANIC_SPRINT)
+	return true
+
+
+# Whether `target` isn't watching `enemy`: fighting someone else, looting,
+# or facing away (what a stalker waits for).
+func _is_distracted(enemy, target) -> bool:
+	if "valid_target" in target and target.get("logic") != null:
+		# An NPC: fighting someone else, or looting.
+		var their_target = target.valid_target
+		if their_target and is_instance_valid(their_target) and not is_same(their_target, enemy):
+			return true
+		if str(target.logic.get_current_state()) == "loot":
+			return true
+	elif target.get("current_open_container") != null:
+		return true
+	if target.has_method("get_facing"):
+		var facing: Vector2 = target.get_facing()
+		var to_enemy: Vector2 = target.global_position.direction_to(enemy.global_position)
+		return facing.dot(to_enemy) < -0.2
+	return false
+
+
+# A Flagged or badly damaged mech in the Guardian's knowledge that isn't
+# hostile to it, the nearest, or null.
+func _find_protege(enemy):
+	# Squadmates first: a Flagged or hurt mate, wherever it is (squad radio).
+	var squad = enemy.knowledge.squad
+	if squad != null:
+		var mate_best = null
+		var mate_dist := INF
+		for mate in squad.mates_of(enemy):
+			if not (mate.get("flag_up") == true or NPCKnowledge._structural_health(mate) <= PROTECT_DAMAGE):
+				continue
+			var d: float = enemy.global_position.distance_to(mate.global_position)
+			if d < mate_dist:
+				mate_best = mate
+				mate_dist = d
+		if mate_best != null:
+			return mate_best
+	var best = null
+	var best_dist := INF
+	for entry in enemy.knowledge.known_mechas():
+		var body = entry.body
+		if not _protege_valid(enemy, body):
+			continue
+		var d: float = enemy.global_position.distance_to(entry.position)
+		if d < best_dist:
+			best = body
+			best_dist = d
+	return best
+
+
+func _protege_valid(enemy, body) -> bool:
+	if body == null or not is_instance_valid(body) or body == enemy or body.get("is_dead") == true:
+		return false
+	# A squadmate is known by radio, and worth protecting Flagged or hurt.
+	var squad = enemy.knowledge.squad
+	if squad != null and squad.is_in(body):
+		return body.get("flag_up") == true or NPCKnowledge._structural_health(body) <= PROTECT_DAMAGE
+	if not enemy.knowledge.knows(body) or body.is_in_group("entity"):
+		return false
+	var rel = enemy.get_relationship(body)
+	if rel.is_traitor or rel.hostility >= 0.3:
+		return false
+	return body.get("flag_up") == true or enemy.knowledge.hp_fraction_of(body) <= PROTECT_DAMAGE
+
+
+# Finishing a Flagged mech, in the open: it says so, closes in lit and
+# deliberately, and fires only after the grace window's length has passed
+# since it decided to.
+func do_execute(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target):
+		return
+	_execute_time += dt
+	enemy.current_target = target
+	var pos: Vector2 = enemy.get_target_position(target)
+	enemy.ai_aim_point = pos
+	if not _execute_barked:
+		_execute_barked = true
+		enemy.bark("traitor" if enemy.get_relationship(target).is_traitor else "execute", target)
+		AICombatLog.record_flag("executed")
+	var eff = _get_effective_distances(enemy)
+	var distance: float = enemy.global_position.distance_to(pos)
+	enemy.going_to_position = true
+	point_of_interest = pos
+	enemy.NavAgent.target_position = pos
+	if distance > eff.cqb:
+		enemy.increase_throttle(1, 0.01)
+		enemy.navigate_to_target(dt, 0.0, 0.3, false)
+	else:
+		enemy.decrease_throttle(0, 0.05)
+		enemy.navigate_to_target(dt, 0.0, 0.0, false)
+	if _execute_time >= Mecha.FLAG_GRACE_TIME and distance < eff.max_shoot:
+		enemy.fire.engage(dt, target, enemy.is_seeing(target), eff, _get_self_state(enemy), false)
+	else:
+		enemy.fire.cease()
+
+
+# A Rat's stalk: Flag up, it follows a distracted target round to its back,
+# and lowers the Flag once close behind it; engage takes over when the Flag
+# is down.
+func do_stalk(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target):
+		return
+	if not _stalk_raised:
+		_stalk_raised = true
+		if not enemy.is_flagged():
+			enemy.raise_flag(true)
+	var pos: Vector2 = enemy.get_target_position(target)
+	enemy.ai_aim_point = pos
+	var facing: Vector2 = target.get_facing() if target.has_method("get_facing") else Vector2.ZERO
+	var eff = _get_effective_distances(enemy)
+	var distance: float = enemy.global_position.distance_to(pos)
+	var behind: bool = facing != Vector2.ZERO and facing.dot(pos.direction_to(enemy.global_position)) < -0.3
+	if distance <= eff.cqb and behind and _is_distracted(enemy, target) and not enemy.is_lowering_flag():
+		enemy.lower_flag()
+	if not _tactical_move(dt, enemy, pos, eff.cqb * 0.8, STALK_WEIGHTS, false, Vector2.INF, facing):
+		enemy.going_to_position = false
+
+
+# A Guardian by a Flagged or damaged mech: it stays within PROTECT_RANGE,
+# lit, watching for threats and shooting enemy devices.
+func do_protect(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	if not _protege_valid(enemy, _protege):
+		_protege = _find_protege(enemy)
+		if _protege == null:
 			return
+	var squad = enemy.knowledge.squad
+	var pos: Vector2 = _protege.global_position if squad != null and squad.is_in(_protege) else enemy.knowledge.position_of(_protege)
+	enemy.fire.shoot_devices(dt)
+	_ramp_throttle_full(dt, enemy)
+	if not _tactical_move(dt, enemy, pos, PROTECT_RANGE, PROTECT_WEIGHTS, false):
+		enemy.going_to_position = false
+	shield_check(enemy)
 
-		else:
-			enemy.going_to_position = true
-			point_of_interest = enemy.get_target_position(enemy.valid_target)
-			var eff = _get_effective_distances(enemy)
-			var distance = enemy.global_position.distance_to(point_of_interest)
-			if distance < eff.min_kite:
-				enemy.decrease_throttle(0.25, 0.01)
-				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif distance > eff.max_kite:
-				enemy.decrease_throttle(0.75, 0.01)
-				enemy.navigate_to_target(dt, 0.0, 0.65)
-			else:
-				enemy.decrease_throttle(0, 0.05)
-				enemy.navigate_to_target(dt, 1.0, 0.8)
-			enemy.is_locking = true
-			shield_check(enemy)
 
-func do_defending_lock(dt, enemy):
-	if is_instance_valid(enemy):
-		aiming_at_enemy = false
-		_check_targets(enemy)
-		if not enemy.valid_target:
-			enemy.is_locking = false
-			return
-		
-		else:
-			enemy.going_to_position = true
-			point_of_interest = enemy.get_target_position(enemy.valid_target)
-			var eff = _get_effective_distances(enemy)
-			var distance = enemy.global_position.distance_to(point_of_interest)
-			if distance < eff.min_kite:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 1.0, 0.65)
-			elif distance > eff.max_kite:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 0.0, 0.65)
-			else:
-				enemy.decrease_throttle(0, 0.05)
-				enemy.navigate_to_target(dt, 1.0, 0.8)
-			enemy.is_locking = true	
-			shield_check(enemy)
+# Surrender: the Flag is up and the flight runs; left alone by the pilot it
+# yielded to for SPARE_TIME, it tells Local it was spared. A Rat whose
+# sparer comes close and looks away lowers its Flag again.
+func do_raise_flag(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	do_flee(dt, enemy)
+	_spare_time += dt
+	var sparer = _surrendered_to
+	if is_instance_valid(sparer):
+		if enemy.under_fire_timer > 0 and is_same(enemy.most_recent_attacker, sparer):
+			_spare_hurt = true
+		if not _spared_noted and not _spare_hurt and _spare_time >= SPARE_TIME:
+			_spared_noted = true
+			var local = enemy._local_pilots()
+			if local != null:
+				local.note_spared(enemy, sparer)
+			enemy.bark("spared", sparer)
+		if enemy.personality.type == Personality.Type.RAT and enemy.is_flagged() and not enemy.is_lowering_flag() \
+				and enemy.global_position.distance_to(sparer.global_position) <= FAKE_SURRENDER_RANGE \
+				and sparer.has_method("get_facing") \
+				and sparer.get_facing().dot(sparer.global_position.direction_to(enemy.global_position)) < -0.2:
+			enemy.lower_flag()
+			enemy.valid_target = sparer
+			_flight_over = true
 
-func do_in_combat(_dt, enemy):
-	if is_instance_valid(enemy):
-		shield_check(enemy)
-		if not enemy.current_target:
-			enemy.current_target = enemy.valid_target
-		var state = _get_self_state(enemy)
-		_update_aggression(enemy, state)
+
+# Where the NPC's trouble is: its target where it believes it is, else where
+# it was last attacked from, else where it last took fire from, else here.
+func _threat_position(enemy) -> Vector2:
+	if enemy.valid_target and is_instance_valid(enemy.valid_target):
+		return enemy.get_target_position(enemy.valid_target)
+	if enemy.last_attack_position:
+		return enemy.last_attack_position
+	var fire_positions: Array[Vector2] = enemy.knowledge.recent_fire_positions()
+	if not fire_positions.is_empty():
+		return fire_positions[fire_positions.size() - 1]
+	return enemy.global_position
+
+
+# Searching for a lost target from where it was last seen or heard: the
+# picker keeps the NPC moving round that spot with a view of it, a sweep
+# (Professionals, Hunters) and a drone (Hunters) once, blind and indirect
+# fire at the spot while the memory is fresh.
+func do_search(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	var target = enemy.valid_target
+	if not target or not is_instance_valid(target):
+		return
+	var last: Vector2 = enemy.get_target_position(target)
+	enemy.ai_aim_point = last
+	var type = enemy.personality.type
+	var dir: Vector2 = enemy.global_position.direction_to(last)
+	if not _search_swept and (type == Personality.Type.PROFESSIONAL or type == Personality.Type.HUNTER):
+		_search_swept = true
+		enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing())
+	if not _search_drone and type == Personality.Type.HUNTER:
+		_search_drone = true
+		enemy.fire.launch_drone(last)
+	var eff = _get_effective_distances(enemy)
+	var state = _get_self_state(enemy)
+	if not state.is_hot and not state.no_ammo and not state.low_ammo:
+		enemy.fire.engage(dt, target, false, eff, state, type == Personality.Type.PROFESSIONAL)
+		enemy.fire.blind_fire(target)
+	_ramp_throttle_full(dt, enemy)
+	# Hunters and Professionals follow the trail: the warmest mark near the
+	# spot, a step along its heading, is the next spot to search round.
+	if type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL:
+		_follow_trail(enemy, last)
+	var spot: Vector2 = _trail_point if _trail_point != Vector2.INF else last
+	if not _tactical_move(dt, enemy, spot, SEARCH_RADIUS, SEARCH_WEIGHTS, false, spot):
+		# There: look round somewhere else next.
+		enemy.positioning.request()
+		enemy.going_to_position = false
+	shield_check(enemy)
+
+
+# Heat trails (HeatTrails.marks_near): from the spot the NPC searches round
+# (the last-known position, or the last trail step), the warmest mark
+# within TRAIL_RADIUS gives a heading; the next spot is TRAIL_STEP along it.
+# Once per search it says whether it found a trail.
+func _follow_trail(enemy, last: Vector2) -> void:
+	var trails: HeatTrails = HeatTrails.find(enemy)
+	if trails == null:
+		return
+	var from: Vector2 = _trail_point if _trail_point != Vector2.INF else last
+	if enemy.global_position.distance_to(from) > SEARCH_RADIUS:
+		return
+	var best: Dictionary = {}
+	for mark in trails.marks_near(from, TRAIL_RADIUS):
+		if best.is_empty() or float(mark.warmth) > float(best.warmth):
+			best = mark
+	if best.is_empty():
+		if not _trail_said:
+			_trail_said = true
+			enemy.bark("lost_trail")
+			AICombatLog.record_info("trail_lost")
+		return
+	_trail_point = Vector2(best.position) + Vector2(best.heading) * TRAIL_STEP
+	enemy.positioning.request()
+	if not _trail_found:
+		_trail_found = true
+		_trail_said = true
+		enemy.bark("found_trail")
+		AICombatLog.record_info("trail_found")
+
+
+# Breaking contact: to cover away from the foe, dark, shield up when cool,
+# smoke round itself, a decoy, a mine on the way the foe will come, guns
+# silent until they are cool.
+func do_disengage(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_check_targets(enemy)
+	_disengage_time += dt
+	var foe_pos := _threat_position(enemy)
+	enemy.ai_aim_point = foe_pos
+	enemy.fire.cease()
+	if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
+		enemy.shield_up()
+	if not _disengage_smoke:
+		_disengage_smoke = true
+		enemy.fire.screen_self()
+	if not _disengage_decoy and _disengage_time > 0.5:
+		_disengage_decoy = true
+		enemy.fire.throw_decoy()
+	if not _disengage_mine and _disengage_time > 1.0 and foe_pos != enemy.global_position:
+		_disengage_mine = true
+		enemy.fire.lay_mine(enemy.global_position + enemy.global_position.direction_to(foe_pos) * MINE_LAY_DISTANCE)
+	var eff = _get_effective_distances(enemy)
+	var state = _get_self_state(enemy)
+	var sprint: bool = not state.is_hot
+	if not _tactical_move(dt, enemy, foe_pos, eff.max_kite * 1.5, DISENGAGE_WEIGHTS, sprint):
+		# Nowhere better in reach: back away from the foe.
+		enemy.going_to_position = true
+		point_of_interest = foe_pos
+		enemy.NavAgent.target_position = foe_pos
+		enemy.increase_throttle(1, 0.01)
+		enemy.navigate_to_target(dt, 1.0, 0.65, sprint)
+
 
 func _get_effective_distances(enemy) -> Dictionary:
 	var eff = {
@@ -593,73 +1745,10 @@ func _get_effective_distances(enemy) -> Dictionary:
 
 # --- Self-aware mech state helpers ---
 
-# Frame-memoized: the do_* combat methods and the flee transition edges both
-# need this snapshot, and computing it walks the weapon slots + components
-# dict. Callers only read the returned Dictionary, so sharing one instance
-# per physics frame is safe.
-var _self_state_cache = null
-var _self_state_frame := -1
-
+# The NPC's own condition (NPCKnowledge.self_state), with this behaviour's
+# heat thresholds. Frame-cached there.
 func _get_self_state(enemy) -> Dictionary:
-	var frame = Engine.get_physics_frames()
-	if _self_state_frame == frame and _self_state_cache != null:
-		return _self_state_cache
-	_self_state_frame = frame
-	_self_state_cache = _compute_self_state(enemy)
-	return _self_state_cache
-
-
-func _compute_self_state(enemy) -> Dictionary:
-	# Returns a snapshot of the AI's own condition for decision-making
-	var state = {
-		"heat_ratio": 0.0,
-		"is_overheating": false,
-		"is_hot": false,
-		"weapons_working": 0,
-		"weapons_total": 0,
-		"low_ammo": false,
-		"no_ammo": false,
-		"mobility_damaged": false,
-		"sensors_damaged": false,
-	}
-
-	# Heat
-	if enemy.overheat_temp > 0:
-		var worst_heat = maxf(enemy.internal_temp, enemy.external_temp)
-		state.heat_ratio = worst_heat / enemy.overheat_temp
-		state.is_overheating = state.heat_ratio >= general_heat_threshold
-		state.is_hot = state.heat_ratio >= weapon_heat_threshold
-
-	# Weapons and ammo
-	var weapon_slots = ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]
-	var disabled_keys = ["left_arm_weapon", "right_arm_weapon", "left_shoulder_weapon", "right_shoulder_weapon"]
-	var any_has_ammo = false
-	var any_low_ammo = false
-	for i in weapon_slots.size():
-		var node = enemy.get_weapon_part(weapon_slots[i])
-		if node and not enemy.disabled_systems[disabled_keys[i]]:
-			state.weapons_total += 1
-			state.weapons_working += 1
-			var max_ammo = enemy.get_max_ammo(weapon_slots[i])
-			var total_ammo = enemy.get_total_ammo(weapon_slots[i])
-			if typeof(max_ammo) != TYPE_BOOL and typeof(total_ammo) != TYPE_BOOL:
-				if total_ammo > 0:
-					any_has_ammo = true
-				if max_ammo > 0 and float(total_ammo) / float(max_ammo) < 0.25:
-					any_low_ammo = true
-			else:
-				any_has_ammo = true  # battery/melee = unlimited
-		elif node:
-			state.weapons_total += 1
-
-	state.low_ammo = any_low_ammo
-	state.no_ammo = state.weapons_working > 0 and not any_has_ammo
-
-	# Systems
-	state.mobility_damaged = enemy.disabled_systems.mobility < 0.8
-	state.sensors_damaged = enemy.disabled_systems.sensors < 0.8
-
-	return state
+	return enemy.knowledge.self_state(weapon_heat_threshold, general_heat_threshold)
 
 
 func _self_state_aggression_mod(state: Dictionary) -> float:
@@ -695,6 +1784,15 @@ func _check_targets(enemy) -> void:
 	var eff = _get_effective_distances(enemy)
 	var engage = maxf(_effective_engage_distance(enemy), eff.max_kite * enemy.disabled_systems.sensors)
 	enemy.check_for_targets(engage, maxf(max_shooting_distance, eff.max_shoot))
+	# The player's attack order: its target, once the callout has landed
+	# (fairness: the squad contact), over whatever the threat scores said.
+	var squad = enemy.knowledge.squad
+	if squad != null and squad.order == "attack":
+		var ordered = squad.order_target
+		if is_instance_valid(ordered) and not ordered.is_dead and not is_same(enemy.valid_target, ordered) \
+				and enemy.knowledge.knows(ordered) and enemy.should_attack(ordered):
+			enemy.valid_target = ordered
+			enemy.positioning.request()
 
 
 func _should_flee(enemy) -> bool:
@@ -712,7 +1810,8 @@ func _should_flee(enemy) -> bool:
 	# courage 0.0 -> flee at 40% health
 	# courage 0.5 -> flee at 25% health
 	# courage 1.0 -> flee at 10% health
-	var flee_threshold = lerpf(0.4, 0.1, enemy.personality.courage)
+	# Panic raises it by up to PANIC_FLEE_HEALTH.
+	var flee_threshold = lerpf(0.4, 0.1, enemy.personality.courage) + enemy.knowledge.panic * PANIC_FLEE_HEALTH
 	var health = _structural_health(enemy)
 	if health < flee_threshold:
 		return true
@@ -720,7 +1819,19 @@ func _should_flee(enemy) -> bool:
 	return false
 
 
+func _container_usable(container) -> bool:
+	return container != null and is_instance_valid(container) and not container.is_open and not container.npc_searched
+
+
+# The nearest unsearched container within the NPC's search range, or null.
+# The scene scan is refreshed every SCAN_INTERVAL s.
 func _find_loot_target(enemy):
+	var now: float = enemy.knowledge.now()
+	if now - _loot_scan_time < SCAN_INTERVAL and _container_usable(_loot_found):
+		return _loot_found
+	if now - _loot_scan_time < SCAN_INTERVAL and _loot_found == null:
+		return null
+	_loot_scan_time = now
 	var containers = enemy.get_tree().get_nodes_in_group("loot_container")
 	var best = null
 	var best_dist = INF
@@ -733,106 +1844,194 @@ func _find_loot_target(enemy):
 		search_range = 1500.0
 
 	for container in containers:
-		if not is_instance_valid(container):
-			continue
-		if container.is_open or container.npc_searched:
+		if not _container_usable(container):
 			continue
 		var dist = enemy.global_position.distance_to(container.global_position)
 		if dist < search_range and dist < best_dist:
 			best = container
 			best_dist = dist
 
+	_loot_found = best
 	return best
 
 
-func do_attack(dt, enemy):
-	if is_instance_valid(enemy):
-		# Mid-combat threat re-evaluation (interval-gated inside Enemy) — a
-		# flanker shooting us can displace the duel partner. A hard lock-on
-		# keeps priority over threat switching. is_same, not !=: current_target
-		# is false after a Flagged target is dropped
-		# (Enemy.recheck_flagged_target), and != can't compare an Object with
-		# a bool.
-		_check_targets(enemy)
-		if not enemy.get_locked_to() and enemy.valid_target \
-				and not is_same(enemy.valid_target, enemy.current_target):
-			enemy.current_target = enemy.valid_target
-			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
-		if not is_instance_valid(enemy.current_target):
+# The engage intent: close in and lock on, then fight in the attack or defend
+# stance.
+func do_engage(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	# Mid-combat threat re-evaluation (interval-gated inside Enemy) — a
+	# flanker shooting us can displace the duel partner. A hard lock-on
+	# keeps priority over threat switching. is_same, not !=: current_target
+	# is false after a Flagged target is dropped
+	# (Enemy.recheck_flagged_target), and != can't compare an Object with
+	# a bool.
+	_check_targets(enemy)
+	if not enemy.valid_target:
+		enemy.is_locking = false
+		return
+	var eff = _get_effective_distances(enemy)
+	if stance == "closing":
+		if enemy.get_locked_to() or _in_combat_range(enemy):
+			_start_fight(enemy)
+		else:
+			_close_in(dt, enemy, eff)
 			return
-		stance_time += dt
-		var target = enemy.current_target
-		# In sight: lead the target so our weapons track its movement (see
-		# compute_lead_point). Out of sight: face where it was last seen or
-		# heard, ready to fire blind or as it reappears.
-		var seen: bool = enemy.is_seeing(target)
-		var target_pos: Vector2 = enemy.get_target_position(target)
-		if seen and enemy.can_see_target(target):
-			enemy.ai_aim_point = enemy.compute_lead_point(target)
+	if not enemy.get_locked_to() and enemy.valid_target \
+			and not is_same(enemy.valid_target, enemy.current_target):
+		enemy.current_target = enemy.valid_target
+		reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
+	if not is_instance_valid(enemy.current_target):
+		return
+	stance_time += dt
+	var state = _get_self_state(enemy)
+	_update_aggression(enemy, state)
+	# Stance hysteresis: see STANCE_HYSTERESIS.
+	if stance == "attack" and stance_time >= STANCE_MIN_DWELL and aggression <= -STANCE_HYSTERESIS:
+		stance = "defend"
+		stance_time = 0.0
+	elif stance == "defend" and stance_time >= STANCE_MIN_DWELL and aggression >= STANCE_HYSTERESIS:
+		stance = "attack"
+		stance_time = 0.0
+	# The support member may need to turn to cover a mate (_cover_aim).
+	_support_cover(enemy)
+	if stance == "attack":
+		_do_attack(dt, enemy, eff, state)
+	else:
+		_do_defend(dt, enemy, eff, state)
+
+
+# Commit to a target: the fight starts. Lock takes precedence over
+# proximity sighting. The first stance is a plain sign check on aggression.
+func _start_fight(enemy) -> void:
+	if enemy.get_locked_to():
+		enemy.current_target = enemy.get_locked_to()
+	else:
+		enemy.current_target = enemy.valid_target
+	if enemy.current_target and is_instance_valid(enemy.current_target):
+		AICombatLog.record_engage(enemy.global_position.distance_to(enemy.get_target_position(enemy.current_target)))
+	shield_check(enemy)
+	_update_aggression(enemy, _get_self_state(enemy))
+	stance = "attack" if aggression > 0 else "defend"
+	stance_time = 0.0
+
+
+# Closing in on a target out of range: lock on and move to kite range. Under
+# fire it drives at full throttle (the old defending_lock); unseen, it eases
+# the throttle to approach quietly (the old ambush_lock). Before pushing on a
+# target it can't see far off, it puts a flare out there, if it has one.
+func _close_in(dt, enemy, eff: Dictionary) -> void:
+	aiming_at_enemy = false
+	enemy.going_to_position = true
+	point_of_interest = enemy.get_target_position(enemy.valid_target)
+	var distance = enemy.global_position.distance_to(point_of_interest)
+	var under_fire: bool = enemy.under_fire_timer > 0
+	if not _flare_used and distance > FLARE_PUSH_DISTANCE and not enemy.is_seeing(enemy.valid_target):
+		_flare_used = true
+		enemy.fire.fire_flare(point_of_interest)
+	if distance < eff.min_kite:
+		if under_fire:
+			enemy.increase_throttle(1, 0.01)
 		else:
-			enemy.ai_aim_point = target_pos
-		var distance: float = enemy.global_position.distance_to(target_pos)
-		var eff = _get_effective_distances(enemy)
-		var state = _get_self_state(enemy)
-		if enemy.is_shielding:
-			enemy.shield_down()
-
-		# Shooting: check heat, ammo, distance, reaction time
-		var can_fire = reaction_timer >= reaction_speed \
-			and distance < eff.max_shoot \
-			and not state.is_hot \
-			and not state.no_ammo
-		# Low ammo: conserve — only fire at close range, and never blind
-		if state.low_ammo and (distance > eff.cqb or not seen):
-			can_fire = false
-		if can_fire:
-			if seen:
-				enemy.shoot_weapons(target)
-			else:
-				enemy.blind_fire(target)
+			enemy.decrease_throttle(0.25, 0.01)
+		enemy.navigate_to_target(dt, 1.0, 0.65)
+	elif distance > eff.max_kite:
+		if under_fire:
+			enemy.increase_throttle(1, 0.01)
 		else:
-			reaction_timer += dt
+			enemy.decrease_throttle(0.75, 0.01)
+		enemy.navigate_to_target(dt, 0.0, 0.65)
+	else:
+		enemy.decrease_throttle(0, 0.05)
+		enemy.navigate_to_target(dt, 1.0, 0.8)
+	enemy.is_locking = true
+	shield_check(enemy)
 
-		_update_aggression(enemy, state)
-		enemy.going_to_position = true
 
-		if seen:
-			point_of_interest = target_pos
-			aiming_at_enemy = true
+func _do_attack(dt, enemy, eff: Dictionary, state: Dictionary) -> void:
+	var target = enemy.current_target
+	# In sight: lead the target so our weapons track its movement (see
+	# compute_lead_point). Out of sight: face where it was last seen or
+	# heard, ready to fire blind or as it reappears.
+	var seen: bool = enemy.is_seeing(target)
+	var target_pos: Vector2 = enemy.get_target_position(target)
+	if _cover_aim != null:
+		enemy.ai_aim_point = _cover_aim
+	elif seen and enemy.can_see_target(target):
+		enemy.ai_aim_point = enemy.compute_lead_point(target)
+	else:
+		enemy.ai_aim_point = target_pos
+	var distance: float = enemy.global_position.distance_to(target_pos)
+	if enemy.is_shielding:
+		enemy.shield_down()
+	_note_sight(enemy, seen)
+
+	# Shooting: check heat, ammo, distance, reaction time
+	var can_fire = reaction_timer >= reaction_speed \
+		and distance < eff.max_shoot \
+		and not state.is_hot \
+		and not state.no_ammo
+	# Low ammo: conserve — only fire at close range, and never blind
+	if state.low_ammo and (distance > eff.cqb or not seen):
+		can_fire = false
+	if can_fire:
+		_fire(dt, enemy, target, seen, eff, state)
+	else:
+		enemy.fire.cease()
+		reaction_timer += dt
+
+	# The support member stands and turns to put smoke on a mate.
+	if _cover_aim != null:
+		_turn_to_cover(dt, enemy)
+		return
+
+	enemy.going_to_position = true
+
+	if seen:
+		point_of_interest = target_pos
+		aiming_at_enemy = true
+	else:
+		_search(enemy, target_pos)
+
+	# Don't sprint when hot — sprinting generates heat
+	var allow_sprint = not state.is_hot
+
+	# A better spot (range, cover, a line of fire; the flank, for a squad's
+	# flanker): go there; otherwise the kite bands round the foe.
+	var anchor := _anchor_position(enemy)
+	_note_flank(enemy, target_pos, anchor)
+	if seen and _tactical_move(dt, enemy, target_pos, (eff.min_kite + eff.max_kite) * 0.5,
+			FLANK_WEIGHTS if anchor != Vector2.INF else ENGAGE_WEIGHTS, allow_sprint, Vector2.INF, Vector2.ZERO, anchor):
+		return
+
+	if enemy.get_locked_to() and aiming_at_enemy and reaction_timer >= reaction_speed:
+		if distance < eff.min_kite:
+			enemy.increase_throttle(1, 0.01)
+			enemy.navigate_to_target(dt, 1.0, 0.65, allow_sprint)
+		elif distance > eff.max_kite:
+			enemy.increase_throttle(1, 0.01)
+			enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
 		else:
-			_search(enemy, target_pos)
-
-		# Don't sprint when hot — sprinting generates heat
-		var allow_sprint = not state.is_hot
-
-		if enemy.get_locked_to() and aiming_at_enemy and reaction_timer >= reaction_speed:
-			if distance < eff.min_kite:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 1.0, 0.65, allow_sprint)
-			elif distance > eff.max_kite:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
-			else:
-				enemy.decrease_throttle(0, 0.05)
-				enemy.navigate_to_target(dt, 1.0, 0.8)
-		elif aiming_at_enemy and reaction_timer >= reaction_speed:
-			if distance > eff.cqb:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
-			else:
-				enemy.increase_throttle(1, 0.01)
-				enemy.navigate_to_target(dt, 1.0, 0.65)
+			enemy.decrease_throttle(0, 0.05)
+			enemy.navigate_to_target(dt, 1.0, 0.8)
+	elif aiming_at_enemy and reaction_timer >= reaction_speed:
+		if distance > eff.cqb:
+			enemy.increase_throttle(1, 0.01)
+			enemy.navigate_to_target(dt, 0.0, 0.65, allow_sprint)
 		else:
 			enemy.increase_throttle(1, 0.01)
-			enemy.navigate_to_target(dt, 0.0, 0.65)
+			enemy.navigate_to_target(dt, 1.0, 0.65)
+	else:
+		enemy.increase_throttle(1, 0.01)
+		enemy.navigate_to_target(dt, 0.0, 0.65)
 
-		if point_of_interest:
-			if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
-				enemy.NavAgent.target_position = point_of_interest
+	if point_of_interest:
+		if enemy.global_position.distance_to(point_of_interest) > POSITIONAL_ACCURACY:
+			enemy.NavAgent.target_position = point_of_interest
 
-		if enemy.NavAgent.is_navigation_finished():
-			enemy.going_to_position = false
-			point_of_interest = false
+	if enemy.arrived():
+		enemy.going_to_position = false
+		point_of_interest = false
 
 
 # Out of sight: go to where the target was last seen or heard, then look
@@ -850,39 +2049,39 @@ func _search(enemy, last_known: Vector2) -> void:
 		else:
 			point_of_interest = enemy.get_random_point_on_radius(last_known, SEARCH_RADIUS)
 
-func do_defend(dt, enemy):
-	if is_instance_valid(enemy):
-		# Same mid-combat threat re-evaluation as do_attack.
-		_check_targets(enemy)
-		if not enemy.get_locked_to() and enemy.valid_target \
-				and not is_same(enemy.valid_target, enemy.current_target):
-			enemy.current_target = enemy.valid_target
-			reaction_timer = 0.0  # re-acquiring: brief aim delay on the new target
-		if not is_instance_valid(enemy.current_target):
-			return
-		stance_time += dt
-		var target = enemy.current_target
-		# Aim as in do_attack: lead it in sight, face its last-known spot out
-		# of sight. Defending holds range from where it is believed to be.
-		var seen: bool = enemy.is_seeing(target)
-		var target_pos: Vector2 = enemy.get_target_position(target)
-		if seen and enemy.can_see_target(target):
-			enemy.ai_aim_point = enemy.compute_lead_point(target)
-		else:
-			enemy.ai_aim_point = target_pos
-		var distance: float = enemy.global_position.distance_to(target_pos)
-		var eff = _get_effective_distances(enemy)
-		var state = _get_self_state(enemy)
-		shield_check(enemy)
-		enemy.going_to_position = true
-		_update_aggression(enemy, state)
-		point_of_interest = target_pos
 
-		# Overheating or out of ammo: retreat harder to create distance
-		var retreat_mult = 1.0
-		if state.is_overheating or state.no_ammo:
-			retreat_mult = 1.5
+func _do_defend(dt, enemy, eff: Dictionary, state: Dictionary) -> void:
+	var target = enemy.current_target
+	# Aim as in attack: lead it in sight, face its last-known spot out of
+	# sight. Defending holds range from where it is believed to be.
+	var seen: bool = enemy.is_seeing(target)
+	var target_pos: Vector2 = enemy.get_target_position(target)
+	if _cover_aim != null:
+		enemy.ai_aim_point = _cover_aim
+	elif seen and enemy.can_see_target(target):
+		enemy.ai_aim_point = enemy.compute_lead_point(target)
+	else:
+		enemy.ai_aim_point = target_pos
+	var distance: float = enemy.global_position.distance_to(target_pos)
+	shield_check(enemy)
+	enemy.going_to_position = true
+	point_of_interest = target_pos
+	_note_sight(enemy, seen)
 
+	# Overheating or out of ammo: retreat harder to create distance
+	var retreat_mult = 1.0
+	if state.is_overheating or state.no_ammo:
+		retreat_mult = 1.5
+
+	# A covered spot at the far edge of the band beats plain kiting (the
+	# flank for a squad's flanker). The support member turning to put smoke
+	# on a mate stands.
+	var anchor := _anchor_position(enemy)
+	_note_flank(enemy, target_pos, anchor)
+	if _cover_aim != null:
+		_turn_to_cover(dt, enemy)
+	elif not (seen and retreat_mult == 1.0 and _tactical_move(dt, enemy, target_pos, eff.max_kite,
+			FLANK_WEIGHTS if anchor != Vector2.INF else DEFEND_WEIGHTS, false, Vector2.INF, Vector2.ZERO, anchor)):
 		if distance < eff.max_kite * retreat_mult:
 			enemy.increase_throttle(1, 0.01)
 			enemy.navigate_to_target(dt, 1.0, 0.65)  # retreat when too close
@@ -890,78 +2089,298 @@ func do_defend(dt, enemy):
 			enemy.decrease_throttle(0, 0.05)
 			enemy.navigate_to_target(dt, 0.0, 0.8)  # approach to kite range
 
-		if seen:
-			aiming_at_enemy = true
-		elif aiming_at_enemy:
-			# Just lost sight: half a reaction to re-aim at the last-known spot.
-			aiming_at_enemy = false
-			reaction_timer = minf(reaction_timer, reaction_speed * 0.5)
+	if seen:
+		aiming_at_enemy = true
+	elif aiming_at_enemy:
+		# Just lost sight: half a reaction to re-aim at the last-known spot.
+		aiming_at_enemy = false
+		reaction_timer = minf(reaction_timer, reaction_speed * 0.5)
 
-		# Only shoot if not overheating and have ammo
-		var can_fire = not state.is_hot and not state.no_ammo
-		# Low ammo: conserve — only fire at close range, and never blind
-		if state.low_ammo and (distance > eff.cqb or not seen):
-			can_fire = false
+	# Only shoot if not overheating and have ammo
+	var can_fire = not state.is_hot and not state.no_ammo
+	# Low ammo: conserve — only fire at close range, and never blind
+	if state.low_ammo and (distance > eff.cqb or not seen):
+		can_fire = false
 
-		if can_fire and distance < eff.max_kite:
-			if reaction_timer >= reaction_speed:
-				if seen:
-					enemy.shoot_weapons(target)
-				else:
-					enemy.blind_fire(target)
-			else:
-				reaction_timer += dt
-
-
-func do_flee(dt, enemy):
-	if is_instance_valid(enemy):
-		# Run away from the most recent attacker or last known threat
-		var flee_from = null
-		if enemy.most_recent_attacker and is_instance_valid(enemy.most_recent_attacker):
-			flee_from = enemy.most_recent_attacker.global_position
-		elif enemy.last_attack_position:
-			flee_from = enemy.last_attack_position
-
-		# Shield up while fleeing
-		if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
-			enemy.shield_up()
-
-		enemy.increase_throttle(1, 0.01)
-
-		if flee_from:
-			var away_dir = (enemy.global_position - flee_from).normalized()
-			var flee_target = enemy.global_position + away_dir * 2000
-			if not enemy.going_to_position or enemy.global_position.distance_to(point_of_interest) < POSITIONAL_ACCURACY:
-				point_of_interest = flee_target
-				enemy.going_to_position = true
-				enemy.NavAgent.target_position = flee_target
-			enemy.navigate_to_target(dt, 0.0, 0.3, true)
+	if can_fire and distance < eff.max_kite:
+		if reaction_timer >= reaction_speed:
+			_fire(dt, enemy, target, seen, eff, state)
 		else:
-			if not enemy.going_to_position:
-				point_of_interest = enemy.arena.get_random_position()
-				enemy.going_to_position = true
-				enemy.NavAgent.target_position = point_of_interest
-			enemy.navigate_to_target(dt, 0.0, 0.3, true)
+			reaction_timer += dt
+	else:
+		enemy.fire.cease()
 
-		if enemy.NavAgent.is_navigation_finished():
-			enemy.going_to_position = false
-			point_of_interest = false
 
-		# Drop combat targets
-		enemy.valid_target = false
-		enemy.current_target = false
-		enemy.is_locking = false
+# Every shot of a fight goes through the fire controller: the guns, the
+# skillshots, the lock-on and indirect weapons; a Professional holds fire on
+# a poor shot. Out of sight, blind fire at the last-known spot too.
+func _fire(dt, enemy, target, seen: bool, eff: Dictionary, state: Dictionary) -> void:
+	var disciplined: bool = enemy.personality.type == Personality.Type.PROFESSIONAL
+	enemy.fire.engage(dt, target, seen, eff, state, disciplined)
+	if not seen:
+		enemy.fire.blind_fire(target)
+
+
+# Losing or regaining sight of the target is an event for the picker.
+func _note_sight(enemy, seen: bool) -> void:
+	if seen != _was_seen:
+		_was_seen = seen
+		enemy.positioning.request()
+
+
+## SQUAD HELPERS ##
+
+# Where the squad's anchor stands, for a flanker: Vector2.INF for anyone
+# else, or when the anchor is this NPC or gone. The anchor moving a good way
+# since the flanker's last pick is an event for the picker (the flank is
+# measured off the anchor), like the foe moving.
+func _anchor_position(enemy) -> Vector2:
+	var squad = enemy.knowledge.squad
+	if squad == null or squad.role_of(enemy) != Squad.ROLE_FLANKER:
+		return Vector2.INF
+	var anchor = squad.anchor()
+	if anchor == null or is_same(anchor, enemy):
+		return Vector2.INF
+	var at: Vector2 = anchor.global_position
+	if _anchor_at_pick == null or at.distance_to(_anchor_at_pick) > Positioning.MOVE_REPICK:
+		_anchor_at_pick = at
+		enemy.positioning.request()
+	return at
+
+
+# The flanker reaching its angle off the anchor's bearing to the foe, once
+# per fight, for the log.
+func _note_flank(enemy, foe_pos: Vector2, anchor: Vector2) -> void:
+	if _flank_reached or anchor == Vector2.INF:
+		return
+	if flank_angle(enemy.global_position, foe_pos, anchor) >= Squad.FLANK_ANGLE:
+		_flank_reached = true
+		AICombatLog.record_squad("flank_reached")
+
+
+## The angle (rad) between the anchor's bearing to the foe and `from`'s.
+static func flank_angle(from: Vector2, foe_pos: Vector2, anchor: Vector2) -> float:
+	if from.distance_squared_to(foe_pos) < 1.0 or anchor.distance_squared_to(foe_pos) < 1.0:
+		return 0.0
+	return absf(foe_pos.direction_to(anchor).angle_to(foe_pos.direction_to(from)))
+
+
+# Standing still, turning the body toward the cover point (_cover_aim) until
+# the launcher's gimbal reaches it: the usual turn (Mecha.apply_rotation_by_
+# point, which slows as it closes) but never under COVER_TURN_RATE deg/s, so
+# the last degrees don't take seconds.
+func _turn_to_cover(dt, enemy) -> void:
+	enemy.going_to_position = false
+	point_of_interest = false
+	if enemy.is_sprinting:
+		enemy.stop_sprinting(enemy.get_facing())
+	enemy.apply_movement(dt, Vector2.ZERO)
+	enemy.apply_rotation_by_point(dt, _cover_aim, true)
+	var target_rot: float = rad_to_deg(enemy.global_position.angle_to_point(_cover_aim)) + 90.0
+	var diff: float = enemy.get_best_rotation_diff(enemy.rotation_degrees, target_rot)
+	var step: float = maxf(absf(diff) * enemy.rotation_acc * dt, minf(absf(diff), COVER_TURN_RATE * dt))
+	enemy.rotation_degrees += signf(diff) * step
+
+
+# The support member screens a squadmate that is breaking off (disengaging,
+# fleeing or surrendering) with smoke, at most every SUPPORT_COVER_COOLDOWN.
+func _support_cover(enemy) -> void:
+	_cover_aim = null
+	var squad = enemy.knowledge.squad
+	if squad == null or squad.role_of(enemy) != Squad.ROLE_SUPPORT:
+		return
+	if enemy.knowledge.now() < _cover_ok_at or not enemy.fire.has_role("smoke"):
+		return
+	for mate in squad.mates_of(enemy):
+		if mate.get("logic") == null:
+			continue
+		var state := str(mate.logic.get_current_state())
+		if state != "disengage" and state != "flee" and state != "raise_flag":
+			continue
+		if enemy.global_position.distance_to(mate.global_position) > SUPPORT_COVER_RANGE:
+			continue
+		# On the mate, or as far toward it as the launcher reaches.
+		var point: Vector2 = enemy.fire.reach_toward(mate.global_position)
+		if enemy.fire.screen_at(point):
+			_cover_ok_at = enemy.knowledge.now() + SUPPORT_COVER_COOLDOWN
+			AICombatLog.record_squad("covered")
+			squad.callout(enemy, "covering", mate)
+			return
+		# The launcher's gimbal can't reach: turn to the mate for a moment
+		# (the stance's aim defers to _cover_aim).
+		if enemy.fire.cover_blocked_by_facing(point):
+			_cover_aim = point
+			return
+	_cover_aim = null
+
+
+# A squadmate died (Enemy.on_squadmate_died). A treacherous Rat leaves the
+# squad, turning on a mate that is hurt or Flagged on the way out, and cashes
+# out. The leader's death is judged by loyalty: low, with little courage, it
+# breaks and flees; high, it hunts the killer; between, it fights on.
+func on_mate_died(enemy, _member, killer, was_leader: bool) -> void:
+	var p: Personality = enemy.personality
+	var squad = enemy.knowledge.squad
+	if squad == null:
+		return
+	if p.type == Personality.Type.RAT and p.treachery > BETRAY_TREACHERY:
+		var turned := false
+		for mate in squad.mates_of(enemy):
+			if mate.is_flagged() or _structural_health(mate) <= BETRAY_HEALTH:
+				enemy.add_hostility(mate, 1.0)
+				turned = true
+		squad.remove(enemy)
+		AICombatLog.record_squad("betrayed" if turned else "abandoned")
+		if not turned:
+			_cash_out = true
+		return
+	if not was_leader:
+		return
+	if p.loyalty < LOYALTY_FLEE and p.courage < LOYALTY_FLEE_COURAGE:
+		AICombatLog.record_squad("broke")
+		if not enemy.is_flagged():
+			enemy.logic.force_intent(enemy, "flee")
+	elif p.loyalty >= LOYALTY_AVENGE and is_instance_valid(killer) and not killer.is_dead \
+			and not squad.is_member(killer):
+		AICombatLog.record_squad("avenge")
+		enemy.add_hostility(killer, 1.0)
+		# The dying mate's last call: where its killer was.
+		enemy._remember(killer, killer.global_position)
+	else:
+		AICombatLog.record_squad("held")
+
+
+# The flight: away from every known threat toward the exit that doesn't take
+# it past them, dark, sprinting while its heat allows, shield up when cool,
+# with smoke and a decoy if it has them, never stopping to fight. It ends
+# when the threats are far and it has been left alone for a while, or when
+# the NPC extracts.
+func do_flee(dt, enemy):
+	if not is_instance_valid(enemy):
+		return
+	_flee_time += dt
+	_flee_exit_timer -= dt
+	var threats := _flee_threats(enemy)
+
+	# Left alone: no hit and no threat in sight.
+	var threat_seen := false
+	for entry in enemy.knowledge.known_mechas():
+		if entry.live and _is_threat(enemy, entry.body):
+			threat_seen = true
+			break
+	if enemy.under_fire_timer > 0 or threat_seen:
+		_flee_calm = 0.0
+	else:
+		_flee_calm += dt
+	var far := true
+	for pos in threats:
+		if enemy.global_position.distance_to(pos) < FLEE_SAFE_DISTANCE:
+			far = false
+			break
+	var safe_time := FLEE_SAFE_TIME
+	var flagged: bool = enemy.is_exposed or enemy.is_flagged()
+	if not flagged:
+		safe_time *= lerpf(1.5, 0.5, enemy.personality.courage)
+	if far and _flee_calm >= safe_time:
+		_flight_over = true
+		var exit = _find_nearest_exit(enemy)
+		_leave_after_flight = flagged or (exit != null \
+				and enemy.global_position.distance_to(exit.global_position) < FLEE_EXTRACT_RANGE)
+		return
+
+	# Shield up while fleeing
+	if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
+		enemy.shield_up()
+	enemy.increase_throttle(1, 0.01)
+
+	# Tools: smoke round itself, a decoy, once each per flight.
+	if not _flee_smoke_used and _flee_time > 0.3:
+		_flee_smoke_used = true
+		enemy.fire.screen_self()
+	if not _flee_decoy_used and _flee_time > 0.6:
+		_flee_decoy_used = true
+		enemy.fire.throw_decoy()
+
+	# Where to: the exit away from the threats, picked again now and then, or
+	# a point past them when the map has no exit.
+	if _flee_point == null or _flee_exit_timer <= 0.0 \
+			or enemy.global_position.distance_to(_flee_point) < POSITIONAL_ACCURACY:
+		_flee_exit_timer = FLEE_EXIT_REPICK_TIME
+		_flee_point = _flee_destination(enemy, threats)
+	point_of_interest = _flee_point
+	enemy.going_to_position = true
+	enemy.NavAgent.target_position = _flee_point
+	var sprint: bool = enemy.heat_ratio() < enemy.SPRINT_HEAT_STOP
+	enemy.navigate_to_target(dt, 0.0, 0.3, sprint)
+
+	# Never a fight.
+	enemy.valid_target = false
+	enemy.current_target = false
+	enemy.is_locking = false
+
+
+# Where the known threats are: every mecha the NPC holds a grudge against or
+# was last attacked by, where it believes they are, plus where it took fire
+# from lately, plus creatures it knows of.
+func _flee_threats(enemy) -> Array[Vector2]:
+	var found: Array[Vector2] = []
+	for entry in enemy.knowledge.known_mechas():
+		if _is_threat(enemy, entry.body):
+			found.append(entry.position)
+	for contact in enemy.knowledge.contacts.query({"live": true}):
+		if contact.kind != "mech" and contact.source == "sight":
+			found.append(contact.position)
+	for pos in enemy.knowledge.recent_fire_positions():
+		found.append(pos)
+	return found
+
+
+func _is_threat(enemy, body) -> bool:
+	if is_same(body, enemy.most_recent_attacker):
+		return true
+	return enemy.get_relationship(body).hostility > 0.0
+
+
+# The exit whose way lies furthest from the threats' bearings (nearest on a
+# tie), or with no exit a point FLEE_RUN_DISTANCE px straight away from them.
+func _flee_destination(enemy, threats: Array[Vector2]) -> Vector2:
+	var pos: Vector2 = enemy.global_position
+	var exits := _find_exits(enemy)
+	if not exits.is_empty():
+		var best = null
+		var best_angle := -1.0
+		var best_dist := INF
+		for exit in exits:
+			var to_exit: Vector2 = exit.global_position - pos
+			var angle := PI
+			for threat in threats:
+				var to_threat := threat - pos
+				if to_threat.length_squared() > 1.0 and to_exit.length_squared() > 1.0:
+					angle = minf(angle, absf(to_exit.angle_to(to_threat)))
+			var dist := to_exit.length()
+			if angle > best_angle + 0.01 or (absf(angle - best_angle) <= 0.01 and dist < best_dist):
+				best = exit
+				best_angle = angle
+				best_dist = dist
+		if best != null:
+			return best.global_position
+	var away := Vector2.ZERO
+	for threat in threats:
+		var from_threat := pos - threat
+		var dist := from_threat.length()
+		if dist > 1.0:
+			away += from_threat / dist / maxf(dist, 1.0)
+	if away.length_squared() < 0.000001:
+		away = Vector2.from_angle(enemy.global_rotation - PI * 0.5)
+		if _flee_point != null:
+			away = pos - _flee_point if pos != _flee_point else away
+	return pos + away.normalized() * FLEE_RUN_DISTANCE
 
 
 func do_loot(dt, enemy):
 	if is_instance_valid(enemy):
 		_check_targets(enemy)
-		if target_container == null or not is_instance_valid(target_container):
-			target_container = null
-			return
-
-		# If container got opened by someone else, give up
-		if target_container.is_open:
+		if not _container_usable(target_container):
 			target_container = null
 			return
 
@@ -976,18 +2395,43 @@ func do_loot(dt, enemy):
 				enemy.increase_throttle(false, dt / THROTTLE_CHANGE_TIME)
 			enemy.navigate_to_target(dt, 0.0, 0.0, false)
 		else:
-			# Close enough — interact
+			# Close enough: a ward to watch its back, then search the crate.
+			if not _loot_ward:
+				_loot_ward = true
+				enemy.fire.place_ward()
 			if target_container.has_method("interact"):
 				target_container.interact(enemy)
+				_read_kill_record(enemy, target_container)
 				times_looted += 1
+				# Greedy NPCs cash out after a successful loot: greed 0.0
+				# never, greed 1.0 always.
+				if randf() < enemy.personality.greed:
+					_cash_out = true
 			target_container = null
 			enemy.going_to_position = false
 			point_of_interest = false
 
-		if enemy.NavAgent.is_navigation_finished():
+		if enemy.arrived():
 			enemy.going_to_position = false
 
 
+# A wreck's kill record (Wreck.kill_record), read on opening it: a fallen
+# squadmate's names its killer, and the whole squad bears the grudge.
+func _read_kill_record(enemy, container) -> void:
+	var record = container.get("kill_record")
+	if not (record is Dictionary) or record.is_empty():
+		return
+	var squad = enemy.knowledge.squad
+	if squad != null and squad.is_fallen(str(record.get("victim", ""))):
+		squad.learn_killer(record)
+	else:
+		# Anyone's wreck: the name is learnt, no grudge.
+		enemy.knowledge.learn_killer(record, false)
+
+
+# Leaving: path to the nearest exit. Flagged, it goes carefully: no sprint,
+# and dark (wants_illuminator). Walking into the exit area is what triggers
+# extraction (the host scene's signal handler calls enemy.extracting()).
 func do_extract(dt, enemy):
 	if not is_instance_valid(enemy):
 		return
@@ -996,7 +2440,7 @@ func do_extract(dt, enemy):
 	if target_exit == null or not is_instance_valid(target_exit):
 		target_exit = _find_nearest_exit(enemy)
 		if target_exit == null:
-			# No exits available — extract_to_roam transition will catch this next tick.
+			# No exits available — score_extract drops to 0 next evaluation.
 			return
 
 	# Drop combat — we're leaving, not fighting.
@@ -1008,38 +2452,45 @@ func do_extract(dt, enemy):
 	if enemy.throttle < 1.0:
 		enemy.increase_throttle(false, dt / THROTTLE_CHANGE_TIME)
 
+	var careful: bool = enemy.is_flagged() or enemy.is_exposed
 	var dist = enemy.global_position.distance_to(target_exit.global_position)
 	if dist > POSITIONAL_ACCURACY:
-		# Path toward the exit. Once the body enters the ExitPoint's Area2D,
-		# the host scene's signal handler will call enemy.extracting() → 5s timer
-		# → "died" signal → mecha despawned by the host.
 		enemy.going_to_position = true
 		enemy.NavAgent.target_position = target_exit.global_position
 		point_of_interest = target_exit.global_position
-		enemy.navigate_to_target(dt, 0.0, 0.2, true)
+		enemy.navigate_to_target(dt, 0.0, 0.2, not careful)
 	else:
-		# Walking into the exit area is what triggers extraction; just keep moving.
 		enemy.navigate_to_target(dt, 0.0, 0.0, false)
 
-	if enemy.NavAgent.is_navigation_finished():
+	if enemy.arrived():
 		enemy.going_to_position = false
 
 
-# Looks up the closest ExitPoint (group "exit_point" — see ExitPoint.tscn).
-func _find_nearest_exit(enemy):
-	var exits = enemy.get_tree().get_nodes_in_group("exit_point")
-	if exits.is_empty():
-		return null
-	var best = null
-	var best_dist = INF
-	for exit in exits:
+# The ExitPoints on the map (group "exit_point", see ExitPoint.tscn), scanned
+# every SCAN_INTERVAL s.
+func _find_exits(enemy) -> Array:
+	var now: float = enemy.knowledge.now()
+	if now - _exit_scan_time < SCAN_INTERVAL:
+		return _exits_found
+	_exit_scan_time = now
+	_exits_found = []
+	_exit_nearest = null
+	var best_dist := INF
+	for exit in enemy.get_tree().get_nodes_in_group("exit_point"):
 		if not is_instance_valid(exit):
 			continue
-		var d = enemy.global_position.distance_to(exit.global_position)
+		_exits_found.append(exit)
+		var d: float = enemy.global_position.distance_to(exit.global_position)
 		if d < best_dist:
 			best_dist = d
-			best = exit
-	return best
+			_exit_nearest = exit
+	return _exits_found
+
+
+# Looks up the closest ExitPoint, or null.
+func _find_nearest_exit(enemy):
+	_find_exits(enemy)
+	return _exit_nearest if is_instance_valid(_exit_nearest) else null
 
 
 # Lazily initialized timestamp; first call sets it, subsequent calls measure from then.
@@ -1049,61 +2500,26 @@ func _time_alive_seconds() -> float:
 	return float(Time.get_ticks_msec() - _start_tick_msec) / 1000.0
 
 
-# Frame-scoped cache keyed by mecha: health_diff / heat_diff / _should_flee
-# can ask for the same mecha's structural health several times per frame
-# (heat_diff even re-enters health_diff). Cleared every physics frame, so
-# freed-mecha references are never held longer than one frame.
-var _health_cache := {}
+# Frame-scoped cache: health_diff / heat_diff / _should_flee can ask for the
+# NPC's own structural health several times per frame (heat_diff even
+# re-enters health_diff).
+var _health_cache := -1.0
 var _health_cache_frame := -1
 
 func _structural_health(mecha) -> float:
 	var frame = Engine.get_physics_frames()
 	if _health_cache_frame != frame:
 		_health_cache_frame = frame
-		_health_cache.clear()
-	if _health_cache.has(mecha):
-		return _health_cache[mecha]
-	# Armor + component health only — no heat/status/weapons to avoid double-counting
-	var score := 0.0
-
-	# Armor integrity (0.0 to 1.0)
-	var total_pips := 0
-	var max_pips := 0
-	for part_name in mecha.armor:
-		for facing in mecha.armor[part_name]:
-			var face = mecha.armor[part_name][facing]
-			if face.level > 0:
-				total_pips += face.pips
-				max_pips += 3
-	if max_pips > 0:
-		score += (float(total_pips) / float(max_pips)) * 0.55
-	else:
-		score += 0.55
-
-	# Component health (0.0 to 1.0)
-	var comp_total := 0.0
-	var comp_count := 0
-	for part_name in mecha.components:
-		for comp_name in mecha.components[part_name]:
-			var comp = mecha.components[part_name][comp_name]
-			if comp.max_hp > 0:
-				comp_total += float(comp.hp) / float(comp.max_hp)
-			comp_count += 1
-	if comp_count > 0:
-		score += (comp_total / float(comp_count)) * 0.45
-	else:
-		score += 0.45
-
-	var result = clampf(score, 0.0, 1.0)
-	_health_cache[mecha] = result
-	return result
+		_health_cache = NPCKnowledge._structural_health(mecha)
+	return _health_cache
 
 
+# The target's health as this NPC last saw it (NPCKnowledge), against its own.
 func health_diff(enemy):
 	if is_instance_valid(enemy) and enemy.current_target:
 		if is_instance_valid(enemy.current_target):
 			var my_health = _structural_health(enemy)
-			var their_health = _structural_health(enemy.current_target)
+			var their_health: float = enemy.knowledge.health_of(enemy.current_target)
 			var diff = my_health - their_health  # positive = I'm healthier
 			if their_health <= 0.25:
 				return 2  # target is crippled, press the attack
@@ -1164,7 +2580,7 @@ func status_diff(enemy):
 				else:
 					return 0
 		else:
-			return 0	
+			return 0
 	else:
 		return 0
 

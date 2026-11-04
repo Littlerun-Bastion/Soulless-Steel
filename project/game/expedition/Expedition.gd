@@ -332,6 +332,66 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	return enemy
 
 
+## Squads: tags shown in Local, the chance a squad is Anonymous (no tag, no
+## names), how far apart its members spawn (px). Placeholders.
+const SQUAD_TAGS := ["HLX", "KRV", "OBS", "TNR", "VGL", "ZEP", "MRK", "DNT", "SBL", "ASH"]
+const SQUAD_ANONYMOUS_CHANCE := 0.1
+const SQUAD_SPAWN_SPACING := 600.0
+var _used_squad_tags := {}
+
+
+## Spawns a squad of `size` NPCs (NPCManager.pick_squad_designs) round
+## `spawn_position` (a random spawn spot when null), named `name_prefix`_0,
+## _1..., and returns the Squad. Its members share a tag in Local, or are all
+## Anonymous.
+func add_squad(size: int, name_prefix: String, spawn_position = null) -> Squad:
+	var squad := Squad.new()
+	var tag := _free_squad_tag()
+	squad.setup(tag, randf() < SQUAD_ANONYMOUS_CHANCE)
+	var centre: Vector2 = spawn_position if spawn_position is Vector2 else _random_spawn_position()
+	var designs: Array = NPCManager.pick_squad_designs(size)
+	for i in designs.size():
+		var design: Dictionary = designs[i]
+		if squad.anonymous:
+			design["anonymous"] = true
+		else:
+			design["squad_tag"] = tag
+		var at := centre + Vector2.from_angle(TAU * i / maxi(designs.size(), 1)) * (SQUAD_SPAWN_SPACING if i > 0 else 0.0)
+		var enemy := add_enemy(design, "%s_%d" % [name_prefix, i], at)
+		squad.add(enemy)
+	squads.append(squad)
+	return squad
+
+
+## Spawns a companion for the player (a mission's, or a test's): a generic
+## NPC (`design` empty: a random one) COMPANION_SPAWN_DISTANCE px beside the
+## player, in the player's squad. Returns it, or null without a player.
+const COMPANION_SPAWN_DISTANCE := 500.0
+var _companions_made := 0
+
+
+func add_companion(design: Dictionary = {}, companion_name := "") -> Mecha:
+	if not is_instance_valid(player):
+		return null
+	if design.is_empty():
+		design = NPCManager.random_design_data()
+	if companion_name == "":
+		companion_name = "Companion_%d" % _companions_made
+	_companions_made += 1
+	var side: Vector2 = player.get_facing().orthogonal() * (1.0 if _companions_made % 2 == 1 else -1.0)
+	var enemy := add_enemy(design, companion_name, player.global_position + side * COMPANION_SPAWN_DISTANCE)
+	var squad := player_squad(true)
+	squad.add(enemy)
+	return enemy
+
+
+func _free_squad_tag() -> String:
+	var free := SQUAD_TAGS.filter(func(t): return not _used_squad_tags.has(t))
+	var tag: String = str(free.pick_random()) if not free.is_empty() else "%s%d" % [SQUAD_TAGS.pick_random(), _used_squad_tags.size()]
+	_used_squad_tags[tag] = true
+	return tag
+
+
 # ---- Positions (read by Enemy.gd / behaviours / ExpeditionDirector) ----
 
 # Used by behaviours like default.gd for wandering points.
@@ -378,6 +438,15 @@ func _get_map_nav_polygon():
 	if has_node("Map") and $Map.has_method("get_navigation_polygon"):
 		return $Map.get_navigation_polygon()
 	return null
+
+
+# Whether a point is on the map's walkable ground (NPC position picking).
+# True everywhere on a map with no navigation polygon.
+func is_position_on_map(pos: Vector2) -> bool:
+	var navpoly = _get_map_nav_polygon()
+	if navpoly == null:
+		return true
+	return _is_position_on_nav(pos, navpoly)
 
 
 # A position is "on the navmesh" if it's inside outline[0] (the outer

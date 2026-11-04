@@ -59,9 +59,14 @@ func toggle_inventory():
 
 
 
-# The quick chat menu takes its keys before the game and the pause menu do.
+# The squad orders menu (made in setup, beside the quick chat menu).
+var hud_squad_orders: HudSquadOrders = null
+
+
+# The quick chat and squad orders menus take their keys before the game and
+# the pause menu do.
 func _input(event: InputEvent) -> void:
-	if player and hud_quick_chat.handle_input(event):
+	if player and (hud_quick_chat.handle_input(event) or (hud_squad_orders != null and hud_squad_orders.handle_input(event))):
 		get_viewport().set_input_as_handled()
 
 
@@ -130,6 +135,12 @@ func setup(player_ref, mechas_ref):
 	hud_vision_outlines.setup(player)
 	hud_world_labels.setup(player, mechas)
 	hud_quick_chat.setup(player)
+	if hud_squad_orders == null:
+		hud_squad_orders = HudSquadOrders.new()
+		hud_squad_orders.theme = hud_quick_chat.theme
+		hud_quick_chat.get_parent().add_child(hud_squad_orders)
+		hud_squad_orders.position = hud_quick_chat.position
+	hud_squad_orders.setup(player)
 	hud_sweep.setup(player)
 	player.swept.connect(_on_player_swept)
 	player.device_destroyed.connect(_on_player_device_destroyed)
@@ -153,6 +164,20 @@ func setup_local(local: LocalPilots) -> void:
 # Mecha.say, once CombatScene has found the player hears it.
 func show_speech(mecha, text: String, seconds: float) -> void:
 	hud_world_labels.show_speech(mecha, text, seconds)
+
+
+# A buddy-up offer from `name` (CombatScene.offer_buddy): the prompt with its
+# keys (Player.ACCEPT_ACTION, DECLINE_ACTION), up for `seconds`, as long as
+# the offer stands.
+func show_offer(name: String, seconds: float) -> void:
+	hud_alerts.show_notice("%s OFFERS TO BUDDY UP · [%s] ACCEPT · [%s] DECLINE" % [name.to_upper(),
+			MechUI.key_name("accept_offer"), MechUI.key_name("decline_offer")], seconds)
+
+
+# A passing line about the player's squad ("ORDER: HOLD HERE", "<NAME> JOINED
+# YOUR SQUAD"); "" clears the notice on show.
+func show_squad_notice(text: String) -> void:
+	hud_alerts.show_notice(text, HudAlerts.NOTICE_TIME if text != "" else 0.0)
 
 
 # Someone's sweep found the player: an alert and a log line, no bearing.
@@ -211,6 +236,8 @@ func player_died():
 	hud_world_labels.player_died()
 	hud_local_feed.player_died()
 	hud_quick_chat.player_died()
+	if hud_squad_orders != null:
+		hud_squad_orders.player_died()
 	hud_sweep.player_died()
 	top_strip.player_died()
 	top_strip.visible = false

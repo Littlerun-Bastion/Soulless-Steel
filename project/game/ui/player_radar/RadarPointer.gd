@@ -1,32 +1,65 @@
-extends Node2D
+extends RefCounted
 
-## One contact on the radar: chevrons just outside the ring, pointing at the
-## contact (up, before the node's rotation). More chevrons = closer.
-##   level 1  far   1 chevron, G4
-##   level 2  mid   2 chevrons, G5
-##   level 3  near  3 chevrons, G6, and the ring brightened under them
-## Replaces the player_directional_pointer sprites.
+## How the radar (PlayerRadar) draws one track: its mark, its chevrons and
+## the bracket of the player's own lock. Each draws on `canvas` at `at` (the
+## mark's centre, on or outside the ring) for a track at `bearing` (radians:
+## the mark points outward along it).
+##   triangle  a mech        diamond  an Entity
+##   square    UNKNOWN (IR)  round    an alarm
+## A hollow mark (a ghost) is drawn as its outline.
+## Chevrons sit outside the mark, CHEVRON_STEP px apart: more is closer.
 
-const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
-const RING_RADIUS := 75.0
-const FIRST := 80.0      # distance from the centre to the first chevron
-const STEP := 5.0
-const HALF_WIDTH := 7.0
-const HEIGHT := 4.0
-const ARC := 0.2         # radians of ring brightened at level 3
-
-var level := 1:
-	set(value):
-		level = clampi(value, 1, 3)
-		queue_redraw()
+## Placeholders (px).
+const MARK_SIZE := 6.0
+const CHEVRON_FIRST := 10.0
+const CHEVRON_STEP := 5.0
+const CHEVRON_HALF := 6.0
+const CHEVRON_HEIGHT := 3.0
+const BRACKET := 11.0
+const LINE := 2.0
 
 
-func _draw() -> void:
-	var color := THEME.get_color(([&"g4", &"g5", &"g6"] as Array)[level - 1], &"MechTokens")
-	for i in level:
-		var base := -(FIRST + STEP * i)
-		draw_polyline(PackedVector2Array([
-			Vector2(-HALF_WIDTH, base), Vector2(0, base - HEIGHT), Vector2(HALF_WIDTH, base),
-		]), color, 2.0, true)
-	if level == 3:
-		draw_arc(Vector2.ZERO, RING_RADIUS, -PI / 2 - ARC, -PI / 2 + ARC, 12, color, 2.0, true)
+static func draw_mark(canvas: CanvasItem, at: Vector2, bearing: float, shape: String, color: Color, hollow: bool) -> void:
+	var out := Vector2.from_angle(bearing)
+	var side := out.orthogonal()
+	var points: PackedVector2Array
+	match shape:
+		"triangle":
+			points = PackedVector2Array([at + out * MARK_SIZE, at - out * MARK_SIZE * 0.7 + side * MARK_SIZE * 0.8,
+					at - out * MARK_SIZE * 0.7 - side * MARK_SIZE * 0.8])
+		"square":
+			var s := MARK_SIZE * 0.75
+			points = PackedVector2Array([at + (out + side) * s, at + (out - side) * s, at - (out + side) * s, at - (out - side) * s])
+		"round":
+			if hollow:
+				canvas.draw_arc(at, MARK_SIZE * 0.8, 0.0, TAU, 16, color, LINE, true)
+			else:
+				canvas.draw_circle(at, MARK_SIZE * 0.8, color)
+			return
+		_:
+			points = PackedVector2Array([at + out * MARK_SIZE, at + side * MARK_SIZE * 0.7, at - out * MARK_SIZE,
+					at - side * MARK_SIZE * 0.7])
+	if hollow:
+		var loop := points.duplicate()
+		loop.append(points[0])
+		canvas.draw_polyline(loop, color, LINE, true)
+	else:
+		canvas.draw_colored_polygon(points, color)
+
+
+static func draw_chevrons(canvas: CanvasItem, at: Vector2, bearing: float, count: int, color: Color) -> void:
+	var out := Vector2.from_angle(bearing)
+	var side := out.orthogonal()
+	for i in count:
+		var base := at + out * (CHEVRON_FIRST + CHEVRON_STEP * i)
+		canvas.draw_polyline(PackedVector2Array([base - side * CHEVRON_HALF, base + out * CHEVRON_HEIGHT,
+				base + side * CHEVRON_HALF]), color, LINE, true)
+
+
+static func draw_bracket(canvas: CanvasItem, at: Vector2, color: Color) -> void:
+	var b := BRACKET
+	var c := BRACKET * 0.45
+	for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var tip: Vector2 = at + corner * b
+		canvas.draw_polyline(PackedVector2Array([tip - Vector2(corner.x * c, 0), tip, tip - Vector2(0, corner.y * c)]),
+				color, LINE, true)

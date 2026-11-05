@@ -181,6 +181,7 @@ static func _personality_from_string(type_name: String) -> Personality:
 			p.greed = 0.3
 			p.loyalty = 0.1
 			p.treachery = 0.0
+	p.skill = Personality.roll_skill(p.type)
 	return p
 
 #Given an npc and a part type, gets the correspondent part

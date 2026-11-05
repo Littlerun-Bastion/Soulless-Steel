@@ -14,14 +14,13 @@ extends Resource
 @export var can_lock := false
 @export var accuracy_modifier := 1.0
 @export var lock_on_speed := .2
+## How long (s) a made lock lasts (Mecha's lock rules).
 @export var lock_on_duration := 5
-@export var lock_on_distance := 5000
 @export var lock_on_reticle_size := 15 #Radius of the reticle
 @export var lock_on_strength := 5
+## Whether the player's radar ring shows (PlayerRadar: tracks only).
 @export var has_radar := true
-@export var radar_refresh_rate := 1.0
 @export var loot_search_time := 1.0
-@export var radar_range := 5000.0
 @export var weight := 1.0
 @export var tags :Array[String] = ["chipset"]
 @export var item_size := [2,2]

@@ -10,19 +10,23 @@ extends RefCounted
 ##   - Its own sight writes "sight" contacts (see), live until the next
 ##     senses update that doesn't see the body (end_sight_update), with the
 ##     body's velocity, how whole it looked and its Flag.
-##   - A round that gave its shooter away writes a "shot" contact
-##     (heard_shot); a body heard, a "sound" contact (heard_body).
+##   - A round that came close or hit writes a "shot" contact (heard_shot)
+##     at where the NPC makes out it was fired from: exactly if it sees the
+##     shooter, else its shot wedge's estimate point (Mecha.note_round_from,
+##     ContactStore wedges). A body heard, a "sound" contact (heard_body).
+##   - Wedges (shot, sound, lock) are in the same store, apart from the
+##     contacts: bearings with no body (ContactStore.wedges).
 ##   - A body its head's IR sensor picks up but it doesn't see writes an "ir"
 ##     contact (sensed_heat, kind "unknown": it can't tell what it is): its
 ##     true position, live like a sight contact until the next senses update
 ##     that doesn't sense it, but not seen. Like a body heard, the NPC knows
 ##     where it is and can take it on; unlike one heard, it keeps tracking it
 ##     exactly behind cover.
-##   - A mecha with its illuminator on within a screen of it writes a "light"
-##     contact (noticed_light, Illumination.in_light_range): the player sees
-##     an illuminator's cone anywhere on screen, so the NPC knows where that
-##     mecha is, live, and that it's a mecha (it can take it on, and keeps it
-##     while the light stays on), but doesn't see it.
+##   - A mecha with its illuminator on inside its sight circle writes a
+##     "light" contact (noticed_light, Illumination.in_light_range): the player
+##     sees an illuminator's cone anywhere inside its own circle, so the NPC
+##     knows where that mecha is, live, and that it's a mecha (it can take it
+##     on, and keeps it while the light stays on), but doesn't see it.
 ##   - A contact no source refreshes becomes a ghost, frozen where it was,
 ##     and is dropped after the store's ghost_time: Enemy.BODY_LIFETIME for
 ##     an NPC. So "forgotten" means the store dropped it.
@@ -33,7 +37,8 @@ extends RefCounted
 ## (flag_memory), with when it lowered it; one that then attacks is a
 ## traitor (Enemy). A pilot the NPC saw spare it is remembered (spared_by).
 ## Sounds: what it heard (Enemy.heard_sound), with lifetimes; the behaviour
-## consumes them as it investigates.
+## consumes them as it investigates. A loud sound from something it can't
+## see is kept at its sound wedge's estimate point, not where it was.
 ## Local (Phase 6): help calls and loot shouts it read (heard_local), each
 ## with the sender's position blurred once to a random point within
 ## LEAD_BLUR (the fairness rule: a pilot could place a caller about that
@@ -42,11 +47,13 @@ extends RefCounted
 ## remembered by time only (swept_at): a sweep gives no bearing. A spot to
 ## keep away from (avoid_point: a car alarm, where it was swept) for
 ## AVOID_TIME s, which wandering steers clear of.
-## Danger: where it took fire from, with the time; the mines it has seen
+## Danger: where it took fire from (as it made it out: an estimate point
+## for a shooter it couldn't see), with the time; the mines it has seen
 ## (spot_mines: a mine within MINE_SIGHT_RANGE is seen unless the one roll
 ## made for it, by panic, misses it for good).
 ## Panic (0 to 1): rises with hits, fire, being outnumbered, overheating,
-## being swept and losing a device, falls while nothing threatens, both
+## being swept, being locked and losing a device, falls while nothing
+## threatens, both
 ## scaled by courage (tick_panic). The intents, the aim and the barks read it.
 ## Its own state: self_state() is a frame-cached snapshot of heat, weapons,
 ## ammo and damaged systems that the intents read.
@@ -72,6 +79,8 @@ const PANIC_OUTNUMBERED_RATE := 0.05
 const PANIC_OVERHEAT := 0.1
 const PANIC_SWEPT := 0.05
 const PANIC_DEVICE_LOST := 0.05
+## Someone's lock made on it (Enemy._watch_lock_warning).
+const PANIC_LOCKED := 0.05
 const PANIC_FALL_RATE := 0.05
 ## Mines: seen within this range (px, 25 m), half of it in smoke; the one
 ## roll to miss a mine is MINE_MISS_BASE + panic * MINE_MISS_PANIC, plus

@@ -8,12 +8,14 @@ extends RefCounted
 ##   - guns (the plain firing path) fire at a target in sight with a clear
 ##     line (try_to_shoot), and blind at where it was last seen or heard
 ##     while the memory is fresh and their rounds can get through the walls
-##     (blind_fire)
+##     (blind_fire), or at a track's point (blind_fire_at); a Guardian never
+##     fires blind
 ##   - skillshots (the cannon's line, the laser's rectangle) and direct AoE
 ##     designators fire at the lead point, through Mecha.fire_at_point, which
 ##     holds them to the weapon's facing and range
-##   - lock-on weapons fire at their lock from anywhere, else at a target in
-##     sight within range
+##   - lock-on weapons fire at their lock from anywhere a round can reach it
+##     (a direct one is held behind a wall: Enemy.lock_shot_clear), else at a
+##     target in sight within range
 ##   - indirect weapons (mortar, MLRS, howitzer) fire at where the target is
 ##     believed to be, in sight or not for INDIRECT_MEMORY s after it was last
 ##     seen, never into a building (roofs would take the round) and never
@@ -57,6 +59,12 @@ const DEVICE_AIM_CONE := deg_to_rad(10.0)
 const SWEEP_WIDTH := 60.0
 
 var npc = null
+## Knowledge time (NPCKnowledge.now) of the last shot it fired: a burst is
+## over once it has stopped (Enemy's flashing light).
+var last_shot_time := -INF
+## The last sweep it made: {"direction", "counts" (the kinds it reported),
+## "time"}; {} for none.
+var last_sweep := {}
 var _burst_time := 0.0
 var _device_scan := 0.0
 var _device_target = null
@@ -110,7 +118,8 @@ func _engage(dt: float, target, seen: bool, eff: Dictionary, state: Dictionary, 
 				fired = _try_to_shoot(slot, target) or fired
 		elif what == "lock":
 			if npc.fires_at_lock(slot):
-				fired = _fire_at(slot, target_pos) or fired
+				if npc.lock_shot_clear(slot):
+					fired = _fire_at(slot, target_pos) or fired
 			elif clear:
 				fired = _fire_at(slot, target_pos) or fired
 		elif what == "skillshot" or what == "aoe":
@@ -120,21 +129,31 @@ func _engage(dt: float, target, seen: bool, eff: Dictionary, state: Dictionary, 
 			if seen or npc.time_unseen(target) <= INDIRECT_MEMORY:
 				fired = fire_indirect_at(slot, target_pos) or fired
 	if fired:
+		last_shot_time = npc.knowledge.now()
 		AICombatLog.record_shot(npc, distance, not seen)
 	return fired
 
 
 ## Blind fire: guns fire at where `target` was last seen or heard, through
-## walls, for BLIND_FIRE_TIME s, each only if its round can get through the
-## walls on the way (a round loses 1 AP per wall, see MapSenses.trace_shot),
-## and only once the mecha faces that point. Returns whether any fired.
+## walls, for BLIND_FIRE_TIME s (blind_fire_at). A Guardian never fires
+## blind: it could hit a friend. Returns whether any fired.
 func blind_fire(target) -> bool:
 	if not is_instance_valid(target) or npc.holds_fire_at(target):
 		return false
 	var knowledge = npc.knowledge
 	if not knowledge.knows(target) or knowledge.is_seen(target) or knowledge.age_of(target) > BLIND_FIRE_TIME:
 		return false
-	var point: Vector2 = knowledge.position_of(target)
+	return blind_fire_at(knowledge.position_of(target))
+
+
+## Guns fire at `point`, unseen, each only if its round can get through the
+## walls on the way (a round loses 1 AP per wall, see MapSenses.trace_shot),
+## and only once the mecha faces that point; never for a Guardian (it could
+## hit a friend). Search fires at a lost target's spot through here, and
+## identify at a track's. Returns whether any fired.
+func blind_fire_at(point: Vector2) -> bool:
+	if npc.personality != null and npc.personality.type == Personality.Type.GUARDIAN:
+		return false
 	var to_point: Vector2 = point - npc.global_position
 	if absf(Vector2.UP.rotated(npc.global_rotation).angle_to(to_point)) > BLIND_FIRE_CONE:
 		return false
@@ -152,6 +171,7 @@ func blind_fire(target) -> bool:
 			npc.shoot(slot)
 			fired = true
 	if fired:
+		last_shot_time = npc.knowledge.now()
 		AICombatLog.record_shot(npc, to_point.length(), true)
 	return fired
 
@@ -172,6 +192,14 @@ func cease() -> void:
 
 
 # ---- Tools ----
+
+## Whether it has a smoke launcher.
+func has_smoke() -> bool:
+	for slot in npc.WEAPON_SLOTS:
+		if role(slot) == "smoke":
+			return true
+	return false
+
 
 ## The smoke launcher fires round the mecha itself.
 func screen_self() -> bool:
@@ -256,7 +284,10 @@ func sweep(direction: Vector2, width := SWEEP_WIDTH) -> bool:
 	if npc.can_sweep() != "":
 		return false
 	var result: Dictionary = npc.sweep(direction, width)
-	return bool(result.get("ok", false))
+	if bool(result.get("ok", false)):
+		last_sweep = {"direction": direction, "counts": result.get("counts", {}), "time": npc.knowledge.now()}
+		return true
+	return false
 
 
 ## Whether a sweep is ready.

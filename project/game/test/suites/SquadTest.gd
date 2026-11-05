@@ -37,8 +37,12 @@ class FakeArena extends Node2D:
 
 
 # A round's area as the NPC's proximity sensor sees it.
+# A round where it lands (on the mecha it is fed to), going nowhere: it comes
+# within Mecha.SHOT_WEDGE_RADIUS.
 class FakeRound extends RefCounted:
 	var original_mecha_info = null
+	var global_position := Vector2.ZERO
+	var dir := Vector2.ZERO
 
 
 # A wreck for the kill-record case (group "loot_container").
@@ -200,7 +204,7 @@ func _test_formation() -> void:
 	var goal: Vector2 = squad.travel_goal(b)
 	var arrived := await wait_until(func(): return b.global_position.distance_to(squad.travel_goal(b)) < 400.0, 30.0)
 	check(arrived, "and gets to its slot (%.0f px off)" % b.global_position.distance_to(goal))
-	check(b.illuminator_on, "lit on the way, as roaming")
+	check(not b.illuminator_on, "dark on the way, as roaming: the light comes on only to engage")
 	# A straggler is called back.
 	b.paused = true
 	b.global_position = Vector2(0, 4000)
@@ -235,7 +239,9 @@ func _test_roles() -> void:
 			rad_to_deg(angle), str(a.global_position), str(a.logic.get_current_state()), str(b.global_position),
 			str(b.logic.get_current_state()), b.logic.behaviour.stance, str(b.positioning.pick_position())])
 	await wait_seconds(1.0)
-	check(a.illuminator_on, "the anchor is lit, the squad's spotter")
+	check(a.logic.behaviour.illuminator_mode(a, "engage") == "on" \
+			and (a.illuminator_on or str(a.logic.get_current_state()) != "engage"),
+			"the anchor is lit while the squad engages, the squad's spotter (%s)" % str(a.logic.get_current_state()))
 	# The spotter's cone: a foe in it is lit, and a dark squadmate sees a lit
 	# body wherever its light shows (IlluminationTest covers the walls).
 	a.global_rotation = Vector2.UP.angle_to(a.global_position.direction_to(foe.global_position))
@@ -323,11 +329,13 @@ func _test_hostility() -> void:
 	var shooter := _foe(Vector2(2000, 0), null, "Drifter")
 	var shot := FakeRound.new()
 	shot.original_mecha_info = {"name": shooter.mecha_name, "body": shooter}
+	shot.global_position = a.global_position
 	a._on_nearby_projectile_area_entered(shot)
 	check_eq(b.get_relationship(shooter).hostility, Squad.MEMBER_SHOT_HOSTILITY, "the mate turns on whoever shot a member")
 	check_eq(a.get_relationship(shooter).hostility, Squad.MEMBER_SHOT_HOSTILITY + 0.25, "the one shot, more")
 	var stray := FakeRound.new()
 	stray.original_mecha_info = {"name": b.mecha_name, "body": b}
+	stray.global_position = a.global_position
 	a._on_nearby_projectile_area_entered(stray)
 	check_eq(a.get_relationship(b).hostility, 0.0, "a squadmate's stray round is forgiven")
 	check(not a.should_attack(b), "and a squadmate is never attacked")

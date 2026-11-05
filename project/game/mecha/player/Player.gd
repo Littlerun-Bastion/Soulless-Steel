@@ -27,18 +27,20 @@ const PENDING_FIRE_TIME = 1.5
 const SHOULDER_SLOTS = ["shoulder_weapon_left", "shoulder_weapon_right"]
 ## A tap_self weapon released sooner than this (s) fires at the mecha itself.
 const TAP_TIME = 0.2
-## The player's view: how often (s) each mecha and Entity is checked, how
-## fast one fades out when hidden or back in when seen (alpha per s), and the
-## distance (px) past which nothing is checked (it is off screen).
+## The player's view: how often (s) each mecha and Entity is checked, and how
+## fast one fades out when hidden or back in when seen (alpha per s).
 const VIEW_CHECK_TIME = 0.1
 const VIEW_FADE_SPEED = 5.0
-const VIEW_RANGE = 6000.0
-## The distance (px) all round within which things are seen anyway (20 m),
-## outside the vision cone (in_view_cone).
+## The distance (px) all round within which things nobody's light falls on are
+## seen anyway (20 m).
 const VIEW_PERIPHERAL = 400.0
 ## Sounds of the illuminator key switching it on and off. Placeholders.
 const ILLUMINATOR_ON_SFX = "select"
 const ILLUMINATOR_OFF_SFX = "back"
+## The illuminator key (see press_illuminator_key): two presses this close
+## (real seconds: it times the player's fingers, not the game) latch the
+## light on. Placeholder.
+const ILLUMINATOR_DOUBLE_TAP = 0.25
 ## The vision source whose mechas are outlined rather than shown.
 const OUTLINE_SOURCE = "seeker"
 ## How long (s) a body the player saw stays a live sight contact after the
@@ -57,6 +59,7 @@ const SWEEP_WIDTH_STEP = 10.0
 
 @onready var Cam = $Camera2D
 @onready var Light = $MechaLight
+@onready var Darkness: PointLight2D = $MechaShadowGen
 
 var sprinting_timer = 0
 var invert_controls = {
@@ -89,6 +92,11 @@ var sweep_width := SWEEP_START_WIDTH
 var _sweep_aiming := false
 # The internal key (see INTERNAL BAY): seconds it has been held, or -1.
 var _internal_held := -1.0
+# The illuminator key (see press_illuminator_key): whether the light is on
+# only while the key is down, and when (real s) the last press that could
+# start a double tap came.
+var _illuminator_held := false
+var _illuminator_tap_at := -INF
 
 func _ready():
 	super()
@@ -101,6 +109,13 @@ func _ready():
 	add_child(layer)
 	designator = DESIGNATOR_SCRIPT.new()
 	layer.add_child(designator)
+	# Its lock turns only its head (aim_at), not the whole mecha.
+	faces_lock = false
+	# Sound is heard at the mecha, not at the panned camera's centre.
+	$AudioListener.make_current()
+	# The darkness is placed on the camera's view each frame (_process), not
+	# carried by the mecha.
+	Darkness.top_level = true
 
 	if Debug.get_setting("player_zoom"):
 		var zoom = Debug.get_setting("player_zoom")
@@ -135,18 +150,47 @@ func _physics_process(dt):
 		if sprinting_timer <= 0.0:
 			is_sprinting = true
 
-	if not get_locked_to():
-		var target_pos = scripted_aim if controls_locked else get_global_mouse_position()
-		if target_pos != null:
-			if target_pos.distance_to(global_position) > ROTATION_DEADZONE:
-				# POINTER (Alt) locks the body; head, shoulders and arms keep
-				# tracking within their rotation ranges.
-				var lock_body: bool = not controls_locked and\
-				(Input.is_action_pressed("strafe") or not MouseManager.is_aiming())
-				apply_rotation_by_point(dt, target_pos, lock_body)
+	aim_at(dt, scripted_aim if controls_locked else get_global_mouse_position())
 		
 	update_camera_zoom(dt)
 	update_camera_offset(dt)
+
+
+## Turns the mecha to `target_pos` (the cursor, or a cutscene's aim; null for
+## none): the body, shoulders and arms, and the head too unless a lock holds
+## it. POINTER (Alt) locks the body; head, shoulders and arms keep tracking
+## within their rotation ranges. While the player holds a lock, with Lock Head
+## Tracking on, the head turns to the locked target instead, within its
+## rotation_range at its rotation_acc (stopping at its limit, never turning
+## the body), and the light with it.
+func aim_at(dt: float, target_pos) -> void:
+	var head_target = _lock_head_target()
+	if target_pos != null and target_pos.distance_to(global_position) > ROTATION_DEADZONE:
+		var lock_body: bool = not controls_locked and\
+		(Input.is_action_pressed("strafe") or not MouseManager.is_aiming())
+		apply_rotation_by_point(dt, target_pos, lock_body, head_target)
+	elif head_target != null:
+		_turn_part_to(Head, build.head.rotation_acc, build.head.rotation_range, head_target, dt)
+		_aim_light()
+
+
+# Where the head looks while a lock holds it (see aim_at), or null.
+func _lock_head_target():
+	if controls_locked or not build.head or is_part_lost("head"):
+		return null
+	if not Profile.get_option("lock_head_tracking"):
+		return null
+	var locked = get_locked_to()
+	return locked.global_position if locked else null
+
+
+# The darkness (MechaShadowGen) sits on the centre of the current camera's
+# view, so it follows the pan, and a cutscene's camera too.
+func _process(_delta: float) -> void:
+	var cam := get_viewport().get_camera_2d()
+	var centre: Vector2 = cam.get_screen_center_position() if cam != null else global_position
+	if Darkness.global_position != centre:
+		Darkness.global_position = centre
 
 
 func _input(event):
@@ -168,6 +212,9 @@ func _input(event):
 			cancel_internal()
 		else:
 			release_internal()
+	# A held light goes out when the key comes up, whatever else is going on.
+	if event.is_action_released(Illumination.KEY_ACTION):
+		release_illuminator_key()
 	if paused or is_stunned() or controls_locked:
 		return
 	if _sweep_aiming and _sweep_aim_input(event):
@@ -186,7 +233,7 @@ func _input(event):
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed(Illumination.KEY_ACTION):
-		toggle_illuminator()
+		press_illuminator_key()
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed(FLAG_ACTION):
@@ -331,30 +378,36 @@ func update_camera_zoom(dt):
 	Cam.zoom = lerp(Cam.zoom, target, clamp(dt*ZOOM_SPEED, 0.0, 1.0))
 
 
+# The cursor near a screen edge pans the camera that way (Camera.pan_offset),
+# out to the sight circle (Mecha.sight_radius) and no further. With no head
+# the camera doesn't pan.
 func update_camera_offset(dt):
-	if build.head and build.head.visual_range > 0:
-		var mp = get_viewport().get_mouse_position()
-		var vp_size = get_viewport().get_visible_rect().size
-		var margin = MOVE_CAMERA_SCREEN_MARGIN
-		var abs_dir = Vector2()
-		var strength = Vector2()
-		if mp.x <= margin:
-			abs_dir.x += 1
-			strength.x = -1.0 + (mp.x/float(margin))
-		elif mp.x >= vp_size.x - margin:
-			abs_dir.x += 1
-			strength.x = ((mp.x - vp_size.x + margin)/float(margin))
-		if mp.y <= margin:
-			abs_dir.y += 1
-			strength.y = -1.0 + (mp.y/float(margin))
-		elif mp.y >= vp_size.y - margin:
-			abs_dir.y += 1
-			strength.y = ((mp.y - vp_size.y + margin)/float(margin))
-		
-		abs_dir = abs_dir.normalized()
-		strength *= strength*strength #Make it cubically strong on edges
-		Cam.offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
-		Cam.offset = Cam.offset.limit_length(build.head.visual_range)
+	var limit := sight_radius() if build.head and not is_part_lost("head") else 0.0
+	if limit <= 0.0:
+		Cam.pan_offset = Vector2.ZERO
+		return
+	var mp = get_viewport().get_mouse_position()
+	var vp_size = get_viewport().get_visible_rect().size
+	var margin = MOVE_CAMERA_SCREEN_MARGIN
+	var abs_dir = Vector2()
+	var strength = Vector2()
+	if mp.x <= margin:
+		abs_dir.x += 1
+		strength.x = -1.0 + (mp.x/float(margin))
+	elif mp.x >= vp_size.x - margin:
+		abs_dir.x += 1
+		strength.x = ((mp.x - vp_size.x + margin)/float(margin))
+	if mp.y <= margin:
+		abs_dir.y += 1
+		strength.y = -1.0 + (mp.y/float(margin))
+	elif mp.y >= vp_size.y - margin:
+		abs_dir.y += 1
+		strength.y = ((mp.y - vp_size.y + margin)/float(margin))
+
+	abs_dir = abs_dir.normalized()
+	strength *= strength*strength #Make it cubically strong on edges
+	Cam.pan_offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
+	Cam.pan_offset = Cam.pan_offset.limit_length(limit)
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
@@ -661,10 +714,86 @@ func is_internal_held() -> bool:
 	return _internal_held >= 0.0
 
 
-# The illuminator key (see Mecha.set_illuminator): switches it on or off.
+# THE ILLUMINATOR KEY
+#
+# Press and hold: the light is on while the key is down, and goes out when it
+# comes up. Two presses within ILLUMINATOR_DOUBLE_TAP latch it on: it stays on
+# once the key comes up. Any press while it is on and latched puts it out
+# and unlatches it, so going dark is always one press; that press can't start
+# a double tap. A light switched on any other way (it starts on, or
+# toggle_illuminator) counts as latched. Each switch plays its sound, and the
+# light still costs and gives the mecha away as Mecha.set_illuminator says.
+
+## `now` (real s) is for tests; the game uses the clock.
+func press_illuminator_key(now := -1.0) -> void:
+	if now < 0.0:
+		now = Time.get_ticks_msec() / 1000.0
+	if is_illuminator_latched():
+		_illuminator_tap_at = -INF
+		_switch_illuminator(false)
+		return
+	if now - _illuminator_tap_at <= ILLUMINATOR_DOUBLE_TAP:
+		_illuminator_tap_at = -INF
+		_illuminator_held = false
+		_switch_illuminator(true)
+		return
+	_illuminator_tap_at = now
+	_illuminator_held = true
+	_switch_illuminator(true)
+
+
+func release_illuminator_key() -> void:
+	if not _illuminator_held:
+		return
+	_illuminator_held = false
+	_switch_illuminator(false)
+
+
+## The light is on and stays on when the key comes up.
+func is_illuminator_latched() -> bool:
+	return illuminator_on and not _illuminator_held
+
+
+## The light is on only while the key is down.
+func is_illuminator_held() -> bool:
+	return illuminator_on and _illuminator_held
+
+
+## Switches the light on or off outright, as latched.
 func toggle_illuminator() -> void:
-	set_illuminator(not illuminator_on)
-	AudioManager.play_sfx(ILLUMINATOR_ON_SFX if illuminator_on else ILLUMINATOR_OFF_SFX)
+	_illuminator_held = false
+	_switch_illuminator(not illuminator_on)
+
+
+func _switch_illuminator(on: bool) -> void:
+	if on == illuminator_on:
+		return
+	set_illuminator(on)
+	AudioManager.play_sfx(ILLUMINATOR_ON_SFX if on else ILLUMINATOR_OFF_SFX)
+
+
+# ROUNDS AND SOUNDS (see Mecha): a round from someone else that comes within
+# SHOT_WEDGE_RADIUS, or a loud sound from something the player can't see,
+# puts a wedge in its contacts, which the radar shows (PlayerRadar). The car
+# alarm is already an alarm contact (CombatScene).
+
+func _on_nearby_projectile_area_entered(area) -> void:
+	var info = area.get("original_mecha_info")
+	if not (info is Dictionary) or not is_instance_valid(info.get("body")) or info.body == self:
+		return
+	var heading = area.get("dir")
+	if not (heading is Vector2):
+		heading = area.get("velocity") if area.get("velocity") is Vector2 else Vector2.ZERO
+	if round_comes_close(area.global_position, heading):
+		note_round_from(info.body, info.get("from", info.body.global_position))
+
+
+func heard_sound(sound_data) -> void:
+	if sound_data.get("type") == "car_alarm" or sound_data.get("volume_type") != "loud":
+		return
+	if sound_data.get("source") == self:
+		return
+	note_sound_from(sound_data.get("source"), sound_data.position)
 
 
 ## The Flag key (raise_flag): raises the Flag at once, or starts lowering it
@@ -848,21 +977,25 @@ func _sweep_mark() -> Dictionary:
 
 # THE PLAYER'S VIEW
 #
-# The world is dark round the player except in its light cone, drawn by 2D
-# lights (see MapSenses). What the player can see matches it: a mecha or
-# Entity is shown only inside the cone (the MechaLight's: half the head's
-# illuminator_angle either side of it, out to its reach, see Illumination;
-# none while the player's illuminator is off) or
-# within VIEW_PERIPHERAL all round, and not behind a building wall, in a
-# different building from the player (generated or hand-made), or in or
-# behind smoke. Two in the same building see each other. A body any
-# illuminator lights (its own, or another mecha's cone on it) is shown
-# wherever it is, walls between or not, unless it is in a different building
-# or in or behind smoke (Illumination.seen_lit). The rest are faded out (their modulate
-# alpha). Each is checked every VIEW_CHECK_TIME s (one wall ray, building and
-# smoke lookups) and fades at VIEW_FADE_SPEED. Nothing is hidden while
-# controls are locked (cutscenes), and dead ones are left alone (Entities
-# fade their own corpses).
+# Nothing past the sight circle (Mecha.sight_radius) is seen: the screen is
+# black past it (HeatmapEffects' sight mask), and a body out there is hidden
+# before any other check.
+#
+# Inside the circle, the world is dark round the player except in the light
+# cones, drawn by 2D lights (see MapSenses). What the player can see matches
+# it. A body any illuminator lights (its own, another mecha's cone on it, or
+# the player's own cone: half the head's illuminator_angle either side of
+# where the head points, out to its reach, see Illumination) is shown
+# wherever it is in the circle, walls between or not, unless it is in a
+# different building or in or behind smoke (Illumination.seen_lit). A body
+# nobody lights is shown only within VIEW_PERIPHERAL all round, and not
+# behind a building wall, in a different building from the player
+# (generated or hand-made), or in or behind smoke: with its own light off,
+# the player sees nothing else. Two in the same building see each other.
+# The rest are faded out (their modulate alpha). Each is checked every
+# VIEW_CHECK_TIME s (one wall ray, building and smoke lookups) and fades at
+# VIEW_FADE_SPEED. Nothing is hidden while controls are locked (cutscenes),
+# and dead ones are left alone (Entities fade their own corpses).
 #
 # A body under a live vision contact from a flare or the Biosensor
 # (ContactStore.has_live_vision) is shown whatever the checks say, and isn't
@@ -875,7 +1008,7 @@ func _sweep_mark() -> Dictionary:
 # own are always shown.
 
 #
-# The head's IR sensor (IRSensing) works within VIEW_RANGE too. A body at
+# The head's IR sensor (IRSensing) works within the sight circle too. A body at
 # least as hot as its IR identification is shown as a lit one is: walls
 # between or not, unless in another building or in or behind smoke. One at
 # least as hot as its IR sensitivity that the player can't see otherwise is
@@ -885,7 +1018,8 @@ func _sweep_mark() -> Dictionary:
 # A body that comes into view has its track dropped, so no marker trails it.
 #
 # A Fisher whose harpoon is in the player is always shown (Fisher.
-# is_tethered_to): the player can follow the tether to it.
+# is_tethered_to): the player can follow the tether to it. Past the sight
+# circle the mask still covers it.
 
 func can_see_body(body: Node2D) -> bool:
 	if controls_locked or is_dead:
@@ -895,11 +1029,11 @@ func can_see_body(body: Node2D) -> bool:
 		return true
 	var to := body.global_position
 	var dist := global_position.distance_to(to)
-	if dist > VIEW_RANGE:
-		return true
+	if dist > sight_radius():
+		return false
 	if Illumination.seen_lit(self, body) or IRSensing.identifies(self, body):
 		return true
-	if dist > VIEW_PERIPHERAL and not in_view_cone(to):
+	if dist > VIEW_PERIPHERAL:
 		return false
 	if MapSenses.building_key_of(self) != MapSenses.building_key_of(body):
 		return false
@@ -907,7 +1041,8 @@ func can_see_body(body: Node2D) -> bool:
 
 
 # Whether `point` is inside the light cone (angle and reach only, no walls).
-# Never while the illuminator is off.
+# Never while the illuminator is off. What the player sees there is decided
+# by what the cone lights (Illumination.is_lit), walls and all.
 func in_view_cone(point: Vector2) -> bool:
 	return illuminator_on and Illumination.in_cone(Light, point)
 
@@ -976,21 +1111,21 @@ func _update_view(dt: float) -> void:
 				body.modulate.a = move_toward(body.modulate.a, target, VIEW_FADE_SPEED * dt)
 
 
-# A body the player can't see, picked up by its heat: an UNKNOWN track, live
-# until the next view check or two (IR_TTL).
+# A body the player can't see, picked up by its heat within the sight circle:
+# an UNKNOWN track, live until the next view check or two (IR_TTL).
 func _track_by_heat(body: Node2D) -> void:
-	if global_position.distance_to(body.global_position) > VIEW_RANGE or not IRSensing.senses(self, body):
+	if global_position.distance_to(body.global_position) > sight_radius() or not IRSensing.senses(self, body):
 		return
 	contacts.report(body, IR_KIND, body.global_position, IR_SOURCE, IR_TTL)
 
 
-# A body the view shows is a sight contact, unless it is past VIEW_RANGE
-# (shown only because it isn't checked) or the view is a cutscene's (controls
-# locked: everything is shown).
+# A body the view shows is a sight contact, unless it is past the sight
+# circle (a tethered Fisher, shown for its tether) or the view is a
+# cutscene's (controls locked: everything is shown).
 func _report_sight(body: Node2D) -> void:
 	if controls_locked or is_dead:
 		return
-	if global_position.distance_to(body.global_position) > VIEW_RANGE:
+	if global_position.distance_to(body.global_position) > sight_radius():
 		return
 	contacts.report(body, ContactStore.kind_of(body), body.global_position, "sight", SIGHT_CONTACT_TTL)
 

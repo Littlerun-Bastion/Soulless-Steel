@@ -132,7 +132,7 @@ func _test_ladder() -> void:
 	var enemy := _enemy(Vector2.ZERO)
 	var behaviour = enemy.logic.behaviour
 	check_eq(_decide(enemy), "roam", "with nothing going on it roams")
-	check(enemy.logic.uses_intents() and enemy.logic.intents.size() == 17, "the default behaviour has the seventeen intents")
+	check(enemy.logic.uses_intents() and enemy.logic.intents.size() == 18, "the default behaviour has the eighteen intents")
 
 	# A loud noise: investigate; once used up it stays wary a while, then roams.
 	_sound(enemy, "loud", Vector2(3000, 0))
@@ -172,9 +172,12 @@ func _test_ladder() -> void:
 	enemy.under_fire_timer = 0.0
 	enemy.senses.sounds.clear()
 
-	# Losing the target ends the engagement.
+	# Losing the target ends the engagement; forgotten, it leaves no ghost
+	# for identify to take up, nor does the noise's sound wedge.
 	enemy.valid_target = false
 	enemy.current_target = false
+	enemy.knowledge.forget(foe)
+	enemy.contacts.drop_wedge(null, "sound")
 	check_eq(_decide(enemy), "roam", "with no target it roams")
 	check_eq(behaviour.stance, "closing", "the stance is reset on the way out")
 

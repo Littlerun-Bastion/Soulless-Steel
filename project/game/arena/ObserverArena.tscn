@@ -1,0 +1,75 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://game/arena/ObserverArena.gd" id="1_root"]
+[ext_resource type="Script" uid="uid://pdse1py3u5dq" path="res://game/expedition/ExpeditionDirector.gd" id="2_director"]
+[ext_resource type="PackedScene" path="res://database/maps/observer_arena.tscn" id="3_map"]
+[ext_resource type="PackedScene" uid="uid://coobdqvll7004" path="res://game/ui/PlayerHUD.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://game/arena/CasingsQueue.gd" id="6_casings_script"]
+[ext_resource type="PackedScene" uid="uid://vvkhuyy3i00d" path="res://game/EjectorParticle.tscn" id="7_casing"]
+[ext_resource type="PackedScene" uid="uid://b2k1xpl1h6tme" path="res://game/ui/HeatmapEffects.tscn" id="8_heatmap"]
+[ext_resource type="PackedScene" uid="uid://d3krjr1dqbv7c" path="res://game/pause/PauseMenu.tscn" id="9_pause"]
+[ext_resource type="PackedScene" uid="uid://bad6i3ad8t17j" path="res://game/arena/GameOver.tscn" id="10_gameover"]
+[ext_resource type="PackedScene" uid="uid://6hk3ar6y8oo8" path="res://game/ui/IntroAnimation.tscn" id="11_intro"]
+[ext_resource type="PackedScene" uid="uid://citfhbbsqdj5i" path="res://game/ui/Camera.tscn" id="12_cam"]
+
+[node name="ObserverArena" type="Node2D"]
+script = ExtResource("1_root")
+
+[node name="Map" parent="." instance=ExtResource("3_map")]
+
+[node name="Casings" type="Node2D" parent="."]
+script = ExtResource("6_casings_script")
+casing = ExtResource("7_casing")
+casings_count = 500
+
+[node name="Mechas" type="Node2D" parent="."]
+
+[node name="ScrapParts" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Trails" type="Node2D" parent="."]
+
+[node name="Flashes" type="Node2D" parent="."]
+
+[node name="Smoke" type="Node2D" parent="."]
+
+[node name="Explosions" type="Node2D" parent="."]
+
+[node name="HeatmapEffects" parent="." instance=ExtResource("8_heatmap")]
+
+[node name="DebugNavigation" type="Node2D" parent="."]
+
+; The spectator camera: on from the start, driven by ObserverArena (keys,
+; the screen edges, the wheel, following the selected NPC).
+[node name="ArenaCamera" parent="." instance=ExtResource("12_cam")]
+process_mode = 3
+enabled = false
+zoom = Vector2(0.25, 0.25)
+position_smoothing_speed = 10.0
+drag_horizontal_enabled = false
+drag_vertical_enabled = false
+
+; Never set up: there is no player. CombatScene needs the node.
+[node name="PlayerHUD" parent="." instance=ExtResource("5_hud")]
+visible = false
+
+[node name="GameOver" parent="." instance=ExtResource("10_gameover")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_pause")]
+
+[node name="WindsTimer" type="Timer" parent="."]
+wait_time = 20.0
+autostart = true
+
+; Not played: the NPCs start at once. CombatScene needs the nodes.
+[node name="Intro" type="CanvasLayer" parent="."]
+layer = 2
+visible = false
+
+[node name="IntroAnimation" parent="Intro" instance=ExtResource("11_intro")]
+
+[node name="ExpeditionDirector" type="Node" parent="."]
+script = ExtResource("2_director")
+
+[connection signal="timeout" from="WindsTimer" to="." method="_on_WindsTimer_timeout"]

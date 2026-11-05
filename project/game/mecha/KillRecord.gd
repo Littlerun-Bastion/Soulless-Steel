@@ -18,7 +18,6 @@ extends RefCounted
 ##                      "position", "live", "age" (s since last reported)}
 
 const UNKNOWN := "Unknown"
-const PX_PER_METRE := 20.0
 const WEAPON_TYPES := ["arm_weapon", "shoulder_weapon"]
 const COMPASS := ["E", "SE", "S", "SW", "W", "NW", "N", "NE"]
 
@@ -72,7 +71,7 @@ static func weapon_label(weapon_name) -> String:
 ## "84 M NE": how far and which way `to` is from `from`.
 static func bearing(from: Vector2, to: Vector2) -> String:
 	var offset := to - from
-	var metres := roundi(offset.length() / PX_PER_METRE)
+	var metres := roundi(offset.length() / MapSenses.PX_PER_METRE)
 	if metres == 0:
 		return "0 M"
 	var octant := posmod(roundi(offset.angle() / (PI / 4.0)), 8)

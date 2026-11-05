@@ -14,11 +14,13 @@ extends RefCounted
 ##   kind         "mech", or the Entity's species ("Stalker", "Brute"...)
 ##   position     where the source last put it; frozen once it is a ghost
 ##   time         store time (s) of that report
+##   since        store time it was first reported (how new it is: an NPC's
+##                reaction delay, Enemy.reaction_delay)
 ##   source       what found it: "sight", "ward", "drone", "seeker", "flare",
 ##                "biosensor", "alarm", "ir" (the head's IR sensor,
 ##                IRSensing: a live track on a body it can't make out, kind
 ##                "unknown", reported every view check) or "light" (a mecha
-##                whose illuminator is on, within a screen of an NPC:
+##                whose illuminator is on, inside an NPC's sight circle:
 ##                Illumination.in_light_range)
 ##   reveal       how the player is shown it, from the source (REVEALS):
 ##                "ping" a HUD marker at its position, "vision" the body
@@ -38,6 +40,26 @@ extends RefCounted
 ## _physics_process, so a paused or frozen mecha's contacts don't age.
 ## Expiry is worked out when the store is read and every PRUNE_INTERVAL s,
 ## never per contact per frame.
+##
+## A contact from "lock" is the mecha's own made lock (Mecha): live while the
+## lock holds, through walls, but not seen.
+##
+## WEDGES. A wedge is a bearing, not a position: a sector from where the
+## mecha was (origin) outward, `width` degrees wide round `bearing`
+## (radians), between min_range and max_range px (0 and INF: unknown). Wedges
+## are their own records (report_wedge, wedges), kept apart from contacts:
+##   source       "shot" (a round came close or hit, from someone not in
+##                sight), "sound" (a loud sound from something not in sight),
+##                "lock" (someone is locking this mecha)
+##   origin, bearing, width, min_range, max_range
+##   time, since, live, live_until, ghost_until   as a contact's
+## A wedge has no body. The store keys it by what caused it (its _key, read
+## by the store alone), so one cause keeps one wedge per source (a repeated
+## shot refreshes it, a lock wedge follows its locker), and knows, best_for
+## and query never return a wedge: callers learn a bearing, not who. The bearing and the band are
+## drawn round the truth, never on it (WEDGE_BEARING_JITTER,
+## WEDGE_BAND_JITTER), always with the source inside, so the middle of the
+## wedge (estimate_point) is a guess and not the source's position.
 
 ## Seconds a ghost stays (the ping marker's fade), unless the store sets its
 ## own ghost_time. Placeholder.
@@ -56,11 +78,30 @@ const REVEALS := {
 	"biosensor": "vision",
 	"ir": "ping",
 	"light": "ping",
+	"lock": "ping",
 	"shot": "ping",
 	"sound": "ping",
 	"squad": "ping",
 	"local": "ping",
 }
+## The wedge sources: width (degrees; a lock's narrows from it to 0 as the
+## lock grows, Mecha), the range band either side of the source's distance
+## (a share of it; 0 for an unknown range), and how long one stays live
+## after its last report (s). Placeholders.
+const WEDGES := {
+	"shot": {"width": 30.0, "band": 0.4, "ttl": 5.0},
+	"sound": {"width": 45.0, "band": 0.4, "ttl": 5.0},
+	"lock": {"width": 60.0, "band": 0.0, "ttl": 3.0},
+}
+## How far a wedge's bearing may be drawn off the truth (a share of half its
+## width), and its band's centre off the source's distance (a share of the
+## distance). The source stays inside: within the width, and within a band
+## of WEDGES.band either side of a centre at most 25% off. Placeholders.
+const WEDGE_BEARING_JITTER := 0.9
+const WEDGE_BAND_JITTER := 0.25
+## Where a wedge with an unknown range puts its estimate point (px out).
+## Placeholder.
+const UNKNOWN_RANGE_ESTIMATE := 3000.0
 ## Details a report may carry on the contact, with their defaults when a
 ## report leaves them out: the body's velocity as seen, and how whole it
 ## looked (structural health and hp fraction, for NPC aggression).
@@ -81,6 +122,9 @@ var revision := 0
 var _contacts: Array[Dictionary] = []
 # Body instance id -> its contacts (one per source).
 var _by_body := {}
+var _wedges: Array[Dictionary] = []
+# "source:cause instance id" -> its wedge.
+var _wedge_keys := {}
 var _prune_timer := PRUNE_INTERVAL
 # The store time expiry was last worked out at.
 var _updated_at := -1.0
@@ -91,6 +135,21 @@ static func kind_of(body: Object) -> String:
 	if body is Node and (body as Node).is_in_group("entity"):
 		return str(body.get("species"))
 	return "mech"
+
+
+## The kind a sweep from `observer` reports `body` as: an Entity's species;
+## a decoy "mech" (it is built to look like one); a mecha by its radar
+## cross-section from the observer's side (RadarCrossSection.sweep_kind), so
+## a stealthy one reads as something smaller. NPC code reads these, never the
+## true kinds (the fairness rule).
+static func sweep_kind_of(body: Object, observer: Node2D) -> String:
+	if not (body is Node):
+		return "mech"
+	if (body as Node).is_in_group("entity"):
+		return kind_of(body)
+	if (body as Node).is_in_group("decoy") or not body.has_method("rcs_outlines"):
+		return "mech"
+	return RadarCrossSection.sweep_kind(RadarCrossSection.relative(body, observer.global_position))
 
 
 func advance(dt: float) -> void:
@@ -111,7 +170,7 @@ func report(body: Object, kind: String, position: Vector2, source: String, ttl: 
 	_update()
 	var contact := _find(body, source)
 	if contact.is_empty():
-		contact = {"body": body, "body_id": 0, "source": source, "reveal": REVEALS[source]}
+		contact = {"body": body, "body_id": 0, "source": source, "reveal": REVEALS[source], "since": now}
 		contact.merge(DETAIL_DEFAULTS)
 		if body != null:
 			contact.body_id = body.get_instance_id()
@@ -136,6 +195,13 @@ func report(body: Object, kind: String, position: Vector2, source: String, ttl: 
 func get_all() -> Array[Dictionary]:
 	_update()
 	return _contacts.duplicate()
+
+
+## The store's own list of every contact, for a reader that walks it every
+## think (no copy): it must not change it, nor report or drop while walking.
+func view() -> Array[Dictionary]:
+	_update()
+	return _contacts
 
 
 ## The contacts matching every key given in `filter`:
@@ -253,11 +319,104 @@ func forget(body: Object) -> void:
 
 
 func clear() -> void:
-	if _contacts.is_empty():
+	if _contacts.is_empty() and _wedges.is_empty():
 		return
 	_contacts.clear()
 	_by_body.clear()
+	_wedges.clear()
+	_wedge_keys.clear()
 	revision += 1
+
+
+# ---- Wedges ----
+
+## Records that `source` (WEDGES) puts something at `toward`, as seen from
+## `origin`: a wedge round that bearing, `width` degrees wide (the source's
+## when negative), live for the source's ttl. `cause` is who fired, made the
+## sound or is locking; the store keys on it and never hands it out. The
+## bearing is drawn up to WEDGE_BEARING_JITTER of half the width off the
+## truth and the band's centre up to WEDGE_BAND_JITTER off the distance:
+## drawn afresh on each report (a new round, a new guess), or kept from the
+## wedge's first report with `keep_jitter` (a lock's wedge, which narrows
+## onto its locker). Returns the wedge.
+func report_wedge(cause: Object, source: String, origin: Vector2, toward: Vector2, width := -1.0, keep_jitter := false) -> Dictionary:
+	if not WEDGES.has(source):
+		push_error("ContactStore: unknown wedge source '%s'" % source)
+		return {}
+	_update()
+	var rules: Dictionary = WEDGES[source]
+	var key := "%s:%d" % [source, cause.get_instance_id() if cause != null else 0]
+	var wedge: Dictionary = _wedge_keys.get(key, {})
+	if wedge.is_empty():
+		wedge = {"source": source, "reveal": REVEALS.get(source, "ping"), "_key": key, "since": now}
+		_wedges.append(wedge)
+		_wedge_keys[key] = wedge
+	if not keep_jitter or not wedge.has("bearing_jitter"):
+		wedge.bearing_jitter = randf_range(-WEDGE_BEARING_JITTER, WEDGE_BEARING_JITTER)
+		wedge.band_jitter = randf_range(-WEDGE_BAND_JITTER, WEDGE_BAND_JITTER)
+	var span := float(rules.width) if width < 0.0 else maxf(width, 0.0)
+	var offset := toward - origin
+	wedge.origin = origin
+	wedge.width = span
+	wedge.bearing = offset.angle() + deg_to_rad(span * 0.5) * float(wedge.bearing_jitter)
+	var band := float(rules.band)
+	if band > 0.0:
+		var centre := offset.length() * (1.0 + float(wedge.band_jitter))
+		wedge.min_range = centre * (1.0 - band)
+		wedge.max_range = centre * (1.0 + band)
+	else:
+		wedge.min_range = 0.0
+		wedge.max_range = INF
+	wedge.time = now
+	wedge.live = true
+	wedge.live_until = now + float(rules.ttl)
+	wedge.ghost_until = wedge.live_until + ghost_time
+	revision += 1
+	return wedge
+
+
+## The wedges matching every key given in `filter`: source (equal), live
+## (true for live only, false for ghosts only).
+func wedges(filter := {}) -> Array[Dictionary]:
+	_update()
+	var result: Array[Dictionary] = []
+	for wedge in _wedges:
+		if filter.has("source") and wedge.source != filter.source:
+			continue
+		if filter.has("live") and wedge.live != filter.live:
+			continue
+		result.append(wedge)
+	return result
+
+
+## Drops the wedge `cause` made from `source`, if there is one.
+func drop_wedge(cause: Object, source: String) -> void:
+	var key := "%s:%d" % [source, cause.get_instance_id() if cause != null else 0]
+	var wedge: Dictionary = _wedge_keys.get(key, {})
+	if wedge.is_empty():
+		return
+	_wedges.erase(wedge)
+	_wedge_keys.erase(key)
+	revision += 1
+
+
+## A wedge's best guess at where its source is: along its bearing at the
+## middle of its band (UNKNOWN_RANGE_ESTIMATE out when the range is unknown).
+static func estimate_point(wedge: Dictionary) -> Vector2:
+	var reach := UNKNOWN_RANGE_ESTIMATE if is_inf(float(wedge.max_range)) \
+			else (float(wedge.min_range) + float(wedge.max_range)) * 0.5
+	return Vector2(wedge.origin) + Vector2.from_angle(float(wedge.bearing)) * reach
+
+
+## Whether `point` is inside a wedge's sector and range band.
+static func wedge_contains(wedge: Dictionary, point: Vector2) -> bool:
+	var offset: Vector2 = point - Vector2(wedge.origin)
+	var distance := offset.length()
+	if distance < float(wedge.min_range) or distance > float(wedge.max_range):
+		return false
+	if distance <= 0.0:
+		return true
+	return absf(rad_to_deg(angle_difference(float(wedge.bearing), offset.angle()))) <= float(wedge.width) * 0.5 + 0.01
 
 
 func size() -> int:
@@ -294,6 +453,15 @@ func _update() -> void:
 			revision += 1
 		elif contact.live and now >= contact.live_until:
 			contact.live = false
+			revision += 1
+	for i in range(_wedges.size() - 1, -1, -1):
+		var wedge: Dictionary = _wedges[i]
+		if now >= wedge.ghost_until:
+			_wedge_keys.erase(wedge._key)
+			_wedges.remove_at(i)
+			revision += 1
+		elif wedge.live and now >= wedge.live_until:
+			wedge.live = false
 			revision += 1
 
 

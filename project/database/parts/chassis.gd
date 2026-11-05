@@ -30,6 +30,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var move_heat = 500
 @export var weight := 300.0
 @export var weight_capacity := 1000.0
+## How big it looks to radar for its size (RadarCrossSection): 0.2 a
+## stealth part, 1.0 an ordinary one, 3.0 flat, bulky armour. Its shape and
+## material as one number. Placeholder.
+@export var rcs_factor := 1.0
 @export var stability := 1.0
 @export var hover_particles := false
 @export var tags :Array[String] = ["chassis"]

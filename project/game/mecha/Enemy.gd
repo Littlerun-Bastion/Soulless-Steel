@@ -6,17 +6,11 @@ const BODY_LIFETIME = 35
 ## How long (s) a body this NPC saw stays a live sight contact after the last
 ## senses update that saw it (see update_senses).
 const SIGHT_CONTACT_TTL = 0.5
-## With its illuminator off, an NPC sees unlit targets only within this share
-## of its sight range (see update_senses). Placeholder.
-const DARK_SIGHT_MULT = 0.5
-## An NPC sees an unlit target by eye only inside its illuminator's cone
-## (Illumination.in_cone: the head's illuminator_angle, ahead of its body),
-## lit or dark, or within this distance (px) all round, as the player does
-## (Player.VIEW_PERIPHERAL). Placeholder.
+## An NPC sees a body nobody's light falls on only within this distance (px)
+## all round, as the player does (Player.VIEW_PERIPHERAL). Its own light
+## lights what is in its cone (Illumination.is_lit), so with the light on it
+## sees there too. Placeholder.
 const PERIPHERAL_SIGHT = 400.0
-
-## Its illuminator, whose cone is the one it sees unlit targets in.
-@onready var _cone_light: PointLight2D = Illumination.light_of(self)
 
 # Stuck watchdog, the last resort after the unstick moves in the steering
 # section. stuck_timer counts while the NPC wants to move but either barely
@@ -51,7 +45,6 @@ var positioning := Positioning.new()
 var fire := FireController.new()
 ## Weapon slot -> its role for the fire controller (see _weapon_role).
 var _weapon_roles := {}
-var engage_distance = 2000 #How far to see other mechas
 ## Sounds heard, with lifetimes. The same Array as knowledge.sounds.
 var senses = {
 	"sounds": [],
@@ -215,6 +208,7 @@ func _physics_frame(dt):
 			_update_illuminator(think_dt)
 			_coast_velocity = velocity if global_position != before else Vector2.ZERO
 			_watch_barks(think_dt)
+			_watch_lock_warning()
 			_tick_companion(think_dt)
 			_tick_provocation(think_dt)
 			_tick_sweep_back(think_dt)
@@ -263,6 +257,10 @@ func _physics_frame(dt):
 
 	if is_locking:
 		update_enemy_locking(dt, valid_target)
+	elif is_instance_valid(lock_search_target):
+		update_enemy_locking(dt, lock_search_target)
+	elif lock_search_target != null:
+		lock_search_target = null
 		
 	if Debug.get_setting("enemy_state"):
 		var state = logic.get_current_state()
@@ -373,7 +371,7 @@ func _overlay_text() -> String:
 	if not t or not is_instance_valid(t):
 		return text
 	var who: String = t.mecha_name if "mecha_name" in t else str(t.name)
-	var metres := global_position.distance_to(get_target_position(t)) / 20.0
+	var metres := global_position.distance_to(get_target_position(t)) / MapSenses.PX_PER_METRE
 	var sight := "seen" if is_seeing(t) else "lost %.0fs" % time_unseen(t)
 	return text + "\n%s %.0fm %s" % [who, metres, sight]
 
@@ -826,14 +824,20 @@ func heard_sound(sound_data):
 	# A car alarm (CombatScene._on_car_alarm) is heard like any sound; what
 	# it is worth is the behaviour's call (cares_about_alarms). A Scavenger
 	# keeps away from the car.
+	# Any other loud sound from something it can't see is a sound wedge, and
+	# the NPC goes by its estimate point (Mecha.note_sound_from); the car is
+	# where it is, and so is a sound marked "exact" (its own device, lost).
+	var heard_at: Vector2 = sound_data.position
 	if sound_data.type == "car_alarm":
 		if personality != null and personality.type == Personality.Type.SCAVENGER:
 			knowledge.set_avoid(sound_data.position)
 		bark("heard_alarm")
+	elif sound_data.volume_type == "loud" and sound_data.source != self and not sound_data.get("exact", false):
+		heard_at = note_sound_from(sound_data.source, sound_data.position)
 	senses.sounds.append({
 		"volume_type": sound_data.volume_type,
 		"type": sound_data.type,
-		"position": sound_data.position,
+		"position": heard_at,
 		"lifetime": SOUND_LIFETIME,
 		"source": sound_data.source,
 	})
@@ -919,24 +923,75 @@ func _on_device_lost(device) -> void:
 	knowledge.raise_panic(knowledge.PANIC_DEVICE_LOST)
 	if scripted or not is_instance_valid(device):
 		return
-	heard_sound({"volume_type": "loud", "type": "device", "position": device.global_position, "source": null})
+	heard_sound({"volume_type": "loud", "type": "device", "position": device.global_position, "source": null, "exact": true})
 	bark("device_destroyed")
 
 
-# The behaviour chooses the illuminator for its intent (wants_illuminator),
-# and the choice is held for ILLUMINATOR_HOLD_TIME s; being hit or Flagging
-# ends the hold. See Mecha.set_illuminator.
+# The behaviour chooses the illuminator for its intent
+# (BaseBehaviour.illuminator_mode): off, steady on, or flashing. A steady
+# light comes on at once and stays on at least ILLUMINATOR_HOLD_TIME s, so it
+# doesn't flicker between intents; being hit or Flagging ends the hold.
+# Flashing (light discipline) follows the fight instead (_flash_step). See
+# Mecha.set_illuminator.
 func _update_illuminator(dt := 0.0) -> void:
 	if not auto_illuminator or logic.behaviour == null:
 		return
 	_illuminator_hold = maxf(_illuminator_hold - dt, 0.0)
-	if not logic.behaviour.has_method("wants_illuminator"):
+	if not logic.behaviour.has_method("illuminator_mode"):
 		return
-	var wanted: bool = logic.behaviour.wants_illuminator(self, str(logic.get_current_state()))
-	if wanted == illuminator_on or _illuminator_hold > 0.0:
+	var mode: String = logic.behaviour.illuminator_mode(self, str(logic.get_current_state()))
+	if mode == "flash":
+		var lit := _flash_step(dt)
+		if lit != illuminator_on:
+			set_illuminator(lit)
+		_illuminator_hold = 0.0
+		return
+	_flash_reset()
+	var wanted := mode == "on"
+	if wanted == illuminator_on or (not wanted and _illuminator_hold > 0.0):
 		return
 	set_illuminator(wanted)
-	_illuminator_hold = ILLUMINATOR_HOLD_TIME
+	_illuminator_hold = ILLUMINATOR_HOLD_TIME if wanted else 0.0
+
+
+# LIGHT DISCIPLINE (skill 0.5 and over: BaseBehaviour.illuminator_mode
+# "flash"). The light comes on to get visual on the target and goes off after
+# each burst: on until it has visual, at most FLASH_MAX s; then off once a
+# burst of fire ends (no shot for FLASH_BURST_GAP s), or at FLASH_MAX with no
+# visual; dark for FLASH_REST s; then on again for the next. Placeholders.
+const FLASH_MAX := 2.0
+const FLASH_REST := 1.0
+const FLASH_BURST_GAP := 0.3
+var _flash_time := 0.0
+var _flash_rest := 0.0
+var _flash_fired := false
+
+
+# One think of the flash cycle; returns whether the light is on.
+func _flash_step(dt: float) -> bool:
+	if _flash_rest > 0.0:
+		_flash_rest = maxf(_flash_rest - dt, 0.0)
+		return false
+	_flash_time += dt
+	var target = current_target if is_instance_valid(current_target) else valid_target
+	var seen: bool = is_instance_valid(target) and is_seeing(target)
+	var shooting: bool = knowledge.now() - fire.last_shot_time <= FLASH_BURST_GAP
+	if shooting:
+		_flash_fired = true
+	var burst_over: bool = _flash_fired and not shooting
+	var no_visual: bool = _flash_time >= FLASH_MAX and not seen and not _flash_fired
+	if burst_over or no_visual:
+		_flash_time = 0.0
+		_flash_fired = false
+		_flash_rest = FLASH_REST
+		return false
+	return true
+
+
+func _flash_reset() -> void:
+	_flash_time = 0.0
+	_flash_rest = 0.0
+	_flash_fired = false
 
 
 # Ages what the NPC knows by `dt` (its thinking time), then looks for
@@ -996,8 +1051,9 @@ func update_senses(dt):
 	knowledge.age(dt)
 
 	# Look for mechas and Entities in sight; a decoy looks like a mecha.
+	# Nothing past the sight circle (Mecha.sight_radius) is seen.
 	var own_sight_mult = MapSenses.sight_mult(self)
-	var max_reach: float = engage_distance * 1.4 * own_sight_mult
+	var max_reach: float = sight_radius() * own_sight_mult
 	var max_reach_sq := max_reach * max_reach
 	for target in _sense_candidates():
 		if target == self:
@@ -1018,24 +1074,24 @@ func update_senses(dt):
 	extra_bloom = knowledge.panic * PANIC_BLOOM
 
 
-# One body of the senses update: in range (the cheap squared-distance test
-# first), then foliage, light and walls, it is seen. The head's IR sensor
-# (IRSensing) works anywhere in that range, foliage and darkness or not: a
-# body at least as hot as its IR identification is seen, as a lit one is; one
-# at least as hot as its IR sensitivity that isn't seen otherwise is tracked
-# by its heat (NPCKnowledge.sensed_heat: where it is, live, not seen).
+# One body of the senses update: in the sight circle (the cheap
+# squared-distance test first), then foliage, light and walls, it is seen. The
+# head's IR sensor (IRSensing) works anywhere in the circle, foliage and
+# darkness or not: a body at least as hot as its IR identification is seen,
+# as a lit one is; one at least as hot as its IR sensitivity that isn't seen
+# otherwise is tracked by its heat (NPCKnowledge.sensed_heat: where it is,
+# live, not seen). A mecha whose illuminator is on within the circle gives
+# itself away (NPCKnowledge.noticed_light, Illumination.in_light_range).
 #
-# Past any of that: a Fisher whose harpoon is in this NPC is seen, wherever
-# it is (it's on the end of the tether); a mecha whose illuminator is on
-# within a screen of it gives itself away (NPCKnowledge.noticed_light,
-# Illumination.in_light_range), however far it sees.
+# Past the circle only a Fisher whose harpoon is in this NPC is seen (it's on
+# the end of the tether).
 func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 	if not is_instance_valid(target):
 		return
 	var far := position.distance_squared_to(target.position) > max_reach_sq
 	# The cheap tests first, before even the (string-keyed) is_dead look-up:
-	# past its sight, only a tether or a light can give a body away.
-	if far and not target.has_method("is_tethered_to") and not Illumination.is_shining(target):
+	# past the circle, only a tether can give a body away.
+	if far and not target.has_method("is_tethered_to"):
 		return
 	if "is_dead" in target and target.is_dead:
 		return
@@ -1043,11 +1099,9 @@ func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 	if target.has_method("is_tethered_to") and target.is_tethered_to(self):
 		knowledge.see(target, target.global_position, velocity_seen)
 		return
-	var light := Illumination.in_light_range(self, target)
 	if far:
-		if light:
-			knowledge.noticed_light(target, target.global_position, velocity_seen)
 		return
+	var light := Illumination.in_light_range(self, target)
 	var heat := IRSensing.level(self, target)
 	if heat == IRSensing.IDENTIFIED:
 		knowledge.see(target, target.global_position, velocity_seen)
@@ -1055,40 +1109,35 @@ func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 	if _sees_by_eye(target, own_sight_mult):
 		return
 	if heat == IRSensing.SENSED:
-		knowledge.sensed_heat(target, target.global_position, velocity_seen)
+		var track: Dictionary = knowledge.sensed_heat(target, target.global_position, velocity_seen)
+		if float(track.get("since", -1.0)) == contacts.now:
+			bark("contact_unknown")
 	if light:
 		knowledge.noticed_light(target, target.global_position, velocity_seen)
 
 
-# Whether the NPC sees `target` by sight alone (in range, foliage, light,
-# its cone, walls), and if so records it.
+# Whether the NPC sees `target` by sight alone (in the circle, foliage, light,
+# walls), and if so records it.
 func _sees_by_eye(target, own_sight_mult: float) -> bool:
 	var distance = position.distance_to(target.position)
-	var thermal_range_mult = 1.0
-	if target.has_method("get_thermal_signature"):
-		# Cold targets detected at 60% range, hot targets at 140%
-		thermal_range_mult = lerp(0.6, 1.4, target.get_thermal_signature())
 
-	# Foliage over the target, or over us, shortens the range; building
-	# walls and smoke block sight completely (see MapSenses). A target an
-	# illuminator lights is seen through walls and all round
-	# (Illumination.seen_lit); an unlit one only inside our cone or within
-	# PERIPHERAL_SIGHT, and with our own illuminator off only at
-	# DARK_SIGHT_MULT of the range. Cheapest checks first: the foliage and
-	# sight checks only run for targets in range.
-	var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
-	if distance > effective_engage_distance \
-			or distance > effective_engage_distance * MapSenses.detection_mult(target):
+	# The sight circle, shortened by foliage over the target or over us; a
+	# body's heat matters only to the IR sensor, never to the eye. Inside it,
+	# a target an illuminator lights (anyone's, ours included) is seen through
+	# walls and all round (Illumination.seen_lit), and an unlit one only
+	# within PERIPHERAL_SIGHT with no wall or smoke between (MapSenses).
+	# Our own light needs no cone test of its own here: an unlit target in
+	# our cone is one its shadow ray found behind a wall, or in another
+	# building. Cheapest checks first: the foliage and sight checks only run
+	# for targets in range.
+	var reach: float = sight_radius() * own_sight_mult
+	if distance > reach or distance > reach * MapSenses.detection_mult(target):
 		return false
-	var lit := Illumination.seen_lit(self, target)
-	if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
-		return false
-	if not lit and distance > PERIPHERAL_SIGHT and not Illumination.in_cone(_cone_light, target.global_position):
-		return false
-	if lit or not _sight_to_blocked(target):
-		knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
-		return true
-	return false
+	if not Illumination.seen_lit(self, target):
+		if distance > PERIPHERAL_SIGHT or _sight_to_blocked(target):
+			return false
+	knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
+	return true
 
 
 # How many living mechas in sight this NPC holds a grudge against or was
@@ -1168,6 +1217,166 @@ func get_recent_noise(var_type, var_value):
 			biggest_lifetime = sound.lifetime
 	
 	return recent_noise
+
+
+# LOCKING
+#
+# An NPC locks by the same rules as the player (Mecha: the sight circle,
+# smoke, the lock rate, ECM, the target's warning), but it has no reticle to
+# drag over a hidden mech, so it may only look for a lock toward a reason:
+#   - a wedge (shot, sound or lock) whose sector and band the target is
+#     really in (ContactStore.wedge_contains);
+#   - any other contact it has that isn't a live track (a ghost, an alarm, a
+#     shot or sound it placed, a squadmate's callout), or a Local lead,
+#     within LOCK_SEARCH_RADIUS of the target.
+# With no live track on the target, it first searches for
+# lerp(LOCK_SEARCH_SLOW, LOCK_SEARCH_FAST, skill) s, LOCK_SEARCH_JITTER either
+# way and within LOCK_SEARCH_FAST..LOCK_SEARCH_SLOW, and nothing shows to
+# anyone while it does. Then it locks, and each second its reticle slips off
+# with chance lerp(LOCK_SLIP_UNSKILLED, LOCK_SLIP_SKILLED, skill): the
+# progress goes back to 0 and it carries on, with no new search. With a live
+# track (LIVE_TRACK_SOURCES: it knows where to put the reticle) there is no
+# search and no slip, and no reason is needed.
+
+## Placeholders.
+const LOCK_SEARCH_RADIUS := 600.0
+const LOCK_SEARCH_SLOW := 5.0
+const LOCK_SEARCH_FAST := 2.0
+const LOCK_SEARCH_JITTER := 0.5
+const LOCK_SLIP_UNSKILLED := 0.10
+const LOCK_SLIP_SKILLED := 0.02
+## The contact sources that follow a body live: a reticle can be put on it.
+const LIVE_TRACK_SOURCES := ["sight", "ir", "light", "ward", "drone", "seeker", "flare", "biosensor", "lock"]
+
+# Seconds of lock search left, or -1 while not searching.
+var _lock_search := -1.0
+## A mech it looks for a lock on with no target of its own: one inside a
+## reason's area (a shot wedge at skill 0.7, identify's lock search, a lock
+## back). The lock rules above still decide; while it has a valid_target,
+## that is what it locks.
+var lock_search_target = null
+
+## Skill (Personality.skill, 0.5 with none) sets how long the NPC takes to
+## act on a new track or wedge: lerp(REACTION_SLOW, REACTION_FAST, skill) s.
+## Placeholders.
+const REACTION_SLOW := 1.5
+const REACTION_FAST := 0.3
+## From this skill on, a shot wedge (fired on from beyond visual) starts a
+## lock search on whoever is inside it at once. Placeholder.
+const SKILL_LOCK_ON_WEDGE := 0.7
+
+
+func skill() -> float:
+	return personality.skill if personality != null else 0.5
+
+
+# Someone locking it (Mecha.lock_warning): a lock_warning bark when a lock
+# begins, and panic (NPCKnowledge.PANIC_LOCKED) once it is made, once per
+# lock wedge. What it does about it is identify's (BaseBehaviour).
+var _warned_since := -INF
+var _locked_since := -INF
+
+
+func _watch_lock_warning() -> void:
+	var warning := lock_warning()
+	if warning.is_empty():
+		return
+	var since: float = float(warning.wedge.get("since", 0.0))
+	if since != _warned_since:
+		_warned_since = since
+		bark("lock_warning")
+	if warning.state == "locked" and since != _locked_since:
+		_locked_since = since
+		knowledge.raise_panic(knowledge.PANIC_LOCKED)
+
+
+func reaction_delay() -> float:
+	return lerpf(REACTION_SLOW, REACTION_FAST, skill())
+
+
+# A lock it just made (Mecha._advance_lock).
+func _on_lock_made(_target) -> void:
+	bark("locked_on")
+
+
+func update_enemy_locking(dt, target):
+	var valid: bool = target and is_instance_valid(target) and can_start_lock(target)
+	var live := valid and has_live_track(target)
+	if not valid or not (live or lock_reason_for(target)):
+		_lock_search = -1.0
+		_reset_locking()
+		if is_same(target, lock_search_target):
+			lock_search_target = null
+		return
+	if locking_to and not is_same(locking_to.mecha, target):
+		_reset_locking()
+		_lock_search = -1.0
+	if not locking_to:
+		if not live:
+			if _lock_search < 0.0:
+				_lock_search = lock_search_time()
+			_lock_search -= dt
+			if _lock_search > 0.0:
+				return
+		_lock_search = -1.0
+		locking_to = {"progress": 0.0, "mecha": target}
+	elif not live and randf() < lock_slip_chance() * dt:
+		locking_to.progress = 0.0
+	_advance_lock(dt)
+
+
+## Whether a live contact follows `body` (LIVE_TRACK_SOURCES).
+func has_live_track(body) -> bool:
+	for contact in contacts.query({"body": body, "live": true}):
+		if contact.source in LIVE_TRACK_SOURCES:
+			return true
+	return false
+
+
+## Whether the NPC has a reason to look for a lock on `target` (see above).
+func lock_reason_for(target) -> bool:
+	var at: Vector2 = target.global_position
+	for wedge in contacts.wedges():
+		if ContactStore.wedge_contains(wedge, at):
+			return true
+	var radius_sq := LOCK_SEARCH_RADIUS * LOCK_SEARCH_RADIUS
+	for contact in contacts.view():
+		if contact.live and contact.source in LIVE_TRACK_SOURCES:
+			continue
+		if Vector2(contact.position).distance_squared_to(at) <= radius_sq:
+			return true
+	for lead in knowledge.local_leads:
+		var spot = lead.get("position")
+		if spot is Vector2 and spot.distance_squared_to(at) <= radius_sq:
+			return true
+	return false
+
+
+## How long (s) this NPC searches before a lock starts (see above).
+func lock_search_time() -> float:
+	var skill := personality.skill if personality != null else 0.5
+	var mean := lerpf(LOCK_SEARCH_SLOW, LOCK_SEARCH_FAST, skill)
+	return clampf(mean + randf_range(-LOCK_SEARCH_JITTER, LOCK_SEARCH_JITTER), LOCK_SEARCH_FAST, LOCK_SEARCH_SLOW)
+
+
+## The chance a second that its reticle slips off a target it has no live
+## track on (see above).
+func lock_slip_chance() -> float:
+	var skill := personality.skill if personality != null else 0.5
+	return lerpf(LOCK_SLIP_UNSKILLED, LOCK_SLIP_SKILLED, skill)
+
+
+## Whether a lock-on round from `slot` can reach the locked target: an
+## indirect one (VLS) comes down from above; a direct one counts as AP 0
+## against walls, so any wall on the way would stop it, and it is held.
+func lock_shot_clear(slot: String) -> bool:
+	var weapon = build.get(slot)
+	var target = get_locked_to()
+	if not weapon or not target:
+		return false
+	if weapon.get("is_indirect_fire"):
+		return true
+	return not MapSenses.walls_between(get_world_2d(), global_position, target.global_position)
 
 #COMBAT METHODS
 
@@ -1351,8 +1560,39 @@ func _get_decoys() -> Array:
 			func(d): return d.owner_mecha != self and not d.is_gone())
 
 
-# An Entity's bite or acid (EntityAttack): react as to being shot. Shots
-# report themselves through _on_nearby_projectile_area_entered instead.
+# A round from `attacker`, fired from `fired_from`, came close or hit: the
+# NPC is under fire, and believes the shot came from where it makes it out
+# to (Mecha.note_round_from: exactly if it sees the shooter, else its shot
+# wedge's estimate point). Who fired still counts for its threat score and
+# hostility (most_recent_attacker); where is the guess. Returns the guess.
+func _took_round(attacker, fired_from: Vector2) -> Vector2:
+	under_fire_timer = 0.5
+	most_recent_attacker = attacker
+	var unseen := not is_in_sight(attacker)
+	var guess := note_round_from(attacker, fired_from)
+	last_attack_position = guess
+	if not scripted:
+		_remember(attacker, guess)
+		knowledge.took_fire_from(guess)
+		positioning.request()
+		# A skilled pilot fired on from beyond visual looks for a lock along
+		# the shot wedge at once (the lock rules hold: the shooter must be in
+		# the wedge and the circle).
+		# A Rat never locks: a lock would give it away.
+		var rat: bool = personality != null and personality.type == Personality.Type.RAT
+		if unseen and not rat and skill() >= SKILL_LOCK_ON_WEDGE and attacker is Mecha \
+				and not is_instance_valid(lock_search_target):
+			lock_search_target = attacker
+	return guess
+
+
+func _on_round_hit(shooter, fired_from: Vector2) -> void:
+	_took_round(shooter, fired_from)
+
+
+# An Entity's bite or acid (EntityAttack): react as to being shot, knowing
+# where it is (it is on top of the NPC). Rounds report themselves through
+# _on_nearby_projectile_area_entered and hits (_took_round) instead.
 func on_attacked_by(attacker) -> void:
 	if not is_instance_valid(attacker):
 		return
@@ -1584,7 +1824,9 @@ func _on_NavigationAgent2D_target_reached():
 #-------- Physics and thinking LOD
 
 # By its distance to the player an NPC runs at one of three rates:
-#   near (within THINK_FULL_DISTANCE): steps and thinks every frame
+#   near (within THINK_FULL_DISTANCE, or anywhere the player can see it: on
+#        screen and inside the player's sight circle): steps and thinks
+#        every frame
 #   far: steps every FAR_STEP_INTERVAL frames, thinks every FAR_THINK_STEPS
 #        of those steps (every FAR_THINK_INTERVAL frames)
 #   very far (beyond VERY_FAR_DISTANCE): VERY_FAR_STEP_INTERVAL and
@@ -1614,7 +1856,9 @@ func is_near_player() -> bool:
 	return lod_tier() == 0
 
 
-## 0 near, 1 far, 2 very far (see above).
+## 0 near, 1 far, 2 very far (see above). An NPC the player can see (on
+## screen, which follows the camera's pan, and inside the player's sight
+## circle) is always near.
 func lod_tier() -> int:
 	if arena == null or not ("player" in arena):
 		return 0
@@ -1622,6 +1866,10 @@ func lod_tier() -> int:
 	if p == null or not is_instance_valid(p):
 		return 0
 	var d := global_position.distance_squared_to(p.global_position)
+	if is_on_screen():
+		var sight: float = p.sight_radius()
+		if d <= sight * sight:
+			return 0
 	if d < THINK_FULL_DISTANCE * THINK_FULL_DISTANCE:
 		return 0
 	return 1 if d < VERY_FAR_DISTANCE * VERY_FAR_DISTANCE else 2
@@ -2624,22 +2872,24 @@ func _try_dodge(from: Vector2) -> void:
 	try_dash(side)
 
 
+# A round entered the NearbyProjectile area: if it comes within
+# SHOT_WEDGE_RADIUS on its way (Mecha.round_comes_close), it is fire taken
+# (_took_round).
 func _on_nearby_projectile_area_entered(area):
 	if area.original_mecha_info and \
 	   area.original_mecha_info.name != mecha_name and\
 	   is_instance_valid(area.original_mecha_info.body):
 		var attacker = area.original_mecha_info.body
-		under_fire_timer = 0.5
-		most_recent_attacker = attacker
-		last_attack_position = attacker.global_position
-		# The shot gives away where it came from.
-		if not scripted:
-			_remember(attacker, attacker.global_position)
-			knowledge.took_fire_from(attacker.global_position)
-			positioning.request()
+		var heading = area.get("dir")
+		if not (heading is Vector2):
+			heading = area.get("velocity") if area.get("velocity") is Vector2 else Vector2.ZERO
+		if not round_comes_close(area.global_position, heading):
+			return
+		var fired_from: Vector2 = area.original_mecha_info.get("from", attacker.global_position)
+		_took_round(attacker, fired_from)
 		if attacker.has_method("is_player") and attacker.is_player():
 			AICombatLog.record_player_shot(global_position.distance_to(attacker.global_position))
-		_try_dodge(attacker.global_position)
+		_try_dodge(fired_from)
 
 		# A squadmate's stray round is forgiven; anyone else's turns the
 		# whole squad on the shooter. A companion shot by the player it

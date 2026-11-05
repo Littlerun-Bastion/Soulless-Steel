@@ -8,12 +8,15 @@ extends Node
 # hidden while its bounds are more than view_margin outside the camera's view.
 # Hidden nodes cost nothing to draw or to cull.
 #
-# Hand-made scenes, round every mecha: each StreamedScene in the tree is
-# loaded (on a background thread) while any mecha is within load_distance of
-# its bounds, and freed once every mecha is more than load_distance +
-# unload_slack away. Hand-made scenes have collision (walls, props), so they
+# Hand-made scenes, round every mecha and round the camera: each
+# StreamedScene in the tree is loaded (on a background thread) while any
+# mecha is within load_distance of its bounds, or the camera's screen centre
+# is within the larger of load_distance and the screen's half-diagonal plus
+# view_margin; it is freed once every one of them is unload_slack further
+# away than that. Hand-made scenes have collision (walls, props), so they
 # stream round every mecha, not only the player: NPCs far from the player
-# still meet them.
+# still meet them. The camera's centre follows the player's camera pan, so
+# what the player looks at is loaded too.
 #
 # Collision that is built by code (building walls, vehicle boxes) is handled
 # by BuildingField and VehicleField; this node does not touch it.
@@ -130,13 +133,22 @@ func _update_scenes() -> void:
 	for m in get_tree().get_nodes_in_group("mecha"):
 		if m is Node2D and (m as Node2D).is_inside_tree():
 			anchors.append((m as Node2D).global_position)
+	var view: Array[Vector2] = []
+	var view_load := load_distance
+	var viewport := get_viewport()
+	var cam := viewport.get_camera_2d() if viewport else null
+	if cam != null:
+		view.append(cam.get_screen_center_position())
+		var size := viewport.get_visible_rect().size / cam.zoom
+		view_load = maxf(load_distance, size.length() * 0.5 + view_margin)
 	for s in get_tree().get_nodes_in_group("streamed_scene"):
 		var scene := s as StreamedScene
 		if scene == null:
 			continue
 		var d := scene.distance_to_nearest(anchors)
-		if d <= load_distance:
+		var d_view := scene.distance_to_nearest(view) if not view.is_empty() else INF
+		if d <= load_distance or d_view <= view_load:
 			scene.stream_in()
-		elif d > load_distance + unload_slack:
+		elif d > load_distance + unload_slack and d_view > view_load + unload_slack:
 			scene.stream_out()
 		scene.poll()

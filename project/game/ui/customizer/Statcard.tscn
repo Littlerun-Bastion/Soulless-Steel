@@ -114,7 +114,7 @@ stat_name = "accuracy_modifier"
 
 [node name="Visual Range" parent="parts/head" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Visual Range"
+stat_title = "Visual Range m"
 stat_name = "visual_range"
 
 [node name="Weight" parent="parts/head" instance=ExtResource("2")]
@@ -355,11 +355,6 @@ layout_mode = 2
 stat_title = "Lock Duration"
 stat_name = "lock_on_duration"
 
-[node name="Lock Distance" parent="parts/chipset" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Lock Distance"
-stat_name = "lock_on_distance"
-
 [node name="Lock Reticle Size" parent="parts/chipset" instance=ExtResource("2")]
 layout_mode = 2
 stat_title = "Lock Reticle Size"
@@ -374,16 +369,6 @@ stat_name = "lock_on_strength"
 layout_mode = 2
 stat_title = "Radar"
 stat_name = "has_radar"
-
-[node name="Radar Range" parent="parts/chipset" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Radar Range"
-stat_name = "radar_range"
-
-[node name="Refresh Rate" parent="parts/chipset" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Refresh Rate"
-stat_name = "radar_refresh_rate"
 
 [node name="Search Time" parent="parts/chipset" instance=ExtResource("2")]
 layout_mode = 2

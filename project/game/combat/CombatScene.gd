@@ -48,12 +48,14 @@ const MAX_ACTIVE_FLASHES := 12
 
 # Parts coming off a dead mecha's body (MechaBody.shed), protections against
 # cascade overload:
-#   1. Offscreen kills (>3000 from player) drop them straight where they
-#      land, with no throw and no explosion
+#   1. Kills the player can't see (_player_can_see_point) drop them straight
+#      where they land, with no throw and no explosion
 #   2. Hard cap on their explosions in ScrapParts: when reached, this death
 #      contributes NO new ones (we'd rather lose visual fidelity than tank FPS)
-const OFFSCREEN_SCRAP_DISTANCE := 3000.0
 const MAX_ACTIVE_SCRAPS := 16
+## How far (px) past the screen's edges a point still counts as on screen
+## for _player_can_see_point.
+const SEE_POINT_MARGIN := 400.0
 const SHED_EXPLOSION_SCALE := 0.6
 # Bodies left where no wreck is (_leave_body), oldest removed first.
 const MAX_BODIES := 12
@@ -565,14 +567,17 @@ func _leave_body(mecha) -> void:
 # The one or two parts that come off a body (MechaBody.choose_shed), each with
 # a small explosion. `loot` is the wreck's, so its weapons stay on the body.
 func _shed_parts(body: MechaBody, mecha, loot: Array) -> void:
-	_shed(body, MechaBody.choose_shed(mecha, loot), _near_player(mecha))
+	_shed(body, MechaBody.choose_shed(mecha, loot), mecha == player or _player_can_see_point(mecha.global_position))
 
 
-# Whether the player is near enough to see `mecha`'s parts come off.
-func _near_player(mecha) -> bool:
-	if is_instance_valid(player) and mecha != player:
-		return player.global_position.distance_to(mecha.global_position) <= OFFSCREEN_SCRAP_DISTANCE
-	return true
+# Whether the player can see `point`: on screen (MapSenses.screen_rect, which
+# follows the camera's pan, grown by SEE_POINT_MARGIN) and inside its sight
+# circle. With no player (the observer arena), always.
+func _player_can_see_point(point: Vector2) -> bool:
+	if not is_instance_valid(player):
+		return true
+	return MapSenses.screen_rect(player, SEE_POINT_MARGIN).has_point(point) \
+			and player.global_position.distance_to(point) <= player.sight_radius()
 
 
 # Sheds `slots` off a body in the tree: thrown, with an explosion each, when
@@ -597,7 +602,8 @@ func _on_mecha_made_sound(sound_data) -> void:
 	for m in all_mechas:
 		if m == sound_data.source or not is_instance_valid(m):
 			continue
-		# Only NPCs react to sound (Enemy.heard_sound); the player has no handler.
+		# NPCs act on sounds (Enemy.heard_sound); the player gets a sound
+		# wedge for its radar (Player.heard_sound).
 		if not m.has_method("heard_sound"):
 			continue
 		if m.global_position.distance_to(sound_data.position) <= sound_data.max_distance:
@@ -965,6 +971,8 @@ func _update_enemies_debug_navigation() -> void:
 func _register_player() -> void:
 	PlayerHUD.setup(player, all_mechas)
 	PlayerHUD.setup_local(local_pilots)
+	if Heatmap.has_method("set_player"):
+		Heatmap.set_player(player)
 	MechOS.set_player(player)
 	MouseManager.set_aim_available(true)
 

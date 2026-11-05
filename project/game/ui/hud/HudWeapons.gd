@@ -15,7 +15,9 @@ extends PanelContainer
 ## (dim at 0), "CHARGES" under them; a passive part ON or OFF (dim), or LOST
 ## for a Seeker shot down, its function under it. While it can't be used yet
 ## the label reads "INT · 0.6S".
-## Under it the IR illuminator: ON, or OFF (dim) while the player runs dark.
+## Under it the IR illuminator: ON, HELD while the key holds it on or LATCHED
+## while it stays on by itself (Player.press_illuminator_key), or OFF (dim),
+## DARK, while the player runs dark.
 ## Rows are built once in setup(); values are read each frame.
 
 const SLOTS := [
@@ -233,4 +235,9 @@ func _update_illuminator_row(row: Dictionary) -> void:
 	row.ammo_box.visible = true
 	row.ammo.text = "ON" if on else "OFF"
 	row.ammo.theme_type_variation = &"LabelDisplay" if on else &"LabelDisplayDim"
-	row.reserve.text = "LIT" if on else "DARK"
+	if not on:
+		row.reserve.text = "DARK"
+	elif player.has_method("is_illuminator_held") and player.is_illuminator_held():
+		row.reserve.text = "HELD"
+	else:
+		row.reserve.text = "LATCHED"

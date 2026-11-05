@@ -96,12 +96,14 @@ func _process_step(dt):
 			if not ConstantBlinkingSFX.playing:
 				ConstantBlinkingSFX.play()
 		elif player.get_locking_to():
+			# Locking has begun (the settle is over): the sprite is on the
+			# target from now on, growing and blinking faster with the
+			# progress. This is the reveal (Mecha's lock rules).
 			ConstantBlinkingSFX.stop()
 			LockingSprite.texture = LOCKING_SPRITES.locking
 			var prog = player.get_locking_to().progress
 			var mecha = player.get_locking_to().mecha
-			var dist = mecha.global_position - player.global_position
-			var pos = player.global_position + dist*prog
+			var pos = mecha.global_position
 			var sc = LOCKING_INIT_SCALE -  LOCKING_INIT_SCALE*prog + LOCKING_FINAL_SCALE*prog
 			var blink_speed = LOCKING_INIT_BLINK -  LOCKING_INIT_BLINK*prog + LOCKING_FINAL_BLINK*prog
 			if player.ecm_strength_difference > 0.0:
@@ -114,6 +116,47 @@ func _process_step(dt):
 			ConstantBlinkingSFX.stop()
 			LockingAnim.stop()
 			LockingSprite.hide()
+		_update_lock_warning(dt)
+
+
+# THE LOCK WARNING: someone locking the player (Mecha.lock_warning). While
+# it narrows, a beep that comes faster as the lock grows, from
+# LOCK_BEEP_SLOW to LOCK_BEEP_FAST s apart; once locked, a steady tone. The
+# text is HudAlerts', the arc the radar's. Placeholder sounds.
+const LOCK_BEEP_SLOW := 0.6
+const LOCK_BEEP_FAST := 0.08
+const LOCK_BEEP_SFX := "select"
+const LOCK_TONE_STREAM := preload("res://assets/audio/sfx/example_locked_tone.ogg")
+const LOCK_TONE_PITCH := 0.7
+var _lock_beep_timer := 0.0
+var _lock_tone: AudioStreamPlayer = null
+
+
+func _update_lock_warning(dt: float) -> void:
+	var warning: Dictionary = player.lock_warning() if player.has_method("lock_warning") else {}
+	var locked: bool = not warning.is_empty() and warning.state == "locked"
+	if _lock_tone == null:
+		_lock_tone = AudioStreamPlayer.new()
+		_lock_tone.stream = LOCK_TONE_STREAM
+		_lock_tone.pitch_scale = LOCK_TONE_PITCH
+		_lock_tone.bus = &"SFX"
+		add_child(_lock_tone)
+	if locked and not _lock_tone.playing:
+		_lock_tone.play()
+	elif not locked and _lock_tone.playing:
+		_lock_tone.stop()
+	if warning.is_empty() or locked:
+		_lock_beep_timer = 0.0
+		return
+	_lock_beep_timer -= dt
+	if _lock_beep_timer <= 0.0:
+		AudioManager.play_sfx(LOCK_BEEP_SFX)
+		_lock_beep_timer = lock_beep_interval(float(warning.progress))
+
+
+## How far apart (s) the warning's beeps come at `progress` (0..1).
+static func lock_beep_interval(progress: float) -> float:
+	return lerpf(LOCK_BEEP_SLOW, LOCK_BEEP_FAST, clampf(progress, 0.0, 1.0))
 
 func setup(player_ref, mechas_ref):
 	player = player_ref
@@ -152,7 +195,7 @@ func setup(player_ref, mechas_ref):
 	player.device_destroyed.connect(_on_player_device_destroyed)
 	top_strip.setup(player)
 	if player.build.chipset.has_radar:
-		PlayerRadar.setup(mechas, player, player.build.chipset.radar_range, player.build.chipset.radar_refresh_rate)
+		PlayerRadar.setup(player)
 		PlayerRadar.show()
 	else:
 		PlayerRadar.hide()

@@ -21,7 +21,7 @@ description = "A cheap lightweight head part cobbled from scrap metal and spare 
 image = ExtResource("2_mte5u")
 heatmap = ExtResource("3_ytp7k")
 accuracy_modifier = 1.2
-visual_range = 300
+visual_range = 150
 health = 825
 weight = 3.5
 

@@ -195,7 +195,7 @@ func _test_help() -> void:
 	guardian.knowledge.help_leads()[0].answer = true
 	guardian.logic.evaluate_now(guardian)
 	check_eq(str(guardian.logic.get_current_state()), "help", "a Guardian with a call to answer helps")
-	check(guardian.logic.behaviour.wants_illuminator(guardian, "help"), "lit on the way")
+	check(not guardian.logic.behaviour.wants_illuminator(guardian, "help"), "dark on the way: the light comes on only to engage")
 	# Seeing the caller hit, it turns on the attacker.
 	var attacker := _mecha(Vector2(3000, 800), "Bully")
 	guardian.knowledge.see(caller, caller.global_position)
@@ -239,7 +239,11 @@ func _test_vulture() -> void:
 	check_eq(str(hunter.logic.get_current_state()), "vulture", "a Hunter in good shape that hears gunfire vultures")
 	check(str(scavenger.logic.get_current_state()) != "vulture", "a Scavenger doesn't (%s)" % str(scavenger.logic.get_current_state()))
 	check(not hunter.logic.behaviour.wants_illuminator(hunter, "vulture"), "dark")
-	check_eq(hunter.logic.behaviour._vulture_point, Vector2(4000, 0), "toward the fight it heard")
+	# It can't see the fight, so it goes by its sound wedge's estimate point.
+	var wedges: Array = hunter.contacts.wedges({"source": "sound"})
+	check(wedges.size() == 1 and ContactStore.wedge_contains(wedges[0], Vector2(4000, 0)), "the gunfire is a sound wedge round the fight")
+	if wedges.size() == 1:
+		check_eq(hunter.logic.behaviour._vulture_point, ContactStore.estimate_point(wedges[0]), "toward the fight it heard, as it makes it out")
 	var survivor := _mecha(Vector2(1500, 0), "Winner")
 	hunter.knowledge.see(survivor, survivor.global_position)
 	hunter.logic.behaviour.do_vulture(0.1, hunter)

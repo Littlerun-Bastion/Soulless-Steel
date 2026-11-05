@@ -19,6 +19,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var arms_accuracy_modifier := 1.0
 @export var melee_modifier := 0.8
 @export var weight := 20.0
+## How big it looks to radar for its size (RadarCrossSection): 0.2 a
+## stealth part, 1.0 an ordinary one, 3.0 flat, bulky armour. Its shape and
+## material as one number. Placeholder.
+@export var rcs_factor := 1.0
 @export var rotation_acc := 5
 @export var rotation_range := 10.0
 @export var tags :Array[String] = ["shoulder"]

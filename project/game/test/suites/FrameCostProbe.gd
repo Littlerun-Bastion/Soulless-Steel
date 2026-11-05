@@ -5,8 +5,9 @@ extends TestSuite
 # NPCs (nobody can die: every mecha keeps its Flag grace), runs MEASURE_SECONDS
 # with the profiler on, and prints the mean and worst milliseconds per frame
 # of every instrumented system beside the engine's process and physics
-# totals. The numbers are headless (no rendering), so they say nothing about
-# the GPU side. It never fails on a timing.
+# totals; and the sight circle's costs with the camera panned (see
+# _test_sight_circle). The numbers are headless (no rendering), so they say
+# nothing about the GPU side. It never fails on a timing.
 
 const EXPEDITION := preload("res://game/expedition/Expedition.tscn")
 const NPC_COUNT := 12
@@ -20,12 +21,24 @@ var _scene = null
 func _init() -> void:
 	slow = true
 	time_scale = 1.0
-	case_timeout = 120
+	case_timeout = 240
 
 
 func run_tests() -> void:
 	await case("a frame's script time by system on Helwan", _test_probe)
 	await case("the engine's step with twelve scripted walkers", _test_walkers)
+	await case("the sight circle: senses, streaming and shadows with the camera panned", _test_sight_circle)
+
+
+## The sight circle case: every head's visual_range set to each of
+## SIGHT_RANGES (m) in turn, on the player and every NPC alike, and three
+## camera pans: none, the full pan held to one side, and the full pan going
+## round at PAN_TURN_RATE rad/s. The full pan is the player's sight radius
+## (its head's visual_range in px where the pan doesn't read metres). Each
+## case runs PAN_SECONDS.
+const SIGHT_RANGES := [850, 150]
+const PAN_SECONDS := 8.0
+const PAN_TURN_RATE := 1.0
 
 
 ## The random seed the probe runs with, so two runs get the same designs,
@@ -102,6 +115,75 @@ func _test_walkers() -> void:
 	await wait_frames(2)
 	_scene = null
 	Debug.debug_settings["skip_intro"] = saved_skip_intro
+
+
+func _test_sight_circle() -> void:
+	var saved_skip_intro = Debug.debug_settings.get("skip_intro")
+	await _start()
+	var heads := {}
+	for id in PartManager.get_parts("head"):
+		var head = PartManager.get_part("head", id)
+		if head != null:
+			heads[head] = head.visual_range
+	var lines := PackedStringArray(["[FrameCostProbe] sight circle: %d NPCs, %.0f s a case (ms per frame; the rest are means over the frames)" % [NPC_COUNT, PAN_SECONDS]])
+	lines.append("  range   pan      senses  streamer  buildings  occluders  scenes  tier-0")
+	for range_m in SIGHT_RANGES:
+		for head in heads:
+			head.visual_range = range_m
+		for pan in ["none", "held", "moving"]:
+			var row := await _measure_pan(pan)
+			lines.append("  %4d m  %-7s  %6.3f  %8.3f  %9.3f  %9.1f  %6.1f  %6.1f" % [range_m, pan,
+					row.senses, row.streamer, row.buildings, row.occluders, row.scenes, row.tier0])
+	for head in heads:
+		head.visual_range = heads[head]
+	print("\n".join(lines))
+	check(lines.size() > 2, "every case was measured")
+	_scene.queue_free()
+	await wait_frames(2)
+	_scene = null
+	Debug.debug_settings["skip_intro"] = saved_skip_intro
+
+
+func _measure_pan(pan: String) -> Dictionary:
+	var player = _scene.player
+	var cam = player.get_cam()
+	var limit: float = player.sight_radius() if player.has_method("sight_radius") else float(player.build.head.visual_range)
+	var field: BuildingField = BuildingField.find(_scene)
+	var scenes_all := get_tree().get_nodes_in_group("streamed_scene")
+	var sums := {"occluders": 0.0, "scenes": 0.0, "tier0": 0.0}
+	var samples := 0
+	var angle := 0.0
+	FrameProfiler.reset()
+	FrameProfiler.enabled = true
+	var started := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - started < int(PAN_SECONDS * 1000.0):
+		await get_tree().process_frame
+		var offset := Vector2.ZERO
+		if pan == "held":
+			offset = Vector2(limit, 0.0)
+		elif pan == "moving":
+			angle += PAN_TURN_RATE * get_process_delta_time()
+			offset = Vector2.from_angle(angle) * limit
+		if "pan_offset" in cam:
+			cam.pan_offset = offset
+		else:
+			cam.offset = offset
+		sums.occluders += field.occluder_count() if field else 0
+		sums.scenes += scenes_all.filter(func(s): return is_instance_valid(s) and s.is_loaded()).size()
+		sums.tier0 += _enemies().filter(func(e): return e.lod_tier() == 0).size()
+		samples += 1
+	FrameProfiler.enabled = false
+	var times := {}
+	for row in FrameProfiler.report():
+		times[row.key] = row.mean_ms
+	if "pan_offset" in cam:
+		cam.pan_offset = Vector2.ZERO
+	else:
+		cam.offset = Vector2.ZERO
+	var n := float(maxi(samples, 1))
+	return {"senses": times.get("npc_senses", 0.0), "streamer": times.get("map_streamer", 0.0),
+			"buildings": times.get("buildings", 0.0), "occluders": sums.occluders / n,
+			"scenes": sums.scenes / n, "tier0": sums.tier0 / n}
 
 
 # "mean / median / 95th percentile / worst" of a run's per-frame times.

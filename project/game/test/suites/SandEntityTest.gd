@@ -1194,9 +1194,10 @@ func _test_sensed_and_seen() -> void:
 		var seen: Dictionary = mecha.contacts.best_for(entity)
 		check(not seen.is_empty() and seen.kind == entity.species, "the Biosensor reports a %s" % entity.species)
 	var result := mecha.sweep(Vector2.UP, 360.0)
-	check(result.ok and result.counts.get("Coyote") == 1 and result.counts.get("Fisher") == 1 and result.counts.get("Tick Swarm") == 1,
-			"a sweep counts each species (%s)" % Mecha.describe_sweep(result.counts))
-	check("TICK SWARM" in Mecha.describe_sweep(result.counts), "by name")
+	check(result.ok and result.counts.get("Coyote") == 1 and result.counts.get("Fisher") == 1
+			and result.counts.get(Mecha.TICK_KIND) == swarm.get_mote_count(),
+			"a sweep counts each species, a swarm one tick a mote (%s)" % Mecha.describe_sweep(result.counts))
+	check("%d TICK" % swarm.get_mote_count() in Mecha.describe_sweep(result.counts), "by name")
 	mecha.attach_tick(swarm.group_id, _arena, Vector2(0, 200), 30.0)
 	check(mecha._tick_layer != null and mecha._tick_layer.get_parent() == mecha, "ticks on a mecha are drawn under it")
 	coyote._carry({"slot": "arm_weapon_left", "part_id": design.arm_weapon_left, "texture": mecha.LeftArmWeaponMain.texture})

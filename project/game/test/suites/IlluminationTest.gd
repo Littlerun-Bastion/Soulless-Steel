@@ -51,7 +51,7 @@ func run_tests() -> void:
 	await case("with its illuminator off the player loses its cone", _test_player_dark)
 	await case("the illuminator key and the HUD row", _test_key_and_hud)
 	await case("an NPC sees lit targets through walls, and less with its own off", _test_npc_senses)
-	await case("an NPC's behaviour runs dark by intent, and holds the setting", _test_npc_states)
+	await case("an NPC runs dark but to engage, and holds the setting", _test_npc_states)
 	await case("every light adds or takes away, the same for everyone", _test_light_style)
 	await case("the cone is drawn in code, as wide as the head's illuminator angle", _test_drawn_cone)
 	await case("an NPC sees unlit mechas only in its cone or close by", _test_npc_cone)
@@ -214,29 +214,32 @@ func _test_key_and_hud() -> void:
 	add_child(weapons)
 	weapons.setup(_player)
 	var row := weapons.get_row_text("illuminator")
-	check(row.contains("IR") and row.contains("ILLUMINATOR") and row.ends_with("ON / LIT"), "the IR row reads ON (%s)" % row)
+	check(row.contains("IR") and row.contains("ILLUMINATOR") and row.ends_with("ON / LATCHED"), "the IR row reads ON (%s)" % row)
 	check(row.begins_with(MechUI.key_name("toggle_illuminator")), "under its key")
 	_player._input(_action("toggle_illuminator"))
 	check(not _player.illuminator_on, "the illuminator key switches it off")
 	weapons._update()
 	check(weapons.get_row_text("illuminator").ends_with("OFF / DARK"), "the row reads OFF (%s)" % weapons.get_row_text("illuminator"))
 	_player._input(_action("toggle_illuminator"))
-	check(_player.illuminator_on, "and on again")
+	check(_player.illuminator_on, "and on again while held")
+	_player._input(_action("toggle_illuminator", false))
+	check(not _player.illuminator_on, "and off when let go")
 	check(InputMap.has_action("toggle_illuminator"), "the key is an input action")
 	weapons.queue_free()
 
-	# A project.godot without the action: the game adds it, on L.
+	# A project.godot without the action: the game adds it, on C.
 	var events := InputMap.action_get_events(Illumination.KEY_ACTION)
 	InputMap.erase_action(Illumination.KEY_ACTION)
 	Illumination.ensure_key_action()
 	var added := InputMap.action_get_events(Illumination.KEY_ACTION)
-	check(added.size() == 1 and added[0] is InputEventKey and (added[0] as InputEventKey).physical_keycode == KEY_L,
-			"with the action missing from the project, it is added on L")
+	check(added.size() == 1 and added[0] is InputEventKey and (added[0] as InputEventKey).physical_keycode == KEY_C,
+			"with the action missing from the project, it is added on C")
 	var pressed := InputEventKey.new()
-	pressed.physical_keycode = KEY_L
+	pressed.physical_keycode = KEY_C
 	pressed.pressed = true
 	_player._input(pressed)
-	check(not _player.illuminator_on, "and the key works")
+	check(_player.illuminator_on, "and the key works")
+	_player.toggle_illuminator()
 	_player.set_illuminator(true)
 	InputMap.erase_action(Illumination.KEY_ACTION)
 	InputMap.add_action(Illumination.KEY_ACTION)
@@ -261,7 +264,7 @@ func _test_npc_senses() -> void:
 	enemy.update_senses(0.1)
 	check(not enemy.is_seeing(foe), "not once it goes dark")
 
-	var sight: float = enemy.engage_distance * lerpf(0.6, 1.4, foe.get_thermal_signature())
+	var sight: float = enemy.sight_radius()
 	var o := Vector2(-4000, -4000)
 	enemy.global_position = o
 	foe.global_position = o + Vector2(0, -sight * 0.75)
@@ -272,10 +275,10 @@ func _test_npc_senses() -> void:
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	check(not enemy.is_seeing(foe), "with it off, not that far")
-	foe.global_position = o + Vector2(0, -sight * enemy.DARK_SIGHT_MULT * 0.8)
+	foe.global_position = o + Vector2(0, -(enemy.PERIPHERAL_SIGHT - 50.0))
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
-	check(enemy.is_seeing(foe), "only close by")
+	check(enemy.is_seeing(foe), "only close by (PERIPHERAL_SIGHT)")
 	foe.global_position = o + Vector2(0, sight * 0.75)
 	foe.set_illuminator(true)
 	await get_tree().physics_frame
@@ -300,7 +303,8 @@ func _test_drawn_cone() -> void:
 	check(light.texture is ImageTexture and light.texture.get_width() == Illumination.LIGHT_TEXTURE_SIZE,
 			"the illuminator's texture is drawn in code")
 	check_eq(Illumination.cone_angle(light), head_angle, "at its head's angle")
-	check(is_equal_approx(light.texture_scale * Illumination.LIGHT_TEXTURE_SIZE * 0.5, Illumination.CONE_RANGE + Illumination.CONE_RANGE_SOFT),
+	var reach := Illumination.reach(light)
+	check(is_equal_approx(light.texture_scale * Illumination.LIGHT_TEXTURE_SIZE * 0.5, Illumination.texture_extent(reach)),
 			"scaled to the cone's range")
 	var half := head_angle * 0.5
 	var soft := Illumination.CONE_EDGE_SOFT
@@ -308,8 +312,8 @@ func _test_drawn_cone() -> void:
 	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half - soft - 1.0)) * 2000.0) > 0.95, "just inside the cone's side")
 	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half + soft + 1.0)) * 2000.0) < 0.02, "none just outside it")
 	check(absf(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half)) * 2000.0) - 0.5) < 0.15, "half on the edge itself")
-	check(absf(_alpha_at(light, Vector2(0, -Illumination.CONE_RANGE)) - 0.5) < 0.1, "half at the cone's range")
-	check(_alpha_at(light, Vector2(0, -(Illumination.CONE_RANGE + Illumination.CONE_RANGE_SOFT * 0.9))) < 0.05, "none past it")
+	check(absf(_alpha_at(light, Vector2(0, -reach)) - 0.5) < 0.1, "half at the cone's range")
+	check(_alpha_at(light, Vector2(0, -(reach + Illumination.range_soft(reach) * 0.9))) < 0.05, "none past it")
 	check(_alpha_at(light, Vector2(0, Illumination.LOCAL_RADIUS - Illumination.LOCAL_SOFT - 30.0)) > 0.95, "a circle round the mecha, behind it too")
 	check(_alpha_at(light, Vector2(0, Illumination.LOCAL_RADIUS + Illumination.LOCAL_SOFT + 30.0)) < 0.02, "and none past it")
 	check(is_equal_approx(_alpha_at(light, Vector2(-700, -1500)), _alpha_at(light, Vector2(700, -1500))), "both sides alike")
@@ -378,14 +382,16 @@ func _test_npc_cone() -> void:
 	check(not seen["to the side, head"] and not seen["to the side, wide"], "nor one to the side")
 	check(not seen["behind, head"], "nor one behind it")
 	check(seen["close behind, head"], "but one close behind it, yes")
-	# Dark itself, it sees only within DARK_SIGHT_MULT of its range: at least
-	# that share of the coldest target's range (0.6 of engage_distance).
+	# Dark itself, it sees an unlit mecha only within PERIPHERAL_SIGHT.
 	enemy.set_illuminator(false)
-	var dark_reach: float = enemy.engage_distance * 0.6 * enemy.DARK_SIGHT_MULT
-	foe.global_position = o + Vector2(0, -(enemy.PERIPHERAL_SIGHT + dark_reach) * 0.5)
+	foe.global_position = o + Vector2(0, -enemy.PERIPHERAL_SIGHT * 2.0)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
-	check(enemy.is_seeing(foe), "dark itself, it still sees ahead (close by)")
+	check(not enemy.is_seeing(foe), "dark itself, it doesn't see one ahead past PERIPHERAL_SIGHT")
+	foe.global_position = o + Vector2(0, -(enemy.PERIPHERAL_SIGHT - 50.0))
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "only close by")
 	foe.global_position = o + Vector2(0, 1200)
 	foe.set_illuminator(true)
 	await get_tree().physics_frame
@@ -404,35 +410,34 @@ func _test_npc_states() -> void:
 		enemy._update_illuminator()
 		var wanted: bool = behaviour.wants_illuminator(enemy, intent)
 		check_eq(enemy.illuminator_on, wanted, "%s: illuminator %s" % [intent, "on" if wanted else "off"])
-	# Engaging: dark while closing on a target that hasn't fired, lit once it
-	# has, and lit while trading shots.
+	check(["roam", "loot", "investigate", "extract", "follow", "help", "protect", "search", "scout"].all(
+			func(intent): return not behaviour.wants_illuminator(enemy, intent)), "the light is off in every calm intent")
+	# Engaging: lit only for a target it has a track on, steady under the
+	# light discipline skill.
 	behaviour.stance = "closing"
-	check(not behaviour.wants_illuminator(enemy, "engage"), "closing on a quiet target: dark")
-	enemy.under_fire_timer = 0.5
-	check(behaviour.wants_illuminator(enemy, "engage"), "closing under fire: lit")
-	enemy.under_fire_timer = 0.0
-	behaviour.stance = "attack"
-	check(behaviour.wants_illuminator(enemy, "engage"), "trading shots: lit")
-	behaviour.stance = "closing"
-	# Flagged, it leaves dark.
-	enemy.is_exposed = true
-	check(not behaviour.wants_illuminator(enemy, "extract"), "leaving Flagged: dark")
-	enemy.is_exposed = false
-	# Hunters and Rats wander dark.
-	enemy.personality.type = Personality.Type.HUNTER
-	check(not behaviour.wants_illuminator(enemy, "roam") and not behaviour.wants_illuminator(enemy, "investigate"),
-			"a Hunter roams and investigates dark")
-	enemy.personality.type = Personality.Type.PROFESSIONAL
-	# A setting is held for ILLUMINATOR_HOLD_TIME s.
+	check(not behaviour.wants_illuminator(enemy, "engage"), "engaging nothing it knows of: dark")
+	var foe := _mecha(Vector2(-3000, -4500), Vector2.UP, false)
+	enemy.mark_traitor(foe)
+	enemy.knowledge.see(foe, foe.global_position)
+	enemy.valid_target = foe
+	enemy.personality.skill = 0.2
+	check(behaviour.wants_illuminator(enemy, "engage"), "a target it has a track on: lit to get visual and aim")
+	# The light comes on at once and stays on ILLUMINATOR_HOLD_TIME s.
+	enemy.set_illuminator(true)
 	enemy.logic.g.set_state("ambush")
 	enemy._illuminator_hold = 0.0
 	enemy._update_illuminator()
 	check(not enemy.illuminator_on, "dark in ambush")
-	enemy.logic.g.set_state("roam")
+	enemy.logic.g.set_state("engage")
 	enemy._update_illuminator(0.1)
-	check(not enemy.illuminator_on, "still dark right after the change (the hold)")
+	check(enemy.illuminator_on, "lit at once to engage")
+	enemy.logic.g.set_state("ambush")
+	enemy._update_illuminator(0.1)
+	check(enemy.illuminator_on, "held lit right after the change (the hold)")
 	enemy._update_illuminator(enemy.ILLUMINATOR_HOLD_TIME)
-	check(enemy.illuminator_on, "lit once the hold is over")
+	check(not enemy.illuminator_on, "dark once the hold is over")
+	enemy.logic.g.set_state("engage")
+	enemy._update_illuminator(0.1)
 	enemy.logic.g.set_state("ambush")
 	enemy._update_illuminator(0.1)
 	check(enemy.illuminator_on, "held lit")

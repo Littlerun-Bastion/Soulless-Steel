@@ -12,19 +12,16 @@ extends Control
 ## view shows the body itself (Player._update_view), or HudVisionOutlines
 ## outlines it.
 ##
-## A ping off screen (or too near the edge for its bracket and label,
-## BRACKET_ROOM) is an arrow at the screen's edge instead, pointing from
-## the middle of the screen toward it, with its kind and distance from the
-## player beside it ("MECH 120M"); it fades the same way. Wards and drones see
-## further than the screen shows, so most pings are arrows.
+## A ping off screen, or too near the edge for its bracket and label
+## (BRACKET_ROOM), isn't drawn here: the radar shows every track round the
+## mecha (PlayerRadar).
 ##
 ## Debug setting "all_contacts": every contact of every mecha is drawn too,
 ## sight included, on screen only. The player's own other contacts are
 ## brackets in G4; other mechas' are crosses in G3 labelled
 ## "<kind> · <owner>", to show what each NPC knows.
 ##
-## Bracket and arrow G5, labels LabelMeta (MechTheme). The labels are a fixed
-## pool.
+## Bracket G5, labels LabelMeta (MechTheme). The labels are a fixed pool.
 
 const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const BRACKET_HALF := 24.0
@@ -32,23 +29,15 @@ const CROSS_HALF := 10.0
 const LABEL_GAP := 6.0
 ## Debug markers this far (px) outside the screen are not drawn.
 const EDGE := 40.0
-## Edge arrows: how far (px) inside the screen's edge they sit (inside the
-## exit marker's, ExitMarker.EDGE_MARGIN), their size, and how far their
-## label sits back toward the middle.
-const ARROW_MARGIN := Vector2(70, 70)
-const ARROW_SIZE := 18.0
-const ARROW_LABEL_GAP := 40.0
 ## A ping keeps its bracket only this far (px) inside the screen's edge,
-## room for the bracket and its label; nearer the edge it is an arrow.
+## room for the bracket and its label.
 const BRACKET_ROOM := 56.0
-const PX_PER_METRE := 20.0
 const MAX_LABELS := 32
 
 var player = null
 var mechas: Array = []
 
-# What is drawn this frame: {"at", "color", "alpha", "cross", "arrow", "dir",
-# "text"}. An arrow's "at" is its place on the screen's edge.
+# What is drawn this frame: {"at", "color", "alpha", "cross", "text"}.
 var _marks: Array[Dictionary] = []
 var _labels: Array[Label] = []
 var _drawn := 0
@@ -76,20 +65,9 @@ func player_died() -> void:
 	queue_redraw()
 
 
-## The markers on show: {"at" (screen px), "alpha", "text", "cross", "arrow",
-## "dir"}.
+## The markers on show: {"at" (screen px), "alpha", "text", "cross"}.
 func get_marks() -> Array[Dictionary]:
 	return _marks
-
-
-## Where a ray from the middle of an area of this size, going in dir, meets a
-## rectangle ARROW_MARGIN inside its edges.
-static func edge_point(area: Vector2, dir: Vector2) -> Vector2:
-	var center := area / 2.0
-	var half := center - ARROW_MARGIN
-	var tx := INF if is_zero_approx(dir.x) else half.x / absf(dir.x)
-	var ty := INF if is_zero_approx(dir.y) else half.y / absf(dir.y)
-	return center + dir * minf(tx, ty)
 
 
 func _process(_delta: float) -> void:
@@ -114,11 +92,6 @@ func _collect() -> void:
 		var kind: String = contact.kind.to_upper()
 		if Rect2(Vector2.ZERO, screen).grow(-BRACKET_ROOM).has_point(at):
 			_add(at, bright, alpha, false, kind)
-			continue
-		var dir := (at - screen / 2.0).normalized()
-		var metres := roundi(player.global_position.distance_to(world) / PX_PER_METRE)
-		_marks.append({"at": edge_point(screen, dir).round(), "color": bright, "alpha": alpha,
-				"cross": false, "arrow": true, "dir": dir, "text": "%s %dM" % [kind, metres]})
 	if not Debug.get_setting("all_contacts"):
 		return
 	var dim := THEME.get_color(&"g4", &"MechTokens")
@@ -142,8 +115,7 @@ func _add(at: Vector2, color: Color, alpha: float, cross: bool, text: String) ->
 	var screen := get_viewport_rect().size
 	if at.x < -EDGE or at.y < -EDGE or at.x > screen.x + EDGE or at.y > screen.y + EDGE:
 		return
-	_marks.append({"at": at.round(), "color": color, "alpha": alpha, "cross": cross, "arrow": false,
-			"dir": Vector2.ZERO, "text": text})
+	_marks.append({"at": at.round(), "color": color, "alpha": alpha, "cross": cross, "text": text})
 
 
 func _show_labels() -> void:
@@ -156,12 +128,8 @@ func _show_labels() -> void:
 		if label.text != mark.text:
 			label.text = mark.text
 			label.reset_size()
-		if mark.arrow:
-			var back: Vector2 = mark.at - mark.dir * ARROW_LABEL_GAP
-			label.position = (back - label.size * 0.5).floor()
-		else:
-			var below: float = CROSS_HALF if mark.cross else BRACKET_HALF
-			label.position = (mark.at + Vector2(-label.size.x * 0.5, below + LABEL_GAP)).floor()
+		var below: float = CROSS_HALF if mark.cross else BRACKET_HALF
+		label.position = (mark.at + Vector2(-label.size.x * 0.5, below + LABEL_GAP)).floor()
 		label.modulate.a = mark.alpha
 		label.visible = true
 
@@ -173,14 +141,7 @@ func _draw() -> void:
 		var color: Color = mark.color
 		color.a = mark.alpha
 		var at: Vector2 = mark.at
-		if mark.arrow:
-			# The exit marker's arrow shape, smaller.
-			var dir: Vector2 = mark.dir
-			var side := dir.orthogonal() * ARROW_SIZE * 0.75
-			var back := at - dir * ARROW_SIZE * 0.5
-			draw_colored_polygon(PackedVector2Array([at + dir * ARROW_SIZE, back + side,
-					at - dir * ARROW_SIZE * 0.05, back - side]), color)
-		elif mark.cross:
+		if mark.cross:
 			var h := CROSS_HALF
 			draw_line(at + Vector2(-h, -h), at + Vector2(h, h), color, s1)
 			draw_line(at + Vector2(-h, h), at + Vector2(h, -h), color, s1)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://b2k1xpl1h6tme"]
+[gd_scene load_steps=7 format=3 uid="uid://b2k1xpl1h6tme"]
 
 [ext_resource type="Texture2D" uid="uid://bgr3uc2fbmoo6" path="res://game/fx/Heatmaps/Blackhot.tres" id="1"]
 [ext_resource type="Script" path="res://game/ui/HeatmapEffects.gd" id="2"]
@@ -51,6 +51,26 @@ void fragment() {
 shader = SubResource("5")
 shader_parameter/Colormap = ExtResource("1")
 
+[sub_resource type="Shader" id="Shader_mask"]
+code = "shader_type canvas_item;
+
+// Black outside a circle, with a soft edge `edge` px wide: the sight mask
+// (HeatmapEffects.gd). centre and radius are in screen px; screen_size is the
+// screen's size in the same px.
+uniform vec2 centre = vec2(960.0, 540.0);
+uniform float radius = 100000.0;
+uniform float edge = 2.0;
+uniform vec2 screen_size = vec2(1920.0, 1080.0);
+
+void fragment() {
+	float d = distance(SCREEN_UV * screen_size, centre);
+	COLOR = vec4(0.0, 0.0, 0.0, smoothstep(radius - edge * 0.5, radius + edge * 0.5, d));
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mask"]
+shader = SubResource("Shader_mask")
+
 [node name="HeatmapEffects" type="CanvasLayer"]
 layer = 2
 script = ExtResource("2")
@@ -63,4 +83,14 @@ anchor_bottom = 1.0
 offset_right = -960.0
 offset_bottom = -540.0
 scale = Vector2(2, 2)
+mouse_filter = 2
+
+; Black past the player's sight circle, over the IR colour map and under the
+; HUD (HeatmapEffects.gd sets its centre and radius every frame).
+[node name="SightMask" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_mask")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2

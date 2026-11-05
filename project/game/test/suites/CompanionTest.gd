@@ -20,6 +20,8 @@ extends TestSuite
 const ENEMY := preload("res://game/mecha/Enemy.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const TEST_ARENA := preload("res://game/arena/TestArena.tscn")
+# Orders given until a companion's bark comes up (each has a chance).
+const ACK_TRIES := 5
 
 
 class FakeArena extends Node2D:
@@ -58,8 +60,12 @@ class FakeArena extends Node2D:
 
 
 # A round's area as the NPC's proximity sensor sees it.
+# A round where it lands (on the mecha it is fed to), going nowhere: it comes
+# within Mecha.SHOT_WEDGE_RADIUS.
 class FakeRound extends RefCounted:
 	var original_mecha_info = null
+	var global_position := Vector2.ZERO
+	var dir := Vector2.ZERO
 
 
 # Just enough of a player for the orders menu.
@@ -353,6 +359,7 @@ func _test_leaving() -> void:
 	_arena.local_pilots.message.connect(func(entry): lines.append(entry))
 	var shot := FakeRound.new()
 	shot.original_mecha_info = {"name": player.mecha_name, "body": player}
+	shot.global_position = buddy.global_position
 	buddy._on_nearby_projectile_area_entered(shot)
 	check(not squad.is_member(buddy) and buddy.knowledge.squad == null, "a companion the player shoots leaves")
 	check(lines.any(func(e): return e.kind == "buddy_left"), "and says so in Local")
@@ -445,14 +452,26 @@ func _test_match() -> void:
 	check(lines.any(func(e): return e.kind == "buddy_accept" and e.sender == npc), "Local says so")
 	check(_scene.pending_offer.is_empty(), "the offer is spent")
 	# An order, acknowledged.
+	# Every companion is told, and the first to bark starts the global
+	# cooldown (Barks.global_ready), so one acknowledgement is all there is.
+	# Each bark has a chance (Barks.chance_for), so the order is given again,
+	# cooldowns cleared, until one comes or ACK_TRIES run out.
 	var said := []
-	npc.spoke.connect(func(_m, text, _s, _a): said.append(text))
+	for member in squad.alive_members():
+		member.spoke.connect(func(_m, text, _s, _a): said.append(text))
 	player.global_position = npc.global_position + Vector2(400, 0)
 	check(_scene.give_order("hold"), "a hold order is taken")
 	check_eq(squad.order, "hold", "the squad holds")
 	await wait_frames(2)
 	check(_scene.PlayerHUD.hud_alerts.get_current().contains("HOLD"), "the HUD confirms it (%s)" % _scene.PlayerHUD.hud_alerts.get_current())
-	check(not said.is_empty() or Time.get_ticks_msec() < npc._bark_ready_ms, "the companion acknowledges (unless its barks are on cooldown)")
+	for i in ACK_TRIES:
+		if not said.is_empty():
+			break
+		for member in squad.alive_members():
+			member._bark_ready_ms = 0
+		Barks._global_ready_ms = 0
+		_scene.give_order("hold")
+	check(not said.is_empty(), "a companion acknowledges")
 	# Declining.
 	var third = _scene.all_mechas.filter(func(m): return m != player and "knowledge" in m and m.knowledge.squad == null)[0]
 	_scene.offer_buddy(third)

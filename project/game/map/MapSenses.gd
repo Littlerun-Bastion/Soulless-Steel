@@ -44,6 +44,9 @@ extends RefCounted
 # Bushes are too small to hide a mecha, so they only hide Entities.
 
 const SMOKE := preload("res://game/weapons/smoke_cloud.gd")
+## The game's scale: one metre is this many px. Part stats in metres
+## (head.visual_range) and readouts in metres go through it.
+const PX_PER_METRE := 20.0
 const WALL_LAYER := 10
 const WALL_MASK := 1 << (WALL_LAYER - 1)
 const VEHICLE_LAYER := 11

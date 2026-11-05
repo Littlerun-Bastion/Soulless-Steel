@@ -393,6 +393,9 @@ func _test_surrender() -> void:
 	check(not scav.logic.behaviour.wants_illuminator(scav, "raise_flag"), "and leaves dark")
 	var behaviour = scav.logic.behaviour
 	var before := PlayerProgress.get_reputation()
+	# The hit before the surrender put it under fire for half a second; the
+	# NPC is paused here, so that runs out by hand.
+	scav.under_fire_timer = 0.0
 	for i in 12:
 		behaviour.do_raise_flag(1.0, scav)
 	check_eq(PlayerProgress.get_reputation(), before + LocalPilots.SPARED_REPUTATION, "left alone for %.0f s, it was spared" % behaviour.SPARE_TIME)
@@ -489,7 +492,7 @@ func _test_protect() -> void:
 	guardian.logic.behaviour.do_protect(0.1, guardian)
 	check(guardian.NavAgent.target_position.distance_to(downed.global_position) <= guardian.logic.behaviour.PROTECT_RANGE * 1.5,
 			"heading to stand by it (%.0f px off)" % guardian.NavAgent.target_position.distance_to(downed.global_position))
-	check(guardian.logic.behaviour.wants_illuminator(guardian, "protect"), "lit")
+	check(not guardian.logic.behaviour.wants_illuminator(guardian, "protect"), "dark: the light comes on only to engage")
 	guardian.add_hostility(downed, 1.0)
 	check_eq(_decide(guardian), "roam", "not one it hates")
 	var scav := _enemy(Vector2(0, 3000), Personality.Type.SCAVENGER)

@@ -10,10 +10,5 @@ mouse_filter = 2
 script = ExtResource("3")
 
 [node name="Circle" type="Node2D" parent="."]
+show_behind_parent = true
 script = ExtResource("4")
-
-[node name="Pointers" type="Node2D" parent="."]
-
-[node name="UpdateTimer" type="Timer" parent="."]
-
-[connection signal="timeout" from="UpdateTimer" to="." method="_on_UpdateTimer_timeout"]

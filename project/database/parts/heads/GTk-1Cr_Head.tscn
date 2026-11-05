@@ -20,7 +20,7 @@ tagline = "BNGH"
 image = ExtResource("2_5otfk")
 heatmap = ExtResource("3_i6y2j")
 accuracy_modifier = 1.4
-visual_range = 570
+visual_range = 150
 health = 2025
 weight = 7.85
 

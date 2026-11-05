@@ -1,0 +1,375 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://database/maps/Map.gd" id="1_map"]
+[ext_resource type="Script" path="res://game/map/BuildingField.gd" id="2_field"]
+[ext_resource type="Script" path="res://game/map/props/PropSpriteLayer.gd" id="3_layer"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_ambulance.png" id="4_v0"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_estate.png" id="5_v1"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_hatchback.png" id="6_v2"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_pickup.png" id="7_v3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_sports.png" id="8_v4"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/vehicle_suv.png" id="9_v5"]
+[ext_resource type="Script" path="res://game/map/props/PropSpawner.gd" id="10_spawner"]
+[ext_resource type="Script" path="res://game/map/props/PropSpawnPoint.gd" id="11_point"]
+[ext_resource type="Script" path="res://game/map/props/VehicleField.gd" id="12_vehicles"]
+[ext_resource type="PackedScene" path="res://game/arena/StartPoint.tscn" id="13_start"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_1.png" id="14_b1"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_2.png" id="15_b2"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_3.png" id="16_b3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_4.png" id="17_b4"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_5.png" id="18_b5"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/bush_6.png" id="19_b6"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_1.png" id="20_t1"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_2.png" id="21_t2"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_3.png" id="22_t3"]
+[ext_resource type="Texture2D" path="res://assets/images/map/props/tree_4.png" id="23_t4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ns"]
+size = Vector2(8400, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_we"]
+size = Vector2(200, 6400)
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_obs"]
+vertices = PackedVector2Array(-3900, -2900, 3900, -2900, 3900, 2900, -3900, 2900)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-3900, -2900, 3900, -2900, 3900, 2900, -3900, 2900)])
+
+; The observer arena's map (game/arena/ObserverArena.tscn): 400 x 300 m of
+; open ground with a street, a car park, three enterable buildings (the
+; warehouse is big enough to fight in), parked cars that can sound an alarm,
+; and trees and bushes. No exits: NPCs stay until they are deleted.
+[node name="ObserverArena" type="Node2D"]
+script = ExtResource("1_map")
+site_name = "Observer Arena"
+
+[node name="BG" type="Node2D" parent="."]
+
+[node name="Ground" type="Polygon2D" parent="BG"]
+color = Color(0.07, 0.07, 0.07, 1)
+polygon = PackedVector2Array(-4600, -3600, 4600, -3600, 4600, 3600, -4600, 3600)
+
+[node name="Roads" type="Node2D" parent="BG"]
+
+[node name="MainStreet" type="Polygon2D" parent="BG/Roads"]
+color = Color(0.13, 0.13, 0.13, 1)
+polygon = PackedVector2Array(-4000, -250, 4000, -250, 4000, 250, -4000, 250)
+
+[node name="Car park" type="Polygon2D" parent="BG/Roads"]
+color = Color(0.11, 0.11, 0.11, 1)
+polygon = PackedVector2Array(-1200, 1000, 300, 1000, 300, 2200, -1200, 2200)
+
+[node name="Bushes" type="Node2D" parent="."]
+
+[node name="Props" type="Node2D" parent="."]
+
+[node name="Trees" type="Node2D" parent="."]
+
+[node name="Buildings" type="Node2D" parent="."]
+
+[node name="Texts" type="Node2D" parent="."]
+
+[node name="Triggers" type="Node2D" parent="."]
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="EdgeN" type="StaticBody2D" parent="Walls"]
+position = Vector2(0, -3100)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeN"]
+shape = SubResource("RectangleShape2D_ns")
+
+[node name="EdgeS" type="StaticBody2D" parent="Walls"]
+position = Vector2(0, 3100)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeS"]
+shape = SubResource("RectangleShape2D_ns")
+
+[node name="EdgeW" type="StaticBody2D" parent="Walls"]
+position = Vector2(-4100, 0)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeW"]
+shape = SubResource("RectangleShape2D_we")
+
+[node name="EdgeE" type="StaticBody2D" parent="Walls"]
+position = Vector2(4100, 0)
+
+[node name="Shape" type="CollisionShape2D" parent="Walls/EdgeE"]
+shape = SubResource("RectangleShape2D_we")
+
+[node name="Border" type="Line2D" parent="Walls"]
+points = PackedVector2Array(-4000, -3000, 4000, -3000, 4000, 3000, -4000, 3000)
+closed = true
+width = 24.0
+default_color = Color(0.45, 0.45, 0.45, 1)
+
+[node name="BuildingField" type="Node2D" parent="."]
+script = ExtResource("2_field")
+
+[node name="Footprints" type="Node2D" parent="BuildingField"]
+
+[node name="Warehouse" type="Polygon2D" parent="BuildingField/Footprints"]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(-3300, -2500, -1500, -2500, -1500, -800, -3300, -800)
+
+[node name="HouseA" type="Polygon2D" parent="BuildingField/Footprints"]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(300, -2000, 1000, -2000, 1000, -1100, 300, -1100)
+
+[node name="HouseB" type="Polygon2D" parent="BuildingField/Footprints"]
+color = Color(0.16, 0.16, 0.16, 1)
+polygon = PackedVector2Array(2000, 800, 2800, 800, 2800, 1600, 2000, 1600)
+
+[node name="Vehicles" type="Node2D" parent="."]
+script = ExtResource("3_layer")
+spawner_path = NodePath("../PropSpawner")
+kinds = PackedStringArray("vehicle")
+textures = {
+"vehicle": [ExtResource("4_v0"), ExtResource("5_v1"), ExtResource("6_v2"), ExtResource("7_v3"), ExtResource("8_v4"), ExtResource("9_v5")]
+}
+spans = {
+"vehicle": PackedFloat32Array(1, 0.99, 1, 1, 1, 1)
+}
+tone_jitter = 0.15
+
+[node name="PropSpawner" type="Node2D" parent="."]
+script = ExtResource("10_spawner")
+show_markers = false
+
+[node name="Vehicle0" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-3400, -170)
+rotation = 0.02
+script = ExtResource("11_point")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle1" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-2100, 175)
+rotation = 3.15
+script = ExtResource("11_point")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle2" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-500, -175)
+rotation = 0.01
+script = ExtResource("11_point")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle3" type="Marker2D" parent="PropSpawner"]
+position = Vector2(1700, 170)
+rotation = 3.13
+script = ExtResource("11_point")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Vehicle4" type="Marker2D" parent="PropSpawner"]
+position = Vector2(3100, -180)
+rotation = 0.04
+script = ExtResource("11_point")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle5" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-900, 1300)
+rotation = 1.57
+script = ExtResource("11_point")
+variant = 1
+size = Vector2(96, 45.6)
+
+[node name="Vehicle6" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-600, 1310)
+rotation = 1.6
+script = ExtResource("11_point")
+variant = 4
+size = Vector2(88, 42)
+
+[node name="Vehicle7" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-300, 1290)
+rotation = 1.55
+script = ExtResource("11_point")
+variant = 2
+size = Vector2(80, 40)
+
+[node name="Vehicle8" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-750, 1900)
+rotation = -1.57
+script = ExtResource("11_point")
+variant = 5
+size = Vector2(98, 46.4)
+
+[node name="Vehicle9" type="Marker2D" parent="PropSpawner"]
+position = Vector2(0, 1900)
+rotation = 4.7
+script = ExtResource("11_point")
+variant = 3
+size = Vector2(106, 53)
+
+[node name="Tree0" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-800, -1400)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(420, 420)
+
+[node name="Tree1" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-250, -1050)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(360, 360)
+
+[node name="Tree2" type="Marker2D" parent="PropSpawner"]
+position = Vector2(2200, -800)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(400, 400)
+
+[node name="Tree3" type="Marker2D" parent="PropSpawner"]
+position = Vector2(3200, 450)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(380, 380)
+
+[node name="Tree4" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-2800, 1000)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(420, 420)
+
+[node name="Tree5" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-3500, 2300)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(360, 360)
+
+[node name="Tree6" type="Marker2D" parent="PropSpawner"]
+position = Vector2(900, 1700)
+script = ExtResource("11_point")
+kind = "tree"
+size = Vector2(400, 400)
+
+[node name="Bush0" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-1000, -700)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(140, 140)
+
+[node name="Bush1" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-600, -620)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(120, 120)
+
+[node name="Bush2" type="Marker2D" parent="PropSpawner"]
+position = Vector2(1600, -1500)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(140, 140)
+
+[node name="Bush3" type="Marker2D" parent="PropSpawner"]
+position = Vector2(3400, -550)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(130, 130)
+
+[node name="Bush4" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-2200, 600)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(140, 140)
+
+[node name="Bush5" type="Marker2D" parent="PropSpawner"]
+position = Vector2(200, 700)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(120, 120)
+
+[node name="Bush6" type="Marker2D" parent="PropSpawner"]
+position = Vector2(2600, 2200)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(140, 140)
+
+[node name="Bush7" type="Marker2D" parent="PropSpawner"]
+position = Vector2(-3600, -200)
+script = ExtResource("11_point")
+kind = "bush"
+size = Vector2(130, 130)
+
+[node name="VehicleField" type="Node2D" parent="."]
+script = ExtResource("12_vehicles")
+spawner_path = NodePath("../PropSpawner")
+layer_path = NodePath("../Vehicles")
+kinds = PackedStringArray("vehicle")
+masses = {
+"vehicle": PackedFloat32Array(3500, 1500, 950, 2000, 1300, 2200)
+}
+shot_blocks = {
+"vehicle": PackedFloat32Array(0.65, 0.5, 0.5, 0.55, 0.5, 0.55)
+}
+stream = false
+
+; Trees and bushes, above mechas, hiding what is under them from detection
+; (see MapSenses). Drawn see-through so the observer can watch what happens
+; under them.
+[node name="Foliage" type="Node2D" parent="."]
+modulate = Color(1, 1, 1, 0.55)
+z_index = 2
+script = ExtResource("3_layer")
+spawner_path = NodePath("../PropSpawner")
+kinds = PackedStringArray("bush", "tree")
+textures = {
+"bush": [ExtResource("14_b1"), ExtResource("15_b2"), ExtResource("16_b3"), ExtResource("17_b4"), ExtResource("18_b5"), ExtResource("19_b6")],
+"tree": [ExtResource("20_t1"), ExtResource("21_t2"), ExtResource("22_t3"), ExtResource("23_t4")]
+}
+spans = {
+"bush": PackedFloat32Array(0.666, 0.707, 0.678, 0.781, 0.697, 0.912),
+"tree": PackedFloat32Array(0.907, 0.964, 0.94, 0.945)
+}
+layers = {
+"tree": Vector2i(2, 3)
+}
+tones = {
+"bush": 0.6,
+"tree": 0.85
+}
+conceals = true
+
+[node name="Exits" type="Node2D" parent="."]
+
+[node name="StartPositions" type="Node2D" parent="."]
+
+[node name="Pos1" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(0, 0)
+
+[node name="Pos2" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(-2400, 1400)
+
+[node name="Pos3" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(2600, -1600)
+
+[node name="Pos4" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(3000, 2400)
+
+[node name="Pos5" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(-600, -1800)
+
+[node name="Pos6" parent="StartPositions" instance=ExtResource("13_start")]
+position = Vector2(1400, 2400)
+
+[node name="SpawnZones" type="Node2D" parent="."]
+
+[node name="Spawn1" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-3000, 2200)
+
+[node name="Spawn2" type="Marker2D" parent="SpawnZones"]
+position = Vector2(3200, -2400)
+
+[node name="Spawn3" type="Marker2D" parent="SpawnZones"]
+position = Vector2(0, 2600)
+
+[node name="Spawn4" type="Marker2D" parent="SpawnZones"]
+position = Vector2(-200, -2600)
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavigationPolygon_obs")

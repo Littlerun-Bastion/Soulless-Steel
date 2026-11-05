@@ -21,7 +21,7 @@ description = "An upgraded middleweight head with upgraded visual sensors and be
 image = ExtResource("5")
 heatmap = ExtResource("3_8ou28")
 accuracy_modifier = 1.35
-visual_range = 550
+visual_range = 150
 health = 1275
 weight = 4.5
 

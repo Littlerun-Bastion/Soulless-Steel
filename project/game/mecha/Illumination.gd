@@ -11,7 +11,7 @@ extends RefCounted
 ##   - it is a living mecha with its own illuminator on (it stands in its own
 ##     light), or
 ##   - it is inside the cone of a living mecha whose illuminator is on
-##     (half its cone angle either side, out to CONE_RANGE), in the same
+##     (half its cone angle either side, out to its reach), in the same
 ##     building as that mecha (or both outside) and with no building wall
 ##     between them: walls shadow the light. Smoke casts no shadow.
 ## An observer sees a lit body (seen_lit) if they are in the same building (or
@@ -34,33 +34,39 @@ extends RefCounted
 ## ground and the cones went black.
 ##
 ## The illuminator's texture is drawn here (light_texture), not taken from
-## the scene: shape_light replaces whatever texture Mecha.tscn gives it.
+## the scene: shape_light replaces whatever texture Mecha.tscn gives it. The
+## light points where its mecha's head points (Mecha._aim_light), so its cone
+## turns with the head.
 
 ## What each MechaLight lights, drawn in code (light_texture): a cone ahead of
 ## the mecha and a circle round it. The cone is its head's illuminator_angle
 ## wide (DEFAULT_CONE_ANGLE with no head), within MIN_CONE_ANGLE and
-## MAX_CONE_ANGLE, and reaches CONE_RANGE px; the circle is LOCAL_RADIUS px.
-## Each edge fades out over its *_SOFT width either side of it (px, or
-## degrees for the cone's sides, at most a quarter of a narrow cone's angle),
-## so the line where something is in or out of the cone (in_cone) runs down
-## the middle of the fade. Placeholders.
+## MAX_CONE_ANGLE, and reaches as far as the head sees (reach_of); the circle
+## is LOCAL_RADIUS px. Each edge fades out over its *_SOFT width either side
+## of it (px, or degrees for the cone's sides, at most a quarter of a narrow
+## cone's angle; the reach's at most half the reach, range_soft), so the line
+## where something is in or out of the cone (in_cone) runs down the middle of
+## the fade. The circle and the fades are the same size in px at any reach.
+## Placeholders.
 const DEFAULT_CONE_ANGLE := 30.0
 const MIN_CONE_ANGLE := 2.0
 const MAX_CONE_ANGLE := 360.0
-const CONE_RANGE := 4500.0
 const CONE_RANGE_SOFT := 450.0
 const CONE_EDGE_SOFT := 4.0
 const LOCAL_RADIUS := 320.0
 const LOCAL_SOFT := 80.0
-## The drawn texture's side (texels). It covers CONE_RANGE + CONE_RANGE_SOFT
-## either way of the mecha, so a texel is about 19 px; the fades are many
-## texels wide, so the edges stay smooth.
+## The drawn texture's side (texels). It covers the reach and its fade either
+## way of the mecha (texture_extent): at a 150 m reach a texel is about
+## 13 px, and the fades are many texels wide, so the edges stay smooth.
 const LIGHT_TEXTURE_SIZE := 512
-## Cone angles are rounded to this many degrees, so heads with nearly the
-## same angle share one texture.
+## Cone angles are rounded to this many degrees, and reaches to REACH_STEP
+## m, so heads with nearly the same light share one texture.
 const CONE_ANGLE_STEP := 0.5
-## Where shape_light keeps a light's cone angle (degrees) on the light.
+const REACH_STEP := 5.0
+## Where shape_light keeps a light's cone angle (degrees) and its reach (px)
+## on the light.
 const CONE_ANGLE_META := &"illuminator_cone_angle"
+const CONE_RANGE_META := &"illuminator_cone_range"
 const LIGHT_NODE := "MechaLight"
 const DARKNESS_NODE := "MechaShadowGen"
 ## How much light every illuminator adds, and how much the darkness round the
@@ -69,17 +75,19 @@ const DARKNESS_NODE := "MechaShadowGen"
 ## mixed NPC cones. Placeholders.
 const LIGHT_ENERGY := 1.2
 const DARKNESS_ENERGY := 0.6
-## A mecha with its illuminator on gives itself away to anyone within a
-## screen of it (in_light_range): the player sees an illuminator's cone on
-## screen even when it can't see the mecha, so every NPC and Entity knows
-## where such a mecha is within the same reach. The game shows 1920 x 1080 px
-## at its 0.5 camera zoom, so a screen is SCREEN_HALF either way of the
-## observer. Not into or out of another building (roofs hide the inside).
+## A mecha with its illuminator on gives itself away (in_light_range): the
+## player sees an illuminator's cone anywhere inside its sight circle even
+## when it can't see the mecha, so a mecha (NPC or player) notices such a
+## mecha anywhere inside its own sight circle (Mecha.sight_radius). An
+## Entity has no head and no circle: it notices one within a screen of it.
+## The game shows 1920 x 1080 px at its 0.5 camera zoom, so a screen is
+## SCREEN_HALF either way. Not into or out of another building (roofs hide
+## the inside).
 const SCREEN_HALF := Vector2(1920.0, 1080.0)
-## The player's illuminator key (Player.toggle_illuminator), and the key it
+## The player's illuminator key (Player.press_illuminator_key), and the key it
 ## gets if project.godot doesn't define the action.
 const KEY_ACTION := "toggle_illuminator"
-const DEFAULT_KEY := KEY_L
+const DEFAULT_KEY := KEY_C
 
 
 ## Adds the illuminator key action, bound to DEFAULT_KEY, if the project's
@@ -133,17 +141,35 @@ static func cone_angle_of(mecha: Node) -> float:
 	return DEFAULT_CONE_ANGLE
 
 
-## Gives a mecha's illuminator the drawn cone for `angle` degrees (its head's
-## when `angle` is negative), scaled to CONE_RANGE, and keeps the angle on
-## the light for in_cone. Mecha.set_head calls it whenever the head changes.
-static func shape_light(mecha: Node, angle := -1.0) -> void:
+## How far (px) a mecha's illuminator reaches: as far as its head sees, the
+## head's visual_range (rounded to REACH_STEP m). Sensor damage hurts the
+## optics, not the lamp, so it doesn't shorten the reach. With no head fitted,
+## or the head shot off, Mecha.NO_HEAD_SIGHT.
+static func reach_of(mecha: Node) -> float:
+	var build = mecha.get("build") if mecha != null else null
+	var head = build.get("head") if build is Dictionary else null
+	if head == null or (mecha.has_method("is_part_lost") and mecha.is_part_lost("head")):
+		return Mecha.NO_HEAD_SIGHT
+	var metres = head.get("visual_range")
+	if not (metres is float or metres is int):
+		return Mecha.NO_HEAD_SIGHT
+	return maxf(snappedf(float(metres), REACH_STEP), REACH_STEP) * MapSenses.PX_PER_METRE
+
+
+## Gives a mecha's illuminator the drawn cone for `angle` degrees and `reach`
+## px (its head's for either one that is negative), and keeps both on the
+## light for in_cone. Mecha.set_head calls it whenever the head changes, and
+## Mecha.lose_part when the head comes off.
+static func shape_light(mecha: Node, angle := -1.0, cone_reach := -1.0) -> void:
 	var light := light_of(mecha)
 	if light == null:
 		return
 	var rounded := _rounded_angle(cone_angle_of(mecha) if angle < 0.0 else angle)
-	light.texture = light_texture(rounded)
-	light.texture_scale = _texture_extent() * 2.0 / LIGHT_TEXTURE_SIZE
+	var distance := reach_of(mecha) if cone_reach < 0.0 else cone_reach
+	light.texture = light_texture(rounded, distance)
+	light.texture_scale = texture_extent(distance) * 2.0 / LIGHT_TEXTURE_SIZE
 	light.set_meta(CONE_ANGLE_META, rounded)
+	light.set_meta(CONE_RANGE_META, distance)
 
 
 ## A light's cone angle (degrees), as shape_light set it.
@@ -154,9 +180,12 @@ static func cone_angle(light: PointLight2D) -> float:
 	return float(angle) if (angle is float or angle is int) else DEFAULT_CONE_ANGLE
 
 
-## How far (px) a light's cone reaches.
+## How far (px) a light's cone reaches, as shape_light set it.
 static func reach(light: PointLight2D) -> float:
-	return 0.0 if light == null else CONE_RANGE
+	if light == null:
+		return 0.0
+	var distance = light.get_meta(CONE_RANGE_META, Mecha.NO_HEAD_SIGHT)
+	return float(distance) if (distance is float or distance is int) else Mecha.NO_HEAD_SIGHT
 
 
 ## Whether `point` is inside a light's cone (angle and reach only, no walls).
@@ -173,19 +202,22 @@ static func in_cone(light: PointLight2D, point: Vector2) -> bool:
 static var _textures := {}
 
 
-## The light texture for a cone `angle` degrees wide (see the constants
-## above), drawn once per rounded angle and shared by every light with it.
-## White, with the light in its alpha: a cone pointing up (the light's
-## forward, -y), fading out at its sides and at CONE_RANGE, and a circle of
-## LOCAL_RADIUS round the centre. It is mirror-symmetric, so each row works
-## out its right half and copies it to the left.
-static func light_texture(angle: float) -> ImageTexture:
+## The light texture for a cone `angle` degrees wide reaching `cone_reach`
+## px (see the constants above), drawn once per rounded angle and reach and
+## shared by every light with them. White, with the light in its alpha: a
+## cone pointing up (the light's forward, -y), fading out at its sides and at
+## its reach, and a circle of LOCAL_RADIUS round the centre. It is
+## mirror-symmetric, so each row works out its right half and copies it to
+## the left.
+static func light_texture(angle: float, cone_reach: float) -> ImageTexture:
 	var rounded := _rounded_angle(angle)
-	if _textures.has(rounded):
-		return _textures[rounded]
+	var key := Vector2(rounded, cone_reach)
+	if _textures.has(key):
+		return _textures[key]
 	var size := LIGHT_TEXTURE_SIZE
 	var half_size := size >> 1
-	var texel := _texture_extent() * 2.0 / size
+	var texel := texture_extent(cone_reach) * 2.0 / size
+	var soft := range_soft(cone_reach)
 	var half_angle := deg_to_rad(rounded * 0.5)
 	var edge := minf(deg_to_rad(CONE_EDGE_SOFT), half_angle * 0.5)
 	var all_round := rounded >= 360.0
@@ -198,7 +230,7 @@ static func light_texture(angle: float) -> ImageTexture:
 			var wx := (x + 0.5) * texel
 			var r := sqrt(wx * wx + wy * wy)
 			var local := 1.0 - smoothstep(LOCAL_RADIUS - LOCAL_SOFT, LOCAL_RADIUS + LOCAL_SOFT, r)
-			var cone := 1.0 - smoothstep(CONE_RANGE - CONE_RANGE_SOFT, CONE_RANGE + CONE_RANGE_SOFT, r)
+			var cone := 1.0 - smoothstep(cone_reach - soft, cone_reach + soft, r)
 			if not all_round:
 				cone *= 1.0 - smoothstep(half_angle - edge, half_angle + edge, atan2(wx, -wy))
 			var alpha := int(roundf(maxf(local, cone) * 255.0))
@@ -209,7 +241,7 @@ static func light_texture(angle: float) -> ImageTexture:
 			data[left] = 255
 			data[left + 1] = alpha
 	var texture := ImageTexture.create_from_image(Image.create_from_data(size, size, false, Image.FORMAT_LA8, data))
-	_textures[rounded] = texture
+	_textures[key] = texture
 	return texture
 
 
@@ -217,10 +249,17 @@ static func _rounded_angle(angle: float) -> float:
 	return snappedf(clampf(angle, MIN_CONE_ANGLE, MAX_CONE_ANGLE), CONE_ANGLE_STEP)
 
 
-# How far (px) the drawn texture reaches from its centre: the cone's fade
-# ends there.
-static func _texture_extent() -> float:
-	return CONE_RANGE + CONE_RANGE_SOFT
+## How wide (px) the fade at a cone's reach is either side of it:
+## CONE_RANGE_SOFT, or half a short reach, so the cone is still at full light
+## near the mecha.
+static func range_soft(cone_reach: float) -> float:
+	return minf(CONE_RANGE_SOFT, cone_reach * 0.5)
+
+
+## How far (px) a drawn texture reaches from its centre: where the cone's
+## fade ends, or the circle's if a short cone's ends first.
+static func texture_extent(cone_reach: float) -> float:
+	return maxf(cone_reach + range_soft(cone_reach), LOCAL_RADIUS + LOCAL_SOFT)
 
 
 ## Whether a mecha's illuminator is lighting right now.
@@ -249,13 +288,17 @@ static func is_lit(body: Node2D) -> bool:
 
 
 ## Whether `mecha` gives itself away to `observer` by its own illuminator:
-## shining, within a screen of the observer (SCREEN_HALF), in the same
-## building or both outside.
+## shining, inside the observer's sight circle (a mecha) or within a screen of
+## it (an Entity: SCREEN_HALF), in the same building or both outside.
 static func in_light_range(observer: Node2D, mecha: Node2D) -> bool:
 	if not is_shining(mecha) or mecha == observer:
 		return false
 	var offset := mecha.global_position - observer.global_position
-	if absf(offset.x) > SCREEN_HALF.x or absf(offset.y) > SCREEN_HALF.y:
+	if observer.has_method("sight_radius"):
+		var sight: float = observer.sight_radius()
+		if offset.length_squared() > sight * sight:
+			return false
+	elif absf(offset.x) > SCREEN_HALF.x or absf(offset.y) > SCREEN_HALF.y:
 		return false
 	return MapSenses.building_key_of(observer) == MapSenses.building_key_of(mecha)
 

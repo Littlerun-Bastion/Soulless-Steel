@@ -21,9 +21,8 @@ extends RefCounted
 # "ai_log" is off, every record call returns at once.
 
 const REPORT_INTERVAL := 30.0
-## Distance band edges in metres (20 px = 1 m).
+## Distance band edges in metres (MapSenses.PX_PER_METRE px each).
 const BANDS := [25.0, 50.0, 75.0, 100.0]
-const PX_PER_M := 20.0
 const MAX_SAMPLES := 4000
 ## Stuck positions kept for the report.
 const STUCK_KEEP := 8
@@ -189,7 +188,7 @@ static func _add(kind: String, distance_px: float) -> void:
 		_distances[kind] = PackedFloat32Array()
 	var list: PackedFloat32Array = _distances[kind]
 	if list.size() < MAX_SAMPLES:
-		list.append(distance_px / PX_PER_M)
+		list.append(distance_px / MapSenses.PX_PER_METRE)
 		_distances[kind] = list
 
 

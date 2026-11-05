@@ -3,8 +3,9 @@ class_name SystemWindow
 
 ## SYS: settings, controls, save and quit.
 ## Works on the options Profile already saves (volume, fullscreen, screen
-## shake, designator look limits), so changes apply at once and persist. CRT and UI-scale settings
-## from the spec wait until those options exist.
+## shake, designator look limits, lock head tracking), so changes apply at
+## once and persist. CRT and UI-scale settings from the spec wait until those
+## options exist.
 
 const VOLUME_STEP := 0.1
 const AUDIO := [
@@ -16,6 +17,7 @@ const TOGGLES := [
 	{"label": "FULLSCREEN", "option": "fullscreen"},
 	{"label": "SCREEN SHAKE", "option": "screen_shake"},
 	{"label": "DESIGNATOR LOOK LIMITS", "option": "designator_look_limits"},
+	{"label": "LOCK HEAD TRACKING", "option": "lock_head_tracking"},
 ]
 ## Input actions shown under CONTROLS (missing ones are skipped).
 const CONTROLS := [
@@ -26,7 +28,7 @@ const CONTROLS := [
 	{"label": "QUICK CHAT", "action": "quick_chat"},
 	{"label": "SENSOR SWEEP", "action": "sweep"},
 	{"label": "INTERNAL BAY", "action": "use_internal"},
-	{"label": "IR ILLUMINATOR", "action": "toggle_illuminator"},
+	{"label": "IR ILLUMINATOR (HOLD, TAP TWICE: LATCH)", "action": "toggle_illuminator"},
 	{"label": "FLAG", "action": "raise_flag"},
 	{"label": "SQUAD ORDERS", "action": "squad_orders"},
 	{"label": "ACCEPT OFFER", "action": "accept_offer"},

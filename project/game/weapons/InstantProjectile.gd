@@ -71,9 +71,12 @@ func setup(mecha, args, _weapon):
 		add_child(proj_data)
 	else:
 		proj_data = $Basic
+	# "from": where it was fired from, which a shot wedge points back to
+	# (Mecha.note_round_from).
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
+		"from": args.pos,
 	}
 	proj_data.width = data.projectile_size*10
 	dir = args.dir.normalized()

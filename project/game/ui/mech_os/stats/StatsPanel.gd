@@ -14,6 +14,10 @@ extends VBoxContainer
 ## No armour or shield tiles or shield rows: the old hp/shield numbers are
 ## being replaced by the component damage system.
 
+## The one stat worked out rather than summed (stat_value): the build's radar
+## cross-section from straight ahead over RadarCrossSection.reference_rcs, to 2
+## places. Lower is better: 1.0 is the default mech.
+const RCS_FRONT := "rcs_front"
 ## Edit these lists to change what the panel shows. "lower_better" only
 ## changes the tooltip; the marks always follow the number.
 const GROUPS := [
@@ -38,13 +42,13 @@ const GROUPS := [
 		{"id": "power_output", "label": "Power output"},
 	]},
 	{"title": "SENSORS", "stats": [
-		{"id": "visual_range", "label": "Visual range"},
+		{"id": "visual_range", "label": "Visual range m"},
 		{"id": "illuminator_angle", "label": "Illuminator angle °"},
 		{"id": "ir_sensitivity", "label": "IR sensitivity °C", "lower_better": true},
 		{"id": "ir_identification", "label": "IR identification °C", "lower_better": true},
 		{"id": "accuracy_modifier", "label": "Accuracy"},
 		{"id": "lock_on_speed", "label": "Lock speed"},
-		{"id": "radar_range", "label": "Radar range"},
+		{"id": RCS_FRONT, "label": "RCS (front)", "lower_better": true},
 		{"id": "ECM", "label": "ECM"},
 		{"id": "sensor_reduction", "label": "Sensor reduction"},
 	]},
@@ -90,8 +94,8 @@ func show_stats(build: Dictionary, cargo_weight: float,
 	for group in GROUPS:
 		for stat in group.stats:
 			var id: String = stat.id
-			var cur := sum_stat(build, id, grades)
-			var new := sum_stat(preview, id, preview_grades) if comparing else cur
+			var cur := stat_value(build, id, grades)
+			var new := stat_value(preview, id, preview_grades) if comparing else cur
 			var top := maxf(maxf(_max_value(id), cur), maxf(new, 0.0001))
 			var row: Dictionary = _rows[id]
 			var changed := comparing and not is_equal_approx(cur, new)
@@ -101,6 +105,14 @@ func show_stats(build: Dictionary, cargo_weight: float,
 			row.value.theme_type_variation = &"LabelBodyBright" if changed else &"LabelBody"
 			row.bar.ratio = cur / top
 			row.bar.preview_ratio = new / top if changed else -1.0
+
+
+## A stat row's value for a build: RCS_FRONT worked out, any other summed
+## (sum_stat).
+static func stat_value(build: Dictionary, stat: String, grades: Dictionary = {}) -> float:
+	if stat == RCS_FRONT:
+		return snappedf(RadarCrossSection.of_build(build) / RadarCrossSection.reference_rcs(), 0.01)
+	return sum_stat(build, stat, grades)
 
 
 ## Sum one stat across a build, the way Mecha.get_stat() does (minus the
@@ -212,6 +224,8 @@ func _set_tile(key: String, cur: float, new: float, comparing: bool, note: Strin
 
 
 func _max_value(stat: String) -> float:
+	if stat == RCS_FRONT:
+		return RadarCrossSection.MULT_MAX
 	if PartManager.has_method("get_max_stat_value"):
 		var value = PartManager.get_max_stat_value(stat)
 		if value is float or value is int:

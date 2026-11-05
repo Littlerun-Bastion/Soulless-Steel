@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/IlluminatorTest.gd" id="1_illuminator"]
+
+[node name="IlluminatorTest" type="Node"]
+script = ExtResource("1_illuminator")

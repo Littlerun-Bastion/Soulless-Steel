@@ -21,7 +21,7 @@ description = "With a homogenous titanium skeleton, aluminium plating and comple
 image = ExtResource("6")
 heatmap = ExtResource("3_8y55w")
 accuracy_modifier = 1.0
-visual_range = 300
+visual_range = 150
 health = 750
 weight = 2.7
 

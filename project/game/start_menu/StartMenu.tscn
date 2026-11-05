@@ -89,6 +89,21 @@ theme_override_fonts/font = ExtResource("5")
 theme_override_font_sizes/font_size = 50
 text = "SAV BOOT SEQUENCE"
 
+[node name="ObserveContainer" type="VBoxContainer" parent="MainButtons"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MainButtons/ObserveContainer"]
+layout_mode = 2
+theme = ExtResource("12")
+text = "Observe"
+alignment = 0
+
+[node name="Descriptor" type="Label" parent="MainButtons/ObserveContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
+text = "NPC observation arena"
+
 [node name="ExpeditionContainer" type="VBoxContainer" parent="MainButtons" unique_id=988913429]
 layout_mode = 2
 
@@ -285,6 +300,9 @@ horizontal_alignment = 2
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_Arena_pressed"]
+[connection signal="mouse_entered" from="MainButtons/ObserveContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/ObserveContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/ObserveContainer/Button" to="." method="_on_Observe_pressed"]
 [connection signal="mouse_entered" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/ExpeditionContainer/Button" to="." method="_on_Expedition_pressed"]

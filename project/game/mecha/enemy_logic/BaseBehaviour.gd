@@ -19,15 +19,17 @@ extends RefCounted
 #                blind fire, shield use and stance hysteresis
 #   flee         run from every known threat to an exit, dark and sprinting,
 #                until it is far from them and left alone for a while
+#   identify     something is out there: an unknown or unseen track, met by
+#                the type's doctrine (see IDENTIFY)
 # Scores are on a 0 to 1 ladder (the SCORE_ constants) that keeps the order
 # the old transition priorities had, so the same intent wins in the same
 # situation. An NPC in the emergency Flag (Mecha.is_exposed) flees above
 # everything; its weapons are locked, so engage never scores for it.
 #
-# The illuminator is chosen per intent (wants_illuminator): on while
-# wandering, looting and investigating (Hunters and Rats run dark), dark
-# while lying in wait, closing on a target that hasn't fired yet, fleeing and
-# leaving Flagged; lit while trading shots.
+# The illuminator is chosen per intent (illuminator_mode): off by default,
+# on only to engage a target it has a track or lock on (steady, or flashing
+# from SKILL_LIGHT_DISCIPLINE), to execute, and for identify's light; never
+# for a Rat.
 #
 # NOT selectable on its own — it lives outside behaviours/ so combat_behaviour
 # names never resolve to it. Add a variant by subclassing, not by editing here.
@@ -73,8 +75,8 @@ const FLEE_SAFE_TIME := 20.0
 const FLEE_EXIT_REPICK_TIME := 5.0
 const FLEE_RUN_DISTANCE := 2000.0
 const FLEE_EXTRACT_RANGE := 3000.0
-## How long (s) an alarmed NPC stays wary, wandering with its illuminator on
-## and shield ready, after its leads are used up. Placeholder.
+## How long (s) an alarmed NPC stays wary, wandering with its shield ready,
+## after its leads are used up. Placeholder.
 const WARY_TIME := 30.0
 ## Scans of the scene for containers and exits are refreshed this often (s).
 const SCAN_INTERVAL := 1.0
@@ -247,7 +249,7 @@ const VULTURE_WEIGHTS := {"range": 0.6, "cover": 1.0, "view": 0.8, "travel": 0.4
 
 #Essential variables
 var intents = ["roam", "investigate", "loot", "extract", "follow", "ambush", "engage", "search", "disengage",
-		"execute", "stalk", "protect", "raise_flag", "flee", "help", "vulture", "scout"]
+		"execute", "stalk", "protect", "raise_flag", "flee", "help", "vulture", "scout", "identify"]
 var initial_state = "roam"
 
 #Custom variables
@@ -761,40 +763,48 @@ func _in_combat_range(enemy) -> bool:
 
 ## ILLUMINATOR ##
 
-# Whether the NPC runs lit in `intent` (Enemy._update_illuminator): see the
-# table at the top.
-func wants_illuminator(enemy, intent: String) -> bool:
+# The doctrine's illuminator (Enemy._update_illuminator): off in every intent
+# but these.
+#   engage    on to get visual and aim, for a target it has a track or a
+#             lock on: steady under SKILL_LIGHT_DISCIPLINE (held
+#             Enemy.ILLUMINATOR_HOLD_TIME at a time), flashing from it
+#             (LIGHT_FLASH: Enemy's light discipline). In a squad the anchor
+#             is lit while the squad engages (the spotter, whose cone lights
+#             the foe for the others), the flanker dark.
+#   execute   lit: an execution must be seen, a Rat's too
+#   identify  lit only for its "light" response
+# Otherwise a Rat never lights up.
+const LIGHT_OFF := "off"
+const LIGHT_ON := "on"
+const LIGHT_FLASH := "flash"
+
+
+func illuminator_mode(enemy, intent: String) -> String:
 	var type = enemy.personality.type if enemy.personality else Personality.Type.PROFESSIONAL
-	var sneaky: bool = type == Personality.Type.HUNTER or type == Personality.Type.RAT
-	if intent == "roam" or intent == "loot" or intent == "investigate" or intent == "follow" or intent == "help":
-		return not sneaky
-	if intent == "ambush" or intent == "flee" or intent == "disengage" or intent == "stalk" or intent == "raise_flag" \
-			or intent == "vulture":
-		return false
-	if intent == "scout":
-		# Sneaking a look at what is ahead.
-		return not (type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL)
-	if intent == "execute" or intent == "protect":
-		# An execution must be seen; a guard wants to see what comes.
-		return true
-	if intent == "search":
-		# Sneaking up on a last-known spot.
-		return not (type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL)
-	if intent == "extract":
-		# Leaving Flagged, or with the capsule exposed: dark.
-		return not (enemy.is_flagged() or enemy.is_exposed)
-	if intent == "engage":
-		# In a squad the anchor is the spotter, lit so its cone lights the
-		# foe for the others; the flanker runs dark.
-		var role: String = enemy.knowledge.role()
-		if role == Squad.ROLE_ANCHOR:
-			return true
-		if role == Squad.ROLE_FLANKER:
-			return false
-		# Closing on a target that isn't shooting yet: sneak up. Trading
-		# shots: lit, it needs to see.
-		return not (stance == "closing" and enemy.under_fire_timer <= 0)
-	return true
+	if intent == "execute":
+		return LIGHT_ON
+	if type == Personality.Type.RAT:
+		return LIGHT_OFF
+	if intent == "identify":
+		return LIGHT_ON if _identify_response == "light" else LIGHT_OFF
+	if intent != "engage":
+		return LIGHT_OFF
+	var role: String = enemy.knowledge.role()
+	if role == Squad.ROLE_ANCHOR:
+		return LIGHT_ON
+	if role == Squad.ROLE_FLANKER:
+		return LIGHT_OFF
+	var target = enemy.current_target if is_instance_valid(enemy.current_target) else enemy.valid_target
+	if not is_instance_valid(target):
+		return LIGHT_OFF
+	if not (enemy.knowledge.knows(target) or is_same(enemy.get_locked_to(), target)):
+		return LIGHT_OFF
+	return LIGHT_FLASH if enemy.skill() >= SKILL_LIGHT_DISCIPLINE else LIGHT_ON
+
+
+# Whether the NPC runs lit in `intent` (illuminator_mode not off).
+func wants_illuminator(enemy, intent: String) -> bool:
+	return illuminator_mode(enemy, intent) != LIGHT_OFF
 
 
 ## ENTRY AND EXIT HOOKS ##
@@ -1291,6 +1301,392 @@ func do_scout(dt, enemy):
 		AICombatLog.record_info("scouted")
 	_scouted_at = enemy.knowledge.now()
 	_scout_goal = Vector2.INF
+
+
+# IDENTIFY: "something is out there". The one intent for an unknown or
+# unseen track (identify_reason), in this order:
+#   a lock wedge (someone locking it now), a shot wedge, an UNKNOWN IR
+#   track, a sound wedge, an alarm, a ghost of a mech it holds something
+#   against;
+# each with no visual on its cause (no body it sees inside the wedge, or the
+# track's body not in sight), at least its reaction delay old
+# (Enemy.reaction_delay) and not handled already. It picks one response
+# (doctrine_response), by panic (nervous), the reason, its type and skill:
+#   watch       turn toward it and look (any type under SKILL_TOOLS)
+#   scan        a sweep toward it, else a drone (fire.sweep, launch_drone, as
+#               scout uses them); a sweep that reports a mech there goes on
+#               to the type's next step (lock, or light for a Guardian)
+#   lock        a lock search on a mech inside the reason's area
+#               (Enemy.lock_search_target; the lock rules decide), a Hunter
+#               sending its drone too to keep the track live, and firing at
+#               its lock or a live track without visual
+#   light       its light on, turned toward it (a Guardian's way to make
+#               sure before it fires)
+#   flank       a Rat: dark, round to a point beside the track, never a lock
+#   leave       away from it, and keeping away (knowledge.set_avoid)
+#   fire        blind fire at it (fire.blind_fire_at, search's code)
+#   smoke       smoke round itself, then break line
+#   break_line  to cover from it (the disengage weights)
+# It ends when the track becomes visual (engage, or nothing, takes over),
+# when it is lost, or after IDENTIFY_TIME s; a reason handled once is not
+# taken up again. Its score sits under engage when a target is in sight and
+# above roam, loot and investigate; a lock warning puts it above a fight
+# (SCORE_IDENTIFY_LOCKED), under disengage and flee. A companion under
+# orders, or an NPC with its Flag up, doesn't run it.
+
+## Placeholders.
+const SCORE_IDENTIFY := 0.42
+const SCORE_IDENTIFY_LOCKED := 0.78
+const IDENTIFY_TIME := 15.0
+## The skill breakpoints (see NPC AI.md): from SKILL_TOOLS a sweep or a drone
+## to identify a track; from SKILL_LIGHT_DISCIPLINE flashing its light; from
+## SKILL_LOCK_BACK a lock search back at whoever locks it (a lock search on a
+## shot wedge from Enemy.SKILL_LOCK_ON_WEDGE).
+const SKILL_TOOLS := 0.3
+const SKILL_LIGHT_DISCIPLINE := 0.5
+const SKILL_LOCK_BACK := 0.7
+## Nervous: above this panic, an NPC with at least NERVOUS_COURAGE fires at
+## any track, one with less leaves on any track.
+const NERVOUS_PANIC := 0.5
+const NERVOUS_COURAGE := 0.4
+## How far (px) leaving takes it from a track, and how far beside a track a
+## Rat goes round.
+const IDENTIFY_LEAVE_DISTANCE := 2500.0
+const IDENTIFY_FLANK_DISTANCE := 1200.0
+## The responses.
+const RESPONSES := ["watch", "scan", "lock", "light", "flank", "leave", "fire", "smoke", "break_line"]
+## Reason kinds by urgency, first first.
+const REASON_RANK := {"lock": 0, "shot": 1, "ir": 2, "sound": 3, "alarm": 4, "ghost": 5}
+
+# The reason being handled ({kind, point, key, wedge or contact, body}),
+# what it does about it, how long it has, and what is done already.
+var _identify := {}
+var _identify_response := ""
+var _identify_time := 0.0
+var _identify_scanned := false
+var _identify_drone := false
+var _identify_smoked := false
+var _identify_leave_to := Vector2.INF
+# Reasons already handled (their keys), not taken up again.
+var _identified := {}
+
+
+func score_identify(enemy) -> float:
+	if enemy.is_flagged() or enemy.is_exposed or _under_orders(enemy):
+		return 0.0
+	if _current(enemy) == "identify":
+		if _identify_time >= IDENTIFY_TIME or not _identify_holds(enemy):
+			return 0.0
+		return SCORE_IDENTIFY_LOCKED if _identify.get("kind") == "lock" else SCORE_IDENTIFY
+	# A target of its own, seen or lost, is engage's or search's: only a lock
+	# on it takes the NPC from that.
+	var fighting: bool = enemy.valid_target and is_instance_valid(enemy.valid_target)
+	var reason := identify_reason(enemy, fighting)
+	if reason.is_empty():
+		return 0.0
+	if reason.kind == "lock":
+		return SCORE_IDENTIFY_LOCKED
+	return 0.0 if fighting else SCORE_IDENTIFY
+
+
+# A companion the player has given an order (SCORE_ORDER's intents).
+func _under_orders(enemy) -> bool:
+	var squad = enemy.knowledge.squad
+	return squad != null and squad.is_player_led() and squad.order != "free"
+
+
+## The most urgent unknown or unseen track this NPC hasn't handled (see
+## above): {kind, point, key, and wedge, or contact and body}; {} for none.
+## With `locks_only`, only a lock on it counts (an NPC busy with a target of
+## its own).
+func identify_reason(enemy, locks_only := false) -> Dictionary:
+	var store: ContactStore = enemy.contacts
+	var delay: float = enemy.reaction_delay()
+	var seen: Array = enemy.knowledge.seen_bodies()
+	var best := {}
+	var best_rank := 99
+	for wedge in store.wedges({"live": true}):
+		var rank: int = REASON_RANK.get(wedge.source, 99)
+		if rank >= best_rank or store.now - float(wedge.since) < delay:
+			continue
+		if wedge.source == "lock":
+			if store.now - float(wedge.time) > Mecha.LOCK_WARNING_FRESH:
+				continue
+		elif locks_only:
+			continue
+		var key := "%s@%s" % [wedge.source, str(wedge.since)]
+		if _identified.has(key) or _seen_inside(seen, wedge):
+			continue
+		best = {"kind": wedge.source, "point": ContactStore.estimate_point(wedge), "key": key, "wedge": wedge}
+		best_rank = rank
+	if locks_only or best_rank == 0:
+		return best
+	var squad = enemy.knowledge.squad
+	for contact in store.view():
+		var kind := ""
+		if contact.live and contact.source == IRSensing.SOURCE:
+			kind = "ir"
+		elif contact.live and contact.source == "alarm":
+			kind = "alarm"
+		elif not contact.live and contact.kind == "mech" and contact.body != null:
+			kind = "ghost"
+		else:
+			continue
+		var rank: int = REASON_RANK[kind]
+		if rank >= best_rank or store.now - float(contact.since) < delay:
+			continue
+		var body = contact.body
+		if body != null:
+			if not is_instance_valid(body) or body.get("is_dead") == true or enemy.is_seeing(body):
+				continue
+			if squad != null and squad.is_in(body):
+				continue
+			# A mech it holds something against (should_attack is too heavy to
+			# ask of every ghost every think).
+			if kind == "ghost" and enemy.get_relationship(body).hostility <= 0.0:
+				continue
+		var key := "%s:%d@%s" % [kind, int(contact.body_id), str(contact.since)]
+		if _identified.has(key):
+			continue
+		best = {"kind": kind, "point": contact.position, "key": key, "contact": contact, "body": body}
+		best_rank = rank
+	return best
+
+
+# Whether any of the bodies seen is inside the wedge (its cause is visual).
+static func _seen_inside(seen: Array, wedge: Dictionary) -> bool:
+	for body in seen:
+		if is_instance_valid(body) and ContactStore.wedge_contains(wedge, body.global_position):
+			return true
+	return false
+
+
+## The response this NPC makes to `reason` (see above), by panic, the
+## reason, its type and its skill.
+func doctrine_response(enemy, reason: Dictionary) -> String:
+	var p = enemy.personality
+	var type = p.type if p != null else Personality.Type.PROFESSIONAL
+	var skill: float = enemy.skill()
+	if enemy.knowledge.panic > NERVOUS_PANIC:
+		return "fire" if p == null or p.courage >= NERVOUS_COURAGE else "leave"
+	if type == Personality.Type.SCAVENGER:
+		return "leave"
+	if reason.get("kind") == "lock":
+		if type != Personality.Type.RAT and skill >= SKILL_LOCK_BACK:
+			return "lock"
+		if enemy.fire.has_smoke():
+			return "smoke"
+		return "break_line"
+	if type == Personality.Type.RAT:
+		return "flank"
+	if type == Personality.Type.GUARDIAN:
+		return "scan" if _can_scan(enemy) else "light"
+	if skill < SKILL_TOOLS:
+		return "watch"
+	if type == Personality.Type.PROFESSIONAL and _can_scan(enemy):
+		return "scan"
+	return "lock"
+
+
+func _can_scan(enemy) -> bool:
+	return enemy.skill() >= SKILL_TOOLS and (enemy.fire.can_sweep() or enemy.fire.has_internal("drone"))
+
+
+func enter_identify(enemy):
+	_identify = identify_reason(enemy)
+	_identify_time = 0.0
+	_identify_scanned = false
+	_identify_drone = false
+	_identify_smoked = false
+	_identify_leave_to = Vector2.INF
+	_identify_response = doctrine_response(enemy, _identify) if not _identify.is_empty() else "watch"
+	enemy.bark("identifying")
+	AICombatLog.record_info("identify_" + _identify_response)
+
+
+func exit_identify(enemy):
+	if not _identify.is_empty():
+		_identified[_identify.key] = true
+	if is_instance_valid(enemy) and _identify_response == "lock" and not enemy.get_locked_to():
+		enemy.lock_search_target = null
+	_identify = {}
+	_identify_response = ""
+
+
+## What identify is doing now: {"reason": the reason, "response"} ({} when
+## it isn't).
+func identifying() -> Dictionary:
+	return {} if _identify.is_empty() else {"reason": _identify, "response": _identify_response}
+
+
+# Whether the reason still stands: still there, and its cause not in sight.
+func _identify_holds(enemy) -> bool:
+	if _identify.is_empty():
+		return false
+	if _identify.has("wedge"):
+		var wedge: Dictionary = _identify.wedge
+		if not enemy.contacts.wedges().has(wedge):
+			return false
+		if _identify.kind == "lock":
+			return not enemy.lock_warning().is_empty()
+		if not wedge.live:
+			return false
+		return not _seen_inside(enemy.knowledge.seen_bodies(), wedge)
+	var body = _identify.get("body")
+	if body != null and (not is_instance_valid(body) or enemy.is_seeing(body)):
+		return false
+	var contact: Dictionary = _identify.contact
+	if not enemy.contacts.view().has(contact):
+		return false
+	return contact.live or _identify.kind == "ghost"
+
+
+# Where the reason puts its cause now.
+func _identify_point() -> Vector2:
+	if _identify.has("wedge"):
+		return ContactStore.estimate_point(_identify.wedge)
+	if _identify.has("contact"):
+		return _identify.contact.position
+	return _identify.get("point", Vector2.ZERO)
+
+
+## A mech inside the reason's area that this NPC could lock (Enemy's lock
+## rules: inside the wedge, or within LOCK_SEARCH_RADIUS of the point), the
+## nearest to the point; null for none. Only what is really there is found,
+## as a reticle swept over the area would find it.
+func lock_candidate(enemy, reason: Dictionary):
+	if reason.is_empty() or not (enemy.arena is Node) or not enemy.arena.has_method("get_mechas"):
+		return null
+	var point: Vector2 = ContactStore.estimate_point(reason.wedge) if reason.has("wedge") else reason.point
+	var squad = enemy.knowledge.squad
+	var best = null
+	var best_dist := INF
+	for mecha in enemy.arena.get_mechas():
+		if not is_instance_valid(mecha) or mecha == enemy or not enemy.can_start_lock(mecha):
+			continue
+		if squad != null and squad.is_in(mecha):
+			continue
+		var at: Vector2 = mecha.global_position
+		var inside: bool = ContactStore.wedge_contains(reason.wedge, at) if reason.has("wedge") \
+				else at.distance_to(point) <= enemy.LOCK_SEARCH_RADIUS
+		if not inside:
+			continue
+		var dist := at.distance_to(point)
+		if dist < best_dist:
+			best = mecha
+			best_dist = dist
+	return best
+
+
+func do_identify(dt, enemy):
+	if not is_instance_valid(enemy) or _identify.is_empty():
+		return
+	_identify_time += dt
+	var point := _identify_point()
+	enemy.ai_aim_point = point
+	aiming_at_enemy = false
+	match _identify_response:
+		"leave":
+			_identify_leave(dt, enemy, point)
+			return
+		"flank":
+			_identify_flank(dt, enemy, point)
+			return
+		"break_line":
+			_identify_break_line(dt, enemy, point)
+			return
+		"smoke":
+			if not _identify_smoked:
+				_identify_smoked = true
+				enemy.fire.screen_self()
+			_identify_break_line(dt, enemy, point)
+			return
+	# The rest stand and turn toward it.
+	enemy.decrease_throttle(0, 0.05)
+	enemy.navigate_to_target(dt, 0.0, 0.0, false)
+	match _identify_response:
+		"scan":
+			_identify_scan(enemy, point)
+		"lock":
+			_identify_lock(dt, enemy, point)
+		"fire":
+			enemy.fire.blind_fire_at(point)
+
+
+# A sweep toward the track, else a drone, once; a sweep that reports a mech
+# there goes on: a Guardian to its light, any other to a lock search. One
+# that reports none ends it: nothing to identify.
+func _identify_scan(enemy, point: Vector2) -> void:
+	if _identify_scanned:
+		return
+	_identify_scanned = true
+	var dir: Vector2 = enemy.global_position.direction_to(point)
+	if enemy.fire.can_sweep() and enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing(), SCOUT_SWEEP_WIDTH):
+		var counts: Dictionary = enemy.fire.last_sweep.get("counts", {})
+		if counts.has("mech"):
+			_identify_response = "light" if enemy.personality.type == Personality.Type.GUARDIAN else "lock"
+		else:
+			_identify_time = IDENTIFY_TIME
+	elif enemy.fire.launch_drone(point):
+		_identify_drone = true
+
+
+# A lock search on a mech inside the reason's area; a Hunter sends its drone
+# to keep the track live and fires at its lock, or blind at a live track,
+# without visual. A lock made on a mech it would fight makes that mech its
+# target: engage takes over, lights up to get visual and aim, and fires.
+func _identify_lock(dt, enemy, point: Vector2) -> void:
+	if not is_instance_valid(enemy.lock_search_target) and not enemy.get_locked_to():
+		var found = lock_candidate(enemy, _identify)
+		if found != null:
+			enemy.lock_search_target = found
+	var made = enemy.get_locked_to()
+	if made and not enemy.valid_target and enemy.should_attack(made):
+		enemy.valid_target = made
+	if enemy.personality.type != Personality.Type.HUNTER:
+		return
+	if not _identify_drone and enemy.fire.has_internal("drone"):
+		_identify_drone = enemy.fire.launch_drone(point)
+	var locked = enemy.get_locked_to()
+	if locked:
+		var eff = _get_effective_distances(enemy)
+		enemy.fire.engage(dt, locked, false, eff, _get_self_state(enemy), false)
+	elif _identify.kind == "ir" and _identify.contact.live:
+		enemy.fire.blind_fire_at(point)
+
+
+# Away from the track and keeping away, as from an alarm: a point
+# IDENTIFY_LEAVE_DISTANCE off on the far side, picked once.
+func _identify_leave(dt, enemy, point: Vector2) -> void:
+	enemy.knowledge.set_avoid(point)
+	if _identify_leave_to == Vector2.INF:
+		var away: Vector2 = (enemy.global_position - point).normalized()
+		if away == Vector2.ZERO:
+			away = -enemy.get_facing()
+		_identify_leave_to = enemy.global_position + away * IDENTIFY_LEAVE_DISTANCE
+	point_of_interest = _identify_leave_to
+	enemy.going_to_position = true
+	_push_poi_to_nav(enemy)
+	_ramp_throttle_full(dt, enemy)
+	enemy.navigate_to_target(dt, 0, 0, false)
+
+
+# A Rat round to a point beside the track, dark and at half throttle, to get
+# behind whatever is there.
+func _identify_flank(dt, enemy, point: Vector2) -> void:
+	var side: Vector2 = (point - enemy.global_position).orthogonal().normalized()
+	point_of_interest = point + side * IDENTIFY_FLANK_DISTANCE
+	enemy.going_to_position = true
+	_push_poi_to_nav(enemy)
+	enemy.decrease_throttle(0.5, 0.01)
+	enemy.navigate_to_target(dt, 0, 0, false)
+
+
+# To cover from the track (the disengage weights, as breaking contact).
+func _identify_break_line(dt, enemy, point: Vector2) -> void:
+	if not _tactical_move(dt, enemy, point, 0.0, DISENGAGE_WEIGHTS, true):
+		enemy.decrease_throttle(0, 0.05)
+		enemy.navigate_to_target(dt, 0.0, 0.0, false)
 
 
 # The leader calls a straggler back (Squad.call_regroup).

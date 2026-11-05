@@ -2,6 +2,10 @@ extends Node2D
 
 enum TYPE {INSTANT, REGULAR, COMPLEX}
 
+## The small hit a round with no impact fuse makes as it breaks up against a
+## wall or a vehicle (_break_up).
+const WALL_IMPACT := preload("res://game/weapons/BallisticImpactMini.tscn")
+
 var LightEffect
 var Collision
 var thrusters_on = false
@@ -163,9 +167,9 @@ var explosion_targets = []
 var fuse_waiting = false
 var has_impacted = false
 var is_trail_created = false
-# Stopped by a building wall or a vehicle: it stays put. An impact-fused
-# round is going off; any other round's timer and proximity fuses keep
-# running.
+# Stopped where it is: an impact-fused round going off against a wall or a
+# vehicle, a designator's cluster round releasing its submunitions there, or
+# an indirect round that landed with its timer and proximity fuses running.
 var cover_stopped = false
 # Landing point from the designator (null without one), where the flight
 # started and how far it is.
@@ -217,21 +221,22 @@ func _physics_process(dt):
 		wiggle_error_lifetime = 0
 		cur_wiggle_err = randf_range(-wiggle_amount * wiggle_err,wiggle_amount * wiggle_err)
 	
-	# Building walls and vehicles (see MapSenses). A round with an impact fuse
-	# goes off at the first wall it hits, or at a vehicle that stops it. Any
-	# other round loses 1 AP per wall and stops at the wall where its AP
-	# reaches 0, or in a vehicle that stops it; its other fuses keep running.
-	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (velocity*dt), armor_pen, fuse_is_contact_enabled, true)
-	armor_pen = cover.ap
+	# Building walls and vehicles (see MapSenses). These rounds don't go
+	# through walls: each one ends at the first wall it hits, or at a vehicle
+	# that stops it. An impact-fused round goes off there. A designator's
+	# cluster round (a landing point and a cluster radius) releases its
+	# submunitions there, which still drop onto its circle. Any other round
+	# breaks up against it (WALL_IMPACT) and releases nothing.
+	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (velocity*dt), armor_pen, true, true)
 	if cover.stop != null:
 		position = cover.stop - dir * 4.0
 		speed = 0
 		velocity = Vector2.ZERO
-		cover_stopped = true
-		if fuse_is_contact_enabled:
+		if fuse_is_contact_enabled or (cluster_radius > 0.0 and target_pos != null and payload_subprojectile):
+			cover_stopped = true
 			payload()
 		else:
-			_check_fuses()
+			_break_up()
 		return
 
 	# Raycast movement - ONLY checks terrain, NOT mechas, building walls or
@@ -342,9 +347,12 @@ func setup(mecha, _args, _weapon):
 	speed = muzzle_speed
 	if inherit_velocity:
 		inherited_velocity = args.inherited_velocity
+	# "from": where it was fired from, which a shot wedge points back to
+	# (Mecha.note_round_from).
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
+		"from": args.pos,
 	}
 	change_scaling(projectile_size)
 	$Sprite2D/LightEffect.modulate.a = light_energy
@@ -536,6 +544,17 @@ func die(body):
 	dying = true
 	if not is_overtime:
 		emit_signal("bullet_impact", self, impact_effect, true, body)
+	queue_free()
+
+
+# Against a wall or a vehicle with no impact fuse: a small hit and nothing
+# more, no payload and no blast.
+func _break_up() -> void:
+	if dying:
+		return
+	dying = true
+	payload_expended = true
+	emit_signal("bullet_impact", self, WALL_IMPACT, true, null)
 	queue_free()
 
 func change_scaling(sc):

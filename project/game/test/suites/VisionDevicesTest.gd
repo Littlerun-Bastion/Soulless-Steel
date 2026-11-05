@@ -441,7 +441,7 @@ func _test_decoy_npc() -> void:
 	check_eq(npc.contacts.best_for(decoy).get("kind"), "mech", "and keeps it as a mech contact")
 	npc.add_hostility(decoy, 1.0)
 	check(npc.should_attack(decoy), "a hostile NPC is willing to attack it")
-	npc.check_for_targets(npc.engage_distance * 2.0, 100000.0)
+	npc.check_for_targets(npc.sight_radius() * 2.0, 100000.0)
 	check(npc.valid_target == decoy, "and picks it as its target")
 
 	var alerts := []

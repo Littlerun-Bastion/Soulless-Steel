@@ -237,10 +237,12 @@ func _test_indirect() -> void:
 	var inside_shots := _count_shots(inside)
 	var fired_in: bool = inside.fire.engage(0.1, hider, false, eff, _engage_state(inside), false)
 	check(not fired_in and inside_shots[0] == 0, "no round at a spot inside a building")
-	# An old memory: no.
+	# An old memory: no. The foe has gone out of the NPC's sight circle, so
+	# only the memory could aim the mortar.
 	var late := _enemy(Vector2(0, -600), Personality.Type.SCAVENGER, _design(MORTAR))
 	var ghost := _foe(Vector2(2200, -600), late)
 	late.knowledge.place(ghost, ghost.global_position)
+	ghost.global_position = late.global_position + Vector2(0, -(late.sight_radius() + 1000.0))
 	late.update_senses(FireController.INDIRECT_MEMORY + 1.0)
 	var late_shots := _count_shots(late)
 	late.fire.engage(0.1, ghost, false, eff, _engage_state(late), false)
@@ -257,9 +259,14 @@ func _test_search() -> void:
 	# The search may be over within a poll under load (its first think
 	# sweeps; a sweep that finds the foe far off ends it): the sweep flag
 	# says the search ran even then.
+	var states := []
 	var searching := await wait_until(func():
+		var now_state := "%s:%s:%s" % [enemy.logic.get_current_state(), "T" if enemy.valid_target else "-", "L" if enemy.get_locked_to() else "-"]
+		if states.is_empty() or states[-1] != now_state:
+			states.append(now_state)
 		return str(enemy.logic.get_current_state()) == "search" or enemy.logic.behaviour._search_swept, 8.0)
-	check(searching, "with the target gone it searches (now %s)" % enemy.logic.get_current_state())
+	check(searching, "with the target gone it searches (now %s; went %s; unseen %.1f s)" % [
+			enemy.logic.get_current_state(), str(states), enemy.time_unseen(foe)])
 	var swept := await wait_until(func(): return enemy.sweep_cooldown > 0.0, 3.0)
 	check(swept, "a Hunter sweeps toward the last-known spot")
 	var drone := await wait_until(func(): return not Device.owned_by(enemy).filter(func(d): return d.kind == "drone").is_empty(), 3.0)

@@ -6,7 +6,10 @@ extends PanelContainer
 ##                        exposed, weapons locked; or raised by choice:
 ##                        weapons locked), the capsule exposed with the Flag
 ##                        down, hull heat past the damage point,
-##                        status effects, ECM interference on a lock
+##                        someone locking the player ("LOCKING" while the
+##                        lock wedge narrows, "LOCKED" once it is a line:
+##                        Mecha.lock_warning), status effects, ECM
+##                        interference on a lock
 ##   notice (outlined)    a passing event for NOTICE_TIME s (show_notice):
 ##                        "YOU WERE SWEPT" (no bearing), "WARD DESTROYED";
 ##                        extracting
@@ -87,6 +90,9 @@ func _pick() -> Dictionary:
 			return {"text": "! CAPSULE EXPOSED", "critical": true}
 		if player.external_temp >= player.OVERHEAT_DAMAGE_TEMP:
 			return {"text": "! EXT HEAT CRITICAL — COMPONENT DAMAGE", "critical": true}
+		var warning: Dictionary = player.lock_warning() if player.has_method("lock_warning") else {}
+		if not warning.is_empty():
+			return {"text": "! LOCKED" if warning.state == "locked" else "! LOCKING", "critical": true}
 		var statuses := []
 		for status in STATUS_WORDS:
 			if player.has_status(status):

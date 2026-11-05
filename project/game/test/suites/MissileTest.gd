@@ -4,7 +4,8 @@ extends TestSuite
 # (TORI-V4). Their data; with a target locked, firing at it whatever the
 # designator, the gimbal or the minimum range, up to max range; an unlocked
 # cluster missile's submunitions dropping onto points inside its circle,
-# also when a wall stops the missile on the way; a locked VLS missile flying
+# also when a wall stops the missile on the way; a locked cluster missile
+# that meets a wall breaking up there with nothing released; a locked VLS missile flying
 # over a building onto a target that moved; and unlocked VLS missiles
 # landing in their circle. Real projectiles at game speed.
 
@@ -42,6 +43,7 @@ func run_tests() -> void:
 	await case("locked on: fires at the target, any facing, up to max range", _test_locked_rules)
 	await case("unlocked: cluster submunitions land inside the circle", _test_cluster_open)
 	await case("unlocked: a wall stops the missile, submunitions still reach the circle", _test_cluster_wall)
+	await case("locked: a wall stops the missile, which breaks up and releases nothing", _test_locked_wall)
 	await case("locked VLS missiles fly over a building onto a moving target", _test_vls_locked)
 	await case("unlocked VLS missiles land in the circle", _test_vls_unlocked)
 
@@ -180,6 +182,21 @@ func _test_cluster_wall() -> void:
 	var point := Vector2(900, 200)
 	check_eq(mecha.fire_at_point(SLOT, point), "", "the cluster missile fires at a point past a building")
 	await _check_cluster(weapon, point)
+
+
+func _test_locked_wall() -> void:
+	var mecha := _mecha(CLUSTER, Vector2(-400, 200), Vector2.RIGHT, true)
+	var target := _mecha(CLUSTER, Vector2(1100, 200), Vector2.UP)
+	await get_tree().physics_frame
+	_lock(mecha, target)
+	check_eq(mecha.fire_at_point(SLOT, target.global_position), "", "the cluster missile fires at the lock past the building")
+	var ended := await wait_until(func(): return not _impacts.is_empty(), 3.0)
+	check(ended, "the missile ends")
+	if ended:
+		check(absf(_impacts[0].x) < 40.0, "at the building's wall (x %.0f)" % _impacts[0].x)
+	await wait_seconds(2.5)
+	check(_subs().is_empty(), "with no submunitions (%d)" % _subs().size())
+	check_eq(get_tree().get_nodes_in_group("projectile").size(), 0, "and nothing left in the air or stuck on the wall")
 
 
 func _check_cluster(weapon, point: Vector2) -> void:

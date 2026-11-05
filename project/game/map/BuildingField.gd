@@ -15,9 +15,12 @@ extends Node2D
 # carries its building's id in UV.x; the roof material reads one fade value
 # per id from a small texture that this node keeps up to date.
 #
-# Buildings within occluder_radius of the player get a LightOccluder2D of
-# their outline, so walls cast shadows in the mechas' light cones (see
-# MapSenses); they are made and freed as the player moves, every
+# Buildings round the camera's view get a LightOccluder2D of their outline, so
+# walls cast shadows in the mechas' light cones (see MapSenses): those within
+# the screen's half-diagonal plus occluder_margin of the screen's centre,
+# which follows the player's camera pan. Buildings wholly further than the
+# player's sight circle plus the margin are left out: the screen is black
+# there (with no player, none are). They are made and freed every
 # OCCLUDER_INTERVAL s, so a big map never has more than the ones in reach.
 #
 # Each building also gets its outline as a wall, on MapSenses.WALL_LAYER.
@@ -71,8 +74,8 @@ const ROUTE_MARGIN := 4000.0
 const ROUTE_WALL_CLEARANCE := 100.0
 const ROUTE_SOLVES_PER_FRAME := 1
 const OCCLUDER_INTERVAL := 0.25
-## Occluders are freed only this far (px) past occluder_radius, so one at
-## the edge doesn't flicker in and out.
+## Occluders are freed only this far (px) past their reach, so one at the
+## edge doesn't flicker in and out.
 const OCCLUDER_SLACK := 1000.0
 
 @export var footprints: BuildingFootprints
@@ -88,11 +91,11 @@ const OCCLUDER_SLACK := 1000.0
 ## Outline drawn round buildings read from a "Footprints" node.
 @export var outline_color := Color(0.75, 0.75, 0.75)
 @export var outline_width := 8.0
-## Buildings within this distance (px) of the player cast light shadows: a
-## little past the screen corners at the default zoom (about 2200 px), since
-## a shadow only shows on screen. Every light that casts shadows pays for
-## each occluder in its reach, so keep it tight.
-@export var occluder_radius := 3000.0
+## How far (px) past the screen's corners, and past the player's sight
+## circle, buildings still cast light shadows: a shadow only shows on screen.
+## Every light that casts shadows pays for each occluder in its reach, so
+## keep it tight.
+@export var occluder_margin := 800.0
 
 var _polys: Array[PackedVector2Array] = []
 var _rects: Array[Rect2] = []
@@ -219,13 +222,13 @@ func _physics_step(delta: float) -> void:
 	if _route_task >= 0 and WorkerThreadPool.is_task_completed(_route_task):
 		_finish_route_build()
 	var reveal_at = null
-	var player_at = null
+	var player = null
 	var seen := {}
 	for mech in get_tree().get_nodes_in_group("mecha"):
 		if not (mech is Node2D) or not mech.has_method("entered_building"):
 			continue
 		if mech.has_method("is_player") and mech.is_player():
-			player_at = mech.global_position
+			player = mech
 		var id: int = mech.get_instance_id()
 		seen[id] = true
 		var pos := to_local(mech.global_position)
@@ -248,16 +251,37 @@ func _physics_step(delta: float) -> void:
 			_mecha_state.erase(id)
 	_update_fades(reveal_at, delta)
 	_occluder_timer -= delta
-	if _occluder_timer <= 0.0 and player_at != null:
+	if _occluder_timer <= 0.0:
 		_occluder_timer = OCCLUDER_INTERVAL
-		update_occluders(player_at)
+		var cam := get_viewport().get_camera_2d() if get_viewport() else null
+		if cam != null:
+			var limit_at := Vector2.INF
+			var limit := INF
+			if is_instance_valid(player) and player.has_method("sight_radius"):
+				limit_at = player.global_position
+				limit = player.sight_radius() + occluder_margin
+			update_occluders(cam.get_screen_center_position(), view_reach(cam), limit_at, limit)
 
 
-# Gives the buildings within occluder_radius of `global_pos` an occluder and
-# frees those well past it.
-func update_occluders(global_pos: Vector2) -> void:
+## How far (px) from the screen's centre buildings get occluders: the
+## screen's half-diagonal at `cam`'s zoom, plus occluder_margin.
+func view_reach(cam: Camera2D) -> float:
+	var size := get_viewport().get_visible_rect().size / cam.zoom
+	return size.length() * 0.5 + occluder_margin
+
+
+# Gives the buildings within `radius` of `global_pos` an occluder and frees
+# those well past it. With `limit_at` given, buildings further than `limit`
+# from it are left out (and freed). A negative radius is the current camera's
+# view_reach.
+func update_occluders(global_pos: Vector2, radius := -1.0, limit_at := Vector2.INF, limit := INF) -> void:
+	if radius < 0.0:
+		var cam := get_viewport().get_camera_2d() if get_viewport() else null
+		radius = view_reach(cam) if cam != null else occluder_margin
 	var keep := {}
-	for i in buildings_within(global_pos, occluder_radius):
+	for i in buildings_within(global_pos, radius):
+		if limit_at != Vector2.INF and distance_to_building(i, limit_at) > limit:
+			continue
 		keep[i] = true
 		if not _occluders.has(i):
 			var shape := OccluderPolygon2D.new()
@@ -268,7 +292,11 @@ func update_occluders(global_pos: Vector2) -> void:
 			add_child(occluder)
 			_occluders[i] = occluder
 	for i in _occluders.keys():
-		if not keep.has(i) and distance_to_building(i, global_pos) > occluder_radius + OCCLUDER_SLACK:
+		if keep.has(i):
+			continue
+		var outside_view := distance_to_building(i, global_pos) > radius + OCCLUDER_SLACK
+		var outside_sight := limit_at != Vector2.INF and distance_to_building(i, limit_at) > limit + OCCLUDER_SLACK
+		if outside_view or outside_sight:
 			_occluders[i].queue_free()
 			_occluders.erase(i)
 

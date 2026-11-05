@@ -54,9 +54,12 @@ func setup(mecha, args, _weapon):
 	if proj_data.random_rotation:
 		$Sprite2D.rotation_degrees = randf_range(0, 360)
 	
+	# "from": where it was fired from, which a shot wedge points back to
+	# (Mecha.note_round_from).
 	original_mecha_info = {
 		"body": mecha,
 		"name": mecha.mecha_name,
+		"from": args.pos,
 	}
 	lifetime = data.lifetime
 	speed = data.bullet_velocity

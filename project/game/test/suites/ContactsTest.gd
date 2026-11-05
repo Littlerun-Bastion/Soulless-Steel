@@ -8,9 +8,9 @@ extends TestSuite
 # contacts don't age; the player's sight and an NPC's sight write contacts;
 # a vision contact keeps a mecha behind a wall shown (the Seeker's outlines
 # it instead); and the HUD draws ping
-# contacts as markers on screen and arrows on the screen's edge off it (with
-# kind and distance), both fading as ghosts, plus everyone's contacts with
-# the all_contacts debug setting.
+# contacts as markers on screen, fading as ghosts, and none off screen (the
+# radar shows those), plus everyone's contacts with the all_contacts debug
+# setting.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const ENEMY := preload("res://game/mecha/Enemy.tscn")
@@ -45,7 +45,7 @@ func run_tests() -> void:
 	await case("the player's sight writes contacts", _test_player_sight)
 	await case("an NPC's sight writes contacts", _test_npc_sight)
 	await case("a vision contact shows a mecha behind a wall", _test_vision)
-	await case("ping contacts are HUD markers (edge arrows off screen) that fade as ghosts", _test_hud_markers)
+	await case("ping contacts are HUD markers on screen that fade as ghosts, none off screen", _test_hud_markers)
 	await case("all_contacts draws every mecha's contacts", _test_debug_all)
 
 
@@ -275,28 +275,13 @@ func _test_hud_markers() -> void:
 	hud._process(0.0)
 	check_eq(hud.get_marks().size(), 0, "gone with the ghost")
 
-	# Off screen: an arrow on the screen's edge pointing at it, with its kind
-	# and distance from the player.
+	# Off screen: nothing here; the radar shows it (PlayerRadar).
 	var right_of: Vector2 = near_player + Vector2(50000, 0)
 	_player.contacts.report(other, "mech", right_of, "ward", 2.5)
 	var above := _mecha(near_player + Vector2(0, -400))
 	_player.contacts.report(above, "mech", near_player + Vector2(0, -50000), "drone", 2.5)
 	hud._process(0.0)
-	marks = hud.get_marks()
-	var screen: Vector2 = hud.get_viewport_rect().size
-	check_eq(marks.size(), 2, "two pings off screen, two markers")
-	var to_right := marks.filter(func(m): return m.arrow and m.dir.x > 0.99)
-	var to_top := marks.filter(func(m): return m.arrow and m.dir.y < -0.99)
-	check(to_right.size() == 1 and absf(to_right[0].at.x - (screen.x - HudContacts.ARROW_MARGIN.x)) < 1.5,
-			"an arrow at the right edge for the one to the right")
-	check(to_top.size() == 1 and absf(to_top[0].at.y - HudContacts.ARROW_MARGIN.y) < 1.5,
-			"an arrow at the top edge for the one above")
-	if to_right.size() == 1:
-		var metres := roundi(_player.global_position.distance_to(right_of) / HudContacts.PX_PER_METRE)
-		check_eq(to_right[0].text, "MECH %dM" % metres, "labelled with its kind and distance")
-	_player.contacts.advance(2.5 + ContactStore.GHOST_TIME * 0.5)
-	hud._process(0.0)
-	check(hud.get_marks().all(func(m): return m.arrow and m.alpha < 0.6), "arrows fade as ghosts too")
+	check_eq(hud.get_marks().size(), 0, "pings off screen get no marker or edge arrow (the radar shows them)")
 
 
 func _test_debug_all() -> void:

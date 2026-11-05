@@ -23,6 +23,10 @@ var options = {
 	# Off: it follows the cursor anywhere in range, dashed outside the look
 	# angle, and the weapon waits for the mecha to face it (Player).
 	"designator_look_limits": true,
+	# On: while the player holds a lock, its head (and light) turns to the
+	# target and the body follows the cursor (Player.aim_at). Off: the head
+	# follows the cursor too.
+	"lock_head_tracking": true,
 	"locale": 0,
 	"invert_x": true,
 	"invert_y": false,

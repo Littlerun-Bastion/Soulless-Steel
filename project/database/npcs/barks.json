@@ -38,6 +38,10 @@
 		"vulturing": 0.6,
 		"found_trail": 0.7,
 		"lost_trail": 0.5,
+		"lock_warning": 0.8,
+		"identifying": 0.5,
+		"locked_on": 0.7,
+		"contact_unknown": 0.6,
 		"spotted_panicked": 0.9,
 		"lost_target_panicked": 0.7,
 		"searching_panicked": 0.6,
@@ -61,6 +65,38 @@
 		"surrender_plea_panicked": 1.0
 	},
 	"events": {
+		"lock_warning": {
+			"any": ["Someone's locking me!", "Lock tone! Breaking!", "I'm being painted."],
+			"scavenger": ["They've got a lock on me, I'm out!", "No no no, a lock tone!", "Not today. Not like this."],
+			"guardian": ["Being painted. Moving to cover.", "Lock warning. Stay sharp.", "Someone wants me. Let them try."],
+			"professional": ["Spiked. Breaking line.", "Lock warning. Repositioning.", "Painted. Moving."],
+			"hunter": ["You want to play? Fine.", "I feel you looking, {target}.", "Lock tone. Turning on you."],
+			"rat": ["Who's that sneaking up on me?", "Rude. Very rude.", "Easy, easy, I'm friendly!"]
+		},
+		"identifying": {
+			"any": ["Something's out there.", "Checking that.", "Got a contact. Looking."],
+			"scavenger": ["What was that? I don't like it.", "Nope. Something's there.", "I'm not sticking around to find out."],
+			"guardian": ["Unknown contact. Identify yourself.", "Checking the perimeter.", "Something moved. Looking."],
+			"professional": ["Unknown contact. Classifying.", "Sweeping the area.", "Getting eyes on it."],
+			"hunter": ["I know you're there.", "Come out, come out.", "Fresh sign. Tracking."],
+			"rat": ["Ooh, who's that?", "Someone's hiding. Good.", "Let's see who we have."]
+		},
+		"locked_on": {
+			"any": ["Locked.", "Got a lock.", "Tone. Firing."],
+			"scavenger": ["I locked something! Now what?", "Lock! Uh, firing!", "Got it, got it!"],
+			"guardian": ["Locked on hostile.", "Target locked. Last warning.", "Lock confirmed."],
+			"professional": ["Lock confirmed.", "Solid tone. Engaging.", "Locked. Weapons free."],
+			"hunter": ["Got you, {target}.", "No hiding now.", "Locked. You're mine."],
+			"rat": ["Gotcha.", "Nothing personal, {target}.", "Hold still..."]
+		},
+		"contact_unknown": {
+			"any": ["Heat contact.", "Something warm out there.", "Unknown contact."],
+			"scavenger": ["Something's out there. Something big.", "Heat! Who's there?", "I really don't like that."],
+			"guardian": ["Heat signature. Unidentified.", "Contact on IR. Not friendly yet.", "Unknown heat. Watching."],
+			"professional": ["IR contact, unknown.", "Heat bloom. Classifying.", "Unknown. Tracking."],
+			"hunter": ["Warm. Very warm.", "There you are, whoever you are.", "Heat trail."],
+			"rat": ["Someone's running hot.", "A little warm, friend?", "I see you. Sort of."]
+		},
 		"spotted": {
 			"any": ["Contact.", "Got eyes on {target}.", "There you are.", "Target sighted.", "Movement. Engaging."],
 			"scavenger": ["Oh no. Oh no no.", "Someone's here!", "Maybe they haven't seen me."],

@@ -9,6 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://ddui674t47osv" path="res://assets/images/mechas/arm_weapons/Type1_Sub.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://cilyoml64lsbf" path="res://assets/images/mechas/shoulder_weapons/CL120Type20_glow.png" id="9"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_nearby"]
+radius = 750.0
+
 [node name="Player" unique_id=1296425214 instance=ExtResource("5")]
 script = ExtResource("1")
 
@@ -49,3 +52,13 @@ position = Vector2(51.6457, 16)
 [node name="MechaShadowGen" parent="." unique_id=1956748453]
 enabled = false
 energy = 0.6
+
+[node name="AudioListener" type="AudioListener2D" parent="."]
+
+[node name="NearbyProjectile" type="Area2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NearbyProjectile"]
+shape = SubResource("CircleShape2D_nearby")
+
+[connection signal="area_entered" from="NearbyProjectile" to="." method="_on_nearby_projectile_area_entered"]

@@ -136,6 +136,7 @@ const SPEECH_TIME := 3.0
 @onready var HeadSub = $Head/Sub
 @onready var HeadGlow = $Head/Glow
 @onready var HeadPort = $HeadPort
+@onready var _illuminator_light: PointLight2D = get_node_or_null(Illumination.LIGHT_NODE)
 @onready var LeftShoulder = $LeftShoulder
 @onready var RightShoulder = $RightShoulder
 #Weapons
@@ -374,6 +375,9 @@ var locking_to = false
 var locked_to = false
 var lock_on_duration = 0.0
 var lock_timer = 0.0
+## Whether a made lock turns the whole mecha to its target. The player's turns
+## only its head (Player.aim_at), so the player clears it.
+var faces_lock := true
 
 var is_shielding = false
 var is_parrying = false
@@ -534,6 +538,7 @@ func _physics_process(dt):
 
 # The body of _physics_process (one return point for the profiler).
 func _physics_step(dt):
+	_aim_light()
 	if contacts_auto_advance:
 		contacts.advance(dt)
 	flag_grace = maxf(flag_grace - dt, 0.0)
@@ -718,7 +723,7 @@ func _physics_step(dt):
 	#Locking mechanic
 	if is_player():
 		update_locking(dt)
-	if get_locked_to():
+	if faces_lock and get_locked_to():
 		var target_pos = locked_to.global_position
 		apply_rotation_by_point(dt, target_pos, false)
 
@@ -781,10 +786,10 @@ func _physics_step(dt):
 	#Lock-on Updating
 	if get_locked_to():
 		if lock_timer >= lock_on_duration:
-			locked_to = false
-			lock_timer = 0.0
+			break_lock()
 		else:
 			lock_timer += dt
+			_check_lock_breaks()
 
 
 func is_player():
@@ -941,6 +946,10 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 	last_damage_source = source_info
 	last_damage_weapon = weapon_name
 	_note_attack(source_info)
+	if typeof(source_info) == TYPE_DICTIONARY:
+		var shooter = source_info.get("body")
+		if is_instance_valid(shooter) and shooter != self and shooter.is_in_group("mecha"):
+			_on_round_hit(shooter, source_info.get("from", shooter.global_position))
 	_note_pressure(source_info, float(amount) * float(health_mult))
 
 	if hp <= 0 and not is_exposed:
@@ -1339,16 +1348,38 @@ func create_sound(volume_type, type, max_distance, entities_only := false):
 	})
 
 
+# SIGHT CIRCLE
+#
+# Every mecha sees nothing past its sight circle, and the player's camera pans
+# out to it (Player). Its radius is the head's visual_range in metres
+# (MapSenses.PX_PER_METRE), shrunk by sensor damage (disabled_systems.sensors:
+# 0.5 once the optics go, 0.1 once the backup optics go too). With no head
+# fitted, or the head shot off, it is NO_HEAD_SIGHT. Inside the circle the
+# usual rules decide what is seen (Player.can_see_body, Enemy.update_senses).
+
+## The sight circle's radius (px) with no head: 20 m.
+const NO_HEAD_SIGHT := 400.0
+
+
+func sight_radius() -> float:
+	var head = build.get("head") if build is Dictionary else null
+	if head == null or is_part_lost("head"):
+		return NO_HEAD_SIGHT
+	return float(head.visual_range) * MapSenses.PX_PER_METRE * float(disabled_systems.sensors)
+
+
 # IR ILLUMINATOR
 #
-# Every mecha's MechaLight is its IR illuminator: a cone of light ahead of it.
-# On, the mecha and whatever its cone falls on are lit, and lit bodies are
-# seen from anywhere their light shows, walls between or not
-# (Illumination). Off, its cone goes dark and the mecha is seen only the
-# usual way, but it sees less itself: the player only by peripheral sight and
-# other mechas' light, an NPC at a shorter range (Enemy.DARK_SIGHT_MULT). The
-# player switches it with the illuminator key; NPC behaviours pick it by state
-# (BaseBehaviour.dark_states).
+# Every mecha's MechaLight is its IR illuminator: a cone of light from it,
+# pointing where its head points, out to as far as the head sees
+# (Illumination.reach_of). On, the mecha and whatever its cone falls on are
+# lit, and lit bodies are seen from anywhere their light shows, walls between
+# or not (Illumination). Off, its cone goes dark and the mecha is seen only
+# the usual way, and it sees less itself: the player and NPCs alike see only
+# lit bodies, bodies hot enough for IR identification, and anything within
+# peripheral sight (Player.can_see_body, Enemy._sees_by_eye). The player
+# works it with the illuminator key (Player.press_illuminator_key); NPC
+# behaviours pick it by state (BaseBehaviour.dark_states).
 
 func set_illuminator(on: bool) -> void:
 	if on == illuminator_on:
@@ -1360,15 +1391,30 @@ func set_illuminator(on: bool) -> void:
 	illuminator_toggled.emit(on)
 
 
+# The light and the head are both children of the root, so the light points
+# where the head does by taking the head's rotation. Written only when it
+# changed: a rotation set is a transform update.
+func _aim_light() -> void:
+	if _illuminator_light and _illuminator_light.rotation != Head.rotation:
+		_illuminator_light.rotation = Head.rotation
+
+
 # SENSOR SWEEP
 #
 # Every mecha has a sweep, like a directional scan: a cone from the mecha,
 # SWEEP_RANGE long and from SWEEP_MIN_WIDTH to 360 degrees wide. It reports
-# what is in the cone by kind ("mech", or an Entity's species) with counts,
-# and nothing else: no positions, directions or distances. A narrow cone
-# tells more only by what it leaves out. Walls don't block it. A mecha with
-# sensor_reduction (ECM) is only found within (1 - sensor_reduction) of the
-# range; further out it simply isn't there.
+# what is in the cone by kind with counts, and nothing else: no positions,
+# directions or distances. A narrow cone tells more only by what it leaves
+# out. Walls don't block it. A mecha with sensor_reduction (ECM) is only
+# found within (1 - sensor_reduction) of the range; further out it simply
+# isn't there.
+#
+# The kinds are what the returns look like (ContactStore.sweep_kind_of): an
+# Entity's species; a decoy "mech"; a mecha by its radar cross-section from
+# the sweeper's side, so a stealthy one can read as a Coyote, a Raven or a
+# Tick (RadarCrossSection.SWEEP_KINDS). Ticks count one by one: a swarm as
+# one "Tick" per mote on the ground, and a mecha one more for each tick on
+# it, beside its own entry.
 #
 # It costs SWEEP_HEAT kJ (about a dash) and SWEEP_COOLDOWN s. Every mecha it
 # finds gets the swept signal (the player sees "YOU WERE SWEPT"); creatures
@@ -1384,6 +1430,8 @@ const SWEEP_HEAT := 650.0
 const SWEEP_COOLDOWN := 10.0
 ## How far (px) creatures hear a sweep.
 const SWEEP_SOUND_RANGE := 10000.0
+## What a sweep calls one tick, on the ground or on a mecha.
+const TICK_KIND := "Tick"
 
 
 ## "" if this mecha can sweep now, else why not: "dead", "cooldown".
@@ -1405,8 +1453,14 @@ func sweep(direction: Vector2, width_deg: float) -> Dictionary:
 	var width := clampf(width_deg, SWEEP_MIN_WIDTH, SWEEP_MAX_WIDTH)
 	var counts := {}
 	for body in sweep_finds(direction, width):
-		var kind := ContactStore.kind_of(body)
-		counts[kind] = counts.get(kind, 0) + 1
+		if body.has_method("get_mote_count"):
+			counts[TICK_KIND] = counts.get(TICK_KIND, 0) + int(body.get_mote_count())
+		else:
+			var kind := ContactStore.sweep_kind_of(body, self)
+			counts[kind] = counts.get(kind, 0) + 1
+			var riders = body.get("ticks")
+			if riders is Array and not riders.is_empty():
+				counts[TICK_KIND] = counts.get(TICK_KIND, 0) + riders.size()
 		if body.has_signal("swept"):
 			body.swept.emit()
 	increase_heat(SWEEP_HEAT)
@@ -1601,6 +1655,61 @@ func say(text: String, seconds := SPEECH_TIME, always_heard := false) -> void:
 
 
 # Tells the match's Local channel who hit whom first (reputation).
+# ROUNDS AND SOUNDS
+#
+# A round that comes within SHOT_WEDGE_RADIUS (its closest approach) or hits,
+# from a shooter this mecha can't see, gives it a shot wedge toward where the
+# round was fired from; a loud sound from something it can't see, a sound
+# wedge toward it (ContactStore). What it then believes about where the
+# shooter or the sound is, is the wedge's estimate point, not the truth. A
+# shooter or source it sees is where it is. The player's radar shows the
+# wedges; an NPC acts on the estimate points (Enemy).
+
+## Placeholder.
+const SHOT_WEDGE_RADIUS := 300.0
+
+
+## Whether this mecha has `body` in sight now (a live sight contact).
+func is_in_sight(body) -> bool:
+	if not is_instance_valid(body):
+		return false
+	return not contacts.query({"body": body, "source": "sight", "live": true}).is_empty()
+
+
+## Whether a round at `at`, flying along `dir` (zero: unknown), comes within
+## SHOT_WEDGE_RADIUS of this mecha, now or further along its flight.
+func round_comes_close(at: Vector2, dir: Vector2) -> bool:
+	var to_me := global_position - at
+	if dir.is_zero_approx():
+		return to_me.length() <= SHOT_WEDGE_RADIUS
+	var heading := dir.normalized()
+	var ahead := to_me.dot(heading)
+	var closest := to_me.length() if ahead <= 0.0 else (to_me - heading * ahead).length()
+	return closest <= SHOT_WEDGE_RADIUS
+
+
+## Where this mecha makes out a round from `shooter`, fired from
+## `fired_from`, to have come from (see above).
+func note_round_from(shooter, fired_from: Vector2) -> Vector2:
+	if is_in_sight(shooter):
+		return fired_from
+	return ContactStore.estimate_point(contacts.report_wedge(shooter, "shot", global_position, fired_from))
+
+
+## Where this mecha makes out a loud sound from `source` (null for none) at
+## `at` to have come from (see above).
+func note_sound_from(source, at: Vector2) -> Vector2:
+	if is_instance_valid(source) and is_in_sight(source):
+		return at
+	return ContactStore.estimate_point(contacts.report_wedge(source if is_instance_valid(source) else null, "sound", global_position, at))
+
+
+# A round from `shooter`, fired from `fired_from`, hit this mecha. The
+# player and a plain mecha note it (a shot wedge); NPCs react (Enemy).
+func _on_round_hit(shooter, fired_from: Vector2) -> void:
+	note_round_from(shooter, fired_from)
+
+
 func _note_attack(source_info) -> void:
 	if typeof(source_info) != TYPE_DICTIONARY or not (arena is Node):
 		return
@@ -2090,6 +2199,21 @@ var _stat_cache_frame := -1
 ## Called by every part setter: the next get_stat sums afresh.
 func _stats_changed() -> void:
 	_stat_cache_frame = -1
+	_rcs_outlines_dirty = true
+
+
+# The outlines its radar cross-section is measured from
+# (RadarCrossSection.outlines_of), in each collision node's own space: worked
+# out again only after the build changes (_stats_changed).
+var _rcs_outlines: Array = []
+var _rcs_outlines_dirty := true
+
+
+func rcs_outlines() -> Array:
+	if _rcs_outlines_dirty:
+		_rcs_outlines = RadarCrossSection.outlines_of(self)
+		_rcs_outlines_dirty = false
+	return _rcs_outlines
 
 
 func get_stat(stat_name):
@@ -2495,7 +2619,7 @@ func apply_rotation_by_direction(dt, direction):
 		push_error("Not a valid direction: " + str(direction))
 
 
-func apply_rotation_by_point(dt, target_pos, stand_still):
+func apply_rotation_by_point(dt, target_pos, stand_still, head_target = null):
 	#Rotate Body
 	var rot_acc = rotation_acc
 	if movement_type == "tank" and build.chassis:
@@ -2505,13 +2629,16 @@ func apply_rotation_by_point(dt, target_pos, stand_still):
 	if not stand_still:
 		rotation_degrees += get_rotation_diff_by_point(dt, global_position, target_pos, rotation_degrees, rot_acc)
 
-	
+
 	# Head, shoulders, arm weapons and chassis halves each turn towards the
-	# point at their part's rate, within its range. Each is written once (a
-	# node's rotation set is a transform update) and no lists are built: this
-	# runs every frame for every mecha with a target.
+	# point at their part's rate, within its range; the head towards
+	# `head_target` instead when one is given, and the light with the head.
+	# Each is written once (a node's rotation set is a transform update) and
+	# no lists are built: this runs every frame for every mecha with a target.
 	if build.head:
-		_turn_part_to(Head, build.head.rotation_acc, build.head.rotation_range, target_pos, dt)
+		_turn_part_to(Head, build.head.rotation_acc, build.head.rotation_range,
+				target_pos if head_target == null else head_target, dt)
+		_aim_light()
 	if build.shoulders:
 		_turn_part_to(LeftShoulder, build.shoulders.rotation_acc, build.shoulders.rotation_range, target_pos, dt)
 		_turn_part_to(RightShoulder, build.shoulders.rotation_acc, build.shoulders.rotation_range, target_pos, dt)
@@ -3092,39 +3219,84 @@ func lock_movement(time):
 
 
 #LOCK ON METHODS
+#
+# A lock is a wallhack with a cost: a mecha can lock one it can't see, but it
+# must find it first and hold on to it. The rules are the same for the player
+# and NPCs; only how each finds its target differs.
+#   - A lock starts only on a living mecha inside the locker's sight circle,
+#     not in smoke and not behind it (can_start_lock).
+#   - The player: the reticle must rest on the target's lock area for
+#     LOCK_SETTLE_TIME s before locking starts, and nothing shows before
+#     that, so a quick sweep of the mouse finds nothing. Then locking starts
+#     (the reveal: the target's lock sprite shows on it) and runs while the
+#     reticle stays on it; off it, the progress is lost and the settle starts
+#     again (update_locking).
+#   - An NPC: only toward a reason (Enemy.update_enemy_locking).
+#   - Locking runs at the chipset's lock_on_speed times the signature
+#     multiplier (signature_lock_mult), halved while electrified, and an ECM
+#     roll can throw it back to 0 (_advance_lock).
+#   - From the start, the target gets a lock wedge toward the locker
+#     (ContactStore "lock"), LOCK_WEDGE_WIDTH wide and narrowing to a line as
+#     the progress reaches 1: its lock warning (lock_warning).
+#   - Made, the lock is a live point track on the target ("lock" contact,
+#     through walls, not seen). It breaks when the target leaves the locker's
+#     sight circle, an ECM roll succeeds, either mecha dies, the chipset's
+#     lock_on_duration runs out, or (the player) lock mode is entered again
+#     (_check_lock_breaks, _on_enter_lock_mode). Smoke stops a lock from
+#     starting, never one made.
+
+## Placeholders.
+const LOCK_SETTLE_TIME := 0.3
+## How long (s) the lock contact stays live after its last refresh.
+const LOCK_CONTACT_TTL := 0.3
+## A lock wedge refreshed within this long (s) is a lock going on now
+## (lock_warning); older, it is the 3 s after a lock ended.
+const LOCK_WARNING_FRESH := 0.2
+
+# The player's reticle: the mecha under it and how long (s) it has rested
+# there.
+var _settle_target = null
+var _settle_time := 0.0
+
 
 func get_lock_area():
 	return LockCollision
 
+
+## Whether this mecha could start locking `target` now: a living mecha
+## inside its sight circle, not in smoke and not behind it.
+func can_start_lock(target) -> bool:
+	if not is_instance_valid(target) or target == self or target.get("is_dead") == true:
+		return false
+	var to: Vector2 = target.global_position
+	if global_position.distance_squared_to(to) > sight_radius() * sight_radius():
+		return false
+	return not (MapSenses.in_smoke(to) or MapSenses.smoke_between(global_position, to))
+
+
+## The lock rate's multiplier for `target`: the larger of its heat
+## multiplier (get_target_thermal_lock_mult) and its RCS multiplier
+## (RadarCrossSection.mult, from this mecha's side). The chipset locks onto
+## whichever signature is stronger, so a mecha is slow to lock only when it
+## is cold and small.
+func signature_lock_mult(target) -> float:
+	var heat := get_target_thermal_lock_mult(target)
+	var rcs := RadarCrossSection.mult(target, global_position) if target.has_method("rcs_outlines") else 1.0
+	return maxf(heat, rcs)
+
+
+## An NPC's lock on `target` (the NPC's own rules for finding it are in
+## Enemy.update_enemy_locking): locking runs while it can, and resets when
+## the target changes or can't be locked.
 func update_enemy_locking(dt, target):
-	if target:
-		if not locking_to:
-			locking_to = {
-				"progress": 0,
-				"mecha": target,
-			}
-		if locking_to.mecha == target and is_instance_valid(locking_to.mecha):
-			if locking_to.mecha.ecm > lock_strength:
-				if ecm_attempt_cooldown <= 0.0:
-					ecm_strength_difference = (locking_to.mecha.ecm - lock_strength) * 0.05
-					var percent = randf()
-					if (percent < ecm_strength_difference):
-						locking_to.progress = 0
-					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
-			# Cold targets lock slower (0.5×), hot targets faster (1.5×).
-			var thermal_lock_mult = get_target_thermal_lock_mult(locking_to.mecha)
-			if has_status("electrified"):
-				locking_to.progress = min(locking_to.progress + (dt * build.chipset.lock_on_speed * 0.5 * thermal_lock_mult), 1.0)
-			else:
-				locking_to.progress = min(locking_to.progress + dt * build.chipset.lock_on_speed * thermal_lock_mult, 1.0)
-			if locking_to.progress >= 1.0:
-				locked_to = locking_to.mecha
-		else:
-			locking_to = {
-				"progress": 0,
-				"mecha": target,
-			}
-	
+	if not target or not can_start_lock(target):
+		_reset_locking()
+		return
+	if not locking_to or not is_same(locking_to.mecha, target):
+		locking_to = {"progress": 0.0, "mecha": target}
+	_advance_lock(dt)
+
+
 # How much faster/slower lock-on is based on target's thermal signature
 # Cold target (sig ~0): lock takes 2x as long
 # Neutral target (sig ~0.3): normal speed
@@ -3136,57 +3308,131 @@ func get_target_thermal_lock_mult(target: Node) -> float:
 	# Lerp from 0.5 (cold) to 1.5 (hot), with 1.0 at sig=0.33
 	return lerp(0.5, 1.5, sig)
 
-func update_locking(dt):
+
+## The player's lock (see above): in lock mode, the mecha under the reticle
+## nearest the player settles, then locks. The reticle is the cursor, or
+## `reticle` when one is given (tests).
+func update_locking(dt, reticle = null):
 	if cur_mode == MODES.LOCK:
-		#Update locking targets
-		#For now, check only using mouse, assuming its only the player that locks
-		var could_lock = []
-		var mouse_pos = get_global_mouse_position()
-		for area in arena.get_lock_areas():
-			var mecha = area.get_parent()
-			var a_radius = area.get_node("CollisionShape2D").shape.radius
-			if  mecha != self and\
-			mouse_pos.distance_to(area.global_position) <= build.chipset.lock_on_reticle_size + a_radius:
-				could_lock.append(area.get_parent())
+		var target = _reticle_target(get_global_mouse_position() if reticle == null else reticle)
+		if target == null:
+			_reset_locking()
+		elif locking_to and is_same(locking_to.mecha, target):
+			_advance_lock(dt)
+		else:
+			if locking_to:
+				_reset_locking()
+			if not is_same(_settle_target, target):
+				_settle_target = target
+				_settle_time = 0.0
+			_settle_time += dt
+			if _settle_time >= LOCK_SETTLE_TIME:
+				locking_to = {"progress": 0.0, "mecha": target}
 
-		for target in locking_targets:
-			if not could_lock.has(target.mecha):
-				locking_targets.erase(target)
-			else:
-				#Erase from list so we don't duplicate later
-				could_lock.erase(target.mecha)
-		#What remains are new locks
-		for mecha in could_lock:
-			locking_targets.append({
-				"progress": 0,
-				"mecha": mecha,
-			})
 
-		locking_to = false
-		var min_dist = INF
-		for target in locking_targets:
-			if not locking_to:
-				locking_to = target
-				min_dist = global_position.distance_to(target.mecha.global_position)
-			else:
-				var dist = global_position.distance_to(target.mecha.global_position)
-				if dist < min_dist:
-					locking_to = target
-					min_dist = dist
-		if locking_to:
-			if locking_to.mecha.ecm > lock_strength:
-				if ecm_attempt_cooldown <= 0.0:
-					ecm_strength_difference = (locking_to.mecha.ecm - lock_strength) * 0.05
-					var percent = randf()
-					if (percent < ecm_strength_difference):
-						locking_to.progress = 0
-					ecm_attempt_cooldown = 1 / locking_to.mecha.ecm_frequency
-			if has_status("electrified"):
-				locking_to.progress = min(locking_to.progress + (dt*build.chipset.lock_on_speed * 0.5), 1.0)
-			else:
-				locking_to.progress = min(locking_to.progress + dt*build.chipset.lock_on_speed, 1.0)
-			if locking_to.progress >= 1.0:
-				locked_to = locking_to.mecha
+# The lockable mecha whose lock area is under the reticle at `cursor`,
+# nearest this mecha; null for none.
+func _reticle_target(cursor: Vector2):
+	var best = null
+	var best_dist := INF
+	for area in arena.get_lock_areas():
+		var mecha = area.get_parent()
+		if mecha == self or not can_start_lock(mecha):
+			continue
+		var a_radius: float = area.get_node("CollisionShape2D").shape.radius
+		if cursor.distance_to(area.global_position) > build.chipset.lock_on_reticle_size + a_radius:
+			continue
+		var dist := global_position.distance_to(mecha.global_position)
+		if dist < best_dist:
+			best = mecha
+			best_dist = dist
+	return best
+
+
+func _reset_locking() -> void:
+	locking_to = false
+	_settle_target = null
+	_settle_time = 0.0
+
+
+# One frame of locking `locking_to`: the ECM roll, the progress, the
+# target's warning, and the lock once the progress reaches 1.
+func _advance_lock(dt: float) -> void:
+	var target = locking_to.mecha
+	if target.ecm > lock_strength and ecm_attempt_cooldown <= 0.0:
+		ecm_strength_difference = (target.ecm - lock_strength) * 0.05
+		if randf() < ecm_strength_difference:
+			locking_to.progress = 0.0
+		ecm_attempt_cooldown = 1.0 / target.ecm_frequency
+	var rate: float = build.chipset.lock_on_speed * signature_lock_mult(target)
+	if has_status("electrified"):
+		rate *= 0.5
+	locking_to.progress = minf(float(locking_to.progress) + dt * rate, 1.0)
+	_warn_target(target, locking_to.progress)
+	if locking_to.progress >= 1.0:
+		var fresh := not is_same(locked_to, target)
+		if fresh:
+			lock_timer = 0.0
+		locked_to = target
+		if fresh:
+			_on_lock_made(target)
+
+
+# A lock this mecha just made: an NPC says so (Enemy).
+func _on_lock_made(_target) -> void:
+	pass
+
+
+# Gives `target` its lock wedge toward this mecha, as wide as `progress`
+# leaves it (a line once locked).
+func _warn_target(target, progress: float) -> void:
+	var store = target.get("contacts")
+	if store == null:
+		return
+	var width := float(ContactStore.WEDGES.lock.width) * (1.0 - clampf(progress, 0.0, 1.0))
+	store.report_wedge(self, "lock", target.global_position, global_position, width, true)
+
+
+# A made lock: refreshes its contact and its target's warning, and breaks it
+# when it must (see above). Every physics frame.
+func _check_lock_breaks() -> void:
+	var target = get_locked_to()
+	if not target:
+		return
+	var broken: bool = target.get("is_dead") == true or is_dead
+	if not broken and global_position.distance_squared_to(target.global_position) > sight_radius() * sight_radius():
+		broken = true
+	if not broken and target.ecm > lock_strength and ecm_attempt_cooldown <= 0.0:
+		ecm_strength_difference = (target.ecm - lock_strength) * 0.05
+		ecm_attempt_cooldown = 1.0 / target.ecm_frequency
+		broken = randf() < ecm_strength_difference
+	if broken:
+		break_lock()
+		return
+	contacts.report(target, ContactStore.kind_of(target), target.global_position, "lock", LOCK_CONTACT_TTL)
+	_warn_target(target, 1.0)
+
+
+## Ends a made lock and any locking: the target's warning lingers its 3 s.
+func break_lock() -> void:
+	locked_to = false
+	lock_timer = 0.0
+	_reset_locking()
+
+
+## The lock warning on this mecha: {"state": "locking" or "locked",
+## "progress": 0..1, "wedge": the lock wedge} for the most advanced lock
+## going on now, or {} for none.
+func lock_warning() -> Dictionary:
+	var best := {}
+	var full := float(ContactStore.WEDGES.lock.width)
+	for wedge in contacts.wedges({"source": "lock", "live": true}):
+		if contacts.now - float(wedge.time) > LOCK_WARNING_FRESH:
+			continue
+		var progress := 1.0 - float(wedge.width) / full if full > 0.0 else 1.0
+		if best.is_empty() or progress > float(best.progress):
+			best = {"state": "locked" if float(wedge.width) <= 0.0 else "locking", "progress": progress, "wedge": wedge}
+	return best
 
 
 func get_locking_to():
@@ -3206,7 +3452,7 @@ func get_locked_to():
 
 func _on_enter_lock_mode():
 	locking_targets = []
-	locked_to = false
+	break_lock()
 	cur_mode = MODES.LOCK
 
 
@@ -4620,6 +4866,8 @@ func lose_part(part_name: String, torn := false) -> bool:
 		lost_parts[slot] = true
 	_stats_changed()
 	_hide_lost(part_name)
+	if is_part_lost("head"):
+		Illumination.shape_light(self)
 	var weapons := []
 	for slot in slots:
 		if DISABLED_WEAPON_KEYS.has(slot):

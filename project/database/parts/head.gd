@@ -15,7 +15,11 @@ extends Node2D
 @export var rotation_acc := 8
 @export var rotation_range := 45.0
 @export var accuracy_modifier := -1.0
-@export var visual_range := 450
+## The sight circle's radius and the camera's pan limit, in metres
+## (MapSenses.PX_PER_METRE px each): a mecha sees nothing past it
+## (Mecha.sight_radius). Its IR illuminator reaches as far
+## (Illumination.reach_of).
+@export var visual_range := 150
 ## The IR sensor (IRSensing), in °C. A body at least ir_sensitivity hot is
 ## picked up as an UNKNOWN track that follows it live; at least
 ## ir_identification hot, it is seen as if lit. Placeholders: a working
@@ -24,12 +28,16 @@ extends Node2D
 @export var ir_sensitivity := 60.0
 @export var ir_identification := 200.0
 ## How wide (degrees) its IR illuminator's cone is, edge to edge
-## (Illumination.shape_light). Inside it the mecha sees a dark mecha at its
-## full sight range: the player's view cone, and an NPC's (Enemy._sees_by_eye).
-## Placeholder.
+## (Illumination.shape_light). What the cone falls on is lit, and the mecha
+## sees it out to its sight circle, the player and an NPC alike. Placeholder.
 @export_range(2.0, 360.0, 0.5) var illuminator_angle := 30.0
 @export var health := 1500
-@export var weight := 1.0 
+@export var weight := 1.0
+## How big it looks to radar for its size (RadarCrossSection): 0.2 a
+## stealth part, 1.0 an ordinary one, 3.0 flat, bulky armour. Its shape and
+## material as one number. Every head has the same outline (Mecha.tscn's
+## HeadCollision), so only this tells heads apart. Placeholder.
+@export var rcs_factor := 1.0
 @export var tags :Array[String] = ["head"]
 @export var item_size := [3,3]
 @export var front_armor := 1

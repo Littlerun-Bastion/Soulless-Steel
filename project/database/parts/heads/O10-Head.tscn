@@ -20,7 +20,7 @@ description = "A heavyweight head model, quite popular amongst the Northern mark
 image = ExtResource("5")
 heatmap = ExtResource("6")
 accuracy_modifier = 1.3
-visual_range = 600
+visual_range = 150
 health = 1800
 weight = 7.0
 

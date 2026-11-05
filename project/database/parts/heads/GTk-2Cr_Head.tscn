@@ -20,7 +20,7 @@ tagline = "RGDH"
 image = ExtResource("2_skso1")
 heatmap = ExtResource("3_1xwlc")
 accuracy_modifier = 1.37
-visual_range = 850
+visual_range = 150
 health = 1800
 weight = 6.95
 

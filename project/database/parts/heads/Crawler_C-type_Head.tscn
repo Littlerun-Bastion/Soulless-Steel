@@ -21,7 +21,7 @@ description = "Quite heavy head model with a unique visual sensor layout that gr
 image = ExtResource("7")
 heatmap = ExtResource("6")
 accuracy_modifier = 1.5
-visual_range = 700
+visual_range = 150
 health = 2175
 weight = 8.5
 

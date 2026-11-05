@@ -259,9 +259,8 @@ func _test_light_known() -> void:
 	var half := Illumination.SCREEN_HALF
 	var foe := _foe(Vector2(half.x * 0.9, half.y * 0.6), enemy)
 	foe.set_illuminator(true)
-	var reach: float = enemy.engage_distance * 1.4
-	check(enemy.global_position.distance_to(foe.global_position) > reach * 0.9 or MapSenses.walls_between(enemy.get_world_2d(), enemy.global_position, foe.global_position),
-			"past its sight or behind the building")
+	check(MapSenses.walls_between(enemy.get_world_2d(), enemy.global_position, foe.global_position),
+			"behind the building")
 	await _sense(enemy)
 	var contact: Dictionary = enemy.knowledge.best(foe)
 	check(not contact.is_empty() and contact.live and contact.kind == "mech", "its light gives it away, as a mecha (%s)" % str(contact.get("source")))
@@ -271,10 +270,10 @@ func _test_light_known() -> void:
 	foe.set_illuminator(false)
 	await _sense(enemy)
 	check(not enemy.knowledge.best(foe).live, "light off: only a memory")
-	var far := _foe(Vector2(half.x * 1.3, 0), enemy)
+	var far := _foe(Vector2(enemy.sight_radius() * 1.1, 0), enemy)
 	far.set_illuminator(true)
 	await _sense(enemy)
-	check(not enemy.knowledge.knows(far), "a light further than a screen away isn't noticed")
+	check(not enemy.knowledge.knows(far), "a light past its sight circle isn't noticed")
 
 
 func _test_tethered_seen() -> void:
@@ -285,7 +284,7 @@ func _test_tethered_seen() -> void:
 	_arena.add_child(fisher)
 	fisher.setup(_arena)
 	fisher.set_pause(true)
-	var reach_sq: float = pow(enemy.engage_distance * 1.4, 2.0)
+	var reach_sq: float = pow(enemy.sight_radius(), 2.0)
 	enemy._look_at(fisher, reach_sq, 1.0)
 	enemy.knowledge.end_sight_update()
 	check(not enemy.is_seeing(fisher), "a Fisher behind the building isn't seen")

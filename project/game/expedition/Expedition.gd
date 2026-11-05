@@ -206,7 +206,7 @@ func _spawn_wreck(mecha) -> void:
 	wreck.setup(mecha.mecha_name, loot)
 	wreck.kill_record = mecha.kill_record
 	wreck.copy_mecha_visuals(mecha)
-	_add_wreck.call_deferred(wreck, MechaBody.choose_shed(mecha, loot), _near_player(mecha))
+	_add_wreck.call_deferred(wreck, MechaBody.choose_shed(mecha, loot), _player_can_see_point(mecha.global_position))
 
 
 func _add_wreck(wreck: Wreck, shed: Array, on_screen: bool) -> void:

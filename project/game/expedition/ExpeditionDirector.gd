@@ -28,6 +28,10 @@ extends Node
 @export var max_total_soft_spawns: int = 30              # hard cap (safety net)
 @export var min_spawn_distance_from_player: float = 5000.0  # don't pop in next to the player
 @export var soft_spawn_check_interval: float = 5.0       # how often to evaluate
+## Nothing appears where the player can see it: spawn points (NPCs and
+## Entities) within the player's sight circle (Mecha.sight_radius) plus this
+## (px) are skipped, besides the distances above.
+@export var spawn_sight_margin: float = 1500.0
 
 # Redirect tunables — pull a distant NPC toward the player when nothing happens.
 # Throttled by redirect_cooldown so the player isn't constantly being chased.
@@ -346,7 +350,7 @@ func _pick_offscreen_spawn_position():
 		if not is_instance_valid(zone):
 			continue
 		var d = player_pos.distance_to(zone.global_position)
-		if d >= min_spawn_distance_from_player:
+		if d >= min_spawn_distance_from_player and not _in_player_sight(zone.global_position):
 			candidates.append(zone)
 
 	if candidates.is_empty():
@@ -419,14 +423,24 @@ func notify_entity_died(entity) -> void:
 		print("[ExpeditionDirector] ", entity.mecha_name, " died")
 
 
-# A random map point far enough from the player, or null after a few tries.
+# A random map point far enough from the player and outside its sight, or
+# null after a few tries.
 func _pick_entity_spawn_position():
 	for _i in 20:
 		var pos: Vector2 = arena.get_random_position()
 		if not is_instance_valid(arena.player) \
-				or pos.distance_to(arena.player.global_position) >= min_entity_distance_from_player:
+				or (pos.distance_to(arena.player.global_position) >= min_entity_distance_from_player \
+				and not _in_player_sight(pos)):
 			return pos
 	return null
+
+
+# Whether `pos` is within the player's sight circle plus spawn_sight_margin.
+func _in_player_sight(pos: Vector2) -> bool:
+	var player = arena.get("player") if is_instance_valid(arena) else null
+	if not is_instance_valid(player) or not player.has_method("sight_radius"):
+		return false
+	return pos.distance_to(player.global_position) < player.sight_radius() + spawn_sight_margin
 
 
 # Newcomers wander in (out of sight) while the population is low.

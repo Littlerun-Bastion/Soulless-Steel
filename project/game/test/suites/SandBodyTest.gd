@@ -32,6 +32,8 @@ func run_tests() -> void:
 	await case("a Fisher's harpoon, recoil and leap play through", _test_fisher_moves)
 	await case("a dead Fisher leaves its shell behind", _test_fisher_shell)
 	await case("nothing is drawn under the ground, and the body is over its legs", _test_layers)
+	await case("the Fisher is half again its first size", _test_fisher_size)
+	await case("faded out of the player's view, its legs and tails fade with it", _test_fades_whole)
 	await case("the art bench runs every species", _test_bench)
 
 
@@ -195,9 +197,16 @@ func _test_layers() -> void:
 			(body as CoyoteBody).carry_gun(tex)
 		await _drive(body, Vector2(200.0, 0.0), 10)
 		check_eq(_lowest_z(body.get_parent()), 0, "%s: nothing alive is drawn below z 0" % species)
-		var body_at: int = body._body_layer.get_index()
-		check(body_at > body._limb_layer.get_index() and body_at > body._tail_layer.get_index()
-				and body_at > body._grains.get_index(), "%s: the body is drawn over its legs, tails and grains" % species)
+		# The legs and tails are top_level, drawn over anything at their z that
+		# isn't, so the body needs a higher z; the grains go by child order.
+		var tail_z: int = body._tail_layer.z_index
+		check(body._limb_layer.top_level and body._body_layer.z_index > body._limb_layer.z_index
+				and (tail_z < body._body_layer.z_index or tail_z == SandBody.RAISED_TAIL_Z),
+				"%s: the body is a z over its legs and trailing tails, a raised tail over the body" % species)
+		check(body._body_layer.get_index() > body._grains.get_index(), "%s: and drawn after its grains" % species)
+		if body is FisherBody:
+			var shell: Sprite2D = (body as FisherBody)._shell
+			check(shell.get_parent() == body._body_layer, "the Fisher's shell is on its body, over its legs")
 		body.die()
 		await wait_frames(2)
 		check_eq(_lowest_z(_world), 0, "%s: nor what it leaves when it dies" % species)
@@ -208,6 +217,37 @@ func _test_layers() -> void:
 		corpse.queue_free()
 		body.get_parent().queue_free()
 		await wait_frames(2)
+
+
+func _test_fisher_size() -> void:
+	var body: FisherBody = _make("Fisher")
+	await _drive(body, Vector2.ZERO, 2)
+	check(FisherBody.SIZE >= 1.5, "at least half again as big (x%.2f)" % FisherBody.SIZE)
+	check(is_equal_approx(body.shell_radius, 60.0 * FisherBody.SIZE) and is_equal_approx(body.limb_length, 160.0 * FisherBody.SIZE),
+			"shell and legs both (%.0f, %.0f px)" % [body.shell_radius, body.limb_length])
+	var fisher: Fisher = load("res://game/entities/fisher/Fisher.tscn").instantiate()
+	var shape := fisher.get_node("CollisionShape2D").shape as CircleShape2D
+	check(fisher.radius >= body.shell_radius * 0.95 and shape.radius >= body.shell_radius * 0.9,
+			"and so is its body in the world (radius %.0f, collision %.0f)" % [fisher.radius, shape.radius])
+	fisher.free()
+
+
+# The legs and tails are top_level, which doesn't take the Entity's modulate:
+# the player's view hides an Entity through its alpha (Player._update_view).
+func _test_fades_whole() -> void:
+	for species in BODIES:
+		var body := _make(species)
+		await _drive(body, Vector2(100.0, 0.0), 3)
+		var entity := body.get_parent() as Node2D
+		entity.modulate.a = 0.0
+		await _drive(body, Vector2.ZERO, 2)
+		check(body._limb_layer.top_level and body._limb_layer.modulate.a == 0.0 and body._tail_layer.modulate.a == 0.0,
+				"%s: hidden, its legs and tails are too" % species)
+		entity.modulate.a = 1.0
+		await _drive(body, Vector2.ZERO, 2)
+		check(body._limb_layer.modulate.a == 1.0 and body._tail_layer.modulate.a == 1.0, "%s: and back with it" % species)
+		entity.queue_free()
+		await wait_frames(1)
 
 
 # The lowest z any CanvasItem under `root` is drawn at, counting relative z

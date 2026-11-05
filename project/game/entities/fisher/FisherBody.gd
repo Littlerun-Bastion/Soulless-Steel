@@ -9,15 +9,19 @@ const ANTENNA_ANGLES := [-38.0, -13.0, 13.0, 38.0]
 const ANTENNAE := 4
 ## Index of the harpoon tendril in _tails, after the antennae.
 const HARPOON := 4
+## How big it is against its first design: every size below (body, shell,
+## legs, antennae, harpoon, the leap's height and the recoil) is that
+## design's times SIZE. Fisher.tscn's collision radius goes with it.
+const SIZE := 1.5
 
 @export_group("Fisher")
 @export var shell_texture: Texture2D
-@export var shell_radius := 60.0
+@export var shell_radius := 60.0 * SIZE
 ## the distance at which the Fisher's tether breaks
 @export var harpoon_length := 1200.0
-@export var recoil_kick := 12.0
+@export var recoil_kick := 12.0 * SIZE
 @export var recoil_time := 0.35
-@export var leap_height := 90.0
+@export var leap_height := 90.0 * SIZE
 
 ## Seconds a dead Fisher's shell lies there before fading, unless a Carcass
 ## takes it: as long as an Entity's corpse.
@@ -61,12 +65,12 @@ var _leap_crouch := 0.0
 
 func _init() -> void:
 	body_shape = BodyShape.ROUND
-	body_length = 120.0
-	body_width = 120.0
+	body_length = 120.0 * SIZE
+	body_width = 120.0 * SIZE
 	body_strands = 0
 	has_head = false
-	limb_length = 160.0
-	limb_width = 13.0
+	limb_length = 160.0 * SIZE
+	limb_width = 13.0 * SIZE
 	rest_reach = 0.78
 	hip_height = 0.36
 	knee_tilt = 35.0
@@ -95,10 +99,10 @@ func _tail_layout() -> Array:
 	for k in ANTENNAE:
 		var angle: float = ANTENNA_ANGLES[k]
 		var a := deg_to_rad(angle)
-		tails.append({"x": cos(a) * 0.4, "y": sin(a) * 0.4, "length": randf_range(70.0, 95.0),
-				"width": 6.0, "angle": angle, "sway": 0.1, "waves": 0.5, "speed": 3.0,
+		tails.append({"x": cos(a) * 0.4, "y": sin(a) * 0.4, "length": randf_range(70.0, 95.0) * SIZE,
+				"width": 6.0 * SIZE, "angle": angle, "sway": 0.1, "waves": 0.5, "speed": 3.0,
 				"stiffness": 0.55, "damping": 0.75, "shed": false})
-	tails.append({"x": 0.0, "y": 0.0, "length": harpoon_length, "width": 11.0, "angle": 0.0,
+	tails.append({"x": 0.0, "y": 0.0, "length": harpoon_length, "width": 11.0 * SIZE, "angle": 0.0,
 			"sway": 0.0, "stiffness": 0.04, "damping": 0.6, "shed": true})
 	return tails
 

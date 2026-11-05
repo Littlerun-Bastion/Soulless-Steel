@@ -203,12 +203,15 @@ func _test_tree() -> void:
 	tree.remove_from_group("foliage_layer")
 
 
+# Dark (its illuminator off): a lit mecha gives itself away to an Entity
+# within a screen of it, tree or not, so only plain sight finds this one.
 func _mecha(pos: Vector2, design := PlayerProgress.DEFAULT_MECHA) -> Mecha:
 	var mecha: Mecha = MECHA.instantiate()
 	mecha.mech_inventory = Inventory.new()
 	mecha.position = pos
 	_arena.add_child(mecha)
 	mecha.set_parts_from_design(design)
+	mecha.set_illuminator(false)
 	_arena.mechas.append(mecha)
 	return mecha
 

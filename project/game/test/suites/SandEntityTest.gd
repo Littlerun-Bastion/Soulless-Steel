@@ -48,6 +48,13 @@ class FakeArena extends Node2D:
 		entities.append(entity)
 		entity.died.connect(func(e): entities.erase(e))
 		return entity
+	# A round as the combat scene spawns one, its args kept for the checks.
+	var projectile_args: Array = []
+	func _on_mecha_create_projectile(mecha, args, weapon) -> void:
+		projectile_args.append(args)
+		var data = ProjectileManager.create(mecha, args, weapon)
+		if data and data.create_node:
+			add_child(data.node)
 
 
 var _arena: FakeArena = null
@@ -55,7 +62,12 @@ var _arena: FakeArena = null
 
 func run_tests() -> void:
 	await case("Coyotes find prey by its heat", _test_heat_finds)
-	await case("prey that cools down is let go", _test_cooling_releases)
+	await case("prey that cools down and goes is hunted where it was, then let go", _test_cooling_releases)
+	await case("a Coyote shot by a cold mecha hunts it and calls the others in", _test_shot_brings_hunt)
+	await case("a cold, dark mecha very close is found", _test_close_sense)
+	await case("a Spitter, or a Coyote with a gun, fires at where it last had its prey", _test_blind_fire)
+	await case("a Fisher that loses its prey stalks to where it last had it", _test_fisher_memory)
+	await case("a mecha with its light on is found and kept within a screen, cold or not", _test_light_gives_away)
 	await case("a Coyote's bite drains heat and stacks a slow that wears off", _test_bite)
 	await case("a Coyote's whip only tears at external components", _test_whip_externals)
 	await case("a Coyote pack hunts: whips land, bites slow, one at a time", _test_pack_hunt)
@@ -65,7 +77,9 @@ func run_tests() -> void:
 	await case("a shot wakes a Fisher and it goes for the shooter", _test_fisher_shot)
 	await case("a Fisher's harpoon latches on and draws on its prey", _test_fisher_latch)
 	await case("a stretched tether snaps", _test_tether_snaps)
-	await case("a rushed Fisher leaps away", _test_fisher_leaps)
+	await case("a rushed Fisher leaps back and to the side", _test_fisher_leaps)
+	await case("a Fisher leaps three times in a row, fast, then waits", _test_fisher_leap_charges)
+	await case("a Fisher a mecha turns to face leaps round it, out of its front", _test_fisher_leaps_out_of_view)
 	await case("a Fisher's drain can't hurt a mecha in the Flag's grace window", _test_fisher_grace)
 	await case("carcasses show what's left", _test_carcasses)
 	await case("the director's Coyote packs always have a Spitter", _test_director_packs)
@@ -87,6 +101,7 @@ func run_tests() -> void:
 	await case("a Coyote rips a part off a Flagged mecha instead of biting", _test_rip_flagged)
 	await case("a shield covers only the front and breaks when its pips run out", _test_shield)
 	await case("carried parts look as on a mecha; a shield's broad outer face is forward", _test_carried_look)
+	await case("a carried gun points its barrels at the target, fires from its muzzle with a flash, and heats up", _test_gun_barrel)
 	await case("a gun fires the weapon's own rounds at the target, credited to the Coyote", _test_gun)
 	await case("a Coyote's carcass holds the parts it scavenged", _test_scavenged_loot)
 	await case("sweeps and the Biosensor report Coyotes, Fishers and ticks; what they leave fades with them", _test_sensed_and_seen)
@@ -113,13 +128,15 @@ func _spawn(scene: PackedScene, pos: Vector2, paused := false) -> Entity:
 
 
 # A mecha facing -Y (Mecha._ready turns each one a random way): an attacker
-# at +Y of it is behind it.
-func _mecha(pos: Vector2, heat := HOT, design := PlayerProgress.DEFAULT_MECHA) -> Mecha:
+# at +Y of it is behind it. Dark (its illuminator off) unless `lit`: a lit
+# mecha gives itself away to every Entity within a screen of it.
+func _mecha(pos: Vector2, heat := HOT, design := PlayerProgress.DEFAULT_MECHA, lit := false) -> Mecha:
 	var mecha: Mecha = MECHA.instantiate()
 	mecha.mech_inventory = Inventory.new()
 	mecha.position = pos
 	_arena.add_child(mecha)
 	mecha.set_parts_from_design(design)
+	mecha.set_illuminator(lit)
 	mecha.global_rotation = 0.0
 	_arena.mechas.append(mecha)
 	mecha.external_temp = heat
@@ -172,15 +189,117 @@ func _test_heat_finds() -> void:
 	check(coyotes[0].sense_range(mecha) > coyotes[0].sight_range, "a hot one from further than it sees")
 
 
+# Cooled and gone, it hunts where it last had it, then forgets (a short
+# memory here, to keep the case quick).
 func _test_cooling_releases() -> void:
 	var mecha := _mecha(Vector2.ZERO)
 	var coyote: Coyote = _spawn(COYOTE, Vector2(600, 0))
+	coyote.memory_time = 1.5
 	coyote.acquire_target(mecha)
+	var spot := mecha.global_position
 	mecha.external_temp = 0.0
-	var let_go := await wait_until(func(): return coyote.target == null, 2.0)
-	check(let_go, "cooled to ambient, it's let go")
+	mecha.global_position = Vector2(-2500, 0)
+	var lost := await wait_until(func(): return not coyote.target_perceived, 1.0)
+	check(lost and coyote.target == mecha, "cooled and gone, it's lost to it, but not let go")
+	check(coyote.target_point() == spot, "it goes after where it last had it")
+	var let_go := await wait_until(func(): return coyote.target == null, coyote.memory_time + 1.5)
+	check(let_go, "its memory run out, it's let go")
 	await wait_seconds(0.5)
 	check(coyote.target == null, "and not picked back up")
+
+
+func _test_shot_brings_hunt() -> void:
+	var mecha := _mecha(Vector2(1300, 0), 0.0)
+	var shot: Coyote = _spawn(COYOTE, Vector2.ZERO)
+	var mate: Coyote = _spawn(COYOTE, Vector2(-900, 300))
+	var far: Coyote = _spawn(COYOTE, Vector2(-shot.call_range - 900.0, 0))
+	await _physics_frames(2)
+	check(shot.target == null and mate.target == null, "a cold, dark mecha out of reach goes unnoticed")
+	shot.take_hit(1.0, 5, Vector2.LEFT, {"body": mecha, "name": "Shooter"})
+	check(shot.target == mecha and shot.last_known == mecha.global_position, "shot, it takes the shooter on, knowing where it fired from")
+	check(mate.target == mecha and mate.last_known == mecha.global_position, "a Coyote nearby, no pack of its, is called in, told the same")
+	check(far.target == null, "one further than call_range isn't")
+	var start := shot.global_position.distance_to(mecha.global_position)
+	var closer := await wait_until(func(): return shot.global_position.distance_to(mecha.global_position) < start - 300.0, 3.0)
+	check(closer, "it goes after the shooter, cold as it is")
+	var found := await wait_until(func(): return shot.target_perceived, 4.0)
+	check(found, "and once close (within %.0f px), it has it, cold, dark and all" % shot.close_sense)
+
+
+# The Fisher behind the mecha (which faces -Y), so it doesn't leap round it.
+func _test_fisher_memory() -> void:
+	var mecha := _mecha(Vector2(0, -600))
+	var fisher: Fisher = _spawn(FISHER, Vector2.ZERO)
+	fisher._harpoon_cool = 100.0
+	fisher.acquire_target(mecha)
+	await wait_until(func(): return fisher.fisher_body.legs_out() >= 1.0, 3.0)
+	var spot := mecha.global_position
+	mecha.external_temp = 0.0
+	mecha.global_position = Vector2(4000, -600)
+	var lost := await wait_until(func(): return not fisher.target_perceived, 1.0)
+	check(lost and fisher.target == mecha, "cooled and gone, it isn't let go")
+	var start := fisher.global_position.distance_to(spot)
+	var went := await wait_until(func(): return fisher.global_position.distance_to(spot) < start - 150.0, 4.0)
+	check(went and fisher.leaps == 0, "it stalks over to where it last had it, no leaps")
+	fisher.harpoon = Fisher.Harpoon.LATCHED
+	fisher._latched_to = mecha
+	check(fisher.perceives(mecha), "with its harpoon in the prey, it has it, wherever it is")
+	fisher.harpoon = Fisher.Harpoon.NONE
+
+
+func _test_close_sense() -> void:
+	var coyote: Coyote = _spawn(COYOTE, Vector2.ZERO, true)
+	var mecha := _mecha(Vector2(coyote.close_sense * 0.8, 0), 0.0)
+	check(coyote.sense_range(mecha) == 0.0 and coyote.find_prey() == mecha, "a cold, dark mecha very close is found")
+	mecha.global_position = Vector2(coyote.close_sense * 1.5, 0)
+	check(coyote.find_prey() == null, "a little further, it isn't")
+
+
+# A Spitter lobs at where it last had its prey; a gun fires there, blind.
+func _test_blind_fire() -> void:
+	var mecha := _mecha(Vector2(0, -700), 0.0)
+	var spitter: CoyoteSpitter = _spawn(COYOTE_SPITTER, Vector2.ZERO)
+	spitter.acquire_target(mecha)
+	var spot := mecha.global_position
+	mecha.global_position = Vector2(2600, -700)
+	var globs := []
+	_arena.child_entered_tree.connect(func(n): if n is AcidGlob: globs.append(n))
+	var lobbed := await wait_until(func(): return not globs.is_empty(), 6.0)
+	if check(lobbed, "a Spitter that lost its prey still spits"):
+		check(globs[0].get_landing_point().distance_to(spot) < 5.0, "at where it last had it")
+	var gunner: Coyote = _spawn(COYOTE, Vector2(0, 600))
+	var weapon_id: String = PlayerProgress.DEFAULT_MECHA.arm_weapon_left
+	gunner._carry({"slot": "arm_weapon_left", "part_id": weapon_id, "texture": null})
+	var target_mecha := _mecha(Vector2(700, 600), 0.0)
+	gunner.acquire_target(target_mecha)
+	var gun_spot := target_mecha.global_position
+	target_mecha.global_position = Vector2(700, 3000)
+	var fired := await wait_until(func(): return gunner.gun_shots > 0, 4.0)
+	check(fired and not gunner.target_perceived, "a Coyote with a gun fires on, blind")
+	var args: Dictionary = _arena.projectile_args.back() if not _arena.projectile_args.is_empty() else {}
+	var dir: Vector2 = args.get("dir", Vector2.ZERO)
+	check(dir.dot((gun_spot - gunner.global_position).normalized()) > 0.9, "at where it last had it")
+
+
+func _test_light_gives_away() -> void:
+	var near := Illumination.SCREEN_HALF * 0.8
+	var mecha := _mecha(Vector2(near.x, 0), 0.0, PlayerProgress.DEFAULT_MECHA, true)
+	var coyote: Coyote = _spawn(COYOTE, Vector2.ZERO)
+	check(coyote.sense_range(mecha) == 0.0, "a cold mecha: no heat to go on")
+	var found := await wait_until(func(): return coyote.target == mecha, 2.0)
+	check(found, "but its light on, within a screen, gives it away")
+	mecha.global_position = Vector2(0, near.y)
+	await wait_seconds(0.5)
+	check(coyote.target == mecha, "and it's kept, cold, while the light stays on")
+	coyote.memory_time = 1.0
+	mecha.set_illuminator(false)
+	mecha.global_position = Vector2(-9000, 0)
+	var let_go := await wait_until(func(): return coyote.target == null, 3.0)
+	check(let_go, "light off, cold and gone: let go once it forgets")
+	var far := _mecha(Vector2(Illumination.SCREEN_HALF.x * 1.3, 0), 0.0, PlayerProgress.DEFAULT_MECHA, true)
+	mecha.global_position = Vector2(-9000, 0)
+	await wait_seconds(0.5)
+	check(coyote.target != far, "a light further than a screen away isn't noticed")
 
 
 # ---- Coyote ----
@@ -350,6 +469,64 @@ func _test_fisher_leaps() -> void:
 	await wait_seconds(fisher.crouch_time + fisher.air_time + fisher.land_time + 0.2)
 	check(fisher.global_position.distance_to(start) > fisher.leap_distance * 0.5, "a good way")
 	check(fisher.global_position.distance_to(mecha.global_position) > 350.0, "away from the rush")
+	# The rush came straight down its y axis: a leap straight back has no x.
+	check(absf(fisher.global_position.x - start.x) > fisher.leap_distance * 0.4,
+			"back and to the side, not straight back (%.0f px aside)" % absf(fisher.global_position.x - start.x))
+	stop.call()
+
+
+# Kept behind its prey (a mecha facing -Y), nothing makes it leap on its own.
+func _test_fisher_leap_charges() -> void:
+	var mecha := _mecha(Vector2(0, -400))
+	var stop := _keep_hot(mecha)
+	var fisher: Fisher = _spawn(FISHER, Vector2(0, 300))
+	fisher._harpoon_cool = 100.0
+	fisher.acquire_target(mecha)
+	await wait_until(func(): return fisher.fisher_body.legs_out() >= 1.0, 3.0)
+	check_eq(fisher.leaps_left(), fisher.leap_charges, "it starts with all its leaps (%d)" % fisher.leap_charges)
+	var air_speed := [0.0]
+	var watch := func():
+		if fisher._leap == FisherBody.LeapPhase.AIR:
+			air_speed[0] = maxf(air_speed[0], fisher.velocity.length())
+	get_tree().physics_frame.connect(watch)
+	for k in fisher.leap_charges:
+		var side := 1.0 if k % 2 == 0 else -1.0
+		fisher.leap_to(fisher.global_position + Vector2(side * fisher.leap_distance, 0))
+		await wait_until(func(): return fisher._leap == FisherBody.LeapPhase.NONE, 2.0)
+	get_tree().physics_frame.disconnect(watch)
+	check_eq(fisher.leaps, fisher.leap_charges, "it leaps %d times in a row" % fisher.leap_charges)
+	check_eq(fisher.leaps_left(), 0, "and then has none left")
+	check(air_speed[0] >= fisher.leap_distance / fisher.air_time * 0.9 and air_speed[0] > 1500.0,
+			"each one fast: %.0f px/s in the air" % air_speed[0])
+	fisher.leap_to(fisher.global_position + Vector2(fisher.leap_distance, 0))
+	check_eq(fisher.leaps, fisher.leap_charges, "a fourth has to wait")
+	var back := await wait_until(func(): return fisher.leaps_left() == fisher.leap_charges, fisher.leap_cooldown + 1.0)
+	check(back, "after the cooldown, its leaps are back")
+	stop.call()
+
+
+# The mecha turned to face it: it leaps round the mecha, out of its front.
+func _test_fisher_leaps_out_of_view() -> void:
+	var mecha := _mecha(Vector2(0, -450))
+	mecha.global_rotation = PI  # facing +Y, at the Fisher
+	var stop := _keep_hot(mecha)
+	var fisher: Fisher = _spawn(FISHER, Vector2(40, 0))
+	fisher._harpoon_cool = 100.0
+	fisher.acquire_target(mecha)
+	var hold := func(): if is_instance_valid(mecha): mecha.global_rotation = PI
+	get_tree().physics_frame.connect(hold)
+	var leapt := await wait_until(func(): return fisher.leaps > 0, 4.0)
+	await wait_until(func(): return fisher._leap == FisherBody.LeapPhase.NONE, 2.0)
+	get_tree().physics_frame.disconnect(hold)
+	if not check(leapt, "faced, it leaps"):
+		stop.call()
+		return
+	var facing := Vector2.UP.rotated(mecha.global_rotation)
+	var off := absf(rad_to_deg(facing.angle_to(fisher.global_position - mecha.global_position)))
+	check(off > fisher.facing_cone + 15.0, "round the mecha, well out of its front (%.0f degrees off)" % off)
+	var d := fisher.distance_to(mecha)
+	check(d > fisher.keep_range * 0.6 and d < fisher.keep_range * 1.6, "at about its keeping range (%.0f px)" % d)
+	check(fisher.global_position.x > 40.0, "to the side the mecha is turned away from")
 	stop.call()
 
 
@@ -848,6 +1025,57 @@ func _test_carried_look() -> void:
 		check(absf(long_side.dot(fwd)) < 0.05, "a %s shoulder's long side runs across the Coyote's front" % pair[2])
 		check(outer.dot(fwd) > 0.95, "and its outer face points forward")
 		check(holder.to_local(shield.global_position).x > holder.body_length * 0.4, "out in front of the head")
+
+
+# Both arms: a right-hand weapon is mirrored on the mecha, which once turned
+# the carried copy end over end. One gun ripped off a mecha, one picked off a
+# wreck's body.
+func _test_gun_barrel() -> void:
+	var mecha := _mecha(Vector2(0, -700), 0.0)
+	var wreck_body := MechaBody.new()
+	wreck_body.position = Vector2(3000, 3000)
+	wreck_body.copy_parts_from(mecha, ["arm_weapon_left"])
+	_arena.add_child(wreck_body)
+	check(wreck_body.find_child("Glow", true, false) == null, "a body on the ground draws no glow")
+	var guns := {
+		"right arm": [MechaBody.look_of(mecha.get_node("ArmWeaponRight"), true), "arm_weapon_right"],
+		"left arm, off a wreck": [wreck_body.part_look("arm_weapon_left", true), "arm_weapon_left"],
+	}
+	var y := 0.0
+	for label in guns:
+		var look: Node2D = guns[label][0]
+		var slot: String = guns[label][1]
+		var coyote: Coyote = _spawn(COYOTE, Vector2(500, y), true)
+		y += 250.0
+		coyote._carry({"slot": slot, "part_id": str(mecha.build[slot].part_id), "texture": null, "look": look})
+		var body := coyote.coyote_body
+		if not check(body._gun_look == look, "%s: it holds the gun" % label):
+			continue
+		var layers: Array = look.find_children("*", "Sprite2D", true, false).map(func(s): return String(s.name))
+		check(layers.has("Main") and layers.has("Sub") and layers.has("Glow"), "%s: with its glow layer (%s)" % [label, str(layers)])
+		check(not body._muzzles.is_empty(), "%s: a muzzle at each of its shooting positions" % label)
+		coyote.target = mecha
+		coyote.fire_gun()
+		var to_target: Vector2 = (mecha.global_position - look.global_position).normalized()
+		check(body.get_direction().dot(to_target) > 0.99, "%s: its barrels point at the target" % label)
+		var muzzle: Marker2D = body._muzzles[0] if not body._muzzles.is_empty() else null
+		check(muzzle != null and (muzzle.global_position - look.global_position).normalized().dot(to_target) > 0.9,
+				"%s: the muzzle is out the front, toward the target, not behind the grip" % label)
+		var args: Dictionary = _arena.projectile_args.back() if not _arena.projectile_args.is_empty() else {}
+		check(args.get("pos_reference") == muzzle and args.get("pos") == muzzle.global_position, "%s: the round leaves from the muzzle" % label)
+		check((args.get("dir", Vector2.ZERO) as Vector2).dot(to_target) > 0.95, "%s: along the barrels" % label)
+		var flash = args.get("muzzle_flash")
+		var weapon = coyote.gun.weapon
+		check(flash is Dictionary and flash.flash_effect == weapon.muzzle_flash and args.get("node_reference") == body,
+				"%s: with the weapon's muzzle flash, following the gun" % label)
+		check(body.gun_heat > 0.0, "%s: firing heats the gun (%.0f)" % [label, body.gun_heat])
+		var glow := (look.get_meta("part") as Node).get_node_or_null("Glow") as Sprite2D
+		var glows := await wait_until(func():
+			return glow != null and glow.material is ShaderMaterial and float(glow.material.get_shader_parameter("heat")) > 0.0, 1.0)
+		check(glows, "%s: its glow shows the heat" % label)
+		var hot := body.gun_heat
+		await wait_seconds(0.5)
+		check(body.gun_heat < hot, "%s: and it cools" % label)
 
 
 func _test_shield() -> void:

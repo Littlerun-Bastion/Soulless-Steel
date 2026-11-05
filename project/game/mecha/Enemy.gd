@@ -1011,16 +1011,50 @@ func update_senses(dt):
 
 
 # One body of the senses update: in range (the cheap squared-distance test
-# first), then foliage, light and walls, it is seen.
+# first), then foliage, light and walls, it is seen. The head's IR sensor
+# (IRSensing) works anywhere in that range, foliage and darkness or not: a
+# body at least as hot as its IR identification is seen, as a lit one is; one
+# at least as hot as its IR sensitivity that isn't seen otherwise is tracked
+# by its heat (NPCKnowledge.sensed_heat: where it is, live, not seen).
+#
+# Past any of that: a Fisher whose harpoon is in this NPC is seen, wherever
+# it is (it's on the end of the tether); a mecha whose illuminator is on
+# within a screen of it gives itself away (NPCKnowledge.noticed_light,
+# Illumination.in_light_range), however far it sees.
 func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 	if not is_instance_valid(target):
 		return
-	# Nothing is seen past the hottest target's range: the cheap test first,
-	# before even the (string-keyed) is_dead look-up.
-	if position.distance_squared_to(target.position) > max_reach_sq:
+	var far := position.distance_squared_to(target.position) > max_reach_sq
+	# The cheap tests first, before even the (string-keyed) is_dead look-up:
+	# past its sight, only a tether or a light can give a body away.
+	if far and not target.has_method("is_tethered_to") and not Illumination.is_shining(target):
 		return
 	if "is_dead" in target and target.is_dead:
 		return
+	var velocity_seen: Vector2 = target.velocity if "velocity" in target else Vector2.ZERO
+	if target.has_method("is_tethered_to") and target.is_tethered_to(self):
+		knowledge.see(target, target.global_position, velocity_seen)
+		return
+	var light := Illumination.in_light_range(self, target)
+	if far:
+		if light:
+			knowledge.noticed_light(target, target.global_position, velocity_seen)
+		return
+	var heat := IRSensing.level(self, target)
+	if heat == IRSensing.IDENTIFIED:
+		knowledge.see(target, target.global_position, velocity_seen)
+		return
+	if _sees_by_eye(target, own_sight_mult):
+		return
+	if heat == IRSensing.SENSED:
+		knowledge.sensed_heat(target, target.global_position, velocity_seen)
+	if light:
+		knowledge.noticed_light(target, target.global_position, velocity_seen)
+
+
+# Whether the NPC sees `target` by sight alone (in range, foliage, light,
+# walls), and if so records it.
+func _sees_by_eye(target, own_sight_mult: float) -> bool:
 	var distance = position.distance_to(target.position)
 	var thermal_range_mult = 1.0
 	if target.has_method("get_thermal_signature"):
@@ -1036,12 +1070,14 @@ func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 	var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
 	if distance > effective_engage_distance \
 			or distance > effective_engage_distance * MapSenses.detection_mult(target):
-		return
+		return false
 	var lit := Illumination.seen_lit(self, target)
 	if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
-		return
+		return false
 	if lit or not _sight_to_blocked(target):
 		knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
+		return true
+	return false
 
 
 # How many living mechas in sight this NPC holds a grudge against or was
@@ -1150,10 +1186,14 @@ func _threat_score(target, distance, eng_distance) -> float:
 
 
 # Picks the target to fight from what this NPC perceives (see update_senses):
-# a new target must be in sight, or be shooting at it right now. The current
-# target is kept while it is remembered, even out of sight, until it hasn't
-# been seen or heard for TARGET_MEMORY_TIME s, dies, or is further than
-# max_shooting_distance from where it was last known to be.
+# a new target must be in sight, be shooting at it right now, or be a mecha
+# whose illuminator gives it away within a screen of it (the player sees
+# that cone on screen too); a body known only by its heat (an UNKNOWN IR
+# track) isn't one. The current target is kept
+# while it is remembered, even out of sight (and tracked exactly while its
+# heat is sensed), until it hasn't been seen, heard or sensed for
+# TARGET_MEMORY_TIME s, dies, or is further than max_shooting_distance from
+# where it was last known to be.
 func check_for_targets(eng_distance, max_shooting_distance):
 	if valid_target and is_instance_valid(valid_target) and not valid_target.is_dead:
 		if time_unseen(valid_target) > TARGET_MEMORY_TIME \
@@ -1175,6 +1215,8 @@ func check_for_targets(eng_distance, max_shooting_distance):
 	var best_score := -1.0
 	for target in _candidate_targets():
 		if not scripted and not knowledge.knows(target):
+			continue
+		if not scripted and not is_same(target, valid_target) and knowledge.known_only_by_heat(target):
 			continue
 		var distance = position.distance_to(get_target_position(target))
 		if distance > eng_distance:
@@ -1270,6 +1312,10 @@ func _candidate_targets() -> Array:
 	if under_fire_timer > 0 and is_instance_valid(most_recent_attacker) \
 			and not most_recent_attacker.is_dead and not found.has(most_recent_attacker):
 		found.append(most_recent_attacker)
+	# Mechas whose illuminator gives them away within a screen of it.
+	for body in knowledge.light_bodies():
+		if not found.has(body):
+			found.append(body)
 	# Squadmates' callouts (Squad.share_contact), and never a squadmate or
 	# the squad's leader.
 	var squad = knowledge.squad

@@ -10,6 +10,10 @@ const GRAIN_SHADER := preload("res://game/entities/sand/sand_grains.gdshader")
 const MAX_POINTS := 64
 ## Seconds for the body to dissolve into the death burst.
 const BODY_BREAK_TIME := 0.12
+## The body layer's z, over the top_level legs and trailing tails (z 0), and
+## a raised tail's, over the body (see _ready).
+const BODY_Z := 1
+const RAISED_TAIL_Z := 2
 ## Shadow offset per pixel of height.
 const SHADOW_PER_HEIGHT := 0.6
 const ROPE_POINTS := 12
@@ -313,8 +317,12 @@ func _ready() -> void:
 	_last_rotation = global_rotation
 
 	# Everything is drawn at z 0 or above, so nothing goes under the map's
-	# ground (z 0). Within that, the order of children layers it: legs,
-	# tails, grains, then the body over them (_layer_body_on_top).
+	# ground (z 0). The legs and tails are top_level, and Godot draws a
+	# top_level item over every item at its z that isn't top_level, whatever
+	# the child order. So the body layer sits a z above them (BODY_Z) to be
+	# drawn over its legs and trailing tails, and a raised tail one above that
+	# (RAISED_TAIL_Z). The grains are ordered under the body by child order
+	# (_layer_body_on_top).
 	_limb_layer = Node2D.new()
 	_limb_layer.top_level = true  # leg points are in world space
 	add_child(_limb_layer)
@@ -337,9 +345,10 @@ func _ready() -> void:
 	_layer_body_on_top()
 
 
-# The body layer goes after the legs, tails and grains, so it draws over
-# them; the death burst goes last.
+# The body layer goes after the grains, so it draws over them, and a z over
+# the legs and tails (see _ready); the death burst goes last.
 func _layer_body_on_top() -> void:
+	_body_layer.z_index = BODY_Z
 	move_child(_body_layer, -1)
 	move_child(_death, -1)
 
@@ -443,8 +452,21 @@ var _skipped_frames := 0.0
 
 func _process(delta: float) -> void:
 	var profile_start := FrameProfiler.start()
+	_follow_entity_alpha()
 	_process_step(delta)
 	FrameProfiler.add("sand_bodies", profile_start)
+
+
+# The legs and tails are top_level (their points are in world space), and a
+# top_level item doesn't take its parents' modulate. So when the player's
+# view fades the Entity out (Player._update_view) they would stay drawn,
+# walls or not: they take its alpha from here, every frame, written only
+# when it changes.
+func _follow_entity_alpha() -> void:
+	var alpha := _entity_alpha()
+	for layer in [_limb_layer, _tail_layer]:
+		if layer != null and layer.modulate.a != alpha:
+			layer.modulate.a = alpha
 
 
 func _process_step(delta: float) -> void:
@@ -1080,9 +1102,8 @@ func _simulate_tails(delta: float) -> void:
 		tail.prev = prev
 		tail.heights = heights
 		raised = raised or tail.raise > 0.3
-	# A raised tail draws over the body; a trailing one under it (by child
-	# order, at z 0).
-	_tail_layer.z_index = 1 if raised else 0
+	# A raised tail draws over the body; a trailing one under it.
+	_tail_layer.z_index = RAISED_TAIL_Z if raised else 0
 
 
 # --- Drawing helpers 

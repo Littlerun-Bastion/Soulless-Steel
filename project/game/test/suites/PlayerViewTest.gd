@@ -9,7 +9,12 @@ extends TestSuite
 # inside; an Entity behind a wall is hidden too; nothing is hidden while
 # controls are locked (cutscenes); a map joins the sight light layer; and
 # BuildingField gives the buildings near the player shadows and drops them
-# when the player moves away.
+# when the player moves away. The head's IR sensor (IRSensing): a body as hot
+# as its IR sensitivity that can't be seen is an UNKNOWN contact whose HUD
+# marker follows it live and fades as a ghost once lost; one as hot as its IR
+# identification is seen through the wall, as a lit one is; not from inside
+# another building, and not with the head gone. An Entity's body_temp counts
+# the same way, and the stats panel lists both stats.
 #
 # The player is held still (no physics) and faces a set way, and its view is
 # stepped by hand, so what is in the cone is the same every run.
@@ -46,6 +51,10 @@ func run_tests() -> void:
 	await case("nothing is hidden while controls are locked", _test_locked)
 	await case("a map joins the sight light layer", _test_light_layer)
 	await case("buildings near the player cast shadows, far ones don't", _test_occluders)
+	await case("IR: hot enough to sense is a live UNKNOWN track; hot enough to identify is seen", _test_ir_mecha)
+	await case("IR: not into another building, not without a head", _test_ir_limits)
+	await case("IR: an Entity's body temperature counts the same", _test_ir_entity)
+	await case("a Fisher with its harpoon in the player is always shown", _test_tethered_fisher)
 
 
 func before_each() -> void:
@@ -190,6 +199,113 @@ func _test_light_layer() -> void:
 	check(ground.light_mask & MapSenses.SIGHT_LIGHT_MASK, "a map node joins the sight light layer")
 	check(ground.light_mask & 32 and ground.light_mask & 1, "keeping the layers it had")
 	check(internal.light_mask & MapSenses.SIGHT_LIGHT_MASK, "internal children too")
+
+
+# ---- IR ----
+
+# A mecha held at `celsius` (absolute): its physics off so it doesn't cool.
+func _hot_mecha(pos: Vector2, celsius: float) -> Mecha:
+	var mecha := _mecha(pos)
+	mecha.set_physics_process(false)
+	mecha.external_temp = celsius - Mecha.AMBIENT_TEMP
+	return mecha
+
+
+func _ir_tracks() -> Array[Dictionary]:
+	return _player.contacts.query({"source": IRSensing.SOURCE})
+
+
+func _test_ir_mecha() -> void:
+	var head = _player.build.head
+	var sensitivity: float = head.ir_sensitivity
+	var identification: float = head.ir_identification
+	check(sensitivity > Mecha.AMBIENT_TEMP and identification > sensitivity, "the stock head senses before it identifies (%.0f, %.0f °C)" % [sensitivity, identification])
+	check(StatsPanel.sum_stat({"head": head}, "ir_sensitivity") == sensitivity
+			and StatsPanel.sum_stat({"head": head}, "ir_identification") == identification, "the stats panel reads both")
+	var behind := _hot_mecha(Vector2(800, 200), sensitivity - 10.0)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(behind) and _ir_tracks().is_empty(), "cooler than the sensitivity, behind a wall: nothing")
+	behind.external_temp = sensitivity + 10.0 - Mecha.AMBIENT_TEMP
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	var tracks := _ir_tracks()
+	check(_hidden(behind), "hot enough to sense: still not seen")
+	if not check(tracks.size() == 1 and tracks[0].body == behind and tracks[0].live, "but tracked by its heat"):
+		return
+	check(tracks[0].kind == IRSensing.KIND and tracks[0].reveal == "ping", "as an UNKNOWN ping")
+	var hud := HudContacts.new()
+	add_child(hud)
+	hud.setup(_player, [])
+	hud._process(0.0)
+	var marks := hud.get_marks()
+	check(marks.size() == 1 and str(marks[0].text).begins_with("UNKNOWN"), "the HUD marks it UNKNOWN (%s)" % str(marks.map(func(m): return m.text)))
+	var before: Vector2 = marks[0].at if not marks.is_empty() else Vector2.ZERO
+	behind.global_position += Vector2(0, 40)
+	hud._process(0.0)
+	var after: Vector2 = hud.get_marks()[0].at if not hud.get_marks().is_empty() else Vector2.ZERO
+	var moved: Vector2 = (_player.get_viewport().get_canvas_transform() * Vector2(0, 40)) - _player.get_viewport().get_canvas_transform() * Vector2.ZERO
+	check((after - before).is_equal_approx(moved.round()) or (after - before).distance_to(moved) < 1.5,
+			"and the marker follows it live, between view checks too")
+	_player._update_view(0.1)
+	check(_ir_tracks()[0].position == behind.global_position, "each view check puts the track where it is")
+	behind.external_temp = 0.0
+	_player.contacts.advance(_player.IR_TTL + 0.1)
+	_player._update_view(0.1)
+	var ghost := _ir_tracks()
+	check(ghost.size() == 1 and not ghost[0].live, "cooled off, the track turns into a ghost where it was last")
+	behind.external_temp = identification + 10.0 - Mecha.AMBIENT_TEMP
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(behind), "hot enough to identify: seen through the wall, as a lit mecha is")
+	check(_ir_tracks().is_empty(), "with no UNKNOWN marker trailing it")
+	hud.queue_free()
+
+
+func _test_ir_limits() -> void:
+	var head = _player.build.head
+	var inside := _hot_mecha(Vector2(2200, 200), head.ir_identification + 50.0)
+	await _look(Vector2(1700, 200), Vector2.RIGHT)
+	check(_hidden(inside) and _ir_tracks().is_empty(), "inside another building, however hot: no heat gets out")
+	var behind := _hot_mecha(Vector2(800, 200), head.ir_identification + 50.0)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(behind), "out in the open behind a wall, it's identified")
+	_player.lose_part("head")
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(behind) and _ir_tracks().is_empty(), "with the head gone, the IR sensor is gone")
+
+
+func _test_ir_entity() -> void:
+	var head = _player.build.head
+	var stalker: Entity = STALKER.instantiate()
+	stalker.position = Vector2(800, 200)
+	_arena.add_child(stalker)
+	stalker.setup(_arena)
+	stalker.set_pause(true)
+	check(stalker.body_temp < head.ir_sensitivity, "an Entity is cooler than the stock head senses by default")
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(stalker) and _ir_tracks().is_empty(), "so it isn't tracked")
+	stalker.body_temp = head.ir_sensitivity + 5.0
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(stalker) and _ir_tracks().size() == 1, "a warmer one is an UNKNOWN track")
+	stalker.body_temp = head.ir_identification + 5.0
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(stalker), "a hot one is seen")
+
+
+func _test_tethered_fisher() -> void:
+	var fisher: Fisher = load("res://game/entities/fisher/Fisher.tscn").instantiate()
+	fisher.position = Vector2(800, 200)
+	_arena.add_child(fisher)
+	fisher.setup(_arena)
+	fisher.set_pause(true)
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(fisher), "a Fisher behind the building is hidden")
+	fisher.harpoon = Fisher.Harpoon.LATCHED
+	fisher._latched_to = _player
+	check(fisher.is_tethered_to(_player), "its harpoon in the player")
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_shown(fisher), "is shown, through the wall, behind the player")
+	fisher.harpoon = Fisher.Harpoon.NONE
+	await _look(Vector2(-600, 200), Vector2.RIGHT)
+	check(_hidden(fisher), "and hidden again once the harpoon is out")
 
 
 func _test_occluders() -> void:

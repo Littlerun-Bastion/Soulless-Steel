@@ -22,6 +22,15 @@ class_name Entity
 # further away, and prey that cools down enough is let go. Being hurt, a pack
 # mate's alarm or a loud noise bring them in regardless.
 #
+# Memory (memory_time > 0): it perceives its prey (perceives) by its heat in
+# range and in sight, by its light (Illumination.in_light_range), by having
+# it within close_sense (heard and felt, cold, dark or behind a wall), or by
+# being hurt by it. Each time it does, it notes where (last_known). Prey it
+# no longer perceives isn't let go: it hunts where it last had it
+# (target_point; the species decides how) until memory_time s have gone by
+# without perceiving it, cold or not. Without memory the old rule holds:
+# prey it can't sense by heat is let go at once.
+#
 # Use: instantiate, add to the tree, then setup(arena) (the combat scene,
 # for get_mechas()). Forward is +X.
 #
@@ -77,6 +86,17 @@ const FRENZY_ATTACK_GAP := 0.5
 ## heat_sense_min, or the prey is picked straight back up. Below 0 it never
 ## lets go for this.
 @export var release_below := -1.0
+## How hot its body is (°C) to a mecha's IR sensor (IRSensing). Just above
+## ambient by default, under the stock heads' sensitivity. Placeholder.
+@export var body_temp := 0.0
+
+@export_group("Memory")
+## How long (s) it keeps prey it no longer perceives, hunting where it last
+## had it (see Memory above). 0: let go as soon as it can't sense it.
+@export var memory_time := 0.0
+## Any mecha this close (px) is perceived, cold, dark or behind a wall. 0 for
+## none.
+@export var close_sense := 0.0
 
 @export_group("Loot")
 ## What its carcass holds: loot_rolls (min, max) rolls on loot_table, plus
@@ -99,6 +119,11 @@ var mecha_name := ""            # what kill feeds and damage attribution call it
 var last_damage_source = null   # {"body", "name"} of whoever hit it last
 var last_attacker: Node2D = null
 var target: Node2D = null       # the mecha it's hunting
+## Where it last perceived its prey (INF for nowhere), and when (its own
+## clock, seconds); and whether it perceived it at the last senses check.
+var last_known := Vector2.INF
+var last_known_at := -INF
+var target_perceived := false
 var home := Vector2.ZERO        # where it wanders around
 # A Cyst's guards are leashed to it (set_leash): they only fight and follow
 # noises inside leash_radius of leash_center, and always settle back there.
@@ -125,6 +150,7 @@ var last_hit_aoe := false
 var frenzied := false
 
 var _sense_timer := 0.0
+var _clock := 0.0               # game seconds it has run (not paused)
 var _flash_timer := 0.0
 var _body_frenzy := false  # the body shows frenzy (has a frenzy flag)
 
@@ -167,6 +193,7 @@ func _physics_process(dt: float) -> void:
 
 
 func _physics_step(dt: float) -> void:
+	_clock += dt
 	frenzied = target != null and is_valid_prey(target) and target is Mecha and target.get_tick_count() > 0
 	if _body_frenzy:
 		body_visual.frenzy = frenzied
@@ -215,16 +242,54 @@ func on_heard(_point: Vector2) -> void:
 	pass
 
 
+# Hurt by a mecha: it takes the shooter on (or keeps it) and knows where it
+# fired from, cold or not (see Memory), and tells others (on_shot_from).
 func on_hurt(_amount: float) -> void:
-	if target == null and wants_prey() and is_valid_prey(last_attacker) and in_territory(last_attacker):
-		acquire_target(last_attacker)
+	var attacker := last_attacker
+	if not is_valid_prey(attacker) or not in_territory(attacker):
+		return
+	if target == null and wants_prey():
+		acquire_target(attacker)
+	if target == attacker:
+		remember(attacker.global_position)
+		target_perceived = true
+	on_shot_from(attacker, attacker.global_position)
 
 
-# Another pack member (or its Cyst) found prey / heard something.
-func join_hunt(prey: Node2D) -> void:
+## Shot by `shooter`, from about `point`: a species may pass it on.
+func on_shot_from(_shooter: Node2D, _point: Vector2) -> void:
+	pass
+
+
+# Another pack member (or its Cyst) found prey / heard something; `point` is
+# where it was told the prey is (the prey's position if not given).
+func join_hunt(prey: Node2D, point := Vector2.INF) -> void:
 	if target == null and wants_prey() and is_valid_prey(prey) and in_territory(prey):
 		target = prey
+		remember(prey.global_position if point == Vector2.INF else point)
+		target_perceived = false
 		on_target_acquired(prey)
+
+
+## Notes that its prey is at `point` now (see Memory).
+func remember(point: Vector2) -> void:
+	last_known = point
+	last_known_at = _clock
+
+
+## Where it goes after its prey: where it is while perceived, else where it
+## last had it.
+func target_point() -> Vector2:
+	if target == null:
+		return global_position
+	if target_perceived or last_known == Vector2.INF:
+		return target.global_position
+	return last_known
+
+
+## Seconds since it last perceived its prey (INF with none).
+func memory_age() -> float:
+	return _clock - last_known_at if last_known != Vector2.INF else INF
 
 
 func join_investigation(_point: Vector2) -> void:
@@ -233,19 +298,38 @@ func join_investigation(_point: Vector2) -> void:
 
 # ---- Senses ----
 
+# Its prey is let go when it's gone, or it has strayed past its leash.
+# Without memory, also when too far (lose_range) or too cold (release_below),
+# but never while the prey's illuminator gives it away
+# (Illumination.in_light_range: a mecha with its light on within a screen
+# of it).
+#
+# With memory (memory_time > 0), prey it perceives is noted where it is;
+# prey it doesn't is kept until memory_time s after it last perceived it
+# (see Memory).
 func _sense() -> void:
 	if target != null:
-		if not is_valid_prey(target) or distance_to(target) > lose_range or beyond_leash() \
-				or prey_heat(target) < release_below:
+		if not is_valid_prey(target) or beyond_leash():
 			lose_target()
+		elif memory_time > 0.0:
+			target_perceived = perceives(target)
+			if target_perceived:
+				remember(target.global_position)
+			elif memory_age() > memory_time:
+				lose_target()
+		elif not Illumination.in_light_range(self, target) \
+				and (distance_to(target) > lose_range or prey_heat(target) < release_below):
+			lose_target()
+		else:
+			target_perceived = true
 	if target == null and wants_prey():
 		var prey := find_prey()
 		if prey != null:
 			acquire_target(prey)
 
 
-# Whoever hurt it last, if still around; otherwise the nearest mecha it can
-# sense: hot enough, close enough for its heat, and in sight.
+# Whoever hurt it last, if still around; otherwise the nearest mecha it
+# perceives (perceives).
 func find_prey() -> Node2D:
 	if is_valid_prey(last_attacker) and distance_to(last_attacker) < lose_range and in_territory(last_attacker):
 		return last_attacker
@@ -253,21 +337,32 @@ func find_prey() -> Node2D:
 		return null
 	var best: Node2D = null
 	var best_distance := INF
-	# A tree over the mecha, or over us, shortens how far we see it; walls
-	# block can_see (see MapSenses). Its heat sets how far it is sensed at
-	# all (sense_range), within that.
-	var own_sight := MapSenses.sight_mult(self)
 	for mecha in arena.get_mechas():
 		if not is_valid_prey(mecha) or not in_territory(mecha):
 			continue
 		var d := distance_to(mecha)
 		if d >= best_distance:
 			continue
-		var reach := sense_range(mecha) * own_sight
-		if d < reach and d < reach * MapSenses.detection_mult(mecha) and can_see(mecha):
+		if perceives(mecha):
 			best = mecha
 			best_distance = d
 	return best
+
+
+## Whether it perceives `mecha` now: its light within a screen
+## (Illumination.in_light_range); within close_sense, whatever else; or its
+## heat in range (sense_range: a tree over the mecha, or over us, shortens
+## it) and in sight (walls and smoke block can_see).
+func perceives(mecha: Node2D) -> bool:
+	if not is_valid_prey(mecha):
+		return false
+	if Illumination.in_light_range(self, mecha):
+		return true
+	var d := distance_to(mecha)
+	if d <= close_sense:
+		return true
+	var reach := sense_range(mecha) * MapSenses.sight_mult(self)
+	return d < reach and d < reach * MapSenses.detection_mult(mecha) and can_see(mecha)
 
 
 # How hot a mecha runs, 0..1. Anything without a signature counts as hot.
@@ -287,12 +382,17 @@ func sense_range(node: Node2D) -> float:
 
 func acquire_target(prey: Node2D) -> void:
 	target = prey
+	remember(prey.global_position)
+	target_perceived = true
 	on_target_acquired(prey)
 
 
 func lose_target() -> void:
 	target = null
 	face_point = null
+	last_known = Vector2.INF
+	last_known_at = -INF
+	target_perceived = false
 	on_target_lost()
 
 
@@ -436,6 +536,11 @@ func has_any_status() -> bool:
 
 func get_thermal_signature() -> float:
 	return 0.5
+
+
+## Its body temperature in °C, for IR sensors (IRSensing).
+func get_body_temp() -> float:
+	return body_temp
 
 
 func _update_components() -> void:

@@ -12,6 +12,17 @@ extends RefCounted
 ##     body's velocity, how whole it looked and its Flag.
 ##   - A round that gave its shooter away writes a "shot" contact
 ##     (heard_shot); a body heard, a "sound" contact (heard_body).
+##   - A body its head's IR sensor picks up but it doesn't see writes an "ir"
+##     contact (sensed_heat, kind "unknown": it can't tell what it is): its
+##     true position, live like a sight contact until the next senses update
+##     that doesn't sense it, but not seen. Like a body heard, the NPC knows
+##     where it is and can take it on; unlike one heard, it keeps tracking it
+##     exactly behind cover.
+##   - A mecha with its illuminator on within a screen of it writes a "light"
+##     contact (noticed_light, Illumination.in_light_range): the player sees
+##     an illuminator's cone anywhere on screen, so the NPC knows where that
+##     mecha is, live, and that it's a mecha (it can take it on, and keeps it
+##     while the light stays on), but doesn't see it.
 ##   - A contact no source refreshes becomes a ghost, frozen where it was,
 ##     and is dropped after the store's ghost_time: Enemy.BODY_LIFETIME for
 ##     an NPC. So "forgotten" means the store dropped it.
@@ -40,6 +51,8 @@ extends RefCounted
 ## Its own state: self_state() is a frame-cached snapshot of heat, weapons,
 ## ammo and damaged systems that the intents read.
 
+## The contact source for a mecha given away by its illuminator.
+const LIGHT_SOURCE := "light"
 ## A body heard or a shot's origin stays live this long (s). Placeholder.
 const SHOT_TTL := 1.0
 const SOUND_TTL := 1.0
@@ -240,6 +253,21 @@ func heard_shot(body, position: Vector2) -> Dictionary:
 	return contact
 
 
+## `body` is sensed by its heat at `position` now (see above).
+func sensed_heat(body, position: Vector2, velocity := Vector2.ZERO) -> Dictionary:
+	var contact := contacts.report(body, IRSensing.KIND, position, IRSensing.SOURCE, npc.SIGHT_CONTACT_TTL)
+	contact.velocity = velocity
+	return contact
+
+
+## `body`'s illuminator gives it away at `position` now (see above).
+func noticed_light(body, position: Vector2, velocity := Vector2.ZERO) -> Dictionary:
+	var contact := contacts.report(body, ContactStore.kind_of(body), position, LIGHT_SOURCE, npc.SIGHT_CONTACT_TTL)
+	contact.velocity = velocity
+	_met(body)
+	return contact
+
+
 ## `body` was heard at `position`.
 func heard_body(body, position: Vector2) -> Dictionary:
 	var contact := contacts.report(body, ContactStore.kind_of(body), position, "sound", SOUND_TTL)
@@ -258,15 +286,30 @@ func place(body, position: Vector2) -> Dictionary:
 	return contact
 
 
-## Ends a senses update: every sight contact the update didn't refresh goes
-## stale now, so "seen" means in sight at the last update, whatever the ttl.
+## Ends a senses update: every sight, heat or light contact the update
+## didn't refresh goes stale now, so "seen" means in sight at the last
+## update, and a heat or light track is live only while it holds, whatever
+## the ttl.
 func end_sight_update() -> void:
 	contacts.expire_unrefreshed("sight")
+	contacts.expire_unrefreshed(IRSensing.SOURCE)
+	contacts.expire_unrefreshed(LIGHT_SOURCE)
 
 
 ## Whether the NPC has any contact on `body`.
 func knows(body) -> bool:
 	return not best(body).is_empty()
+
+
+## Whether all the NPC has on `body` is its heat (sensed_heat): it can't tell
+## what it is, so it doesn't start a fight with it (Enemy.check_for_targets).
+func known_only_by_heat(body) -> bool:
+	if best(body).is_empty():
+		return false
+	for contact in contacts.query({"body": body}):
+		if contact.source != IRSensing.SOURCE:
+			return false
+	return true
 
 
 ## The best contact on `body` ({} for none): live before ghost, then latest.
@@ -350,6 +393,17 @@ func known_mechas() -> Array[Dictionary]:
 
 func forget(body) -> void:
 	contacts.forget(body)
+
+
+## The living mechas giving themselves away by their light right now (live
+## "light" contacts, noticed_light).
+func light_bodies() -> Array:
+	var found := []
+	for contact in contacts.live_from(LIGHT_SOURCE):
+		var body = contact.body
+		if is_instance_valid(body) and not _is_dead(body) and not found.has(body):
+			found.append(body)
+	return found
 
 
 ## The living bodies squadmates called out lately (live "squad" contacts).

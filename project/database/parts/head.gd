@@ -14,8 +14,15 @@ extends Node2D
 @export var heatmap : Resource
 @export var rotation_acc := 8
 @export var rotation_range := 45.0
-@export var accuracy_modifier := -1.0 
-@export var visual_range := 450 
+@export var accuracy_modifier := -1.0
+@export var visual_range := 450
+## The IR sensor (IRSensing), in °C. A body at least ir_sensitivity hot is
+## picked up as an UNKNOWN track that follows it live; at least
+## ir_identification hot, it is seen as if lit. Placeholders: a working
+## mecha's hull is about 60 °C, and it starts to burn above 190 °C
+## (Mecha.OVERHEAT_DAMAGE_TEMP over ambient).
+@export var ir_sensitivity := 60.0
+@export var ir_identification := 200.0
 @export var health := 1500
 @export var weight := 1.0 
 @export var tags :Array[String] = ["head"]

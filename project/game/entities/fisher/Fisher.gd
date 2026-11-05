@@ -15,12 +15,24 @@ class_name Fisher
 # the prey gets tether_break away; before that, the Fisher leaps after it to
 # keep it.
 #
-# It leaps away when prey rushes it, and after prey that runs off, to get
-# back into harpoon range. So kiting it back forces a leap the player can
-# see coming, and rush into close range while it lands.
+# It leaps: back and to the side when prey rushes it, round the prey's flank
+# when the prey turns its front on it (the side the prey is turned away
+# from, so its leaps outrun the prey's turning and it's hard to keep in
+# front), and after prey that runs off, to get back into harpoon range. It
+# has leap_charges leaps in a row; once they're spent it waits leap_cooldown
+# before it leaps again (a spent leap comes back after leap_cooldown without
+# leaping, too). So it can be caught out: make it spend its leaps, then rush
+# into close range.
 #
-# Cold prey is let go (release_below); with nothing to hunt it searches a
-# while, then curls back up where it is.
+# It remembers its prey (Entity's Memory: memory_time, close_sense): prey it
+# no longer perceives (cooled off, dark, out of sight) it stalks over to
+# where it last had it, without harpoon or leaps, until it has it again or
+# memory_time runs out. Its harpoon in the prey, it always perceives it.
+# A mecha's light within a screen finds it prey while it is awake; with
+# nothing to hunt it searches a while, then curls back up where it is.
+# Dormant, it senses nothing but noise, light or not; a shot wakes it, and
+# it goes for the shooter. The mecha its harpoon is in always sees it
+# (is_tethered_to).
 #
 # Its look is a FisherBody (the Body child). The Fisher moves itself, leaps
 # included, through velocity; it hands the body its stage, the harpoon's
@@ -49,21 +61,31 @@ enum Harpoon { NONE, FLYING, LATCHED, REELING }
 @export var tether_speed := 200.0
 @export_group("Hunting")
 ## The distance it keeps from its prey while not latched.
-@export var keep_range := 420.0
+@export var keep_range := 480.0
 ## Awake with nothing found, it curls back up after this long.
 @export var search_time := 6.0
 @export_group("Leap")
-@export var leap_distance := 320.0
-@export var crouch_time := 0.16
-@export var air_time := 0.5
-@export var land_time := 0.25
+@export var leap_distance := 450.0
+@export var crouch_time := 0.1
+@export var air_time := 0.25
+@export var land_time := 0.15
+## Leaps it can make in a row; spent, it waits leap_cooldown for them back.
+@export var leap_charges := 3
 @export var leap_cooldown := 2.5
 ## Prey closing in or pulling away faster than this (px/s) makes it leap.
 @export var threat_speed := 260.0
 ## Rushed inside this distance, it leaps away.
-@export var evade_range := 520.0
+@export var evade_range := 600.0
 ## Prey running off beyond this distance makes it leap after it.
-@export var pursue_range := 400.0
+@export var pursue_range := 460.0
+## Rushed, how much of the leap goes away from the prey (the rest round it).
+@export_range(0.0, 1.0) var evade_back := 0.55
+## The prey's front is on it when the Fisher is within this many degrees of
+## where the prey faces; kept there face_react s, it leaps round it.
+@export var facing_cone := 25.0
+@export var face_react := 0.3
+## A leap round the prey turns it at most this far round (radians).
+@export var max_flank_turn := 1.3
 
 var state: State = State.DORMANT
 var harpoon: Harpoon = Harpoon.NONE
@@ -84,16 +106,26 @@ var _leap_t := 0.0
 var _leap_from := Vector2.ZERO
 var _leap_to := Vector2.ZERO
 var _leap_cool := 0.0
+var _leaps_left := 3
+var _faced_time := 0.0
 var _focus_dist := -1.0
 var _focus_rate := 0.0
 
 @onready var fisher_body: FisherBody = $Body as FisherBody
 
 
+func _ready() -> void:
+	super._ready()
+	_leaps_left = leap_charges
+
+
 func behave(dt: float) -> void:
 	_state_time += dt
 	_harpoon_cool = maxf(_harpoon_cool - dt, 0.0)
-	_leap_cool = maxf(_leap_cool - dt, 0.0)
+	if _leap_cool > 0.0:
+		_leap_cool = maxf(_leap_cool - dt, 0.0)
+		if _leap_cool <= 0.0:
+			_leaps_left = leap_charges
 	match state:
 		State.DORMANT: _dormant(dt)
 		State.ALERT: _alert()
@@ -135,10 +167,17 @@ func on_heard(point: Vector2) -> void:
 	_set_state(State.ALERT)
 
 
-func on_hurt(_amount: float) -> void:
-	# Even dormant, a shot wakes it, and it goes for the shooter.
+func on_hurt(amount: float) -> void:
+	# Even dormant, a shot wakes it, and it goes for the shooter, knowing
+	# where it fired from (Entity.on_hurt).
 	if target == null and is_valid_prey(last_attacker):
 		acquire_target(last_attacker)
+	super.on_hurt(amount)
+
+
+# With its harpoon in its prey, it has it on the end of the tether.
+func perceives(mecha: Node2D) -> bool:
+	return is_tethered_to(mecha) or super.perceives(mecha)
 
 
 # ---- States ----
@@ -159,6 +198,17 @@ func _alert() -> void:
 func _hunt(dt: float) -> void:
 	if not is_valid_prey(target):
 		lose_target()
+		return
+	# Prey it has lost (Entity's Memory): it stalks over to where it last had
+	# it, no harpoon and no leaps, until it has it again or forgets it.
+	if not target_perceived and harpoon != Harpoon.LATCHED:
+		if _leap != FisherBody.LeapPhase.NONE:
+			return
+		face_point = last_known
+		if fisher_body.legs_out() < 0.95 or harpoon != Harpoon.NONE:
+			stop()
+		else:
+			move_to(last_known, walk_speed, keep_range * 0.5)
 		return
 	_watch_prey(dt)
 	if _leap != FisherBody.LeapPhase.NONE:
@@ -303,9 +353,11 @@ func _hold_tether() -> void:
 
 # ---- Leaping ----
 
-# Watches how fast its prey closes in or pulls away. Rushed, it springs away.
-# Run from, it lunges after it: back into harpoon range or, latched on, to
-# keep the tether from snapping.
+# Watches how fast its prey closes in or pulls away, and whether its prey's
+# front is on it. Rushed, it springs back and round the prey's flank. Faced,
+# it leaps round the prey, the way the prey is turned from it. Run from, it
+# lunges after it: back into harpoon range or, latched on, to keep the
+# tether from snapping.
 func _watch_prey(dt: float) -> void:
 	var d := distance_to(target)
 	# Its own leaps don't count as the prey moving.
@@ -313,7 +365,8 @@ func _watch_prey(dt: float) -> void:
 		var rate := (_focus_dist - d) / maxf(dt, 0.0001)
 		_focus_rate = lerpf(_focus_rate, rate, clampf(8.0 * dt, 0.0, 1.0))
 	_focus_dist = d
-	if _leap != FisherBody.LeapPhase.NONE or _leap_cool > 0.0 or fisher_body.legs_out() < 0.95:
+	_faced_time = _faced_time + dt if _faced() else 0.0
+	if _leap != FisherBody.LeapPhase.NONE or _leaps_left <= 0 or fisher_body.legs_out() < 0.95:
 		return
 	var away := (global_position - target.global_position).normalized()
 	if harpoon == Harpoon.LATCHED:
@@ -322,21 +375,73 @@ func _watch_prey(dt: float) -> void:
 			leap(-away, clampf(stretch - _tether_len, 120.0, leap_distance))
 	elif harpoon == Harpoon.NONE:
 		if _focus_rate > threat_speed and d < evade_range:
-			leap(away.rotated(randf_range(-0.4, 0.4)))
+			leap_to(flank_point(leap_distance * evade_back))
 		elif _focus_rate < -threat_speed and d > pursue_range:
 			leap(-away, clampf(d - harpoon_range * 0.7, 120.0, leap_distance))
+		elif _faced_time >= face_react:
+			_faced_time = 0.0
+			leap_to(flank_point(clampf(keep_range - d, -leap_distance * 0.3, leap_distance * 0.5)))
+
+
+# Whether its prey has its front on it (within facing_cone of where it
+# faces). Mechas face -Y.
+func _faced() -> bool:
+	if not is_valid_prey(target):
+		return false
+	var facing := Vector2.UP.rotated(target.global_rotation)
+	return absf(rad_to_deg(facing.angle_to(global_position - target.global_position))) <= facing_cone
+
+
+## Where to leap to get round the prey: about leap_distance away, `outward`
+## px of it further from the prey (closer for less than 0), the rest round
+## it toward the side its front is turned away from, at most max_flank_turn
+## round. Straight in front, a side at random.
+func flank_point(outward: float) -> Vector2:
+	var prey := target.global_position
+	var from_prey := global_position - prey
+	var r := maxf(from_prey.length(), 1.0)
+	var facing := Vector2.UP.rotated(target.global_rotation)
+	var off_front := facing.angle_to(from_prey)
+	var side := signf(off_front) if absf(off_front) > 0.01 else (1.0 if randf() < 0.5 else -1.0)
+	var out := clampf(outward, -leap_distance, leap_distance)
+	var new_r := maxf(r + out, radius + 120.0)
+	var round_by := sqrt(maxf(leap_distance * leap_distance - out * out, 0.0))
+	var turn := minf(round_by / ((r + new_r) * 0.5), max_flank_turn)
+	return prey + from_prey.normalized().rotated(side * turn) * new_r
 
 
 ## Leap in a direction (world), the default distance or the one given.
 func leap(direction: Vector2, distance := -1.0) -> void:
-	if state != State.HUNT or _leap != FisherBody.LeapPhase.NONE or direction.length() < 0.01:
+	if direction.length() < 0.01:
+		return
+	leap_to(global_position + direction.normalized() * (leap_distance if distance < 0.0 else distance))
+
+
+## Leap to a point (world), if it has a leap left.
+func leap_to(point: Vector2) -> void:
+	if state != State.HUNT or _leap != FisherBody.LeapPhase.NONE or _leaps_left <= 0:
+		return
+	if point.distance_to(global_position) < 1.0:
 		return
 	_leap = FisherBody.LeapPhase.CROUCH
 	_leap_t = 0.0
 	_leap_from = global_position
-	_leap_to = global_position + direction.normalized() * (leap_distance if distance < 0.0 else distance)
+	_leap_to = point
+	_leaps_left -= 1
 	_leap_cool = leap_cooldown
 	leaps += 1
+
+
+## Whether its harpoon is in `mecha`: that mecha always sees it, wherever it
+## is (Player.can_see_body, Enemy._look_at), since it's on the end of the
+## tether.
+func is_tethered_to(mecha) -> bool:
+	return harpoon == Harpoon.LATCHED and is_instance_valid(_latched_to) and is_same(_latched_to, mecha) and not is_dead
+
+
+## Leaps it has left before it must wait (leap_charges, leap_cooldown).
+func leaps_left() -> int:
+	return _leaps_left
 
 
 # Crouch, fly, land. In the air it moves at the leap's speed (walls stop it);

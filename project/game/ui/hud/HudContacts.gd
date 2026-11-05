@@ -6,7 +6,9 @@ extends Control
 ## under it, drawn through walls and darkness. The device reports every
 ## couple of seconds, so a marker jumps rather than tracks. Once the device
 ## loses the body, the marker stays where it was last put and fades out over
-## ContactStore.GHOST_TIME. Vision contacts need nothing here: the player's
+## ContactStore.GHOST_TIME. A live IR track (IRSensing.SOURCE, kind UNKNOWN)
+## follows its body every frame instead: the head's IR sensor tracks it
+## perfectly while it senses it. Vision contacts need nothing here: the player's
 ## view shows the body itself (Player._update_view), or HudVisionOutlines
 ## outlines it.
 ##
@@ -104,14 +106,17 @@ func _collect() -> void:
 	var bright := THEME.get_color(&"g5", &"MechTokens")
 	var screen := get_viewport_rect().size
 	for contact in player.contacts.query({"reveal": "ping"}):
-		var at: Vector2 = to_screen * contact.position
+		var world: Vector2 = contact.position
+		if contact.live and contact.source == IRSensing.SOURCE and is_instance_valid(contact.body):
+			world = (contact.body as Node2D).global_position
+		var at: Vector2 = to_screen * world
 		var alpha: float = 1.0 - player.contacts.ghost_fade(contact)
 		var kind: String = contact.kind.to_upper()
 		if Rect2(Vector2.ZERO, screen).grow(-BRACKET_ROOM).has_point(at):
 			_add(at, bright, alpha, false, kind)
 			continue
 		var dir := (at - screen / 2.0).normalized()
-		var metres := roundi(player.global_position.distance_to(contact.position) / PX_PER_METRE)
+		var metres := roundi(player.global_position.distance_to(world) / PX_PER_METRE)
 		_marks.append({"at": edge_point(screen, dir).round(), "color": bright, "alpha": alpha,
 				"cross": false, "arrow": true, "dir": dir, "text": "%s %dM" % [kind, metres]})
 	if not Debug.get_setting("all_contacts"):

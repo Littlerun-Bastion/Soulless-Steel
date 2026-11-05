@@ -8,7 +8,9 @@ class_name CoyoteSpitter
 # forward and the body pulses as it charges (CoyoteSpitterBody), then it
 # spits a glob of sand (an AcidGlob) at where the prey is heading. The shot
 # is medium AP (glob_pen 3): it gets through side and rear armour but only
-# glances off a mecha's front.
+# glances off a mecha's front. Prey it has lost (Entity's Memory), it hunts
+# where it last had it like a Coyote, and lobs globs there for
+# blind_fire_time: a lob goes over cover, so it needs no line of sight.
 
 const GLOB_SCRIPT := preload("res://game/entities/AcidGlob.gd")
 
@@ -54,6 +56,23 @@ func _stalk() -> void:
 	if not is_valid_prey(target):
 		lose_target()
 		return
+	if not target_perceived:
+		# While it's fresh in mind, it keeps lobbing range of where it last
+		# had it (backing off if too close) and lobs; after, it searches.
+		var to_spot := global_position.distance_to(last_known)
+		if memory_age() > blind_fire_time or to_spot > fire_range.y:
+			_hunt_memory()
+			return
+		face_point = last_known
+		if to_spot < fire_range.x:
+			move_in(global_position - last_known, run_speed)
+			return
+		stop()
+		if _lunge_cooldown <= 0.0:
+			spitter_body.charge(_aim_point())
+			_set_state(State.WINDUP)
+		return
+	_search_point = null
 	face_point = target.global_position
 	_circle(_ring_angle(), orbit_radius)
 	var d := distance_to(target)
@@ -70,16 +89,22 @@ func _windup() -> void:
 	if not is_valid_prey(target):
 		lose_target()
 		return
-	face_point = target.global_position
-	_circle(_ring_angle(), orbit_radius, 0.35)
+	face_point = target_point()
+	if target_perceived:
+		_circle(_ring_angle(), orbit_radius, 0.35)
+	else:
+		stop()
 	spitter_body.aim_point = _aim_point()
 	if not spitter_body.is_attacking():
 		_lunge_cooldown = randf_range(fire_cooldown.x, fire_cooldown.y) * attack_gap_mult()
 		_set_state(State.STALK)
 
 
-# Where the prey will be when a glob from here reaches it.
+# Where the prey will be when a glob from here reaches it; prey it has lost,
+# where it last had it.
 func _aim_point() -> Vector2:
+	if not target_perceived:
+		return target_point()
 	var flight := clampf(distance_to(target) / glob_speed, 0.2, 1.2)
 	return target.global_position + target.velocity * flight * 0.8
 

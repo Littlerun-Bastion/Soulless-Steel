@@ -46,6 +46,12 @@ const OUTLINE_SOURCE = "seeker"
 ## How long (s) a body the player saw stays a live sight contact after the
 ## last view check that saw it.
 const SIGHT_CONTACT_TTL = 0.3
+## The head's IR tracks (see THE PLAYER'S VIEW): their contact source and
+## kind (IRSensing), and how long one stays live after the last view check
+## that sensed it.
+const IR_SOURCE = IRSensing.SOURCE
+const IR_KIND = IRSensing.KIND
+const IR_TTL = 0.3
 ## The sweep cone's width at the start, and how much one mouse wheel notch
 ## changes it (degrees). Placeholders.
 const SWEEP_START_WIDTH = 90.0
@@ -300,6 +306,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				
 				var container_win = MechOS.open_inventory("container", thing.inventory, thing.display_name)
 				if container_win != null:
+					# A wreck's shed parts, crossed out under its loot.
+					if container_win.has_method("show_unsalvageable"):
+						container_win.show_unsalvageable(thing)
 					container_win.position = Vector2(screen_size.x - container_win.size.x - 80, (screen_size.y - container_win.size.y) * 0.5)
 				# A wreck's kill record goes beside its loot (KillRecord).
 				if thing is Wreck and not thing.kill_record.is_empty():
@@ -866,14 +875,30 @@ func _sweep_mark() -> Dictionary:
 # devices (Device) are checked the same way, without contacts; the player's
 # own are always shown.
 
+#
+# The head's IR sensor (IRSensing) works within VIEW_RANGE too. A body at
+# least as hot as its IR identification is shown as a lit one is: walls
+# between or not, unless in another building or in or behind smoke. One at
+# least as hot as its IR sensitivity that the player can't see otherwise is
+# an UNKNOWN contact (IR_SOURCE, a ping): reported at every view check, so
+# its HUD marker follows the body live (HudContacts), and once it's seen, or
+# cools, or is lost, the marker stays where it was last and fades as a ghost.
+# A body that comes into view has its track dropped, so no marker trails it.
+#
+# A Fisher whose harpoon is in the player is always shown (Fisher.
+# is_tethered_to): the player can follow the tether to it.
+
 func can_see_body(body: Node2D) -> bool:
 	if controls_locked or is_dead:
+		return true
+	# A Fisher's harpoon in the player: it's on the end of the tether.
+	if body.has_method("is_tethered_to") and body.is_tethered_to(self):
 		return true
 	var to := body.global_position
 	var dist := global_position.distance_to(to)
 	if dist > VIEW_RANGE:
 		return true
-	if Illumination.seen_lit(self, body):
+	if Illumination.seen_lit(self, body) or IRSensing.identifies(self, body):
 		return true
 	if dist > VIEW_PERIPHERAL and not in_view_cone(to):
 		return false
@@ -917,8 +942,10 @@ func _update_view(dt: float) -> void:
 					continue
 				if can_see_body(body):
 					_report_sight(body)
+					contacts.drop(body, IR_SOURCE)
 				elif not contacts.has_live_vision(body):
 					_view_hidden[body] = true
+					_track_by_heat(body)
 				elif group == "mecha":
 					_view_hidden[body] = true
 					_view_outlined[body] = true
@@ -943,6 +970,14 @@ func _update_view(dt: float) -> void:
 			# item for redraw, and most bodies sit at their target.
 			if body.modulate.a != target:
 				body.modulate.a = move_toward(body.modulate.a, target, VIEW_FADE_SPEED * dt)
+
+
+# A body the player can't see, picked up by its heat: an UNKNOWN track, live
+# until the next view check or two (IR_TTL).
+func _track_by_heat(body: Node2D) -> void:
+	if global_position.distance_to(body.global_position) > VIEW_RANGE or not IRSensing.senses(self, body):
+		return
+	contacts.report(body, IR_KIND, body.global_position, IR_SOURCE, IR_TTL)
 
 
 # A body the view shows is a sight contact, unless it is past VIEW_RANGE

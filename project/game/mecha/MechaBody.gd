@@ -25,7 +25,26 @@ extends Node2D
 ##
 ## Use: new(), position it, copy_from(mecha) while the mecha is still valid,
 ## add it to the tree, then shed() the parts choose_shed() picked.
+##
+## A part that comes off a live mecha (Mecha.lose_part) leaves a body of just
+## that part (copy_parts_from, not solid), shed beside it. A part the mecha
+## lost before it died isn't shown, so it isn't copied.
+##
+## Coyotes scavenge from a body (Coyote): a shoulder (as a shield) or an arm
+## weapon (as a gun), from the body or its debris on the ground, a wreck's or
+## a live mecha's lost part alike. Every body is in SCAVENGE_GROUP for them
+## to find. takeable_slots() lists what's there; part_look() copies how a
+## part looks, for carrying (look_of); take_part() removes it (a shoulder
+## takes its arm weapon with it) and says what it was: its part id, its main
+## sprite, and for a shoulder its front armour.
+##
+## parts_changed fires when parts come off (shed) or are taken (take_part):
+## a Wreck lists its shed parts from it (Wreck.unsalvageable).
 
+signal parts_changed
+
+## Every body, for scavengers to find.
+const SCAVENGE_GROUP := "mecha_body"
 ## Mecha child -> the part (design slot, or "core"/"chassis") it draws.
 const PART_NODES := {
 	"Chassis": "chassis",
@@ -69,13 +88,27 @@ const SHED_TIME := 0.45
 ## How many stripped armour pips one destroyed component counts as when
 ## choosing what comes off.
 const DESTROYED_WEIGHT := 2
+## What a Coyote can take from a body.
+const TAKEABLE := ["left_shoulder", "right_shoulder", "arm_weapon_left", "arm_weapon_right"]
 
 ## Parts that came off, including arm weapons that went with a shoulder.
 var shed_slots: Array[String] = []
+## Parts taken from the body or its debris (take_part).
+var taken_slots: Array[String] = []
+## Slot (SHED_OPTIONS) -> the part id it carried (both shoulders carry the
+## one shoulders part), and for each shoulder its front armour ({level,
+## pips}), from the mecha (copy_from).
+var part_ids := {}
+var shoulder_armor := {}
 ## What makes the body solid (copy_from).
 var solid: StaticBody2D = null
 var _parts := {}  # part -> copied top-level nodes
 var _shapes := {}  # part -> its CollisionPolygon2D copies in solid
+var _debris := {}  # part -> the Debris node it was shed into
+# Weapon slot -> its glow layer on the mecha ({texture, material, transform}),
+# not drawn on the body (glow goes dark) but given back to a carried gun
+# (part_look).
+var _glows := {}
 var _material_copies := {}
 var _heat_materials: Array[ShaderMaterial] = []
 var _start_heat := START_HEAT
@@ -84,23 +117,53 @@ var _refresh := 0.0
 static var _heat_shaders := {}
 
 
+func _ready() -> void:
+	add_to_group(SCAVENGE_GROUP)
+
+
 func copy_from(mecha: Node2D) -> void:
+	_copy_parts(mecha, [])
+	_copy_shapes(mecha)
+	_set_heat(_start_heat)
+
+
+## Only these parts (PART_NODES values), with no solid body: a part that came
+## off a live mecha.
+func copy_parts_from(mecha: Node2D, parts: Array) -> void:
+	_copy_parts(mecha, parts)
+	_set_heat(_start_heat)
+
+
+# The mecha's drawn parts (all of them for an empty `only`), and what a
+# scavenger needs to know about them.
+func _copy_parts(mecha: Node2D, only: Array) -> void:
 	rotation = mecha.global_rotation
 	scale = mecha.global_scale
 	_start_heat = maxf(START_HEAT, float(mecha.get("shader_heat_value")))
 	for child in mecha.get_children():
 		var part: String = PART_NODES.get(String(child.name), "")
-		if part == "":
+		if part == "" or (not only.is_empty() and not part in only):
 			continue
 		var copy := _copy(child)
 		if copy == null:
 			continue
+		var glow := child.get_node_or_null("Glow") as Sprite2D
+		if glow != null and glow.texture != null:
+			_glows[part] = {"texture": glow.texture, "material": glow.material, "transform": glow.transform}
 		add_child(copy)
 		if not _parts.has(part):
 			_parts[part] = []
 		_parts[part].append(copy)
-	_copy_shapes(mecha)
-	_set_heat(_start_heat)
+	var build = mecha.get("build")
+	if build is Dictionary:
+		for slot in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right", "head"]:
+			if build.get(slot):
+				part_ids[slot] = str(build[slot].part_id)
+		if build.get("shoulders"):
+			for slot in ["left_shoulder", "right_shoulder"]:
+				part_ids[slot] = str(build.shoulders.part_id)
+				var front: Dictionary = mecha.armor[slot].front
+				shoulder_armor[slot] = {"level": int(front.level), "pips": int(front.pips)}
 
 
 func _notification(what: int) -> void:
@@ -126,14 +189,15 @@ func _copy_shapes(mecha: Node2D) -> void:
 	add_child.call_deferred(solid)
 	for shape_name in SOLID_SHAPES:
 		var source := mecha.get_node_or_null(shape_name) as CollisionPolygon2D
-		if source == null or source.disabled or _area(source.polygon) < 1.0:
+		var part: String = SOLID_SHAPES[shape_name]
+		if source == null or source.disabled or _area(source.polygon) < 1.0 \
+				or (mecha.has_method("is_part_lost") and mecha.is_part_lost(part)):
 			continue
 		var shape := CollisionPolygon2D.new()
 		shape.name = shape_name
 		shape.polygon = source.polygon
 		shape.transform = source.transform
 		solid.add_child(shape)
-		var part: String = SOLID_SHAPES[shape_name]
 		if not _shapes.has(part):
 			_shapes[part] = []
 		_shapes[part].append(shape)
@@ -168,7 +232,7 @@ func get_heat() -> float:
 func get_part_slots() -> Array[String]:
 	var found: Array[String] = []
 	for part in _parts:
-		if part in shed_slots:
+		if part in shed_slots or part in taken_slots:
 			continue
 		for node in _parts[part]:
 			if _has_texture(node):
@@ -208,6 +272,9 @@ func shed(slot: String, animate := true) -> Vector2:
 		remove_child(node)
 		node.position -= centre
 		debris.add_child(node)
+	for part in [slot] + SHED_WITH.get(slot, []):
+		if _parts.has(part):
+			_debris[part] = debris
 	var out := centre.normalized() if centre.length() > 1.0 else Vector2.RIGHT.rotated(randf() * TAU)
 	var lands := centre + out.rotated(randf_range(-0.6, 0.6)) * randf_range(SHED_DISTANCE.x, SHED_DISTANCE.y)
 	var spin := randf_range(-SHED_SPIN, SHED_SPIN)
@@ -218,6 +285,7 @@ func shed(slot: String, animate := true) -> Vector2:
 	else:
 		debris.position = lands
 		debris.rotation = spin
+	parts_changed.emit()
 	return to_global(centre) if is_inside_tree() else global_position + centre
 
 
@@ -297,8 +365,75 @@ static func damage_of(mecha, slot: String) -> int:
 
 
 static func _is_fitted(mecha, slot: String) -> bool:
+	if mecha.has_method("is_part_lost") and mecha.is_part_lost(slot):
+		return false
 	var part = mecha.build.get("shoulders" if slot in ["left_shoulder", "right_shoulder"] else slot)
 	return true if part else false
+
+
+## What a Coyote could take here: TAKEABLE parts on the body or its debris,
+## with a sprite, not taken yet.
+func takeable_slots() -> Array[String]:
+	var found: Array[String] = []
+	for slot in TAKEABLE:
+		if slot in taken_slots or not part_ids.has(slot) or not _parts.has(slot):
+			continue
+		for node in _parts[slot]:
+			if is_instance_valid(node) and _has_texture(node):
+				found.append(slot)
+				break
+	return found
+
+
+## Where a part is now (world): on the body, or where its debris lies.
+func part_position(slot: String) -> Vector2:
+	for node in _parts.get(slot, []):
+		if is_instance_valid(node):
+			return node.global_position
+	return global_position
+
+
+## Takes a part off the body or its debris (a shoulder takes its arm weapon
+## with it). Returns {"slot", "part_id", "texture", "material"} (its main
+## sprite's) and, for a shoulder, "armor" (its front {level, pips}); {} if it
+## isn't there to take.
+func take_part(slot: String) -> Dictionary:
+	if not slot in takeable_slots():
+		return {}
+	var sprite := _sprite_of(slot)
+	var taken := {"slot": slot, "part_id": part_ids[slot], "texture": sprite.texture if sprite != null else null,
+			"material": sprite.material if sprite != null else null}
+	if shoulder_armor.has(slot):
+		taken["armor"] = shoulder_armor[slot].duplicate()
+	for part in [slot] + SHED_WITH.get(slot, []):
+		if part in taken_slots:
+			continue
+		taken_slots.append(part)
+		for shape in _shapes.get(part, []):
+			if is_instance_valid(shape):
+				shape.queue_free()
+		_shapes.erase(part)
+		for node in _parts.get(part, []):
+			if is_instance_valid(node):
+				node.queue_free()
+		var debris = _debris.get(part)
+		if is_instance_valid(debris) and debris.get_children().all(func(n): return n.is_queued_for_deletion()):
+			debris.queue_free()
+	parts_changed.emit()
+	return taken
+
+
+# The first drawn sprite of a part: its main sprite.
+func _sprite_of(slot: String) -> Sprite2D:
+	for node in _parts.get(slot, []):
+		if not is_instance_valid(node):
+			continue
+		if node is Sprite2D and node.texture != null:
+			return node
+		for child in node.find_children("*", "Sprite2D", true, false):
+			if child.texture != null:
+				return child
+	return null
 
 
 static func _goes_with(slot: String, chosen: Array) -> bool:
@@ -321,11 +456,103 @@ static func _has_texture(node: Node) -> bool:
 	return false
 
 
+## A cold copy of one part's look, for a scavenger to carry (Coyote): the
+## drawn nodes of `node` (a mecha's part node, or a body's copy of one), each
+## layer's material copied with its heat at ambient (cold_material); its glow
+## layer too with with_glow (a weapon that heats up as it fires).
+##
+## The look is a plain Node2D holding the copy (its "part" meta), the part's
+## mount at its origin, facing -Y as mecha parts do: the copy keeps its scale
+## and mirroring (a right-hand weapon is mirrored, scale.x -1) but not its
+## pose. The copy sits under its own root because Godot reads a mirrored
+## node's transform back as a turn of PI with scale.y flipped: turning that
+## node itself would flip it end over end. Turn the look instead.
+##
+## Its "reach" meta is how far it extends ahead of the mount (-Y): a
+## weapon's far end. Null if nothing of it is drawn.
+static func look_of(node: Node, with_glow := false) -> Node2D:
+	if node == null or not is_instance_valid(node):
+		return null
+	var skipped := SKIPPED.filter(func(n): return n != "Glow") if with_glow else SKIPPED
+	var part := _copy_node(node, cold_material, skipped)
+	if part == null:
+		return null
+	if part is Sprite2D:
+		# A single-sprite part (a shoulder) under its own holder, so the
+		# holder is what's mirrored and the sprite keeps its offset.
+		var holder := Node2D.new()
+		holder.name = part.name
+		holder.transform = part.transform
+		part.transform = Transform2D.IDENTITY
+		holder.add_child(part)
+		part = holder
+	var mirrored := part.transform.determinant() < 0.0
+	var size := Vector2(part.transform.x.length(), part.transform.y.length())
+	part.transform = Transform2D(Vector2(-size.x if mirrored else size.x, 0.0), Vector2(0.0, size.y), Vector2.ZERO)
+	var look := Node2D.new()
+	look.name = "Look"
+	look.add_child(part)
+	look.set_meta("part", part)
+	look.set_meta("reach", _reach(look))
+	return look
+
+
+## The look (look_of) of a part still on this body or its debris; null if it
+## isn't there. with_glow gives a weapon back the glow layer it had on the
+## mecha, which the body itself doesn't draw.
+func part_look(slot: String, with_glow := false) -> Node2D:
+	for node in _parts.get(slot, []):
+		if is_instance_valid(node) and not node.is_queued_for_deletion() and _has_texture(node):
+			var look := look_of(node, with_glow)
+			if look != null and with_glow and _glows.has(slot):
+				var glow := Sprite2D.new()
+				glow.name = "Glow"
+				glow.texture = _glows[slot].texture
+				glow.material = cold_material(_glows[slot].material)
+				glow.transform = _glows[slot].transform
+				(look.get_meta("part") as Node).add_child(glow)
+			return look
+	return null
+
+
+## A part's material for carrying off: its own copy, with the heat shader's
+## heat at ambient (0), as a body's parts go once cool.
+static func cold_material(material: Material) -> Material:
+	if not material is ShaderMaterial:
+		return material
+	var copy: ShaderMaterial = material.duplicate()
+	if _has_heat(copy.shader):
+		copy.set_shader_parameter("heat", 0.0)
+	return copy
+
+
+# How far ahead (-Y) of the look's origin its sprites reach.
+static func _reach(look: Node2D) -> float:
+	var furthest := 0.0
+	for sprite in look.find_children("*", "Sprite2D", true, false):
+		if (sprite as Sprite2D).texture == null:
+			continue
+		var xform := Transform2D.IDENTITY
+		var at: Node = sprite
+		while at != look:
+			xform = (at as Node2D).transform * xform
+			at = at.get_parent()
+		var rect: Rect2 = (sprite as Sprite2D).get_rect()
+		for corner in [rect.position, rect.position + Vector2(rect.size.x, 0.0), rect.end, rect.position + Vector2(0.0, rect.size.y)]:
+			furthest = maxf(furthest, -(xform * corner).y)
+	return furthest
+
+
 # A plain copy of a mecha's Node2D or Sprite2D and its drawn children; no
 # scripts, particles, lights or collisions.
 func _copy(node: Node) -> Node2D:
+	return _copy_node(node, _copy_material)
+
+
+# The copy, each material through copy_material, leaving out `skipped`.
+static func _copy_node(node: Node, copy_material: Callable, skipped: Array = SKIPPED) -> Node2D:
 	var cls := node.get_class()
-	if (cls != "Node2D" and cls != "Sprite2D") or String(node.name) in SKIPPED or not node.visible:
+	if (cls != "Node2D" and cls != "Sprite2D") or String(node.name) in skipped or not node.visible:
 		return null
 	var copy: Node2D
 	if node is Sprite2D:
@@ -352,9 +579,9 @@ func _copy(node: Node) -> Node2D:
 	copy.self_modulate = node.self_modulate
 	copy.light_mask = node.light_mask
 	copy.texture_filter = node.texture_filter
-	copy.material = _copy_material(node.material)
+	copy.material = copy_material.call(node.material)
 	for child in node.get_children():
-		var child_copy := _copy(child)
+		var child_copy := _copy_node(child, copy_material, skipped)
 		if child_copy != null:
 			copy.add_child(child_copy)
 	return copy

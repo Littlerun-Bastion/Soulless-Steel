@@ -118,6 +118,13 @@ func _process(_delta: float) -> void:
 func _connect_signals() -> void:
 	player.component_damaged.connect(_on_component_damaged)
 	player.component_destroyed_alert.connect(_on_component_destroyed)
+	if player.has_signal("part_lost"):
+		player.part_lost.connect(_on_part_lost)
+
+
+# A part that came off (and the weapons that went with it) shows as gone.
+func _on_part_lost(_part_name: String) -> void:
+	_refresh_all()
 
 func _on_component_damaged(part_name: String, _component_name: String, _hp: int, _max_hp: int) -> void:
 	_refresh_part(part_name)
@@ -130,6 +137,8 @@ func _on_component_destroyed(part_name: String, _component_name: String) -> void
 # dead / critical / okay / full. Static so the debrief can read a mecha's
 # damage without a display (part_state).
 func _get_part_state(part_name: String) -> int:
+	if player.has_method("is_part_lost") and player.is_part_lost(part_name):
+		return -1
 	return part_state(player.components, part_name)
 
 
@@ -187,6 +196,10 @@ func _get_weapon_state(_part_name: String, _feed_component: String) -> int:
 	#   return 2                    (heavily damaged / hp 0 shouldn't occur, disabled catches it)
 	return 0  
 
+# -1 (gone) for a weapon that came off with its part, else `state`.
+func _lost_or(state: int, slot: String) -> int:
+	return -1 if player.has_method("is_part_lost") and player.is_part_lost(slot) else state
+
 # Part state -1..3 straight onto the outline (-1 hides it).
 func _apply_part_state(part: OutlinePart, state: int) -> void:
 	part.state = clampi(state, -1, 3)
@@ -206,19 +219,19 @@ func _refresh_part(part_name: String) -> void:
 		"core":
 			_apply_part_state(sprite_core, _get_part_state("core"))
 			_apply_weapon_state(sprite_left_shoulder_weapon,
-				_get_weapon_state("core", "left_shoulder_weapon_feed"))
+				_lost_or(_get_weapon_state("core", "left_shoulder_weapon_feed"), "shoulder_weapon_left"))
 			_apply_weapon_state(sprite_right_shoulder_weapon,
-				_get_weapon_state("core", "right_shoulder_weapon_feed"))
+				_lost_or(_get_weapon_state("core", "right_shoulder_weapon_feed"), "shoulder_weapon_right"))
 		"head":
 			_apply_part_state(sprite_head, _get_part_state("head"))
 		"left_shoulder":
 			_apply_part_state(sprite_left_shoulder, _get_part_state("left_shoulder"))
 			_apply_weapon_state(sprite_left_arm_weapon,
-				_get_weapon_state("left_shoulder", "weapon_feed"))
+				_lost_or(_get_weapon_state("left_shoulder", "weapon_feed"), "arm_weapon_left"))
 		"right_shoulder":
 			_apply_part_state(sprite_right_shoulder, _get_part_state("right_shoulder"))
 			_apply_weapon_state(sprite_right_arm_weapon,
-				_get_weapon_state("right_shoulder", "weapon_feed"))
+				_lost_or(_get_weapon_state("right_shoulder", "weapon_feed"), "arm_weapon_right"))
 		"chassis":
 			if _is_legs:
 				var state := _get_part_state("chassis")

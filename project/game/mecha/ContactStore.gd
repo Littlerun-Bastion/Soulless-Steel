@@ -15,7 +15,11 @@ extends RefCounted
 ##   position     where the source last put it; frozen once it is a ghost
 ##   time         store time (s) of that report
 ##   source       what found it: "sight", "ward", "drone", "seeker", "flare",
-##                "biosensor" or "alarm"
+##                "biosensor", "alarm", "ir" (the head's IR sensor,
+##                IRSensing: a live track on a body it can't make out, kind
+##                "unknown", reported every view check) or "light" (a mecha
+##                whose illuminator is on, within a screen of an NPC:
+##                Illumination.in_light_range)
 ##   reveal       how the player is shown it, from the source (REVEALS):
 ##                "ping" a HUD marker at its position, "vision" the body
 ##                drawn through walls and darkness, "sight" seen anyway
@@ -50,6 +54,8 @@ const REVEALS := {
 	"seeker": "vision",
 	"flare": "vision",
 	"biosensor": "vision",
+	"ir": "ping",
+	"light": "ping",
 	"shot": "ping",
 	"sound": "ping",
 	"squad": "ping",
@@ -221,6 +227,16 @@ func expire_unrefreshed(source: String) -> void:
 			contact.live = false
 			contact.live_until = now
 			revision += 1
+
+
+## Drops `body`'s contact from `source`, if it has one (no ghost left).
+func drop(body: Object, source: String) -> void:
+	var contact := _find(body, source)
+	if contact.is_empty():
+		return
+	_unindex(contact)
+	_contacts.erase(contact)
+	revision += 1
 
 
 ## Drops every contact on `body`.

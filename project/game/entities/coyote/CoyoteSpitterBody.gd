@@ -42,6 +42,7 @@ func is_attacking() -> bool:
 func _animate(delta: float) -> void:
 	var attacking := is_attacking()
 	thrash = move_toward(thrash, 1.0 if attacking else 0.0, delta * (8.0 if attacking else 2.5))
+	_hold_parts(delta)
 	if _fire_t < 0.0:
 		pulse_strength = move_toward(pulse_strength, 0.0, delta * 4.0)
 		body_swell = move_toward(body_swell, 0.0, delta)

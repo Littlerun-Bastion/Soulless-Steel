@@ -7,7 +7,11 @@ extends TestSuite
 # forgets it after a while; a roaming NPC that spots a target goes to engage
 # it; it fires blind through walls only when its rounds can get through them;
 # it enters combat at its build's range; and a build's preferred range comes
-# from its direct-fire weapons.
+# from its direct-fire weapons. Its head's IR sensor: a hot mecha behind a
+# wall is tracked by its heat (where it is, live, not seen) but not picked as
+# a target; a target it was fighting stays tracked exactly behind cover, and
+# turns into a frozen memory once it cools; one hot enough to identify is
+# seen through the wall; with its head gone it senses nothing.
 
 const ENEMY := preload("res://game/mecha/Enemy.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
@@ -39,6 +43,11 @@ func run_tests() -> void:
 	await case("blind fire goes only through walls the round can get through", _test_blind_fire)
 	await case("an NPC enters combat at its build's range", _test_combat_entry)
 	await case("a build's range comes from its direct-fire weapons", _test_build_range)
+	await case("IR: a hot mecha behind a wall is tracked, not seen, not picked", _test_ir_unknown)
+	await case("IR: a target behind cover stays tracked exactly while hot", _test_ir_keeps_target)
+	await case("IR: hot enough to identify is seen; no head, no IR", _test_ir_identify)
+	await case("a mecha with its light on within a screen is known, past sight and walls", _test_light_known)
+	await case("a Fisher with its harpoon in the NPC is seen, wherever it is", _test_tethered_seen)
 
 
 func before_each() -> void:
@@ -226,3 +235,131 @@ func _test_build_range() -> void:
 	var plain := _enemy(Vector2(0, 500))
 	var base: Dictionary = plain.logic.behaviour._get_effective_distances(plain)
 	check(base.min_kite == 1500 and base.max_kite == 1700, "the default build keeps the tuned 1500-1700 px band")
+
+
+# ---- Lights and tethers ----
+
+func _test_light_known() -> void:
+	await _setup([_house(400, 600, -1200, 1200)])
+	var enemy := _enemy(Vector2.ZERO)
+	var half := Illumination.SCREEN_HALF
+	var foe := _foe(Vector2(half.x * 0.9, half.y * 0.6), enemy)
+	foe.set_illuminator(true)
+	var reach: float = enemy.engage_distance * 1.4
+	check(enemy.global_position.distance_to(foe.global_position) > reach * 0.9 or MapSenses.walls_between(enemy.get_world_2d(), enemy.global_position, foe.global_position),
+			"past its sight or behind the building")
+	await _sense(enemy)
+	var contact: Dictionary = enemy.knowledge.best(foe)
+	check(not contact.is_empty() and contact.live and contact.kind == "mech", "its light gives it away, as a mecha (%s)" % str(contact.get("source")))
+	check(enemy.get_target_position(foe) == foe.global_position, "exactly where it is")
+	enemy.check_for_targets(5000.0, 6000.0)
+	check(is_same(enemy.valid_target, foe), "and it can be taken on")
+	foe.set_illuminator(false)
+	await _sense(enemy)
+	check(not enemy.knowledge.best(foe).live, "light off: only a memory")
+	var far := _foe(Vector2(half.x * 1.3, 0), enemy)
+	far.set_illuminator(true)
+	await _sense(enemy)
+	check(not enemy.knowledge.knows(far), "a light further than a screen away isn't noticed")
+
+
+func _test_tethered_seen() -> void:
+	await _setup([_house(400, 600, -300, 300)])
+	var enemy := _enemy(Vector2.ZERO)
+	var fisher: Fisher = load("res://game/entities/fisher/Fisher.tscn").instantiate()
+	fisher.position = Vector2(900, 0)
+	_arena.add_child(fisher)
+	fisher.setup(_arena)
+	fisher.set_pause(true)
+	var reach_sq: float = pow(enemy.engage_distance * 1.4, 2.0)
+	enemy._look_at(fisher, reach_sq, 1.0)
+	enemy.knowledge.end_sight_update()
+	check(not enemy.is_seeing(fisher), "a Fisher behind the building isn't seen")
+	fisher.harpoon = Fisher.Harpoon.LATCHED
+	fisher._latched_to = enemy
+	fisher.global_position = Vector2(9000, 0)
+	await get_tree().physics_frame
+	enemy.contacts.advance(0.1)
+	enemy._look_at(fisher, reach_sq, 1.0)
+	enemy.knowledge.end_sight_update()
+	check(enemy.is_seeing(fisher), "with its harpoon in the NPC, it's seen, however far and whatever's between")
+	fisher.queue_free()
+
+
+# ---- IR ----
+
+# Holds a foe at `celsius` (absolute): its physics off, so it doesn't cool.
+func _heat(foe: Mecha, celsius: float) -> void:
+	foe.set_physics_process(false)
+	foe.external_temp = celsius - Mecha.AMBIENT_TEMP
+
+
+func _sense(enemy) -> void:
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+
+
+func _test_ir_unknown() -> void:
+	await _setup([_house(400, 600, -300, 300)])
+	var enemy := _enemy(Vector2.ZERO)
+	var head = enemy.build.head
+	var foe := _foe(Vector2(800, 0), enemy)
+	_heat(foe, head.ir_sensitivity - 10.0)
+	await _sense(enemy)
+	check(not enemy.knowledge.knows(foe), "cooler than its sensitivity behind a wall: unknown")
+	_heat(foe, head.ir_sensitivity + 10.0)
+	await _sense(enemy)
+	check(not enemy.is_seeing(foe), "hot enough to sense: still not seen")
+	var contact: Dictionary = enemy.knowledge.best(foe)
+	check(contact.get("source") == IRSensing.SOURCE and contact.get("kind") == IRSensing.KIND and contact.get("live") == true,
+			"but tracked by its heat, as an unknown")
+	check(enemy.get_target_position(foe) == foe.global_position, "exactly where it is")
+	enemy.check_for_targets(1800.0, 2000.0)
+	check(not enemy.valid_target, "an unknown heat track isn't picked as a target")
+	foe.global_position = Vector2(820, 120)
+	await _sense(enemy)
+	check(enemy.get_target_position(foe) == foe.global_position, "and the track follows it live")
+
+
+func _test_ir_keeps_target() -> void:
+	await _setup([_house(400, 600, -300, 300)])
+	var enemy := _enemy(Vector2.ZERO)
+	var head = enemy.build.head
+	var foe := _foe(Vector2(0, 800), enemy)
+	_heat(foe, head.ir_sensitivity + 10.0)
+	await _sense(enemy)
+	enemy.check_for_targets(1800.0, 2000.0)
+	if not check(enemy.valid_target == foe, "it picks the mecha it sees in the open"):
+		return
+	foe.global_position = Vector2(800, 0)
+	await _sense(enemy)
+	check(not enemy.is_seeing(foe), "behind the building, it's out of sight")
+	check(enemy.get_target_position(foe) == foe.global_position and enemy.time_unseen(foe) < 0.2,
+			"but its heat keeps it tracked exactly")
+	enemy.check_for_targets(1800.0, 2000.0)
+	check(enemy.valid_target == foe, "so it keeps the target")
+	_heat(foe, Mecha.AMBIENT_TEMP)
+	await _sense(enemy)
+	var frozen: Vector2 = enemy.get_target_position(foe)
+	foe.global_position = Vector2(820, 200)
+	await _sense(enemy)
+	check(enemy.get_target_position(foe) == frozen and not enemy.knowledge.best(foe).live,
+			"cooled off, it works from where it last had it")
+
+
+func _test_ir_identify() -> void:
+	await _setup([_house(400, 600, -300, 300)])
+	var enemy := _enemy(Vector2.ZERO)
+	var head = enemy.build.head
+	var foe := _foe(Vector2(800, 0), enemy)
+	_heat(foe, head.ir_identification + 10.0)
+	await _sense(enemy)
+	check(enemy.is_seeing(foe), "hot enough to identify: seen through the wall")
+	enemy.check_for_targets(1800.0, 2000.0)
+	check(enemy.valid_target == foe, "and picked as a target")
+	var blind := _enemy(Vector2(0, -600))
+	var blind_foe := _foe(Vector2(800, -100), blind)
+	_heat(blind_foe, head.ir_identification + 10.0)
+	blind.lose_part("head")
+	await _sense(blind)
+	check(not blind.knowledge.knows(blind_foe), "with its head gone, an NPC senses no heat")

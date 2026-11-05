@@ -2,12 +2,15 @@ extends TestSuite
 
 # WreckTest: Expedition wrecks. What WreckLoot rolls for a destroyed mecha
 # (per-part salvage pools, weapon drops), moving stacks between inventories
-# (Take / Take all), part weights in cargo, the Wreck states, and the Mech OS
-# "Take" actions. Prints the average salvage and weapons per wreck.
+# (Take / Take all), part weights in cargo, the Wreck states, the Mech OS
+# "Take" actions, and the parts a wreck shed: listed UNSALVAGEABLE and
+# crossed out under its loot, never in the inventory, and gone from the list
+# once taken. Prints the average salvage and weapons per wreck.
 #
 # Rolls use a seeded RandomNumberGenerator so results are the same every run.
 
 const WRECK := preload("res://game/mecha/Wreck.tscn")
+const MECHA := preload("res://game/mecha/Mecha.tscn")
 const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 2x1
 const HIGH_ITEM := preload("res://database/items/salvage/damaged_nt_engine.tres")    # 2x2
 
@@ -36,6 +39,7 @@ func run_tests() -> void:
 	await case("wreck states", _test_wreck_states)
 	await case("NPC visits don't lock a container", _test_npc_visit)
 	await case("Mech OS take actions", _test_take_actions)
+	await case("shed parts are listed unsalvageable, crossed out under the loot", _test_unsalvageable)
 
 
 func _seeded_rng() -> RandomNumberGenerator:
@@ -311,3 +315,56 @@ func _test_take_actions() -> void:
 
 	MechOS.set_player(saved_player)
 	player.free()
+
+
+# ---- Unsalvageable ----
+
+func _test_unsalvageable() -> void:
+	var holder := Node2D.new()
+	add_child(holder)
+	var mecha: Mecha = MECHA.instantiate()
+	mecha.mech_inventory = Inventory.new()
+	holder.add_child(mecha)
+	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	var wreck: Wreck = WRECK.instantiate()
+	wreck.setup("Grob", [item_stack.from_generic(LOW_ITEM)])
+	wreck.copy_mecha_visuals(mecha)
+	holder.add_child(wreck)
+	mecha.queue_free()
+	await wait_frames(2)
+	check(wreck.unsalvageable.is_empty(), "nothing shed, nothing listed")
+	wreck.body.shed("arm_weapon_left", false)
+	wreck.body.shed("head", false)
+	check_eq(wreck.unsalvageable.map(func(e): return e.slot), ["arm_weapon_left", "head"], "each part the wreck shed is listed")
+	var weapon = PartManager.get_part("arm_weapon", PlayerProgress.DEFAULT_MECHA.arm_weapon_left)
+	var first: Dictionary = wreck.unsalvageable[0] if not wreck.unsalvageable.is_empty() else {}
+	check(first.get("label") == "L ARM" and first.get("name") == str(weapon.part_name), "by slot and part name (%s)" % str(first.get("name")))
+	check(first.get("texture") is Texture2D, "with the part's sprite")
+	check_eq(wreck.inventory.get_stacks().size(), 1, "it isn't in the inventory")
+
+	var window = MechOS.open_inventory("container", wreck.inventory, wreck.display_name)
+	window.show_unsalvageable(wreck)
+	await wait_frames(1)
+	var rows: Array[String] = window.get_unsalvageable_rows()
+	check_eq(rows.size(), 2, "the loot window lists both under the grid")
+	check(rows.size() == 2 and rows[0] == "L ARM · %s" % weapon.part_name, "as slot and name (%s)" % str(rows))
+	var labels: Array = window.find_children("*", "Label", true, false).filter(func(l): return l.is_visible_in_tree())
+	check(labels.filter(func(l): return l.text == InventoryWindow.UNSALVAGEABLE).size() == 3, "under an UNSALVAGEABLE heading, each tagged UNSALVAGEABLE")
+	check(window.inventory_grid.get_item_count() == 1, "the grid holds only the loot")
+
+	var player := FakeMecha.new()
+	player.player = true
+	wreck.interact(player)
+	wreck.inventory.transfer_all_to(_inventory(6, 6))
+	wreck.close()
+	check(wreck.state == Wreck.State.EMPTY, "the loot taken, it reads EMPTY with shed parts left")
+
+	wreck.body.take_part("arm_weapon_left")
+	check_eq(wreck.unsalvageable.map(func(e): return e.slot), ["head"], "a part carried off leaves the list")
+	check_eq(window.get_unsalvageable_rows().size(), 1, "and the open window")
+	window.show_unsalvageable(null)
+	check(window.get_unsalvageable_rows().is_empty(), "another container shows none")
+	MechOS.close_app("container")
+	player.free()
+	holder.queue_free()
+	await wait_frames(2)

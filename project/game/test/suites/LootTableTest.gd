@@ -73,9 +73,11 @@ func _test_salvage_tiers() -> void:
 
 # Bio salvage (database/items/bio/) comes from Entity carcasses. Every item is
 # proper salvage, and drops from at least one Entity's table, except the NT
-# Engine Heart, which is a rare extra (Brutes, Cysts), never a table roll.
+# Engine Heart, which is a rare extra (Fishers, Brutes, Cysts), never a table
+# roll.
 const BIO_DIR := "res://database/items/bio/"
-const ENTITY_TABLES := ["entity_stalker", "entity_spitter", "entity_brute", "entity_cyst"]
+const ENTITY_TABLES := ["entity_coyote", "entity_coyote_spitter", "entity_fisher",
+		"entity_stalker", "entity_spitter", "entity_brute", "entity_cyst"]
 const RARE_ONLY := ["nt_engine_heart"]
 
 func _test_bio_salvage() -> void:

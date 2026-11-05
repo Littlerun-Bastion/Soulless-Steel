@@ -46,6 +46,13 @@ const DARKNESS_NODE := "MechaShadowGen"
 ## mixed NPC cones. Placeholders.
 const LIGHT_ENERGY := 1.2
 const DARKNESS_ENERGY := 0.6
+## A mecha with its illuminator on gives itself away to anyone within a
+## screen of it (in_light_range): the player sees an illuminator's cone on
+## screen even when it can't see the mecha, so every NPC and Entity knows
+## where such a mecha is within the same reach. The game shows 1920 x 1080 px
+## at its 0.5 camera zoom, so a screen is SCREEN_HALF either way of the
+## observer. Not into or out of another building (roofs hide the inside).
+const SCREEN_HALF := Vector2(1920.0, 1080.0)
 ## The player's illuminator key (Player.toggle_illuminator), and the key it
 ## gets if project.godot doesn't define the action.
 const KEY_ACTION := "toggle_illuminator"
@@ -131,6 +138,18 @@ static func is_lit(body: Node2D) -> bool:
 	var lit := _lit_lookup(body)
 	_lit_cache[id] = lit
 	return lit
+
+
+## Whether `mecha` gives itself away to `observer` by its own illuminator:
+## shining, within a screen of the observer (SCREEN_HALF), in the same
+## building or both outside.
+static func in_light_range(observer: Node2D, mecha: Node2D) -> bool:
+	if not is_shining(mecha) or mecha == observer:
+		return false
+	var offset := mecha.global_position - observer.global_position
+	if absf(offset.x) > SCREEN_HALF.x or absf(offset.y) > SCREEN_HALF.y:
+		return false
+	return MapSenses.building_key_of(observer) == MapSenses.building_key_of(mecha)
 
 
 ## Whether `observer` sees `body` by the light on it (see the rules above).

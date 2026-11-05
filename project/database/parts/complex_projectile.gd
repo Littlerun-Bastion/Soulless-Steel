@@ -497,7 +497,7 @@ func hit_entity(body) -> void:
 		return
 	has_impacted = true
 	mech_hit = true
-	body.take_hit(base_damage, armor_pen, dir, original_mecha_info, impact_force)
+	body.take_hit(base_damage, armor_pen, dir, original_mecha_info, impact_force, false, global_position)
 
 
 # What sets off a proximity fuse and takes blast damage: mechas and Entities.
@@ -768,9 +768,11 @@ func explosion():
 			if (not result or result.collider != body) and _blast_inside(body):
 				result = {"collider": body, "position": position}
 
-			# Entities and devices: one blast hit, no parts to spread it over.
+			# Entities and devices: one blast hit, no parts to spread it over,
+			# marked as a blast's (is_aoe).
 			if result and result.collider and (result.collider.is_in_group("entity") or result.collider.is_in_group("device")):
-				result.collider.take_hit(base_damage, armor_pen, ray, original_mecha_info, payload_explosion_force)
+				result.collider.take_hit(base_damage, armor_pen, ray, original_mecha_info, payload_explosion_force,
+						true, global_position)
 				continue
 
 			if result and result.collider and result.collider.is_in_group("mecha"):

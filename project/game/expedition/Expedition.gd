@@ -36,8 +36,9 @@ const QUIT_WARNING := "Quitting abandons the expedition: your mecha and everythi
 const WRECK = preload("res://game/mecha/Wreck.tscn")
 const EXTRACTION_SUMMARY = preload("res://game/expedition/ExtractionSummary.tscn")
 const MAX_WRECKS := 12
-# Dead Entities leave a Carcass of bio salvage; capped separately (Stalkers
-# die in numbers) so they never push out mecha wrecks.
+# Dead Entities leave a Carcass of bio salvage; capped separately (Coyotes
+# die in numbers) so they never push out mecha wrecks. Entities with
+# leaves_carcass off (tick swarms) leave none.
 const CARCASS = preload("res://game/entities/Carcass.tscn")
 const MAX_CARCASSES := 16
 const DEFAULT_SITE := "Helwan"
@@ -142,6 +143,8 @@ func _leave_body(mecha) -> void:
 func _before_entity_removed(entity) -> void:
 	if ExpeditionDirector:
 		ExpeditionDirector.notify_entity_died(entity)
+	if not entity.leaves_carcass:
+		return
 	_spawn_carcass(entity)
 	entity.queue_free()
 
@@ -198,7 +201,8 @@ func _setup_wrecks() -> void:
 func _spawn_wreck(mecha) -> void:
 	var wreck = WRECK.instantiate()
 	wreck.position = mecha.global_position
-	var loot := WreckLoot.roll(mecha.get_design_data())
+	# Parts that came off before it died aren't on the wreck to salvage.
+	var loot := WreckLoot.roll(mecha.get_intact_design_data())
 	wreck.setup(mecha.mecha_name, loot)
 	wreck.kill_record = mecha.kill_record
 	wreck.copy_mecha_visuals(mecha)
@@ -610,7 +614,10 @@ func _on_player_extracted(_mecha) -> void:
 	details["damage"] = ExtractionSummary.collect_damage(player)
 	details["value"] = PlayerProgress.cargo_sell_value()
 	# Fixing the damage is paid for now, from the credits (into debt if need be).
+	# Sections that came off are written off instead, and standard parts fitted.
 	details["repairs"] = RepairBill.estimate(player)
+	details["lost"] = ExtractionSummary.PARTS.keys().filter(func(p): return player.is_part_lost(p))
+	details["written_off"] = PlayerProgress.write_off_slots(RepairBill.written_off_slots(player))
 	PlayerProgress.charge_repairs(details.repairs)
 	details["balance"] = PlayerProgress.get_money()
 	_remove_extracted_player()

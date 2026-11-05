@@ -11,7 +11,9 @@ extends TestSuite
 # guns and never flee; both drop their own loot. Cysts sleep until a mecha
 # comes near, hatch leashed guards (and replace them, up to a limit), set
 # them on whoever hits the nest, can't be shoved, and burst into a rich carcass.
-# (In the real Expedition: ExpeditionRunTest.)
+# These are the first species: the Expedition doesn't spawn them, and other
+# suites use the Stalker as a stand-in Entity. The sand species (and heat
+# sensing) are in SandEntityTest.
 
 const STALKER := preload("res://game/entities/Stalker.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")

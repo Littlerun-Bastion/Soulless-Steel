@@ -8,10 +8,43 @@ const WHIP_TIME := 0.8
 ## Fraction of the whip at which the tail lashes past the head.
 const WHIP_STRIKE_AT := 0.45
 const BITE_TIME := 0.25
+## Carried parts (carry_shield, carry_gun): each part's own look, every layer
+## of it, as big as on a mecha (CARRY_SCALE), cold (MechaBody.look_of). The
+## shield is in front of the head, its long side across the Coyote's front
+## and its outer, armoured face forward; the gun is over it, held by its
+## mount and pointing at gun_aim. Each is held by a loose tendril wrapped
+## round it. Placeholders.
+const CARRY_SCALE := 1.0
+const SHIELD_AHEAD := 0.6     # fractions of body_length ahead of the centre
+const GUN_AHEAD := 0.12
+const GUN_LIFT := 40.0        # px the gun sits off the centre line, over the head
+const WRAP_RADIUS := 12.0
+const WRAP_SHARE := 0.3       # of the tendril, wound round the part
+const HOLD_WEIGHT := 0.85
+## The carried gun heats up as it fires, as on a mecha (WeaponNode): each
+## shot adds its weapon's muzzle_heat times GUN_SHOT_HEAT, up to GUN_HEAT_MAX,
+## and it cools by GUN_HEAT_DECAY a second. Its Sub and Glow layers show it
+## (their shaders' heat).
+const GUN_SHOT_HEAT := 4.0
+const GUN_HEAT_MAX := 200.0
+const GUN_HEAT_DECAY := 30.0
+
+## Where the carried gun points (world), set by the Coyote.
+var gun_aim := Vector2.ZERO
+## How hot the carried gun is (see GUN_SHOT_HEAT).
+var gun_heat := 0.0
 
 var _whip_t := -1.0
 var _whip_side := 1.0
 var _bite_t := -1.0
+var _shield_look: Node2D = null
+var _shield_turn := 0.0  # the shield's rotation in body space (carry_shield)
+var _gun_look: Node2D = null
+var _muzzles: Array[Marker2D] = []  # the gun's barrels (carry_gun), fired in turn
+var _muzzle_at := 0
+var _gun_heat_materials: Array[ShaderMaterial] = []
+var _shown_gun_heat := -1.0
+var _loose: Array[int] = []  # the loose tendrils: indices in _tails
 
 
 func _init() -> void:
@@ -89,6 +122,188 @@ func _tail_layout() -> Array:
 	return tails
 
 
+func _ready() -> void:
+	super()
+	for i in _tails.size():
+		if _tails[i].thrashes:
+			_loose.append(i)
+
+
+## Carries a shoulder as a shield, or nothing (null). The part is its look
+## (MechaBody.look_of, which this body then owns) or just its texture.
+## outer_x is the way the shoulder's outer face points in its own sprite: -1
+## for a left shoulder, +1 for a right one (mecha sprites face -Y, a left
+## shoulder's armour on its left). That face is turned forward.
+func carry_shield(part, outer_x := -1.0) -> void:
+	_shield_turn = PI if outer_x < 0.0 else 0.0
+	_shield_look = _carried(_shield_look, part, false)
+
+
+## Carries an arm weapon as a gun, or nothing (null): its look (owned from
+## then on) or its texture, held by its mount. With the weapon's part data
+## (`weapon`), its rounds leave from its own barrels: a marker where each of
+## its shooting positions is, placed as a mecha's WeaponNode places them
+## (the shooting position less the attach position, in the weapon's space).
+func carry_gun(part, weapon = null) -> void:
+	_gun_look = _carried(_gun_look, part, true)
+	_muzzles.clear()
+	_muzzle_at = 0
+	_gun_heat_materials.clear()
+	_shown_gun_heat = -1.0
+	gun_heat = 0.0
+	if _gun_look == null:
+		return
+	var holder: Node = _gun_look.get_meta("part", _gun_look)
+	if weapon != null and weapon.has_method("get_num_shooting_pos"):
+		for i in weapon.get_num_shooting_pos():
+			var marker := Marker2D.new()
+			marker.name = "Muzzle%d" % i
+			marker.position = weapon.get_shooting_pos(i).position - weapon.get_attach_pos()
+			holder.add_child(marker)
+			_muzzles.append(marker)
+	for layer_name in ["Sub", "Glow"]:
+		var layer := holder.get_node_or_null(layer_name) as Sprite2D
+		if layer != null and layer.material is ShaderMaterial and MechaBody._has_heat(layer.material.shader):
+			_gun_heat_materials.append(layer.material)
+
+
+## The carried gun fired: it heats up by `heat` (see GUN_SHOT_HEAT).
+func gun_fired(heat: float) -> void:
+	gun_heat = minf(gun_heat + heat, GUN_HEAT_MAX)
+
+
+## Which way the carried gun points (world), along its barrels; with no gun
+## drawn, at gun_aim. A muzzle flash follows it (MuzzleFlash).
+func get_direction(_multishot_offset := 0.0, _angle := 0.0) -> Vector2:
+	if _gun_look == null:
+		var to_aim := gun_aim - global_position
+		return to_aim.normalized() if to_aim.length() > 1.0 else Vector2.from_angle(global_rotation)
+	return Vector2.UP.rotated(_gun_look.global_rotation)
+
+
+## The barrel the next round leaves from, taking turns; null for a gun with
+## no shooting positions (gun_muzzle is then where rounds leave).
+func next_muzzle() -> Marker2D:
+	if _muzzles.is_empty():
+		return null
+	var marker := _muzzles[_muzzle_at % _muzzles.size()]
+	_muzzle_at = (_muzzle_at + 1) % _muzzles.size()
+	return marker
+
+
+## Where the shield is (world).
+func shield_position() -> Vector2:
+	return _shield_look.global_position if _shield_look != null else to_global(Vector2(body_length * SHIELD_AHEAD, 0.0))
+
+
+## How the shield is turned (world).
+func shield_rotation() -> float:
+	return global_rotation + _shield_turn
+
+
+## Lets go of the shield: hands its look over (to drop on the ground), or
+## null if it held none.
+func let_go_of_shield() -> Node2D:
+	var look := _shield_look
+	_shield_look = null
+	if look != null and look.get_parent() != null:
+		look.get_parent().remove_child(look)
+	return look
+
+
+## Where the carried gun's next round leaves it (world): its next barrel, or
+## for a gun with none, its reach ahead of the mount along the barrels.
+func gun_muzzle() -> Vector2:
+	if _gun_look == null:
+		return global_position
+	if not _muzzles.is_empty():
+		return _muzzles[_muzzle_at % _muzzles.size()].global_position
+	return _gun_look.global_position + get_direction() * float(_gun_look.get_meta("reach", 0.0)) * CARRY_SCALE
+
+
+# A look as given, or a plain sprite for a texture (by its mount, the bottom
+# edge, for a gun; by its centre otherwise), at CARRY_SCALE.
+func _carried(old: Node2D, part, by_mount: bool) -> Node2D:
+	if old != null:
+		old.queue_free()
+	var look: Node2D = null
+	if part is Node2D:
+		look = part
+	elif part is Texture2D:
+		var sprite := Sprite2D.new()
+		sprite.texture = part
+		var height: float = part.get_height()
+		if by_mount:
+			sprite.offset = Vector2(0.0, -height * 0.5)
+		sprite.set_meta("reach", height if by_mount else height * 0.5)
+		look = sprite
+	if look == null:
+		return null
+	if dead:
+		look.queue_free()
+		return null
+	look.scale *= CARRY_SCALE
+	look.z_index = 1
+	_body_layer.add_child(look)
+	return look
+
+
+# The parts it carries sit in front of and over the head; a loose tendril
+# reaches out to each and winds round it. (Mecha sprites face -Y.) The gun
+# cools, its layers showing its heat (written only when it changes).
+func _hold_parts(delta: float) -> void:
+	gun_heat = maxf(gun_heat - GUN_HEAT_DECAY * delta, 0.0)
+	if gun_heat != _shown_gun_heat and not _gun_heat_materials.is_empty():
+		_shown_gun_heat = gun_heat
+		for mat in _gun_heat_materials:
+			mat.set_shader_parameter("heat", gun_heat)
+	var holding := 0
+	if _shield_look != null:
+		_shield_look.position = Vector2(body_length * SHIELD_AHEAD, 0.0)
+		_shield_look.rotation = _shield_turn
+		_wrap(holding, _shield_look.global_position)
+		holding += 1
+	if _gun_look != null:
+		point_gun()
+		_wrap(holding, _gun_look.global_position)
+		holding += 1
+	for k in range(holding, _loose.size()):
+		if _tails[_loose[k]].pose_weight > 0.0 and _whip_t < 0.0:
+			_tails[_loose[k]].pose_weight = 0.0
+
+
+## Puts the carried gun over the head, its barrels (-Y) on gun_aim. Every
+## frame, and right before it fires (Coyote.fire_gun).
+func point_gun() -> void:
+	if _gun_look == null:
+		return
+	_gun_look.position = Vector2(body_length * GUN_AHEAD, -GUN_LIFT)
+	var to_aim := gun_aim - _gun_look.global_position
+	_gun_look.global_rotation = (to_aim.angle() if to_aim.length() > 1.0 else global_rotation) + PI * 0.5
+
+
+# The k-th loose tendril: out from its root to `at`, the last WRAP_SHARE of
+# it wound round the part.
+func _wrap(k: int, at: Vector2) -> void:
+	if k >= _loose.size():
+		return
+	var tail := _tails[_loose[k]]
+	var root := _body_to_world(tail.root)
+	var reach_end := int((TAIL_POINTS - 1) * (1.0 - WRAP_SHARE))
+	var side := Vector2(0.0, -1.0 if k % 2 == 0 else 1.0).rotated(global_rotation) * 30.0
+	var ctrl := root.lerp(at, 0.5) + side
+	for i in TAIL_POINTS:
+		if i <= reach_end:
+			var t := float(i) / reach_end
+			tail.pose[i] = root.lerp(ctrl, t).lerp(ctrl.lerp(at, t), t)
+		else:
+			var u := float(i - reach_end) / (TAIL_POINTS - 1 - reach_end)
+			tail.pose[i] = at + Vector2.from_angle(u * TAU * 1.2 + _time * 2.0) * WRAP_RADIUS
+	tail.pose_weight = HOLD_WEIGHT
+	tail.pose_falloff = 0.0
+	tail.raise = 0.6
+
+
 func whip() -> void:
 	if dead or _whip_t >= 0.0:
 		return
@@ -110,6 +325,7 @@ func _animate(delta: float) -> void:
 	# Tendrils thrash for the whole attack, easing in fast and out slower.
 	var attacking := is_attacking()
 	thrash = move_toward(thrash, 1.0 if attacking else 0.0, delta * (8.0 if attacking else 2.5))
+	_hold_parts(delta)
 	if _whip_t >= 0.0:
 		var before := _whip_t
 		_whip_t = minf(_whip_t + delta / WHIP_TIME, 1.0)

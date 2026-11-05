@@ -39,6 +39,8 @@ const GROUPS := [
 	]},
 	{"title": "SENSORS", "stats": [
 		{"id": "visual_range", "label": "Visual range"},
+		{"id": "ir_sensitivity", "label": "IR sensitivity °C", "lower_better": true},
+		{"id": "ir_identification", "label": "IR identification °C", "lower_better": true},
 		{"id": "accuracy_modifier", "label": "Accuracy"},
 		{"id": "lock_on_speed", "label": "Lock speed"},
 		{"id": "radar_range", "label": "Radar range"},

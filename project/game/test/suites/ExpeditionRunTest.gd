@@ -9,9 +9,10 @@ extends TestSuite
 #   - dying: everything brought out is lost, the game-over screen says what
 #   - pausing and resuming; quitting from the pause menu (warned first)
 #     abandons the run
-#   - Entities: Stalker packs spawn away from the player, NPCs fight them,
-#     gunfire reaches them, the intro freeze holds them, kills count, and a
-#     dead one leaves a carcass of bio salvage to loot
+#   - Entities: Coyote packs, Fishers and tick swarms spawn away from the
+#     player, none of the first species do, NPCs fight them, gunfire reaches
+#     them, the intro freeze holds them, kills count, and a dead one leaves a
+#     carcass of bio salvage to loot
 #
 # Enemies and Entities are frozen after spawning and the director stopped, so
 # the player isn't attacked at random and results don't depend on luck. Scene
@@ -47,7 +48,7 @@ func run_tests() -> void:
 
 	await _start_expedition()
 	await case("Entities roam the map", _test_entities_spawned)
-	await case("NPCs and Stalkers fight", _test_npcs_fight_entities)
+	await case("NPCs and Coyotes fight", _test_npcs_fight_entities)
 	await case("gunfire reaches Entities", _test_entities_hear)
 	await case("the intro freeze holds Entities too", _test_entities_freeze)
 	await case("killing an Entity counts for the player", _test_entity_kill)
@@ -252,7 +253,8 @@ func _test_death() -> void:
 	var summary = _find_child_of_type(ExtractionSummary)
 	if summary != null:
 		var text: String = summary.get_text()
-		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists what was lost as written off")
+		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists the lost cargo as written off")
+		check("UNSALVAGEABLE" in text, "and the mecha's parts as unsalvageable")
 		check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
 		summary.continue_button.pressed.emit()
 		await wait_frames()
@@ -260,105 +262,109 @@ func _test_death() -> void:
 
 # ---- Entities ----
 
-func _stalkers() -> Array:
-	return _scene.get_entities().filter(func(e): return e is Stalker and not e.is_dead)
+# The pack's melee Coyotes (not its Spitters).
+func _coyotes() -> Array:
+	return _scene.get_entities().filter(func(e): return e is Coyote and not e is CoyoteSpitter and not e.is_dead)
 
 
 func _test_entities_spawned() -> void:
 	var director = _scene.ExpeditionDirector
-	var stalkers := _stalkers()
-	check(stalkers.size() >= director.min_initial_packs * director.min_pack_size,
-			"at least %d packs of %d (%d Stalkers)" % [director.min_initial_packs, director.min_pack_size, stalkers.size()])
-	var spitters: Array = _scene.get_entities().filter(func(e): return e is Spitter)
-	var brutes: Array = _scene.get_entities().filter(func(e): return e is Brute)
-	check(spitters.size() >= director.min_initial_spitters and spitters.size() <= director.max_initial_spitters,
-			"%d-%d Spitters (%d)" % [director.min_initial_spitters, director.max_initial_spitters, spitters.size()])
-	check(brutes.size() <= 1, "at most one Brute to start with (%d)" % brutes.size())
-	var cysts: Array = _scene.get_entities().filter(func(e): return e is Cyst)
-	var sites: Array = _scene.get_cyst_sites()
-	check(not sites.is_empty() and cysts.size() == sites.size(), "a Cyst on each of the map's %d sites (%d)" % [sites.size(), cysts.size()])
-	for cyst in cysts:
-		check(sites.any(func(s): return s.global_position.distance_to(cyst.global_position) < 1.0), "%s sits on a site" % cyst.name)
-		check(not cyst.awake and cyst.guards.is_empty(), "%s is asleep at the start" % cyst.name)
+	var pack_members: Array = _scene.get_entities().filter(func(e): return e is Coyote)
+	check(pack_members.size() >= director.min_initial_packs * director.min_pack_size,
+			"at least %d packs of %d (%d Coyotes)" % [director.min_initial_packs, director.min_pack_size, pack_members.size()])
+	var packs := {}
+	for coyote in pack_members:
+		if coyote.pack != null:
+			packs[coyote.pack] = true
+	check(packs.keys().all(func(p): return p.members.any(func(m): return m is CoyoteSpitter)), "every pack has a Spitter")
+	check(packs.keys().all(func(p): return not p.leader() is CoyoteSpitter), "and a Coyote leads it")
+	var fishers: Array = _scene.get_entities().filter(func(e): return e is Fisher)
+	check(fishers.size() >= director.min_initial_fishers and fishers.size() <= director.max_initial_fishers,
+			"%d-%d Fishers (%d)" % [director.min_initial_fishers, director.max_initial_fishers, fishers.size()])
+	check(fishers.all(func(f): return f.state == Fisher.State.DORMANT), "the Fishers lie dormant at the start")
+	var swarms: Array = _scene.get_entities().filter(func(e): return e is TickSwarm)
+	check(swarms.size() >= director.min_initial_tick_swarms and swarms.size() <= director.max_initial_tick_swarms,
+			"%d-%d tick swarms (%d)" % [director.min_initial_tick_swarms, director.max_initial_tick_swarms, swarms.size()])
+	check(_scene.get_entities().all(func(e): return e is Coyote or e is Fisher or e is TickSwarm),
+			"none of the first species spawn (Stalker, Spitter, Brute, Cyst)")
 	var player_pos: Vector2 = _player().global_position
 	# Spawns are at least min_entity_distance_from_player away; pack members spread 250 around theirs.
 	var nearest := INF
 	for entity in _scene.get_entities():
 		nearest = minf(nearest, entity.global_position.distance_to(player_pos))
 	check(nearest > director.min_entity_distance_from_player - 400.0, "none spawn on top of the player (nearest %d)" % int(nearest))
-	check(stalkers.all(func(s): return s.pack != null and s.pack.members.size() >= director.min_pack_size), "each is in a pack")
+	check(pack_members.all(func(s): return s.pack != null and s.pack.members.size() >= director.min_pack_size), "each Coyote is in a pack")
 	check(_scene.Entities.get_index() < _scene.Mechas.get_index(), "drawn under the mechas")
 
 
-# A Stalker bites an NPC: the NPC turns on it (and Stalkers always count as
+# A Coyote whips an NPC: the NPC turns on it (and Entities always count as
 # fair game, no flags or grudges needed).
 func _test_npcs_fight_entities() -> void:
 	var enemy = _enemies()[0]
-	var stalker: Stalker = _stalkers()[0]
-	# Behind it (mechas face -Y), where a bite always gets through.
-	stalker.global_position = enemy.global_position + Vector2(0, 300).rotated(enemy.global_rotation)
-	# NPC fire makes an idle Stalker hunt the NPC. (First, while the NPC is
-	# sure to be alive: the bites below can take out its cockpit. And the
-	# Stalker may already have been after something when the world froze.)
-	stalker.lose_target()
-	stalker._set_state(Stalker.State.WANDER)
-	stalker.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
-	check(stalker.target == enemy, "a shot Stalker hunts its shooter")
-	stalker.lose_target()
-	# And the other way round: a bitten NPC turns on the Stalker.
+	var coyote: Coyote = _coyotes()[0]
+	# Behind it (mechas face -Y).
+	coyote.global_position = enemy.global_position + Vector2(0, 300).rotated(enemy.global_rotation)
+	# NPC fire makes an idle Coyote hunt the NPC. (The Coyote may already
+	# have been after something when the world froze.)
+	coyote.lose_target()
+	coyote._set_state(Coyote.State.WANDER)
+	coyote.take_hit(1.0, 5, Vector2.ZERO, {"body": enemy, "name": enemy.mecha_name})
+	check(coyote.target == enemy, "a shot Coyote hunts its shooter")
+	coyote.lose_target()
+	# And the other way round: a whipped NPC turns on the Coyote.
 	var damaged := [0]
 	enemy.component_damaged.connect(func(_p, _c, _hp, _max): damaged[0] += 1)
 	for _i in 4:
-		EntityAttack.hit_mecha(stalker, enemy, 1, 2)
-	check(enemy.most_recent_attacker == stalker and enemy.under_fire_timer > 0.0, "the NPC knows it's under attack")
+		EntityAttack.hit_external(coyote, enemy, 1)
+	check(enemy.most_recent_attacker == coyote and enemy.under_fire_timer > 0.0, "the NPC knows it's under attack")
 	# Whatever it was after before the world froze, it re-picks now.
 	enemy.valid_target = false
 	enemy._last_target_eval_ms = -100000
 	enemy.check_for_targets(2000, 2000)
-	check(enemy.valid_target == stalker, "the NPC targets the Stalker")
-	check(damaged[0] > 0, "the bites damaged the NPC")
+	check(enemy.valid_target == coyote, "the NPC targets the Coyote")
+	check(damaged[0] > 0, "the whips damaged the NPC")
 
 
 func _test_entities_hear() -> void:
-	var stalker: Stalker = _stalkers()[0]
-	stalker.set_pause(false)
-	stalker.lose_target()
+	var coyote: Coyote = _coyotes()[0]
+	coyote.set_pause(false)
+	coyote.lose_target()
 	_scene._on_mecha_made_sound({
 		"volume_type": "loud", "type": "gunshot", "source": null,
-		"position": stalker.global_position + Vector2(600, 0), "max_distance": 1500.0,
+		"position": coyote.global_position + Vector2(600, 0), "max_distance": 1500.0,
 	})
-	check_eq(stalker.state, Stalker.State.INVESTIGATE, "the Stalker goes to look")
-	stalker.set_pause(true)
+	check_eq(coyote.state, Coyote.State.INVESTIGATE, "the Coyote goes to look")
+	coyote.set_pause(true)
 
 
 func _test_entities_freeze() -> void:
-	for stalker in _stalkers():
-		stalker.paused = false
+	for coyote in _coyotes():
+		coyote.paused = false
 	_scene.set_mechas_block_status(true)
-	check(_stalkers().all(func(s): return s.paused), "every Entity is frozen with the mechas")
+	check(_coyotes().all(func(s): return s.paused), "every Entity is frozen with the mechas")
 	_player().set_pause(false)  # the freeze includes the player; later cases need it moving
 
 
 func _test_entity_kill() -> void:
-	var stalker: Stalker = _stalkers()[0]
+	var coyote: Coyote = _coyotes()[0]
 	var kills_before: int = _scene.player_kills.size()
-	stalker.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
-	check(stalker.is_dead, "the Stalker died")
-	check(not _scene.get_entities().has(stalker), "it's off the scene's Entity list")
-	check(_scene.player_kills.size() == kills_before + 1 and _scene.player_kills[-1] == "Stalker", "the kill counts for the player")
+	coyote.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
+	check(coyote.is_dead, "the Coyote died")
+	check(not _scene.get_entities().has(coyote), "it's off the scene's Entity list")
+	check(_scene.player_kills.size() == kills_before + 1 and _scene.player_kills[-1] == "Coyote", "the kill counts for the player")
 	check_eq(_scene.ExpeditionDirector.entity_kills, 1, "the director counts it")
 
 
 func _test_carcass_loot() -> void:
 	await wait_frames(2)  # carcasses land a frame after a death (the previous case's)
-	var stalker: Stalker = _stalkers()[0]
-	var where := stalker.global_position
+	var coyote: Coyote = _coyotes()[0]
+	var where := coyote.global_position
 	var carcasses_before: int = _scene.Carcasses.get_child_count()
-	var ref: WeakRef = weakref(stalker)
-	stalker.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
+	var ref: WeakRef = weakref(coyote)
+	coyote.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
 	await wait_frames(2)
 	check(_scene.Carcasses.get_child_count() == carcasses_before + 1, "a carcass is left behind")
-	check(ref.get_ref() == null, "the Stalker itself is gone (the carcass is the corpse)")
+	check(ref.get_ref() == null, "the Coyote itself is gone (the carcass is the corpse)")
 	var carcass: Carcass = _scene.Carcasses.get_children()[-1]
 	check(carcass.global_position.distance_to(where) < 1.0, "where it died")
 	check(not carcass.inventory.is_empty(), "with bio salvage in it")
@@ -379,17 +385,17 @@ func _test_carcass_loot() -> void:
 # Area2D doing the killing.
 func _test_kill_in_collision() -> void:
 	await wait_frames(2)  # carcasses land a frame after a death (earlier cases')
-	var stalker: Stalker = _stalkers()[0]
+	var coyote: Coyote = _coyotes()[0]
 	var carcasses_before: int = _scene.Carcasses.get_child_count()
 	var player := _player()
-	# Weak: the Stalker is freed once its carcass takes over.
-	var ref: WeakRef = weakref(stalker)
+	# Weak: the Coyote is freed once its carcass takes over.
+	var ref: WeakRef = weakref(coyote)
 	var killer := Area2D.new()
 	var shape := CollisionShape2D.new()
 	shape.shape = CircleShape2D.new()
 	shape.shape.radius = 60.0
 	killer.add_child(shape)
-	killer.global_position = stalker.global_position
+	killer.global_position = coyote.global_position
 	killer.body_entered.connect(func(body):
 		if body == ref.get_ref():
 			body.take_hit(100.0, 5, Vector2.ZERO, {"body": player, "name": "Player"}))

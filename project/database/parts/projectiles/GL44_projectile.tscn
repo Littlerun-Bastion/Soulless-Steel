@@ -22,7 +22,6 @@ release_aligned = false
 impact_effect = ExtResource("2_dy3pr")
 impact_size = 2.0
 trail = ExtResource("2_8narh")
-base_damage = 1
 stage_max_speed = Array[int]([2000])
 stage_min_speed = Array[int]([750])
 stage_deceleration = Array[float]([1000.0])

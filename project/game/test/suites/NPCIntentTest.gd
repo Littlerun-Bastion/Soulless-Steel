@@ -293,9 +293,9 @@ func _test_flight() -> void:
 func _test_lost_target_fairness() -> void:
 	var enemy := _enemy(Vector2.ZERO, Personality.Type.PROFESSIONAL, true)
 	var behaviour = enemy.logic.behaviour
-	var foe := _foe(Vector2(900, 0), enemy)
+	var foe := _foe(Vector2(0, -900), enemy)
 	var engaged := await wait_until(func(): return str(enemy.logic.get_current_state()) == "engage", 4.0)
-	check(engaged, "it engages the mecha it sees")
+	check(engaged, "it engages the mecha it sees (ahead of it)")
 	var stranger := _foe(Vector2(-6000, -6000), enemy)
 	check(enemy.get_target_position(stranger).is_equal_approx(enemy.global_position),
 			"a body it never perceived is nowhere (its own position), not at its true position")

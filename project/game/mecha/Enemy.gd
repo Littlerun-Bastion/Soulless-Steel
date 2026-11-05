@@ -9,6 +9,14 @@ const SIGHT_CONTACT_TTL = 0.5
 ## With its illuminator off, an NPC sees unlit targets only within this share
 ## of its sight range (see update_senses). Placeholder.
 const DARK_SIGHT_MULT = 0.5
+## An NPC sees an unlit target by eye only inside its illuminator's cone
+## (Illumination.in_cone: the head's illuminator_angle, ahead of its body),
+## lit or dark, or within this distance (px) all round, as the player does
+## (Player.VIEW_PERIPHERAL). Placeholder.
+const PERIPHERAL_SIGHT = 400.0
+
+## Its illuminator, whose cone is the one it sees unlit targets in.
+@onready var _cone_light: PointLight2D = Illumination.light_of(self)
 
 # Stuck watchdog, the last resort after the unstick moves in the steering
 # section. stuck_timer counts while the NPC wants to move but either barely
@@ -1053,7 +1061,7 @@ func _look_at(target, max_reach_sq: float, own_sight_mult: float) -> void:
 
 
 # Whether the NPC sees `target` by sight alone (in range, foliage, light,
-# walls), and if so records it.
+# its cone, walls), and if so records it.
 func _sees_by_eye(target, own_sight_mult: float) -> bool:
 	var distance = position.distance_to(target.position)
 	var thermal_range_mult = 1.0
@@ -1063,16 +1071,19 @@ func _sees_by_eye(target, own_sight_mult: float) -> bool:
 
 	# Foliage over the target, or over us, shortens the range; building
 	# walls and smoke block sight completely (see MapSenses). A target an
-	# illuminator lights is seen through walls (Illumination.seen_lit); with
-	# our own illuminator off, unlit ones are only seen at DARK_SIGHT_MULT
-	# of the range. Cheapest checks first: the foliage and sight checks
-	# only run for targets in range.
+	# illuminator lights is seen through walls and all round
+	# (Illumination.seen_lit); an unlit one only inside our cone or within
+	# PERIPHERAL_SIGHT, and with our own illuminator off only at
+	# DARK_SIGHT_MULT of the range. Cheapest checks first: the foliage and
+	# sight checks only run for targets in range.
 	var effective_engage_distance = engage_distance * thermal_range_mult * own_sight_mult
 	if distance > effective_engage_distance \
 			or distance > effective_engage_distance * MapSenses.detection_mult(target):
 		return false
 	var lit := Illumination.seen_lit(self, target)
 	if not lit and not illuminator_on and distance > effective_engage_distance * DARK_SIGHT_MULT:
+		return false
+	if not lit and distance > PERIPHERAL_SIGHT and not Illumination.in_cone(_cone_light, target.global_position):
 		return false
 	if lit or not _sight_to_blocked(target):
 		knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)

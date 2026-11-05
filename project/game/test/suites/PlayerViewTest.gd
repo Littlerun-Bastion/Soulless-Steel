@@ -122,7 +122,7 @@ func _test_cone() -> void:
 	var reach: float = _player.get_view_reach()
 	check(reach > 2000.0, "the cone reaches well past the screen (%.0f px)" % reach)
 	var ahead := _mecha(o + Vector2(0, -1500))
-	var edge := _mecha(o + Vector2.UP.rotated(deg_to_rad(_player.VIEW_CONE_HALF_ANGLE - 3.0)) * 1500.0)
+	var edge := _mecha(o + Vector2.UP.rotated(deg_to_rad(_player.get_view_angle() * 0.5 - 3.0)) * 1500.0)
 	var aside := _mecha(o + Vector2.UP.rotated(deg_to_rad(40.0)) * 1500.0)
 	var behind := _mecha(o + Vector2(0, 1500))
 	var close_behind := _mecha(o + Vector2(0, _player.VIEW_PERIPHERAL - 50.0))

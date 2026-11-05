@@ -39,6 +39,7 @@ const GROUPS := [
 	]},
 	{"title": "SENSORS", "stats": [
 		{"id": "visual_range", "label": "Visual range"},
+		{"id": "illuminator_angle", "label": "Illuminator angle °"},
 		{"id": "ir_sensitivity", "label": "IR sensitivity °C", "lower_better": true},
 		{"id": "ir_identification", "label": "IR identification °C", "lower_better": true},
 		{"id": "accuracy_modifier", "label": "Accuracy"},

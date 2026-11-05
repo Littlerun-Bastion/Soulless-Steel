@@ -109,6 +109,12 @@ func _foe(pos: Vector2, enemy) -> Mecha:
 	return mecha
 
 
+# Turns the NPC to face `pos`: it sees a dark mecha only in its cone, so a
+# sight check that is about walls or memory has it looking that way.
+func _face(enemy, pos: Vector2) -> void:
+	enemy.global_rotation = Vector2.UP.angle_to(pos - enemy.global_position)
+
+
 func _house(x0: float, x1: float, y0: float, y1: float) -> Array:
 	return [Vector2(x0, y0), Vector2(x1, y0), Vector2(x1, y1), Vector2(x0, y1)]
 
@@ -117,11 +123,14 @@ func _test_sight() -> void:
 	await _setup([_house(400, 600, -300, 300)])
 	var enemy := _enemy(Vector2.ZERO)
 	var foe := _foe(Vector2(800, 0), enemy)
+	_face(enemy, foe.global_position)
+	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	enemy.check_for_targets(1800.0, 2000.0)
 	check(not enemy.is_seeing(foe), "it doesn't see a mecha behind a building")
 	check(not enemy.valid_target, "so it doesn't pick it as a target")
 	foe.global_position = Vector2(0, 800)
+	_face(enemy, foe.global_position)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	enemy.check_for_targets(1800.0, 2000.0)
@@ -133,10 +142,13 @@ func _test_memory() -> void:
 	await _setup([_house(400, 600, -300, 300)])
 	var enemy := _enemy(Vector2.ZERO)
 	var foe := _foe(Vector2(800, -800), enemy)
+	_face(enemy, foe.global_position)
+	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	enemy.check_for_targets(1800.0, 2000.0)
 	check(enemy.valid_target == foe, "it picks the mecha it sees")
 	foe.global_position = Vector2(800, 0)
+	_face(enemy, foe.global_position)
 	await get_tree().physics_frame
 	enemy.update_senses(0.5)
 	check(not enemy.is_seeing(foe), "the mecha went behind the building")
@@ -169,7 +181,7 @@ func _test_shot_reveals() -> void:
 func _test_roam_engages() -> void:
 	await _setup()
 	var enemy := _enemy(Vector2.ZERO, PlayerProgress.DEFAULT_MECHA, true)
-	var foe := _foe(Vector2(900, 0), enemy)
+	var foe := _foe(Vector2(0, -900), enemy)
 	foe.set_pause(true)
 	check(enemy.logic.get_current_state() == "roam", "it starts out roaming")
 	var left_roam := await wait_until(func(): return enemy.logic.get_current_state() != "roam", 6.0)
@@ -181,6 +193,8 @@ func _test_blind_fire() -> void:
 	await _setup([_house(400, 600, -300, 300)])
 	var enemy := _enemy(Vector2.ZERO)
 	var foe := _foe(Vector2(800, -800), enemy)
+	_face(enemy, foe.global_position)
+	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	check(enemy.is_seeing(foe), "it sees the mecha first")
 	check(enemy._weapon_ap["arm_weapon_left"] == 2, "the MA-L127's round has 2 AP")
@@ -327,11 +341,13 @@ func _test_ir_keeps_target() -> void:
 	var head = enemy.build.head
 	var foe := _foe(Vector2(0, 800), enemy)
 	_heat(foe, head.ir_sensitivity + 10.0)
+	_face(enemy, foe.global_position)
 	await _sense(enemy)
 	enemy.check_for_targets(1800.0, 2000.0)
 	if not check(enemy.valid_target == foe, "it picks the mecha it sees in the open"):
 		return
 	foe.global_position = Vector2(800, 0)
+	_face(enemy, foe.global_position)
 	await _sense(enemy)
 	check(not enemy.is_seeing(foe), "behind the building, it's out of sight")
 	check(enemy.get_target_position(foe) == foe.global_position and enemy.time_unseen(foe) < 0.2,

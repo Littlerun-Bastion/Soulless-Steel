@@ -1991,6 +1991,7 @@ func set_head(part_name):
 			"rear": {"level": 0, "pips": 0}
 		}
 	update_max_life_from_parts()
+	Illumination.shape_light(self)
 
 
 func set_shoulders(part_name):

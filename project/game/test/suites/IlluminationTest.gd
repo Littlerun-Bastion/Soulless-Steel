@@ -10,6 +10,9 @@ extends TestSuite
 # illuminator, the player's darkness, flares and car alarm lamps add or take
 # light away rather than mix it (so the draw order can't hide a cone), the
 # player's and an NPC's alike, and a mecha's fire glow is off unless it burns.
+# The illuminator's cone and circle are drawn in code, as wide as the head's
+# illuminator_angle, and that angle is what is lit and what the player and
+# an NPC see a dark mecha in.
 #
 # The player is held still (no physics) and its view is stepped by hand; NPCs
 # are paused and their senses stepped by hand. Illumination works out each
@@ -50,6 +53,8 @@ func run_tests() -> void:
 	await case("an NPC sees lit targets through walls, and less with its own off", _test_npc_senses)
 	await case("an NPC's behaviour runs dark by intent, and holds the setting", _test_npc_states)
 	await case("every light adds or takes away, the same for everyone", _test_light_style)
+	await case("the cone is drawn in code, as wide as the head's illuminator angle", _test_drawn_cone)
+	await case("an NPC sees unlit mechas only in its cone or close by", _test_npc_cone)
 
 
 func before_each() -> void:
@@ -259,15 +264,15 @@ func _test_npc_senses() -> void:
 	var sight: float = enemy.engage_distance * lerpf(0.6, 1.4, foe.get_thermal_signature())
 	var o := Vector2(-4000, -4000)
 	enemy.global_position = o
-	foe.global_position = o + Vector2(0, sight * 0.75)
+	foe.global_position = o + Vector2(0, -sight * 0.75)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
-	check(enemy.is_seeing(foe), "with its own illuminator on it sees a dark mecha in the open (%.0f px)" % (sight * 0.75))
+	check(enemy.is_seeing(foe), "with its own illuminator on it sees a dark mecha in the open ahead (%.0f px)" % (sight * 0.75))
 	enemy.set_illuminator(false)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	check(not enemy.is_seeing(foe), "with it off, not that far")
-	foe.global_position = o + Vector2(0, sight * enemy.DARK_SIGHT_MULT * 0.8)
+	foe.global_position = o + Vector2(0, -sight * enemy.DARK_SIGHT_MULT * 0.8)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
 	check(enemy.is_seeing(foe), "only close by")
@@ -275,7 +280,117 @@ func _test_npc_senses() -> void:
 	foe.set_illuminator(true)
 	await get_tree().physics_frame
 	enemy.update_senses(0.1)
-	check(enemy.is_seeing(foe), "but a lit one at the full range")
+	check(enemy.is_seeing(foe), "but a lit one at the full range, behind it too")
+
+
+# The texture's alpha `offset` px from a light's centre, in the light's own
+# frame (forward is -y).
+func _alpha_at(light: PointLight2D, offset: Vector2) -> float:
+	var image: Image = light.texture.get_image()
+	var texel: float = light.texture_scale
+	var half := image.get_width() * 0.5
+	var px := Vector2(half, half) + offset / texel
+	return image.get_pixel(clampi(int(px.x), 0, image.get_width() - 1), clampi(int(px.y), 0, image.get_height() - 1)).a
+
+
+func _test_drawn_cone() -> void:
+	var plain := _mecha(Vector2(3000, 3000), Vector2.UP, true)
+	var light := Illumination.light_of(plain)
+	var head_angle: float = plain.build.head.illuminator_angle
+	check(light.texture is ImageTexture and light.texture.get_width() == Illumination.LIGHT_TEXTURE_SIZE,
+			"the illuminator's texture is drawn in code")
+	check_eq(Illumination.cone_angle(light), head_angle, "at its head's angle")
+	check(is_equal_approx(light.texture_scale * Illumination.LIGHT_TEXTURE_SIZE * 0.5, Illumination.CONE_RANGE + Illumination.CONE_RANGE_SOFT),
+			"scaled to the cone's range")
+	var half := head_angle * 0.5
+	var soft := Illumination.CONE_EDGE_SOFT
+	check(_alpha_at(light, Vector2(0, -2000)) > 0.98, "full light ahead")
+	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half - soft - 1.0)) * 2000.0) > 0.95, "just inside the cone's side")
+	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half + soft + 1.0)) * 2000.0) < 0.02, "none just outside it")
+	check(absf(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(half)) * 2000.0) - 0.5) < 0.15, "half on the edge itself")
+	check(absf(_alpha_at(light, Vector2(0, -Illumination.CONE_RANGE)) - 0.5) < 0.1, "half at the cone's range")
+	check(_alpha_at(light, Vector2(0, -(Illumination.CONE_RANGE + Illumination.CONE_RANGE_SOFT * 0.9))) < 0.05, "none past it")
+	check(_alpha_at(light, Vector2(0, Illumination.LOCAL_RADIUS - Illumination.LOCAL_SOFT - 30.0)) > 0.95, "a circle round the mecha, behind it too")
+	check(_alpha_at(light, Vector2(0, Illumination.LOCAL_RADIUS + Illumination.LOCAL_SOFT + 30.0)) < 0.02, "and none past it")
+	check(is_equal_approx(_alpha_at(light, Vector2(-700, -1500)), _alpha_at(light, Vector2(700, -1500))), "both sides alike")
+
+	var other := _mecha(Vector2(3000, -3000), Vector2.UP, true)
+	check(Illumination.light_of(other).texture == light.texture, "mechas with the same angle share one texture")
+	var started := Time.get_ticks_usec()
+	Illumination.shape_light(plain, 90.0)
+	var ms := (Time.get_ticks_usec() - started) / 1000.0
+	check(ms < 1000.0, "a new angle is drawn once (%.0f ms)" % ms)
+	check(light.texture != Illumination.light_of(other).texture and Illumination.cone_angle(light) == 90.0, "a wider head gets its own cone")
+	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(40.0)) * 2000.0) > 0.95, "lit 40 degrees off")
+	check(_alpha_at(light, Vector2.UP.rotated(deg_to_rad(50.0)) * 2000.0) < 0.02, "not 50")
+	Illumination.shape_light(plain, 1000.0)
+	check_eq(Illumination.cone_angle(light), Illumination.MAX_CONE_ANGLE, "angles are kept within the limits")
+	check(_alpha_at(light, Vector2(0, 2000)) > 0.98, "and a full circle lights all round")
+	Illumination.shape_light(plain)
+	check_eq(Illumination.cone_angle(light), head_angle, "shaped for its head again")
+
+	# The cone's angle is what is lit, and what the player and an NPC see.
+	var o := Vector2(-4000, 4000)
+	var lamp := _mecha(o, Vector2.UP, true)
+	var at_25 := _mecha(o + Vector2.UP.rotated(deg_to_rad(25.0)) * 1500.0, Vector2.UP, false)
+	await get_tree().physics_frame
+	check(not Illumination.is_lit(at_25), "with a %.0f degree cone, a dark mecha 25 degrees off isn't lit" % head_angle)
+	Illumination.shape_light(lamp, 60.0)
+	await get_tree().physics_frame
+	check(Illumination.is_lit(at_25), "with a 60 degree one it is")
+	lamp.set_illuminator(false)
+	await _look(o + Vector2(0, 100), Vector2.UP)
+	check(_hidden(at_25), "the player doesn't see it with its head's cone")
+	Illumination.shape_light(_player, 60.0)
+	check_eq(_player.get_view_angle(), 60.0, "the player's view cone follows its light")
+	await _look(o + Vector2(0, 100), Vector2.UP)
+	check(_shown(at_25), "and with a 60 degree one it does")
+	Illumination.shape_light(_player)
+
+
+func _test_npc_cone() -> void:
+	var enemy := _enemy(Vector2(-3000, -3000))
+	enemy.auto_illuminator = false
+	var o := Vector2(-4000, -4000)
+	enemy.global_position = o
+	enemy.global_rotation = 0.0
+	var foe := _mecha(o + Vector2(0, -1200), Vector2.UP, false)
+	enemy.mark_traitor(foe)
+	var where := {
+		"ahead": Vector2(0, -1200),
+		"25 degrees off": Vector2.UP.rotated(deg_to_rad(25.0)) * 1200.0,
+		"to the side": Vector2(1200, 0),
+		"behind": Vector2(0, 1200),
+		"close behind": Vector2(0, enemy.PERIPHERAL_SIGHT - 50.0),
+	}
+	var seen := {}
+	for cone in [["head", -1.0], ["wide", 60.0]]:
+		Illumination.shape_light(enemy, cone[1])
+		for key in where:
+			foe.global_position = o + where[key]
+			await get_tree().physics_frame
+			enemy.update_senses(0.1)
+			seen["%s, %s" % [key, cone[0]]] = enemy.is_seeing(foe)
+	var head_angle: float = enemy.build.head.illuminator_angle
+	check(seen["ahead, head"], "an NPC sees a dark mecha ahead in its cone")
+	check(not seen["25 degrees off, head"], "not one 25 degrees off with its head's %.0f degree cone" % head_angle)
+	check(seen["25 degrees off, wide"], "but does with a 60 degree one")
+	check(not seen["to the side, head"] and not seen["to the side, wide"], "nor one to the side")
+	check(not seen["behind, head"], "nor one behind it")
+	check(seen["close behind, head"], "but one close behind it, yes")
+	# Dark itself, it sees only within DARK_SIGHT_MULT of its range: at least
+	# that share of the coldest target's range (0.6 of engage_distance).
+	enemy.set_illuminator(false)
+	var dark_reach: float = enemy.engage_distance * 0.6 * enemy.DARK_SIGHT_MULT
+	foe.global_position = o + Vector2(0, -(enemy.PERIPHERAL_SIGHT + dark_reach) * 0.5)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "dark itself, it still sees ahead (close by)")
+	foe.global_position = o + Vector2(0, 1200)
+	foe.set_illuminator(true)
+	await get_tree().physics_frame
+	enemy.update_senses(0.1)
+	check(enemy.is_seeing(foe), "and a lit mecha behind it is seen all the same")
 
 
 func _test_npc_states() -> void:

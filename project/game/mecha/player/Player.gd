@@ -33,10 +33,8 @@ const TAP_TIME = 0.2
 const VIEW_CHECK_TIME = 0.1
 const VIEW_FADE_SPEED = 5.0
 const VIEW_RANGE = 6000.0
-## The vision cone, matching the MechaLight (Illumination), and the distance
-## (px) all round within which things are seen anyway (20 m).
-const VIEW_CONE_HALF_ANGLE = Illumination.CONE_HALF_ANGLE
-const VIEW_CONE_REACH = Illumination.CONE_REACH
+## The distance (px) all round within which things are seen anyway (20 m),
+## outside the vision cone (in_view_cone).
 const VIEW_PERIPHERAL = 400.0
 ## Sounds of the illuminator key switching it on and off. Placeholders.
 const ILLUMINATOR_ON_SFX = "select"
@@ -852,8 +850,9 @@ func _sweep_mark() -> Dictionary:
 #
 # The world is dark round the player except in its light cone, drawn by 2D
 # lights (see MapSenses). What the player can see matches it: a mecha or
-# Entity is shown only inside the cone (VIEW_CONE_HALF_ANGLE either side of
-# the light, out to its reach; none while the player's illuminator is off) or
+# Entity is shown only inside the cone (the MechaLight's: half the head's
+# illuminator_angle either side of it, out to its reach, see Illumination;
+# none while the player's illuminator is off) or
 # within VIEW_PERIPHERAL all round, and not behind a building wall, in a
 # different building from the player (generated or hand-made), or in or
 # behind smoke. Two in the same building see each other. A body any
@@ -915,6 +914,11 @@ func in_view_cone(point: Vector2) -> bool:
 
 func get_view_reach() -> float:
 	return Illumination.reach(Light)
+
+
+## The vision cone's angle (degrees, edge to edge), from the head.
+func get_view_angle() -> float:
+	return Illumination.cone_angle(Light)
 
 
 func is_hidden_from_view(body) -> bool:

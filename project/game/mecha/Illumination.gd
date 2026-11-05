@@ -11,7 +11,7 @@ extends RefCounted
 ##   - it is a living mecha with its own illuminator on (it stands in its own
 ##     light), or
 ##   - it is inside the cone of a living mecha whose illuminator is on
-##     (CONE_HALF_ANGLE either side, out to the light's reach), in the same
+##     (half its cone angle either side, out to CONE_RANGE), in the same
 ##     building as that mecha (or both outside) and with no building wall
 ##     between them: walls shadow the light. Smoke casts no shadow.
 ## An observer sees a lit body (seen_lit) if they are in the same building (or
@@ -25,19 +25,42 @@ extends RefCounted
 ## (MechaShadowGen) takes light away (Light2D.BLEND_MODE_SUB) and every
 ## illuminator adds it back (BLEND_MODE_ADD), all at the same energy. Adding
 ## and taking away give the same picture whatever order Godot draws the lights
-## in; mixing (BLEND_MODE_MIX, as both were) paints each light over the ones
-## before it, so the order decided whether a cone showed at all.
+## in; mixing (BLEND_MODE_MIX) paints each light over the ones before it, so
+## the order would decide whether a cone showed at all.
 ##
 ## Only the player's darkness is on (Player.setup switches it on). Every
-## mecha has the node and Mecha.tscn has it on, so without this every NPC
-## took its own darkness away round it too: taken away once per mecha nearby,
-## the ground went black and the cones with it, and moving NPCs made the
-## darkness flicker and cut cones off at the edges of their darkness.
+## mecha has the node and Mecha.tscn has it on; left on, each NPC's would take
+## its own darkness away round it too, once per mecha nearby, until the
+## ground and the cones went black.
+##
+## The illuminator's texture is drawn here (light_texture), not taken from
+## the scene: shape_light replaces whatever texture Mecha.tscn gives it.
 
-## The cone each MechaLight lights: its aimed_glow texture is lit to about 15
-## degrees either side and to 0.44 of its width from the centre.
-const CONE_HALF_ANGLE := 15.0
-const CONE_REACH := 0.44
+## What each MechaLight lights, drawn in code (light_texture): a cone ahead of
+## the mecha and a circle round it. The cone is its head's illuminator_angle
+## wide (DEFAULT_CONE_ANGLE with no head), within MIN_CONE_ANGLE and
+## MAX_CONE_ANGLE, and reaches CONE_RANGE px; the circle is LOCAL_RADIUS px.
+## Each edge fades out over its *_SOFT width either side of it (px, or
+## degrees for the cone's sides, at most a quarter of a narrow cone's angle),
+## so the line where something is in or out of the cone (in_cone) runs down
+## the middle of the fade. Placeholders.
+const DEFAULT_CONE_ANGLE := 30.0
+const MIN_CONE_ANGLE := 2.0
+const MAX_CONE_ANGLE := 360.0
+const CONE_RANGE := 4500.0
+const CONE_RANGE_SOFT := 450.0
+const CONE_EDGE_SOFT := 4.0
+const LOCAL_RADIUS := 320.0
+const LOCAL_SOFT := 80.0
+## The drawn texture's side (texels). It covers CONE_RANGE + CONE_RANGE_SOFT
+## either way of the mecha, so a texel is about 19 px; the fades are many
+## texels wide, so the edges stay smooth.
+const LIGHT_TEXTURE_SIZE := 512
+## Cone angles are rounded to this many degrees, so heads with nearly the
+## same angle share one texture.
+const CONE_ANGLE_STEP := 0.5
+## Where shape_light keeps a light's cone angle (degrees) on the light.
+const CONE_ANGLE_META := &"illuminator_cone_angle"
 const LIGHT_NODE := "MechaLight"
 const DARKNESS_NODE := "MechaShadowGen"
 ## How much light every illuminator adds, and how much the darkness round the
@@ -74,8 +97,9 @@ static var _lit_cache_frame := -1
 
 
 ## Gives a mecha's illuminator and darkness lights their blend modes and
-## energies (see above), and switches its darkness off: the player switches
-## its own back on. Their textures, reach and shadows stay as the scene has
+## energies (see above), shapes its illuminator for its head (shape_light),
+## and switches its darkness off: the player switches its own back on. The
+## darkness keeps its texture, and both keep their shadows, as the scene has
 ## them.
 static func style_lights(mecha: Node) -> void:
 	var light := light_of(mecha)
@@ -83,6 +107,7 @@ static func style_lights(mecha: Node) -> void:
 		light.blend_mode = Light2D.BLEND_MODE_ADD
 		light.color = Color.WHITE
 		light.energy = LIGHT_ENERGY
+		shape_light(mecha)
 	var darkness := mecha.get_node_or_null(DARKNESS_NODE) as PointLight2D
 	if darkness:
 		darkness.blend_mode = Light2D.BLEND_MODE_SUB
@@ -97,11 +122,41 @@ static func light_of(mecha: Node) -> PointLight2D:
 	return mecha.get_node_or_null(LIGHT_NODE) as PointLight2D
 
 
+## The cone angle (degrees) a mecha's head gives its illuminator.
+static func cone_angle_of(mecha: Node) -> float:
+	var build = mecha.get("build") if mecha != null else null
+	var head = build.get("head") if build is Dictionary else null
+	if head != null:
+		var angle = head.get("illuminator_angle")
+		if angle is float or angle is int:
+			return float(angle)
+	return DEFAULT_CONE_ANGLE
+
+
+## Gives a mecha's illuminator the drawn cone for `angle` degrees (its head's
+## when `angle` is negative), scaled to CONE_RANGE, and keeps the angle on
+## the light for in_cone. Mecha.set_head calls it whenever the head changes.
+static func shape_light(mecha: Node, angle := -1.0) -> void:
+	var light := light_of(mecha)
+	if light == null:
+		return
+	var rounded := _rounded_angle(cone_angle_of(mecha) if angle < 0.0 else angle)
+	light.texture = light_texture(rounded)
+	light.texture_scale = _texture_extent() * 2.0 / LIGHT_TEXTURE_SIZE
+	light.set_meta(CONE_ANGLE_META, rounded)
+
+
+## A light's cone angle (degrees), as shape_light set it.
+static func cone_angle(light: PointLight2D) -> float:
+	if light == null:
+		return 0.0
+	var angle = light.get_meta(CONE_ANGLE_META, DEFAULT_CONE_ANGLE)
+	return float(angle) if (angle is float or angle is int) else DEFAULT_CONE_ANGLE
+
+
 ## How far (px) a light's cone reaches.
 static func reach(light: PointLight2D) -> float:
-	if light == null or light.texture == null:
-		return 0.0
-	return light.texture.get_width() * light.texture_scale * CONE_REACH
+	return 0.0 if light == null else CONE_RANGE
 
 
 ## Whether `point` is inside a light's cone (angle and reach only, no walls).
@@ -112,7 +167,60 @@ static func in_cone(light: PointLight2D, point: Vector2) -> bool:
 	if offset.length() > reach(light):
 		return false
 	var forward := Vector2.UP.rotated(light.global_rotation)
-	return absf(rad_to_deg(forward.angle_to(offset))) <= CONE_HALF_ANGLE
+	return absf(rad_to_deg(forward.angle_to(offset))) <= cone_angle(light) * 0.5
+
+
+static var _textures := {}
+
+
+## The light texture for a cone `angle` degrees wide (see the constants
+## above), drawn once per rounded angle and shared by every light with it.
+## White, with the light in its alpha: a cone pointing up (the light's
+## forward, -y), fading out at its sides and at CONE_RANGE, and a circle of
+## LOCAL_RADIUS round the centre. It is mirror-symmetric, so each row works
+## out its right half and copies it to the left.
+static func light_texture(angle: float) -> ImageTexture:
+	var rounded := _rounded_angle(angle)
+	if _textures.has(rounded):
+		return _textures[rounded]
+	var size := LIGHT_TEXTURE_SIZE
+	var half_size := size >> 1
+	var texel := _texture_extent() * 2.0 / size
+	var half_angle := deg_to_rad(rounded * 0.5)
+	var edge := minf(deg_to_rad(CONE_EDGE_SOFT), half_angle * 0.5)
+	var all_round := rounded >= 360.0
+	var data := PackedByteArray()
+	data.resize(size * size * 2)
+	for y in size:
+		var wy := (y + 0.5 - half_size) * texel
+		var row := y * size
+		for x in half_size:
+			var wx := (x + 0.5) * texel
+			var r := sqrt(wx * wx + wy * wy)
+			var local := 1.0 - smoothstep(LOCAL_RADIUS - LOCAL_SOFT, LOCAL_RADIUS + LOCAL_SOFT, r)
+			var cone := 1.0 - smoothstep(CONE_RANGE - CONE_RANGE_SOFT, CONE_RANGE + CONE_RANGE_SOFT, r)
+			if not all_round:
+				cone *= 1.0 - smoothstep(half_angle - edge, half_angle + edge, atan2(wx, -wy))
+			var alpha := int(roundf(maxf(local, cone) * 255.0))
+			var right := (row + half_size + x) * 2
+			var left := (row + half_size - 1 - x) * 2
+			data[right] = 255
+			data[right + 1] = alpha
+			data[left] = 255
+			data[left + 1] = alpha
+	var texture := ImageTexture.create_from_image(Image.create_from_data(size, size, false, Image.FORMAT_LA8, data))
+	_textures[rounded] = texture
+	return texture
+
+
+static func _rounded_angle(angle: float) -> float:
+	return snappedf(clampf(angle, MIN_CONE_ANGLE, MAX_CONE_ANGLE), CONE_ANGLE_STEP)
+
+
+# How far (px) the drawn texture reaches from its centre: the cone's fade
+# ends there.
+static func _texture_extent() -> float:
+	return CONE_RANGE + CONE_RANGE_SOFT
 
 
 ## Whether a mecha's illuminator is lighting right now.

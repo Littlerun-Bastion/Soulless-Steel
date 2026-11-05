@@ -23,6 +23,11 @@ extends Node2D
 ## (Mecha.OVERHEAT_DAMAGE_TEMP over ambient).
 @export var ir_sensitivity := 60.0
 @export var ir_identification := 200.0
+## How wide (degrees) its IR illuminator's cone is, edge to edge
+## (Illumination.shape_light). Inside it the mecha sees a dark mecha at its
+## full sight range: the player's view cone, and an NPC's (Enemy._sees_by_eye).
+## Placeholder.
+@export_range(2.0, 360.0, 0.5) var illuminator_angle := 30.0
 @export var health := 1500
 @export var weight := 1.0 
 @export var tags :Array[String] = ["head"]

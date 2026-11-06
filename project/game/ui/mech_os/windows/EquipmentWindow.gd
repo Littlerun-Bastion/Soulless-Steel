@@ -4,6 +4,9 @@ class_name EquipmentWindow
 # Part slots on the left, the stats panel on the right.
 # While a part is dragged, the stats show what swapping it in would change,
 # and in the Hangar the slot it would drop into lights up.
+# An energy weapon the generator can't power (Mecha.is_weapon_underpowered)
+# says so on its slot: "RIGHT ARM · UNDERPOWERED" as a badge, and the slot's
+# tooltip gives the rating it needs (power_warning).
 
 # A part was equipped or taken off through this window.
 signal parts_changed
@@ -229,6 +232,14 @@ func _build_key(slot: PartSlot) -> String:
 	return slot.part_type
 
 
+## "UNDERPOWERED: needs WPOR 0.50" for the energy weapon in this build slot
+## when the mecha's generator can't power it; "" otherwise.
+func power_warning(build_key: String) -> String:
+	if mecha_ref == null or not build_key in Mecha.DISABLED_WEAPON_KEYS or not mecha_ref.is_weapon_underpowered(build_key):
+		return ""
+	return "UNDERPOWERED: needs WPOR %.2f" % float(mecha_ref.build[build_key].min_power_rating)
+
+
 static func _part_name(part) -> String:
 	if not part:
 		return "EMPTY"
@@ -285,8 +296,11 @@ func _style_slot(slot: PartSlot, filled: bool, target: bool) -> void:
 	var margin := slot.get_node_or_null("MarginContainer")
 	if margin:
 		margin.theme_type_variation = &"SlotMargin"
+	var warning := power_warning(_build_key(slot)) if filled else ""
+	slot.tooltip_text = warning
 	if slot.PartCategory:
-		slot.PartCategory.theme_type_variation = &"LabelMeta"
+		slot.PartCategory.text = slot.display_name + (" · UNDERPOWERED" if warning != "" else "")
+		slot.PartCategory.theme_type_variation = &"Badge" if warning != "" else &"LabelMeta"
 	if slot.PartName:
 		slot.PartName.theme_type_variation = &"LabelBody" if filled else &"LabelDim"
 

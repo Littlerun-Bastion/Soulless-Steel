@@ -154,7 +154,9 @@ func _test_weapon_swaps() -> void:
 
 
 # The default mecha with one part swapped in. Shoulder weapons need a core
-# with a shoulder mount, so one is fitted if the default core has none.
+# with a shoulder mount, so one is fitted if the default core has none; an
+# energy weapon that needs more weapon power than the default generator has
+# (weapon.min_power_rating) gets the generator with the most.
 func _design_with(part_type: String, part_id: String) -> Dictionary:
 	var design := PlayerProgress.DEFAULT_MECHA.duplicate()
 	design[SLOTS[part_type]] = part_id
@@ -163,4 +165,14 @@ func _design_with(part_type: String, part_id: String) -> Dictionary:
 			if PartManager.get_part("core", core_id).has_left_shoulder:
 				design["core"] = core_id
 				break
+	if part_type in ["arm_weapon", "shoulder_weapon"]:
+		var weapon = PartManager.get_part(part_type, part_id)
+		var needs: float = float(weapon.min_power_rating) if weapon.uses_battery else 0.0
+		if float(PartManager.get_part("generator", design["generator"]).weapon_power_rating) < needs:
+			var best: float = -1.0
+			for gen_id in PartManager.get_parts("generator"):
+				var rating: float = float(PartManager.get_part("generator", gen_id).weapon_power_rating)
+				if rating > best:
+					best = rating
+					design["generator"] = gen_id
 	return design

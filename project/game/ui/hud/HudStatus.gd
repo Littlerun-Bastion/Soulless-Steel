@@ -2,12 +2,17 @@ class_name HudStatus
 extends HBoxContainer
 
 ## Bottom-left HUD block: the frame readout (240 x 240) and the gauges.
-## (No armour or shield gauges: the old hp/shield numbers are being replaced
-## by the component damage system; the frame readout shows the damage.)
+## (No armour gauge: the frame readout shows the component damage.)
+##   SHIELD                  SC as a share of its capacity; "12.3/20 · SS 2.67"
+##                           (SC, capacity, strength). The name says its state:
+##                           UP (bright), READY (dim), RECHARGING and the
+##                           seconds left after it broke, OFFLINE with no
+##                           projector working. Hidden with no generator
 ##   INT COOLANT             internal heat as a share of the overheat point
 ##   EXT TEMP                outer hull temperature; the tick marks where heat
 ##                           starts damaging components, past it the row is bright
-##   BATTERY                 hidden when the generator has none
+##   BATTERY                 the energy weapons' reserve, "312 / 500 kWh";
+##                           hidden when the generator has none
 ##   DASH F B L R · WT       dash directions (bright = ready) and the load;
 ##                           over capacity the load inverts (replaces LoadIndicator)
 ## Everything reads the player each frame, except the load (every 0.25 s:
@@ -103,8 +108,8 @@ func _build_gauges() -> void:
 	panel.size_flags_vertical = Control.SIZE_SHRINK_END
 	var stack := MechUI.vbox(&"HudStack")
 	panel.add_child(stack)
-	for key in ["coolant", "ext_temp", "battery"]:
-		stack.add_child(_make_row(key, {"coolant": "INT COOLANT", "ext_temp": "EXT TEMP",
+	for key in ["shield", "coolant", "ext_temp", "battery"]:
+		stack.add_child(_make_row(key, {"shield": "SHIELD", "coolant": "INT COOLANT", "ext_temp": "EXT TEMP",
 				"battery": "BATTERY"}[key]))
 
 	var bottom := MechUI.hbox(&"BarRow")
@@ -139,6 +144,8 @@ func _make_row(key: String, title: String) -> VBoxContainer:
 # ---- updating -----------------------------------------------------------
 
 func _update() -> void:
+	_update_shield()
+
 	var coolant := float(player.internal_temp) / maxf(float(player.overheat_temp), 1.0)
 	_set_row("coolant", "SATURATED" if coolant >= 1.0 else "%d%%" % roundi(coolant * 100.0), coolant, coolant >= 1.0)
 
@@ -151,7 +158,7 @@ func _update() -> void:
 	var capacity := float(player.battery_capacity)
 	_rows.battery.box.visible = capacity > 0.0
 	if capacity > 0.0:
-		_set_row("battery", "%d / %d" % [roundi(player.battery), roundi(capacity)], player.battery / capacity, false)
+		_set_row("battery", "%d / %d kWh" % [roundi(player.battery), roundi(capacity)], player.battery / capacity, false)
 
 	for dir in _dash_labels:
 		var off_cooldown: bool = player.dash_cooldown[dir] <= 0.0
@@ -159,6 +166,48 @@ func _update() -> void:
 
 	if wireframe.has_method("get_damage_summary"):
 		_damage_label.text = wireframe.get_damage_summary()
+
+
+## The shield's state for the row: "up", "ready", "recharging" (the break
+## cooldown) or "offline" (no projector working, or no generator).
+static func shield_state(mecha) -> String:
+	if mecha.is_shield_offline():
+		return "offline"
+	if mecha.is_shielding:
+		return "up"
+	if mecha.shield_break_timer > 0.0:
+		return "recharging"
+	return "ready"
+
+
+## The row's name: "SHIELD · UP", "SHIELD · RECHARGING 2.4S".
+static func shield_title(state: String, break_left: float) -> String:
+	if state == "recharging":
+		return "SHIELD · RECHARGING %sS" % MechUI.fmt(snappedf(break_left, 0.1))
+	return "SHIELD · " + state.to_upper()
+
+
+## The row's value: SC to one place over its capacity, and the strength,
+## "12.3/20 · SS 2.67".
+static func format_shield(sc: float, capacity: float, strength: float) -> String:
+	return "%.1f/%s · SS %.2f" % [sc, MechUI.fmt(capacity), strength]
+
+
+func _update_shield() -> void:
+	var row: Dictionary = _rows.shield
+	row.box.visible = player.build.generator != null
+	if not row.box.visible:
+		return
+	var state := shield_state(player)
+	var capacity := float(player.max_shield)
+	row.name.text = shield_title(state, player.shield_break_timer)
+	row.value.text = format_shield(player.shield, capacity, player.shield_strength)
+	var up := state == "up"
+	row.name.theme_type_variation = &"LabelMetaBright" if up else &"LabelDim"
+	row.value.theme_type_variation = &"LabelBodyBright" if up else (&"LabelDim" if state == "offline" else &"LabelBody")
+	row.gauge.ratio = player.shield / capacity if capacity > 0.0 else 0.0
+	row.gauge.critical = up
+	row.gauge.empty = state == "offline"
 
 
 ## How far right the block moves for a sidebar whose right edge is at x.

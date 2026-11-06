@@ -607,7 +607,7 @@ offset_left = 46.9076
 offset_top = 291.824
 offset_right = 219.908
 offset_bottom = 334.824
-stat_name = "shield"
+stat_name = "shield_capacity"
 stat_label = "SHD"
 
 [node name="HeatCap" parent="TopBar" instance=ExtResource("13")]

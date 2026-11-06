@@ -181,6 +181,9 @@ var is_airborne := false
 var roof_burst := false
 var cluster_radius := 0.0
 var burst_on_landing := false
+# Where the round was before this frame's move: where a contact hit came from
+# (Mecha.shield_check).
+var _last_position := Vector2.ZERO
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -198,6 +201,7 @@ func _physics_process(dt):
 
 	if dying:
 		return
+	_last_position = position
 
 	if cover_stopped:
 		lifetime += dt
@@ -374,6 +378,7 @@ func setup(mecha, _args, _weapon):
 		$Explosion/ExplosionSensor.shape = explosion_radius
 
 	flight_start = position
+	_last_position = position
 	cluster_radius = float(args.get("cluster_radius", 0.0))
 	burst_on_landing = bool(args.get("burst_on_landing", false))
 	if args.get("target_pos") != null:
@@ -406,18 +411,22 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 				original_mecha_info.name = body.mecha_name
 				shield_hit = true
 				return
-			
-			# Handle shield reflect
-			if body.is_shielding and not has_impacted and not fuse_is_contact_enabled:
-				var reflect_vector = global_position.direction_to(body.global_position)
-				dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
-				rotation_degrees = rad_to_deg(dir.angle()) + 90
-				original_mecha_info.body = body
-				original_mecha_info.name = body.mecha_name
+
+			# A raised shield met from outside takes the direct hit
+			# (Mecha.shield_check, a deflect or an impact): the round stops at
+			# the bubble and goes off there as it would on the hull; nothing
+			# reaches the armour. Touching the bubble of a shield that doesn't
+			# stop it (from inside, or going down) does nothing.
+			if not has_impacted and body.shield_blocks(_last_position):
+				body.shield_check(_last_position, armor_pen, base_damage)
+				position = body.shield_entry_point(_last_position, position)
 				shield_hit = true
 				emit_signal("bullet_impact", self, impact_effect, false, body)
+				has_impacted = true
+				mech_hit = true
+			elif body.get_part_name_from_shape(body_shape_id) == "shield":
 				return
-			
+
 			# NEW ARMOR SYSTEM - only process if not already impacted
 			if not has_impacted:
 				# Get collision point from shape intersection
@@ -806,9 +815,16 @@ func explosion():
 				hit_mecha.last_damage_source = original_mecha_info
 				hit_mecha.last_damage_weapon = part_id
 
+				# A blast from outside a raised shield meets it instead of the
+				# armour, one hit for each part it reaches (at least one: it
+				# reached the bubble), so blasts and submunitions strip it fast.
+				var shielded: bool = hit_mecha.shield_check(position, armor_pen, base_damage,
+						maxi(parts_hit.size(), 1)) != ""
+				var armour_parts: Array = [] if shielded else parts_hit
+
 				# Run armor check for EACH part hit by explosion
 				# Explosions can damage multiple parts simultaneously
-				for hit_name in parts_hit:
+				for hit_name in armour_parts:
 					var pen_result = hit_mecha.armor_check(
 						hit_name,
 						explosion_center,
@@ -860,7 +876,8 @@ func get_explosion_parts(mecha, explosion_center: Vector2, explosion_radius: flo
 	for result in results:
 		if result.collider == mecha:
 			var hit_name = mecha.get_part_name_from_shape(result.shape)
-			# Shields aren't a real armor part — skip; take_damage handles them
+			# The shield's bubble isn't an armour part (explosion's
+			# shield_check handles a raised one)
 			if hit_name == "shield":
 				continue
 			if not parts_found.has(hit_name):

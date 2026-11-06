@@ -61,6 +61,15 @@ const WOUND_HEAVY_BLEED := 0.4
 const WOUND_LEAK := 0.2
 const SHIELD_PARTICLE_AMOUNT = 5
 const SHIELD_PARRY_TIME = 0.15
+## The shield (see SHIELDS): seconds after it goes up before it can be
+## lowered, and after it goes down before it can be raised; SC drained a
+## second while electrified (placeholder); the projector component, one on the
+## core and one on each shoulder.
+const SHIELD_TOGGLE_LOCK := 2.0
+const ELECTRIFIED_SHIELD_DRAIN := 2.0
+const SHIELD_PROJECTOR := "shield_projector"
+const SHIELD_PROJECTORS := 3
+const SHIELD_PROJECTOR_PARTS := ["core", "left_shoulder", "right_shoulder"]
 const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
 const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
 const THROTTLE_STEP = 0.1
@@ -84,7 +93,6 @@ signal died
 signal cargo_overflow(stacks)
 signal exposed
 signal mecha_extracted
-signal shield_ready
 signal parried
 signal made_sound
 signal component_damaged(part_name: String, component_name: String, hp: int, max_hp: int)
@@ -287,18 +295,31 @@ var throttle :float = 1.0
 
 var max_hp = 10
 var hp = 10
-var max_shield = 10
-var shield = 10
-var shield_regen_cooldown = 5
-var shield_project_cooldown = 0.5
-var shield_project_heat
+## The shield (see SHIELDS). SC now and full (the generator's
+## shield_capacity); SS from the parts (shield_base_strength) and with the
+## projectors that still work (shield_strength); how many work.
+var max_shield := 0.0
+var shield := 0.0
+var shield_base_strength := 0.0
+var shield_strength := 0.0
+var shield_projectors := 0
+var shield_project_heat := 0.0
+## What the pilot wants (shield_up, shield_down); seconds left of the toggle
+## lock, and of the break cooldown (no regen after SC reached 0).
+var shield_wanted := false
+var shield_lock := 0.0
+var shield_break_timer := 0.0
 var max_energy = 100
 var energy = 100
 var total_kills = 0
 var shader_heat_value = 0
-var battery = 0.0
-var battery_capacity = 0.0
-var battery_recharge_rate = 0.0
+## The battery (see ENERGY WEAPONS): kWh now and at most, the kWh a second
+## the generator's power output puts back, and the generator's weapon power
+## output rating (0 to 1).
+var battery := 0.0
+var battery_capacity := 0.0
+var power_output := 0.0
+var weapon_power_rating := 0.0
 var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
@@ -385,7 +406,6 @@ var faces_lock := true
 
 var is_shielding = false
 var is_parrying = false
-var shield_project_cooldown_timer = 0.0
 var shield_parry_timer = 0.0
 
 var internal_temp := 0.0        # °C above ambient (so 0.0 = at ambient)
@@ -622,20 +642,11 @@ func _physics_step(dt):
 	ecm_attempt_cooldown = max(ecm_attempt_cooldown - dt, 0.0)
 	
 	#SHIELDS
-	if shield_project_cooldown_timer <= 0.0:
-		emit_signal("shield_ready")
-	else:
-		shield_project_cooldown_timer = max(shield_project_cooldown_timer - dt, 0.0)
-	
 	if shield_parry_timer <= 0.0:
 		is_parrying = false
 	else:
 		shield_parry_timer = max(shield_parry_timer - dt, 0.0)
-	
-	if is_shielding:
-		increase_heat(shield_project_heat*dt)
-		if shield <= 0.0:
-			shield_down()
+	_update_shield(dt)
 
 	#Bloom — direct member access (avoids per-frame get()/set() string reflection)
 	if right_arm_bloom_time > 0: right_arm_bloom_time = max(right_arm_bloom_time - dt, 0.0)
@@ -649,23 +660,6 @@ func _physics_step(dt):
 
 	if not _salvos.is_empty():
 		_process_salvos(dt)
-
-	#Handle shield
-	if build.generator and shield < max_shield:
-		if not is_shielding:
-			shield_regen_cooldown = max(shield_regen_cooldown - dt, 0.0)
-		else:
-			shield_regen_cooldown = build.generator.shield_regen_delay
-		if shield_regen_cooldown <= 0 and not has_status("electrified"):
-			shield = min(shield + build.generator.shield_regen_speed*dt, max_shield)
-			shield = round(shield)
-			emit_signal("took_damage", self, true)
-	# Only reassign on change — see _last_shield_particle_amount declaration.
-	var new_shield_particle_amount: int = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * (shield / max_shield))))
-	if new_shield_particle_amount != _last_shield_particle_amount:
-		_last_shield_particle_amount = new_shield_particle_amount
-		$ParticlesLayer3/ShieldRing.amount = new_shield_particle_amount
-		$ParticlesLayer3/ShieldStartup.amount = new_shield_particle_amount
 
 	#Handle sprinting momentum
 	sprinting_ending_correction *= 1.0 - min(SPRINTING_COOLDOWN_SPEED*dt, 1.0)
@@ -739,8 +733,7 @@ func _physics_step(dt):
 		_update_entity_slow(dt)
 	if not ticks.is_empty() or not _fading_ticks.is_empty():
 		_update_ticks(dt)
-	if battery < battery_capacity and not has_status("electrified"):
-		battery = min(battery + battery_recharge_rate*dt, battery_capacity)
+	_recharge_battery(dt)
 	for status in status_time:
 		if status == "overheating":
 			continue  # Managed by thermal system, not timer
@@ -883,19 +876,6 @@ func update_max_life_from_parts():
 	set_max_life(value)
 
 
-func update_max_shield_from_parts():
-	var value = 0
-	if build.core:
-		value += build.core.shield
-	if build.generator:
-		value += build.generator.shield
-	#Check shoulders
-	if build.shoulders:
-		value += build.shoulders.shield
-
-	set_max_shield(value)
-
-
 func is_overweight():
 	weight_capacity = get_stat("weight_capacity")
 	weight = get_total_weight()
@@ -907,17 +887,14 @@ func set_max_life(value):
 	hp = max_hp
 
 
-func set_max_shield(value):
-	max_shield = value
-	shield = max_shield
-
-
 func set_max_energy(value):
 	max_energy = value
 	energy = max_energy
 
 
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
+## The old hp damage, from melee hitboxes and the legacy projectiles. The
+## shield doesn't take part in it (see SHIELDS): only a parry stops it.
+func take_damage(amount, _shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
 	if is_dead or is_in_flag_grace():
 		return
 
@@ -930,18 +907,12 @@ func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, s
 		do_hitstop()
 		return
 
-	if is_shielding:
-		var temp_shield = shield
-		shield = round(max(shield - (shield_mult * amount), 0))
-		amount = max(amount - temp_shield, 0)
-		hp = round(max(hp - (health_mult * amount), 0))
-	else:
-		hp = round(max(hp - (health_mult * amount), 0))
-		increase_heat(heat_damage)
-		if status_type and status_amount > 0.0:
-			set_status(status_type, status_amount)
-		if amount > max_hp/0.25:
-			Particle.blood[2].emitting = true
+	hp = round(max(hp - (health_mult * amount), 0))
+	increase_heat(heat_damage)
+	if status_type and status_amount > 0.0:
+		set_status(status_type, status_amount)
+	if amount > max_hp/0.25:
+		Particle.blood[2].emitting = true
 
 	emit_signal("took_damage", self, false)
 	if amount > 0:
@@ -1026,10 +997,9 @@ func take_status_damage(dt):
 		increase_heat(FIRE_DAMAGE*dt)
 
 	if has_status("electrified"):
-		shield = round(max(shield - (dt * 100), 0))
+		if shield > 0.0:
+			take_shield_damage(ELECTRIFIED_SHIELD_DRAIN * dt)
 		emit_signal("took_damage", self, true)
-		if build.generator:
-			shield_regen_cooldown = build.generator.shield_regen_delay
 
 	if has_status("corrosion"):
 		if hp <= 0:
@@ -1088,6 +1058,8 @@ func die(source_info, weapon_name):
 	is_dead = true
 	kill_record = KillRecord.build(self, source_info, weapon_name)
 	_drop_all_ticks()
+	if is_shielding:
+		_lower_shield(true)
 
 	# The Flag is over; the blood pools under what will be the wreck.
 	if _flag_marker:
@@ -1811,9 +1783,10 @@ func set_core(part_name):
 	if not part_name:
 		build.core = null
 		Core.texture = null
-		CoreSub.texture = null 
-		CoreGlow.texture = null  
+		CoreSub.texture = null
+		CoreGlow.texture = null
 		#do NOT touch mech_inventory here
+		refit_shield()
 		return
 	var part_data = PartManager.get_part("core", part_name)
 	Core.texture = part_data.get_image()
@@ -1841,7 +1814,6 @@ func set_core(part_name):
 	CoreSub.texture = build.core.get_sub()
 	CoreGlow.texture = build.core.get_glow()
 	update_max_life_from_parts()
-	update_max_shield_from_parts()
 	stability = get_stat("stability")
 	reset_offsets()
 	
@@ -1907,9 +1879,13 @@ func set_core(part_name):
 			push_warning("Mecha core '%s' has no coolant_type — using fallback thermals" % core_id)
 		internal_capacity = 40.0
 		overheat_temp = 110.0
+	refit_shield()
 
+## The first generator fitted comes with a full battery; one swapped for
+## another keeps the charge, up to the new capacity.
 func set_generator(part_name):
 	_stats_changed()
+	var had_generator: bool = build.generator != null
 	if part_name:
 		var part_data = PartManager.get_part("generator", part_name)
 		build.generator = part_data
@@ -1917,20 +1893,24 @@ func set_generator(part_name):
 		#Read thermal management stats
 		external_capacity = build.generator.external_thermal_capacity
 		
-		# Battery / shield (unchanged)
-		battery_capacity = build.generator.battery_capacity
-		battery = build.generator.battery_capacity
-		battery_recharge_rate = build.generator.battery_recharge_rate
-		shield_project_cooldown = build.generator.shield_project_cooldown
+		battery_capacity = float(build.generator.battery_capacity)
+		battery = minf(battery, battery_capacity) if had_generator else battery_capacity
+		power_output = float(build.generator.power_output)
+		weapon_power_rating = clampf(float(build.generator.weapon_power_rating), 0.0, 1.0)
 		shield_project_heat = build.generator.shield_project_heat
-		
+
 		if is_player():
 			GeneratorAmbientSFX.stream = build.generator.ambient_sfx
 			if GeneratorAmbientSFX.stream:
 				GeneratorAmbientSFX.play()
 	else:
 		build.generator = null
-	update_max_shield_from_parts()
+		battery_capacity = 0.0
+		battery = 0.0
+		power_output = 0.0
+		weapon_power_rating = 0.0
+	refit_shield()
+	_apply_weapon_power()
 
 
 func set_chipset(part_name):
@@ -2158,7 +2138,7 @@ func set_shoulders(part_name):
 			"side": {"level": 0, "pips": 0},
 			"rear": {"level": 0, "pips": 0}
 		}
-	update_max_shield_from_parts()
+	refit_shield()
 	arm_accuracy_mod = get_stat("arms_accuracy_modifier")
 	stability = get_stat("stability")
 
@@ -2313,10 +2293,7 @@ func get_weapon_part(part_name):
 func get_clip_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		if part.data.uses_battery:
-			return battery
-		else:
-			return part.clip_ammo
+		return part.clip_ammo
 	return false
 
 
@@ -2330,24 +2307,27 @@ func get_battery_drain(part_name):
 func get_clip_size(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.data.clip_size
+		return part.get_clip_size()
 	return false
 
 
+## The reserve: for an energy weapon, the shots the battery can still pay
+## for.
 func get_total_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
 		if part.data.uses_battery:
-			return battery
+			return part.reserve_shots()
 		else:
 			return part.total_ammo - (get_clip_size(part_name) - get_clip_ammo(part_name))
 	return false
 
 
+## false for an energy weapon: it has no ammunition of its own.
 func get_max_ammo(part_name):
 	var part = get_weapon_part(part_name)
 	if part:
-		return part.data.max_ammo
+		return false if part.data.uses_battery else part.data.max_ammo
 	return false
 
 
@@ -2362,6 +2342,67 @@ func set_ammo(part_name, target_val):
 	var part = get_weapon_part(part_name)
 	if typeof(target_val) == TYPE_INT:
 		part.data.total_ammo = target_val
+
+
+# ENERGY WEAPONS
+#
+# An energy weapon (weapon.uses_battery) fires from a clip like any weapon;
+# its reserve is the battery, one for all of them. A reload (the usual
+# WeaponNode.reload) puts in as many shots as the battery pays for, at the
+# weapon's battery_drain kWh each, up to the clip's size; with less than one
+# shot's kWh it can't reload. The battery refills at power_output kWh a second
+# except while electrified, when energy weapons can't fire either. The
+# generator's WPOR (weapon_power_rating) improves them by weapon_power_boost,
+# WPOR x WPOR_MAX_BOOST, worked out when the generator or a weapon is fitted
+# (_apply_weapon_power, WeaponNode.setup): their times between shots and
+# reload time are divided by 1 + the boost and their clip multiplied by it
+# (rounded down), so a low WPOR never makes one worse than its base stats. A
+# generator change that shrinks a clip cuts it and puts the cut shots' kWh
+# back in the battery. One whose min_power_rating is above the WPOR can be
+# fitted but neither fires nor reloads (is_weapon_underpowered).
+
+const WPOR_MAX_BOOST := 0.5
+
+
+func weapon_power_boost() -> float:
+	return clampf(weapon_power_rating, 0.0, 1.0) * WPOR_MAX_BOOST
+
+
+func is_weapon_underpowered(slot: String) -> bool:
+	var node = get_weapon_part(slot)
+	return node != null and node is Node and node.is_underpowered()
+
+
+## How many shots of `drain` kWh the battery pays for now (a weapon that
+## costs nothing: as many as anyone could want).
+func battery_shots(drain: float) -> int:
+	if drain <= 0.0:
+		return 9999
+	return maxi(floori(battery / drain), 0)
+
+
+## Takes up to `wanted` shots of `drain` kWh from the battery; returns how
+## many it paid for.
+func draw_battery_shots(wanted: int, drain: float) -> int:
+	var shots := mini(maxi(wanted, 0), battery_shots(drain))
+	if drain > 0.0:
+		battery = maxf(battery - shots * drain, 0.0)
+	return shots
+
+
+func _recharge_battery(dt: float) -> void:
+	if battery < battery_capacity and not has_status("electrified"):
+		battery = minf(battery + power_output * dt, battery_capacity)
+
+
+func _apply_weapon_power() -> void:
+	var boost := weapon_power_boost()
+	for slot in DISABLED_WEAPON_KEYS:
+		var node = get_weapon_part(slot)
+		if node is Node and node.data and node.data.uses_battery:
+			var cut: int = node.set_power_boost(boost)
+			if cut > 0:
+				battery = minf(battery + cut * float(node.data.battery_drain), battery_capacity)
 
 #MOVEMENT METHODS
 
@@ -2801,7 +2842,12 @@ func shoot(type, is_auto_fire = false):
 		return
 	if disabled_systems.has(type) and disabled_systems[type] == true:
 		return
-	
+	if is_weapon_underpowered(type):
+		if is_player() and not is_auto_fire:
+			AudioManager.play_sfx("no_ammo", global_position)
+			create_sound("quiet", "no_ammo", 600)
+		return
+
 	#Check for spool up
 	var sfx_node = WeaponSFXs[type]
 	if build[type].spool_up_sfx:
@@ -2846,26 +2892,19 @@ func shoot(type, is_auto_fire = false):
 		sfx_node.shoot_loop.play()
 		
 	while node.burst_count < weapon_ref.burst_size:
-		var amount
-		if weapon_ref.uses_battery:
-			amount = weapon_ref.number_projectiles
-			if not node.can_shoot_battery(weapon_ref.battery_drain, battery) or has_status("electrified"):
-				if is_player() and weapon_ref.battery_drain > battery and not is_auto_fire:
-					AudioManager.play_sfx("no_ammo", global_position)
-					create_sound("quiet", "no_ammo", 600)
-				return
-			node.shoot_battery()
-			battery = max(battery - weapon_ref.battery_drain, 0)
-		else:
-			amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
-			amount = max(amount, 1) #Tries to shoot at least 1 projectile
-			if not node.can_shoot(amount):
-				if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
-					AudioManager.play_sfx("no_ammo", global_position)
-					create_sound("quiet", "no_ammo", 600)
-					
-				return
-			node.shoot(amount)
+		# An energy weapon fires from its clip like any other (see ENERGY
+		# WEAPONS), except while electrified.
+		if weapon_ref.uses_battery and has_status("electrified"):
+			return
+		var amount = min(weapon_ref.burst_ammo_cost, get_clip_ammo(type))
+		amount = max(amount, 1) #Tries to shoot at least 1 projectile
+		if not node.can_shoot(amount):
+			if is_player() and node.clip_ammo <= 0 and not is_auto_fire:
+				AudioManager.play_sfx("no_ammo", global_position)
+				create_sound("quiet", "no_ammo", 600)
+
+			return
+		node.shoot(amount)
 
 		#Create projectile
 		if not weapon_ref.is_melee:
@@ -3007,7 +3046,8 @@ func designator_clip(slot: String, point: Vector2) -> Vector2:
 
 
 # Why `slot` can't fire at `point` now, or "" if it can. Reasons:
-# no_weapon, disabled, busy (dead, shielding or a salvo still going out),
+# no_weapon, disabled, underpowered (an energy weapon below its minimum
+# WPOR), busy (dead, shielding or a salvo still going out),
 # flagged (the Flag locks the weapons),
 # indoors (indirect fire from inside a building), reloading (also the
 # cooldown), no_ammo, too_hot, too_close, too_far, not_facing.
@@ -3018,13 +3058,15 @@ func can_fire_at_point(slot: String, point: Vector2) -> String:
 		return "no_weapon"
 	if disabled_systems.get(DISABLED_WEAPON_KEYS.get(slot, ""), false) == true:
 		return "disabled"
+	if node.is_underpowered():
+		return "underpowered"
 	if is_dead or is_shielding or is_salvo_firing(slot):
 		return "busy"
 	if is_flagged() and not flag_allows(slot):
 		return "flagged"
 	if weapon.is_indirect_fire and is_inside_building:
 		return "indoors"
-	if node.clip_ammo is not bool and node.clip_ammo <= 0 and node.total_ammo <= 0:
+	if node.clip_ammo is not bool and node.clip_ammo <= 0 and node.reserve_shots() <= 0:
 		return "no_ammo"
 	if node.is_reloading() or node.timer > 0.0 or (node.clip_ammo is not bool and node.clip_ammo <= 0):
 		return "reloading"
@@ -3189,23 +3231,242 @@ func _fire_designator_round(slot: String, point: Vector2) -> void:
 						})
 
 
-func shield_up():
-	await shield_ready
-	if shield > 0.0:
-		$ParticlesLayer3/ShieldStartup.emitting = true
-		$ShieldCollision.disabled = false
-		is_shielding = true
-		$ParticlesLayer3/ShieldRing.emitting = true
-	
-func shield_down():
-	shield_parry()
-	$ShieldCollision.disabled = true
+# SHIELDS
+#
+# While the shield is up the generator holds a bubble round the mecha
+# ($ShieldCollision, a circle). It has a pool, SC (shield, up to max_shield:
+# the generator's shield_capacity), and a strength, SS, which works like an
+# armour level: the average of the core's, the shoulders' (counted once) and
+# the generator's shield_strength (shield_base_strength, to 2 places), times
+# the share of the SHIELD_PROJECTORS still working (shield_strength). One
+# projector is a component of the core and one of each shoulder; a shoulder
+# that comes off takes its own. With none working, or no generator, the shield
+# is offline. update_shield_strength works SS out when a part is fitted, a
+# projector is destroyed or a part comes off, never per frame.
+#
+# A hit from outside the bubble meets the shield instead of the armour
+# (shield_check, one place for every damage path). The round's armour pen
+# against SS: short of it by 1 or more, the round is deflected and does
+# nothing; nearer, it stops at the bubble and takes its damage pips x
+# (1 - shortfall) from SC (all of them at or above SS; shield_damage); nothing
+# reaches the armour or the components. A blast counts as one hit for each
+# part it reaches. Anything that starts inside the bubble ignores it.
+#
+# shield_up and shield_down only say what the pilot wants (shield_wanted);
+# _update_shield follows it once SHIELD_TOGGLE_LOCK s have passed since the
+# shield last went up or down. SC reaching 0 or the last projector going drops
+# it at once, whatever the lock, and forgets the want. It can't go up with no
+# SC, offline or with no generator (can_raise_shield). Up, it costs
+# shield_project_heat kJ a second and the weapons can't fire; lowered by
+# choice with SC left, it parries for SHIELD_PARRY_TIME s. Down, SC comes back
+# at the generator's shield_regen_rate a second, except during
+# shield_break_cooldown s after SC reached 0, with the generator component
+# destroyed (disabled_systems.shield_regen) or while electrified, which
+# drains ELECTRIFIED_SHIELD_DRAIN a second instead.
+
+## The pilot wants the shield up: it goes up now, or when the toggle lock ends.
+func shield_up() -> void:
+	shield_wanted = true
+	_apply_shield_wanted()
+
+
+## The pilot wants the shield down: it goes down now, or when the toggle lock
+## ends.
+func shield_down() -> void:
+	shield_wanted = false
+	_apply_shield_wanted()
+
+
+## Whether the shield could go up now, the toggle lock aside.
+func can_raise_shield() -> bool:
+	return not is_dead and build.generator != null and shield > 0.0 and not is_shield_offline()
+
+
+## No generator, or no projector left to project the bubble.
+func is_shield_offline() -> bool:
+	return build.generator == null or shield_projectors <= 0
+
+
+## Where the bubble is centred, and how far it reaches.
+func shield_center() -> Vector2:
+	return $ShieldCollision.global_position
+
+
+func shield_radius() -> float:
+	var circle := $ShieldCollision.shape as CircleShape2D
+	return circle.radius * absf($ShieldCollision.global_scale.x) if circle else 0.0
+
+
+func is_inside_shield(point: Vector2) -> bool:
+	return point.distance_to(shield_center()) < shield_radius()
+
+
+## Where the line from `from` (outside) to `to` first meets the bubble,
+## nudged 1 px out of it; `to` when the line doesn't meet it.
+func shield_entry_point(from: Vector2, to: Vector2) -> Vector2:
+	var center := shield_center()
+	var t := Geometry2D.segment_intersects_circle(from, to, center, shield_radius())
+	if t < 0.0:
+		return to
+	var at := from.lerp(to, t)
+	return at + (at - center).normalized()
+
+
+## The bubble's surface normal (outwards) at `point`.
+func shield_normal(point: Vector2) -> Vector2:
+	var out := point - shield_center()
+	return out.normalized() if out != Vector2.ZERO else Vector2.UP
+
+
+## How far short of shield strength `ss` armour pen `pen` falls, to 2 places.
+static func shield_shortfall(ss: float, pen: int) -> float:
+	return snappedf(ss - float(pen), 0.01)
+
+
+## The SC one hit takes from a shield of strength `ss`: all `damage` pips at
+## or above it, none 1 or more short of it (a deflect), and in between
+## damage x (1 - shortfall), to 2 places.
+static func shield_damage(ss: float, pen: int, damage: int) -> float:
+	var shortfall := shield_shortfall(ss, pen)
+	if shortfall >= 1.0:
+		return 0.0
+	if shortfall <= 0.0:
+		return float(damage)
+	return snappedf(float(damage) * (1.0 - shortfall), 0.01)
+
+
+## The shield check for a hit coming from `from` with armour pen `pen` and
+## `damage` pips, counted `hits` times (a blast: once per part it reaches).
+## "" when the shield isn't in the way: it is down, or `from` is inside the
+## bubble; then the armour check follows as usual. Otherwise nothing gets
+## through: "deflect" (the round bounces off, no SC lost) or "impact" (it
+## stops at the bubble and SC goes down, nothing in the Flag's grace window).
+func shield_check(from: Vector2, pen: int, damage: int, hits := 1) -> String:
+	if not shield_blocks(from):
+		return ""
+	if shield_shortfall(shield_strength, pen) >= 1.0:
+		return "deflect"
+	if not is_in_flag_grace():
+		take_shield_damage(snappedf(shield_damage(shield_strength, pen, damage) * maxi(hits, 1), 0.01))
+	return "impact"
+
+
+## Whether a hit from `from` meets the shield: it is up and `from` is outside
+## the bubble.
+func shield_blocks(from: Vector2) -> bool:
+	return is_shielding and not is_dead and not is_inside_shield(from)
+
+
+## Takes `amount` from SC. At 0 the break cooldown starts and a shield that
+## is up drops.
+func take_shield_damage(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	shield = maxf(shield - amount, 0.0)
+	if shield <= 0.0:
+		shield = 0.0
+		shield_break_timer = build.generator.shield_break_cooldown if build.generator else 0.0
+		if is_shielding:
+			_lower_shield(true)
+
+
+## A part was fitted or taken off: SC full again (max from the generator),
+## no break cooldown, SS worked out afresh.
+func refit_shield() -> void:
+	max_shield = float(build.generator.shield_capacity) if build.generator else 0.0
+	shield = max_shield
+	shield_break_timer = 0.0
+	update_shield_strength()
+
+
+## Works out SS from the fitted parts and the projectors that still work. A
+## shield that is up drops when none are left.
+func update_shield_strength() -> void:
+	var total := 0.0
+	var count := 0
+	for part in [build.core, build.shoulders, build.generator]:
+		if part:
+			total += float(part.shield_strength)
+			count += 1
+	shield_base_strength = snappedf(total / count, 0.01) if build.generator and count > 0 else 0.0
+	shield_projectors = count_shield_projectors()
+	shield_strength = snappedf(shield_base_strength * shield_projectors / float(SHIELD_PROJECTORS), 0.01)
+	if is_shielding and is_shield_offline():
+		_lower_shield(true)
+
+
+## The shield projectors still working: not destroyed, on a fitted part that
+## hasn't come off.
+func count_shield_projectors() -> int:
+	var live := 0
+	for part_name in SHIELD_PROJECTOR_PARTS:
+		if (build.core if part_name == "core" else build.shoulders) == null or is_part_lost(part_name):
+			continue
+		var comp = components[part_name].get(SHIELD_PROJECTOR)
+		if comp != null and not comp.disabled:
+			live += 1
+	return live
+
+
+func _update_shield(dt: float) -> void:
+	shield_lock = maxf(shield_lock - dt, 0.0)
+	shield_break_timer = maxf(shield_break_timer - dt, 0.0)
+	if is_shielding:
+		increase_heat(shield_project_heat * dt)
+	elif _shield_regenerates():
+		shield = minf(shield + float(build.generator.shield_regen_rate) * dt, max_shield)
+	_apply_shield_wanted()
+	# Only reassign on change — see _last_shield_particle_amount declaration.
+	var share := shield / max_shield if max_shield > 0.0 else 0.0
+	var new_shield_particle_amount: int = max(1, int(ceil(SHIELD_PARTICLE_AMOUNT * share)))
+	if new_shield_particle_amount != _last_shield_particle_amount:
+		_last_shield_particle_amount = new_shield_particle_amount
+		$ParticlesLayer3/ShieldRing.amount = new_shield_particle_amount
+		$ParticlesLayer3/ShieldStartup.amount = new_shield_particle_amount
+
+
+func _shield_regenerates() -> bool:
+	return build.generator != null and shield < max_shield and shield_break_timer <= 0.0 \
+			and disabled_systems.shield_regen > 0.0 and not has_status("electrified")
+
+
+# Raises or lowers the shield to what the pilot wants, once the lock allows.
+func _apply_shield_wanted() -> void:
+	if shield_lock > 0.0 or shield_wanted == is_shielding:
+		return
+	if shield_wanted:
+		if can_raise_shield():
+			_raise_shield()
+	else:
+		_lower_shield()
+
+
+func _raise_shield() -> void:
+	is_shielding = true
+	shield_lock = SHIELD_TOGGLE_LOCK
+	$ShieldCollision.disabled = false
+	$ParticlesLayer3/ShieldStartup.emitting = true
+	$ParticlesLayer3/ShieldRing.emitting = true
+
+
+# `forced`: SC ran out or the projectors went, which may be inside a physics
+# callback, so the bubble's shape goes off at the end of the frame; no
+# parry, and the want is forgotten.
+func _lower_shield(forced := false) -> void:
+	if not forced:
+		shield_parry()
 	is_shielding = false
+	shield_lock = SHIELD_TOGGLE_LOCK
+	if forced:
+		shield_wanted = false
+		$ShieldCollision.set_deferred("disabled", true)
+	else:
+		$ShieldCollision.disabled = true
 	$ParticlesLayer3/ShieldRing.emitting = false
-	shield_project_cooldown_timer = shield_project_cooldown
+
 
 func shield_parry():
-	if shield > 0.0 and shield_project_cooldown_timer == 0.0:
+	if shield > 0.0:
 		is_parrying = true
 		shield_parry_timer = SHIELD_PARRY_TIME
 		$ParticlesLayer3/ShieldParry.emitting = true
@@ -3640,9 +3901,9 @@ func get_part_name_from_shape(shape_index: int) -> String:
 func armor_check(hit_part_name: String, impact_position: Vector2, projectile_dir: Vector2, pen_level: int, damage_pips: int, is_aoe := false) -> Dictionary:
 	# Returns: {penetrated: bool, part_name: String, component_name: String, facing: String}
 
-	# The shield collision isn't a real armor part — it's a separate
-	# damage-absorption layer handled by take_damage. Explosion area queries
-	# can pick it up; treat as "not penetrated" instead of erroring.
+	# The shield's bubble isn't an armour part: hits on it go through
+	# shield_check before any armour check. A query that picks its shape
+	# up gets "not penetrated" instead of an error.
 	if hit_part_name == "shield":
 		return {"penetrated": false, "part_name": "", "component_name": "", "facing": ""}
 
@@ -3895,6 +4156,7 @@ func get_default_components(part_type: String) -> Dictionary:
 					"weight": 0.5,
 					"disabled": false
 				},
+				SHIELD_PROJECTOR: _shield_projector_component(),
 			}
 		
 		"head":
@@ -3967,10 +4229,22 @@ func get_default_components(part_type: String) -> Dictionary:
 					"weight": 1.5,
 					"disabled": false
 				},
+				SHIELD_PROJECTOR: _shield_projector_component(),
 			}
-		
+
 		_:
 			return {}
+
+
+# One of the shield's projectors (see SHIELDS). Its hp and weight are
+# placeholders.
+func _shield_projector_component() -> Dictionary:
+	return {
+		"hp": 2, "max_hp": 2,
+		"tags": ["external", "shield"],
+		"weight": 1.0,
+		"disabled": false
+	}
 
 func initialize_components(part_type: String, part_data) -> Dictionary:
 	_wound_dirty = true
@@ -4098,6 +4372,10 @@ func component_destroyed(part_name: String, comp_name: String):
 	if comp_name == "generator":
 		disabled_systems.shield_regen = 0.0
 		emit_signal("system_degraded", "shield_regen", 0.0)
+
+	# SHIELD
+	if comp_name == SHIELD_PROJECTOR:
+		update_shield_strength()
 	
 	# THRUSTER
 	if comp_name == "thruster":
@@ -4908,6 +5186,7 @@ func lose_part(part_name: String, torn := false) -> bool:
 	else:
 		var shoulder := "left_shoulder" if part_name == "arm_weapon_left" else "right_shoulder"
 		_destroy_components(shoulder, func(_comp_name, comp): return "weapon" in comp.tags)
+	update_shield_strength()
 	_show_part_loss(at, torn)
 	part_lost.emit(part_name)
 	return true

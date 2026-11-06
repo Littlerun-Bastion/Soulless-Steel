@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/ShieldTest.gd" id="1_shield"]
+
+[node name="ShieldTest" type="Node"]
+script = ExtResource("1_shield")

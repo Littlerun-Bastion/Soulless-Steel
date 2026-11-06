@@ -7,8 +7,9 @@ extends Node2D
 # muzzle to the far end over sweep_time; every mecha or Entity the front
 # passes over is hit once, for one fixed amount: an armour check with
 # armor_pen and base_damage pips on its core, from the side facing the
-# beam, plus heat_damage kJ of heat. The firer is never hit. The beam stays
-# lit for linger_time after the sweep, then is gone.
+# beam, plus heat_damage kJ of heat; a raised shield the muzzle is outside
+# of takes that one hit instead (Mecha.shield_check). The firer is never hit.
+# The beam stays lit for linger_time after the sweep, then is gone.
 #
 # Only the mechas and Entities near the beam when it fires are checked, by
 # plain maths each frame: no physics queries after the first frame's wall
@@ -108,6 +109,11 @@ func _hit_bodies(prev_front: float) -> void:
 func _hit_body(body, at: Vector2) -> void:
 	if body.is_in_group("entity") or body.is_in_group("device"):
 		body.take_hit(base_damage, armor_pen, _dir, original_mecha_info, 0.0)
+		return
+	# A raised shield, with the muzzle outside its bubble, takes the hit
+	# instead (Mecha.shield_check): no armour check and no heat.
+	if body.shield_check(_origin, armor_pen, base_damage) != "":
+		shield_hit = true
 		return
 	var pen_result: Dictionary = body.armor_check("core", at, _dir, armor_pen, base_damage)
 	if pen_result.penetrated:

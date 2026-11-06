@@ -495,7 +495,8 @@ func _analyze_build():
 	_weapon_roles.clear()
 	for weapon_key in WEAPON_SLOTS:
 		_weapon_ap[weapon_key] = _read_armor_pen(build[weapon_key])
-		_weapon_roles[weapon_key] = _weapon_role(build[weapon_key])
+		# An underpowered energy weapon is one it can't use (no role).
+		_weapon_roles[weapon_key] = "" if is_weapon_underpowered(weapon_key) else _weapon_role(build[weapon_key])
 
 
 # Weapons that came off with their part (Mecha.lose_part) have no role: the

@@ -70,7 +70,11 @@ extends Node
 @export var eject_casings := false
 @export var casing_size := 1.0
 @export var show_idle_projectile := false
+## Energy weapons (uses_battery): the battery's kWh a reload takes for each
+## shot it puts in the clip, and the lowest generator WPOR it fires and
+## reloads with (WeaponNode.is_underpowered).
 @export var battery_drain := 1.00
+@export var min_power_rating := 0.0
 @export var impact_force := 0.0
 
 @export_category("Sound Attributes")

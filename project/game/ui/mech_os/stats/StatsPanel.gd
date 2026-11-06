@@ -11,13 +11,15 @@ extends VBoxContainer
 ##   "84 > 102 +18" with hatching on the bar for a gain,
 ##   "310 > 265 -45" with a dashed ghost on the bar for a loss.
 ## TheJewishBitmap (the summary tiles) has no arrow glyphs, so the text is plain ASCII.
-## No armour or shield tiles or shield rows: the old hp/shield numbers are
-## being replaced by the component damage system.
+## No armour tiles: the component damage system has no one number for it.
 
-## The one stat worked out rather than summed (stat_value): the build's radar
+## The stats worked out rather than summed (stat_value): the build's radar
 ## cross-section from straight ahead over RadarCrossSection.reference_rcs, to 2
-## places. Lower is better: 1.0 is the default mech.
+## places (lower is better: 1.0 is the default mech), and the shield's
+## strength, the average of the core's, the shoulders' and the generator's
+## (Mecha.update_shield_strength, all projectors working).
 const RCS_FRONT := "rcs_front"
+const SHIELD_STRENGTH := "shield_strength_avg"
 ## Edit these lists to change what the panel shows. "lower_better" only
 ## changes the tooltip; the marks always follow the number.
 const GROUPS := [
@@ -36,10 +38,15 @@ const GROUPS := [
 		{"id": "sprinting_heat", "label": "Sprint heat", "lower_better": true},
 		{"id": "dash_heat", "label": "Dash heat", "lower_better": true},
 	]},
+	{"title": "SHIELD", "stats": [
+		{"id": "shield_capacity", "label": "Shield capacity"},
+		{"id": SHIELD_STRENGTH, "label": "Shield strength"},
+		{"id": "shield_regen_rate", "label": "Shield regen /s"},
+	]},
 	{"title": "POWER", "stats": [
-		{"id": "battery_capacity", "label": "Battery capacity"},
-		{"id": "battery_recharge_rate", "label": "Battery recharge"},
-		{"id": "power_output", "label": "Power output"},
+		{"id": "battery_capacity", "label": "Battery capacity kWh"},
+		{"id": "power_output", "label": "Power output kW"},
+		{"id": "weapon_power_rating", "label": "Weapon power rating"},
 	]},
 	{"title": "SENSORS", "stats": [
 		{"id": "visual_range", "label": "Visual range m"},
@@ -107,12 +114,29 @@ func show_stats(build: Dictionary, cargo_weight: float,
 			row.bar.preview_ratio = new / top if changed else -1.0
 
 
-## A stat row's value for a build: RCS_FRONT worked out, any other summed
-## (sum_stat).
+## A stat row's value for a build: RCS_FRONT and SHIELD_STRENGTH worked out,
+## any other summed (sum_stat).
 static func stat_value(build: Dictionary, stat: String, grades: Dictionary = {}) -> float:
 	if stat == RCS_FRONT:
 		return snappedf(RadarCrossSection.of_build(build) / RadarCrossSection.reference_rcs(), 0.01)
+	if stat == SHIELD_STRENGTH:
+		return shield_strength_of(build)
 	return sum_stat(build, stat, grades)
+
+
+## The average shield_strength of the build's core, shoulders and generator
+## (those fitted), to 2 places; 0 with no generator.
+static func shield_strength_of(build: Dictionary) -> float:
+	if not build.get("generator"):
+		return 0.0
+	var total := 0.0
+	var count := 0
+	for slot in ["core", "shoulders", "generator"]:
+		var part = build.get(slot)
+		if part and part.get("shield_strength") != null:
+			total += float(part.shield_strength)
+			count += 1
+	return snappedf(total / count, 0.01) if count > 0 else 0.0
 
 
 ## Sum one stat across a build, the way Mecha.get_stat() does (minus the
@@ -226,6 +250,8 @@ func _set_tile(key: String, cur: float, new: float, comparing: bool, note: Strin
 func _max_value(stat: String) -> float:
 	if stat == RCS_FRONT:
 		return RadarCrossSection.MULT_MAX
+	if stat == SHIELD_STRENGTH:
+		return PartManager.get_max_stat_value("shield_strength") / 3.0
 	if PartManager.has_method("get_max_stat_value"):
 		var value = PartManager.get_max_stat_value(stat)
 		if value is float or value is int:

@@ -137,8 +137,8 @@ stat_name = "health"
 
 [node name="Shield" parent="parts/core" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Shield"
-stat_name = "shield"
+stat_title = "Shield Strength"
+stat_name = "shield_strength"
 
 [node name="Stability" parent="parts/core" instance=ExtResource("2")]
 layout_mode = 2
@@ -168,8 +168,8 @@ alignment = 1
 
 [node name="Shield" parent="parts/shoulders" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Shield"
-stat_name = "shield"
+stat_title = "Shield Strength"
+stat_name = "shield_strength"
 
 [node name="Stability" parent="parts/shoulders" instance=ExtResource("2")]
 layout_mode = 2
@@ -281,18 +281,18 @@ alignment = 1
 
 [node name="Shield" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Shield"
-stat_name = "shield"
+stat_title = "Shield Capacity"
+stat_name = "shield_capacity"
 
 [node name="Shield Recovery" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Shield Recovery"
-stat_name = "shield_regen_speed"
+stat_title = "Shield Regen /s"
+stat_name = "shield_regen_rate"
 
-[node name="Recovery Delay" parent="parts/generator" instance=ExtResource("2")]
+[node name="Shield Strength" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Recovery Delay"
-stat_name = "shield_regen_delay"
+stat_title = "Shield Strength"
+stat_name = "shield_strength"
 
 [node name="Heat Dissipation" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
@@ -311,18 +311,18 @@ stat_name = "idle_threshold"
 
 [node name="Battery Capacity" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Battery Capacity"
+stat_title = "Battery kWh"
 stat_name = "battery_capacity"
-
-[node name="Battery Recharge" parent="parts/generator" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Battery Recharge"
-stat_name = "battery_recharge_rate"
 
 [node name="Power Output" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2
-stat_title = "Power Output Scale"
+stat_title = "Power Output kW"
 stat_name = "power_output"
+
+[node name="Weapon Power" parent="parts/generator" instance=ExtResource("2")]
+layout_mode = 2
+stat_title = "Weapon Power Rating"
+stat_name = "weapon_power_rating"
 
 [node name="Weight" parent="parts/generator" instance=ExtResource("2")]
 layout_mode = 2

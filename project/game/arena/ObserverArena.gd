@@ -440,7 +440,7 @@ func fire_round(from: Vector2, target) -> bool:
 	var node = _phantom.get_weapon_part(ROUND_SLOT)
 	if node:
 		node.reloading = false
-		node.clip_ammo = node.data.clip_size if node.data else 1
+		node.clip_ammo = node.get_clip_size() if node.data else 1
 	_phantom_shot = {"target": target, "time": ROUND_AIM_TIME, "frames": ROUND_TRIGGER_FRAMES}
 	return true
 

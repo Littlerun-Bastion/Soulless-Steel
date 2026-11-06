@@ -113,13 +113,25 @@ func _physics_process(dt):
 	query.exclude = [self]
 
 	var result = _cast(space_state, query)
+	# A bubble whose shield went down this frame (its shape goes off at the
+	# end of the frame) stops nothing: look past it.
+	if result and result.collider is Mecha and _is_bubble(result) and not result.collider.shield_blocks(position):
+		query.from = result.position + dir * 2.0
+		result = _cast(space_state, query)
 
 	if result and result.collider:
 		var is_mecha = result.collider.is_in_group("mecha")
 		var distance_to_hit = result.position.distance_to(position)
+		var shielded: bool = result.collider is Mecha and _not_shooter(result.collider) \
+				and result.collider.shield_blocks(position)
 		
+		# A raised shield, met from outside: the shield check, not the armour
+		if shielded and not has_impacted and deflection_cooldown <= 0:
+			handle_shield_hit(result.collider, result.collider.shield_entry_point(position, result.position))
+			if dying:
+				return
 		# Ignore hits that are too close (self-collision)
-		if distance_to_hit < 15:
+		elif distance_to_hit < 15:
 			position += dir*speed*dt
 		# If we hit a mecha, manually trigger armor check
 		elif is_mecha and not has_impacted and deflection_cooldown <= 0:
@@ -219,24 +231,9 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 	# Handle deflection
 	if pen_result.has("deflection_type") and pen_result.deflection_type != "":
 		handle_deflection(body, collision_point, pen_result.deflection_type, best_part)
-		deflection_cooldown = 0.2
-		deflected_from_body = body
-		
 		body.add_decal(0, collision_point, decal_type, Vector2(40, 40))
 		emit_signal("bullet_impact", self, impact_effect, false, body)
-		
-		var kill_timer = Timer.new()
-		add_child(kill_timer)
-		kill_timer.wait_time = 0.5
-		kill_timer.one_shot = true
-		# Named method + bind, NOT a lambda: a lambda capturing `body` makes
-		# the engine print "Lambda capture at index 0 was freed" whenever the
-		# mecha dies during the 0.5s window — Godot validates captures before
-		# our guard can run. Bound args skip that check; is_instance_valid
-		# handles the freed case. Self-safety is structural: the timer is our
-		# child, so if this projectile is freed the timer never fires.
-		kill_timer.timeout.connect(_on_deflect_kill_timeout.bind(body))
-		kill_timer.start()
+		_deflected_off(body)
 		return
 	
 	# If penetrated, damage component (if one was selected)
@@ -259,10 +256,57 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		has_impacted = true
 		die(body)
 
+
+# The round meets a raised shield's bubble at `point`, coming from outside it
+# (Mecha.shield_check). Deflected, it bounces off the bubble the way it would
+# off armour; otherwise it stops there, the SC lost. Neither reaches the hull.
+func handle_shield_hit(body, point: Vector2) -> void:
+	var result: String = body.shield_check(position, armor_pen, base_damage)
+	position = point
+	shield_hit = true
+	if result == "deflect":
+		handle_deflection(body, point, "bounce", "shield")
+		emit_signal("bullet_impact", self, impact_effect, false, body)
+		_deflected_off(body)
+		return
+	speed = 0
+	has_impacted = true
+	die(body)
+
+
+# The movement ray's hit is on a mecha's shield bubble.
+func _is_bubble(result: Dictionary) -> bool:
+	return result.collider.get_part_name_from_shape(result.shape) == "shield"
+
+
+func _not_shooter(body) -> bool:
+	return not (original_mecha_info and original_mecha_info.has("body") and body == original_mecha_info.body)
+
+
+# After a bounce: mechas don't stop the round for a moment, and it ends a
+# little later wherever it is.
+func _deflected_off(body) -> void:
+	deflection_cooldown = 0.2
+	deflected_from_body = body
+	var kill_timer = Timer.new()
+	add_child(kill_timer)
+	kill_timer.wait_time = 0.5
+	kill_timer.one_shot = true
+	# Named method + bind, NOT a lambda: a lambda capturing `body` makes
+	# the engine print "Lambda capture at index 0 was freed" whenever the
+	# mecha dies during the 0.5s window — Godot validates captures before
+	# our guard can run. Bound args skip that check; is_instance_valid
+	# handles the freed case. Self-safety is structural: the timer is our
+	# child, so if this projectile is freed the timer never fires.
+	kill_timer.timeout.connect(_on_deflect_kill_timeout.bind(body))
+	kill_timer.start()
+
 func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
 	if _from_entity and body.is_in_group("entity"):
 		return
-	# This now only handles shields and parries, armor system uses raycast
+	# Only parries are handled here: the armour and the shield use the
+	# movement ray (handle_mecha_raycast_hit, handle_shield_hit), so touching
+	# a shield's bubble does nothing here.
 	if body.is_in_group("mecha"):
 		if deflection_cooldown > 0:
 			return
@@ -277,19 +321,9 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 				original_mecha_info.body = body
 				original_mecha_info.name = body.mecha_name
 				return
-			
-			# Shield reflect
-			if body.is_shielding and not has_impacted:
-				var reflect_vector = global_position.direction_to(body.global_position)
-				dir = (dir.reflect(reflect_vector.rotated(deg_to_rad(90)))).normalized()
-				rotation_degrees = rad_to_deg(dir.angle()) + 90
-				original_mecha_info.body = body
-				original_mecha_info.name = body.mecha_name
-				shield_hit = true
-				speed = muzzle_speed
-				emit_signal("bullet_impact", self, impact_effect, false, body)
-				return
-	
+		if body.get_part_name_from_shape(body_shape_id) == "shield":
+			return
+
 	# Hit non-mecha
 	if not body.is_in_group("mecha") or\
 	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
@@ -315,9 +349,15 @@ func handle_deflection(body, collision_point: Vector2, deflection_type: String, 
 	match deflection_type:
 		"bounce":
 			var surface_normal = get_deflection_normal(body, collision_point, hit_part)
-			var base_reflect = dir.reflect(surface_normal)
+			# Off a shield's bubble (its normal points outwards) the round
+			# mirrors off the surface and always leaves it, never turning
+			# back inside.
+			var off_bubble: bool = hit_part == "shield"
+			var base_reflect = dir.bounce(surface_normal) if off_bubble else dir.reflect(surface_normal)
 			var random_angle = randf_range(-45, 45)
 			dir = base_reflect.rotated(deg_to_rad(random_angle)).normalized()
+			if off_bubble and dir.dot(surface_normal) < 0.0:
+				dir = dir.bounce(surface_normal)
 			rotation_degrees = rad_to_deg(dir.angle()) + 90
 			
 			# Restore speed if it was zeroed
@@ -346,6 +386,8 @@ func handle_deflection(body, collision_point: Vector2, deflection_type: String, 
 			has_impacted = false
 
 func get_deflection_normal(body, collision_point: Vector2, hit_part: String) -> Vector2:
+	if hit_part == "shield":
+		return body.shield_normal(collision_point)
 	var collision_shape = body.get_collision_shape_for_part(hit_part)
 	if collision_shape:
 		return body.get_surface_normal_at_point(collision_point, collision_shape)

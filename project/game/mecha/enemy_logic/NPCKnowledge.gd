@@ -619,16 +619,24 @@ func _compute_self_state(weapon_heat_threshold: float, general_heat_threshold: f
 		state.is_overheating = state.heat_ratio >= general_heat_threshold
 		state.is_hot = state.heat_ratio >= weapon_heat_threshold
 
-	# Weapons and ammo
+	# Weapons and ammo. An energy weapon has ammo while its clip holds a shot
+	# or the battery can pay for one, is low under a quarter of the battery,
+	# and doesn't work at all underpowered (WeaponNode.is_underpowered).
 	var weapon_slots = ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]
 	var disabled_keys = ["left_arm_weapon", "right_arm_weapon", "left_shoulder_weapon", "right_shoulder_weapon"]
 	var any_has_ammo = false
 	var any_low_ammo = false
 	for i in weapon_slots.size():
 		var node = enemy.get_weapon_part(weapon_slots[i])
-		if node and not enemy.disabled_systems[disabled_keys[i]]:
+		if node and not enemy.disabled_systems[disabled_keys[i]] and not node.is_underpowered():
 			state.weapons_total += 1
 			state.weapons_working += 1
+			if node.data.uses_battery:
+				if int(node.clip_ammo) > 0 or node.reserve_shots() > 0:
+					any_has_ammo = true
+				if enemy.battery_capacity > 0.0 and enemy.battery / enemy.battery_capacity < 0.25:
+					any_low_ammo = true
+				continue
 			var max_ammo = enemy.get_max_ammo(weapon_slots[i])
 			var total_ammo = enemy.get_total_ammo(weapon_slots[i])
 			if typeof(max_ammo) != TYPE_BOOL and typeof(total_ammo) != TYPE_BOOL:
@@ -637,7 +645,7 @@ func _compute_self_state(weapon_heat_threshold: float, general_heat_threshold: f
 				if max_ammo > 0 and float(total_ammo) / float(max_ammo) < 0.25:
 					any_low_ammo = true
 			else:
-				any_has_ammo = true  # battery/melee = unlimited
+				any_has_ammo = true  # melee = unlimited
 		elif node:
 			state.weapons_total += 1
 

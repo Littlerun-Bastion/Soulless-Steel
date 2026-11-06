@@ -5,8 +5,10 @@ extends PanelContainer
 ##   key     the bound input (LMB, RMB, Q...)
 ##   slot    L ARM, R ARM, L SHD, R SHD (+ " · RELOADING" while reloading)
 ##   name    the weapon's part name, or EMPTY for an empty slot
-##   ammo    rounds in the clip (battery charge for battery weapons), large;
-##           the reserve underneath, small. Dim at 0.
+##   ammo    rounds in the clip, large; the reserve underneath, small. Dim
+##           at 0. An energy weapon's reserve is BAT and the shots the battery
+##           can still pay for ("BAT 27"), or UNDERPOWERED while the
+##           generator's WPOR is below the weapon's minimum.
 ## While a weapon reloads its name gives way to a reload bar. A weapon the
 ## frame readout shows as gone reads LOST (struck through, dashed tag). An
 ## indirect-fire weapon can't fire from inside a building: its name dims and
@@ -181,7 +183,7 @@ func _update_row(row: Dictionary) -> void:
 	if reloading:
 		if not _reload_start.has(info.slot):
 			_reload_start[info.slot] = Time.get_ticks_msec()
-		var duration := maxf(float(node.data.reload_speed), 0.01)
+		var duration := maxf(float(node.get_reload_time()), 0.01)
 		row.reload.ratio = (Time.get_ticks_msec() - _reload_start[info.slot]) / 1000.0 / duration
 	else:
 		_reload_start.erase(info.slot)
@@ -197,7 +199,10 @@ func _update_row(row: Dictionary) -> void:
 	row.ammo.text = str(clip_value)
 	row.ammo.theme_type_variation = &"LabelDisplay" if clip_value > 0 else &"LabelDisplayDim"
 	var battery: bool = node != null and node.get("data") != null and node.data.uses_battery
-	row.reserve.text = "BATTERY" if battery else str(roundi(float(total)) if total is float or total is int else 0)
+	var reserve := str(roundi(float(total)) if total is float or total is int else 0)
+	if battery:
+		reserve = "UNDERPOWERED" if node.is_underpowered() else "BAT " + reserve
+	row.reserve.text = reserve
 
 
 func _update_internal_row(row: Dictionary, part) -> void:

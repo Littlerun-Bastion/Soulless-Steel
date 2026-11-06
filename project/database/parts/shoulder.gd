@@ -14,7 +14,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var composition: Dictionary[String, int] = {}
 @export var description : String
 @export var image : Texture2D
-@export var shield := 1500.0
+## The shoulders' share of the shield's strength, counted once for both
+## (Mecha.update_shield_strength averages it with the core's and the
+## generator's).
+@export var shield_strength := 2.0
 @export var stability := 1.0
 @export var arms_accuracy_modifier := 1.0
 @export var melee_modifier := 0.8
@@ -38,13 +41,9 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 	#	"tags": ["internal"],
 	#	"weight": 3.0          Bigger, easier to hit
 	#},
-	#{
-	#	"name": "shield_emitter",   NEW component
-	#	"hp": 2,
-	#	"max_hp": 2,
-	#	"tags": ["internal", "shield"],
-	#	"weight": 1.0
-	#}
+	# Each shoulder's shield_projector is one of its default components
+	# (Mecha.get_default_components); an entry named shield_projector here
+	# replaces it.
 ]
 
 var part_id

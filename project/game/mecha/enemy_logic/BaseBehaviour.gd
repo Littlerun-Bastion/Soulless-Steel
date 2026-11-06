@@ -2074,8 +2074,7 @@ func do_investigate(dt, enemy):
 	else:
 		_wander_if_idle(enemy)
 		_investigate_quiet_noise(enemy)
-		if enemy.is_shielding:
-			enemy.shield_down()
+		_drop_shield(enemy)
 		_push_poi_to_nav(enemy)
 		_check_targets(enemy)
 		enemy.fire.shoot_devices(dt)
@@ -2422,7 +2421,7 @@ func do_disengage(dt, enemy):
 	var foe_pos := _threat_position(enemy)
 	enemy.ai_aim_point = foe_pos
 	enemy.fire.cease()
-	if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
+	if _can_shield(enemy) and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
 		enemy.shield_up()
 	if not _disengage_smoke:
 		_disengage_smoke = true
@@ -2698,8 +2697,7 @@ func _do_attack(dt, enemy, eff: Dictionary, state: Dictionary) -> void:
 	else:
 		enemy.ai_aim_point = target_pos
 	var distance: float = enemy.global_position.distance_to(target_pos)
-	if enemy.is_shielding:
-		enemy.shield_down()
+	_drop_shield(enemy)
 	_note_sight(enemy, seen)
 
 	# Shooting: check heat, ammo, distance, reaction time
@@ -3025,7 +3023,7 @@ func do_flee(dt, enemy):
 		return
 
 	# Shield up while fleeing
-	if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
+	if _can_shield(enemy) and enemy.internal_temp < enemy.overheat_temp * general_heat_threshold:
 		enemy.shield_up()
 	enemy.increase_throttle(1, 0.01)
 
@@ -3320,11 +3318,24 @@ func status_diff(enemy):
 	else:
 		return 0
 
+# The shield up while under fire and cool enough, down otherwise. The calls
+# say what the NPC wants (Mecha.shield_wanted); the toggle lock decides when
+# the shield follows, as for the player.
 func shield_check(enemy):
 	if is_instance_valid(enemy):
 		if enemy.under_fire_timer > 0.0:
-			if not enemy.is_shielding and enemy.internal_temp < enemy.overheat_temp*general_heat_threshold:
+			if _can_shield(enemy) and enemy.internal_temp < enemy.overheat_temp*general_heat_threshold:
 				enemy.shield_up()
 		else:
-			if enemy.is_shielding:
-				enemy.shield_down()
+			_drop_shield(enemy)
+
+
+# Whether it is worth asking for the shield: not already wanted, and it could
+# go up (SC left, a projector working, a generator).
+func _can_shield(enemy) -> bool:
+	return not enemy.shield_wanted and enemy.can_raise_shield()
+
+
+func _drop_shield(enemy) -> void:
+	if enemy.shield_wanted:
+		enemy.shield_down()

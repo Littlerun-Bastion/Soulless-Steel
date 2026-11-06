@@ -553,36 +553,34 @@ percent_visible = false
 [node name="Shields" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 offset_top = 80.0
 offset_bottom = 80.0
-tooltip_text = "Shield integrity of the SAV. When
-this drops to zero, the SAV begins
-taking armor damage. Regenerates
-after a period of not taking any damage
-dictated by the Generator.
+tooltip_text = "Shield Capacity: the shield's pool.
+Hits that get through the Shield
+Strength take it away. At zero the
+shield drops and recharges after a
+short cooldown.
 
-Modified by the SAV's Core, Shoulders
-and Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
-stat_name = "shield"
+stat_name = "shield_capacity"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
 offset_left = 11.0
 offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
-tooltip_text = "Shield integrity of the SAV. When
-this drops to zero, the SAV begins
-taking armor damage. Regenerates
-after a period of not taking any damage
-dictated by the Generator.
+tooltip_text = "Shield Capacity: the shield's pool.
+Hits that get through the Shield
+Strength take it away. At zero the
+shield drops and recharges after a
+short cooldown.
 
-Modified by the SAV's Core, Shoulders
-and Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 custom_fonts/font = ExtResource( 2 )
-text = "Shields"
+text = "Shield Capacity"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/Shields"]
 offset_left = 342.0
@@ -631,30 +629,28 @@ percent_visible = false
 [node name="ShieldRecoveryRate" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 offset_top = 160.0
 offset_bottom = 160.0
-tooltip_text = "How fast the Shield recovers lost integrity.
-Activates after not taking damage for
-a while.
+tooltip_text = "Shield Capacity regained a second
+while the shield is down.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
-stat_name = "shield_regen_speed"
+stat_name = "shield_regen_rate"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
 offset_left = 11.0
 offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
-tooltip_text = "How fast the Shield recovers lost integrity.
-Activates after not taking damage for
-a while.
+tooltip_text = "Shield Capacity regained a second
+while the shield is down.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 custom_fonts/font = ExtResource( 2 )
-text = "Shield Recovery Rate"
+text = "Shield Regen Rate"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldRecoveryRate"]
 offset_left = 342.0
@@ -703,31 +699,29 @@ percent_visible = false
 [node name="ShieldReactionDelay" type="Panel" parent="CategoryContainers/DefensesContainer/VBoxContainer"]
 offset_top = 240.0
 offset_bottom = 240.0
-tooltip_text = "How fast the Shield recovery kicks
-in if the SAV has taken no damage in
-the duration.
+tooltip_text = "How long the shield regains nothing
+after its Shield Capacity hits zero.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
-stat_name = "shield_regen_delay"
+stat_name = "shield_break_cooldown"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
 offset_left = 11.0
 offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
-tooltip_text = "How fast the Shield recovery kicks
-in if the SAV has taken no damage in
-the duration.
+tooltip_text = "How long the shield regains nothing
+after its Shield Capacity hits zero.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
-text = "Shield Reaction Delay"
+text = "Shield Break Cooldown"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/DefensesContainer/VBoxContainer/ShieldReactionDelay"]
 offset_left = 342.0
@@ -1408,13 +1402,11 @@ percent_visible = false
 [node name="BatteryCapacity" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 offset_top = 160.0
 offset_bottom = 160.0
-tooltip_text = "The available power capacity for
-the SAV's energy weapons. All 
-energy weapons across the SAV
-draw power from the battery, instead
-of using ammunition.
+tooltip_text = "The battery, in kWh: the one reserve
+every energy weapon on the SAV
+reloads its clip from.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
@@ -1427,7 +1419,7 @@ offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
-text = "Battery Capcity"
+text = "Battery Capacity (kWh)"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryCapacity"]
 offset_left = 342.0
@@ -1476,15 +1468,16 @@ percent_visible = false
 [node name="BatteryRechargeRate" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 offset_top = 240.0
 offset_bottom = 240.0
-tooltip_text = "The rate at which the SAV's battery
-recharges, per second.
+tooltip_text = "Power Output, in kW: the kWh a second
+the generator puts back into the
+battery.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
-stat_name = "battery_recharge_rate"
+stat_name = "power_output"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
 offset_left = 11.0
@@ -1492,7 +1485,7 @@ offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
-text = "Battery Recharge Rate"
+text = "Power Output (kW)"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/BatteryRechargeRate"]
 offset_left = 342.0
@@ -1541,17 +1534,16 @@ percent_visible = false
 [node name="PowerOutput" type="Panel" parent="CategoryContainers/EnergyContainer/VBoxContainer"]
 offset_top = 320.0
 offset_bottom = 320.0
-tooltip_text = "Output of the SAV's energy weapons, 
-higher values allow for more powerful
-weapons. Also forms as the basis for
-how much damage an energy weapon
-deals.
+tooltip_text = "Weapon Power Output Rating, 0 to 1:
+energy weapons fire, reload and hold
+up to half as much again. Some need
+a minimum rating to fire at all.
 
-Modified by the SAV's Generator."
+Set by the SAV's Generator."
 mouse_filter = 1
 custom_styles/panel = SubResource( 20 )
 script = ExtResource( 5 )
-stat_name = "power_output"
+stat_name = "weapon_power_rating"
 
 [node name="StatTitle" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
 offset_left = 11.0
@@ -1559,7 +1551,7 @@ offset_top = 13.0
 offset_right = 399.0
 offset_bottom = 42.0
 custom_fonts/font = ExtResource( 2 )
-text = "Power Output"
+text = "Weapon Power Rating"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/EnergyContainer/VBoxContainer/PowerOutput"]
 offset_left = 342.0

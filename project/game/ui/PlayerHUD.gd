@@ -22,8 +22,9 @@ const BLINK_PITCH_TARGET_MOD = .40
 @onready var LockingAnim = $SubViewportContainer/SubViewport/LockingSprite/AnimationPlayer
 @onready var ConstantBlinkingSFX = $SubViewportContainer/SubViewport/ConstantBlinkingSFX
 @onready var StatusChirpSFX = $SubViewportContainer/SubViewport/StatusChirpSFX
-# Bottom left: frame readout + gauges (armour, shield, heat, battery, dash,
-# load). Bottom right: weapon list. Both are built in code (game/ui/hud/).
+# Bottom left: frame readout + gauges (shield, coolant, hull temperature,
+# battery, dash, load). Bottom right: weapon list. Both are built in code
+# (game/ui/hud/).
 @onready var hud_status: HudStatus = $SubViewportContainer/SubViewport/HudStatus
 @onready var hud_weapons: HudWeapons = $SubViewportContainer/SubViewport/HudWeapons
 # Top: the strip text (site, grid square, clock), one alert at a time in the
@@ -303,7 +304,7 @@ func play_blink_sound():
 
 func _on_player_took_damage(_p, is_status):
 	#Bullet holes logic
-	if player.shield <= 0 and player.hp < player.max_hp*BULLET_THRESHOLD and\
+	if not player.is_shielding and player.hp < player.max_hp*BULLET_THRESHOLD and\
 	randf() <= BULLET_CHANCE and not is_status:
 		var visible_holes = []
 		for hole in Bulletholes.get_children():

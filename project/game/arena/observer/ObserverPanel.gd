@@ -15,8 +15,8 @@ extends CanvasLayer
 #               a clicked point or at the selected NPC, and its Flag
 #   EVENTS      each arms one event, set off where the map is clicked next
 #   TIME        pause, and the game speed
-#   OVERLAYS    sight, cone, tracks, wedges, locks, think tags, barks
-#               (ObserverOverlay), and the NPCs' ai_overlay lines
+#   OVERLAYS    sight, cone, tracks, wedges, locks, sweeps, think tags,
+#               barks (ObserverOverlay), and the NPCs' ai_overlay lines
 #   SELECTION   what is selected, its skill (an NPC), following it (F),
 #               deleting it, clearing all
 # A right click or Esc ends a click mode.
@@ -212,7 +212,8 @@ func _build_time(box: VBoxContainer) -> void:
 func _build_overlays(box: VBoxContainer) -> void:
 	var group := _section(box, "OVERLAYS")
 	for entry in [["SIGHT", "show_sight"], ["CONE", "show_cone"], ["TRACKS", "show_tracks"],
-			["WEDGES", "show_wedges"], ["LOCKS", "show_locks"], ["THINK TAGS", "show_tags"], ["BARKS", "show_barks"]]:
+			["WEDGES", "show_wedges"], ["LOCKS", "show_locks"], ["SWEEPS", "show_sweeps"], ["THINK TAGS", "show_tags"],
+			["BARKS", "show_barks"]]:
 		var property: String = entry[1]
 		_row(group, entry[0]).add_child(_button("overlay:" + property, "", _toggle_overlay.bind(property), true))
 	_row(group, "AI LINES").add_child(_button("ai_lines", "", _toggle_ai_lines, true))

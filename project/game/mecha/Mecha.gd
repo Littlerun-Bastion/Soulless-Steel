@@ -108,6 +108,9 @@ signal flag_lowered(mecha)
 signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 # Someone's sweep found this mecha (see sweep). Says nothing of who or where.
 signal swept
+# This mecha swept (see sweep): the cone, what it reported and the bodies it
+# found, for views that draw sweeps (the observer arena), never for NPC code.
+signal sweep_made(mecha, direction: Vector2, width: float, counts: Dictionary, found: Array)
 # One of this mecha's devices (a ward, a drone) was destroyed (Device).
 signal device_destroyed(device)
 # Its IR illuminator went on or off (set_illuminator).
@@ -258,8 +261,10 @@ var is_anonymous := false
 ## Active sensors (sweeps; later drones, wards, the Seeker) find this mecha
 ## only within (1 - sensor_reduction) of their range. Set by an ECM module.
 var sensor_reduction := 0.0
-## Seconds until this mecha can sweep again.
+## Seconds until this mecha can sweep again, and how many sweeps it has made
+## (each sweep's number, to match a drawn sweep with an NPC's reading of it).
 var sweep_cooldown := 0.0
+var sweeps_made := 0
 ## The internal bay part's state (see INTERNAL BAY): charges left, seconds
 ## until it can be used again, and whether a passive part is switched on.
 var internal_charges := 0
@@ -1452,7 +1457,8 @@ func sweep(direction: Vector2, width_deg: float) -> Dictionary:
 		return {"ok": false, "reason": reason}
 	var width := clampf(width_deg, SWEEP_MIN_WIDTH, SWEEP_MAX_WIDTH)
 	var counts := {}
-	for body in sweep_finds(direction, width):
+	var found := sweep_finds(direction, width)
+	for body in found:
 		if body.has_method("get_mote_count"):
 			counts[TICK_KIND] = counts.get(TICK_KIND, 0) + int(body.get_mote_count())
 		else:
@@ -1466,6 +1472,8 @@ func sweep(direction: Vector2, width_deg: float) -> Dictionary:
 	increase_heat(SWEEP_HEAT)
 	sweep_cooldown = SWEEP_COOLDOWN
 	create_sound("loud", "sweep", SWEEP_SOUND_RANGE, true)
+	sweeps_made += 1
+	sweep_made.emit(self, direction, width, counts, found)
 	return {"ok": true, "width": width, "counts": counts}
 
 

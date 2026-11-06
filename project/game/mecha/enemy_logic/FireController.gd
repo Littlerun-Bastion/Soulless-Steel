@@ -62,8 +62,8 @@ var npc = null
 ## Knowledge time (NPCKnowledge.now) of the last shot it fired: a burst is
 ## over once it has stopped (Enemy's flashing light).
 var last_shot_time := -INF
-## The last sweep it made: {"direction", "counts" (the kinds it reported),
-## "time"}; {} for none.
+## The last sweep it made, as read (read_sweep), with "time" (knowledge
+## time) and "serial" (Mecha.sweeps_made); {} for none.
 var last_sweep := {}
 var _burst_time := 0.0
 var _device_scan := 0.0
@@ -279,15 +279,65 @@ func throw_decoy() -> bool:
 	return has_internal("decoy") and npc.use_internal() == ""
 
 
-## A sensor sweep `width` degrees wide (SWEEP_WIDTH) along `direction`.
+## A sensor sweep `width` degrees wide (SWEEP_WIDTH) along `direction`; its
+## reading goes to last_sweep.
 func sweep(direction: Vector2, width := SWEEP_WIDTH) -> bool:
 	if npc.can_sweep() != "":
 		return false
 	var result: Dictionary = npc.sweep(direction, width)
-	if bool(result.get("ok", false)):
-		last_sweep = {"direction": direction, "counts": result.get("counts", {}), "time": npc.knowledge.now()}
+	if not bool(result.get("ok", false)):
+		return false
+	var forward: Vector2 = direction.normalized() if direction != Vector2.ZERO else npc.get_facing()
+	last_sweep = read_sweep(npc, npc.global_position, forward, float(result.width), result.counts)
+	last_sweep.time = npc.knowledge.now()
+	last_sweep.serial = npc.sweeps_made
+	return true
+
+
+## What a sweep from `origin` along `direction`, `width` degrees wide, tells
+## `sweeper`: {"origin", "direction", "width", "counts", "mechs" (what it
+## reported as mechs), "mates" (how many of those are its own squadmates:
+## it knows where they are, squad radio, so which of them the cone took in),
+## "unknown" (the rest: strangers), and "verdict"}:
+##   none       no strangers: nothing back, or every mech a mate
+##   contact    strangers, and no mate in the cone to mix them up with
+##   ambiguous  strangers and mates both, more mechs than mates: which
+##              returns are which isn't known (BaseBehaviour confirms first)
+## A mate that reads as something smaller (its RCS) isn't among the mechs,
+## so it isn't counted off them either.
+static func read_sweep(sweeper, origin: Vector2, direction: Vector2, width: float, counts: Dictionary) -> Dictionary:
+	var squad = sweeper.knowledge.squad if sweeper.get("knowledge") != null else null
+	var mechs := int(counts.get("mech", 0))
+	var mates := 0
+	if squad != null:
+		var cone := {"origin": origin, "direction": direction, "width": width}
+		var friends: Array = squad.alive_members()
+		if squad.is_player_led():
+			friends.append(squad.leader)
+		for body in friends:
+			if not is_instance_valid(body) or is_same(body, sweeper) or body.get("is_dead") == true:
+				continue
+			var reduction = body.get("sensor_reduction")
+			var reach := Mecha.SWEEP_RANGE * (1.0 - clampf(float(reduction) if reduction != null else 0.0, 0.0, 1.0))
+			if origin.distance_to(body.global_position) <= reach and in_sweep(cone, body.global_position) \
+					and ContactStore.sweep_kind_of(body, sweeper) == "mech":
+				mates += 1
+	var unknown := maxi(mechs - mates, 0)
+	var verdict := "none"
+	if unknown > 0:
+		verdict = "ambiguous" if mates > 0 else "contact"
+	return {"origin": origin, "direction": direction, "width": width, "counts": counts.duplicate(), "mechs": mechs,
+			"mates": mates, "unknown": unknown, "verdict": verdict}
+
+
+## Whether `point` lies inside a sweep reading's cone.
+static func in_sweep(reading: Dictionary, point: Vector2) -> bool:
+	var offset: Vector2 = point - Vector2(reading.origin)
+	if offset.length() > Mecha.SWEEP_RANGE:
+		return false
+	if float(reading.width) >= Mecha.SWEEP_MAX_WIDTH or offset == Vector2.ZERO:
 		return true
-	return false
+	return absf(Vector2(reading.direction).angle_to(offset)) <= deg_to_rad(float(reading.width)) * 0.5
 
 
 ## Whether a sweep is ready.

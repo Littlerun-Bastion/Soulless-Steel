@@ -123,7 +123,22 @@ func _test_tags_and_barks() -> void:
 	check(not npc._player_in_earshot(), "barks off: nobody hears them")
 	overlay.show_barks = true
 	await wait_seconds(npc.SPEECH_TIME + 0.5)
-	check_eq(overlay.speech_of(npc), "", "and goes when the speech is over")
+	# The NPC may have barked something of its own since.
+	check(overlay.speech_of(npc) != "Testing.", "and goes when the speech is over (%s)" % overlay.speech_of(npc))
+
+	check(overlay.show_sweeps, "sweeps are drawn to begin with")
+	npc.sweep_cooldown = 0.0
+	check(npc.fire.sweep(Vector2.UP, 90.0), "(an NPC sweeps)")
+	check(not overlay.sweeps.is_empty() and is_same(overlay.sweeps[-1].sweeper, npc), "its sweep is drawn")
+	var sweep_text: PackedStringArray = overlay.sweep_lines(overlay.sweeps[-1])
+	check(sweep_text.size() == 2 and "SWEEP" in sweep_text[0] and sweep_text[1].ends_with(str(npc.fire.last_sweep.verdict).to_upper()),
+			"with what it reported and how the NPC read it (%s)" % " | ".join(sweep_text))
+	_scene.select(npc)
+	var before: int = overlay.sweeps.size()
+	check(_scene.trigger_event("sweep", npc.global_position + Vector2(0, 2000)), "(the phantom sweeps the NPC)")
+	check(overlay.sweeps.size() == before + 1 and npc in overlay.sweeps[-1].found, "the phantom's sweep too, the NPC among what it found")
+	await wait_seconds(overlay.SWEEP_SHOW + 0.5)
+	check(overlay.sweeps.is_empty(), "and they fade out")
 
 
 # Whether a shot wedge points back at `fired_from`, give or take the few px

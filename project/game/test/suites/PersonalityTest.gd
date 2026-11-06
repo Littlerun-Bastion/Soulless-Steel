@@ -17,7 +17,7 @@ const MECHA := preload("res://game/mecha/Mecha.tscn")
 const EVENTS := ["contact", "flanking", "covering", "moving_up", "falling_back", "man_down", "regroup",
 		"investigating", "heard_alarm", "swept", "device_destroyed", "mine_spotted", "scouting", "vulturing",
 		"flag_raised", "flag_lowered", "execute", "surrender_plea", "spared", "traitor", "buddy_offer",
-		"buddy_accept", "order_ack", "betrayal", "lost_trail", "found_trail",
+		"buddy_accept", "order_ack", "betrayal", "lost_trail", "found_trail", "sweep_contact", "sweep_confirm",
 		"spotted", "lost_target", "searching", "taking_fire", "reloading", "overheating", "retreating",
 		"target_down", "looting", "extracting", "idle"]
 const TYPES := ["scavenger", "guardian", "professional", "hunter", "rat"]

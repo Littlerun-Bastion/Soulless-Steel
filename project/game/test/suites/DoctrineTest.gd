@@ -45,6 +45,8 @@ var _spoken := []
 func run_tests() -> void:
 	await case("each type meets an UNKNOWN track, a shot wedge and a lock wedge its own way", _test_responses)
 	await case("identify runs the response: sweep, lock search, leave, light", _test_identify_runs)
+	await case("sweeps decide: readings, a Hunter's push, a Professional's drone and lock, backing off", _test_sweep_steps)
+	await case("a sweep that caught squadmates is confirmed first; scout and search readings", _test_sweep_confirm)
 	await case("the skill breakpoints allow and refuse their tools; the reaction delay", _test_breakpoints)
 	await case("lights: off when calm, steady under 0.5, flashing from 0.5, the anchor, the Rat", _test_lights)
 	await case("nervous: above the panic line it fires or leaves by courage", _test_nervous)
@@ -135,11 +137,11 @@ func _wedge_reason(enemy, source: String, from: Vector2) -> Dictionary:
 func _test_responses() -> void:
 	var o := Vector2(-3000, -3000)
 	var expected := {
-		Personality.Type.SCAVENGER: ["leave", "leave", "leave"],
-		Personality.Type.RAT: ["flank", "flank", "break_line"],
+		Personality.Type.SCAVENGER: ["scan", "scan", "leave"],
+		Personality.Type.RAT: ["scan", "scan", "break_line"],
 		Personality.Type.GUARDIAN: ["scan", "scan", "lock"],
 		Personality.Type.PROFESSIONAL: ["scan", "scan", "lock"],
-		Personality.Type.HUNTER: ["lock", "lock", "lock"],
+		Personality.Type.HUNTER: ["scan", "scan", "lock"],
 	}
 	for type in TYPES:
 		var npc := _enemy(o, type, 0.8)
@@ -152,6 +154,15 @@ func _test_responses() -> void:
 		check_eq(got, expected[type], "a %s (skill 0.8): UNKNOWN, shot, lock" % name)
 		npc.queue_free()
 		hidden.queue_free()
+		_arena.mechas.clear()
+		await get_tree().physics_frame
+	# With the sweep not ready, the types that only scan by sweeping fall back.
+	for pair in [[Personality.Type.SCAVENGER, "leave"], [Personality.Type.RAT, "flank"], [Personality.Type.HUNTER, "lock"]]:
+		var npc := _enemy(o + Vector2(0, 5000), pair[0], 0.8)
+		npc.sweep_cooldown = 100.0
+		check_eq(npc.logic.behaviour.doctrine_response(npc, _wedge_reason(npc, "shot", o + Vector2(0, 3500))), pair[1],
+				"a %s with its sweep not ready: %s" % [Personality.Type.keys()[pair[0]], pair[1]])
+		npc.queue_free()
 		_arena.mechas.clear()
 		await get_tree().physics_frame
 	# A Hunter with its drone, no sweep: lock (and the drone keeps the track
@@ -188,14 +199,20 @@ func _test_identify_runs() -> void:
 	pro.update_enemy_locking(pro._lock_search + 0.01, pro.lock_search_target)
 	check(pro.get_locking_to() != null and pro.get_locking_to() and not hidden.lock_warning().is_empty(), "then locks, and the mech is warned")
 
-	# A Scavenger: it leaves, and keeps away.
+	# A Scavenger: it sweeps, the sweep reports a mech, and it backs off from
+	# it and keeps away.
 	var scav := _enemy(o + Vector2(4000, 0), Personality.Type.SCAVENGER, 0.4)
 	var spot := scav.global_position + Vector2(0, -1500)
+	var lurker := _mecha(spot + Vector2(0, -300))
 	scav.contacts.report(null, "car", spot, "alarm", 30.0)
 	_wait_out(scav)
 	check_eq(_decide(scav), "identify", "a Scavenger identifies too")
-	check_eq(scav.logic.behaviour.identifying().response, "leave", "by leaving")
+	check_eq(scav.logic.behaviour.identifying().response, "scan", "sweeping first")
 	scav.logic.behaviour.do_identify(0.1, scav)
+	check_eq(scav.fire.last_sweep.get("verdict"), "contact", "(the sweep reports the lurker)")
+	check_eq(scav.logic.behaviour.identifying().response, "leave", "so it backs off")
+	scav.logic.behaviour.do_identify(0.1, scav)
+	lurker.queue_free()
 	check(scav.knowledge.avoids(spot, 100.0), "it keeps away from the spot")
 	var goal = scav.logic.behaviour.point_of_interest
 	check(goal is Vector2 and goal.distance_to(spot) > scav.global_position.distance_to(spot), "and heads away from it")
@@ -209,6 +226,220 @@ func _test_identify_runs() -> void:
 	guardian._illuminator_hold = 0.0
 	guardian._update_illuminator(0.1)
 	check(guardian.illuminator_on, "with its light")
+
+
+# A sweep north from `npc`, ready or not, and its reading.
+func _sweep_north(npc, width := 90.0) -> Dictionary:
+	npc.sweep_cooldown = 0.0
+	npc.fire.sweep(Vector2.UP, width)
+	return npc.fire.last_sweep
+
+
+func _squad(members: Array) -> Squad:
+	var squad := Squad.new()
+	squad.setup("SW", false)
+	for m in members:
+		squad.add(m)
+	return squad
+
+
+func _test_sweep_steps() -> void:
+	var o := Vector2(-3000, -3000)
+	# Readings: every mech a stranger with no squad; a mate and a stranger;
+	# only the mate.
+	var hunter := _enemy(o, Personality.Type.HUNTER, 0.8)
+	var mate := _enemy(o + Vector2(-400, -1500), Personality.Type.HUNTER, 0.8)
+	var stranger := _mecha(o + Vector2(400, -2000))
+	var r := _sweep_north(hunter)
+	check(r.mechs == 2 and r.mates == 0 and r.verdict == "contact", "no squad: both mechs are strangers (%s)" % str(r))
+	_squad([hunter, mate])
+	r = _sweep_north(hunter)
+	check(r.mates == 1 and r.unknown == 1 and r.verdict == "ambiguous", "a mate and a stranger in the cone: ambiguous")
+	stranger.global_position = o + Vector2(0, 3000)
+	r = _sweep_north(hunter)
+	check(r.mates == 1 and r.unknown == 0 and r.verdict == "none", "only the mate: nothing to act on")
+	r = _sweep_north(hunter, 360.0)
+	check(hunter.logic.behaviour.identify_reason(hunter).get("kind") != "sweep", "a sweep all round points nowhere: no reason")
+	for m in [hunter, mate, stranger]:
+		m.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A Hunter: sweeps, then pushes that way, lock searching once a mech is
+	# inside its circle.
+	var lone := _enemy(o, Personality.Type.HUNTER, 0.8)
+	var prey := _mecha(o + Vector2(300, -3800))
+	lone.contacts.report_wedge(null, "sound", lone.global_position, prey.global_position)
+	_wait_out(lone)
+	check_eq(_decide(lone), "identify", "(a sound wedge: identify)")
+	var behaviour = lone.logic.behaviour
+	check_eq(behaviour.identifying().response, "scan", "a Hunter sweeps first")
+	behaviour.do_identify(0.1, lone)
+	check_eq(lone.fire.last_sweep.get("verdict"), "contact", "the sweep reports the mech")
+	check_eq(behaviour.identifying().response, "push", "then it pushes")
+	behaviour.do_identify(0.1, lone)
+	var goal = behaviour.point_of_interest
+	check(lone.going_to_position and goal is Vector2 and goal.distance_to(prey.global_position) < o.distance_to(prey.global_position),
+			"toward it (%s)" % str(goal))
+	check(lone.lock_search_target == null, "nothing inside its lock circle yet")
+	lone.global_position = prey.global_position + Vector2(0, 2000)
+	behaviour.do_identify(0.1, lone)
+	check(is_same(lone.lock_search_target, prey), "in reach, it lock searches on it")
+	lone.queue_free()
+	prey.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A Professional: sweeps, then lock searches where it stands, and sends
+	# its drone.
+	var design: Dictionary = PlayerProgress.DEFAULT_MECHA.duplicate()
+	design["internal"] = "DR-4"
+	var pro := _enemy(o, Personality.Type.PROFESSIONAL, 0.8, design)
+	var target := _mecha(o + Vector2(200, -2000))
+	pro.contacts.report_wedge(null, "sound", pro.global_position, target.global_position)
+	_wait_out(pro)
+	check_eq(_decide(pro), "identify", "(a Professional identifies)")
+	behaviour = pro.logic.behaviour
+	behaviour.do_identify(0.1, pro)
+	check_eq(behaviour.identifying().response, "lock", "a Professional's sweep with returns: a lock search")
+	behaviour.do_identify(0.1, pro)
+	check(is_same(pro.lock_search_target, target), "on the mech in the cone")
+	check(behaviour._identify_drone and pro.internal_cooldown > 0.0, "and its drone goes out")
+	check(not pro.going_to_position, "where it stands: no push yet")
+	pro.queue_free()
+	target.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A Rat: sweeps, then backs off from that direction.
+	var rat := _enemy(o, Personality.Type.RAT, 0.6)
+	var other := _mecha(o + Vector2(-200, -2000))
+	rat.contacts.report_wedge(null, "sound", rat.global_position, other.global_position)
+	_wait_out(rat)
+	check_eq(_decide(rat), "identify", "(a Rat identifies)")
+	behaviour = rat.logic.behaviour
+	check_eq(behaviour.identifying().response, "scan", "a Rat sweeps first")
+	behaviour.do_identify(0.1, rat)
+	check_eq(behaviour.identifying().response, "leave", "returns: it backs off")
+	behaviour.do_identify(0.1, rat)
+	goal = behaviour.point_of_interest
+	check(goal is Vector2 and goal.distance_to(other.global_position) > o.distance_to(other.global_position) + 1000.0,
+			"away from that direction (%s)" % str(goal))
+	rat.queue_free()
+	other.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+
+func _test_sweep_confirm() -> void:
+	var o := Vector2(-3000, -3000)
+	# A Professional whose sweep takes in a squadmate and a stranger: it
+	# confirms first, then with nobody seeing it, a narrower sweep clear of
+	# the mate settles it.
+	var a := _enemy(o, Personality.Type.PROFESSIONAL, 0.8)
+	var b := _enemy(o + Vector2(-500, -1500), Personality.Type.PROFESSIONAL, 0.8)
+	var stranger := _mecha(o + Vector2(700, -2200))
+	_squad([a, b])
+	a.contacts.report_wedge(null, "sound", a.global_position, o + Vector2(0, -2000))
+	_wait_out(a)
+	check_eq(_decide(a), "identify", "(identify)")
+	var behaviour = a.logic.behaviour
+	behaviour.do_identify(0.1, a)
+	check_eq(a.fire.last_sweep.get("verdict"), "ambiguous", "the sweep caught the mate and a stranger")
+	check_eq(behaviour.identifying().response, "confirm", "so it confirms before it acts")
+	var first: int = a.sweeps_made
+	behaviour.do_identify(0.1, a)
+	check(a.sweeps_made == first and behaviour.identifying().response == "confirm", "it holds while its sweep cools")
+	a.sweep_cooldown = 0.0
+	behaviour.do_identify(0.1, a)
+	var again: Dictionary = a.fire.last_sweep
+	check(a.sweeps_made == first + 1 and float(again.width) < 90.0 and int(again.mates) == 0,
+			"then sweeps narrower, clear of the mate (%.0f degrees, %d mates)" % [float(again.width), int(again.mates)])
+	check(not FireController.in_sweep(again, b.global_position), "the mate isn't in that cone")
+	check_eq(behaviour.identifying().response, "lock", "strangers there: confirmed, a Professional's lock search")
+	check(again.verdict == "contact" and FireController.in_sweep(again, stranger.global_position), "toward the stranger")
+	for m in [a, b, stranger]:
+		m.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A mate that sees the stranger settles it at once, and shares it.
+	var c := _enemy(o, Personality.Type.HUNTER, 0.8)
+	var d := _enemy(o + Vector2(-500, -1500), Personality.Type.HUNTER, 0.8)
+	var seen := _mecha(o + Vector2(700, -2200))
+	var squad := _squad([c, d])
+	c.contacts.report_wedge(null, "sound", c.global_position, o + Vector2(0, -2000))
+	_wait_out(c)
+	check_eq(_decide(c), "identify", "(identify)")
+	behaviour = c.logic.behaviour
+	behaviour.do_identify(0.1, c)
+	check_eq(behaviour.identifying().response, "confirm", "(confirming)")
+	d.contacts.report(seen, "mech", seen.global_position, "sight", 5.0)
+	behaviour.do_identify(0.1, c)
+	check_eq(behaviour.identifying().response, "push", "the mate has it in sight: confirmed, a Hunter pushes")
+	check(behaviour.identifying().reason.get("fix", Vector2.INF).distance_to(seen.global_position) < 1.0, "to where the mate sees it")
+	check(squad._shares.any(func(s): return is_same(s.body, seen)), "and the mate's sighting is shared")
+	for m in [c, d, seen]:
+		m.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# The stranger right by the mate: the confirming sweep can't tell them
+	# apart, finds nothing clear of the mate, and it stands down.
+	var e := _enemy(o, Personality.Type.PROFESSIONAL, 0.8)
+	var f := _enemy(o + Vector2(0, -1500), Personality.Type.PROFESSIONAL, 0.8)
+	var close := _mecha(o + Vector2(120, -1600))
+	_squad([e, f])
+	e.contacts.report_wedge(null, "sound", e.global_position, o + Vector2(0, -2000))
+	_wait_out(e)
+	_decide(e)
+	behaviour = e.logic.behaviour
+	behaviour.do_identify(0.1, e)
+	e.sweep_cooldown = 0.0
+	behaviour.do_identify(0.1, e)
+	check(_decide(e) != "identify", "nothing clear of the mate: it stands down (%s)" % str(e.fire.last_sweep))
+	for m in [e, f, close]:
+		m.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A Scavenger may just back off from an ambiguous sweep, by its courage.
+	var scav := _enemy(o, Personality.Type.SCAVENGER, 0.5)
+	var ambiguous := {"verdict": "ambiguous"}
+	scav.personality.courage = 0.0
+	check_eq(scav.logic.behaviour.sweep_response(scav, ambiguous), "leave", "a timid Scavenger just backs off")
+	scav.personality.courage = 1.0
+	check_eq(scav.logic.behaviour.sweep_response(scav, ambiguous), "confirm", "a brave one confirms")
+	scav.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+
+	# A scout's sweep with returns is a reason to identify; a search's puts a
+	# lock search in its cone.
+	var scout := _enemy(o, Personality.Type.PROFESSIONAL, 0.8)
+	var ahead := _mecha(o + Vector2(0, -2500))
+	_sweep_north(scout)
+	var reason: Dictionary = scout.logic.behaviour.identify_reason(scout)
+	check(reason.get("kind") == "sweep" and reason.point.distance_to(o + Vector2.UP * scout.logic.behaviour.SWEEP_GUESS) < 1.0,
+			"a scout's sweep with returns is a reason, SWEEP_GUESS along it (%s)" % str(reason))
+	check_eq(_decide(scout), "identify", "which it identifies")
+	check_eq(scout.logic.behaviour.identifying().response, "lock", "a Professional's step: lock")
+	scout.logic.intent_time = 10.0
+	scout.logic.behaviour._identify_time = scout.logic.behaviour.IDENTIFY_TIME
+	scout.logic.evaluate_now(scout)
+	check(scout.logic.behaviour.identify_reason(scout).get("kind") != "sweep", "a reading handled once isn't taken up again")
+	scout.queue_free()
+	_arena.mechas.clear()
+	await get_tree().physics_frame
+	_arena.mechas.append(ahead)
+	var seeker := _enemy(o + Vector2(0, -900), Personality.Type.HUNTER, 0.8)
+	seeker.mark_traitor(ahead)
+	seeker.knowledge.see(ahead, ahead.global_position)
+	seeker.valid_target = ahead
+	seeker.logic.behaviour.enter_search(seeker)
+	seeker.logic.behaviour.do_search(0.1, seeker)
+	check_eq(seeker.fire.last_sweep.get("verdict"), "contact", "a search sweeps toward the lost target")
+	check(is_same(seeker.lock_search_target, ahead), "and lock searches on the mech in its cone")
 
 
 func _test_breakpoints() -> void:

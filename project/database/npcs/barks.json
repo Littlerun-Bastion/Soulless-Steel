@@ -40,6 +40,8 @@
 		"lost_trail": 0.5,
 		"lock_warning": 0.8,
 		"identifying": 0.5,
+		"sweep_contact": 0.7,
+		"sweep_confirm": 0.9,
 		"locked_on": 0.7,
 		"contact_unknown": 0.6,
 		"spotted_panicked": 0.9,
@@ -80,6 +82,22 @@
 			"professional": ["Unknown contact. Classifying.", "Sweeping the area.", "Getting eyes on it."],
 			"hunter": ["I know you're there.", "Come out, come out.", "Fresh sign. Tracking."],
 			"rat": ["Ooh, who's that?", "Someone's hiding. Good.", "Let's see who we have."]
+		},
+		"sweep_contact": {
+			"any": ["Sweep's got returns.", "Mechs out that way.", "Contacts on the sweep."],
+			"scavenger": ["Returns. Nope, I'm going the other way.", "Something big out there. Backing off.", "Not my fight. Moving away."],
+			"guardian": ["Returns on the sweep. Lighting it up.", "Mechs that way. Show yourselves.", "Contact on the sweep. Getting eyes on."],
+			"professional": ["Sweep returns. Drone out, going for a lock.", "Mechs bearing that way. Locking.", "Returns confirmed. Sending the drone."],
+			"hunter": ["There you are. Moving in.", "Sweep says you're out there. Coming.", "Got returns. Pushing for a lock."],
+			"rat": ["Company. I'll just... go.", "Too many friends out there. Backing off.", "Nope. Wrong way."]
+		},
+		"sweep_confirm": {
+			"any": ["Sweep shows more than us out there. Who's that?", "Extra returns by our people. Confirm.", "More mechs than friendlies on the sweep. Check it."],
+			"scavenger": ["There's more out there than us. Anyone see them?", "Who's that with you? Say something.", "Extra returns. Somebody look, please."],
+			"guardian": ["Sweep has extra returns near ours. Confirm before anyone fires.", "Hold fire. Extra contact by a friendly.", "Unknown with our people. Identify."],
+			"professional": ["Extra returns among friendlies. Confirm before we act.", "More mechs than ours on that bearing. Verify.", "Mixed returns. Confirming."],
+			"hunter": ["Someone's standing with you. Who?", "Extra return by ours. Point it out.", "More mechs than us out there. Find it."],
+			"rat": ["Hey, who's your new friend?", "Extra mech by you. Should I worry?", "More of us than there should be. Funny, that."]
 		},
 		"locked_on": {
 			"any": ["Locked.", "Got a lock.", "Tone. Firing."],

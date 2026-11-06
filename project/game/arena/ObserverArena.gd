@@ -190,6 +190,17 @@ func get_phantom() -> Mecha:
 	return _phantom
 
 
+# Every mecha here, the phantom too, also has its sweeps drawn.
+func _connect_mecha_signals(mecha) -> void:
+	super._connect_mecha_signals(mecha)
+	mecha.sweep_made.connect(_on_mecha_sweep)
+
+
+func _on_mecha_sweep(mecha, direction: Vector2, width: float, counts: Dictionary, found: Array) -> void:
+	if overlay != null:
+		overlay.add_sweep(mecha, direction, width, counts, found)
+
+
 # ---- Spawning ----
 
 ## Spawns `size` NPCs (1 to 3) of the generic design `design_index`

@@ -23,6 +23,12 @@ extends CanvasLayer
 #            knows, its target) instead. The same size at any zoom
 #   barks    what each mecha says (ObserverArena._on_mecha_spoke), in a box
 #            over it for as long as the speech lasts
+#   sweeps   each sweep (Mecha.sweep_made) for SWEEP_SHOW s of game time,
+#            fading: its cone out to the sweep's range (a circle for one all
+#            round), faintly filled; what it reported by the sweeper
+#            ("SWEEP · 2 MECH · 1 STALKER"), and for an NPC how it read it
+#            (FireController.read_sweep: mates, strangers, the verdict); a
+#            ring round each body it found
 # and the selected dummy's patrol points and fire point.
 #
 # Greys and strokes are MechTheme's tokens (G1 to G6, S1 and S2).
@@ -49,6 +55,13 @@ const BODY_REACH := 125.0
 ## it from STILL_SHOW s.
 const STILL_RADIUS := 40.0
 const STILL_SHOW := 3.0
+## Sweeps: how long one shows (game s), how far ahead of the sweeper its
+## label sits (screen px), the found rings' radius (screen px), and the
+## cone's fill. Placeholders.
+const SWEEP_SHOW := 3.0
+const SWEEP_LABEL_AHEAD := 70.0
+const SWEPT_RING := 22.0
+const SWEEP_FILL := 0.07
 
 var arena = null
 var show_sight := true
@@ -58,6 +71,10 @@ var show_wedges := true
 var show_locks := true
 var show_tags := true
 var show_barks := true
+var show_sweeps := true
+## The sweeps showing: {"sweeper", "origin", "direction", "width", "counts",
+## "found", "serial" (the sweeper's Mecha.sweeps_made), "left" (game s)}.
+var sweeps: Array[Dictionary] = []
 
 var _canvas: Node2D = null
 var _font: Font = null
@@ -90,12 +107,36 @@ func _process(delta: float) -> void:
 		_speech[m].left -= delta
 		if not is_instance_valid(m) or _speech[m].left <= 0.0:
 			_speech.erase(m)
+	for i in range(sweeps.size() - 1, -1, -1):
+		sweeps[i].left -= delta
+		if sweeps[i].left <= 0.0:
+			sweeps.remove_at(i)
 	for m in arena.observed_npcs():
 		var entry: Dictionary = _still.get(m, {})
 		if entry.is_empty() or m.global_position.distance_to(entry.at) > STILL_RADIUS:
 			_still[m] = {"at": m.global_position, "time": 0.0}
 		else:
 			entry.time += delta
+
+
+## Shows a sweep `mecha` just made (Mecha.sweep_made) for SWEEP_SHOW s.
+func add_sweep(mecha, direction: Vector2, width: float, counts: Dictionary, found: Array) -> void:
+	sweeps.append({"sweeper": mecha, "origin": mecha.global_position,
+			"direction": direction.normalized() if direction != Vector2.ZERO else Vector2.UP.rotated(mecha.global_rotation),
+			"width": width, "counts": counts.duplicate(), "found": found.duplicate(), "serial": mecha.sweeps_made,
+			"left": SWEEP_SHOW})
+
+
+## The lines by a drawn sweep: what it reported, and for an NPC how it read
+## it ("1 MATE · 1 STRANGER · AMBIGUOUS"), once its reading is in.
+func sweep_lines(entry: Dictionary) -> PackedStringArray:
+	var lines := PackedStringArray(["SWEEP · " + Mecha.describe_sweep(entry.counts)])
+	var sweeper = entry.sweeper
+	if is_instance_valid(sweeper) and sweeper.get("fire") != null:
+		var reading: Dictionary = sweeper.fire.last_sweep
+		if int(reading.get("serial", -1)) == int(entry.serial):
+			lines.append("%d MATE · %d STRANGER · %s" % [int(reading.mates), int(reading.unknown), str(reading.verdict).to_upper()])
+	return lines
 
 
 ## Shows `text` in a box over `mecha` for `seconds` of game time.
@@ -119,6 +160,10 @@ func tag_lines(npc, detailed: bool) -> PackedStringArray:
 	var lines := PackedStringArray()
 	var state = npc.logic.get_current_state() if npc.logic != null else null
 	var head := "%s · %s" % [str(npc.mecha_name).to_upper(), str(state).to_upper() if state else "?"]
+	if str(state) == "identify" and npc.logic.behaviour.has_method("identifying"):
+		var doing: Dictionary = npc.logic.behaviour.identifying()
+		if not doing.is_empty():
+			head += " (%s)" % str(doing.response).to_upper()
 	var still := still_time(npc)
 	if still >= STILL_SHOW:
 		head += " · STILL %dS" % int(still)
@@ -170,6 +215,9 @@ func _draw_overlays() -> void:
 			_draw_wedges(m, to_screen, zoom, g5 if selected else g4, width)
 		if show_locks:
 			_draw_lock(m, to_screen, g6 if selected else g5, width)
+	if show_sweeps:
+		for entry in sweeps:
+			_draw_sweep(entry, to_screen, zoom, g6, s1)
 	var reach := maxf(BODY_REACH * zoom, TAG_GAP)
 	if show_tags and _font != null:
 		for npc in arena.observed_npcs():
@@ -256,6 +304,37 @@ func _draw_lock(m, to_screen: Transform2D, color: Color, width: float) -> void:
 		_canvas.draw_line(from, to, color, width)
 	else:
 		_canvas.draw_dashed_line(from, to, color, width, 10.0)
+
+
+# One sweep (see above), fading over its time.
+func _draw_sweep(entry: Dictionary, to_screen: Transform2D, zoom: float, color: Color, width: float) -> void:
+	var c := color
+	c.a = clampf(float(entry.left) / SWEEP_SHOW, 0.0, 1.0)
+	var origin: Vector2 = to_screen * Vector2(entry.origin)
+	var reach := Mecha.SWEEP_RANGE * zoom
+	var forward: Vector2 = entry.direction
+	var fill := c
+	fill.a *= SWEEP_FILL
+	if float(entry.width) >= Mecha.SWEEP_MAX_WIDTH:
+		_canvas.draw_circle(origin, reach, fill)
+		_canvas.draw_arc(origin, reach, 0.0, TAU, ARC_POINTS, c, width)
+	else:
+		var half := deg_to_rad(float(entry.width)) * 0.5
+		var start := forward.angle() - half
+		var points := PackedVector2Array([origin])
+		var steps := maxi(8, int(ARC_POINTS * half / PI))
+		for i in steps + 1:
+			points.append(origin + Vector2.from_angle(start + half * 2.0 * i / steps) * reach)
+		_canvas.draw_colored_polygon(points, fill)
+		_canvas.draw_line(origin, points[1], c, width)
+		_canvas.draw_line(origin, points[-1], c, width)
+		_canvas.draw_arc(origin, reach, start, start + half * 2.0, steps, c, width)
+	for body in entry.found:
+		if is_instance_valid(body):
+			_canvas.draw_arc(to_screen * body.global_position, SWEPT_RING, 0.0, TAU, 24, c, width)
+	if _font != null:
+		var label := origin + forward * SWEEP_LABEL_AHEAD
+		_draw_box(label, sweep_lines(entry), -1.0, c, false)
 
 
 # A box of `lines` on a G1 backing, centred on `anchor` across: hanging

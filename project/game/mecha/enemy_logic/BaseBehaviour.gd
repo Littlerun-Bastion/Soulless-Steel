@@ -302,6 +302,7 @@ var _wary_time := 0.0
 var _flare_used := false
 var _search_swept := false
 var _search_drone := false
+var _search_reading := {}
 var _ambush_ward := false
 var _ambush_mine := false
 var _ambush_time := 0.0
@@ -870,6 +871,7 @@ func exit_ambush(enemy):
 func enter_search(enemy):
 	_search_swept = false
 	_search_drone = false
+	_search_reading = {}
 	_trail_point = Vector2.INF
 	_trail_found = false
 	_trail_said = false
@@ -1334,7 +1336,8 @@ func _quiet_for(enemy) -> float:
 
 
 # Scouting: a sweep toward the trip's goal, else a drone that way, once;
-# then the trip goes on.
+# then the trip goes on, unless the sweep reported strangers: that reading
+# is a reason to identify (identify_reason), which outscores the trip.
 func do_scout(dt, enemy):
 	if not is_instance_valid(enemy):
 		return
@@ -1348,6 +1351,8 @@ func do_scout(dt, enemy):
 	var done := false
 	if enemy.fire.can_sweep():
 		done = enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing(), SCOUT_SWEEP_WIDTH)
+		if done:
+			AICombatLog.record_info("sweep_" + str(enemy.fire.last_sweep.verdict))
 	elif enemy.fire.has_internal("drone"):
 		done = enemy.fire.launch_drone(_scout_goal)
 	if done:
@@ -1358,34 +1363,44 @@ func do_scout(dt, enemy):
 
 # IDENTIFY: "something is out there". The one intent for an unknown or
 # unseen track (identify_reason), in this order:
-#   a lock wedge (someone locking it now), a shot wedge, an UNKNOWN IR
-#   track, a sound wedge, an alarm, a ghost of a mech it holds something
-#   against;
-# each with no visual on its cause (no body it sees inside the wedge, or the
-# track's body not in sight), at least its reaction delay old
-# (Enemy.reaction_delay) and not handled already. It picks one response
-# (doctrine_response), by panic (nervous), the reason, its type and skill:
+#   a lock wedge (someone locking it now), a shot wedge, a sweep of its own
+#   that reported strangers (a scout's, say), an UNKNOWN IR track, a sound
+#   wedge, an alarm, a ghost of a mech it holds something against;
+# each with no visual on its cause (no body it sees inside the wedge or the
+# sweep's cone, or the track's body not in sight), at least its reaction
+# delay old (Enemy.reaction_delay; not for its own sweep) and not handled
+# already. It picks one response (doctrine_response), by panic (nervous),
+# the reason, its type and skill:
 #   watch       turn toward it and look (any type under SKILL_TOOLS)
-#   scan        a sweep toward it, else a drone (fire.sweep, launch_drone, as
-#               scout uses them); a sweep that reports a mech there goes on
-#               to the type's next step (lock, or light for a Guardian)
-#   lock        a lock search on a mech inside the reason's area
-#               (Enemy.lock_search_target; the lock rules decide), a Hunter
-#               sending its drone too to keep the track live, and firing at
-#               its lock or a live track without visual
+#   scan        a sweep toward it (Hunters, Rats and Scavengers only sweep;
+#               Professionals and Guardians send a drone when the sweep
+#               isn't ready); what the sweep reads (FireController.read_sweep)
+#               decides the next step: nothing there ends it, strangers get
+#               the type's step (sweep_response)
+#   push        a Hunter: toward the sweep's point, lock searching on the way
+#   lock        a lock search on a mech inside the reason's area (the sweep's
+#               cone once it has swept; Enemy.lock_search_target, the lock
+#               rules decide), a Professional or a Hunter sending its drone
+#               there too, a Hunter firing at its lock or a live track
+#   confirm     a sweep caught squadmates and more mechs than them: it holds
+#               and checks before it acts (_identify_confirm)
 #   light       its light on, turned toward it (a Guardian's way to make
 #               sure before it fires)
-#   flank       a Rat: dark, round to a point beside the track, never a lock
-#   leave       away from it, and keeping away (knowledge.set_avoid)
+#   flank       a Rat that can't sweep: dark, round to a point beside the
+#               track, never a lock
+#   leave       away from it, and keeping away (knowledge.set_avoid): a
+#               Scavenger that can't sweep, and a Rat or a Scavenger whose
+#               sweep reports strangers (backing off from that direction)
 #   fire        blind fire at it (fire.blind_fire_at, search's code)
 #   smoke       smoke round itself, then break line
 #   break_line  to cover from it (the disengage weights)
 # It ends when the track becomes visual (engage, or nothing, takes over),
 # when it is lost, or after IDENTIFY_TIME s; standing and looking with
 # nothing to show for it (watch, light, or lock with nothing in the area to
-# lock) ends after IDENTIFY_WATCH_TIME s, and investigate goes to look. A
-# reason handled once is not taken up again. Its score sits under engage when a target is in sight and
-# above roam, loot and investigate; a lock warning puts it above a fight
+# lock and no drone out) ends after IDENTIFY_WATCH_TIME s, and investigate
+# goes to look. A reason handled once is not taken up again, nor a sweep
+# reading. Its score sits under engage when a target is in sight and above
+# roam, loot and investigate; a lock warning puts it above a fight
 # (SCORE_IDENTIFY_LOCKED), under disengage and flee. A companion under
 # orders, or an NPC with its Flag up, doesn't run it.
 
@@ -1409,13 +1424,23 @@ const NERVOUS_COURAGE := 0.4
 ## Rat goes round.
 const IDENTIFY_LEAVE_DISTANCE := 2500.0
 const IDENTIFY_FLANK_DISTANCE := 1200.0
+## Sweep readings (FireController.read_sweep): one with strangers is a reason
+## for SWEEP_READING_FRESH s; it gives no distance, so its point is
+## SWEEP_GUESS px along it; one wider than SWEEP_AIMED_WIDTH points nowhere
+## (a Hunter's sweep back all round) and is no reason. Confirming keeps the
+## second sweep CONFIRM_MATE_CLEARANCE px clear of each squadmate.
+const SWEEP_READING_FRESH := 10.0
+const SWEEP_GUESS := 3000.0
+const SWEEP_AIMED_WIDTH := 180.0
+const CONFIRM_MATE_CLEARANCE := 300.0
 ## The responses.
-const RESPONSES := ["watch", "scan", "lock", "light", "flank", "leave", "fire", "smoke", "break_line"]
+const RESPONSES := ["watch", "scan", "push", "lock", "confirm", "light", "flank", "leave", "fire", "smoke", "break_line"]
 ## Reason kinds by urgency, first first.
-const REASON_RANK := {"lock": 0, "shot": 1, "ir": 2, "sound": 3, "alarm": 4, "ghost": 5}
+const REASON_RANK := {"lock": 0, "shot": 1, "sweep": 2, "ir": 3, "sound": 4, "alarm": 5, "ghost": 6}
 
-# The reason being handled ({kind, point, key, wedge or contact, body}),
-# what it does about it, how long it has, and what is done already.
+# The reason being handled ({kind, point, key, wedge or contact, body; a
+# sweep reading once it has one, "sweep"; a point a squadmate settled,
+# "fix"}), what it does about it, how long it has, and what is done already.
 var _identify := {}
 var _identify_response := ""
 var _identify_time := 0.0
@@ -1423,6 +1448,7 @@ var _identify_scanned := false
 var _identify_drone := false
 var _identify_smoked := false
 var _identify_leave_to := Vector2.INF
+var _confirm_swept := false
 # Reasons already handled (their keys), not taken up again.
 var _identified := {}
 
@@ -1477,6 +1503,13 @@ func identify_reason(enemy, locks_only := false) -> Dictionary:
 		best_rank = rank
 	if locks_only or best_rank == 0:
 		return best
+	var reading: Dictionary = enemy.fire.last_sweep
+	if REASON_RANK.sweep < best_rank and not reading.is_empty() and reading.verdict != "none" \
+			and float(reading.width) < SWEEP_AIMED_WIDTH and store.now - float(reading.time) <= SWEEP_READING_FRESH:
+		var sweep_key := _sweep_key(reading)
+		if not _identified.has(sweep_key) and not _stranger_seen_in(enemy, reading):
+			best = {"kind": "sweep", "point": sweep_point(reading), "key": sweep_key, "sweep": reading}
+			best_rank = REASON_RANK.sweep
 	var squad = enemy.knowledge.squad
 	for contact in store.view():
 		var kind := ""
@@ -1517,6 +1550,28 @@ static func _seen_inside(seen: Array, wedge: Dictionary) -> bool:
 	return false
 
 
+# Whether it sees a mecha that isn't a squadmate inside a sweep's cone: the
+# sweep's returns are visual.
+func _stranger_seen_in(enemy, reading: Dictionary) -> bool:
+	var squad = enemy.knowledge.squad
+	for body in enemy.knowledge.seen_bodies():
+		if not is_instance_valid(body) or body.is_in_group("entity") or (squad != null and squad.is_in(body)):
+			continue
+		if FireController.in_sweep(reading, body.global_position):
+			return true
+	return false
+
+
+## Where a sweep reading puts what it found: SWEEP_GUESS px along it (a
+## sweep gives no distance).
+static func sweep_point(reading: Dictionary) -> Vector2:
+	return Vector2(reading.origin) + Vector2(reading.direction).normalized() * SWEEP_GUESS
+
+
+static func _sweep_key(reading: Dictionary) -> String:
+	return "sweep@%s#%s" % [str(reading.get("time", 0.0)), str(reading.get("serial", 0))]
+
+
 ## The response this NPC makes to `reason` (see above), by panic, the
 ## reason, its type and its skill.
 func doctrine_response(enemy, reason: Dictionary) -> String:
@@ -1525,8 +1580,10 @@ func doctrine_response(enemy, reason: Dictionary) -> String:
 	var skill: float = enemy.skill()
 	if enemy.knowledge.panic > NERVOUS_PANIC:
 		return "fire" if p == null or p.courage >= NERVOUS_COURAGE else "leave"
+	if reason.get("kind") == "sweep":
+		return sweep_response(enemy, reason.sweep)
 	if type == Personality.Type.SCAVENGER:
-		return "leave"
+		return "scan" if reason.get("kind") != "lock" and _can_sweep_scan(enemy) else "leave"
 	if reason.get("kind") == "lock":
 		if type != Personality.Type.RAT and skill >= SKILL_LOCK_BACK:
 			return "lock"
@@ -1534,18 +1591,52 @@ func doctrine_response(enemy, reason: Dictionary) -> String:
 			return "smoke"
 		return "break_line"
 	if type == Personality.Type.RAT:
-		return "flank"
+		return "scan" if _can_sweep_scan(enemy) else "flank"
 	if type == Personality.Type.GUARDIAN:
 		return "scan" if _can_scan(enemy) else "light"
 	if skill < SKILL_TOOLS:
 		return "watch"
 	if type == Personality.Type.PROFESSIONAL and _can_scan(enemy):
 		return "scan"
+	if type == Personality.Type.HUNTER and _can_sweep_scan(enemy):
+		return "scan"
 	return "lock"
+
+
+## What `enemy` does about a sweep reading with strangers in it: one that
+## also caught squadmates is confirmed first ("confirm"; a Scavenger may just
+## back off instead, by its courage), else the type's step (_sweep_step).
+func sweep_response(enemy, reading: Dictionary) -> String:
+	var p = enemy.personality
+	var type = p.type if p != null else Personality.Type.PROFESSIONAL
+	if reading.get("verdict") == "ambiguous":
+		if type == Personality.Type.SCAVENGER and randf() >= (p.courage if p != null else 0.5):
+			return "leave"
+		return "confirm"
+	return _sweep_step(type)
+
+
+# A type's step on strangers a sweep reported: a Hunter pushes that way to
+# get a lock, a Professional sends its drone and lock searches where it
+# stands, a Guardian lights it up, a Rat or a Scavenger backs off from it.
+static func _sweep_step(type) -> String:
+	match type:
+		Personality.Type.HUNTER:
+			return "push"
+		Personality.Type.PROFESSIONAL:
+			return "lock"
+		Personality.Type.GUARDIAN:
+			return "light"
+	return "leave"
 
 
 func _can_scan(enemy) -> bool:
 	return enemy.skill() >= SKILL_TOOLS and (enemy.fire.can_sweep() or enemy.fire.has_internal("drone"))
+
+
+# A scan that can only be a sweep (Hunters, Rats, Scavengers).
+func _can_sweep_scan(enemy) -> bool:
+	return enemy.skill() >= SKILL_TOOLS and enemy.fire.can_sweep()
 
 
 func enter_identify(enemy):
@@ -1555,15 +1646,19 @@ func enter_identify(enemy):
 	_identify_drone = false
 	_identify_smoked = false
 	_identify_leave_to = Vector2.INF
+	_confirm_swept = false
 	_identify_response = doctrine_response(enemy, _identify) if not _identify.is_empty() else "watch"
-	enemy.bark("identifying")
+	if _identify_response == "confirm":
+		_call_confirm(enemy)
+	else:
+		enemy.bark("sweep_contact" if _identify.get("kind") == "sweep" else "identifying")
 	AICombatLog.record_info("identify_" + _identify_response)
 
 
 func exit_identify(enemy):
 	if not _identify.is_empty():
 		_identified[_identify.key] = true
-	if is_instance_valid(enemy) and _identify_response == "lock" and not enemy.get_locked_to():
+	if is_instance_valid(enemy) and _identify_response in ["lock", "push"] and not enemy.get_locked_to():
 		enemy.lock_search_target = null
 	_identify = {}
 	_identify_response = ""
@@ -1576,9 +1671,12 @@ func identifying() -> Dictionary:
 
 
 # Whether the reason still stands: still there, and its cause not in sight.
+# Once it has a sweep reading, until it sees a stranger inside the cone.
 func _identify_holds(enemy) -> bool:
 	if _identify.is_empty():
 		return false
+	if _identify.has("sweep"):
+		return not _stranger_seen_in(enemy, _identify.sweep)
 	if _identify.has("wedge"):
 		var wedge: Dictionary = _identify.wedge
 		if not enemy.contacts.wedges().has(wedge):
@@ -1597,8 +1695,11 @@ func _identify_holds(enemy) -> bool:
 	return contact.live or _identify.kind == "ghost"
 
 
-# Where the reason puts its cause now.
+# Where the reason puts its cause now: where a squadmate or a confirming
+# sweep settled it, else the wedge's estimate, the track, or the point.
 func _identify_point() -> Vector2:
+	if _identify.has("fix"):
+		return _identify.fix
 	if _identify.has("wedge"):
 		return ContactStore.estimate_point(_identify.wedge)
 	if _identify.has("contact"):
@@ -1607,13 +1708,22 @@ func _identify_point() -> Vector2:
 
 
 ## A mech inside the reason's area that this NPC could lock (Enemy's lock
-## rules: inside the wedge, or within LOCK_SEARCH_RADIUS of the point), the
-## nearest to the point; null for none. Only what is really there is found,
-## as a reticle swept over the area would find it.
+## rules: inside the sweep's cone once it has one, inside the wedge, or
+## within LOCK_SEARCH_RADIUS of the point), never a squadmate, the nearest
+## to the point; null for none. Only what is really there is found, as a
+## reticle swept over the area would find it.
 func lock_candidate(enemy, reason: Dictionary):
 	if reason.is_empty() or not (enemy.arena is Node) or not enemy.arena.has_method("get_mechas"):
 		return null
-	var point: Vector2 = ContactStore.estimate_point(reason.wedge) if reason.has("wedge") else reason.point
+	var point: Vector2
+	if reason.has("fix"):
+		point = reason.fix
+	elif reason.has("wedge"):
+		point = ContactStore.estimate_point(reason.wedge)
+	elif reason.has("point"):
+		point = reason.point
+	else:
+		point = sweep_point(reason.sweep)
 	var squad = enemy.knowledge.squad
 	var best = null
 	var best_dist := INF
@@ -1623,8 +1733,13 @@ func lock_candidate(enemy, reason: Dictionary):
 		if squad != null and squad.is_in(mecha):
 			continue
 		var at: Vector2 = mecha.global_position
-		var inside: bool = ContactStore.wedge_contains(reason.wedge, at) if reason.has("wedge") \
-				else at.distance_to(point) <= enemy.LOCK_SEARCH_RADIUS
+		var inside: bool
+		if reason.has("sweep"):
+			inside = FireController.in_sweep(reason.sweep, at)
+		elif reason.has("wedge"):
+			inside = ContactStore.wedge_contains(reason.wedge, at)
+		else:
+			inside = at.distance_to(point) <= enemy.LOCK_SEARCH_RADIUS
 		if not inside:
 			continue
 		var dist := at.distance_to(point)
@@ -1648,6 +1763,9 @@ func do_identify(dt, enemy):
 		"flank":
 			_identify_flank(dt, enemy, point)
 			return
+		"push":
+			_identify_push(dt, enemy, point)
+			return
 		"break_line":
 			_identify_break_line(dt, enemy, point)
 			return
@@ -1665,35 +1783,181 @@ func do_identify(dt, enemy):
 			_identify_scan(enemy, point)
 		"lock":
 			_identify_lock(dt, enemy, point)
+		"confirm":
+			_identify_confirm(enemy)
 		"fire":
 			enemy.fire.blind_fire_at(point)
 	if _identify_time >= IDENTIFY_WATCH_TIME and _identify_response in ["watch", "light", "lock"] \
-			and not is_instance_valid(enemy.lock_search_target) and not enemy.get_locked_to():
+			and not _identify_drone and not is_instance_valid(enemy.lock_search_target) and not enemy.get_locked_to():
 		_identify_time = IDENTIFY_TIME
 
 
-# A sweep toward the track, else a drone, once; a sweep that reports a mech
-# there goes on: a Guardian to its light, any other to a lock search. One
-# that reports none ends it: nothing to identify.
+# A sweep toward the track (else a drone, for a Professional or a Guardian),
+# once. What it reads decides the rest: nothing there (no mech, or only
+# squadmates) ends it; strangers get sweep_response, toward the sweep's cone
+# from then on.
 func _identify_scan(enemy, point: Vector2) -> void:
 	if _identify_scanned:
 		return
 	_identify_scanned = true
 	var dir: Vector2 = enemy.global_position.direction_to(point)
 	if enemy.fire.can_sweep() and enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing(), SCOUT_SWEEP_WIDTH):
-		var counts: Dictionary = enemy.fire.last_sweep.get("counts", {})
-		if counts.has("mech"):
-			_identify_response = "light" if enemy.personality.type == Personality.Type.GUARDIAN else "lock"
-		else:
+		var reading: Dictionary = enemy.fire.last_sweep
+		_identified[_sweep_key(reading)] = true
+		AICombatLog.record_info("sweep_" + str(reading.verdict))
+		if reading.verdict == "none":
 			_identify_time = IDENTIFY_TIME
+			return
+		_identify.sweep = reading
+		_identify_response = sweep_response(enemy, reading)
+		if _identify_response == "confirm":
+			_call_confirm(enemy)
+		else:
+			enemy.bark("sweep_contact")
 	elif enemy.fire.launch_drone(point):
 		_identify_drone = true
 
 
-# A lock search on a mech inside the reason's area; a Hunter sends its drone
-# to keep the track live and fires at its lock, or blind at a live track,
-# without visual. A lock made on a mech it would fight makes that mech its
-# target: engage takes over, lights up to get visual and aim, and fires.
+# A Hunter's push: toward the point at full throttle, lock searching on the
+# way (_identify_lock: whatever comes inside the area within its lock
+# rules). With a lock it stops to hold it; arriving with nothing to lock
+# ends it.
+func _identify_push(dt, enemy, point: Vector2) -> void:
+	_identify_lock(dt, enemy, point)
+	if enemy.get_locked_to():
+		enemy.decrease_throttle(0, 0.05)
+		enemy.navigate_to_target(dt, 0.0, 0.0, false)
+		return
+	if enemy.global_position.distance_to(point) <= POSITIONAL_ACCURACY:
+		_identify_time = IDENTIFY_TIME
+		return
+	point_of_interest = point
+	enemy.going_to_position = true
+	_push_poi_to_nav(enemy)
+	_ramp_throttle_full(dt, enemy)
+	enemy.navigate_to_target(dt, 0.0, 0.0, false)
+
+
+# The squad hears it ask (a callout), so the line shows who is confirming.
+func _call_confirm(enemy) -> void:
+	var squad = enemy.knowledge.squad
+	if squad != null:
+		squad.callout(enemy, "sweep_confirm")
+	else:
+		enemy.bark("sweep_confirm")
+	AICombatLog.record_info("sweep_confirm")
+
+
+# Confirming a sweep that caught squadmates and more mechs than them, where
+# it stands, turned toward it:
+#   - a squadmate (or the player leading the squad) that has a stranger in
+#     sight inside the cone settles it: it shares the contact (squad radio)
+#     and that is where the type's step (_sweep_step) goes
+#   - else, once its sweep is ready, a narrower sweep clear of every mate
+#     (_clear_of_mates): strangers in it settle it the same way, toward
+#     where that sweep points; none, and it stands down
+# Nothing settled by IDENTIFY_TIME, it stands down.
+func _identify_confirm(enemy) -> void:
+	var reading: Dictionary = _identify.sweep
+	var type = enemy.personality.type if enemy.personality != null else Personality.Type.PROFESSIONAL
+	var spotted := _mate_spotted(enemy, reading)
+	if not spotted.is_empty():
+		enemy.knowledge.squad.share_contact(spotted.mate, spotted.body, spotted.position)
+		_identify.fix = spotted.position
+		_identify_response = _sweep_step(type)
+		enemy.bark("sweep_contact")
+		AICombatLog.record_info("sweep_confirmed")
+		return
+	if _confirm_swept or not enemy.fire.can_sweep():
+		return
+	var gap := _clear_of_mates(enemy, reading)
+	if gap.is_empty():
+		return
+	_confirm_swept = true
+	if not enemy.fire.sweep(gap.direction, gap.width):
+		return
+	var again: Dictionary = enemy.fire.last_sweep
+	_identified[_sweep_key(again)] = true
+	if int(again.unknown) > 0:
+		_identify.sweep = again
+		_identify.fix = sweep_point(again)
+		_identify_response = _sweep_step(type)
+		enemy.bark("sweep_contact")
+		AICombatLog.record_info("sweep_confirmed")
+	else:
+		_identify_time = IDENTIFY_TIME
+		AICombatLog.record_info("sweep_stood_down")
+
+
+# A stranger that a squadmate (or the player leading the squad) has in
+# sight inside the sweep's cone: {"body", "position", "mate"}; {} for none.
+func _mate_spotted(enemy, reading: Dictionary) -> Dictionary:
+	var squad = enemy.knowledge.squad
+	if squad == null:
+		return {}
+	var mates: Array = squad.mates_of(enemy)
+	if squad.is_player_led() and not is_same(squad.leader, enemy):
+		mates.append(squad.leader)
+	for mate in mates:
+		var store = mate.get("contacts")
+		if not (store is ContactStore):
+			continue
+		for contact in store.live_from("sight"):
+			var body = contact.body
+			if body == null or not is_instance_valid(body) or not body.is_in_group("mecha") or body.get("is_dead") == true:
+				continue
+			if squad.is_in(body) or is_same(body, enemy):
+				continue
+			if FireController.in_sweep(reading, contact.position):
+				return {"body": body, "position": contact.position, "mate": mate}
+	return {}
+
+
+## The widest part of a sweep reading's cone, seen from where `enemy` stands
+## now, that keeps CONFIRM_MATE_CLEARANCE px clear of every squadmate in it:
+## {"direction", "width" (degrees)}; {} if no part is SWEEP_MIN_WIDTH wide.
+func _clear_of_mates(enemy, reading: Dictionary) -> Dictionary:
+	var origin: Vector2 = enemy.global_position
+	var centre: float = Vector2(reading.direction).angle()
+	var half := deg_to_rad(float(reading.width)) * 0.5
+	var squad = enemy.knowledge.squad
+	var blocked: Array = []
+	if squad != null:
+		var mates: Array = squad.mates_of(enemy)
+		if squad.is_player_led() and not is_same(squad.leader, enemy):
+			mates.append(squad.leader)
+		for mate in mates:
+			var offset: Vector2 = mate.global_position - origin
+			var distance := offset.length()
+			if distance <= 0.0 or distance > Mecha.SWEEP_RANGE:
+				continue
+			var at := angle_difference(centre, offset.angle())
+			var pad := asin(minf(CONFIRM_MATE_CLEARANCE / distance, 1.0))
+			if absf(at) - pad > half:
+				continue
+			blocked.append(Vector2(at - pad, at + pad))
+	blocked.sort_custom(func(a, b): return a.x < b.x)
+	var best_from := 0.0
+	var best_width := -1.0
+	var from := -half
+	for span in blocked:
+		if span.x - from > best_width:
+			best_width = span.x - from
+			best_from = from
+		from = maxf(from, span.y)
+	if half - from > best_width:
+		best_width = half - from
+		best_from = from
+	if rad_to_deg(best_width) < Mecha.SWEEP_MIN_WIDTH:
+		return {}
+	return {"direction": Vector2.from_angle(centre + best_from + best_width * 0.5), "width": rad_to_deg(best_width)}
+
+
+# A lock search on a mech inside the reason's area; a Professional or a
+# Hunter sends its drone there too; a Hunter fires at its lock, or blind at
+# a live track, without visual. A lock made on a mech it would fight makes
+# that mech its target: engage takes over, lights up to get visual and aim,
+# and fires.
 func _identify_lock(dt, enemy, point: Vector2) -> void:
 	if not is_instance_valid(enemy.lock_search_target) and not enemy.get_locked_to():
 		var found = lock_candidate(enemy, _identify)
@@ -1702,10 +1966,12 @@ func _identify_lock(dt, enemy, point: Vector2) -> void:
 	var made = enemy.get_locked_to()
 	if made and not enemy.valid_target and enemy.should_attack(made):
 		enemy.valid_target = made
-	if enemy.personality.type != Personality.Type.HUNTER:
-		return
-	if not _identify_drone and enemy.fire.has_internal("drone"):
+	var type = enemy.personality.type
+	if not _identify_drone and (type == Personality.Type.HUNTER or type == Personality.Type.PROFESSIONAL) \
+			and enemy.fire.has_internal("drone"):
 		_identify_drone = enemy.fire.launch_drone(point)
+	if type != Personality.Type.HUNTER:
+		return
 	var locked = enemy.get_locked_to()
 	if locked:
 		var eff = _get_effective_distances(enemy)
@@ -2066,8 +2332,10 @@ func _threat_position(enemy) -> Vector2:
 
 # Searching for a lost target from where it was last seen or heard: the
 # picker keeps the NPC moving round that spot with a view of it, a sweep
-# (Professionals, Hunters) and a drone (Hunters) once, blind and indirect
-# fire at the spot while the memory is fresh.
+# (Professionals, Hunters) and a drone (Hunters; a Professional too when its
+# sweep reported strangers) once, blind and indirect fire at the spot while
+# the memory is fresh. A sweep that reported strangers puts a lock search on
+# a mech in its cone, the nearest to the spot (lock_candidate).
 func do_search(dt, enemy):
 	if not is_instance_valid(enemy):
 		return
@@ -2081,10 +2349,20 @@ func do_search(dt, enemy):
 	var dir: Vector2 = enemy.global_position.direction_to(last)
 	if not _search_swept and (type == Personality.Type.PROFESSIONAL or type == Personality.Type.HUNTER):
 		_search_swept = true
-		enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing())
-	if not _search_drone and type == Personality.Type.HUNTER:
+		if enemy.fire.sweep(dir if dir != Vector2.ZERO else enemy.get_facing()):
+			var reading: Dictionary = enemy.fire.last_sweep
+			_identified[_sweep_key(reading)] = true
+			AICombatLog.record_info("sweep_" + str(reading.verdict))
+			if reading.verdict != "none":
+				_search_reading = reading
+	if not _search_drone and (type == Personality.Type.HUNTER
+			or (type == Personality.Type.PROFESSIONAL and not _search_reading.is_empty())):
 		_search_drone = true
 		enemy.fire.launch_drone(last)
+	if not _search_reading.is_empty() and not enemy.get_locked_to() and not is_instance_valid(enemy.lock_search_target):
+		var found = lock_candidate(enemy, {"sweep": _search_reading, "point": last})
+		if found != null:
+			enemy.lock_search_target = found
 	var eff = _get_effective_distances(enemy)
 	var state = _get_self_state(enemy)
 	if not state.is_hot and not state.no_ammo and not state.low_ammo:

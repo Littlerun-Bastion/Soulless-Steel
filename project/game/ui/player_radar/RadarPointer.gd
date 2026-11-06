@@ -8,6 +8,7 @@ extends RefCounted
 ##   square    UNKNOWN (IR)  round    an alarm
 ## A hollow mark (a ghost) is drawn as its outline.
 ## Chevrons sit outside the mark, CHEVRON_STEP px apart: more is closer.
+## The bracket turns with the bearing and stays inside the first chevron.
 
 ## Placeholders (px).
 const MARK_SIZE := 6.0
@@ -15,7 +16,11 @@ const CHEVRON_FIRST := 10.0
 const CHEVRON_STEP := 5.0
 const CHEVRON_HALF := 6.0
 const CHEVRON_HEIGHT := 3.0
-const BRACKET := 11.0
+## Half the bracket's size out along the bearing and across it, and its
+## corners' leg length.
+const BRACKET_DEPTH := 8.0
+const BRACKET_WIDTH := 9.0
+const BRACKET_LEG := 4.0
 const LINE := 2.0
 
 
@@ -56,10 +61,11 @@ static func draw_chevrons(canvas: CanvasItem, at: Vector2, bearing: float, count
 				base + side * CHEVRON_HALF]), color, LINE, true)
 
 
-static func draw_bracket(canvas: CanvasItem, at: Vector2, color: Color) -> void:
-	var b := BRACKET
-	var c := BRACKET * 0.45
+static func draw_bracket(canvas: CanvasItem, at: Vector2, bearing: float, color: Color) -> void:
+	var out := Vector2.from_angle(bearing)
+	var side := out.orthogonal()
 	for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
-		var tip: Vector2 = at + corner * b
-		canvas.draw_polyline(PackedVector2Array([tip - Vector2(corner.x * c, 0), tip, tip - Vector2(0, corner.y * c)]),
-				color, LINE, true)
+		var along: Vector2 = out * corner.x
+		var across: Vector2 = side * corner.y
+		var tip: Vector2 = at + along * BRACKET_DEPTH + across * BRACKET_WIDTH
+		canvas.draw_polyline(PackedVector2Array([tip - along * BRACKET_LEG, tip, tip - across * BRACKET_LEG]), color, LINE, true)

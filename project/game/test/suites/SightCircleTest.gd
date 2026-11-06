@@ -144,6 +144,19 @@ func _test_pan() -> void:
 	for i in 600:
 		_player.update_camera_offset(0.1)
 	check(cam.pan_offset.length() <= limit + 0.01, "however long the cursor pushes")
+	var screen := Vector2(1920, 1080)
+	var margin := float(_player.MOVE_CAMERA_SCREEN_MARGIN)
+	var edge: Vector2 = _player.pan_velocity(Vector2(screen.x - 1.0, screen.y * 0.5), screen, limit)
+	check(edge.x * _player.MOVE_CAMERA_PAN_TIME > limit * 0.98 and is_zero_approx(edge.y),
+			"at the edge it crosses the sight circle's radius in %.1f s (%.0f px/s)" % [_player.MOVE_CAMERA_PAN_TIME, edge.x])
+	check(_player.MOVE_CAMERA_PAN_TIME <= 1.5, "(no more than 1.5 s)")
+	var half_in: Vector2 = _player.pan_velocity(Vector2(margin * 0.5, screen.y * 0.5), screen, limit)
+	check(half_in.x < 0.0 and absf(half_in.x) > edge.x * 0.2 and absf(half_in.x) < edge.x * 0.3,
+			"halfway into the margin, a quarter of that, the other way (%.0f px/s)" % half_in.x)
+	check_eq(_player.pan_velocity(screen * 0.5, screen, limit), Vector2.ZERO, "and none in the middle")
+	var corner: Vector2 = _player.pan_velocity(Vector2(0, 0), screen, limit)
+	check(is_equal_approx(corner.length(), limit / _player.MOVE_CAMERA_PAN_TIME) and corner.x < 0.0 and corner.y < 0.0,
+			"a corner pans both ways, no faster than an edge")
 	cam.pan_offset = Vector2(1000, 0)
 	cam.shake(0.2, 15, 60)
 	# A tween's first step lands at the end of the frame after it is made.

@@ -206,10 +206,15 @@ func _test_reach() -> void:
 	var o := Vector2(-3000, -3000)
 	lamp.global_position = o
 	var inside := _mecha(o + Vector2(0, -near * 0.9), Vector2.UP, false)
-	var past := _mecha(o + Vector2(0, -near * 1.1), Vector2.UP, false)
+	var past := _mecha(o + Vector2(0, -near * 3.0), Vector2.UP, false)
+	var reaching := _mecha(o + Vector2(0, -near * 4.0), Vector2.UP, false)
+	var radius := Illumination.body_radius(past)
+	past.global_position = o + Vector2(0, -(near + radius + 50.0))
+	reaching.global_position = o + Vector2(0, -(near + radius * 0.5))
 	await get_tree().physics_frame
 	check(Illumination.is_lit(inside), "a dark mecha just inside the reach is lit")
-	check(not Illumination.is_lit(past), "one just past it isn't")
+	check(Illumination.is_lit(reaching), "one whose near edge is inside it too")
+	check(not Illumination.is_lit(past), "one wholly past it isn't")
 
 	# The lamp, not the optics: sensor damage leaves the reach.
 	lamp.disabled_systems.sensors = 0.5

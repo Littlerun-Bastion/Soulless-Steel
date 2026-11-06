@@ -258,6 +258,32 @@ func _test_vulture() -> void:
 	hunter.logic.intent_time = 5.0
 	hunter.logic.evaluate_now(hunter)
 	check_eq(str(hunter.logic.get_current_state()), "engage", "so it attacks")
+	# Gunfire and then nobody to see: it goes in to look, then is done with it.
+	var lone := _enemy(Vector2(-6000, 6000), Personality.Type.HUNTER)
+	var behaviour = lone.logic.behaviour
+	var lone_shot := shot.duplicate()
+	lone_shot.position = Vector2(-6000, 2500)
+	lone.heard_sound(lone_shot)
+	lone.logic.evaluate_now(lone)
+	check_eq(str(lone.logic.get_current_state()), "vulture", "(a lone Hunter vultures a lone shot)")
+	for sound in lone.knowledge.sounds:
+		sound.lifetime = lone.SOUND_LIFETIME - behaviour.VULTURE_QUIET - 1.0
+	behaviour.do_vulture(0.1, lone)
+	var heading = behaviour.point_of_interest
+	check(lone.going_to_position and heading is Vector2
+			and heading.distance_to(behaviour._vulture_point) < lone.global_position.distance_to(behaviour._vulture_point) - 1000.0,
+			"quiet with nobody in sight, it goes in to look (to %s)" % str(heading))
+	check(not behaviour._vulture_looked and lone.logic.behaviour.score_vulture(lone) > 0.0, "still vulturing on the way")
+	lone.global_position = behaviour._vulture_point + Vector2(0, behaviour.VULTURE_LOOK)
+	behaviour.do_vulture(0.1, lone)
+	check(behaviour._vulture_looked and behaviour.score_vulture(lone) == 0.0, "there, nobody: it's done")
+	lone.logic.intent_time = 5.0
+	lone.logic.evaluate_now(lone)
+	check(str(lone.logic.get_current_state()) != "vulture", "and goes on (%s)" % str(lone.logic.get_current_state()))
+	check_eq(behaviour.score_vulture(lone), 0.0, "the same gunfire doesn't bring it back")
+	lone.contacts.advance(1.0)
+	lone.heard_sound(lone_shot)
+	check(behaviour.score_vulture(lone) > 0.0, "new gunfire does")
 	# Running hot, it doesn't vulture.
 	var hot := _enemy(Vector2(0, -800), Personality.Type.HUNTER)
 	hot.heard_sound(shot)

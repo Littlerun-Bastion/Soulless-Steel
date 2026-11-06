@@ -148,6 +148,20 @@ func _test_lit() -> void:
 	check(Illumination.is_lit(ahead), "a dark one in another's cone is")
 	check(not Illumination.is_lit(past), "but not past the light's reach")
 
+	# Any of a body in the cone lights it, not only its centre.
+	var half: float = Illumination.cone_angle(light) * 0.5
+	var radius := Illumination.body_radius(ahead)
+	check(radius > 50.0 and radius < 300.0, "(a mecha reaches %.0f px round its centre)" % radius)
+	var widen := rad_to_deg(asin(radius / 1200.0))
+	var edge_in := _mecha(o + Vector2.UP.rotated(deg_to_rad(half + widen * 0.5)) * 1200.0, Vector2.UP, false)
+	var edge_out := _mecha(o + Vector2.UP.rotated(deg_to_rad(-(half + widen + 2.0))) * 1200.0, Vector2.UP, false)
+	await get_tree().physics_frame
+	check(not Illumination.in_cone(light, edge_in.global_position), "(its centre is outside the cone)")
+	check(Illumination.is_lit(edge_in), "a dark one with only its side in the cone is lit")
+	check(not Illumination.is_lit(edge_out), "one just clear of the cone isn't")
+	check(Illumination.in_cone(light, o + Vector2(0, -(reach + 100.0)), 150.0)
+			and not Illumination.in_cone(light, o + Vector2(0, -(reach + 100.0)), 50.0), "the margin reaches past the reach as well")
+
 	var toggles := []
 	lamp.illuminator_toggled.connect(func(on: bool): toggles.append(on))
 	lamp.set_illuminator(false)

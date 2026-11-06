@@ -27,6 +27,9 @@ const ENEMY := preload("res://game/mecha/Enemy.tscn")
 const CLOUD := preload("res://game/weapons/SmokeCloud.tscn")
 const TICKS := preload("res://game/entities/tick/TickSwarm.tscn")
 const RADAR := preload("res://game/ui/player_radar/PlayerRadar.tscn")
+const RADAR_CODE := preload("res://game/ui/player_radar/PlayerRadar.gd")
+const RING := preload("res://game/ui/player_radar/RadarRing.gd")
+const MARKS := preload("res://game/ui/player_radar/RadarPointer.gd")
 const HUD := preload("res://game/ui/PlayerHUD.gd")
 const VLS := "TORI-V4"
 const CLUSTER := "TORI-ML"
@@ -76,7 +79,7 @@ func run_tests() -> void:
 	await case("RCS: facing widths, the sum, a part shot off, the reference", _test_rcs)
 	await case("the signature multiplier takes the larger of heat and RCS", _test_signature)
 	await case("sweeps report kinds by RCS, ticks one by one, decoys as mechs", _test_sweeps)
-	await case("the radar draws tracks only, each mark, stacked", _test_radar)
+	await case("the radar draws tracks only, each mark and wedge on its own lane", _test_radar)
 	await case("the chipset's radar stats are gone", _test_chipset)
 	await before_each()
 
@@ -561,13 +564,47 @@ func _test_radar() -> void:
 			"chevrons: 3 near, 2 mid, 1 far")
 	check(by_source.drone.hollow and by_source.drone.chevrons == 0, "a ghost is hollow, and one past the circle has no chevrons")
 	check(by_source.sight.locked and not by_source.ir.locked, "the locked target's mark has the bracket")
-	check(by_source.alarm.level > 0 or by_source.sight.level > 0, "two marks at nearly one bearing stack outward")
+	var apart: float = absf(angle_difference(by_source.alarm.at, by_source.sight.at)) * radar.MARK_R
+	check(apart >= radar.MARK_GAP - 0.01, "two marks at nearly one bearing spread apart along their lane (%.1f px)" % apart)
+	check(absf(angle_difference(by_source.ward.at, by_source.ward.bearing)) < 0.001, "a mark with room stays on its bearing")
 	var arc_sources: Array = radar.arcs.map(func(a): return a.source)
 	check("shot" in arc_sources and "sound" in arc_sources and "lock" in arc_sources, "shot, sound and lock arcs (%s)" % str(arc_sources))
-	var lock_arc: Dictionary = radar.arcs.filter(func(a): return a.source == "lock")[0]
+	var arc_by := {}
+	for a in radar.arcs:
+		arc_by[a.source] = a
+	var lock_arc: Dictionary = arc_by.lock
 	check(lock_arc.pulse and is_equal_approx(lock_arc.width, ContactStore.WEDGES.lock.width * 0.5), "the lock arc pulses, as wide as the lock leaves it")
+	check(arc_by.shot.style != arc_by.sound.style and arc_by.lock.style != arc_by.shot.style and arc_by.lock.style != arc_by.sound.style,
+			"shot, sound and lock arcs each drawn their own way (%s, %s, %s)" % [arc_by.shot.style, arc_by.sound.style, arc_by.lock.style])
+	var chevrons_out: float = radar.MARK_R + MARKS.CHEVRON_FIRST + MARKS.CHEVRON_STEP * 2 + MARKS.CHEVRON_HEIGHT
+	check(arc_by.sound.radius < arc_by.shot.radius and arc_by.shot.radius < RING.RADIUS - MARKS.MARK_SIZE * 0.5,
+			"sound and shot arcs on lanes of their own inside the ring")
+	check(RING.RADIUS < radar.MARK_R - MARKS.MARK_SIZE and arc_by.lock.radius - radar.LOCK_CAP > chevrons_out,
+			"marks outside the ring, the lock arc outside them and their chevrons")
 	check_eq(radar.chevrons_for(sight * 2.0, sight), 0, "past the circle, no chevrons")
 	radar.queue_free()
+
+	var gap := 0.2
+	var same: Array[float] = [1.0, 1.0, 1.0]
+	var fanned: Array[float] = RADAR_CODE.spread(same, gap)
+	fanned.sort()
+	check(is_equal_approx(fanned[0], 1.0 - gap) and is_equal_approx(fanned[1], 1.0) and is_equal_approx(fanned[2], 1.0 + gap),
+			"marks on one bearing fan out a gap apart round it (%s)" % str(fanned))
+	var over: Array[float] = [PI - 0.01, -PI + 0.01]
+	var across: Array[float] = RADAR_CODE.spread(over, gap)
+	check(is_equal_approx(absf(angle_difference(across[0], across[1])), gap) and absf(angle_difference(across[0], PI)) < gap,
+			"and across ±PI round it (%s)" % str(across))
+	var apart_already: Array[float] = [0.0, 1.0, -2.0]
+	check_eq(RADAR_CODE.spread(apart_already, gap), apart_already, "marks with room stay put")
+	var crowd: Array[float] = []
+	for i in 40:
+		crowd.append(0.5)
+	var shared: Array[float] = RADAR_CODE.spread(crowd, gap)
+	var closest := TAU
+	for i in shared.size():
+		for j in range(i + 1, shared.size()):
+			closest = minf(closest, absf(angle_difference(shared[i], shared[j])))
+	check(closest > TAU / 40.0 - 0.001, "too many for the ring share it evenly (closest %.3f)" % closest)
 
 
 func _test_chipset() -> void:

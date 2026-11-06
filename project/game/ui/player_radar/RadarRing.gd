@@ -1,7 +1,8 @@
 extends Node2D
 
 ## The radar ring around the player's mecha: S1 G4, RADIUS px. The tracks
-## sit on and outside it (PlayerRadar). Placeholder radius.
+## and wedges sit in lanes inside and outside it (PlayerRadar). Placeholder
+## radius.
 
 const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const RADIUS := 140.0

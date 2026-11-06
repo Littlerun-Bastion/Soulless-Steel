@@ -108,6 +108,12 @@ const SEARCH_WEIGHTS := {"range": 0.4, "view": 0.8, "cover": 0.3, "travel": 0.5,
 		"mines": -1.0, "travel_scale": 1200.0}
 const AMBUSH_WEIGHTS := {"range": 0.4, "cover": 1.0, "view": 0.8, "travel": 0.5, "open": 0.5,
 		"mines": -1.0, "travel_scale": 1500.0}
+## Ambush waits for whatever it heard at most AMBUSH_PATIENCE s (a Rat's lure
+## keeps its own LURE_TIME); then it goes to look (investigate) and won't lie
+## in wait again for AMBUSH_REST s, so a walker heard nearby that never comes
+## can't hold it in place. Placeholders.
+const AMBUSH_PATIENCE := 20.0
+const AMBUSH_REST := 30.0
 const DISENGAGE_WEIGHTS := {"cover": 1.2, "far": 1.0, "travel": 0.3, "way": 0.5, "open": 0.3,
 		"smoke": 0.5, "mines": -1.0, "travel_scale": 2000.0, "far_scale": 3000.0}
 
@@ -205,7 +211,10 @@ const FLANK_WEIGHTS := {"range": 0.8, "flank": 1.5, "fire_line": 1.0, "cover": 0
 ##   vulture   Hunters and Rats: toward a fight heard (gunfire, or a help
 ##             call) while in good shape, to a covered spot VULTURE_STANDOFF
 ##             from it, dark, until the shooting has stopped for
-##             VULTURE_QUIET s; then whoever it sees there is prey
+##             VULTURE_QUIET s; then whoever it sees there is prey. Seeing
+##             nobody, it goes in to VULTURE_LOOK of the spot to look; nobody
+##             there either, it is done with that fight, and only gunfire or a
+##             help call heard after that brings it back
 ##   scout     Professionals and Hunters: before a trip further than
 ##             SCOUT_TRIP, or into ground it took fire on, a sweep toward the
 ##             goal or a drone, at most every SCOUT_INTERVAL s
@@ -231,6 +240,7 @@ const HELP_MATE_HEALTH := 0.5
 const VULTURE_RANGE := 6000.0
 const VULTURE_STANDOFF := 2500.0
 const VULTURE_QUIET := 8.0
+const VULTURE_LOOK := 600.0
 const VULTURE_PATIENCE := 45.0
 const VULTURE_HEALTH := 0.6
 const VULTURE_HOSTILITY := 1.0
@@ -294,6 +304,8 @@ var _search_swept := false
 var _search_drone := false
 var _ambush_ward := false
 var _ambush_mine := false
+var _ambush_time := 0.0
+var _ambush_rest_until := -INF
 var _loot_ward := false
 var _disengage_time := 0.0
 var _disengage_ok_at := -INF
@@ -307,6 +319,8 @@ var _help_mate = null
 var _vulture_lead = null
 var _vulture_point := Vector2.INF
 var _vulture_time := 0.0
+var _vulture_looked := false
+var _vulture_done_at := -INF
 var _scouted_at := -INF
 var _scout_goal := Vector2.INF
 var _trail_point := Vector2.INF
@@ -477,27 +491,37 @@ func score_vulture(enemy) -> float:
 		return 0.0
 	var current := _current(enemy)
 	if current == "vulture":
-		return SCORE_VULTURE if _vulture_time < VULTURE_PATIENCE and _vulture_point != Vector2.INF else 0.0
+		if _vulture_looked or _vulture_time >= VULTURE_PATIENCE:
+			return 0.0
+		return SCORE_VULTURE if _vulture_point != Vector2.INF else 0.0
 	var state = _get_self_state(enemy)
 	if state.is_hot or state.no_ammo or _structural_health(enemy) < VULTURE_HEALTH:
 		return 0.0
-	return SCORE_VULTURE if _fight_heard(enemy) != Vector2.INF else 0.0
+	return SCORE_VULTURE if _fight_heard(enemy, _vulture_done_at) != Vector2.INF else 0.0
 
 
 # Where a fight is, as far as this NPC can tell: the newest gunfire heard,
-# else the newest help call's blurred spot, within VULTURE_RANGE.
-func _fight_heard(enemy) -> Vector2:
+# else the newest help call's blurred spot, within VULTURE_RANGE. Only what
+# was heard after `since` (the NPC's time) counts.
+func _fight_heard(enemy, since := -INF) -> Vector2:
 	var newest = null
 	for sound in enemy.knowledge.sounds:
 		if sound.volume_type == "loud" and _is_gunfire(sound) \
 				and (newest == null or sound.lifetime > newest.lifetime):
 			newest = sound
-	if newest != null and enemy.global_position.distance_to(newest.position) <= VULTURE_RANGE:
+	if newest != null and _heard_at(enemy, newest) > since \
+			and enemy.global_position.distance_to(newest.position) <= VULTURE_RANGE:
 		return newest.position
 	for lead in enemy.knowledge.help_leads():
-		if enemy.global_position.distance_to(lead.position) <= VULTURE_RANGE:
+		if float(lead.time) > since and enemy.global_position.distance_to(lead.position) <= VULTURE_RANGE:
 			return lead.position
 	return Vector2.INF
+
+
+# When (the NPC's time) a sound was heard: it is remembered SOUND_LIFETIME s
+# and its lifetime counts down from that.
+static func _heard_at(enemy, sound: Dictionary) -> float:
+	return enemy.knowledge.now() - (float(enemy.SOUND_LIFETIME) - float(sound.lifetime))
 
 
 func score_scout(enemy) -> float:
@@ -600,8 +624,11 @@ func score_ambush(enemy) -> float:
 	if enemy.knowledge.now() < _lure_until and enemy.under_fire_timer <= 0:
 		return SCORE_AMBUSH
 	if current == "ambush":
+		if _ambush_time >= AMBUSH_PATIENCE:
+			return 0.0
 		return SCORE_AMBUSH if (enemy.get_most_recent_loud_noise() or enemy.get_most_recent_quiet_noise()) else 0.0
-	if current == "investigate" and enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0:
+	if current == "investigate" and enemy.get_most_recent_quiet_noise() and enemy.under_fire_timer <= 0 \
+			and enemy.knowledge.now() >= _ambush_rest_until:
 		return SCORE_AMBUSH
 	return 0.0
 
@@ -826,12 +853,18 @@ func enter_loot(enemy):
 func enter_ambush(enemy):
 	_ambush_ward = false
 	_ambush_mine = false
+	_ambush_time = 0.0
 	enemy.positioning.request()
 	# A Rat baits its ambush with a loot shout that isn't true.
 	if enemy.personality.type == Personality.Type.RAT and randf() < RAT_LIE_CHANCE * enemy.personality.treachery \
 			and enemy.knowledge.now() >= _lure_until:
 		enemy.broadcast("found_loot")
 		AICombatLog.record_info("rat_lie")
+
+
+func exit_ambush(enemy):
+	if _ambush_time >= AMBUSH_PATIENCE:
+		_ambush_rest_until = enemy.knowledge.now() + AMBUSH_REST
 
 
 func enter_search(enemy):
@@ -864,8 +897,9 @@ func exit_help(enemy):
 
 
 func enter_vulture(enemy):
-	_vulture_point = _fight_heard(enemy)
+	_vulture_point = _fight_heard(enemy, _vulture_done_at)
 	_vulture_time = 0.0
+	_vulture_looked = false
 	_vulture_lead = null
 	aiming_at_enemy = false
 	enemy.positioning.request()
@@ -875,6 +909,7 @@ func enter_vulture(enemy):
 
 func exit_vulture(enemy):
 	_vulture_point = Vector2.INF
+	_vulture_done_at = enemy.knowledge.now()
 	enemy.going_to_position = false
 	point_of_interest = false
 
@@ -1222,14 +1257,17 @@ func do_help(dt, enemy):
 # Vulturing: to a covered spot VULTURE_STANDOFF from the fight, dark, at
 # half throttle, watching it, until the shooting has stopped for
 # VULTURE_QUIET s; then whoever it sees there is prey (hostility, so the
-# target rules let it engage).
+# target rules let it engage). Seeing nobody, it goes in toward the spot
+# (the picker's choice VULTURE_LOOK from it, or straight there if the picker
+# keeps it where it stands); within VULTURE_LOOK * 1.5 of the spot with
+# nobody in sight, it has looked (_vulture_looked) and the intent ends.
 func do_vulture(dt, enemy):
 	if not is_instance_valid(enemy):
 		return
 	_vulture_time += dt
 	aiming_at_enemy = false
 	_check_targets(enemy)
-	var heard := _fight_heard(enemy)
+	var heard := _fight_heard(enemy, _vulture_done_at)
 	if heard != Vector2.INF:
 		_vulture_point = heard
 	if _vulture_point == Vector2.INF:
@@ -1243,7 +1281,8 @@ func do_vulture(dt, enemy):
 	# than its engage range, so it closes on the nearest to its kite range,
 	# where the target rules pick it up and engage takes over.
 	var prey = null
-	if _quiet_for(enemy) >= VULTURE_QUIET:
+	var quiet := _quiet_for(enemy) >= VULTURE_QUIET
+	if quiet:
 		var prey_dist := INF
 		for body in enemy.knowledge.seen_bodies():
 			if body.is_in_group("entity") or (enemy.knowledge.squad != null and enemy.knowledge.squad.is_in(body)):
@@ -1254,11 +1293,25 @@ func do_vulture(dt, enemy):
 				prey = body
 				prey_dist = d
 	var standoff := VULTURE_STANDOFF
+	var looking := false
 	if prey != null:
 		_vulture_point = enemy.get_target_position(prey)
 		standoff = _get_effective_distances(enemy).max_kite
 		_ramp_throttle_full(dt, enemy)
-	if not _tactical_move(dt, enemy, _vulture_point, standoff, VULTURE_WEIGHTS, false, _vulture_point):
+	elif quiet:
+		if enemy.global_position.distance_to(_vulture_point) <= VULTURE_LOOK * 1.5:
+			_vulture_looked = true
+		looking = true
+		standoff = VULTURE_LOOK
+	if _tactical_move(dt, enemy, _vulture_point, standoff, VULTURE_WEIGHTS, false, _vulture_point):
+		pass
+	elif looking and not _vulture_looked:
+		point_of_interest = _vulture_point
+		enemy.going_to_position = true
+		_push_poi_to_nav(enemy)
+		enemy.navigate_to_target(dt, 0, 0, false)
+		_clear_arrival(enemy)
+	else:
 		enemy.going_to_position = false
 		point_of_interest = false
 	shield_check(enemy)
@@ -1328,8 +1381,10 @@ func do_scout(dt, enemy):
 #   smoke       smoke round itself, then break line
 #   break_line  to cover from it (the disengage weights)
 # It ends when the track becomes visual (engage, or nothing, takes over),
-# when it is lost, or after IDENTIFY_TIME s; a reason handled once is not
-# taken up again. Its score sits under engage when a target is in sight and
+# when it is lost, or after IDENTIFY_TIME s; standing and looking with
+# nothing to show for it (watch, light, or lock with nothing in the area to
+# lock) ends after IDENTIFY_WATCH_TIME s, and investigate goes to look. A
+# reason handled once is not taken up again. Its score sits under engage when a target is in sight and
 # above roam, loot and investigate; a lock warning puts it above a fight
 # (SCORE_IDENTIFY_LOCKED), under disengage and flee. A companion under
 # orders, or an NPC with its Flag up, doesn't run it.
@@ -1338,6 +1393,7 @@ func do_scout(dt, enemy):
 const SCORE_IDENTIFY := 0.42
 const SCORE_IDENTIFY_LOCKED := 0.78
 const IDENTIFY_TIME := 15.0
+const IDENTIFY_WATCH_TIME := 5.0
 ## The skill breakpoints (see NPC AI.md): from SKILL_TOOLS a sweep or a drone
 ## to identify a track; from SKILL_LIGHT_DISCIPLINE flashing its light; from
 ## SKILL_LOCK_BACK a lock search back at whoever locks it (a lock search on a
@@ -1611,6 +1667,9 @@ func do_identify(dt, enemy):
 			_identify_lock(dt, enemy, point)
 		"fire":
 			enemy.fire.blind_fire_at(point)
+	if _identify_time >= IDENTIFY_WATCH_TIME and _identify_response in ["watch", "light", "lock"] \
+			and not is_instance_valid(enemy.lock_search_target) and not enemy.get_locked_to():
+		_identify_time = IDENTIFY_TIME
 
 
 # A sweep toward the track, else a drone, once; a sweep that reports a mech
@@ -1763,6 +1822,7 @@ func do_investigate(dt, enemy):
 # the approach, at half throttle.
 func do_ambush(dt, enemy):
 	if is_instance_valid(enemy):
+		_ambush_time += dt
 		aiming_at_enemy = false
 		# Ambush idles at half throttle — quieter, harder to detect.
 		if enemy.throttle > 0.5:

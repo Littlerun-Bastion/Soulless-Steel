@@ -15,8 +15,8 @@ extends CanvasLayer
 #               a clicked point or at the selected NPC, and its Flag
 #   EVENTS      each arms one event, set off where the map is clicked next
 #   TIME        pause, and the game speed
-#   OVERLAYS    sight, cone, tracks, wedges, locks, and the NPCs' ai_overlay
-#               labels
+#   OVERLAYS    sight, cone, tracks, wedges, locks, think tags, barks
+#               (ObserverOverlay), and the NPCs' ai_overlay lines
 #   SELECTION   what is selected, its skill (an NPC), following it (F),
 #               deleting it, clearing all
 # A right click or Esc ends a click mode.
@@ -74,7 +74,7 @@ func _ready() -> void:
 	_build_time(box)
 	_build_overlays(box)
 	_build_selection(box)
-	box.add_child(MechUI.label(&"LabelDim", "WASD / EDGES PAN · WHEEL ZOOM · LMB SELECT OR PLACE · RMB CANCELS · F FOLLOW", true))
+	box.add_child(MechUI.label(&"LabelDim", "WASD / EDGES PAN (SHIFT FASTER) · WHEEL ZOOM · LMB SELECT OR PLACE · RMB CANCELS · F FOLLOW", true))
 	if arena != null:
 		arena.selection_changed.connect(refresh)
 	_last_usec = Time.get_ticks_usec()
@@ -212,10 +212,10 @@ func _build_time(box: VBoxContainer) -> void:
 func _build_overlays(box: VBoxContainer) -> void:
 	var group := _section(box, "OVERLAYS")
 	for entry in [["SIGHT", "show_sight"], ["CONE", "show_cone"], ["TRACKS", "show_tracks"],
-			["WEDGES", "show_wedges"], ["LOCKS", "show_locks"]]:
+			["WEDGES", "show_wedges"], ["LOCKS", "show_locks"], ["THINK TAGS", "show_tags"], ["BARKS", "show_barks"]]:
 		var property: String = entry[1]
 		_row(group, entry[0]).add_child(_button("overlay:" + property, "", _toggle_overlay.bind(property), true))
-	_row(group, "LABELS").add_child(_button("labels", "", _toggle_labels, true))
+	_row(group, "AI LINES").add_child(_button("ai_lines", "", _toggle_ai_lines, true))
 
 
 func _build_selection(box: VBoxContainer) -> void:
@@ -307,8 +307,8 @@ func _toggle_overlay(property: String) -> void:
 	refresh()
 
 
-func _toggle_labels() -> void:
-	arena.set_labels(not arena.labels_on())
+func _toggle_ai_lines() -> void:
+	arena.set_ai_lines(not arena.ai_lines_on())
 	refresh()
 
 
@@ -363,8 +363,8 @@ func refresh() -> void:
 			_buttons[key].set_pressed_no_signal(on)
 			_buttons[key].text = "ON" if on else "OFF"
 	_buttons["pause"].set_pressed_no_signal(arena.game_paused)
-	_buttons["labels"].set_pressed_no_signal(arena.labels_on())
-	_buttons["labels"].text = "ON" if arena.labels_on() else "OFF"
+	_buttons["ai_lines"].set_pressed_no_signal(arena.ai_lines_on())
+	_buttons["ai_lines"].text = "ON" if arena.ai_lines_on() else "OFF"
 	_buttons["follow"].set_pressed_no_signal(arena.following)
 	_status.text = _status_text()
 	_labels["selected"].text = _name_of(arena.selected)

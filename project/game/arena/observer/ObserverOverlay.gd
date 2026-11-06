@@ -15,11 +15,17 @@ extends CanvasLayer
 #            cross at its estimate point, fading as it ages
 #   locks    a line from each locker to what it locks: dashed while locking,
 #            solid once locked
-# and the selected dummy's patrol points and fire point. The ai_overlay label
-# over each NPC is the NPC's own (ObserverArena.set_labels), kept upright
-# here while it shows.
+#   tags     each NPC's think tag under it (tag_lines): its name and intent,
+#            how long it has stood still (from STILL_SHOW s: within
+#            STILL_RADIUS px of one spot, game time), and its top intent
+#            scores; the selected NPC's has the whole ai_overlay detail
+#            (Enemy.overlay_text: every score, its light and panic, what it
+#            knows, its target) instead. The same size at any zoom
+#   barks    what each mecha says (ObserverArena._on_mecha_spoke), in a box
+#            over it for as long as the speech lasts
+# and the selected dummy's patrol points and fire point.
 #
-# Greys and strokes are MechTheme's tokens (G3 to G6, S1 and S2).
+# Greys and strokes are MechTheme's tokens (G1 to G6, S1 and S2).
 
 const THEME := preload("res://game/ui/mech_os/MechTheme.tres")
 const LAYER := 4
@@ -28,6 +34,21 @@ const SELECT_RADIUS := 26.0
 const POINT_HALF := 6.0
 const LABEL_SIZE := 16
 const ARC_POINTS := 96
+## Tags and speech boxes (px): text size, line spacing, padding, how far
+## from the mecha's centre at least, how wide a speech box gets before it
+## wraps, and how many scores a tag lists. Placeholders.
+const TAG_SIZE := 14
+const TAG_LINE := 16.0
+const TAG_PAD := 4.0
+const TAG_GAP := 18.0
+const SPEECH_WIDTH := 320.0
+const TAG_SCORES := 3
+## A mecha's body reaches about this far (world px) round its centre.
+const BODY_REACH := 125.0
+## Standing still: within STILL_RADIUS (world px) of one spot; the tag shows
+## it from STILL_SHOW s.
+const STILL_RADIUS := 40.0
+const STILL_SHOW := 3.0
 
 var arena = null
 var show_sight := true
@@ -35,9 +56,15 @@ var show_cone := true
 var show_tracks := true
 var show_wedges := true
 var show_locks := true
+var show_tags := true
+var show_barks := true
 
 var _canvas: Node2D = null
 var _font: Font = null
+## Mecha -> {"text", "left": game seconds it still shows}.
+var _speech := {}
+## Mecha -> {"at": the spot it is standing at, "time": game seconds there}.
+var _still := {}
 
 
 func _ready() -> void:
@@ -50,13 +77,60 @@ func _ready() -> void:
 	_font = THEME.get_font(&"font", &"LabelMeta")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_canvas.queue_redraw()
-	if arena != null and is_instance_valid(arena) and arena.labels_on():
-		for m in arena.observed_mechas():
-			var label_holder := m.get_node_or_null("Debug") as Node2D
-			if label_holder != null and label_holder.global_rotation != 0.0:
-				label_holder.global_rotation = 0.0
+	if arena == null or not is_instance_valid(arena):
+		return
+	for m in _still.keys():
+		if not is_instance_valid(m) or m.is_dead:
+			_still.erase(m)
+	if arena.game_paused:
+		return
+	for m in _speech.keys():
+		_speech[m].left -= delta
+		if not is_instance_valid(m) or _speech[m].left <= 0.0:
+			_speech.erase(m)
+	for m in arena.observed_npcs():
+		var entry: Dictionary = _still.get(m, {})
+		if entry.is_empty() or m.global_position.distance_to(entry.at) > STILL_RADIUS:
+			_still[m] = {"at": m.global_position, "time": 0.0}
+		else:
+			entry.time += delta
+
+
+## Shows `text` in a box over `mecha` for `seconds` of game time.
+func show_speech(mecha, text: String, seconds: float) -> void:
+	_speech[mecha] = {"text": text, "left": seconds}
+
+
+## What `mecha` is saying now ("" for nothing).
+func speech_of(mecha) -> String:
+	return str(_speech[mecha].text) if _speech.has(mecha) else ""
+
+
+## How long (game s) `npc` has stood within STILL_RADIUS of one spot.
+func still_time(npc) -> float:
+	return float(_still[npc].time) if _still.has(npc) else 0.0
+
+
+## The lines of `npc`'s think tag (see above); `detailed` adds the
+## ai_overlay detail.
+func tag_lines(npc, detailed: bool) -> PackedStringArray:
+	var lines := PackedStringArray()
+	var state = npc.logic.get_current_state() if npc.logic != null else null
+	var head := "%s · %s" % [str(npc.mecha_name).to_upper(), str(state).to_upper() if state else "?"]
+	var still := still_time(npc)
+	if still >= STILL_SHOW:
+		head += " · STILL %dS" % int(still)
+	lines.append(head)
+	if detailed:
+		lines.append_array(npc.overlay_text().split("\n", false))
+	elif npc.logic != null and not npc.logic.last_scores.is_empty():
+		var parts := PackedStringArray()
+		for pair in npc.logic.last_scores.slice(0, TAG_SCORES):
+			parts.append("%s %.2f" % [pair[0], pair[1]])
+		lines.append(" ".join(parts))
+	return lines
 
 
 ## How far (px) an NPC sees at most: its sight circle, as Enemy.update_senses
@@ -96,6 +170,17 @@ func _draw_overlays() -> void:
 			_draw_wedges(m, to_screen, zoom, g5 if selected else g4, width)
 		if show_locks:
 			_draw_lock(m, to_screen, g6 if selected else g5, width)
+	var reach := maxf(BODY_REACH * zoom, TAG_GAP)
+	if show_tags and _font != null:
+		for npc in arena.observed_npcs():
+			var selected: bool = is_same(npc, arena.selected)
+			_draw_box(to_screen * npc.global_position + Vector2(0.0, reach), tag_lines(npc, selected), -1.0,
+					g6 if selected else g5, false)
+	if show_barks and _font != null:
+		for m in _speech:
+			if is_instance_valid(m):
+				_draw_box(to_screen * m.global_position - Vector2(0.0, reach), PackedStringArray([speech_of(m)]),
+						SPEECH_WIDTH, g6, true)
 	var control = arena.dummy_control(arena.selected_dummy)
 	if control != null:
 		var last := Vector2.INF
@@ -171,6 +256,30 @@ func _draw_lock(m, to_screen: Transform2D, color: Color, width: float) -> void:
 		_canvas.draw_line(from, to, color, width)
 	else:
 		_canvas.draw_dashed_line(from, to, color, width, 10.0)
+
+
+# A box of `lines` on a G1 backing, centred on `anchor` across: hanging
+# below it, or standing on it when `above`. With `wrap` above 0 the text
+# wraps at that width; otherwise the box is as wide as its widest line.
+func _draw_box(anchor: Vector2, lines: PackedStringArray, wrap: float, color: Color, above: bool) -> void:
+	var text := "\n".join(lines)
+	var width := wrap
+	if width <= 0.0:
+		width = 0.0
+		for line in lines:
+			width = maxf(width, _font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, TAG_SIZE).x)
+	var size := _font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, width, TAG_SIZE)
+	if wrap > 0.0:
+		width = minf(width, size.x + 1.0)
+	var box := Rect2(anchor.x - width * 0.5 - TAG_PAD, anchor.y, width + TAG_PAD * 2.0, size.y + TAG_PAD * 2.0)
+	if above:
+		box.position.y -= box.size.y
+	var back := THEME.get_color(&"g1", &"MechTokens")
+	back.a = 0.8
+	_canvas.draw_rect(box, back)
+	_canvas.draw_rect(box, THEME.get_color(&"g3", &"MechTokens"), false, 1.0)
+	_canvas.draw_multiline_string(_font, box.position + Vector2(TAG_PAD, TAG_PAD + _font.get_ascent(TAG_SIZE)), text,
+			HORIZONTAL_ALIGNMENT_LEFT, width, TAG_SIZE, -1, color)
 
 
 func _cross(p: Vector2, color: Color, width: float) -> void:

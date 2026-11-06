@@ -15,8 +15,11 @@ const DEFAULT_CAM_ZOOM = Vector2(.5,.5)
 const ZOOM_SPEED = 2
 
 const ROTATION_DEADZONE = 20
+## The edge pan (pan_velocity): how near a screen edge (px) the cursor pans
+## the camera, and how long (s) the pan takes to cross the sight circle's
+## radius with the cursor right at the edge. Placeholders.
 const MOVE_CAMERA_SCREEN_MARGIN = 260
-const MOVE_CAMERA_MAX_SPEED = 800
+const MOVE_CAMERA_PAN_TIME = 1.0
 const SPRINTING_TIMEOUT = .25 #How much the player needs to hold the button to enter sprint mode
 const DESIGNATOR_SCRIPT = preload("res://game/mecha/player/Designator.gd")
 ## Canvas layer of the designators: above the IR heatmap (layer 2).
@@ -378,36 +381,42 @@ func update_camera_zoom(dt):
 	Cam.zoom = lerp(Cam.zoom, target, clamp(dt*ZOOM_SPEED, 0.0, 1.0))
 
 
-# The cursor near a screen edge pans the camera that way (Camera.pan_offset),
-# out to the sight circle (Mecha.sight_radius) and no further. With no head
-# the camera doesn't pan.
+# The cursor near a screen edge pans the camera that way (Camera.pan_offset,
+# pan_velocity), out to the sight circle (Mecha.sight_radius) and no further.
+# With no head the camera doesn't pan.
 func update_camera_offset(dt):
 	var limit := sight_radius() if build.head and not is_part_lost("head") else 0.0
 	if limit <= 0.0:
 		Cam.pan_offset = Vector2.ZERO
 		return
-	var mp = get_viewport().get_mouse_position()
-	var vp_size = get_viewport().get_visible_rect().size
-	var margin = MOVE_CAMERA_SCREEN_MARGIN
-	var abs_dir = Vector2()
-	var strength = Vector2()
-	if mp.x <= margin:
-		abs_dir.x += 1
-		strength.x = -1.0 + (mp.x/float(margin))
-	elif mp.x >= vp_size.x - margin:
-		abs_dir.x += 1
-		strength.x = ((mp.x - vp_size.x + margin)/float(margin))
-	if mp.y <= margin:
-		abs_dir.y += 1
-		strength.y = -1.0 + (mp.y/float(margin))
-	elif mp.y >= vp_size.y - margin:
-		abs_dir.y += 1
-		strength.y = ((mp.y - vp_size.y + margin)/float(margin))
+	var velocity := pan_velocity(get_viewport().get_mouse_position(), get_viewport().get_visible_rect().size, limit)
+	Cam.pan_offset = (Cam.pan_offset + velocity * dt).limit_length(limit)
 
-	abs_dir = abs_dir.normalized()
-	strength *= strength*strength #Make it cubically strong on edges
-	Cam.pan_offset += abs_dir*strength*MOVE_CAMERA_MAX_SPEED*dt
-	Cam.pan_offset = Cam.pan_offset.limit_length(limit)
+
+## How fast (px/s) the camera pans with the cursor at `mouse` on a `screen`
+## px screen, panning out to `limit` px. Inside MOVE_CAMERA_SCREEN_MARGIN of
+## an edge it pans that way, at limit / MOVE_CAMERA_PAN_TIME right at the
+## edge, slowing with the square of how far in from the edge the cursor is to
+## nothing at the margin's inner side. In a corner both ways at once, the
+## pair scaled down by sqrt(2).
+static func pan_velocity(mouse: Vector2, screen: Vector2, limit: float) -> Vector2:
+	var margin := float(MOVE_CAMERA_SCREEN_MARGIN)
+	var push := Vector2.ZERO
+	var axes := 0
+	for axis in 2:
+		var into := 0.0
+		if mouse[axis] <= margin:
+			into = -(1.0 - mouse[axis] / margin)
+		elif mouse[axis] >= screen[axis] - margin:
+			into = 1.0 - (screen[axis] - mouse[axis]) / margin
+		else:
+			continue
+		into = clampf(into, -1.0, 1.0)
+		push[axis] = into * absf(into)
+		axes += 1
+	if axes == 2:
+		push /= sqrt(2.0)
+	return push * limit / MOVE_CAMERA_PAN_TIME
 
 
 func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):

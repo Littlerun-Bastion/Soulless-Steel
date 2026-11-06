@@ -350,9 +350,21 @@ func _test_identify_ends() -> void:
 	npc.contacts.report(null, "car", hidden.global_position + Vector2(10, 0), "alarm", 100.0)
 	_wait_out(npc)
 	check_eq(_decide(npc), "identify", "another alarm: identify")
-	npc.logic.behaviour.do_identify(npc.logic.behaviour.IDENTIFY_TIME + 0.1, npc)
-	check(_decide(npc) != "identify", "after IDENTIFY_TIME it gives up")
+	check_eq(npc.logic.behaviour.identifying().get("response"), "watch", "(under 0.3 it only watches)")
+	npc.logic.behaviour.do_identify(npc.logic.behaviour.IDENTIFY_WATCH_TIME - 0.5, npc)
+	check_eq(_decide(npc), "identify", "it watches a while")
+	npc.logic.behaviour.do_identify(0.6, npc)
+	check(_decide(npc) != "identify", "and after IDENTIFY_WATCH_TIME with nothing to show for it, goes on")
 	check(npc.logic.behaviour.identify_reason(npc).is_empty(), "and doesn't take the same track up again")
+	npc.contacts.report(null, "car", hidden.global_position + Vector2(20, 0), "alarm", 100.0)
+	_wait_out(npc)
+	check_eq(_decide(npc), "identify", "a third alarm: identify")
+	npc.logic.behaviour._identify_response = "scan"
+	npc.logic.behaviour._identify_scanned = true
+	npc.logic.behaviour.do_identify(npc.logic.behaviour.IDENTIFY_WATCH_TIME + 0.5, npc)
+	check_eq(_decide(npc), "identify", "one waiting on a drone isn't hurried")
+	npc.logic.behaviour.do_identify(npc.logic.behaviour.IDENTIFY_TIME, npc)
+	check(_decide(npc) != "identify", "after IDENTIFY_TIME it gives up")
 
 	# Visual ends it: a mech it sees inside the wedge.
 	var shooter := _mecha(o + Vector2(0, -350))

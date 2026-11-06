@@ -150,6 +150,24 @@ func _test_ladder() -> void:
 	enemy.senses.sounds.clear()
 	check_eq(_decide(enemy), "roam", "with every sound gone the ambush is over")
 
+	# A walker heard nearby that never comes: the ambush runs out of patience.
+	behaviour._wary_time = 0.0
+	_sound(enemy, "loud", Vector2(3000, 0))
+	check_eq(_decide(enemy), "investigate", "(investigating again)")
+	_sound(enemy, "quiet", Vector2(1500, 0))
+	check_eq(_decide(enemy), "ambush", "(lying in wait again)")
+	behaviour._ambush_time = behaviour.AMBUSH_PATIENCE + 0.1
+	_sound(enemy, "quiet", Vector2(1400, 0))
+	check_eq(_decide(enemy), "investigate", "after AMBUSH_PATIENCE it stops waiting and goes to look, footsteps or not")
+	_sound(enemy, "quiet", Vector2(1300, 0))
+	check_eq(_decide(enemy), "investigate", "and doesn't lie in wait again straight away")
+	enemy.contacts.advance(behaviour.AMBUSH_REST + 0.1)
+	_sound(enemy, "quiet", Vector2(1200, 0))
+	check_eq(_decide(enemy), "ambush", "after AMBUSH_REST it may")
+	enemy.senses.sounds.clear()
+	behaviour._wary_time = 0.0
+	check_eq(_decide(enemy), "roam", "(roaming again)")
+
 	# Under fire: investigate where the shot came from, above a noise.
 	_sound(enemy, "quiet", Vector2(1500, 0))
 	enemy.under_fire_timer = 0.5

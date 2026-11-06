@@ -19,9 +19,12 @@ extends "res://game/expedition/Expedition.gd"
 # read only where its round came from; nobody can see, lock or target it.
 #
 # The camera is the scene's ArenaCamera, moved by WASD or the arrow keys, by
-# the cursor at a screen edge (not over the panel), zoomed by the wheel, and
-# following the selected mecha (F). The panel and the camera keep running
-# while the game is paused.
+# the cursor at a screen edge (not over the panel), faster with Shift held,
+# zoomed by the wheel, and following the selected mecha (F). The panel and
+# the camera keep running while the game is paused.
+#
+# Every pilot is in earshot here (hears_every_bark): the NPCs bark as they
+# would beside the player, and what they say shows over them.
 #
 # There is no darkness light without a player (MechaShadowGen is the
 # player's), so the arena has its own: one subtracting light over the whole
@@ -31,10 +34,12 @@ const OBSERVER_PANEL := preload("res://game/arena/observer/ObserverPanel.gd")
 const OBSERVER_OVERLAY := preload("res://game/arena/observer/ObserverOverlay.gd")
 const OBSERVER_DUMMY := preload("res://game/arena/observer/ObserverDummy.gd")
 
-## The camera: its speed (screen px per second, so the same at any zoom), how
-## near a screen edge (px) the cursor pans it, the zoom it starts at, its
-## limits and how much one wheel notch changes it.
-const CAMERA_SPEED := 900.0
+## The camera: its speed (screen px per second, so the same at any zoom) and
+## how much faster it goes with Shift held, how near a screen edge (px) the
+## cursor pans it, the zoom it starts at, its limits and how much one wheel
+## notch changes it.
+const CAMERA_SPEED := 1800.0
+const CAMERA_FAST := 2.5
 const EDGE_PAN_MARGIN := 24.0
 const START_ZOOM := 0.2
 const ZOOM_MIN := 0.05
@@ -116,7 +121,8 @@ func _ready() -> void:
 	panel = OBSERVER_PANEL.new()
 	panel.arena = self
 	add_child(panel)
-	set_labels(false)
+	Debug.debug_settings["enemy_state"] = false
+	set_ai_lines(false)
 
 
 func _exit_tree() -> void:
@@ -331,17 +337,36 @@ func set_speed(value: float) -> void:
 
 # ---- Overlays ----
 
-## The ai_overlay label over each NPC (Enemy._overlay_text) and its lines
-## (Enemy._draw_ai_overlay).
-func set_labels(on: bool) -> void:
-	Debug.debug_settings["enemy_state"] = on
+## Each NPC's ai_overlay lines (Enemy._draw_ai_overlay): to its target, to
+## where it last had it, and to where it is heading. Its think tag is the
+## overlay's (ObserverOverlay.show_tags), so the NPC's own state label stays
+## off here.
+func set_ai_lines(on: bool) -> void:
 	Debug.debug_settings["ai_overlay"] = on
 	for m in observed_mechas():
 		m.queue_redraw()
 
 
-func labels_on() -> bool:
+func ai_lines_on() -> bool:
 	return Debug.debug_settings["ai_overlay"] == true
+
+
+# ---- Speech ----
+
+## Every pilot is heard here (Enemy.bark): there is no player to be in
+## earshot of. Off with the overlay's barks.
+func hears_every_bark() -> bool:
+	return overlay != null and overlay.show_barks
+
+
+# Speech shows in a box over the speaker (ObserverOverlay.show_speech) and
+# goes to Local as a bark line.
+func _on_mecha_spoke(mecha, text: String, seconds: float, _always_heard: bool) -> void:
+	if not is_instance_valid(mecha) or overlay == null:
+		return
+	if overlay.show_barks:
+		overlay.show_speech(mecha, text, seconds)
+	local_pilots.post_bark(mecha, text)
 
 
 # ---- Events ----
@@ -552,4 +577,5 @@ func update_camera(real_dt: float, mouse_over_panel: bool) -> void:
 		elif mouse.y >= size.y - EDGE_PAN_MARGIN:
 			move.y += 1.0
 	if move != Vector2.ZERO:
-		ArenaCam.position += move.normalized() * CAMERA_SPEED / ArenaCam.zoom.x * real_dt
+		var speed := CAMERA_SPEED * (CAMERA_FAST if Input.is_physical_key_pressed(KEY_SHIFT) else 1.0)
+		ArenaCam.position += move.normalized() * speed / ArenaCam.zoom.x * real_dt

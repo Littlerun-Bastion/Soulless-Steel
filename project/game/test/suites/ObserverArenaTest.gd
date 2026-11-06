@@ -30,6 +30,8 @@ func run_tests() -> void:
 	await case("each event happens", _test_events)
 	await case("each dummy behaviour", _test_dummy)
 	await case("clicks pick, place and cancel", _test_clicks)
+	await case("a real mouse click on the map gets through to it", _test_real_clicks)
+	await case("think tags and barks over the NPCs", _test_tags_and_barks)
 	await case("pause stops the NPCs; the speeds set the game speed", _test_time)
 	await case("delete and clear", _test_delete)
 	await before_each()
@@ -93,6 +95,35 @@ func _test_spawn() -> void:
 	check(is_same(_scene.selected_dummy, dummy), "and selected")
 	await wait_seconds(1.0)
 	check(_scene.observed_npcs().any(func(n): return str(n.logic.get_current_state()) != ""), "the NPCs think")
+
+
+func _test_tags_and_barks() -> void:
+	await _start()
+	var overlay = _scene.overlay
+	check(overlay.show_tags and overlay.show_barks, "think tags and barks are on to begin with")
+	check(not Debug.get_setting("enemy_state"), "(the NPCs' own world-size state labels stay off)")
+	var npc := _npc("professional", Vector2(-800, 600))
+	await wait_seconds(0.5)
+	var lines: PackedStringArray = overlay.tag_lines(npc, false)
+	var state := str(npc.logic.get_current_state()).to_upper()
+	check(lines.size() >= 2 and npc.mecha_name.to_upper() in lines[0] and state in lines[0],
+			"a tag names the NPC and its intent, then its scores (%s)" % " | ".join(lines))
+	var detail: PackedStringArray = overlay.tag_lines(npc, true)
+	check(detail.size() > lines.size() and ("lit" in "\n".join(detail) or "dark" in "\n".join(detail)),
+			"the selected one's has the whole detail (%s)" % " | ".join(detail))
+	npc.paused = true
+	await wait_seconds(overlay.STILL_SHOW + 0.5)
+	check(overlay.still_time(npc) >= overlay.STILL_SHOW and "STILL" in overlay.tag_lines(npc, false)[0],
+			"one standing still says for how long (%s)" % overlay.tag_lines(npc, false)[0])
+	npc.paused = false
+	check(npc._player_in_earshot(), "with no player, every pilot is in earshot")
+	npc.say("Testing.")
+	check_eq(overlay.speech_of(npc), "Testing.", "what it says shows over it")
+	overlay.show_barks = false
+	check(not npc._player_in_earshot(), "barks off: nobody hears them")
+	overlay.show_barks = true
+	await wait_seconds(npc.SPEECH_TIME + 0.5)
+	check_eq(overlay.speech_of(npc), "", "and goes when the speech is over")
 
 
 # Whether a shot wedge points back at `fired_from`, give or take the few px
@@ -180,7 +211,8 @@ func _test_dummy() -> void:
 	control.set_fire(DUMMY.Fire.POINT)
 	control.fire_point = Vector2(0, 2000)
 	var before: int = control.shots
-	var fired_point := await wait_until(func(): return control.shots > before, 6.0)
+	# Long enough for a reload after the shots at the NPC.
+	var fired_point := await wait_until(func(): return control.shots > before, 12.0)
 	check(fired_point, "and at a point")
 	control.set_fire(DUMMY.Fire.OFF)
 
@@ -223,6 +255,49 @@ func _test_clicks() -> void:
 	for i in 60:
 		_scene.zoom_by(_scene.ZOOM_STEP)
 	check(is_equal_approx(_scene.ArenaCam.zoom.x, _scene.ZOOM_MAX), "within its limit")
+
+
+# A left click at `at` (viewport px) pushed through the viewport
+# (Viewport.push_input) goes the way the mouse's does: every node's _input,
+# the GUI (where a control that stops the mouse would take it), then
+# _unhandled_input, where the panel hands it to the arena.
+func _push_click(at: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = at
+	motion.global_position = at
+	get_viewport().push_input(motion, true)
+	await get_tree().process_frame
+	for pressed in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = button
+		click.pressed = pressed
+		click.position = at
+		click.global_position = at
+		get_viewport().push_input(click, true)
+		await get_tree().process_frame
+
+
+func _test_real_clicks() -> void:
+	await _start()
+	var middle: Vector2 = get_viewport().get_visible_rect().size * 0.5
+	var where: Vector2 = _scene.screen_to_world(middle)
+	_scene.panel.npc_type_index = TYPES.find("hunter")
+	_scene.panel.squad_size = 1
+	_scene.set_place_mode("npc")
+	await _push_click(middle)
+	check(get_viewport().gui_get_hovered_control() == null, "nothing on screen over the map takes the mouse (%s)" % str(get_viewport().gui_get_hovered_control()))
+	var hunters: Array = _scene.observed_npcs().filter(func(n): return n.personality.type == Personality.Type.HUNTER)
+	check_eq(hunters.size(), 1, "PLACE NPC: a click in the middle of the screen spawns one")
+	if not hunters.is_empty():
+		check(hunters[0].global_position.distance_to(where) < 300.0, "where the click was, or next to it (%.0f px off)" % hunters[0].global_position.distance_to(where))
+	_scene.set_place_mode("dummy")
+	await _push_click(middle + Vector2(-300, 120))
+	check_eq(_scene.dummies.size(), 1, "PLACE DUMMY: a click spawns a dummy")
+	await _push_click(middle, MOUSE_BUTTON_RIGHT)
+	check_eq(_scene.place_mode, "", "a right click ends the mode")
+	if not hunters.is_empty():
+		await _push_click(_scene.get_viewport().get_canvas_transform() * hunters[0].global_position)
+		check(is_same(_scene.selected, hunters[0]), "a click on an NPC selects it")
 
 
 func _test_time() -> void:

@@ -55,6 +55,7 @@ offset_left = -605.0
 offset_top = -726.0
 offset_right = 7395.0
 offset_bottom = 7274.0
+mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = SubResource("13")

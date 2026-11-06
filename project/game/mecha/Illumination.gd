@@ -10,10 +10,11 @@ extends RefCounted
 ## A body is lit when:
 ##   - it is a living mecha with its own illuminator on (it stands in its own
 ##     light), or
-##   - it is inside the cone of a living mecha whose illuminator is on
-##     (half its cone angle either side, out to its reach), in the same
-##     building as that mecha (or both outside) and with no building wall
-##     between them: walls shadow the light. Smoke casts no shadow.
+##   - any of it is inside the cone of a living mecha whose illuminator is on
+##     (half its cone angle either side, out to its reach: in_cone with the
+##     body's radius, body_radius, as its margin), in the same building as
+##     that mecha (or both outside) and with no building wall between them:
+##     walls shadow the light. Smoke casts no shadow.
 ## An observer sees a lit body (seen_lit) if they are in the same building (or
 ## both outside: roofs hide the inside of a building) and the body isn't in or
 ## behind thick smoke. Range is the observer's to check.
@@ -188,15 +189,41 @@ static func reach(light: PointLight2D) -> float:
 	return float(distance) if (distance is float or distance is int) else Mecha.NO_HEAD_SIGHT
 
 
-## Whether `point` is inside a light's cone (angle and reach only, no walls).
-static func in_cone(light: PointLight2D, point: Vector2) -> bool:
+## Whether a circle `margin` px round `point` reaches into a light's cone
+## (angle and reach only, no walls); with no margin, whether the point is in
+## it. The circle reaches past the cone's side by as much as it is wide seen
+## from the light: asin(margin / distance) either side of the half angle.
+static func in_cone(light: PointLight2D, point: Vector2, margin := 0.0) -> bool:
 	if light == null:
 		return false
 	var offset: Vector2 = point - light.global_position
-	if offset.length() > reach(light):
+	var distance := offset.length()
+	if distance - margin > reach(light):
 		return false
+	if distance <= margin:
+		return true
 	var forward := Vector2.UP.rotated(light.global_rotation)
-	return absf(rad_to_deg(forward.angle_to(offset))) <= cone_angle(light) * 0.5
+	var widen := asin(margin / distance) if margin > 0.0 else 0.0
+	return absf(forward.angle_to(offset)) <= deg_to_rad(cone_angle(light) * 0.5) + widen
+
+
+## How far (px) a body reaches round its centre, for what lights it
+## (in_cone's margin): a mecha's farthest outline point (Mecha.rcs_outlines,
+## the parts it still has), an Entity's radius, nothing for anything else.
+static func body_radius(body: Node2D) -> float:
+	if body == null or not is_instance_valid(body):
+		return 0.0
+	if body.has_method("rcs_outlines"):
+		var farthest := 0.0
+		for entry in body.rcs_outlines():
+			if body.is_part_lost(entry.lost) or not is_instance_valid(entry.node):
+				continue
+			var xform: Transform2D = entry.node.global_transform
+			for point in entry.points:
+				farthest = maxf(farthest, (xform * point).distance_to(body.global_position))
+		return farthest
+	var radius = body.get("radius")
+	return float(radius) if (radius is float or radius is int) else 0.0
 
 
 static var _textures := {}
@@ -332,10 +359,13 @@ static func _lit_lookup(body: Node2D) -> bool:
 	var to := body.global_position
 	var body_key := ""
 	var key_known := false
+	var margin := -1.0
 	for mecha in _shining_mechas(body):
 		if mecha == body or not is_instance_valid(mecha):
 			continue
-		if not in_cone(light_of(mecha), to):
+		if margin < 0.0:
+			margin = body_radius(body)
+		if not in_cone(light_of(mecha), to, margin):
 			continue
 		var from: Vector2 = mecha.global_position
 		if not key_known:

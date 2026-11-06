@@ -335,6 +335,12 @@ func _draw_ai_overlay() -> void:
 # Extra lines for the state label with the AI overlay on: the top intent
 # scores, the illuminator, then the target, how far away it is believed to
 # be, and whether it is in sight.
+## The ai_overlay's detail lines (the label's text after the intent), for
+## other debug views (ObserverOverlay's think tags).
+func overlay_text() -> String:
+	return _overlay_text()
+
+
 func _overlay_text() -> String:
 	var text := ""
 	if not logic.last_scores.is_empty():
@@ -3189,7 +3195,8 @@ var _fight_help := false
 
 
 ## Says a line for `event` (see Barks): only if the player is within
-## earshot, the cooldowns are over and the event's chance comes up. Returns
+## earshot (or the scene hears every pilot: _player_in_earshot), the
+## cooldowns are over and the event's chance comes up. Returns
 ## whether it spoke. NPC code can bark new events too; give them lines in
 ## database/npcs/barks.json.
 func bark(event: String, target = null) -> bool:
@@ -3234,9 +3241,13 @@ func _local_pilots():
 	return null
 
 
+# A scene with no player can hear every pilot (hears_every_bark: the
+# observer arena).
 func _player_in_earshot() -> bool:
 	if not (arena is Node):
 		return false
+	if arena.has_method("hears_every_bark") and arena.hears_every_bark():
+		return true
 	var player = arena.get("player")
 	return is_instance_valid(player) and global_position.distance_to(player.global_position) <= Barks.EARSHOT
 

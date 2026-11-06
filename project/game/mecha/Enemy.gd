@@ -15,12 +15,16 @@ const PERIPHERAL_SIGHT = 400.0
 # Stuck watchdog, the last resort after the unstick moves in the steering
 # section. stuck_timer counts while the NPC wants to move but either barely
 # moves or makes no progress (_steer_blocked).
-#  1. Soft reset (STUCK_RESET_TIME): clear going_to_position so the behaviour
-#     picks a fresh target on the next tick.
+#  1. Soft reset, once, as stuck_timer passes STUCK_RESET_TIME: clear
+#     going_to_position so the behaviour picks a fresh target on the next
+#     tick, and the blocked flag, so that target is judged on its own (the
+#     steering only judges progress on a heading held for a while, so a flag
+#     left over would never clear).
 #  2. Hard relocate (STUCK_RELOCATE_TIME): if it is STILL stuck and off
 #     screen, ask the host scene for a safe position and teleport there.
 #     Catches NPCs that ended up outside the navmesh. An NPC the player can
-#     see is never teleported; it keeps trying to unstick instead.
+#     see is never teleported: its count starts over, so it gets another
+#     soft reset and keeps trying to unstick.
 const STUCK_VELOCITY_THRESHOLD := 50.0
 const STUCK_RESET_TIME := 8.0
 const STUCK_RELOCATE_TIME := 15.0
@@ -227,18 +231,18 @@ func _physics_frame(dt):
 	# (turning tanks, holding range), so neither is reset or teleported.
 	if not scripted and going_to_position and not _combat_target() \
 			and (velocity.length() < STUCK_VELOCITY_THRESHOLD or _steer_blocked):
+		var was_stuck := stuck_timer
 		stuck_timer += dt
-		# Tier 1: soft reset — clear going_to_position so behaviour re-targets.
-		# If the behaviour re-sets it next tick and we still don't move, the
-		# timer keeps climbing toward Tier 2.
-		if stuck_timer >= STUCK_RESET_TIME and stuck_timer < STUCK_RELOCATE_TIME:
-			if going_to_position:
-				AICombatLog.record_stuck(self, "soft reset")
+		# Tier 1: soft reset, once. If the behaviour's fresh target still
+		# doesn't move it, the timer keeps climbing toward Tier 2.
+		if was_stuck < STUCK_RESET_TIME and stuck_timer >= STUCK_RESET_TIME:
+			AICombatLog.record_stuck(self, "soft reset")
 			going_to_position = false
+			_steer_blocked = false
 		# Tier 2: hard relocate, off screen only.
 		elif stuck_timer >= STUCK_RELOCATE_TIME:
 			if is_on_screen():
-				stuck_timer = STUCK_RESET_TIME
+				stuck_timer = 0.0
 			else:
 				if arena and arena.has_method("get_safe_position"):
 					push_warning("[Enemy] " + mecha_name + " hard-relocated after being stuck for " + str(STUCK_RELOCATE_TIME) + "s")
@@ -2509,13 +2513,16 @@ func _track_progress(dt: float, in_combat := false) -> void:
 		_progress_done += (global_position - _progress_last_pos).dot(_steer_desired)
 	_progress_last_pos = global_position
 	_progress_has_pos = true
-	var speed: float = max_speed * throttle
+	# The pace it would keep with nothing in the way (Mecha.free_speed: a
+	# heavy legged mecha walks well under its top speed), so a slow mecha
+	# making its own pace isn't taken for a blocked one.
+	var speed: float = free_speed
 	if movement_type == "tank":
 		# A tank only drives at speed once its chassis faces the way it wants
 		# to go (Mecha.apply_movement: speed scales with that dot product
 		# cubed), so it isn't stuck while it turns on the spot.
 		var facing: Vector2 = tank_move_target.rotated(deg_to_rad(270.0)).normalized()
-		speed *= TANK_SPEED_FACTOR * pow(maxf(facing.dot(_steer_desired), 0.0), 3.0)
+		speed = max_speed * throttle * TANK_SPEED_FACTOR * pow(maxf(facing.dot(_steer_desired), 0.0), 3.0)
 	_progress_expected += speed * dt
 	_progress_time += dt
 	if _progress_time < PROGRESS_SAMPLE:

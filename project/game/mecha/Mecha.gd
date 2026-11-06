@@ -30,7 +30,6 @@ const DASH_DECAY = 4
 const FIRE_DAMAGE = 10.0 #TODO convert to kJ in new heat system
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
-const AI_TURN_DEADZONE = 5
 const EXPOSED_INVULN_WINDOW = 1
 ## The emergency Flag (enter_flagged_state): how long (s) the mecha takes no
 ## damage of any kind after entering it, and how often (s) the wound spurts
@@ -2407,6 +2406,13 @@ func get_direction_from_vector(dir_vec, eight_directions = false):
 # distance of the frames it skipped. The velocity is scaled for the move and
 # restored after, so the speed the next frame starts from is unchanged.
 var _step_scale := 1.0
+## The speed (px/s) a free or relative mover's drive would have with nothing
+## in the way: apply_movement runs the same update on it as on velocity (the
+## lerp toward the target speed, the walk cycle's speed_modifier, the
+## overweight and other movement modifiers), but no collision touches it.
+## Enemy._track_progress expects progress at this speed, the mecha's real
+## pace however heavy it is, not its top speed.
+var free_speed := 0.0
 
 
 func move(vec):
@@ -2525,12 +2531,15 @@ func apply_movement(dt, direction):
 		if direction.length() > 0:
 			moving = true
 			velocity = lerp(velocity, target_speed, target_move_acc)
+			free_speed = lerpf(free_speed, target_speed.length(), target_move_acc)
 			increase_heat(get_chassis_move_heat() * throttle * dt)
 		else:
 			moving = false
 			velocity *= 1 - get_chassis_friction()
+			free_speed *= 1 - get_chassis_friction()
 		var mod = 1.0 if is_sprinting else speed_modifier
 		velocity = apply_movement_modifiers(velocity*mod)
+		free_speed = apply_movement_modifiers(free_speed * mod)
 		move(velocity)
 	elif movement_type == "relative":
 		if direction.length() > 0:
@@ -2539,14 +2548,17 @@ func apply_movement(dt, direction):
 			moving_axis.y = direction.y != 0
 			target_speed = target_speed.rotated(deg_to_rad(rotation_degrees))
 			velocity = lerp(velocity, target_speed, target_move_acc)
+			free_speed = lerpf(free_speed, target_speed.length(), target_move_acc)
 			increase_heat(get_chassis_move_heat() * throttle * dt)
 		else:
 			moving = false
 			moving_axis.x = false
 			moving_axis.y = false
 			velocity *= 1 - get_chassis_friction()
+			free_speed *= 1 - get_chassis_friction()
 		var mod = 1.0 if is_sprinting else speed_modifier
 		velocity = apply_movement_modifiers(velocity*mod)
+		free_speed = apply_movement_modifiers(free_speed * mod)
 		move(velocity)
 	elif movement_type == "tank" and not is_player():
 		# This frame's dash or knockback move overwrote velocity; NPC tanks
@@ -2560,15 +2572,13 @@ func apply_movement(dt, direction):
 			var rotated_tank_move_target = tank_move_target.rotated(deg_to_rad(270))
 			#Compare direction we want to go to the way the Chassis is facing.
 			var turn_angle = rad_to_deg(rotated_tank_move_target.angle_to(direction))
-			#Turn chassis to face the direction
-			if turn_angle > AI_TURN_DEADZONE:
-				#Right
-				tank_move_target = tank_move_target.rotated(deg_to_rad(target_rotation_acc*dt))
-				global_rotation_degrees += target_rotation_acc*dt
-			elif turn_angle < -AI_TURN_DEADZONE:
-				#Left
-				tank_move_target = tank_move_target.rotated(deg_to_rad(-target_rotation_acc*dt))
-				global_rotation_degrees -= target_rotation_acc*dt
+			# Turn the chassis toward the direction at its turn rate, never past
+			# it, so it settles on the heading and follows it smoothly. The body
+			# rides the turn, and turns to its own target from there.
+			var turn: float = clampf(turn_angle, -target_rotation_acc * dt, target_rotation_acc * dt)
+			if turn != 0.0:
+				tank_move_target = tank_move_target.rotated(deg_to_rad(turn))
+				global_rotation_degrees += turn
 			target_speed = rotated_tank_move_target * min(max_speed, (max_speed * mult/1.5 * pow(rotated_tank_move_target.dot(direction),3.0)))
 			target_speed *= WHEELS_SPEED_FACTOR * get_entity_slow()
 			velocity = lerp(velocity, target_speed, target_move_acc)
@@ -2691,9 +2701,13 @@ func get_best_rotation_diff(cur_rot, target_rot):
 	return diff
 
 
+# How far (degrees) to turn this step from `cur_rot` toward facing
+# `target_pos`: the gap times acc * dt, which is never more than the whole
+# gap (a long step, at a high game speed or a far NPC's skipped frames,
+# lands on the target instead of overshooting it and swinging back).
 func get_rotation_diff_by_point(dt, origin, target_pos, cur_rot, acc):
 	var target_rot = rad_to_deg(origin.angle_to_point(target_pos)) + 90
-	return get_best_rotation_diff(cur_rot, target_rot)*acc*dt
+	return get_best_rotation_diff(cur_rot, target_rot) * minf(acc * dt, 1.0)
 
 
 func knockback(_strength, _knockback_dir, _should_rotate = true):

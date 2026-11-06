@@ -62,6 +62,8 @@ func run_tests() -> void:
 	await case("a blocked NPC picks a side to unstick", _test_unstick)
 	await case("a tank drives over a car after pushing it for a while", _test_trample_car)
 	await case("a tank can't drive over a fire engine", _test_no_trample_truck)
+	await case("a tank NPC turns onto its heading smoothly and holds it; no turn overshoots", _test_tank_turn)
+	await case("a heavy legged NPC walking its own pace isn't taken for a blocked one", _test_heavy_pace)
 	await case("a trampled car uses its trampled sprite, or is darkened", _test_trampled_sprite)
 	await case("a route goes round a building block through its gap", _test_route)
 	await case("spawn points move clear of parked vehicles", _test_clear_spot)
@@ -298,6 +300,56 @@ func _tank(pos: Vector2) -> Mecha:
 	mecha.global_rotation = 0.0
 	_arena.mechas.append(mecha)
 	return mecha
+
+
+# The Hunter's build: legs carrying two cannons and a missile launcher.
+func _test_heavy_pace() -> void:
+	await _setup([])
+	var design: Dictionary = PlayerProgress.DEFAULT_MECHA.duplicate()
+	design.chassis = "MSV-L3J-L"
+	design.arm_weapon_left = "Kruis_CL157.0"
+	design.arm_weapon_right = "Kruis_CL157.0"
+	design.shoulder_weapon_left = "TORI-ML"
+	var enemy := _enemy(Vector2(-3000, 0), design)
+	enemy.walk_to(Vector2(3000, 0))
+	var blocked := false
+	for i in 420:
+		await get_tree().physics_frame
+		blocked = blocked or enemy._steer_blocked or enemy._unstick_stage > 0
+	check(enemy.free_speed > 0.0 and enemy.free_speed < enemy.max_speed * 0.5,
+			"(this build walks well under its top speed: %.0f of %.0f px/s)" % [enemy.free_speed, enemy.max_speed])
+	check(not blocked, "walking its own pace on open ground, it's never judged blocked")
+	check(enemy.global_position.x > -2700.0, "and gets somewhere (%.0f px on)" % (enemy.global_position.x + 3000.0))
+
+
+func _test_tank_turn() -> void:
+	await _setup([])
+	var tank := _tank(Vector2(-6000, -6000))
+	tank.set_physics_process(false)
+	tank.throttle = 1.0
+	var heading := func() -> Vector2: return tank.tank_move_target.rotated(deg_to_rad(270.0))
+	var want: Vector2 = heading.call().rotated(deg_to_rad(20.0))
+	var last_angle: float = heading.call().angle()
+	var reversed := false
+	var turns: Array[float] = []
+	for i in 120:
+		await get_tree().physics_frame
+		tank.apply_movement(1.0 / 60.0, want)
+		var angle: float = heading.call().angle()
+		var turn := angle_difference(last_angle, angle)
+		last_angle = angle
+		if not turns.is_empty() and turn * turns[-1] < 0.0 and absf(turn) > 0.0001:
+			reversed = true
+		turns.append(turn)
+	var off := absf(rad_to_deg(heading.call().angle_to(want)))
+	check(off < 0.5, "it turns all the way onto the heading (%.2f degrees off)" % off)
+	check(not reversed, "without ever turning back")
+	var settled := turns.slice(-30).all(func(t): return absf(t) < 0.0001)
+	check(settled, "and holds it: no more turning once it's there")
+	var gap: float = tank.get_rotation_diff_by_point(0.5, Vector2.ZERO, Vector2(100, 0), 0.0, 45.0)
+	check(is_equal_approx(gap, 90.0), "a long step turns the whole gap, not past it (%.1f of 90)" % gap)
+	var small: float = tank.get_rotation_diff_by_point(1.0 / 60.0, Vector2.ZERO, Vector2(100, 0), 0.0, 6.0)
+	check(is_equal_approx(small, 9.0), "a short one turns acc * dt of it, as before (%.2f)" % small)
 
 
 # Drives a mecha at `vel` for `seconds` with Mecha.move (no steering).

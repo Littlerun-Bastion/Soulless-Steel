@@ -115,8 +115,12 @@ func _register_apps() -> void:
 	register_app("log", preload("res://game/ui/mech_os/windows/LogWindow.tscn"), "LOG", preload(ICONS + "log.svg"), "Log")
 	register_app("local", preload("res://game/ui/mech_os/windows/LocalWindow.tscn"), "LOC", preload(ICONS + "loc.svg"), "Local")
 	register_app("system", preload("res://game/ui/mech_os/windows/SystemWindow.tscn"), "SYS", preload(ICONS + "sys.svg"), "System", true)
-	register_app("net", null, "NET", preload(ICONS + "net.svg"), "Browser", true)
-	taskbar.set_app_enabled("net", false, "Offline")
+	# The browser: Hangar only for now, like MAT (HangarScreen turns it on).
+	register_app("net", preload("res://game/ui/mech_os/windows/NetWindow.tscn"), "NET", preload(ICONS + "net.svg"), "Browser", true)
+	app_openers["net"] = open_net
+	set_app_available("net", false)
+	# No sidebar tile: opened by "Compare to..." on a part (open_compare).
+	register_app("compare", preload("res://game/ui/mech_os/windows/CompareWindow.tscn"))
 
 
 func register_app(app_id: String, scene: PackedScene, code: String = "",
@@ -309,6 +313,29 @@ func _close_kill_record_of(window: MechWindow) -> void:
 	if open_windows.get("kill_record") == window:
 		close_app("kill_record")
 
+
+## Opens NET (or brings it to the front) and loads the address, the home
+## page when it's empty. Nothing while NET isn't available (the field, the
+## title screen).
+func open_net(url := "") -> MechWindow:
+	if not is_app_available("net"):
+		return null
+	var window: NetWindow = open_app("net")
+	if window != null:
+		window.navigate(url if url != "" else NetWindow.HOME_URL)
+	return window
+
+
+## Opens COMPARE on a part ({"part_type", "part_id", "grade", "place"}, see
+## CompareWindow), replacing what it showed.
+func open_compare(subject: Dictionary) -> MechWindow:
+	if subject.is_empty():
+		return null
+	var window: CompareWindow = open_app("compare")
+	if window != null:
+		window.set_subject(subject)
+	return window
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		close_all()
@@ -421,6 +448,40 @@ func _register_context_actions() -> void:
 			"run": func(ctx):
 				ctx["inventory"].transfer_all_to(_player_cargo())
 				refresh_inventory_windows(),
+		})
+
+	# A part anywhere: in a grid ("item" with a part stack), in an EQP slot or
+	# on amazing.com ("part"). CompareWindow reads both shapes.
+	for target_type in ["item", "part"]:
+		register_context_action(target_type, {
+			"id": "compare", "label": "Compare to...", "priority": 5, "group": "inspect",
+			"visible_if": func(ctx): return not CompareWindow.subject_from_context(ctx).is_empty(),
+			"run": func(ctx): open_compare(CompareWindow.subject_from_context(ctx)),
+		})
+	# A part on an amazing.com page.
+	register_context_action("part", {
+		"id": "view_product", "label": "View product", "priority": 2, "group": "store",
+		"visible_if": func(ctx): return ctx.get("from_store", false) and is_app_available("net"),
+		"run": func(ctx): open_net(NetSites.product_url(ctx["part_type"], ctx["part_id"])),
+	})
+	register_context_action("part", {
+		"id": "add_to_cart", "label": "Add to cart", "priority": 3, "group": "store",
+		"visible_if": func(ctx): return ctx.get("from_store", false),
+		"enabled_if": func(ctx): return "" if Store.is_listed(ctx["part_type"], ctx["part_id"]) else "NOT SOLD",
+		"run": func(ctx):
+			Store.add_to_cart(ctx["part_type"], ctx["part_id"])
+			AudioManager.play_sfx("keystrike"),
+	})
+	# NET's Manufacturers menu: every maker's own site.
+	var makers := Manufacturers.real_ids()
+	for i in makers.size():
+		var maker_id: String = makers[i]
+		register_context_action("net_makers", {
+			"id": "maker_" + maker_id, "label": Manufacturers.display_name(maker_id), "priority": i,
+			"run": func(ctx):
+				var window = ctx.get("window")
+				if is_instance_valid(window):
+					window.navigate(Manufacturers.domain_of(maker_id)),
 		})
 
 	# Recycling (Hangar only): salvage and parts -> materials. Only offered

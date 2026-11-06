@@ -226,6 +226,16 @@ func _preview_slot(stack: item_stack) -> PartSlot:
 	return null
 
 
+## The right-click context for a slot (PartSlot.get_context_target): its part
+## as {"type": "part", "part_type", "part_id", "grade", "slot"}, {} if empty.
+func slot_context(slot: PartSlot) -> Dictionary:
+	var part = _get_mecha_part_for_slot(slot)
+	if not part:
+		return {}
+	return {"type": "part", "part_type": slot.part_type, "part_id": str(part.part_id),
+			"grade": _grade_in(slot), "slot": _build_key(slot)}
+
+
 func _build_key(slot: PartSlot) -> String:
 	if slot.part_type == "arm_weapon" or slot.part_type == "shoulder_weapon":
 		return slot.part_type + ("_left" if slot.part_side == PartSlot.SIDE.LEFT else "_right")

@@ -3,6 +3,9 @@
 [ext_resource type="FontFile" uid="uid://b31lkain7iil5" path="res://assets/fonts/data/Pixgamer/PixgamerRegular-OVD6A.ttf" id="1_text"]
 [ext_resource type="FontFile" uid="uid://dypckct0ep7aa" path="res://assets/fonts/data/TheJewishBitmap/TheJewishBitmap.ttf" id="2_caps"]
 [ext_resource type="Script" uid="uid://wuadc6b3d4yl" path="res://game/ui/mech_os/StyleBoxDashed.gd" id="3_dash"]
+[ext_resource type="Script" path="res://game/ui/mech_os/StyleBoxBevel.gd" id="4_bevel"]
+[ext_resource type="FontFile" uid="uid://dxr72yrryp5lq" path="res://assets/fonts/data/Silkscreen/Silkscreen-Regular.ttf" id="5_silk"]
+[ext_resource type="Texture2D" uid="uid://darfelgc5lid1" path="res://game/ui/net/net_dither.png" id="6_dither"]
 
 [sub_resource type="StyleBoxFlat" id="sb_alert_critical"]
 content_margin_left = 12.0
@@ -682,6 +685,250 @@ border_width_bottom = 1
 border_color = Color(0.839, 0.839, 0.839, 1)
 corner_detail = 1
 
+[sub_resource type="StyleBoxFlat" id="sb_net_address"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.839, 0.839, 0.839, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxTexture" id="sb_net_banner"]
+content_margin_left = 20.0
+content_margin_top = 12.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+texture = ExtResource("6_dither")
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_box"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_bar"]
+content_margin_left = 8.0
+content_margin_top = 1.0
+content_margin_right = 8.0
+content_margin_bottom = 1.0
+bg_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_button"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("4_bevel")
+face_color = Color(0.541, 0.541, 0.541, 1)
+light_color = Color(0.839, 0.839, 0.839, 1)
+shadow_color = Color(0.102, 0.102, 0.102, 1)
+
+[sub_resource type="StyleBox" id="sb_net_button_pressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 13.0
+content_margin_top = 5.0
+content_margin_right = 11.0
+content_margin_bottom = 3.0
+script = ExtResource("4_bevel")
+face_color = Color(0.541, 0.541, 0.541, 1)
+light_color = Color(0.839, 0.839, 0.839, 1)
+shadow_color = Color(0.102, 0.102, 0.102, 1)
+sunken = true
+
+[sub_resource type="StyleBoxFlat" id="sb_net_counter"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_counter_digit"]
+content_margin_left = 4.0
+content_margin_top = 0.0
+content_margin_right = 4.0
+content_margin_bottom = 0.0
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxEmpty" id="sb_net_content"]
+content_margin_left = 20.0
+content_margin_top = 14.0
+content_margin_right = 20.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="sb_net_frame_row"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+draw_center = false
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_frame_row_tight"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+draw_center = false
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_input"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+script = ExtResource("4_bevel")
+face_color = Color(0, 0, 0, 1)
+light_color = Color(0.541, 0.541, 0.541, 1)
+shadow_color = Color(0, 0, 0, 1)
+sunken = true
+
+[sub_resource type="StyleBox" id="sb_net_notice"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+script = ExtResource("3_dash")
+border_color = Color(0.541, 0.541, 0.541, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_net_row"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_row_alt"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.102, 0.102, 0.102, 1)
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_sprite"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_status"]
+content_margin_left = 12.0
+content_margin_top = 5.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+draw_center = false
+border_width_top = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_tab"]
+content_margin_left = 14.0
+content_margin_top = 2.0
+content_margin_right = 14.0
+content_margin_bottom = 2.0
+bg_color = Color(0.541, 0.541, 0.541, 1)
+border_width_right = 1
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_tab_active"]
+content_margin_left = 14.0
+content_margin_top = 2.0
+content_margin_right = 14.0
+content_margin_bottom = 2.0
+bg_color = Color(0.839, 0.839, 0.839, 1)
+border_width_right = 1
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_tab_bar"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 0.0
+content_margin_top = 2.0
+content_margin_right = 0.0
+content_margin_bottom = 2.0
+script = ExtResource("4_bevel")
+face_color = Color(0.541, 0.541, 0.541, 1)
+light_color = Color(0.839, 0.839, 0.839, 1)
+shadow_color = Color(0.102, 0.102, 0.102, 1)
+sides = false
+
+[sub_resource type="StyleBoxEmpty" id="sb_net_box_body"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxEmpty" id="sb_net_well_margin"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBox" id="sb_net_well"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+script = ExtResource("4_bevel")
+face_color = Color(0.043, 0.043, 0.043, 1)
+light_color = Color(0.541, 0.541, 0.541, 1)
+shadow_color = Color(0, 0, 0, 1)
+sunken = true
+
 [resource]
 default_font = SubResource("font_text")
 default_font_size = 16
@@ -855,6 +1102,149 @@ MessageList/base_type = &"VBoxContainer"
 MessageList/constants/separation = 14
 MessageOut/base_type = &"PanelContainer"
 MessageOut/styles/panel = SubResource("sb_message_out")
+NetAddress/base_type = &"LineEdit"
+NetAddress/colors/caret_color = Color(0.949, 0.949, 0.949, 1)
+NetAddress/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetAddress/styles/focus = SubResource("sb_net_address")
+NetAddress/styles/normal = SubResource("sb_net_address")
+NetAddress/styles/read_only = SubResource("sb_net_address")
+NetBanner/base_type = &"PanelContainer"
+NetBanner/styles/panel = SubResource("sb_net_banner")
+NetBarText/base_type = &"Label"
+NetBarText/colors/font_color = Color(0, 0, 0, 1)
+NetBarText/font_sizes/font_size = 16
+NetBarText/fonts/font = SubResource("font_text")
+NetBody/base_type = &"Label"
+NetBody/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetBody/font_sizes/font_size = 16
+NetBody/fonts/font = SubResource("font_text")
+NetBodyBright/base_type = &"Label"
+NetBodyBright/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetBodyBright/font_sizes/font_size = 16
+NetBodyBright/fonts/font = SubResource("font_text")
+NetBox/base_type = &"PanelContainer"
+NetBox/styles/panel = SubResource("sb_net_box")
+NetBoxBody/base_type = &"PanelContainer"
+NetBoxBody/styles/panel = SubResource("sb_net_box_body")
+NetBoxHeader/base_type = &"PanelContainer"
+NetBoxHeader/styles/panel = SubResource("sb_net_bar")
+NetButton/base_type = &"Button"
+NetButton/colors/font_color = Color(0, 0, 0, 1)
+NetButton/colors/font_disabled_color = Color(0.227, 0.227, 0.227, 1)
+NetButton/colors/font_focus_color = Color(0, 0, 0, 1)
+NetButton/colors/font_hover_color = Color(0, 0, 0, 1)
+NetButton/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+NetButton/colors/font_pressed_color = Color(0, 0, 0, 1)
+NetButton/styles/disabled = SubResource("sb_net_button")
+NetButton/styles/focus = SubResource("sb_focus")
+NetButton/styles/hover = SubResource("sb_net_button")
+NetButton/styles/hover_pressed = SubResource("sb_net_button_pressed")
+NetButton/styles/normal = SubResource("sb_net_button")
+NetButton/styles/pressed = SubResource("sb_net_button_pressed")
+NetColumns/base_type = &"HBoxContainer"
+NetColumns/constants/separation = 16
+NetContent/base_type = &"PanelContainer"
+NetContent/styles/panel = SubResource("sb_net_content")
+NetCounter/base_type = &"PanelContainer"
+NetCounter/styles/panel = SubResource("sb_net_counter")
+NetCounterDigit/base_type = &"PanelContainer"
+NetCounterDigit/styles/panel = SubResource("sb_net_counter_digit")
+NetCounterRow/base_type = &"HBoxContainer"
+NetCounterRow/constants/separation = 2
+NetFavorite/base_type = &"LinkButton"
+NetFavorite/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetFavorite/colors/font_focus_color = Color(0.541, 0.541, 0.541, 1)
+NetFavorite/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetFavorite/colors/font_hover_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetFavorite/colors/font_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetFavorite/font_sizes/font_size = 16
+NetFavorite/fonts/font = SubResource("font_text")
+NetFavorite/styles/focus = SubResource("sb_focus")
+NetFavoriteActive/base_type = &"NetFavorite"
+NetFavoriteActive/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetFavoriteActive/colors/font_focus_color = Color(0.949, 0.949, 0.949, 1)
+NetFavorites/base_type = &"HBoxContainer"
+NetFavorites/constants/separation = 24
+NetFrameRow/base_type = &"PanelContainer"
+NetFrameRow/styles/panel = SubResource("sb_net_frame_row")
+NetFrameRowTight/base_type = &"PanelContainer"
+NetFrameRowTight/styles/panel = SubResource("sb_net_frame_row_tight")
+NetHeading/base_type = &"Label"
+NetHeading/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetHeading/font_sizes/font_size = 24
+NetHeading/fonts/font = ExtResource("5_silk")
+NetInput/base_type = &"LineEdit"
+NetInput/colors/caret_color = Color(0.949, 0.949, 0.949, 1)
+NetInput/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetInput/colors/font_placeholder_color = Color(0.541, 0.541, 0.541, 1)
+NetInput/colors/selection_color = Color(0.227, 0.227, 0.227, 1)
+NetInput/styles/focus = SubResource("sb_net_input")
+NetInput/styles/normal = SubResource("sb_net_input")
+NetInput/styles/read_only = SubResource("sb_net_input")
+NetLink/base_type = &"LinkButton"
+NetLink/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetLink/colors/font_disabled_color = Color(0.227, 0.227, 0.227, 1)
+NetLink/colors/font_focus_color = Color(0.839, 0.839, 0.839, 1)
+NetLink/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetLink/colors/font_hover_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetLink/colors/font_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetLink/font_sizes/font_size = 16
+NetLink/fonts/font = SubResource("font_text")
+NetLink/styles/focus = SubResource("sb_focus")
+NetLinkDim/base_type = &"NetLink"
+NetLinkDim/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetLinkDim/colors/font_focus_color = Color(0.541, 0.541, 0.541, 1)
+NetLogo/base_type = &"Label"
+NetLogo/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetLogo/font_sizes/font_size = 40
+NetLogo/fonts/font = ExtResource("5_silk")
+NetMeta/base_type = &"Label"
+NetMeta/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMeta/font_sizes/font_size = 16
+NetMeta/fonts/font = SubResource("font_text")
+NetNotice/base_type = &"PanelContainer"
+NetNotice/styles/panel = SubResource("sb_net_notice")
+NetPageWell/base_type = &"PanelContainer"
+NetPageWell/styles/panel = SubResource("sb_net_well")
+NetRow/base_type = &"PanelContainer"
+NetRow/styles/panel = SubResource("sb_net_row")
+NetRowAlt/base_type = &"PanelContainer"
+NetRowAlt/styles/panel = SubResource("sb_net_row_alt")
+NetSpriteBox/base_type = &"PanelContainer"
+NetSpriteBox/styles/panel = SubResource("sb_net_sprite")
+NetStack/base_type = &"VBoxContainer"
+NetStack/constants/separation = 10
+NetStatusBar/base_type = &"PanelContainer"
+NetStatusBar/styles/panel = SubResource("sb_net_status")
+NetTab/base_type = &"Button"
+NetTab/colors/font_color = Color(0, 0, 0, 1)
+NetTab/colors/font_disabled_color = Color(0.227, 0.227, 0.227, 1)
+NetTab/colors/font_focus_color = Color(0, 0, 0, 1)
+NetTab/colors/font_hover_color = Color(0, 0, 0, 1)
+NetTab/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+NetTab/colors/font_pressed_color = Color(0, 0, 0, 1)
+NetTab/styles/disabled = SubResource("sb_net_tab")
+NetTab/styles/focus = SubResource("sb_focus")
+NetTab/styles/hover = SubResource("sb_net_tab_active")
+NetTab/styles/hover_pressed = SubResource("sb_net_tab_active")
+NetTab/styles/normal = SubResource("sb_net_tab")
+NetTab/styles/pressed = SubResource("sb_net_tab_active")
+NetTabActive/base_type = &"NetTab"
+NetTabActive/styles/normal = SubResource("sb_net_tab_active")
+NetTabBar/base_type = &"PanelContainer"
+NetTabBar/styles/panel = SubResource("sb_net_tab_bar")
+NetTableHeader/base_type = &"PanelContainer"
+NetTableHeader/styles/panel = SubResource("sb_net_bar")
+NetTightStack/base_type = &"VBoxContainer"
+NetTightStack/constants/separation = 2
+NetToolbar/base_type = &"HBoxContainer"
+NetToolbar/constants/separation = 8
+NetWellMargin/base_type = &"PanelContainer"
+NetWellMargin/styles/panel = SubResource("sb_net_well_margin")
+NetZeroRow/base_type = &"HBoxContainer"
+NetZeroRow/constants/separation = 0
+NetZeroStack/base_type = &"VBoxContainer"
+NetZeroStack/constants/separation = 0
 NoticeDashed/base_type = &"PanelContainer"
 NoticeDashed/styles/panel = SubResource("sb_notice_dashed")
 PaneDivider/base_type = &"PanelContainer"

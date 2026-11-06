@@ -1,4 +1,5 @@
 extends Control
+class_name HangarScreen
 
 # The Hangar: refit the mecha between expeditions and recycle salvage.
 # Built on Mech OS windows — the same ones used in the field — so the Hangar
@@ -14,6 +15,11 @@ extends Control
 # they change. The design is handed to PlayerProgress on every equip, so any
 # save (recycling, say) writes parts, cargo and stash that agree; leaving or
 # closing the game saves it all.
+#
+# NET (the browser) is on the sidebar here and only here for now. A screen
+# that sends the player to the Hangar to shop (the title screen's Store
+# button) sets open_net_url first; the Hangar opens NET there once, on
+# arrival, and clears it.
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
@@ -27,6 +33,9 @@ const LAYOUT_GAP := 20.0
 const EQUIPMENT_SIZE := Vector2(820, 900)
 const CARGO_SIZE := Vector2(440, 420)
 const STASH_HEIGHT := 900.0
+
+## An address for NET to open when the Hangar next loads ("" = none).
+static var open_net_url := ""
 
 @onready var player_mecha: Mecha = $Mecha
 @onready var credits_label: Label = $HangarBar/Row/Credits/CreditsLabel
@@ -55,7 +64,12 @@ func _ready() -> void:
 	MechOS.set_app_available("materials", true)
 	MechOS.set_app_available("fabricator", true)
 	MechOS.set_app_available("facilities", true)
+	MechOS.set_app_available("net", true)
 	_open_windows()
+	if open_net_url != "":
+		var url := open_net_url
+		open_net_url = ""
+		MechOS.open_net(url)
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
@@ -69,6 +83,7 @@ func _exit_tree() -> void:
 	MechOS.set_app_available("materials", false)
 	MechOS.set_app_available("fabricator", false)
 	MechOS.set_app_available("facilities", false)
+	MechOS.set_app_available("net", false)
 	MechOS.close_all()
 	MechOS.recycling_enabled = false
 	MechOS.set_player(null)

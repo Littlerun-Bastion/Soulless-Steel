@@ -1,12 +1,11 @@
 extends TestSuite
 
 # OtherModesTest: the screens and modes outside the Expedition loop still
-# start and run for a few seconds without errors: the Store, the Ladder, and
-# an Arena fight (Exhibition against a random NPC, Challenge against the
-# current challenger). Arena is parked, so this is a smoke test, not a
-# playthrough.
+# start and run for a few seconds without errors: the Ladder, and an Arena
+# fight (Exhibition against a random NPC, Challenge against the current
+# challenger). Arena is parked, so this is a smoke test, not a playthrough.
+# The store (amazing.com on the NET) is NetStoreTest's.
 
-const STORE := preload("res://game/ui/customizer/Storepage.tscn")
 const LADDER := preload("res://game/ui/ladder/Ladder.tscn")
 const ARENA := preload("res://game/arena/Arena.tscn")
 const ARENA_MAP := "arena_oldgate"
@@ -21,7 +20,6 @@ func _init() -> void:
 
 func run_tests() -> void:
 	_saved_arena = {"mode": ArenaManager.mode, "map": ArenaManager.map_to_load}
-	await case("the Store opens and runs", func(): await _run_scene(STORE.instantiate(), "Store"))
 	await case("the Ladder opens and runs", func(): await _run_scene(LADDER.instantiate(), "Ladder"))
 	await case("an Arena exhibition fight runs", func(): await _run_arena("Exhibition"))
 	await case("an Arena challenge fight runs", func(): await _run_arena("Challenge"))

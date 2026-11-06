@@ -316,6 +316,15 @@ func _test_drawn_cone() -> void:
 	var head_angle: float = plain.build.head.illuminator_angle
 	check(light.texture is ImageTexture and light.texture.get_width() == Illumination.LIGHT_TEXTURE_SIZE,
 			"the illuminator's texture is drawn in code")
+	# A texture from the scene is only swapped out at once (shape_light), and
+	# swapping it raised a renderer error when the Hangar opened ("Parameter
+	# "t" is null" in texture_remove_from_decal_atlas). Headless runs can't see
+	# that error, so this checks the cause.
+	for scene in [MECHA, PLAYER, ENEMY]:
+		var fresh: Node = scene.instantiate()
+		check(Illumination.light_of(fresh).texture == null,
+				"%s gives its illuminator no texture of its own" % scene.resource_path.get_file())
+		fresh.free()
 	check_eq(Illumination.cone_angle(light), head_angle, "at its head's angle")
 	var reach := Illumination.reach(light)
 	check(is_equal_approx(light.texture_scale * Illumination.LIGHT_TEXTURE_SIZE * 0.5, Illumination.texture_extent(reach)),

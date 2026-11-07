@@ -210,6 +210,11 @@ func _test_player_view() -> void:
 	check(_player.contacts.query({"body": outside, "source": "sight"}).is_empty(), "none past it")
 	check(_player.is_hidden_from_view(outside) and outside.modulate.a < 0.05, "and it is faded out")
 
+	# Dark all round: the player's own light too. Its cone reaches the sight
+	# circle and points wherever Mecha._ready turned the player at random; on
+	# the body inside, the player would see it, and a seen body has no IR
+	# track.
+	_player.set_illuminator(false)
 	inside.set_illuminator(false)
 	outside.set_illuminator(false)
 	inside.global_position = Vector2(0, r * 0.9)

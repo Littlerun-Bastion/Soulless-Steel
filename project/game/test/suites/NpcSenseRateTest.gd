@@ -4,8 +4,9 @@ extends TestSuite
 # (update_senses) on every Enemy.NEAR_SENSE_INTERVAL-th frame, over the time
 # since its senses last ran, so its memory ages as before; a further NPC
 # senses on every thinking frame, and a new NPC on its first think. Real
-# physics frames; the NPC's behaviour is
-# held (wait_for_map_sync) so only its senses run.
+# physics frames; the NPC's behaviour is held (wait_for_map_sync) so only
+# its senses run. The senses also drop cached wall rays too old to be used
+# again (Enemy._prune_sight_cache), every SIGHT_CACHE_PRUNE_FRAMES frames.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const ENEMY := preload("res://game/mecha/Enemy.tscn")
@@ -37,6 +38,7 @@ func _init() -> void:
 func run_tests() -> void:
 	await case("a near NPC senses every other frame, its memory ageing as before", _test_near)
 	await case("a far NPC senses on every thinking frame", _test_far)
+	await case("cached wall rays too old to use are dropped", _test_sight_cache_pruned)
 
 
 func before_each() -> void:
@@ -113,3 +115,22 @@ func _test_far() -> void:
 		all_sensing = all_sensing and npc.is_sensing_frame()
 		await get_tree().physics_frame
 	check(all_sensing, "every frame it thinks on is a sensing frame")
+
+
+func _test_sight_cache_pruned() -> void:
+	_player(Vector2(500, 500))
+	var npc := _npc(Vector2(900, 500))
+	await wait_frames(3)
+	var frame := Engine.get_physics_frames()
+	var at := Vector2.ZERO
+	# One ray cast long ago (a body gone since), one just now.
+	npc._sight_cache[111] = [frame - npc.SIGHT_RECHECK_FRAMES - 50, false, at, at]
+	npc._sight_cache[222] = [frame, true, at, at]
+	npc._sight_cache_pruned = frame - npc.SIGHT_CACHE_PRUNE_FRAMES
+	npc.update_senses(0.1)
+	check(not npc._sight_cache.has(111), "a ray too old to use is dropped")
+	check(npc._sight_cache.has(222) and npc._sight_cache[222][1] == true, "a fresh one is kept as it was")
+	check_eq(npc._sight_cache_pruned, Engine.get_physics_frames(), "and the next prune is SIGHT_CACHE_PRUNE_FRAMES away")
+	npc._sight_cache[333] = [frame - npc.SIGHT_RECHECK_FRAMES - 50, false, at, at]
+	npc.update_senses(0.1)
+	check(npc._sight_cache.has(333), "between prunes nothing is dropped")

@@ -235,6 +235,11 @@ func _test_fisher_memory() -> void:
 	await wait_until(func(): return fisher.fisher_body.legs_out() >= 1.0, 3.0)
 	var spot := mecha.global_position
 	mecha.external_temp = 0.0
+	# Gone at once, and the Fisher senses that on its next frame. It senses
+	# only every NEAR_SENSE_INTERVAL s, from a random phase, so it could
+	# otherwise still have the prey for up to that long, and the jump would
+	# look like prey bolting: a leap after it, before it's lost.
+	fisher._sense_timer = 0.0
 	mecha.global_position = Vector2(4000, -600)
 	var lost := await wait_until(func(): return not fisher.target_perceived, 1.0)
 	check(lost and fisher.target == mecha, "cooled and gone, it isn't let go")

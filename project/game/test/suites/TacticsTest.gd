@@ -253,7 +253,13 @@ func _test_search() -> void:
 	await _setup()
 	var enemy := _enemy(Vector2.ZERO, Personality.Type.HUNTER, _design("", "", "DR-4"), true)
 	var foe := _foe(Vector2(900, 0), enemy)
-	var engaged := await wait_until(func(): return str(enemy.logic.get_current_state()) == "engage", 4.0)
+	# Engaged, and with the target in sight on a think (aiming_at_enemy):
+	# lost from there, it heads for the last-known spot. A Hunter flashes its
+	# light, so it can go into engage between flashes, with the target unseen
+	# and its last roam point still its point_of_interest; it heads there
+	# instead, past max_shooting_distance from the spot within SEARCH_AFTER,
+	# and drops the target before it searches.
+	var engaged := await wait_until(func(): return str(enemy.logic.get_current_state()) == "engage" and enemy.logic.behaviour.aiming_at_enemy, 4.0)
 	check(engaged, "it engages the mecha it sees")
 	foe.global_position = Vector2(0, 7000)
 	# The search may be over within a poll under load (its first think

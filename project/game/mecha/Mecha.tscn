@@ -944,6 +944,7 @@ tracks/0/keys = {
 }
 
 [sub_resource type="Animation" id="16"]
+resource_local_to_scene = true
 length = 3.2
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -976,6 +977,7 @@ tracks/1/keys = {
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_roks7"]
+resource_local_to_scene = true
 _data = {
 &"RESET": SubResource("2"),
 &"Walking": SubResource("16")

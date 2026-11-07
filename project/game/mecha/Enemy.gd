@@ -1031,6 +1031,21 @@ static var _sense_decoys: Array = []
 static var _sense_bodies_frame := -1
 # Body instance id -> [frame of the last wall ray, blocked].
 var _sight_cache := {}
+## Every this many physics frames the senses drop the cached rays too old to
+## be used again (_prune_sight_cache): bodies come and go all expedition,
+## and the cache would otherwise keep one entry for every body ever looked at.
+const SIGHT_CACHE_PRUNE_FRAMES := 600
+var _sight_cache_pruned := 0
+
+
+# Drops every cached ray older than SIGHT_RECHECK_FRAMES: _sight_to_blocked
+# would cast it again before using it, so nothing it answers changes.
+func _prune_sight_cache() -> void:
+	var frame := Engine.get_physics_frames()
+	_sight_cache_pruned = frame
+	for id in _sight_cache.keys():
+		if frame - int(_sight_cache[id][0]) >= SIGHT_RECHECK_FRAMES:
+			_sight_cache.erase(id)
 
 
 func _sense_candidates() -> Array:
@@ -1067,6 +1082,8 @@ func _sight_to_blocked(target) -> bool:
 
 func update_senses(dt):
 	_has_sensed = true
+	if Engine.get_physics_frames() - _sight_cache_pruned >= SIGHT_CACHE_PRUNE_FRAMES:
+		_prune_sight_cache()
 	contacts.advance(dt)
 	knowledge.age(dt)
 

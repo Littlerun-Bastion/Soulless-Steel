@@ -863,6 +863,9 @@ func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	MovementAnimation.speed_scale = move_acc
 	if build.chassis and build.chassis.is_legs:
 		move_acc *= 50
+	# The walk cycle's slow beats follow this mecha's chassis. Its Walking
+	# animation (and the library holding it) is local to scene in Mecha.tscn:
+	# each mecha edits its own copy, not one every mecha shares.
 	var animation = MovementAnimation.get_animation("Walking")
 	var track = 0 #animation.find_track("Mecha:speed_modifier")
 	animation.track_set_key_value(track, 2, move_acc/100.0)

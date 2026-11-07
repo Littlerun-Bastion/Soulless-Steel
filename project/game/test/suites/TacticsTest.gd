@@ -9,7 +9,8 @@ extends TestSuite
 # NPC with a mortar fires at a last-known position behind a building, never
 # at one inside a building, and not once the memory is old. A lost target
 # turns the fight into a search: a Hunter sweeps, sends its drone and runs
-# dark. Overheating turns it into a disengage: smoke round itself, a decoy,
+# dark. A fight begun with the target out of sight goes for its last-known
+# spot, not on to where the NPC was roaming. Overheating turns it into a disengage: smoke round itself, a decoy,
 # a mine on the way the foe will come, guns silent, over once cool. A
 # Professional holds fire on a poor shot where a Scavenger fires; hot guns
 # fire in bursts. An NPC with nothing to fight shoots an enemy ward it sees.
@@ -47,6 +48,7 @@ func run_tests() -> void:
 	await case("1v1 in the open: the NPC holds its range band and never closes to point-blank", _test_one_v_one)
 	await case("behind a building: a mortar fires at the last-known spot, never into a building", _test_indirect)
 	await case("a lost target: search, with a sweep, a drone and the lights off", _test_search)
+	await case("a fight begun out of sight goes for the last-known spot, not the roam point", _test_engage_unseen)
 	await case("overheating: disengage with smoke, a decoy and a mine, over once cool", _test_disengage)
 	await case("a Professional holds a poor shot; hot guns fire in bursts", _test_discipline)
 	await case("an NPC with nothing to fight shoots an enemy ward it sees", _test_devices)
@@ -280,6 +282,30 @@ func _test_search() -> void:
 	check(not enemy.illuminator_on, "running dark")
 	check(enemy.get_target_position(foe).distance_to(Vector2(900, 0)) < 300.0, "while it works from where it last saw the target")
 	check(enemy.global_position.distance_to(foe.global_position) > 4000.0, "and never heads for the true position")
+
+
+# A fight that starts with the target out of sight (a Hunter's light between
+# flashes): the NPC goes for where it last saw the target, not on to where it
+# was roaming.
+func _test_engage_unseen() -> void:
+	await _setup()
+	var enemy := _enemy(Vector2.ZERO, Personality.Type.HUNTER)
+	var foe := _foe(Vector2(900, 0), enemy)
+	var behaviour = enemy.logic.behaviour
+	var roam_point := Vector2(-2200, -2400)
+	behaviour.point_of_interest = roam_point
+	enemy.going_to_position = true
+	enemy.knowledge.see(foe, foe.global_position)
+	behaviour._check_targets(enemy)
+	check(is_same(enemy.valid_target, foe), "it has the target")
+	enemy.contacts.advance(0.1)
+	enemy.contacts.expire_unrefreshed("sight")
+	check(not enemy.is_seeing(foe), "out of sight now")
+	enemy.logic.force_intent(enemy, "engage")
+	behaviour.do_engage(0.1, enemy)
+	check_eq(behaviour.stance, "attack", "in range, a Hunter goes straight to the attack")
+	check(behaviour.point_of_interest is Vector2 and behaviour.point_of_interest.distance_to(Vector2(900, 0)) <= behaviour.SEARCH_RADIUS,
+			"it heads for where it last saw the target (%s), not on to its roam point" % str(behaviour.point_of_interest))
 
 
 func _test_disengage() -> void:

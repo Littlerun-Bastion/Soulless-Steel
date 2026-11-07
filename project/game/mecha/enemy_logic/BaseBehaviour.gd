@@ -971,6 +971,10 @@ func enter_engage(enemy):
 	stance = "closing"
 	stance_time = 0.0
 	aiming_at_enemy = false
+	# The fight's own point from here: a roam or investigate destination
+	# left over would be where an attack with the target out of sight
+	# heads (_search keeps a point it has).
+	point_of_interest = false
 	_flare_used = false
 	_was_seen = false
 	_flank_reached = false

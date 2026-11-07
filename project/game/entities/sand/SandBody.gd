@@ -443,7 +443,9 @@ func _world_parent() -> Node:
 ## OFF_SCREEN_INTERVAL frames instead of every frame: its legs, braids and
 ## grains are the dearest per-frame drawing on the map, and nobody sees
 ## them. The clocks still run every frame, so it is in step when it comes
-## into view. Placeholders.
+## into view. Its braids, ropes, shadows and claws are redrawn only while it
+## may be seen (may_be_seen: within the player's sight circle, or near the
+## screen). Placeholders.
 const OFF_SCREEN_MARGIN := 600.0
 const OFF_SCREEN_INTERVAL := 6
 var _frame_offset := randi() % OFF_SCREEN_INTERVAL
@@ -485,7 +487,9 @@ func _process_step(delta: float) -> void:
 	intensity = move_toward(intensity, 1.0 if alarm else 0.2, delta * 2.5)
 	flow_phase += delta * lerpf(idle_flow, hunt_flow, intensity) * (1.0 - 0.9 * _retract) \
 			* (frenzy_flow if frenzy else 1.0)
-	if is_inside_tree() and not MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position):
+	var near_screen := not is_inside_tree() \
+			or MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position)
+	if not near_screen:
 		_skipped_frames += delta
 		if (Engine.get_physics_frames() + _frame_offset) % OFF_SCREEN_INTERVAL != 0:
 			return
@@ -498,6 +502,52 @@ func _process_step(delta: float) -> void:
 		thrash = 1.0
 	_simulate_limbs()
 	_simulate_tails(delta)
+	_update_head()
+	var m: ShaderMaterial = _grains.process_material
+	_set_point_params(m)
+	m.set_shader_parameter(&"intensity", intensity)
+	m.set_shader_parameter(&"agitation", maxf(flash, kick))
+	_grains.amount_ratio = lerpf(0.35, 1.0, maxf(maxf(intensity, flash), kick)) * (1.0 - 0.85 * _retract)
+	if near_screen or may_be_seen():
+		_redraw_chains()
+
+
+## Whether the player could see this body now. Nothing past the player's
+## sight circle (Mecha.sight_radius) is ever shown, however fast the camera
+## pans (it pans no further than the circle): so a body within the circle,
+## or within OFF_SCREEN_MARGIN of it or of the screen (a camera with no
+## player, a cutscene's), may be seen; any other is drawn only once it may
+## (_redraw_chains), while its legs, tails and grains still move.
+func may_be_seen() -> bool:
+	if not is_inside_tree():
+		return true
+	if MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position):
+		return true
+	var player = _viewer()
+	if player == null:
+		return false
+	return global_position.distance_to(player.global_position) <= player.sight_radius() + OFF_SCREEN_MARGIN
+
+
+# The player whose view shows this body (the Entity's arena's), or null.
+func _viewer():
+	var entity := get_parent()
+	if entity == null or not ("arena" in entity):
+		return null
+	var arena = entity.arena
+	if not is_instance_valid(arena) or not ("player" in arena):
+		return null
+	var player = arena.player
+	if not is_instance_valid(player) or not player.has_method("sight_radius"):
+		return null
+	return player
+
+
+# What the body draws from its pose: legs' and tails' braids, its ropes, its
+# shadows and claws, and itself. Only while it may be seen (may_be_seen):
+# it all follows the pose of the moment, so it is the same whenever it's
+# drawn.
+func _redraw_chains() -> void:
 	var leg_taper := _paw_taper if paw_size > 0.0 else _taper
 	for limb in _limbs:
 		# A leg thins as it draws in, and is hidden once fully in.
@@ -520,11 +570,6 @@ func _process_step(delta: float) -> void:
 	_update_body()
 	_shadow_layer.queue_redraw()
 	_claw_layer.queue_redraw()
-	var m: ShaderMaterial = _grains.process_material
-	_set_point_params(m)
-	m.set_shader_parameter("intensity", intensity)
-	m.set_shader_parameter("agitation", maxf(flash, kick))
-	_grains.amount_ratio = lerpf(0.35, 1.0, maxf(maxf(intensity, flash), kick)) * (1.0 - 0.85 * _retract)
 	queue_redraw()
 
 
@@ -662,8 +707,13 @@ func _update_body() -> void:
 				pts[k] = Vector2(x, clampf(y, -half, half))
 		rope.line.points = pts
 		_set_line_params(rope.line)
+
+
+# The head's flash and pose, every animation step (a corpse takes its place
+# from it, seen or not).
+func _update_head() -> void:
 	var hm: ShaderMaterial = _head.material
-	hm.set_shader_parameter("flash", flash)
+	hm.set_shader_parameter(&"flash", flash)
 	_head.position = Vector2(body_length * neck_position + head_lunge * placeholder_head_size.x * 0.5, 0.0)
 	_head.rotation = sin(_time * 1.7) * lerpf(0.12, 0.05, intensity) * (1.0 - head_lunge)
 
@@ -1138,13 +1188,14 @@ func _show_chain(line: Line2D, strands: Array[Line2D], shown: bool, width: float
 # own_pulse_pos >= 0 gives this line its own pulse instead of the shared one.
 func _set_line_params(line: Line2D, own_pulse_pos := -1.0, own_pulse_strength := 0.0) -> void:
 	var m: ShaderMaterial = line.material
-	m.set_shader_parameter("flow_phase", flow_phase)
-	m.set_shader_parameter("intensity", intensity)
-	m.set_shader_parameter("grain_color", grain_color.lerp(Color.WHITE, flash))
-	m.set_shader_parameter("highlight_color", ridge_color.lerp(Color.WHITE, flash))
+	# StringName literals (&""): the names aren't converted on every call.
+	m.set_shader_parameter(&"flow_phase", flow_phase)
+	m.set_shader_parameter(&"intensity", intensity)
+	m.set_shader_parameter(&"grain_color", grain_color.lerp(Color.WHITE, flash))
+	m.set_shader_parameter(&"highlight_color", ridge_color.lerp(Color.WHITE, flash))
 	var own := own_pulse_pos >= 0.0
-	m.set_shader_parameter("pulse_pos", own_pulse_pos if own else pulse_pos)
-	m.set_shader_parameter("pulse_strength", own_pulse_strength if own else pulse_strength)
+	m.set_shader_parameter(&"pulse_pos", own_pulse_pos if own else pulse_pos)
+	m.set_shader_parameter(&"pulse_strength", own_pulse_strength if own else pulse_strength)
 
 func _update_braid(points: PackedVector2Array, line: Line2D, strands: Array[Line2D], width: float,
 		taper: Curve, joints: PackedFloat32Array, seed: float, own_pulse_pos := -1.0,
@@ -1152,26 +1203,36 @@ func _update_braid(points: PackedVector2Array, line: Line2D, strands: Array[Line
 	var core := _smooth(points)
 	line.points = core
 	_set_line_params(line, own_pulse_pos, own_pulse_strength)
+	if strands.is_empty():
+		return
 	var count := core.size()
 	var along := PackedFloat32Array()
 	along.resize(count)
 	for i in range(1, count):
 		along[i] = along[i - 1] + core[i].distance_to(core[i - 1])
 	var total := maxf(along[count - 1], 1.0)
+	# What every strand shares at a point, worked out once: the side it winds
+	# out to (across the core) and how far (the taper, pinched at the joints).
+	var side := PackedVector2Array()
+	side.resize(count)
+	var reach := PackedFloat32Array()
+	reach.resize(count)
+	for i in count:
+		var s := along[i] / total
+		var tangent := (core[mini(i + 1, count - 1)] - core[maxi(i - 1, 0)]).normalized()
+		var pinch := 1.0
+		for j_at in joints:
+			pinch = minf(pinch, lerpf(0.2, 1.0, smoothstep(0.0, 0.12, absf(s - j_at))))
+		side[i] = tangent.orthogonal()
+		reach[i] = width * 0.42 * taper.sample(s) * pinch
 	for j in strands.size():
 		var pts := PackedVector2Array()
 		pts.resize(count)
 		for i in count:
-			var s := along[i] / total
-			var tangent := (core[mini(i + 1, count - 1)] - core[maxi(i - 1, 0)]).normalized()
-			var pinch := 1.0
-			for j_at in joints:
-				pinch = minf(pinch, lerpf(0.2, 1.0, smoothstep(0.0, 0.12, absf(s - j_at))))
-			var amp := width * 0.42 * taper.sample(s) * pinch
 			# Opposite strands (j * PI) wind round each other; the phase
 			# drifts with the flow, so the braid slowly twists.
 			var wind := sin(along[i] / STRAND_TURN_PX * TAU + j * PI + seed - flow_phase * 2.0)
-			pts[i] = core[i] + tangent.orthogonal() * wind * amp
+			pts[i] = core[i] + side[i] * wind * reach[i]
 		strands[j].points = pts
 		_set_line_params(strands[j], own_pulse_pos, own_pulse_strength)
 
@@ -1338,6 +1399,6 @@ func _set_point_params(m: ShaderMaterial) -> void:
 			var a := floori(f)
 			arr[k] = tail.points[a].lerp(tail.points[mini(a + 1, TAIL_POINTS - 1)], f - a)
 			k += 1
-	m.set_shader_parameter("points", arr)
-	m.set_shader_parameter("limb_count", chains)
-	m.set_shader_parameter("points_per_limb", limb_points)
+	m.set_shader_parameter(&"points", arr)
+	m.set_shader_parameter(&"limb_count", chains)
+	m.set_shader_parameter(&"points_per_limb", limb_points)

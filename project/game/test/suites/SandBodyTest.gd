@@ -6,10 +6,12 @@ extends TestSuite
 # Node2D. Every body builds, walks faster when it moves faster, and bursts
 # into grains that outlive the Entity when it dies. The Coyote's whip and
 # bite, the Spitter's charge and the Fisher's stages, harpoon and leap pose
-# all play through and say when they land. Nothing a body draws (legs,
-# tails, grains, shadows, carried parts, its corpse or a Fisher's dead
-# shell) sits below z 0, where the map's ground would cover it, and the body
-# draws over its legs and trailing tails. The art bench
+# all play through and say when they land. Out of the player's sight
+# (SandBody.may_be_seen) a body moves on but isn't redrawn, and a braid's
+# strands sit where the old per-strand maths put them. Nothing a body
+# draws (legs, tails, grains, shadows, carried parts, its corpse or a
+# Fisher's dead shell) sits below z 0, where the map's ground would cover
+# it, and the body draws over its legs and trailing tails. The art bench
 # (game/test/sand_bench) runs every species without errors.
 
 const BODIES := {
@@ -34,6 +36,8 @@ func run_tests() -> void:
 	await case("nothing is drawn under the ground, and the body is over its legs", _test_layers)
 	await case("the Fisher is half again its first size", _test_fisher_size)
 	await case("faded out of the player's view, its legs and tails fade with it", _test_fades_whole)
+	await case("out of the player's sight it moves on but isn't redrawn", _test_drawn_in_sight)
+	await case("a braid's strands are where they always were", _test_braid_points)
 	await case("the art bench runs every species", _test_bench)
 
 
@@ -247,6 +251,140 @@ func _test_fades_whole() -> void:
 		await _drive(body, Vector2.ZERO, 2)
 		check(body._limb_layer.modulate.a == 1.0 and body._tail_layer.modulate.a == 1.0, "%s: and back with it" % species)
 		entity.queue_free()
+		await wait_frames(1)
+
+
+# Stand-ins for an Entity, its arena and the player whose view shows it
+# (SandBody.may_be_seen asks the Entity's arena for its player).
+class FakeViewer extends Node2D:
+	var sight := 3000.0
+	func sight_radius() -> float:
+		return sight
+
+
+class FakeArena extends Node2D:
+	var player = null
+
+
+class FakeEntity extends Node2D:
+	var arena = null
+
+
+const FAR := Vector2(60000, 60000)
+
+
+# A body as the Body child of a stand-in Entity at `pos`, with a player in
+# its arena at `viewer_pos`.
+func _make_seen(species: String, pos: Vector2, viewer_pos: Vector2) -> SandBody:
+	var arena := FakeArena.new()
+	var viewer := FakeViewer.new()
+	viewer.position = viewer_pos
+	arena.add_child(viewer)
+	arena.player = viewer
+	_world.add_child(arena)
+	var entity := FakeEntity.new()
+	entity.arena = arena
+	entity.position = pos
+	var body: SandBody = BODIES[species].new()
+	body.name = "Body"
+	entity.add_child(body)
+	arena.add_child(entity)
+	return body
+
+
+func _leg_points(body: SandBody) -> PackedVector2Array:
+	return body._limbs[0].line.points
+
+
+func _test_drawn_in_sight() -> void:
+	var body := _make_seen("Coyote", FAR, FAR + Vector2(20000, 0))
+	await _drive(body, Vector2(300.0, 0.0), 2)
+	var drawn := _leg_points(body)
+	var gait := body.gait_phase
+	await _drive(body, Vector2(300.0, 0.0), 30)
+	check(not body.may_be_seen(), "off screen and past the player's sight circle: can't be seen")
+	check(body.gait_phase > gait, "it walks on")
+	check(_leg_points(body) == drawn, "its legs aren't redrawn")
+	# The player comes near: the body is in its sight circle, still off screen.
+	var viewer: FakeViewer = body.get_parent().arena.player
+	viewer.global_position = body.global_position + Vector2(2500, 0)
+	check(body.may_be_seen(), "within the sight circle: may be seen")
+	await _drive(body, Vector2(300.0, 0.0), SandBody.OFF_SCREEN_INTERVAL + 1)
+	check(_leg_points(body) != drawn, "its legs are redrawn by its next step")
+	# Past the circle but within OFF_SCREEN_MARGIN of it: drawn too.
+	viewer.global_position = body.global_position + Vector2(viewer.sight + SandBody.OFF_SCREEN_MARGIN - 50.0, 0)
+	check(body.may_be_seen(), "just past the circle, within the margin: may be seen")
+	viewer.global_position = body.global_position + Vector2(viewer.sight + SandBody.OFF_SCREEN_MARGIN + 50.0, 0)
+	check(not body.may_be_seen(), "past the margin: can't")
+	# Near the screen it is always drawn, with or without a player.
+	var plain := _make("Coyote")
+	await _drive(plain, Vector2(300.0, 0.0), 2)
+	var before := _leg_points(plain)
+	await _drive(plain, Vector2(300.0, 0.0), 1)
+	check(plain.may_be_seen(), "on screen: may be seen")
+	check(_leg_points(plain) != before, "and redrawn every frame")
+
+
+# The strands as _update_braid placed them before it shared the per-point
+# work between strands: the same points, to the bit.
+func _old_strands(body: SandBody, points: PackedVector2Array, strand_count: int, width: float, taper: Curve,
+		joints: PackedFloat32Array, seed: float) -> Array:
+	var core := body._smooth(points)
+	var count := core.size()
+	var along := PackedFloat32Array()
+	along.resize(count)
+	for i in range(1, count):
+		along[i] = along[i - 1] + core[i].distance_to(core[i - 1])
+	var total := maxf(along[count - 1], 1.0)
+	var out := []
+	for j in strand_count:
+		var pts := PackedVector2Array()
+		pts.resize(count)
+		for i in count:
+			var s := along[i] / total
+			var tangent := (core[mini(i + 1, count - 1)] - core[maxi(i - 1, 0)]).normalized()
+			var pinch := 1.0
+			for j_at in joints:
+				pinch = minf(pinch, lerpf(0.2, 1.0, smoothstep(0.0, 0.12, absf(s - j_at))))
+			var amp := width * 0.42 * taper.sample(s) * pinch
+			var wind := sin(along[i] / SandBody.STRAND_TURN_PX * TAU + j * PI + seed - body.flow_phase * 2.0)
+			pts[i] = core[i] + tangent.orthogonal() * wind * amp
+		out.append(pts)
+	return out
+
+
+func _test_braid_points() -> void:
+	for species in BODIES:
+		var body := _make(species)
+		if body is FisherBody:
+			(body as FisherBody).stage = FisherBody.Stage.ACTIVE
+		await _drive(body, Vector2(250.0, 0.0), 20)
+		var braided := 0
+		for limb in body._limbs:
+			if limb.strands.is_empty() or limb.points.size() < 2:
+				continue
+			var joints := PackedFloat32Array([0.35, 0.7])
+			var expected := _old_strands(body, limb.points, limb.strands.size(), limb.width, body._taper, joints, limb.seed)
+			body._update_braid(limb.points, limb.line, limb.strands, limb.width, body._taper, joints, limb.seed)
+			var same := true
+			for j in limb.strands.size():
+				same = same and limb.strands[j].points == expected[j]
+			check(same, "%s: a leg's strands are where they were" % species)
+			braided += 1
+			break
+		for tail in body._tails:
+			if tail.strands.is_empty():
+				continue
+			var expected := _old_strands(body, tail.points, tail.strands.size(), tail.width, body._tail_taper, PackedFloat32Array(), tail.seed)
+			body._update_braid(tail.points, tail.line, tail.strands, tail.width, body._tail_taper, PackedFloat32Array(), tail.seed)
+			var same := true
+			for j in tail.strands.size():
+				same = same and tail.strands[j].points == expected[j]
+			check(same, "%s: a tail's strands are where they were" % species)
+			braided += 1
+			break
+		check(braided > 0, "%s has a braid to compare" % species)
+		body.get_parent().queue_free()
 		await wait_frames(1)
 
 

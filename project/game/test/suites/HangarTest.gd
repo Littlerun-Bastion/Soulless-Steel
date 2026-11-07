@@ -3,7 +3,7 @@ extends TestSuite
 # HangarTest loads the real Hangar (HangarScreen.tscn, built on Mech OS) and
 # checks it end to end: its three windows, recycling (with the Materials
 # window and the high-tech confirm), selling (with the credits in the Hangar
-# bar), the leave guard, swapping parts, a
+# bar), the debug money button, the leave guard, swapping parts, a
 # smaller core pushing cargo into the stash, and cleaning up Mech OS on exit.
 # The cases share one Hangar, opened at the start, in order.
 
@@ -26,6 +26,7 @@ func run_tests() -> void:
 	await case("recycling in the Hangar", _test_recycling)
 	await case("high tech asks before recycling", func(): await _test_high_tech_confirm(PlayerProgress.get_stash_inventory()))
 	await case("selling in the Hangar", _test_selling)
+	await case("the debug button adds 100k CT", _test_debug_money)
 	await case("can't leave with a required part missing", func(): await _test_leave_guard(_hangar, _equipment))
 	await case("swapped-out part goes to the stash", func(): _test_swap_returns_to_stash(_hangar, _equipment))
 	await case("a part keeps its grade on and off the mecha", _test_grades)
@@ -138,6 +139,20 @@ func _test_selling() -> void:
 	check_eq(_hangar.credits_label.theme_type_variation, &"Badge", "inverted, like an overweight load")
 	PlayerProgress.add_money(money + 300, false)
 	check_eq(_hangar.credits_label.theme_type_variation, &"LabelBodyBright", "back to normal once paid off")
+
+
+# Test runs are debug builds, so the Hangar bar has the button.
+func _test_debug_money() -> void:
+	var button: Button = _hangar.debug_money_button
+	if not check(button != null and button.get_parent() == _hangar.credits_label.get_parent(),
+			"a debug build has a money button by the credits"):
+		return
+	check_eq(button.text, "+100K CT", "it says what it adds")
+	var start := PlayerProgress.get_money()
+	button.pressed.emit()
+	check_eq(PlayerProgress.get_money(), start + HangarScreen.DEBUG_MONEY, "a click adds 100,000 CT")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + HangarScreen.DEBUG_MONEY), "the Hangar bar follows")
+	await wait_frames()
 
 
 # The menu's first button (ignoring ones from an earlier opening still being freed).

@@ -299,6 +299,8 @@ func _add_player() -> void:
 	# (0x0) cargo for players who hadn't opened the Hangar yet.
 	player.mech_inventory = PlayerProgress.get_mech_inventory()
 	player.setup(self)
+	# What happens to the frame goes to the LOG's COMBAT tab.
+	CombatRecorder.attach(player)
 	player.position = _player_start_position()
 	_connect_mecha_signals(player)
 	player.connect("lost_health", Callable(self, "_on_player_lost_health"))

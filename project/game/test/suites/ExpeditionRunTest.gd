@@ -126,6 +126,8 @@ func _test_start() -> void:
 			"no exit next to the spawn any more: the nearest is out at the map's edge")
 	check(player.mech_inventory.get_stacks().any(func(s): return s.item == SALVAGE), "cargo still holds what was packed")
 	check(MissionManager.current_mission != null, "a mission is running")
+	var recorder := CombatRecorder.of(player)
+	check(recorder != null and recorder.mecha == player, "what happens to the frame goes to the combat log (CombatRecorder)")
 	# The site comes from the map (Map.site_name), Helwan unless it says otherwise.
 	var map: Node = _scene.get_node("Map")
 	check_eq(_scene.get_site_name(), "Helwan", "the run takes place at the map's site")

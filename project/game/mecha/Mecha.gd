@@ -377,6 +377,10 @@ var cur_rotation_speed = 0
 
 var last_damage_source
 var last_damage_weapon
+## What is doing the damage that isn't anyone's hit: "heat" while an overheat
+## tick (overheat_damage_tick) damages a component, else "". The player's
+## CombatRecorder reads it to tell heat damage from a hit.
+var damage_cause := ""
 ## Built when it dies (KillRecord): who killed it, with what, from where, and
 ## what it knew. Empty while alive.
 var kill_record := {}
@@ -907,6 +911,9 @@ func take_damage(amount, _shield_mult, health_mult, heat_damage, status_amount, 
 		do_hitstop()
 		return
 
+	# Before took_damage: whoever hears it reads who hit (CombatRecorder).
+	last_damage_source = source_info
+	last_damage_weapon = weapon_name
 	hp = round(max(hp - (health_mult * amount), 0))
 	increase_heat(heat_damage)
 	if status_type and status_amount > 0.0:
@@ -918,8 +925,6 @@ func take_damage(amount, _shield_mult, health_mult, heat_damage, status_amount, 
 	if amount > 0:
 		_shake_ticks(1)
 
-	last_damage_source = source_info
-	last_damage_weapon = weapon_name
 	_note_attack(source_info)
 	if typeof(source_info) == TYPE_DICTIONARY:
 		var shooter = source_info.get("body")
@@ -1038,7 +1043,9 @@ func overheat_damage_tick():
 	for c in candidates:
 		running += c.weight
 		if roll <= running:
+			damage_cause = "heat"
 			damage_component(c.part, c.comp, 1)
+			damage_cause = ""
 			return
 
 func apply_movement_modifiers(speed):

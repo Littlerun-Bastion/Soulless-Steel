@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/CombatLogTest.gd" id="1_combat_log"]
+
+[node name="CombatLogTest" type="Node"]
+script = ExtResource("1_combat_log")

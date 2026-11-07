@@ -181,13 +181,15 @@ func _chart(prices: Array) -> Array:
 	for value in prices:
 		levels.append(0 if high <= low else int(roundf((float(value) - low) / (high - low) * (CHART_ROWS - 1))))
 	var lines := []
+	@warning_ignore("integer_division")
+	var middle_row := (CHART_ROWS - 1) / 2
 	for row in range(CHART_ROWS - 1, -1, -1):
 		var label := ""
 		if row == CHART_ROWS - 1:
 			label = FourX.format_price(high)
 		elif row == 0:
 			label = FourX.format_price(low)
-		elif row == (CHART_ROWS - 1) / 2:
+		elif row == middle_row:
 			label = FourX.format_price((high + low) / 2.0)
 		var runs := [BbsText.cell(label, CHART_LABEL, "dim", "", "right"), BbsText.dim(" |")]
 		for level in levels:
@@ -333,14 +335,14 @@ func _ticker() -> BbsText.Seg:
 		var shown := FourX.quote(entry.symbol)
 		var price := FourX.format_price(float(shown.last))
 		var pct := FourX.format_pct(float(shown.change_pct))
-		var size: int = entry.symbol.length() + 1 + price.length() + 1 + pct.length() + 3
-		if used + size > WIDTH:
+		var cell_width: int = entry.symbol.length() + 1 + price.length() + 1 + pct.length() + 3
+		if used + cell_width > WIDTH:
 			break
 		runs.append(BbsText.link(entry.symbol, NetSites.quote_url(entry.symbol)))
 		runs.append(BbsText.plain(" " + price + " "))
 		runs.append(BbsText.cell(pct, pct.length(), _move_style(float(shown.change_pct))))
 		runs.append(BbsText.space(3))
-		used += size
+		used += cell_width
 	return BbsText.join(runs)
 
 

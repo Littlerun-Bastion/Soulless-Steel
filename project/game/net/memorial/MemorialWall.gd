@@ -462,6 +462,7 @@ func _comment(rng: RandomNumberGenerator, group: String, author: String, record:
 ## A time of day made from text ("03:14"), the same every time.
 static func fake_time(text: String) -> String:
 	var h := absi(text.hash())
+	@warning_ignore("integer_division")
 	return "%02d:%02d" % [h % 24, (h / 24) % 60]
 
 

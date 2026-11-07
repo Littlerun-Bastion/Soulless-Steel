@@ -15,6 +15,7 @@ var mech_hit = false
 var lifetime_tick = 1.0
 var body
 
+@warning_ignore("unused_signal")
 signal bullet_impact
 
 func _physics_process(dt): 

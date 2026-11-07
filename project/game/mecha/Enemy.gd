@@ -1365,16 +1365,16 @@ func lock_reason_for(target) -> bool:
 
 ## How long (s) this NPC searches before a lock starts (see above).
 func lock_search_time() -> float:
-	var skill := personality.skill if personality != null else 0.5
-	var mean := lerpf(LOCK_SEARCH_SLOW, LOCK_SEARCH_FAST, skill)
+	var skill_level := personality.skill if personality != null else 0.5
+	var mean := lerpf(LOCK_SEARCH_SLOW, LOCK_SEARCH_FAST, skill_level)
 	return clampf(mean + randf_range(-LOCK_SEARCH_JITTER, LOCK_SEARCH_JITTER), LOCK_SEARCH_FAST, LOCK_SEARCH_SLOW)
 
 
 ## The chance a second that its reticle slips off a target it has no live
 ## track on (see above).
 func lock_slip_chance() -> float:
-	var skill := personality.skill if personality != null else 0.5
-	return lerpf(LOCK_SLIP_UNSKILLED, LOCK_SLIP_SKILLED, skill)
+	var skill_level := personality.skill if personality != null else 0.5
+	return lerpf(LOCK_SLIP_UNSKILLED, LOCK_SLIP_SKILLED, skill_level)
 
 
 ## Whether a lock-on round from `slot` can reach the locked target: an
@@ -3280,6 +3280,7 @@ func _watch_barks(dt: float) -> void:
 		_fight_hit = true
 		bark("taking_fire", most_recent_attacker if is_instance_valid(most_recent_attacker) else null)
 
+	@warning_ignore("incompatible_ternary")
 	var target = current_target if is_instance_valid(current_target) and not current_target.is_dead else null
 	# The engage intent's stance (closing, attack, defend): a fight starts
 	# when it leaves closing, and retreating is the defend stance.

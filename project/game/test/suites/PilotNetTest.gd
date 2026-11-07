@@ -85,8 +85,8 @@ func _active_gig(template_id: String) -> Dictionary:
 
 func _test_content() -> void:
 	PilotNet.reload_content()
-	var errors := PilotNet.check_content()
-	check(errors.is_empty(), "no mistakes in database/pilotnet (%s)" % "; ".join(errors))
+	var problems := PilotNet.check_content()
+	check(problems.is_empty(), "no mistakes in database/pilotnet (%s)" % "; ".join(problems))
 	for path in PilotNet.post_files() + [PilotNet.BOARDS_PATH, PilotNet.WORLD_PATH, PilotNet.GIGS_PATH, PilotNet.PILOTS_PATH]:
 		var json := JSON.new()
 		check(json.parse(FileAccess.get_file_as_string(path)) == OK, "%s parses" % path)
@@ -108,16 +108,16 @@ func _test_checks_catch() -> void:
 			"colour": "red", "requires": {"flag": {"x": true}}, "on_read": {"pilotnet": {"show": ["no_such_post"], "bogus": 1}},
 			"gig": "no_such_gig"}, "file")
 	PilotNet._file_posts["bad_post"] = bad
-	var errors := " | ".join(PilotNet.check_content())
+	var problems := " | ".join(PilotNet.check_content())
 	PilotNet._file_posts.erase("bad_post")
 	for wanted in ["board 'nowhere' doesn't exist", "unknown key 'colour'", "unknown condition 'flag'",
 			"show names no post 'no_such_post'", "unknown pilotnet key 'bogus'", "gig 'no_such_gig' isn't a template",
 			"unknown tag {nonsense}"]:
-		check(wanted in errors, "the checks catch: %s" % wanted)
+		check(wanted in problems, "the checks catch: %s" % wanted)
 	PilotNet.world["bad_world"] = {"label": "x", "values": {"1": 2}}
-	errors = " | ".join(PilotNet.check_content())
+	problems = " | ".join(PilotNet.check_content())
 	PilotNet.world.erase("bad_world")
-	check("world bad_world: the text for '1' isn't a string" in errors, "world values must be strings")
+	check("world bad_world: the text for '1' isn't a string" in problems, "world values must be strings")
 	check(PilotNet.check_content().is_empty(), "and nothing left over")
 
 

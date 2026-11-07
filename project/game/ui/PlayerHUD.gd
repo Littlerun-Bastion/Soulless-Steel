@@ -219,8 +219,8 @@ func show_speech(mecha, text: String, seconds: float) -> void:
 # A buddy-up offer from `name` (CombatScene.offer_buddy): the prompt with its
 # keys (Player.ACCEPT_ACTION, DECLINE_ACTION), up for `seconds`, as long as
 # the offer stands.
-func show_offer(name: String, seconds: float) -> void:
-	hud_alerts.show_notice("%s OFFERS TO BUDDY UP · [%s] ACCEPT · [%s] DECLINE" % [name.to_upper(),
+func show_offer(offer_name: String, seconds: float) -> void:
+	hud_alerts.show_notice("%s OFFERS TO BUDDY UP · [%s] ACCEPT · [%s] DECLINE" % [offer_name.to_upper(),
 			MechUI.key_name("accept_offer"), MechUI.key_name("decline_offer")], seconds)
 
 

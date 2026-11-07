@@ -515,10 +515,10 @@ func spot_mines(hurrying: bool) -> Array:
 	for id in known_mines.keys():
 		if not is_instance_valid(known_mines[id].node):
 			known_mines.erase(id)
-	var range := MINE_SIGHT_RANGE
+	var sight_range := MINE_SIGHT_RANGE
 	if MapSenses.in_smoke(npc.global_position):
-		range *= MINE_SMOKE_MULT
-	for mine in npc.mines_near(npc.global_position, range):
+		sight_range *= MINE_SMOKE_MULT
+	for mine in npc.mines_near(npc.global_position, sight_range):
 		var node = mine.node
 		if not is_instance_valid(node):
 			continue
@@ -528,7 +528,7 @@ func spot_mines(hurrying: bool) -> Array:
 			continue
 		if missed_mines.has(id):
 			continue
-		if MapSenses.in_smoke(mine.position) and range > MINE_SIGHT_RANGE * MINE_SMOKE_MULT \
+		if MapSenses.in_smoke(mine.position) and sight_range > MINE_SIGHT_RANGE * MINE_SMOKE_MULT \
 				and npc.global_position.distance_to(mine.position) > MINE_SIGHT_RANGE * MINE_SMOKE_MULT:
 			continue
 		var miss := MINE_MISS_BASE + panic * MINE_MISS_PANIC + (MINE_MISS_HURRY if hurrying else 0.0)

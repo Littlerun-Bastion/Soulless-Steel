@@ -112,9 +112,9 @@ func _test_header() -> void:
 	check(article.body.begins_with("'''Martel''' is."), "the body after ---")
 	check(article.errors.is_empty(), "no errors")
 	var bad := Steelapedia.parse("title: X\ncolour: red\nrequires: not json\nno colon here\n---\nBody.", "x", "misc")
-	var errors := " | ".join(bad.errors)
-	check("unknown header key 'colour'" in errors and "requires isn't a JSON object" in errors and "isn't 'key: value'" in errors,
-			"mistakes are caught (%s)" % errors)
+	var problems := " | ".join(bad.errors)
+	check("unknown header key 'colour'" in problems and "requires isn't a JSON object" in problems and "isn't 'key: value'" in problems,
+			"mistakes are caught (%s)" % problems)
 	check("no '---' line" in " ".join(Steelapedia.parse("title: X\nBody.", "x", "misc").errors), "a missing --- too")
 
 
@@ -219,7 +219,7 @@ func _test_lorem() -> void:
 
 func _test_search() -> void:
 	var found := Steelapedia.search("martel")
-	check(not found.is_empty() and found[0].slug == "martel", "a title match first (%s)" % str(found.map(func(a): return a.slug).slice(0, 3)))
+	check(not found.is_empty() and found[0].slug == "martel", "a title match first (%s)" % str(found.map(func(article): return article.slug).slice(0, 3)))
 	var by_text := Steelapedia.search("Hand-written nowhere")
 	check(by_text.is_empty(), "nothing for nothing")
 	check(Steelapedia.exact_title("martel shipping and sav manufacturing").slug == "martel", "an exact title, any case")

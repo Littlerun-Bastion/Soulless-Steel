@@ -32,8 +32,9 @@ func side() -> int:
 ## The pattern for a callsign: rows of CELLS bools, true where a cell is
 ## filled. The left half and middle come from the hash's low bits; one with
 ## nothing filled gets its middle cell.
-static func pattern(name: String) -> Array:
-	var h := absi(name.to_lower().hash())
+static func pattern(pilot_callsign: String) -> Array:
+	var h := absi(pilot_callsign.to_lower().hash())
+	@warning_ignore("integer_division")
 	var half := (CELLS + 1) / 2
 	var rows := []
 	var any := false
@@ -47,13 +48,14 @@ static func pattern(name: String) -> Array:
 			any = any or on
 		rows.append(row)
 	if not any:
+		@warning_ignore("integer_division")
 		rows[CELLS / 2][CELLS / 2] = true
 	return rows
 
 
 ## The grey the callsign's cells are drawn in.
-static func ink_of(name: String) -> String:
-	return INKS[(absi(name.to_lower().hash()) >> 20) % INKS.size()]
+static func ink_of(pilot_callsign: String) -> String:
+	return INKS[(absi(pilot_callsign.to_lower().hash()) >> 20) % INKS.size()]
 
 
 func _draw() -> void:

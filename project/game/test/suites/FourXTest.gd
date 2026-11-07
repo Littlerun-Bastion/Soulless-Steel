@@ -58,8 +58,8 @@ func _prices() -> Dictionary:
 # ---- content ------------------------------------------------------------------
 
 func _test_content() -> void:
-	var errors := FourX.check_content()
-	check(errors.is_empty(), "no problems in market.json (%s)" % "; ".join(errors))
+	var problems := FourX.check_content()
+	check(problems.is_empty(), "no problems in market.json (%s)" % "; ".join(problems))
 
 
 func _test_checks_catch() -> void:
@@ -72,13 +72,13 @@ func _test_checks_catch() -> void:
 		"events": [{"id": "e", "targets": ["group:nowhere", "NOPE"], "requires": [], "drift": 0.1, "size": 1},
 				{"id": "f", "targets": []}],
 	}
-	var errors := " | ".join(FourX.check_data(bad))
+	var problems := " | ".join(FourX.check_data(bad))
 	for wanted in ["unknown key 'oops'", "unknown key 'speed'", "'nobody' is not a maker or item id",
 			"'lower' for 'nobody' is not 1-5 capitals", "'FXC' is used twice", "the symbol is not 1-5 capitals",
 			"no name", "base must be a number above 0", "group 'nowhere' is not a group", "unknown condition 'when'",
 			"instrument 'DUPE': the symbol is used twice", "target 'group:nowhere'", "target 'NOPE'",
 			"requires is not an object", "unknown key 'size'", "event 'f': no targets"]:
-		check(wanted in errors, "catches: %s" % wanted)
+		check(wanted in problems, "catches: %s" % wanted)
 
 
 # ---- instruments --------------------------------------------------------------

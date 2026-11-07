@@ -536,7 +536,6 @@ func _test_panic() -> void:
 	brave.knowledge.panic = 0.8
 	check(Barks.has_lines("taking_fire_panicked", "any"), "panicked lines exist")
 	timid.knowledge.panic = 0.9
-	var threshold_calm: float = lerpf(0.4, 0.1, timid.personality.courage)
 	timid.knowledge.panic = 0.0
 	check(not timid.logic.behaviour._should_flee(timid), "whole and calm it doesn't flee")
 

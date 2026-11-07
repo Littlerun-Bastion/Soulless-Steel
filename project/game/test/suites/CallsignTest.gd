@@ -40,8 +40,8 @@ func before_each() -> void:
 
 
 func _test_data() -> void:
-	var errors := CallsignGenerator.check_content()
-	check(errors.is_empty(), "callsigns.json is valid (%s)" % "; ".join(errors))
+	var problems := CallsignGenerator.check_content()
+	check(problems.is_empty(), "callsigns.json is valid (%s)" % "; ".join(problems))
 	var data := CallsignGenerator.data()
 	for pool in CallsignGenerator.POOLS:
 		check(data.get(pool) is Array and not data[pool].is_empty(), "'%s' has names" % pool)
@@ -58,10 +58,10 @@ func _test_rules() -> void:
 	var styles := {}
 	var bad := []
 	for i in COUNT:
-		var name := CallsignGenerator.generate(rng, {})
+		var callsign := CallsignGenerator.generate(rng, {})
 		styles[CallsignGenerator.last_style] = int(styles.get(CallsignGenerator.last_style, 0)) + 1
-		if name.length() > CallsignGenerator.MAX_LENGTH or regex.search(name) == null or CallsignGenerator.is_blocked(name):
-			bad.append(name)
+		if callsign.length() > CallsignGenerator.MAX_LENGTH or regex.search(callsign) == null or CallsignGenerator.is_blocked(callsign):
+			bad.append(callsign)
 	check(bad.is_empty(), "every callsign is at most 16 valid characters with no blocklist word (%s)" % str(bad.slice(0, 5)))
 	for style in CallsignGenerator.STYLES:
 		check(int(styles.get(style, 0)) > 0, "the style '%s' appears (%d)" % [style, int(styles.get(style, 0))])
@@ -102,10 +102,10 @@ func _test_fallback() -> void:
 	CallsignGenerator.use_data({"weights": {"word": 1}, "words": ["Kestrel"], "blocklist": []})
 	var rng := RandomNumberGenerator.new()
 	rng.seed = SEED
-	var name := CallsignGenerator.generate(rng, {"Kestrel": true})
-	check(name.begins_with("Kestrel") and name != "Kestrel" and name.substr(7).is_valid_int(),
-			"after ten failed rolls the last one gets a number (%s)" % name)
-	check(name.length() <= CallsignGenerator.MAX_LENGTH, "still at most 16 characters")
+	var callsign := CallsignGenerator.generate(rng, {"Kestrel": true})
+	check(callsign.begins_with("Kestrel") and callsign != "Kestrel" and callsign.substr(7).is_valid_int(),
+			"after ten failed rolls the last one gets a number (%s)" % callsign)
+	check(callsign.length() <= CallsignGenerator.MAX_LENGTH, "still at most 16 characters")
 	var taken := {"Kestrel": true}
 	for i in 30:
 		var more := CallsignGenerator.generate(rng, taken)

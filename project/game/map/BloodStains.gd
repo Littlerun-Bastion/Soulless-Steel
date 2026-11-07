@@ -274,6 +274,7 @@ func add_splatter(at: Vector2, away: Vector2) -> int:
 		var blob := randf_range(BLOB_SIZE.x, BLOB_SIZE.y) * (1.4 if k == 0 else 1.0)
 		_set_piece(Batch.ROUND, slot, k, blob_at, randf() * TAU, _flipped(Vector2(blob, blob)), randf_range(0.75, 1.0))
 
+	@warning_ignore("integer_division")
 	var drops := randi_range(DROPS_PER_STAIN / 2, DROPS_PER_STAIN)
 	for k in drops:
 		var drop_dir := dir.rotated(randf_range(-DROP_SPREAD, DROP_SPREAD))

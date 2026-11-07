@@ -208,6 +208,7 @@ class Limb:
 	var walk_phase := 0.0        # its timing in the gait cycle when walking
 	var run_phase := 0.0         # ... and when running
 	var cycle := 0               # last gait cycle this leg stepped in
+	@warning_ignore("shadowed_global_identifier")
 	var seed := 0.0
 	var points := PackedVector2Array()  # world space, hip first
 	var prev := PackedVector2Array()
@@ -247,6 +248,7 @@ class Tail:
 	var damping := 0.94          # momentum each joint keeps, per frame
 	var pose_falloff := 0.0      # 0 = a pose pulls the whole tail; 1 = mostly the root
 	var shed := true             # sheds grains (tendrils don't, to save points)
+	@warning_ignore("shadowed_global_identifier")
 	var seed := 0.0
 	var points := PackedVector2Array()  # world space, root first
 	var prev := PackedVector2Array()
@@ -555,11 +557,11 @@ func _half_width_at(x: float) -> float:
 
 func _outline() -> PackedVector2Array:
 	if body_shape == BodyShape.NONE:
-		var out := PackedVector2Array()
+		var placeholder := PackedVector2Array()
 		var c := Vector2(body_length * neck_position + placeholder_head_size.x * 0.4, 0.0)
 		for k in 12:
-			out.append(c + Vector2.from_angle(TAU * k / 12.0) * placeholder_head_size * Vector2(0.6, 0.6))
-		return out
+			placeholder.append(c + Vector2.from_angle(TAU * k / 12.0) * placeholder_head_size * Vector2(0.6, 0.6))
+		return placeholder
 	if body_shape == BodyShape.WEDGE:
 		return PackedVector2Array([Vector2(body_length * 0.6, 0.0), Vector2(-body_length * 0.4, body_width * 0.5),
 				Vector2(-body_length * 0.26, 0.0), Vector2(-body_length * 0.4, -body_width * 0.5)])
@@ -713,6 +715,7 @@ func _build_limbs() -> void:
 	for spec in _tail_specs:
 		if spec.get("shed", true):
 			chains += 1
+	@warning_ignore("integer_division")
 	limb_points = clampi(limb_points, 3, MAX_POINTS / maxi(chains, 1))
 	for spec in layout:
 		var limb := Limb.new()
@@ -1110,7 +1113,7 @@ func _simulate_tails(delta: float) -> void:
 
 # A tapered line with sand_limb.gdshader: flowing grains, or (rope = true)
 # a solid rounded rope with spiralling ridges.
-func _make_line(seed: float, length_px: float, width: float, taper: Curve, rope: bool) -> Line2D:
+func _make_line(line_seed: float, length_px: float, width: float, taper: Curve, rope: bool) -> Line2D:
 	var line := Line2D.new()
 	line.width = width
 	line.width_curve = taper
@@ -1119,7 +1122,7 @@ func _make_line(seed: float, length_px: float, width: float, taper: Curve, rope:
 	line.joint_mode = Line2D.LINE_JOINT_ROUND
 	var mat := ShaderMaterial.new()
 	mat.shader = LIMB_SHADER
-	mat.set_shader_parameter("seed", seed)
+	mat.set_shader_parameter("seed", line_seed)
 	mat.set_shader_parameter("limb_px", length_px)
 	mat.set_shader_parameter("limb_width_px", width)
 	mat.set_shader_parameter("rope", rope)
@@ -1147,7 +1150,7 @@ func _set_line_params(line: Line2D, own_pulse_pos := -1.0, own_pulse_strength :=
 	m.set_shader_parameter("pulse_strength", own_pulse_strength if own else pulse_strength)
 
 func _update_braid(points: PackedVector2Array, line: Line2D, strands: Array[Line2D], width: float,
-		taper: Curve, joints: PackedFloat32Array, seed: float, own_pulse_pos := -1.0,
+		taper: Curve, joints: PackedFloat32Array, line_seed: float, own_pulse_pos := -1.0,
 		own_pulse_strength := 0.0) -> void:
 	var core := _smooth(points)
 	line.points = core
@@ -1170,7 +1173,7 @@ func _update_braid(points: PackedVector2Array, line: Line2D, strands: Array[Line
 			var amp := width * 0.42 * taper.sample(s) * pinch
 			# Opposite strands (j * PI) wind round each other; the phase
 			# drifts with the flow, so the braid slowly twists.
-			var wind := sin(along[i] / STRAND_TURN_PX * TAU + j * PI + seed - flow_phase * 2.0)
+			var wind := sin(along[i] / STRAND_TURN_PX * TAU + j * PI + line_seed - flow_phase * 2.0)
 			pts[i] = core[i] + tangent.orthogonal() * wind * amp
 		strands[j].points = pts
 		_set_line_params(strands[j], own_pulse_pos, own_pulse_strength)

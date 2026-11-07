@@ -181,17 +181,17 @@ func _test_pool() -> void:
 
 # A map with vehicles: each item is [kind, position].
 func _vehicles(vehicles: Array) -> void:
-	var set := PropSpawnSet.new()
-	set.kinds = PackedStringArray(["vehicle", "truck"])
+	var spawn_set := PropSpawnSet.new()
+	spawn_set.kinds = PackedStringArray(["vehicle", "truck"])
 	for v in vehicles:
-		set.kind.append(0 if v[0] == "vehicle" else 1)
-		set.position.append(v[1])
-		set.rotation.append(PI / 2.0)
-		set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
-		set.variant.append(0)
+		spawn_set.kind.append(0 if v[0] == "vehicle" else 1)
+		spawn_set.position.append(v[1])
+		spawn_set.rotation.append(PI / 2.0)
+		spawn_set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
+		spawn_set.variant.append(0)
 	var spawner := PropSpawner.new()
 	spawner.name = "PropSpawner"
-	spawner.spawn_set = set
+	spawner.spawn_set = spawn_set
 	_arena.add_child(spawner)
 	var layer := PropSpriteLayer.new()
 	layer.name = "Vehicles"

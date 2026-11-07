@@ -163,35 +163,35 @@ func _test_parts() -> void:
 func _test_seeker_follows() -> void:
 	var display := _mecha(Vector2(0, -3000), "SK-1", false)
 	check(_devices("seeker").is_empty(), "a mecha outside a match (a Hangar display) puts out no Seeker")
-	var owner := _mecha(Vector2(500, 500), "SK-1")
+	var carrier := _mecha(Vector2(500, 500), "SK-1")
 	var seekers := _devices("seeker")
-	check(seekers.size() == 1 and seekers[0].owner_mecha == owner and seekers[0].follows_owner, "fitted in a match, a Seeker comes out, switched on")
+	check(seekers.size() == 1 and seekers[0].owner_mecha == carrier and seekers[0].follows_owner, "fitted in a match, a Seeker comes out, switched on")
 	if seekers.size() != 1:
 		return
 	var seeker: Device = seekers[0]
 	var nearest := Device.FOLLOW_RADIUS - Device.FOLLOW_RADIUS_SWAY - 40.0
 	var furthest := Device.FOLLOW_RADIUS + Device.FOLLOW_RADIUS_SWAY + 40.0
 	await get_tree().create_timer(1.5).timeout
-	var off := seeker.global_position.distance_to(owner.global_position)
+	var off := seeker.global_position.distance_to(carrier.global_position)
 	check(off >= nearest and off <= furthest, "it hovers by its owner (%d px off)" % roundi(off))
 	var was := seeker.global_position
 	await get_tree().create_timer(1.0).timeout
 	check(seeker.global_position.distance_to(was) > 10.0, "and drifts about while its owner stands still")
-	owner.global_position = Vector2(1500, 500)
-	owner.global_rotation = PI * 0.5
+	carrier.global_position = Vector2(1500, 500)
+	carrier.global_rotation = PI * 0.5
 	await get_tree().physics_frame
-	check(seeker.global_position.distance_to(owner.global_position) > furthest, "it lags behind a sudden move")
+	check(seeker.global_position.distance_to(carrier.global_position) > furthest, "it lags behind a sudden move")
 	await get_tree().create_timer(2.0).timeout
-	off = seeker.global_position.distance_to(owner.global_position)
+	off = seeker.global_position.distance_to(carrier.global_position)
 	check(off >= nearest and off <= furthest and seeker.global_position.distance_to(seeker.follow_point()) < 60.0,
 			"then catches up and wanders round it again, turned with it")
-	var local := (seeker.global_position - owner.global_position).rotated(-owner.global_rotation)
+	var local := (seeker.global_position - carrier.global_position).rotated(-carrier.global_rotation)
 	check(local.y > -furthest * 0.5, "keeping mostly beside or behind it")
-	owner.set_internal(false)
+	carrier.set_internal(false)
 	check(_devices("seeker").is_empty(), "taking the part out takes it in")
-	owner.set_internal("SK-1")
+	carrier.set_internal("SK-1")
 	var again: Device = _devices("seeker")[0]
-	owner.is_dead = true
+	carrier.is_dead = true
 	await wait_frames(3)
 	check(_gone(again), "it goes when its owner dies")
 	display.queue_free()
@@ -211,58 +211,58 @@ func _test_seeker_follows() -> void:
 
 func _test_seeker_senses() -> void:
 	await _building()
-	var owner := _mecha(Vector2(-600, 0), "SK-1")
+	var carrier := _mecha(Vector2(-600, 0), "SK-1")
 	var seeker: Device = _devices("seeker")[0]
 	await get_tree().physics_frame
 	var behind_wall := _mecha(Vector2(200, 0))
 	var far := _mecha(Vector2(-600, -3500))
 	var ecm := _mecha(seeker.global_position + Vector2(0, 1200), "ECM-50")
 	seeker.ping()
-	var seen: Dictionary = owner.contacts.best_for(behind_wall)
+	var seen: Dictionary = carrier.contacts.best_for(behind_wall)
 	check(not seen.is_empty() and seen.source == "seeker" and seen.reveal == "vision", "a mecha behind a wall within 100 m is seen")
-	check(owner.contacts.best_for(far).is_empty(), "nothing further out")
-	check(owner.contacts.best_for(ecm).is_empty(), "an ECM-0.5 mecha at 60 m isn't (it shows within 50 m)")
+	check(carrier.contacts.best_for(far).is_empty(), "nothing further out")
+	check(carrier.contacts.best_for(ecm).is_empty(), "an ECM-0.5 mecha at 60 m isn't (it shows within 50 m)")
 	ecm.global_position = seeker.global_position + Vector2(0, 800)
 	seeker.ping()
-	check(not owner.contacts.best_for(ecm).is_empty(), "closer in, it is")
+	check(not carrier.contacts.best_for(ecm).is_empty(), "closer in, it is")
 
-	var listener = _npc(owner.global_position + Vector2(0, 150))
-	var deaf = _npc(owner.global_position + Vector2(-2000, 0))
+	var listener = _npc(carrier.global_position + Vector2(0, 150))
+	var deaf = _npc(carrier.global_position + Vector2(-2000, 0))
 	var scene = COMBAT_SCENE.new()
-	scene.all_mechas = [owner, listener, deaf]
-	owner.made_sound.connect(scene._on_mecha_made_sound)
+	scene.all_mechas = [carrier, listener, deaf]
+	carrier.made_sound.connect(scene._on_mecha_made_sound)
 	seeker.make_sound()
 	var heard: Array = listener.senses.sounds
-	check(heard.size() == 1 and heard[0].volume_type == "quiet" and heard[0].position == seeker.global_position and heard[0].source == owner,
+	check(heard.size() == 1 and heard[0].volume_type == "quiet" and heard[0].position == seeker.global_position and heard[0].source == carrier,
 			"an NPC within 30 m hears its quiet hum, from the Seeker, as the owner's")
 	check(deaf.senses.sounds.is_empty(), "one further off doesn't")
 	listener.senses.sounds.clear()
 	var hummed := await wait_until(func(): return not listener.senses.sounds.is_empty(), seeker.sound_interval + 1.0)
 	check(hummed, "it hums by itself every %ds" % roundi(seeker.sound_interval))
-	owner.made_sound.disconnect(scene._on_mecha_made_sound)
+	carrier.made_sound.disconnect(scene._on_mecha_made_sound)
 	scene.free()
 
-	check_eq(owner.use_internal(), "", "the internal key")
-	check(not owner.internal_on and _devices("seeker").is_empty(), "switches it off and takes it in")
-	owner.internal_cooldown = 0.0
-	owner.use_internal()
-	check(owner.internal_on and _devices("seeker").size() == 1, "and back out")
+	check_eq(carrier.use_internal(), "", "the internal key")
+	check(not carrier.internal_on and _devices("seeker").is_empty(), "switches it off and takes it in")
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal()
+	check(carrier.internal_on and _devices("seeker").size() == 1, "and back out")
 
 
 func _test_seeker_lost() -> void:
-	var owner := _mecha(Vector2.ZERO, "SK-1")
+	var carrier := _mecha(Vector2.ZERO, "SK-1")
 	var shooter := _mecha(Vector2(0, -1500))
 	var alerts := []
-	owner.device_destroyed.connect(func(d): alerts.append(d.kind))
+	carrier.device_destroyed.connect(func(d): alerts.append(d.kind))
 	_shoot(_devices("seeker")[0], shooter)
 	check(_devices("seeker").is_empty(), "a mecha's shot brings it down")
 	check_eq(alerts, ["seeker"], "the owner hears of it")
-	check(owner.internal_lost and not owner.internal_on, "it is lost, and the part is off")
-	owner.internal_cooldown = 0.0
-	check_eq(owner.use_internal(), "lost", "the key can't bring it back")
+	check(carrier.internal_lost and not carrier.internal_on, "it is lost, and the part is off")
+	carrier.internal_cooldown = 0.0
+	check_eq(carrier.use_internal(), "lost", "the key can't bring it back")
 	check(_devices("seeker").is_empty(), "no new one")
-	owner.set_internal("SK-1")
-	check(not owner.internal_lost and _devices("seeker").size() == 1, "fitting the part again does")
+	carrier.set_internal("SK-1")
+	check(not carrier.internal_lost and _devices("seeker").size() == 1, "fitting the part again does")
 
 
 func _test_seeker_player() -> void:
@@ -312,18 +312,18 @@ func _test_seeker_player() -> void:
 
 
 func _test_flare() -> void:
-	var owner := _mecha(Vector2.ZERO, "FL-2")
-	var part = owner.build.internal
-	check_eq(owner.use_internal(), "", "a tap fires one")
+	var carrier := _mecha(Vector2.ZERO, "FL-2")
+	var part = carrier.build.internal
+	check_eq(carrier.use_internal(), "", "a tap fires one")
 	var flare: Device = _devices("flare")[0]
-	check(flare.global_position.distance_to(owner.global_position + owner.get_facing() * part.throw_range) < 1.0,
+	check(flare.global_position.distance_to(carrier.global_position + carrier.get_facing() * part.throw_range) < 1.0,
 			"straight ahead, as far as it goes")
 	flare.expire()
-	owner.internal_cooldown = 0.0
-	owner.use_internal(Vector2(600, 0))
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal(Vector2(600, 0))
 	flare = _devices("flare")[0]
 	check(flare.global_position.distance_to(Vector2(600, 0)) < 1.0, "aimed, at the point")
-	check_eq(owner.internal_charges, 0, "two charges spent")
+	check_eq(carrier.internal_charges, 0, "two charges spent")
 
 	var light := flare.find_children("*", "PointLight2D")
 	check(not light.is_empty() and light[0].enabled, "it lights the ground")
@@ -335,18 +335,18 @@ func _test_flare() -> void:
 	var near := _mecha(Vector2(600, 400))
 	var ecm := _mecha(Vector2(600, -700), "ECM-50")
 	var outside := _mecha(Vector2(600, 2000))
-	owner.global_position = Vector2(300, 0)
+	carrier.global_position = Vector2(300, 0)
 	flare.ping()
-	check_eq(owner.contacts.best_for(near).get("source"), "flare", "it shows its owner what is near it")
-	check_eq(owner.contacts.best_for(near).get("reveal"), "vision", "as vision")
-	check(not shooter.contacts.best_for(near).is_empty() and not shooter.contacts.best_for(owner).is_empty(),
+	check_eq(carrier.contacts.best_for(near).get("source"), "flare", "it shows its owner what is near it")
+	check_eq(carrier.contacts.best_for(near).get("reveal"), "vision", "as vision")
+	check(not shooter.contacts.best_for(near).is_empty() and not shooter.contacts.best_for(carrier).is_empty(),
 			"and every other mecha, its owner included")
-	check(not owner.contacts.best_for(ecm).is_empty(), "ECM doesn't hide a mecha from it")
-	check(owner.contacts.best_for(outside).is_empty(), "nothing past 80 m")
+	check(not carrier.contacts.best_for(ecm).is_empty(), "ECM doesn't hide a mecha from it")
+	check(carrier.contacts.best_for(outside).is_empty(), "nothing past 80 m")
 	check(near.contacts.best_for(near).is_empty(), "no mecha is shown itself")
 
 	var alerts := []
-	owner.device_destroyed.connect(func(d): alerts.append(d.kind))
+	carrier.device_destroyed.connect(func(d): alerts.append(d.kind))
 	flare.lifetime = 0.05
 	var flare_ref: WeakRef = weakref(flare)
 	var out := await wait_until(func(): return _gone(flare_ref.get_ref()), 1.0)
@@ -354,9 +354,9 @@ func _test_flare() -> void:
 
 	var player = _player(false)
 	player.global_position = Vector2(-600, 3000)
-	owner.internal_charges = 1
-	owner.internal_cooldown = 0.0
-	owner.use_internal(Vector2(600, 0))
+	carrier.internal_charges = 1
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal(Vector2(600, 0))
 	var burning: Device = _devices("flare")[0]
 	var ward_owner := _mecha(Vector2(600, 100), "WD-2")
 	# Every other mecha dark, so no cone lights the ward.
@@ -391,38 +391,38 @@ func _test_biosensor() -> void:
 
 
 func _test_decoy_sensors() -> void:
-	var owner := _mecha(Vector2.ZERO, "DC-2")
-	check_eq(owner.use_internal(), "", "a tap puts a decoy out")
+	var carrier := _mecha(Vector2.ZERO, "DC-2")
+	check_eq(carrier.use_internal(), "", "a tap puts a decoy out")
 	var decoys := _devices("decoy")
-	check(decoys.size() == 1 and decoys[0] is Decoy and decoys[0].global_position.distance_to(owner.global_position) < 1.0,
+	check(decoys.size() == 1 and decoys[0] is Decoy and decoys[0].global_position.distance_to(carrier.global_position) < 1.0,
 			"at the mecha's feet")
 	if decoys.size() != 1:
 		return
 	var decoy: Decoy = decoys[0]
 	check(decoy.is_in_group("decoy") and decoy.is_in_group("device"), "a device, in the decoy group")
 	check_eq(ContactStore.kind_of(decoy), "mech", "contacts call it a mech")
-	check_eq(decoy.get_thermal_signature(), owner.build.internal.decoy_heat, "it gives off a mecha's heat")
-	owner.internal_cooldown = 0.0
-	owner.use_internal(Vector2(0, -5000))
+	check_eq(decoy.get_thermal_signature(), carrier.build.internal.decoy_heat, "it gives off a mecha's heat")
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal(Vector2(0, -5000))
 	var thrown = _devices("decoy").filter(func(d): return d != decoy)
-	check(thrown.size() == 1 and absf(thrown[0].global_position.length() - owner.build.internal.throw_range) < 1.0,
+	check(thrown.size() == 1 and absf(thrown[0].global_position.length() - carrier.build.internal.throw_range) < 1.0,
 			"a held use throws one as far as its throw range")
 
 	var sweeper := _mecha(Vector2(0, 1500))
 	check(sweeper.sweep_finds(Vector2.UP, 30.0).has(decoy), "another mecha's sweep finds it")
-	check(not owner.sweep_finds(Vector2.DOWN, 360.0).has(decoy), "its owner's doesn't")
+	check(not carrier.sweep_finds(Vector2.DOWN, 360.0).has(decoy), "its owner's doesn't")
 	sweeper.set_internal("WD-2")
 	sweeper.use_internal(Vector2(0, 800))
 	var ward: Device = Device.owned_by(sweeper)[0]
 	ward.ping()
 	check_eq(sweeper.contacts.best_for(decoy).get("kind"), "mech", "another mecha's ward pings it as a mech")
-	owner.set_internal("WD-2")
-	owner.use_internal()
-	Device.owned_by(owner).filter(func(d): return d.kind == "ward")[0].ping()
-	check(owner.contacts.best_for(decoy).is_empty(), "its owner's ward leaves it out")
+	carrier.set_internal("WD-2")
+	carrier.use_internal()
+	Device.owned_by(carrier).filter(func(d): return d.kind == "ward")[0].ping()
+	check(carrier.contacts.best_for(decoy).is_empty(), "its owner's ward leaves it out")
 
 	var alerts := []
-	owner.device_destroyed.connect(func(d): alerts.append(d.kind))
+	carrier.device_destroyed.connect(func(d): alerts.append(d.kind))
 	decoy.lifetime = 0.05
 	var decoy_ref: WeakRef = weakref(decoy)
 	var out := await wait_until(func(): return _gone(decoy_ref.get_ref()), 1.0)
@@ -430,8 +430,8 @@ func _test_decoy_sensors() -> void:
 
 
 func _test_decoy_npc() -> void:
-	var owner := _mecha(Vector2(-2500, 0), "DC-2")
-	owner.use_internal(Vector2(-2200, 0))
+	var carrier := _mecha(Vector2(-2500, 0), "DC-2")
+	carrier.use_internal(Vector2(-2200, 0))
 	var decoy: Decoy = _devices("decoy")[0]
 	decoy.global_position = Vector2(0, -300)
 	var npc = _npc(Vector2.ZERO)
@@ -445,7 +445,7 @@ func _test_decoy_npc() -> void:
 	check(npc.valid_target == decoy, "and picks it as its target")
 
 	var alerts := []
-	owner.device_destroyed.connect(func(d): alerts.append(d.kind))
+	carrier.device_destroyed.connect(func(d): alerts.append(d.kind))
 	_shoot(decoy, npc)
 	check(decoy.is_dead and _gone(decoy), "an NPC's shot destroys it")
 	check_eq(alerts, ["decoy"], "and its owner hears of it")

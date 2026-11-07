@@ -91,6 +91,7 @@ static func _flood_outside(solid: PackedByteArray, w: int, h: int) -> PackedByte
 			continue
 		outside[i] = 1
 		var x := i % w
+		@warning_ignore("integer_division")
 		var y := i / w
 		if x > 0: queue.append(i - 1)
 		if x < w - 1: queue.append(i + 1)

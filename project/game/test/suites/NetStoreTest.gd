@@ -368,8 +368,8 @@ func _test_history() -> void:
 func _test_load_plan() -> void:
 	var rng := RandomNumberGenerator.new()
 	var long_stalls := 0
-	for seed in range(1, 61):
-		rng.seed = seed
+	for run_seed in range(1, 61):
+		rng.seed = run_seed
 		var total := rng.randf_range(NetWindow.LOAD_MIN, NetWindow.LOAD_MAX)
 		var plan := NetLoad.plan(rng, total)
 		var ok := true
@@ -388,17 +388,17 @@ func _test_load_plan() -> void:
 			var typical: float = (plan.steps[-1][0] - plan.steps[0][0]) / (plan.steps.size() - 1)
 			if longest > typical * 1.5:
 				long_stalls += 1
-		check(ok, "seed %d: never goes down, jumps of 3-18 %%" % seed)
-		check(last_p == 100 and plan.progress_at(total - 0.0001) == 100 and last_t < total, "seed %d: full before the end" % seed)
-		check(plan.progress_at(plan.connect_time - 0.0001) == 0, "seed %d: nothing before the host replies" % seed)
-		check(plan.phase_at(0.0) == NetLoad.Phase.LOOKUP and plan.phase_at(total) == NetLoad.Phase.DONE, "seed %d: phases" % seed)
+		check(ok, "seed %d: never goes down, jumps of 3-18 %%" % run_seed)
+		check(last_p == 100 and plan.progress_at(total - 0.0001) == 100 and last_t < total, "seed %d: full before the end" % run_seed)
+		check(plan.progress_at(plan.connect_time - 0.0001) == 0, "seed %d: nothing before the host replies" % run_seed)
+		check(plan.phase_at(0.0) == NetLoad.Phase.LOOKUP and plan.phase_at(total) == NetLoad.Phase.DONE, "seed %d: phases" % run_seed)
 	check(long_stalls >= 30, "most loads have one long stall late on (%d of 60)" % long_stalls)
 	rng.seed = 7
 	var first := NetLoad.plan(rng, 2.0).steps
 	rng.seed = 7
 	check_eq(NetLoad.plan(rng, 2.0).steps, first, "a seeded rng gives the same load")
-	var failed := NetLoad.plan_failed(1.5)
-	check(failed.failed and failed.progress_at(1.4) == 0 and failed.phase_at(1.4) == NetLoad.Phase.LOOKUP, "a failed lookup transfers nothing")
+	var failed_plan := NetLoad.plan_failed(1.5)
+	check(failed_plan.failed and failed_plan.progress_at(1.4) == 0 and failed_plan.phase_at(1.4) == NetLoad.Phase.LOOKUP, "a failed lookup transfers nothing")
 
 
 # Steps a load at a steady 60 frames a second, so no long frame skips a
@@ -464,6 +464,7 @@ func _test_load_bar() -> void:
 	check_eq(window.reload_button.text, "RELOAD", "and STOP is RELOAD again")
 	var bar := window.load_bar
 	bar.progress = 50
+	@warning_ignore("integer_division")
 	check_eq(bar.lit_blocks(), NetLoadBar.BLOCKS / 2, "half the blocks at 50 %")
 	bar.progress = 0
 

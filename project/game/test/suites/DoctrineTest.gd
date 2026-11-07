@@ -146,12 +146,12 @@ func _test_responses() -> void:
 	for type in TYPES:
 		var npc := _enemy(o, type, 0.8)
 		var hidden := _mecha(o + Vector2(0, -1500))
-		var name: String = Personality.Type.keys()[type]
+		var type_name: String = Personality.Type.keys()[type]
 		var behaviour = npc.logic.behaviour
 		var got := [behaviour.doctrine_response(npc, _ir_reason(npc, hidden)),
 				behaviour.doctrine_response(npc, _wedge_reason(npc, "shot", hidden.global_position)),
 				behaviour.doctrine_response(npc, _wedge_reason(npc, "lock", hidden.global_position))]
-		check_eq(got, expected[type], "a %s (skill 0.8): UNKNOWN, shot, lock" % name)
+		check_eq(got, expected[type], "a %s (skill 0.8): UNKNOWN, shot, lock" % type_name)
 		npc.queue_free()
 		hidden.queue_free()
 		_arena.mechas.clear()

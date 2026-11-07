@@ -117,6 +117,7 @@ func _draw() -> void:
 
 
 func _draw_big(origin: Vector2i) -> void:
+	@warning_ignore("integer_division")
 	var cx := origin.x + BIG_SIZE.x / 2
 	var body_top := origin.y + BODY_TOP
 	var inner := _grey(GLOW_INNER)
@@ -129,6 +130,7 @@ func _draw_big(origin: Vector2i) -> void:
 	_rect(cx - 14, saucer_y, 29, 1, _grey(OUTLINE))
 	_rect(cx - 15, saucer_y + 1, 31, 2, _grey(SAUCER))
 	_rect(cx - 13, saucer_y + 3, 27, 1, _grey(SAUCER))
+	@warning_ignore("integer_division")
 	var left := cx - BODY_WIDTH / 2
 	var body_height := saucer_y - body_top
 	_rect(left, body_top, BODY_WIDTH, body_height, _grey(OUTLINE))
@@ -139,6 +141,7 @@ func _draw_big(origin: Vector2i) -> void:
 
 
 func _draw_small(origin: Vector2i) -> void:
+	@warning_ignore("integer_division")
 	var cx := origin.x + SMALL_SIZE.x / 2
 	var body_top := origin.y + 8
 	_rect(cx - 2, body_top, 5, SMALL_SIZE.y - 8, _grey(OUTLINE))
@@ -158,12 +161,15 @@ func _draw_flame(cx: int, foot: int, height: int, lean: int, core: bool) -> void
 		var shift := roundi(lean * 2.0 * pow(1.0 - t, 1.5))
 		var w: int = rows[row]
 		var y := foot - rows.size() + 1 + row
+		@warning_ignore("integer_division")
 		_rect(cx - w / 2 + shift, y, w, 1, flame)
 		if core and w >= 5 and t > 0.6:
+			@warning_ignore("integer_division")
 			_rect(cx - (w - 4) / 2 + shift, y, w - 4, 1, core_grey)
 
 
 func _make_glow() -> void:
+	@warning_ignore("integer_division")
 	var centre := Vector2(BIG_SIZE.x / 2, BODY_TOP - GLOW_RISE) + Vector2(0.5, 0.5)
 	for y in BIG_SIZE.y:
 		for x in BIG_SIZE.x:

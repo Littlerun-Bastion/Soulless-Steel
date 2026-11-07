@@ -389,8 +389,8 @@ func update_camera_offset(dt):
 	if limit <= 0.0:
 		Cam.pan_offset = Vector2.ZERO
 		return
-	var velocity := pan_velocity(get_viewport().get_mouse_position(), get_viewport().get_visible_rect().size, limit)
-	Cam.pan_offset = (Cam.pan_offset + velocity * dt).limit_length(limit)
+	var pan_vector := pan_velocity(get_viewport().get_mouse_position(), get_viewport().get_visible_rect().size, limit)
+	Cam.pan_offset = (Cam.pan_offset + pan_vector * dt).limit_length(limit)
 
 
 ## How fast (px/s) the camera pans with the cursor at `mouse` on a `screen`
@@ -712,6 +712,7 @@ func release_internal() -> void:
 		return
 	var held := _internal_held
 	_internal_held = -1.0
+	@warning_ignore("incompatible_ternary")
 	_use_internal_feedback(use_internal(null if held < TAP_TIME else get_global_mouse_position()))
 
 

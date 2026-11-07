@@ -335,10 +335,10 @@ func _test_match() -> void:
 	Debug.debug_settings["skip_intro"] = true
 	_scene = TEST_ARENA.instantiate()
 	add_child(_scene)
-	var ready := await wait_until(func(): return _scene.all_mechas.size() > 2 and _scene.local_pilots.live, 20.0)
+	var is_ready := await wait_until(func(): return _scene.all_mechas.size() > 2 and _scene.local_pilots.live, 20.0)
 	Debug.debug_settings["skip_intro"] = saved_skip
-	check(ready, "the Test Arena started and Local went live")
-	if not ready:
+	check(is_ready, "the Test Arena started and Local went live")
+	if not is_ready:
 		return
 	var local: LocalPilots = _scene.local_pilots
 	check(LocalPilots.current == local, "it is the current channel")

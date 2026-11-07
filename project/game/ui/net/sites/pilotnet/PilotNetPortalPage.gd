@@ -198,12 +198,12 @@ func _front_middle(middle: VBoxContainer) -> void:
 				PilotNet.is_new(post_data.id)))
 	middle.add_child(_list("HOT IN THE FORUMS", topics, ["All forums", _url("/forums")]))
 
-	var open := PilotNet.open_gigs()
+	var gigs_open := PilotNet.open_gigs()
 	var gigs := []
-	for gig in open.slice(0, GIG_COUNT):
+	for gig in gigs_open.slice(0, GIG_COUNT):
 		gigs.append(_bullet(str(gig.title), PilotNetSite.post_url("gig:" + str(gig.id)),
 				"%s CT" % BbsText.thousands(int(gig.reward))))
-	middle.add_child(_list("GIG BOARD", gigs, ["%d open · %d/%d yours · All gigs" % [open.size(), PilotNet.active_gigs().size(),
+	middle.add_child(_list("GIG BOARD", gigs, ["%d open · %d/%d yours · All gigs" % [gigs_open.size(), PilotNet.active_gigs().size(),
 			PilotNet.MAX_ACTIVE_GIGS], _url("/gigs")]))
 
 
@@ -218,15 +218,15 @@ func _make_slides() -> Array:
 				"text": BbsText.cut(PilotNetSite.teaser(top), TEASER_LENGTH),
 				"links": [["Full story", PilotNetSite.post_url(top.id)], ["More news", _url("/board/news")]],
 				"picture": "avatar:" + PilotNet.author_name(top)})
-	var open := PilotNet.open_gigs()
-	if not open.is_empty():
-		var best: Dictionary = open[0]
-		for gig in open:
+	var gigs_open := PilotNet.open_gigs()
+	if not gigs_open.is_empty():
+		var best: Dictionary = gigs_open[0]
+		for gig in gigs_open:
 			if int(gig.reward) > int(best.reward):
 				best = gig
 		slides.append({"kicker": "GIG BOARD", "title": str(best.title), "url": PilotNetSite.post_url("gig:" + str(best.id)),
 				"text": "%s CT and +%d reputation, posted by %s. %d open gigs on the board." % [BbsText.thousands(int(best.reward)),
-				int(best.reputation), str(best.poster), open.size()],
+				int(best.reputation), str(best.poster), gigs_open.size()],
 				"links": [["See the gig board", _url("/gigs")]], "picture": "avatar:" + str(best.poster)})
 	AmazingPage.ensure_picks()
 	if not AmazingPage.featured.is_empty():
@@ -392,14 +392,14 @@ func _forums() -> void:
 	for row in PilotNetSite.forum_rows():
 		var board: Dictionary = row.board
 		var last: Dictionary = row.last
-		var name := "[b]%s[/b]" % _link_code(str(board.name), _url("/board/" + str(board.id)))
+		var board_link := "[b]%s[/b]" % _link_code(str(board.name), _url("/board/" + str(board.id)))
 		if row.unread:
-			name += "  " + _meta_code("NEW")
+			board_link += "  " + _meta_code("NEW")
 		var last_cell: Control = NetUI.text("-", &"NetPortalMeta")
 		if not last.is_empty():
 			last_cell = _rich("%s\n%s" % [_meta_code("%s by %s" % [PilotNet.stamp(PilotNet.first_seen_day(last.id), PilotNet.post_time(last.id)),
 					PilotNet.author_name(last)]), _link_code(PilotNet.fill_tags(last.title), PilotNetSite.post_url(last.id))])
-		rows.append([_rich("%s\n%s" % [name, _meta_code(str(board.get("blurb", "")))]), str(row.topics), str(row.posts), last_cell])
+		rows.append([_rich("%s\n%s" % [board_link, _meta_code(str(board.get("blurb", "")))]), str(row.topics), str(row.posts), last_cell])
 	main.add_child(_table([{"title": "Forum", "width": 0}, {"title": "Topics", "width": 70, "align": "right"},
 			{"title": "Posts", "width": 70, "align": "right"}, {"title": "Last post", "width": 280}], rows))
 	main.add_child(NetUI.text("Boards with posts you haven't read are marked NEW.", &"NetPortalMeta"))
@@ -581,18 +581,18 @@ func _gigs() -> void:
 	var active := PilotNet.active_gigs()
 	main.add_child(NetUI.text("Accepted %d/%d · Completed %d" % [active.size(), PilotNet.MAX_ACTIVE_GIGS, PilotNet.gigs_completed],
 			&"NetPortalMeta"))
-	var open := PilotNet.open_gigs()
+	var gigs_open := PilotNet.open_gigs()
 	var reason := PilotNet.accept_block_reason()
 	var head := NetUI.hbox(&"NetPortalToolbar")
-	head.add_child(NetUI.text("Open gigs (%d)" % open.size(), &"NetPortalSection"))
+	head.add_child(NetUI.text("Open gigs (%d)" % gigs_open.size(), &"NetPortalSection"))
 	if reason != "":
 		head.add_child(NetUI.text(reason, &"NetPortalMeta"))
 	main.add_child(head)
-	if open.is_empty():
+	if gigs_open.is_empty():
 		main.add_child(NetUI.text(PilotNetSite.NO_POSTS, &"NetPortalMeta"))
 	else:
 		var rows := []
-		for gig in open:
+		for gig in gigs_open:
 			var button := _action_button("Accept", PilotNetSite.ACCEPT, str(gig.id))
 			button.disabled = reason != ""
 			rows.append([_rich(_link_code(str(gig.title), PilotNetSite.post_url("gig:" + str(gig.id)))),
@@ -645,8 +645,8 @@ func _pilots(letter: String) -> void:
 	var letters := NetUI.hbox(&"NetPortalToolbar")
 	for code in range(65, 91):
 		var l := String.chr(code)
-		letters.add_child(NetUI.text(l, &"NetPortalLabel") if l == letter else _link(l, _url("/pilots", {"l": l})))
-	letters.add_child(NetUI.text("All", &"NetPortalLabel") if letter == "" else _link("All", _url("/pilots")))
+		letters.add_child((NetUI.text(l, &"NetPortalLabel") as Control) if l == letter else _link(l, _url("/pilots", {"l": l})))
+	letters.add_child((NetUI.text("All", &"NetPortalLabel") as Control) if letter == "" else _link("All", _url("/pilots")))
 	main.add_child(letters)
 	var listed := PilotNetSite.directory(letter)
 	var rows := []
@@ -994,7 +994,7 @@ func _add_pages(page_path: String, page_number: int, pages: int) -> void:
 	if page_number > 1:
 		row.add_child(_link("« Prev", _url(page_path, {"page": str(page_number - 1)})))
 	for number in range(1, pages + 1):
-		row.add_child(NetUI.text(str(number), &"NetPortalLabel") if number == page_number
+		row.add_child((NetUI.text(str(number), &"NetPortalLabel") as Control) if number == page_number
 				else _link(str(number), _url(page_path, {"page": str(number)})))
 	if page_number < pages:
 		row.add_child(_link("Next »", _url(page_path, {"page": str(page_number + 1)})))

@@ -164,9 +164,9 @@ func _physics_frames(count: int) -> void:
 
 # component_damaged events: [part, component].
 func _damage_log(mecha: Mecha) -> Array:
-	var log := []
-	mecha.component_damaged.connect(func(part, comp, _hp, _max): log.append([part, comp]))
-	return log
+	var damage_log := []
+	mecha.component_damaged.connect(func(part, comp, _hp, _max): damage_log.append([part, comp]))
+	return damage_log
 
 
 # ---- Heat ----
@@ -307,12 +307,12 @@ func _test_light_gives_away() -> void:
 func _test_bite() -> void:
 	var mecha := _mecha(Vector2.ZERO, 100.0)
 	var coyote: Coyote = _spawn(COYOTE, Vector2(0, 150), true)
-	var log := _damage_log(mecha)
+	var damage_log := _damage_log(mecha)
 	var before := mecha.external_temp
 	coyote.bite(mecha)
 	check(mecha.external_temp < before - 5.0, "the bite drains heat (%.0f -> %.0f)" % [before, mecha.external_temp])
 	check(is_equal_approx(mecha.get_entity_slow(), 1.0 - Mecha.ENTITY_SLOW_PER_STACK), "and slows the mecha")
-	check(log.is_empty(), "without damaging a component")
+	check(damage_log.is_empty(), "without damaging a component")
 	for _i in 6:
 		coyote.bite(mecha)
 	check_eq(mecha.entity_slow_stacks.size(), Mecha.ENTITY_SLOW_MAX_STACKS, "slow stacks, up to a limit")
@@ -325,12 +325,12 @@ func _test_bite() -> void:
 func _test_whip_externals() -> void:
 	var mecha := _mecha(Vector2.ZERO)
 	var coyote: Coyote = _spawn(COYOTE, Vector2(0, 160), true)
-	var log := _damage_log(mecha)
+	var damage_log := _damage_log(mecha)
 	var armor_before: Dictionary = mecha.armor.duplicate(true)
 	for _i in 8:
 		EntityAttack.hit_external(coyote, mecha, 1)
-	check(not log.is_empty(), "whips damage components")
-	check(log.all(func(e): return "external" in mecha.components[e[0]][e[1]].tags), "only external ones")
+	check(not damage_log.is_empty(), "whips damage components")
+	check(damage_log.all(func(e): return "external" in mecha.components[e[0]][e[1]].tags), "only external ones")
 	check(mecha.armor == armor_before, "without touching the armour")
 	check(not mecha.is_dead, "and can't kill the mecha")
 
@@ -413,7 +413,7 @@ func _test_fisher_latch() -> void:
 	# Behind the mecha (it faces -Y), where a pen 2 harpoon gets through.
 	var mecha := _mecha(Vector2(0, -450))
 	var stop := _keep_hot(mecha)
-	var log := _damage_log(mecha)
+	var damage_log := _damage_log(mecha)
 	var fisher: Fisher = _spawn(FISHER, Vector2.ZERO)
 	fisher.hp = 10.0
 	fisher.acquire_target(mecha)
@@ -423,10 +423,10 @@ func _test_fisher_latch() -> void:
 		return
 	check(fisher.hp > 10.0, "a hit that gets through heals it")
 	var hp_latched := fisher.hp
-	var damage_latched := log.size()
+	var damage_latched := damage_log.size()
 	var drained := await wait_until(func(): return fisher.drain_hits >= 2, fisher.drain_period * 2.0 + 1.0)
 	check(drained, "it draws on the prey every %.0f s" % fisher.drain_period)
-	check(log.size() >= damage_latched + 2, "each draw damages a component")
+	check(damage_log.size() >= damage_latched + 2, "each draw damages a component")
 	check(fisher.hp >= minf(hp_latched + 2.0, fisher.max_hp), "and heals it")
 	var released := await wait_until(func(): return fisher.harpoon != Fisher.Harpoon.LATCHED, fisher.latch_time)
 	check(released, "it lets go after %.0f s" % fisher.latch_time)
@@ -537,11 +537,11 @@ func _test_fisher_grace() -> void:
 	var fisher: Fisher = _spawn(FISHER, Vector2.ZERO, true)
 	mecha.damage_component("core", "core_shell", 3)
 	check(mecha.is_exposed and mecha.is_in_flag_grace(), "the mecha is Exposed, in the grace window")
-	var log := _damage_log(mecha)
+	var damage_log := _damage_log(mecha)
 	var through := false
 	for _i in 20:
 		through = EntityAttack.hit_through(fisher, mecha, 5) or through
-	check(not through and log.is_empty(), "the draws do nothing")
+	check(not through and damage_log.is_empty(), "the draws do nothing")
 	check(not mecha.is_dead, "and can't kill it")
 
 
@@ -712,8 +712,6 @@ func _test_swarm_gap() -> void:
 	_arena.add_child(at_mote)
 	var hit := await wait_until(func(): return swarm.get_mote_count() < 2, 2.0)
 	check(hit, "one at a mote hits it")
-	if hit:
-		var left := swarm.get_mote_positions()
 
 
 func _test_tick_jump() -> void:
@@ -757,14 +755,14 @@ func _test_tick_effects() -> void:
 	check(absf(control.internal_temp - mecha.internal_temp) < 1.0, "not the internal one")
 	var tick: Mecha.Tick = mecha.ticks[0]
 	var armor_before: Dictionary = mecha.armor.duplicate(true)
-	var log := _damage_log(mecha)
+	var damage_log := _damage_log(mecha)
 	for _i in 12:
 		mecha._tick_bite(tick)
 	var plates := 0
 	for facing in mecha.armor[tick.part]:
 		plates += armor_before[tick.part][facing].pips - mecha.armor[tick.part][facing].pips
-	check(plates > 0 or not log.is_empty(), "its bites strip armour or damage components")
-	check(log.all(func(e): return e[0] == tick.part and "external" in mecha.components[e[0]][e[1]].tags),
+	check(plates > 0 or not damage_log.is_empty(), "its bites strip armour or damage components")
+	check(damage_log.all(func(e): return e[0] == tick.part and "external" in mecha.components[e[0]][e[1]].tags),
 			"only external components of the part it's on")
 	for part in mecha.armor:
 		if part != tick.part:
@@ -1115,15 +1113,15 @@ func _test_gun() -> void:
 	stop.call()
 	if not check(fired, "it fires while it circles"):
 		return
-	var round = rounds[0]
-	check(round.original_mecha_info.body == coyote and round.part_id == weapon_id, "the weapon's own round, credited to the Coyote")
+	var first_round = rounds[0]
+	check(first_round.original_mecha_info.body == coyote and first_round.part_id == weapon_id, "the weapon's own round, credited to the Coyote")
 	var weapon = coyote.gun.weapon
 	var fresh = weapon.projectile.instantiate()
-	check(round.base_damage == fresh.base_damage, "at the weapon's damage")
+	check(first_round.base_damage == fresh.base_damage, "at the weapon's damage")
 	fresh.free()
 	var start: Vector2 = coyote.global_position
 	var hp_before := coyote.hp
-	var impact := _impact_of(round)
+	var impact := _impact_of(first_round)
 	var landed := await wait_until(func(): return impact[0] != null, 3.0)
 	check(landed, "the round goes somewhere")
 	var reached: float = (impact[0] as Vector2).distance_to(start) if landed else 0.0
@@ -1151,9 +1149,9 @@ func _test_gun() -> void:
 
 
 # Where a round ends (its bullet_impact as it dies); [null] until then.
-func _impact_of(round) -> Array:
+func _impact_of(bullet) -> Array:
 	var at := [null]
-	round.bullet_impact.connect(func(projectile, _effect, clear, _body):
+	bullet.bullet_impact.connect(func(projectile, _effect, clear, _body):
 		if clear:
 			at[0] = projectile.global_position)
 	return at

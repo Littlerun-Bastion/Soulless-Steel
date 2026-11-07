@@ -428,10 +428,10 @@ func _test_match() -> void:
 	Debug.debug_settings["skip_intro"] = true
 	_scene = TEST_ARENA.instantiate()
 	add_child(_scene)
-	var ready := await wait_until(func(): return _scene.player_squad(false) != null and _scene.local_pilots.live \
+	var is_ready := await wait_until(func(): return _scene.player_squad(false) != null and _scene.local_pilots.live \
 			and is_instance_valid(_scene.player) and not _scene.player.paused, 20.0)
 	Debug.debug_settings["skip_intro"] = saved_skip
-	check(ready, "the Test Arena started with the player's squad")
+	check(is_ready, "the Test Arena started with the player's squad")
 	var squad: Squad = _scene.player_squad(false)
 	check(squad != null and squad.alive_members().size() == _scene.STARTING_COMPANIONS, "the arena starts the player with a companion")
 	if squad == null:

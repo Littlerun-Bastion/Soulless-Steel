@@ -25,13 +25,13 @@ const SITES := {
 }
 ## Sites still to build: domain -> name (they show Under Construction).
 const PLANNED := {}
-## The favorites row: [label, domain]. The Memorial Wall is left off: pilots
-## find it from pilot.net.
+## The favorites row: [label, domain].
 const FAVORITES := [
 	["pilot.net", "pilot.net"],
 	["amazing.com", "amazing.com"],
 	["Steelapedia", "steelapedia.net"],
 	["FourX.net", "fourx.net"],
+	["Memorial Wall", "memorialwall.org"],
 ]
 const BUILT := "built"
 const PLANNED_SITE := "planned"
@@ -124,7 +124,10 @@ static func build(domain: String) -> NetPage:
 	var page: NetPage
 	var kind := kind_of(domain)
 	if domain == PILOTNET_DOMAIN:
-		page = PilotNetPortalPage.new() if PilotNet.look() == PilotNet.LOOK_PORTAL else PilotNetPage.new()
+		if PilotNet.look() == PilotNet.LOOK_PORTAL:
+			page = PilotNetPortalPage.new()
+		else:
+			page = PilotNetPage.new()
 	elif domain == STEELAPEDIA_DOMAIN:
 		page = SteelapediaPage.new()
 	elif domain == FOURX_DOMAIN:

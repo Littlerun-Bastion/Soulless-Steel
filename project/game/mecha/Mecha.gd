@@ -114,6 +114,7 @@ signal flag_lowered(mecha)
 # say(): CombatScene shows it to the player if they hear it.
 signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 # Someone's sweep found this mecha (see sweep). Says nothing of who or where.
+@warning_ignore("unused_signal")
 signal swept
 # This mecha swept (see sweep): the cone, what it reported and the bodies it
 # found, for views that draw sweeps (the observer arena), never for NPC code.
@@ -2219,11 +2220,11 @@ func get_stat(stat_name):
 
 func _sum_stat(stat_name) -> float:
 	var total_stat = 0.0
-	var weight: bool = stat_name == "weight"
+	var is_weight: bool = stat_name == "weight"
 	for slot in build:
 		var part = build[slot]
 		if part and part.get(stat_name):
-			var share := _weight_share(slot) if weight else 1.0
+			var share := _weight_share(slot) if is_weight else 1.0
 			total_stat += part[stat_name] * Grades.stat_mult(part_grades.get(slot), stat_name) * share
 
 	if stat_name.contains("max_speed") and is_overweight():
@@ -3053,6 +3054,7 @@ func designator_clip(slot: String, point: Vector2) -> Vector2:
 # cooldown), no_ammo, too_hot, too_close, too_far, not_facing.
 func can_fire_at_point(slot: String, point: Vector2) -> String:
 	var weapon = build.get(slot)
+	@warning_ignore("incompatible_ternary")
 	var node = get_weapon_part(slot) if weapon else null
 	if not weapon or not node:
 		return "no_weapon"
@@ -3193,6 +3195,7 @@ func _fire_designator_round(slot: String, point: Vector2) -> void:
 	var dir := from.direction_to(landing)
 	if dir == Vector2.ZERO:
 		dir = get_facing()
+	@warning_ignore("incompatible_ternary")
 	var args := {
 		"projectile": weapon.projectile,
 		"pos": from,
@@ -4930,6 +4933,7 @@ func _sync_ticks(group: int) -> void:
 			tick.middle = false
 		return
 	members.sort_custom(func(a, b): return a.time_left < b.time_left)
+	@warning_ignore("integer_division")
 	var middle: Tick = members[members.size() / 2]
 	for tick in members:
 		tick.time_left = clampf(tick.time_left, middle.time_left - TICK_SYNC_SPREAD, middle.time_left + TICK_SYNC_SPREAD)

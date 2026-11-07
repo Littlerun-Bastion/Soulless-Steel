@@ -72,6 +72,7 @@ func _ready() -> void:
 func run_suite() -> void:
 	_save_state()
 	_take_errors_as("setup")
+	@warning_ignore("redundant_await")
 	await run_tests()
 	_take_errors_as("outside a case")
 	await _restore_state()
@@ -83,6 +84,7 @@ func case(case_name: String, test: Callable) -> void:
 	_case_name = case_name
 	var failed_before := failed
 	_take_errors_as("before " + case_name)
+	@warning_ignore("redundant_await")
 	await before_each()
 	# A script error inside a waiting case stops it without returning, which
 	# would hang the run; so the case runs on its own and gets a time limit.

@@ -396,20 +396,20 @@ func _test_suspicion() -> void:
 
 func _test_leads_of_the_world() -> void:
 	# A destroyed device is a lead at its spot.
-	var owner := _enemy(Vector2.ZERO, Personality.Type.PROFESSIONAL, false, _design(WARD))
-	owner.use_internal()
+	var carrier := _enemy(Vector2.ZERO, Personality.Type.PROFESSIONAL, false, _design(WARD))
+	carrier.use_internal()
 	await wait_frames(2)
-	var wards: Array = Device.owned_by(owner)
+	var wards: Array = Device.owned_by(carrier)
 	check_eq(wards.size(), 1, "the ward is out")
 	if wards.size() == 1:
 		var at: Vector2 = wards[0].global_position
 		wards[0].destroy()
 		await wait_frames(1)
-		var lead = owner.get_most_recent_loud_noise()
+		var lead = carrier.get_most_recent_loud_noise()
 		check(lead and lead.type == "device" and lead.position == at, "its loss is a loud lead where it stood")
-		owner.logic.intent_time = 5.0
-		owner.logic.evaluate_now(owner)
-		check_eq(str(owner.logic.get_current_state()), "investigate", "which it investigates")
+		carrier.logic.intent_time = 5.0
+		carrier.logic.evaluate_now(carrier)
+		check_eq(str(carrier.logic.get_current_state()), "investigate", "which it investigates")
 	# Car alarms by personality.
 	var alarm := {"volume_type": "loud", "type": "car_alarm", "position": Vector2(2000, 0), "source": null}
 	var hunter := _enemy(Vector2(0, 1000), Personality.Type.HUNTER)
@@ -433,7 +433,7 @@ func _test_leads_of_the_world() -> void:
 	check_eq(pro.known_squad_size(a), 3, "an NPC reads it")
 	a.is_anonymous = true
 	check_eq(pro.known_squad_size(a), 1, "not for an Anonymous pilot")
-	check_eq(pro.known_squad_size(owner), 1, "nor one with no tag")
+	check_eq(pro.known_squad_size(carrier), 1, "nor one with no tag")
 	var lone := _mecha(Vector2(6000, 0), "Lone")
 	var in_squad := _mecha(Vector2(6000, 600), "Squadded")
 	in_squad.squad_tag = "KRV"

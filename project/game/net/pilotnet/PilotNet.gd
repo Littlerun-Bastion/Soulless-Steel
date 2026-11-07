@@ -48,6 +48,7 @@ signal post_appeared(post: Dictionary)
 signal unread_changed(total: int)
 signal gigs_changed
 ## A Memorial Wall record went up (a MemorialWall record Dictionary).
+@warning_ignore("unused_signal")
 signal pilot_lost(record: Dictionary)
 
 const DATA_DIR := "res://database/pilotnet/"
@@ -214,15 +215,15 @@ func reload_content() -> void:
 
 
 ## Every .json file in the posts folder, A-Z.
-static func post_files() -> Array:
+func post_files() -> Array:
 	var files := []
 	var dir := DirAccess.open(POSTS_DIR)
 	if dir == null:
 		return files
 	for file_name in dir.get_files():
-		var name := str(file_name).trim_suffix(".remap")
-		if name.ends_with(".json"):
-			files.append(POSTS_DIR + name)
+		var entry := str(file_name).trim_suffix(".remap")
+		if entry.ends_with(".json"):
+			files.append(POSTS_DIR + entry)
 	files.sort()
 	return files
 
@@ -385,8 +386,8 @@ func post_count(callsign: String) -> int:
 
 
 ## The author's callsign as shown, with {player} filled in.
-func author_name(post: Dictionary) -> String:
-	var author := str(post.get("author", ""))
+func author_name(post_data: Dictionary) -> String:
+	var author := str(post_data.get("author", ""))
 	return fill_tags(author) if author != "" else "SYSOP"
 
 
@@ -396,8 +397,9 @@ func first_seen_day(id: String) -> int:
 
 
 ## A time of day made from the id ("03:14"), the same every time.
-static func post_time(id: String) -> String:
+func post_time(id: String) -> String:
 	var h := absi(id.hash())
+	@warning_ignore("integer_division")
 	return "%02d:%02d" % [h % 24, (h / 24) % 60]
 
 
@@ -554,14 +556,14 @@ func fill_tags(text: String) -> String:
 	var regex := RegEx.create_from_string("\\{(flag|world):([^{}\\s]+)\\}")
 	for found in regex.search_all(out):
 		var kind := found.get_string(1)
-		var name := found.get_string(2)
-		var filled := value_key(StoryDirector.get_flag(name)) if kind == "flag" else world_text(name)
+		var tag_name := found.get_string(2)
+		var filled := value_key(StoryDirector.get_flag(tag_name)) if kind == "flag" else world_text(tag_name)
 		out = out.replace(found.get_string(), filled)
 	return out
 
 
 ## The {tags} in text that fill_tags doesn't know.
-static func unknown_tags(text: String) -> Array:
+func unknown_tags(text: String) -> Array:
 	var unknown := []
 	var regex := RegEx.create_from_string("\\{([^{}\\s]*)\\}")
 	for found in regex.search_all(text):
@@ -581,26 +583,26 @@ static func date_of(day_number: int) -> Dictionary:
 
 
 ## "Mon 15 Jan 2035"
-static func date_text(day_number: int) -> String:
+func date_text(day_number: int) -> String:
 	var date := date_of(day_number)
 	return "%s %d %s %d" % [WEEKDAYS[int(date.weekday)], int(date.day), MONTHS[int(date.month) - 1], int(date.year)]
 
 
 ## "15/01/2035"
-static func short_date(day_number: int) -> String:
+func short_date(day_number: int) -> String:
 	var date := date_of(day_number)
 	return "%02d/%02d/%d" % [int(date.day), int(date.month), int(date.year)]
 
 
 ## "15 Jan 2035"
-static func long_date(day_number: int) -> String:
+func long_date(day_number: int) -> String:
 	var date := date_of(day_number)
 	return "%d %s %d" % [int(date.day), MONTHS[int(date.month) - 1], int(date.year)]
 
 
 ## "15 Jan 2035 · 03:14": a date and a time of day, as the early-2000s
 ## pages print them.
-static func stamp(day_number: int, time: String) -> String:
+func stamp(day_number: int, time: String) -> String:
 	return "%s · %s" % [long_date(day_number), time]
 
 
@@ -906,11 +908,11 @@ func _gig_noun(template: Dictionary, gig: Dictionary) -> String:
 
 
 ## "Coyote", or "mech" as "mech".
-static func kind_name(template: Dictionary) -> String:
+func kind_name(template: Dictionary) -> String:
 	return str(template.get("kind", ""))
 
 
-static func kind_plural(template: Dictionary) -> String:
+func kind_plural(template: Dictionary) -> String:
 	if template.has("kind_plural"):
 		return str(template.kind_plural)
 	return kind_name(template) + "s"
@@ -935,9 +937,9 @@ static func _read_item_names(path: String) -> Dictionary:
 	for sub in dir.get_directories():
 		names.merge(_read_item_names(path.path_join(sub)))
 	for file_name in dir.get_files():
-		var name := str(file_name).trim_suffix(".remap")
-		if name.ends_with(".tres"):
-			var res = load(path.path_join(name))
+		var entry := str(file_name).trim_suffix(".remap")
+		if entry.ends_with(".tres"):
+			var res = load(path.path_join(entry))
 			if res is item_data and res.id != "":
 				names[res.id] = res.display_name
 	return names
@@ -992,7 +994,7 @@ func run_progress(id: String) -> int:
 
 
 ## How many of an item (id or tag) the mech cargo holds.
-static func cargo_count(item: String) -> int:
+func cargo_count(item: String) -> int:
 	var count := 0
 	var cargo := PlayerProgress.get_mech_inventory()
 	if cargo == null or cargo.grid.is_empty():
@@ -1090,7 +1092,7 @@ func last_seen(callsign: String) -> int:
 
 ## A named NPC's frame: [[slot label, part type, part id]] from its
 ## special_npc resource, [] if it isn't one.
-static func known_build(callsign: String) -> Array:
+func known_build(callsign: String) -> Array:
 	var slots := [["Head", "head", "head"], ["Core", "core", "core"], ["Shoulders", "shoulders", "shoulders"],
 			["Chassis", "chassis", "chassis"], ["Generator", "generator", "generator"],
 			["Chipset", "chipset", "chipset"], ["Thruster", "thruster", "thruster"],

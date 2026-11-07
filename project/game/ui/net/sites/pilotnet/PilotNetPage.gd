@@ -211,14 +211,14 @@ func _front_middle() -> Array:
 	lines.append_array(BbsText.box("HOT IN THE FORUMS", width, topics))
 	lines.append(BbsText.Seg.new())
 
-	var open := PilotNet.open_gigs()
+	var gigs_open := PilotNet.open_gigs()
 	var gig_lines := []
-	for gig in open.slice(0, GIG_COUNT):
+	for gig in gigs_open.slice(0, GIG_COUNT):
 		gig_lines.append(BbsText.join([BbsText.cell(str(gig.title), inner - 10, "", _post_url("gig:" + str(gig.id))),
 				BbsText.cell("%s CT" % BbsText.thousands(int(gig.reward)), 10, "bright", "", "right")]))
-	if open.is_empty():
+	if gigs_open.is_empty():
 		gig_lines.append(BbsText.dim(NO_POSTS))
-	var counts := BbsText.dim("%d open · %d/%d yours" % [open.size(), PilotNet.active_gigs().size(), PilotNet.MAX_ACTIVE_GIGS])
+	var counts := BbsText.dim("%d open · %d/%d yours" % [gigs_open.size(), PilotNet.active_gigs().size(), PilotNet.MAX_ACTIVE_GIGS])
 	gig_lines.append(BbsText.spread(counts, BbsText.link("All gigs »", _url("/gigs")), inner))
 	lines.append_array(BbsText.box("GIG BOARD", width, gig_lines))
 	lines.append(BbsText.Seg.new())
@@ -495,6 +495,7 @@ func _card(author: String, entry: Dictionary, number: int, day: int, time: Strin
 ## A pilot's three-line avatar, the same every time for the same callsign.
 static func avatar(callsign: String) -> Array:
 	var h := absi(callsign.to_lower().hash())
+	@warning_ignore("integer_division")
 	return [AVATAR_TOPS[h % AVATAR_TOPS.size()], AVATAR_EYES[(h / 7) % AVATAR_EYES.size()],
 			AVATAR_MOUTHS[(h / 71) % AVATAR_MOUTHS.size()]]
 
@@ -510,17 +511,17 @@ func _gigs() -> void:
 	_add(BbsText.spread(BbsText.bright("GIG BOARD"), BbsText.dim("Accepted %d/%d · Completed %d" % [active.size(),
 			PilotNet.MAX_ACTIVE_GIGS, PilotNet.gigs_completed]), WIDTH))
 	_add(BbsText.Seg.new())
-	var open := PilotNet.open_gigs()
+	var gigs_open := PilotNet.open_gigs()
 	var reason := PilotNet.accept_block_reason()
-	_add(BbsText.join([BbsText.bright("OPEN GIGS (%d)" % open.size()), BbsText.dim("   " + reason if reason != "" else "")]))
-	if open.is_empty():
+	_add(BbsText.join([BbsText.bright("OPEN GIGS (%d)" % gigs_open.size()), BbsText.dim("   " + reason if reason != "" else "")]))
+	if gigs_open.is_empty():
 		_add(BbsText.dim("  " + NO_POSTS))
 	else:
 		var columns := [{"title": "GIG", "width": 38}, {"title": "REWARD", "width": 9, "align": "right"},
 				{"title": "REP", "width": 4, "align": "right"}, {"title": "POSTED BY", "width": 14},
 				{"title": "EXPIRES", "width": 10}, {"title": "", "width": 14}]
 		var rows := []
-		for gig in open:
+		for gig in gigs_open:
 			rows.append([BbsText.cell(str(gig.title), 38, "", _post_url("gig:" + str(gig.id))),
 					"%s CT" % BbsText.thousands(int(gig.reward)), "+%d" % int(gig.reputation), str(gig.poster),
 					PilotNetSite.expires_text(gig), _accept_button(PilotNetSite.ACCEPT, str(gig.id))])

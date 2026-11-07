@@ -99,17 +99,17 @@ func _setup(vehicles: Array, buildings: Array = []) -> void:
 	nav.add_polygon(PackedInt32Array([0, 1, 2, 3]))
 	region.navigation_polygon = nav
 	_arena.add_child(region)
-	var set := PropSpawnSet.new()
-	set.kinds = PackedStringArray(["vehicle", "truck"])
+	var spawn_set := PropSpawnSet.new()
+	spawn_set.kinds = PackedStringArray(["vehicle", "truck"])
 	for v in vehicles:
-		set.kind.append(0 if v[0] == "vehicle" else 1)
-		set.position.append(v[1])
-		set.rotation.append(v[2])
-		set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
-		set.variant.append(0)
+		spawn_set.kind.append(0 if v[0] == "vehicle" else 1)
+		spawn_set.position.append(v[1])
+		spawn_set.rotation.append(v[2])
+		spawn_set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
+		spawn_set.variant.append(0)
 	var spawner := PropSpawner.new()
 	spawner.name = "PropSpawner"
-	spawner.spawn_set = set
+	spawner.spawn_set = spawn_set
 	_arena.add_child(spawner)
 	_buildings = null
 	if not buildings.is_empty():

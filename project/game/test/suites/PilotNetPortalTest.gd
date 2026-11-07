@@ -63,9 +63,9 @@ func _buttons(page: Node, action: String) -> Array:
 func _test_site_file() -> void:
 	check(PilotNet.check_site(PilotNet.site).is_empty(), "site.json is valid (%s)" % "; ".join(PilotNet.check_site(PilotNet.site)))
 	check(PilotNet.site.has("new_look"), "it has a new look")
-	var errors := " | ".join(PilotNet.check_site({"colour": 1, "new_look": {"requires": {"when": 2}, "notice": "{nope}", "x": 1}}))
+	var problems := " | ".join(PilotNet.check_site({"colour": 1, "new_look": {"requires": {"when": 2}, "notice": "{nope}", "x": 1}}))
 	for wanted in ["site.json: unknown key 'colour'", "new_look: unknown key 'x'", "unknown condition", "unknown tag {nope}"]:
-		check(wanted in errors, "catches: %s (%s)" % [wanted, errors])
+		check(wanted in problems, "catches: %s (%s)" % [wanted, problems])
 	check(" ".join(PilotNet.check_site({"new_look": 3})).contains("isn't an object"), "catches a new_look that isn't an object")
 
 
@@ -242,8 +242,8 @@ func _test_drawings() -> void:
 	check_eq(rows, PilotAvatar.pattern("LADY VOLK"), "the same for a callsign in any case")
 	check(PilotAvatar.pattern("Lady Volk") != PilotAvatar.pattern("KESTREL"), "different callsigns, different pictures")
 	var filled := 0
-	for name in ["", "a", "SYSOP", "Drifter"]:
-		filled += 1 if PilotAvatar.pattern(name).any(func(r): return r.has(true)) else 0
+	for callsign in ["", "a", "SYSOP", "Drifter"]:
+		filled += 1 if PilotAvatar.pattern(callsign).any(func(r): return r.has(true)) else 0
 	check_eq(filled, 4, "never an empty picture")
 	var avatar := PilotAvatar.new("X", 6)
 	check_eq(avatar.custom_minimum_size, Vector2.ONE * (PilotAvatar.CELLS * 6 + 2), "its size from the cell size")

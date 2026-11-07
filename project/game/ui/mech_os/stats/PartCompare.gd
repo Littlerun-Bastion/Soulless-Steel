@@ -217,7 +217,9 @@ static func value_of(spec: Dictionary, field: Dictionary):
 			else part.get(id)
 	var kind: String = field.get("kind", "number")
 	if kind == "flag":
-		return bool(raw) if raw != null else null
+		if raw == null:
+			return null
+		return bool(raw)
 	if kind == "text":
 		return _text_of(raw)
 	if not (raw is int or raw is float):

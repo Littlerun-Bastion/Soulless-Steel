@@ -115,9 +115,9 @@ static func _read_file() -> void:
 	var data = read_data()
 	if not data is Dictionary:
 		return
-	var groups = data.get("groups", [])
-	if groups is Array and not groups.is_empty():
-		_groups = groups.filter(func(g): return g is Dictionary and str(g.get("id", "")) != "")
+	var raw_groups = data.get("groups", [])
+	if raw_groups is Array and not raw_groups.is_empty():
+		_groups = raw_groups.filter(func(g): return g is Dictionary and str(g.get("id", "")) != "")
 		for fallback in DEFAULT_GROUPS:
 			if not _groups.any(func(g): return str(g.id) == fallback.id):
 				_groups.append(fallback.duplicate())
@@ -366,29 +366,29 @@ static func _sync_instruments() -> void:
 static func _made_up_history(entry: Dictionary, end_day: int) -> Array:
 	var price: float = entry.base
 	var prices := []
-	for day in range(end_day - HISTORY_DAYS - BURN_IN_DAYS + 1, end_day + 1):
-		price = _next_price(entry, price, day, [])
-		if day > end_day - HISTORY_DAYS:
+	for step_day in range(end_day - HISTORY_DAYS - BURN_IN_DAYS + 1, end_day + 1):
+		price = _next_price(entry, price, step_day, [])
+		if step_day > end_day - HISTORY_DAYS:
 			prices.append(price)
 	return prices
 
 
-static func _step(day: int) -> void:
+static func _step(step_day: int) -> void:
 	var events := active_events()
 	for entry in _instruments:
 		if entry.is_index:
 			continue
 		var prices: Array = history[entry.symbol]
-		prices.append(_next_price(entry, float(prices[-1]), day, events))
+		prices.append(_next_price(entry, float(prices[-1]), step_day, events))
 		while prices.size() > HISTORY_DAYS:
 			prices.pop_front()
-	last_day = day
+	last_day = step_day
 	_update_indexes()
 
 
-static func _next_price(entry: Dictionary, price: float, day: int, events: Array) -> float:
+static func _next_price(entry: Dictionary, price: float, step_day: int, events: Array) -> float:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = ("%d:%s:%d" % [market_seed, entry.symbol, day]).hash()
+	rng.seed = ("%d:%s:%d" % [market_seed, entry.symbol, step_day]).hash()
 	var drift: float = entry.drift
 	var volatility: float = entry.volatility
 	for event in events:
@@ -586,16 +586,16 @@ static func day() -> int:
 ## "1,234.56"
 static func format_price(value: float) -> String:
 	var whole := int(absf(value))
-	var cents := int(roundf((absf(value) - whole) * 100.0))
-	if cents >= 100:
+	var fraction := int(roundf((absf(value) - whole) * 100.0))
+	if fraction >= 100:
 		whole += 1
-		cents -= 100
+		fraction -= 100
 	var digits := str(whole)
 	var grouped := ""
 	while digits.length() > 3:
 		grouped = "," + digits.substr(digits.length() - 3) + grouped
 		digits = digits.substr(0, digits.length() - 3)
-	return "%s%s%s.%02d" % ["-" if value < 0.0 else "", digits, grouped, cents]
+	return "%s%s%s.%02d" % ["-" if value < 0.0 else "", digits, grouped, fraction]
 
 
 ## "+12.34" or "-0.80"

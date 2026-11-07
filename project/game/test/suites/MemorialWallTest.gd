@@ -174,8 +174,8 @@ func _scene_mecha(scene, callsign: String) -> Mecha:
 # ---- data ---------------------------------------------------------------------
 
 func _test_data() -> void:
-	var errors := _wall().check_content()
-	check(errors.is_empty(), "database/memorial/ is valid (%s)" % "; ".join(errors))
+	var problems := _wall().check_content()
+	check(problems.is_empty(), "database/memorial/ is valid (%s)" % "; ".join(problems))
 	var regions: Array = _wall().data().regions
 	check(regions.size() == 8 and regions[0] == "[REGION A]" and regions[7] == "[REGION H]", "eight placeholder regions")
 	for group in MemorialWall.GROUPS:
@@ -183,9 +183,9 @@ func _test_data() -> void:
 		check(lines.size() >= 8, "about ten '%s' lines (%d)" % [group, lines.size()])
 	var tributes: Dictionary = _wall().data().tributes
 	for npc in NPCManager.SPECIAL_NPCS:
-		var name := str(npc.get("mecha_name")) if npc != null else ""
-		if name != "" and name != MemorialWall.TEST_NPC:
-			check(tributes.get(name) is String and str(tributes[name]) != "", "a tribute for %s" % name)
+		var npc_name := str(npc.get("mecha_name")) if npc != null else ""
+		if npc_name != "" and npc_name != MemorialWall.TEST_NPC:
+			check(tributes.get(npc_name) is String and str(tributes[npc_name]) != "", "a tribute for %s" % npc_name)
 	check(not tributes.has(MemorialWall.TEST_NPC), "none for Test Dummy")
 	for key in ["welcome", "about", "moderator"]:
 		check(_wall().site_text(key) != "", "site.json has '%s'" % key)
@@ -529,7 +529,7 @@ func _test_pages() -> void:
 	check(submit.size() == 1 and submit[0].disabled, "the submit button is disabled")
 	check(MemorialWallPage.SUBMIT_NOTE in window.page.get_text(), "submissions are moderated")
 	check(NetSites.kind_of(NetSites.MEMORIAL_DOMAIN) == NetSites.BUILT, "memorialwall.org is a built site")
-	check(not NetSites.FAVORITES.any(func(f): return f[1] == NetSites.MEMORIAL_DOMAIN), "not in the favourites")
+	check(NetSites.FAVORITES.any(func(f): return f[1] == NetSites.MEMORIAL_DOMAIN), "in the favourites")
 
 
 func _test_record_page() -> void:

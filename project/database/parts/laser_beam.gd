@@ -15,6 +15,7 @@ extends Node2D
 # plain maths each frame: no physics queries after the first frame's wall
 # ray.
 
+@warning_ignore("unused_signal")
 signal bullet_impact
 
 ## How far (px) from its centre a mecha or Entity counts as touched by the

@@ -248,6 +248,7 @@ func _personal_line() -> HBoxContainer:
 	var row := NetUI.hbox(&"NetWikiToolbar")
 	row.alignment = BoxContainer.ALIGNMENT_END
 	var h := absi(PlayerProgress.get_callsign().hash())
+	@warning_ignore("integer_division")
 	var address := "10.%d.%d.%d" % [h % 250 + 1, (h / 250) % 250 + 1, (h / 62500) % 250 + 1]
 	row.add_child(NetUI.text(PERSONAL % address, &"NetWikiMeta"))
 	var gap := Control.new()
@@ -375,12 +376,12 @@ func _main_page() -> void:
 	var news := []
 	for post_data in PilotNet.latest(PilotNet.NEWS_BOARD, NEWS_COUNT):
 		news.append([PilotNet.fill_tags(post_data.title), NetSites.make_url(PilotNetPage.DOMAIN, "/post/" + post_data.id)])
-	right.add_child(_mp_box("In the news", _bullets(news) if not news.is_empty()
+	right.add_child(_mp_box("In the news", (_bullets(news) as Control) if not news.is_empty()
 			else NetUI.text("Nothing in the news.", &"NetWikiMeta")))
 	var fresh := []
 	for entry in Steelapedia.recent_articles(NEW_COUNT):
 		fresh.append("* [[%s]] (%s)" % [entry.slug, PilotNet.long_date(Steelapedia.last_modified_day(entry.slug))])
-	right.add_child(_mp_box("New articles", _rich(_markup("\n".join(fresh))) if not fresh.is_empty()
+	right.add_child(_mp_box("New articles", (_rich(_markup("\n".join(fresh))) as Control) if not fresh.is_empty()
 			else NetUI.text("No articles yet.", &"NetWikiMeta")))
 
 	var shown := featured_picture()
@@ -707,10 +708,10 @@ func _talk(title: String, back: String) -> void:
 # ---- lists ------------------------------------------------------------------------
 
 func _category(category: String) -> void:
-	var name := Steelapedia.category_name(category)
-	page_title = "Steelapedia - Category: %s" % name
+	var category_title := Steelapedia.category_name(category)
+	page_title = "Steelapedia - Category: %s" % category_title
 	_tabs = [["category", _url("/category/" + category), true]]
-	_title("Category:%s" % name)
+	_title("Category:%s" % category_title)
 	if category == "parts":
 		var counts := Steelapedia.category_counts()
 		var subs := []
@@ -725,7 +726,7 @@ func _category(category: String) -> void:
 			_heading(main, "Subcategories", 2, false)
 			main.add_child(_columns(subs))
 	var articles := Steelapedia.articles_in(category)
-	_heading(main, "Pages in category \"%s\" (%d)" % [name, articles.size()], 2, false)
+	_heading(main, "Pages in category \"%s\" (%d)" % [category_title, articles.size()], 2, false)
 	if articles.is_empty():
 		main.add_child(NetUI.text("This category has no pages yet.", &"NetWikiMeta"))
 		return

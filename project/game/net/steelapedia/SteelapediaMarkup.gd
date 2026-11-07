@@ -15,9 +15,8 @@ extends RefCounted
 ##   * item                   a bullet
 ##   a blank line             a new paragraph
 ##
-## Links come out as [url=wiki:<slug>] and [url=net:<address>] in the
-## theme's link colour (NetWikiLink, NetWikiLinkMissing); the page follows
-## them (meta_clicked).
+## Links come out as [url=wiki:<slug>] and [url=net:<address>]; the page
+## follows them (meta_clicked).
 
 const WIKI := "wiki:"
 const NET := "net:"
@@ -120,7 +119,7 @@ static func inline(line: String, exists: Callable, title: Callable = Callable())
 static func _link_code(target: String, label: String, exists: Callable, title: Callable) -> String:
 	if target.begins_with(NET):
 		var address := target.substr(NET.length())
-		return "[url=%s%s][color=%s]%s[/color][/url]" % [NET, address, link_color(), _safe(label if label != "" else address)]
+		return "[url=%s%s]%s[/url]" % [NET, address, _safe(label if label != "" else address)]
 	var slug := slug_of(target)
 	var shown := label
 	if shown == "":
@@ -128,19 +127,8 @@ static func _link_code(target: String, label: String, exists: Callable, title: C
 		if shown == "":
 			shown = target.replace("_", " ")
 	if exists.call(slug):
-		return "[url=%s%s][color=%s]%s[/color][/url]" % [WIKI, slug, link_color(), _safe(shown)]
+		return "[url=%s%s]%s[/url]" % [WIKI, slug, _safe(shown)]
 	return "[url=%s%s][color=%s][s]%s[/s][/color][/url]" % [WIKI, slug, missing_color(), _safe(shown)]
-
-
-## The slugs a piece of markup links to ([[slug]], [[slug|text]]; not net:
-## links), in order.
-static func link_targets(text: String) -> Array:
-	var found := []
-	for match_data in _link.search_all(text):
-		var target := match_data.get_string(1).strip_edges()
-		if not target.begins_with(NET):
-			found.append(slug_of(target))
-	return found
 
 
 ## JSON text as data, or null when it doesn't parse (without an error: a
@@ -155,14 +143,8 @@ static func slug_of(text: String) -> String:
 	return text.strip_edges().to_lower().replace(" ", "_")
 
 
-## A link's colour: NetWikiLink's.
-static func link_color() -> String:
-	return "#" + THEME.get_color("font_color", "NetWikiLink").to_html(false)
-
-
-## A red link's colour: NetWikiLinkMissing's.
 static func missing_color() -> String:
-	return "#" + THEME.get_color("font_color", "NetWikiLinkMissing").to_html(false)
+	return "#" + THEME.get_color("g4", "MechTokens").to_html(false)
 
 
 static func _safe(text: String) -> String:

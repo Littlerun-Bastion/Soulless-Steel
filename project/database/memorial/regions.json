@@ -1,0 +1,4 @@
+{
+	"_about": "The regions where the Memorial Wall's background losses happen (MemorialWall, game/net/memorial/MemorialWall.gd). Each new day the Wall adds a few pilots lost somewhere else in the world; each gets one of these as its site, and the regions show in the Wall's tag cloud. The names are placeholders for Yosqi to name.",
+	"regions": ["[REGION A]", "[REGION B]", "[REGION C]", "[REGION D]", "[REGION E]", "[REGION F]", "[REGION G]", "[REGION H]"]
+}

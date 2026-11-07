@@ -21,8 +21,7 @@ extends RefCounted
 ##   slug, title, summary, category, categories (category ids), requires,
 ##   infobox ([[label, markup]]), see_also (slugs), body (markup),
 ##   generated (bool), file (path or ""), links ([[text, net address]]),
-##   extra_sections ({section title: markup added under it}), source (the
-##   file's text, "" for an article with no file).
+##   extra_sections ({section title: markup added under it}).
 ## requires is checked every time an article is read, so story changes show
 ## at once.
 
@@ -108,7 +107,6 @@ static func _ensure_files() -> void:
 ## An article from a file's text. Header keys it doesn't know go in "errors".
 static func parse(text: String, slug: String, category: String) -> Dictionary:
 	var article := _new_article(SteelapediaMarkup.slug_of(slug), category)
-	article.source = text.replace("\r\n", "\n").strip_edges()
 	var lines := text.replace("\r\n", "\n").split("\n")
 	var cut := lines.find("---")
 	if cut < 0:
@@ -157,7 +155,7 @@ static func _list(value: String) -> Array:
 static func _new_article(slug: String, category: String) -> Dictionary:
 	return {"slug": slug, "title": "", "summary": "", "category": category, "categories": [category],
 			"requires": {}, "infobox": [], "see_also": [], "body": "", "generated": false, "file": "",
-			"links": [], "extra_sections": {}, "errors": [], "data": {}, "source": ""}
+			"links": [], "extra_sections": {}, "errors": [], "data": {}}
 
 
 # ---- generated articles ---------------------------------------------------------
@@ -261,7 +259,6 @@ static func get_article(slug: String, with_data := true):
 	if not base.is_empty() and not file.is_empty():
 		article.body = file.body
 		article.file = file.file
-		article.source = file.source
 		article.requires = file.requires
 		article.see_also = file.see_also
 		if file.title != "" and file.title != slug.replace("_", " ").capitalize():
@@ -376,78 +373,6 @@ static func last_modified_day(slug: String) -> int:
 	return int(first_visible.get(SteelapediaMarkup.slug_of(slug), 1))
 
 
-## The newest articles: the last ones to show first, then A-Z.
-static func recent_articles(count: int) -> Array:
-	var all := all_articles()
-	all.sort_custom(func(a, b):
-		var da := last_modified_day(a.slug)
-		var db := last_modified_day(b.slug)
-		if da != db:
-			return da > db
-		return a.title.naturalnocasecmp_to(b.title) < 0)
-	return all.slice(0, count)
-
-
-## The visible articles that link to slug: from their text, their infobox
-## (a file's rows), See also, and the links the game adds (a part to its
-## maker, a maker to its parts). A-Z.
-static func links_to(slug: String) -> Array:
-	slug = SteelapediaMarkup.slug_of(slug)
-	var target = get_article(slug, false)
-	var target_maker := ""
-	if target != null and target.data.get("kind") == "part":
-		target_maker = str(target.data.get("maker", ""))
-	var result := []
-	for article in all_articles():
-		if article.slug == slug:
-			continue
-		var targets: Array = SteelapediaMarkup.link_targets(article.body)
-		for row in article.infobox:
-			targets.append_array(SteelapediaMarkup.link_targets(str(row[1])))
-		targets.append_array(article.see_also)
-		var data: Dictionary = article.data
-		if data.get("kind") == "part" and str(data.get("maker", "")) == slug:
-			targets.append(slug)
-		if data.get("kind") == "maker" and target_maker != "" and str(data.get("maker", "")) == target_maker:
-			targets.append(slug)
-		if slug in targets:
-			result.append(article)
-	return result
-
-
-## The article as markup, for "view source", with only what shows now: a
-## file's header (without requires lines and notes) or a generated article's
-## data written as a header, then the sections that show, without their
-## requires lines.
-static func source_of(article: Dictionary) -> String:
-	var lines := []
-	var source := str(article.get("source", ""))
-	if source != "":
-		for line in source.split("\n"):
-			var text := line.strip_edges()
-			if text == "---":
-				break
-			if text.begins_with("#") or text.begins_with("requires:"):
-				continue
-			lines.append(line)
-	else:
-		lines = ["title: " + str(article.title), "summary: " + str(article.summary)]
-		for row in article.infobox:
-			lines.append("infobox.%s: %s" % [row[0], row[1]])
-		if not article.see_also.is_empty():
-			lines.append("see_also: " + ", ".join(article.see_also))
-	lines.append("---")
-	var meets := func(conditions: Dictionary) -> bool: return StoryDirector.meets(conditions)
-	for section in SteelapediaMarkup.visible_sections(str(article.body), meets):
-		if section.level > 0:
-			var marks := "=".repeat(section.level)
-			lines.append("")
-			lines.append("%s %s %s" % [marks, section.title, marks])
-		if str(section.text) != "":
-			lines.append(str(section.text))
-	return "\n".join(lines).strip_edges()
-
-
 ## Records the day each file article with a requires first shows (PilotNet
 ## calls it whenever the story moves).
 static func note_visible(day: int) -> void:
@@ -506,9 +431,6 @@ static func _add_data(article: Dictionary) -> void:
 		article.infobox = [["Name", Manufacturers.display_name(maker)], ["Short name", Manufacturers.short_name(maker)],
 				["Website", "[[net:%s|%s]]" % [Manufacturers.domain_of(maker), Manufacturers.domain_of(maker)]],
 				["Parts in the catalogue", str(products.size())]]
-		var symbol := FourX.symbol_of_maker(maker)
-		if symbol != "":
-			article.infobox.append(["Traded as", "[[net:%s|FourX: %s]]" % [NetSites.quote_url(symbol), symbol]])
 		var lines := products.map(func(e): return "* [[%s|%s]] (%s)" % [SteelapediaMarkup.slug_of(e[1]),
 				Store.part_name(e[0], e[1]), Store.type_name(e[0])])
 		article.extra_sections = {"Products": "\n".join(lines) if not lines.is_empty() else "''No parts in the catalogue.''"}

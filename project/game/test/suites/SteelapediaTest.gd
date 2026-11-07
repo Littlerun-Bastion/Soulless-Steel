@@ -313,7 +313,7 @@ func _test_pages() -> void:
 			"a contents box (4 sections)")
 	check(not page.find_children("*", "PanelContainer", true, false).filter(func(n): return n.has_meta("categories")).is_empty()
 			and "Categories" in text and "Martel" in text, "the category bar")
-	check("This page was last modified on Day 1." in text, "last modified")
+	check("This page was last modified on %s." % PilotNet.long_date(1) in text, "last modified")
 	check("Buy on amazing.com" in text, "the amazing.com link")
 	var tabs := page.find_children("*", "Button", true, false).filter(func(b): return b.has_meta("url") and not b is LinkButton)
 	check_eq(tabs.map(func(b): return b.text), ["article", "discussion", "view source", "history"], "the tabs")

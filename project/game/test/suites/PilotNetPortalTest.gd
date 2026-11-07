@@ -128,7 +128,7 @@ func _test_front_page() -> void:
 	for part in ["News & Gigs", "Look it Up", "Shopping", "Money", "PILOT.NET NEWS", "HOT IN THE FORUMS", "GIG BOARD",
 			"MONEY", "SHOPPING", "WORLD STATUS", "PILOTS ONLINE", "Advertisement", "Search the NET:", PilotNetPortalPage.SMALL_PRINT]:
 		check(part in text, "the front page's %s" % part)
-	check("Logged in as" in text and PlayerProgress.get_callsign().to_upper() in text and "Day 1" in text, "the strip")
+	check("Logged in as" in text and PlayerProgress.get_callsign().to_upper() in text and PilotNet.date_text(1) in text, "the strip")
 	var tabs := page.find_children("*", "Button", true, false).filter(func(b): return str(b.theme_type_variation).begins_with("NetPortalTab"))
 	check_eq(tabs.size(), PilotNetPortalPage.TABS.size(), "the section tabs")
 	check_eq(tabs.filter(func(b): return b.theme_type_variation == &"NetPortalTabActive").map(func(b): return b.text), ["Home"],
@@ -218,11 +218,12 @@ func _test_pilots() -> void:
 	PilotNet.note_met("ASH")
 	var window := _portal("pilot.net/pilot/Lady%20Volk")
 	var text: String = window.page.get_text()
-	check("[AFFILIATION]" in text and "Last seen: Day 2" in text and "Known build" in text, "a profile")
+	check("[AFFILIATION]" in text and "Last seen: %s" % PilotNet.long_date(2) in text and "Known build" in text, "a profile")
 	check(window.page.get_links().has(NetSites.wiki_url("MSV-L3J-H")), "the build links to Steelapedia")
 	check("[SAMPLE] A thread with a gated reply" in text, "with their posts")
 	window.navigate("pilot.net/pilot/ASH")
-	check("No profile on file." in window.page.get_text() and "Last seen: Day 2" in window.page.get_text(), "a met pilot with no profile")
+	check("No profile on file." in window.page.get_text() and "Last seen: %s" % PilotNet.long_date(2) in window.page.get_text(),
+			"a met pilot with no profile")
 	window.navigate("pilot.net/pilot/" + PlayerProgress.get_callsign())
 	text = window.page.get_text()
 	check("YOUR PROFILE" in text and "Reputation: 0" in text and "Gigs completed: 0" in text, "the player's own profile")

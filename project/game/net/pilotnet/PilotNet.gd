@@ -34,12 +34,21 @@ extends Node
 ## LOOK_PORTAL, the web portal. database/pilotnet/site.json's "new_look"
 ## conditions switch the site to the portal while they pass; look_override
 ## (Shift+F9 while the game runs) sets one for a test.
+##
+## The calendar: Day 1 is CALENDAR_START, Day n is n - 1 days later. NET
+## pages show dates (date_text, short_date, stamp) where they would show a
+## day number; the day stays the number underneath.
+##
+## The Memorial Wall's registry (memorial, a MemorialWall) lives here so it
+## shares the day and the save; pilot_lost says when a record goes up.
 
 signal posts_changed
 ## A post became visible for the first time.
 signal post_appeared(post: Dictionary)
 signal unread_changed(total: int)
 signal gigs_changed
+## A Memorial Wall record went up (a MemorialWall record Dictionary).
+signal pilot_lost(record: Dictionary)
 
 const DATA_DIR := "res://database/pilotnet/"
 const POSTS_DIR := DATA_DIR + "posts/"
@@ -80,8 +89,15 @@ const SITE_KEYS := ["new_look"]
 const NEW_LOOK_KEYS := ["requires", "notice"]
 const LOOK_BBS := "bbs"
 const LOOK_PORTAL := "portal"
+## Day 1's date (YYYY-MM-DD).
+const CALENDAR_START := "2035-01-01"
+const WEEKDAYS := ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const MONTHS := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const SECONDS_PER_DAY := 86400
 
 var day := 1
+## The Memorial Wall's registry.
+var memorial := MemorialWall.new()
 var autosave := true
 ## site.json: which look the site has.
 var site: Dictionary = {}
@@ -143,6 +159,7 @@ func _input(event: InputEvent) -> void:
 		reload_content()
 		Steelapedia.reload_articles()
 		FourX.reload_content()
+		memorial.reload_content()
 		_refresh()
 		print(get_debug_text())
 
@@ -527,11 +544,13 @@ static func value_key(value) -> String:
 
 # ---- text tags ----------------------------------------------------------------
 
-## Fills {player}, {day}, {flag:name} and {world:name}; any other {tag} stays.
+## Fills {player}, {day}, {date}, {flag:name} and {world:name}; any other
+## {tag} stays.
 func fill_tags(text: String) -> String:
 	if not "{" in text:
 		return text
-	var out := text.replace("{player}", PlayerProgress.get_callsign()).replace("{day}", str(day))
+	var out := text.replace("{player}", PlayerProgress.get_callsign()).replace("{day}", str(day)) \
+			.replace("{date}", date_text(day))
 	var regex := RegEx.create_from_string("\\{(flag|world):([^{}\\s]+)\\}")
 	for found in regex.search_all(out):
 		var kind := found.get_string(1)
@@ -547,10 +566,42 @@ static func unknown_tags(text: String) -> Array:
 	var regex := RegEx.create_from_string("\\{([^{}\\s]*)\\}")
 	for found in regex.search_all(text):
 		var tag := found.get_string(1)
-		if tag == "player" or tag == "day" or tag.begins_with("flag:") or tag.begins_with("world:"):
+		if tag == "player" or tag == "day" or tag == "date" or tag.begins_with("flag:") or tag.begins_with("world:"):
 			continue
 		unknown.append(found.get_string())
 	return unknown
+
+
+# ---- the calendar -------------------------------------------------------------
+
+## A day's date: {"year", "month", "day", "weekday" (0 = Sunday)}.
+static func date_of(day_number: int) -> Dictionary:
+	var start := Time.get_unix_time_from_datetime_string(CALENDAR_START)
+	return Time.get_datetime_dict_from_unix_time(start + (day_number - 1) * SECONDS_PER_DAY)
+
+
+## "Mon 15 Jan 2035"
+static func date_text(day_number: int) -> String:
+	var date := date_of(day_number)
+	return "%s %d %s %d" % [WEEKDAYS[int(date.weekday)], int(date.day), MONTHS[int(date.month) - 1], int(date.year)]
+
+
+## "15/01/2035"
+static func short_date(day_number: int) -> String:
+	var date := date_of(day_number)
+	return "%02d/%02d/%d" % [int(date.day), int(date.month), int(date.year)]
+
+
+## "15 Jan 2035"
+static func long_date(day_number: int) -> String:
+	var date := date_of(day_number)
+	return "%d %s %d" % [int(date.day), MONTHS[int(date.month) - 1], int(date.year)]
+
+
+## "15 Jan 2035 · 03:14": a date and a time of day, as the early-2000s
+## pages print them.
+static func stamp(day_number: int, time: String) -> String:
+	return "%s · %s" % [long_date(day_number), time]
 
 
 # ---- the look -----------------------------------------------------------------
@@ -630,18 +681,20 @@ func _update_unread() -> void:
 
 # ---- the day ------------------------------------------------------------------
 
-## One day passes: old open gigs go, new ones fill the board, FourX closes
-## the day.
+## One day passes: old open gigs go, new ones fill the board, the Memorial
+## Wall puts up the day's losses, FourX closes the day.
 func advance_day() -> void:
 	day += 1
 	expire_gigs()
 	fill_board()
+	memorial.on_new_day(day)
 	_refresh()
 	FourX.note_day(day)
 
 
 func _on_expedition_started() -> void:
 	_run_progress.clear()
+	memorial.note_deployed()
 
 
 func _on_expedition_extracted() -> void:
@@ -664,6 +717,7 @@ func _on_expedition_extracted() -> void:
 
 func _on_expedition_lost(_report) -> void:
 	_run_progress.clear()
+	memorial.note_player_lost()
 	advance_day()
 	gigs_changed.emit()
 	_save()
@@ -813,8 +867,7 @@ func roll_gig(template: Dictionary) -> Dictionary:
 	var reward := int(roundf(_roll_float(template.get("reward", 0)) / 10.0) * 10.0)
 	var poster := str(template.get("poster", ""))
 	if poster == "":
-		var pool := LocalPilots.callsign_pool()
-		poster = str(pool[rng.randi_range(0, pool.size() - 1)]) if not pool.is_empty() else "ANON"
+		poster = CallsignGenerator.generate(rng, {})
 	var gig := {
 		"id": "g%d" % _gig_serial, "template": str(template.get("id", "")), "type": str(template.get("type", "kill")),
 		"kind": str(template.get("kind", "")), "item": str(template.get("item", "")),
@@ -1099,13 +1152,17 @@ func get_save_data() -> Dictionary:
 		"met": met.duplicate(),
 		"steelapedia": Steelapedia.get_save_data(),
 		"fourx": FourX.get_save_data(),
+		"memorial": memorial.get_save_data(),
 	}
 
 
+## A save without the Memorial Wall (from before it) starts one, with the
+## backfill before Day 1.
 func set_save_data(data) -> void:
 	ensure_loaded()
 	_clear()
 	if not data is Dictionary:
+		memorial.start()
 		_refresh(false)
 		return
 	day = maxi(int(data.get("day", 1)), 1)
@@ -1143,16 +1200,22 @@ func set_save_data(data) -> void:
 			met[str(callsign)] = int(met_data[callsign])
 	Steelapedia.set_save_data(data.get("steelapedia", {}))
 	FourX.set_save_data(data.get("fourx", {}))
+	if data.get("memorial") is Dictionary:
+		memorial.set_save_data(data.memorial)
+	else:
+		memorial.start()
 	_refresh(false)
 	gigs_changed.emit()
 
 
-## A new profile: day 1, nothing read, a fresh gig board, no market yet.
+## A new profile: day 1, nothing read, a fresh gig board, no market yet, a
+## Memorial Wall with its backfill.
 func reset(should_save := true) -> void:
 	ensure_loaded()
 	_clear()
 	Steelapedia.set_save_data({})
 	FourX.reset()
+	memorial.start()
 	_refresh(false)
 	gigs_changed.emit()
 	if should_save:

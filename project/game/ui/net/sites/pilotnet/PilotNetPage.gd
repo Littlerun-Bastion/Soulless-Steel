@@ -6,8 +6,9 @@ extends NetPage
 ## text-mode board, black with VT323, laid out like a web portal and forum
 ## in ASCII (BbsText). What it shows comes from PilotNetSite. Paths:
 ##   /                   the front page: channels on the left; the top story,
-##                       the news, the forums and the gig board in the middle;
-##                       your pilot, FourX markets, amazing.com deals, world
+##                       the news, the forums, the gig board and In memoriam
+##                       (the Memorial Wall's newest) in the middle; your
+##                       pilot, FourX markets, amazing.com deals, world
 ##                       status and Steelapedia's featured article on the
 ##                       right; who's online under them
 ##   /forums  /boards    the forum index: each board's topics, posts and last
@@ -19,7 +20,8 @@ extends NetPage
 ##   /gigs               the gig board: open gigs, your gigs with progress
 ##                       bars, complete gigs waiting for pay
 ##   /pilots?l=<letter>  the pilot directory
-##   /pilot/<callsign>   a pilot's profile (the player's own too)
+##   /pilot/<callsign>   a pilot's profile (the player's own too); a lost
+##                       pilot's links to its Memorial Wall record
 ##   /search?q=          the NET search: pilot.net posts and pilots,
 ##                       Steelapedia articles, amazing.com parts, FourX quotes
 ## The page is a header screen, the search row and a body screen. Links are
@@ -47,6 +49,8 @@ const FORUM_COUNT := 4
 const GIG_COUNT := 4
 const DEAL_COUNT := 4
 const MOVER_COUNT := 3
+## The In memoriam box's callsign column (the longest callsign and a space).
+const MEMORIAL_NAME_WIDTH := CallsignGenerator.MAX_LENGTH + 1
 const TEASER_LINES := 5
 const SEARCH_COUNT := 8
 const NO_POSTS := PilotNetSite.NO_POSTS
@@ -162,7 +166,7 @@ func _channels() -> Array:
 func _front_middle() -> Array:
 	var width: int = HOME_COLUMNS[1]
 	var inner := width - 4
-	var lines := [BbsText.spread(BbsText.bright("FRONT PAGE"), BbsText.dim("Day %d" % PilotNet.day), width), BbsText.Seg.new()]
+	var lines := [BbsText.spread(BbsText.bright("FRONT PAGE"), BbsText.dim(PilotNet.date_text(PilotNet.day)), width), BbsText.Seg.new()]
 	var top := PilotNetSite.top_story()
 	var story := []
 	if top.is_empty():
@@ -170,8 +174,8 @@ func _front_middle() -> Array:
 	else:
 		for line in BbsText.wrap(PilotNet.fill_tags(top.title), inner):
 			story.append(BbsText.link(line, _post_url(top.id)))
-		story.append(BbsText.dim(BbsText.cut("by %s · Day %d %s" % [PilotNet.author_name(top),
-				PilotNet.first_seen_day(top.id), PilotNet.post_time(top.id)], inner)))
+		story.append(BbsText.dim(BbsText.cut("by %s · %s %s" % [PilotNet.author_name(top),
+				PilotNet.short_date(PilotNet.first_seen_day(top.id)), PilotNet.post_time(top.id)], inner)))
 		story.append(BbsText.Seg.new())
 		var body := BbsText.wrap(PilotNet.fill_tags(top.body), inner)
 		for line in body.slice(0, TEASER_LINES):
@@ -217,11 +221,22 @@ func _front_middle() -> Array:
 	var counts := BbsText.dim("%d open · %d/%d yours" % [open.size(), PilotNet.active_gigs().size(), PilotNet.MAX_ACTIVE_GIGS])
 	gig_lines.append(BbsText.spread(counts, BbsText.link("All gigs »", _url("/gigs")), inner))
 	lines.append_array(BbsText.box("GIG BOARD", width, gig_lines))
+	lines.append(BbsText.Seg.new())
+
+	var memorial := []
+	for entry in PilotNetSite.in_memoriam():
+		memorial.append(BbsText.join([BbsText.dim("† "), BbsText.cell(str(entry.callsign), MEMORIAL_NAME_WIDTH, "",
+				NetSites.memorial_record_url(int(entry.id))), BbsText.dim(BbsText.cut("%s · %s" % [PilotNet.short_date(int(entry.day)),
+				str(entry.site)], inner - 2 - MEMORIAL_NAME_WIDTH))]))
+	if memorial.is_empty():
+		memorial.append(BbsText.dim(NO_POSTS))
+	memorial.append(BbsText.link("Visit the %s »" % PilotNetSite.MEMORIAL_NAME, NetSites.memorial_url()))
+	lines.append_array(BbsText.box("IN MEMORIAM", width, memorial))
 	return lines
 
 
 func _headline(post_data: Dictionary, width: int) -> BbsText.Seg:
-	var stamp := " D%d" % PilotNet.first_seen_day(post_data.id)
+	var stamp := " " + PilotNet.short_date(PilotNet.first_seen_day(post_data.id))
 	return BbsText.join([BbsText.dim("* " if PilotNet.is_new(post_data.id) else "· "),
 			BbsText.cell(PilotNet.fill_tags(post_data.title), width - 2 - stamp.length(), "", _post_url(post_data.id)),
 			BbsText.dim(stamp)])
@@ -251,7 +266,7 @@ func _front_right() -> Array:
 	var moves := FourX.movers(MOVER_COUNT)
 	for shown in (moves.gainers as Array).slice(0, 2) + (moves.losers as Array).slice(0, 1):
 		quotes.append(_quote_row(shown, inner))
-	quotes.append(BbsText.dim(BbsText.cut("Day %d close · delayed" % FourX.day(), inner)))
+	quotes.append(BbsText.dim(BbsText.cut("%s close · delayed" % PilotNet.short_date(FourX.day()), inner)))
 	quotes.append(BbsText.link("More at FourX.net »", NetSites.fourx_url()))
 	lines.append_array(BbsText.box("FOURX MARKETS", width, quotes))
 	lines.append(BbsText.Seg.new())
@@ -322,7 +337,7 @@ func _forums() -> void:
 		var blurb_line := BbsText.join([BbsText.space(4), BbsText.cell(str(board.get("blurb", "")), 49, "dim")])
 		var last_lines := [BbsText.dim("-")]
 		if not last.is_empty():
-			last_lines = [BbsText.cell("D%d %s by %s" % [PilotNet.first_seen_day(last.id), PilotNet.post_time(last.id),
+			last_lines = [BbsText.cell("%s %s by %s" % [PilotNet.short_date(PilotNet.first_seen_day(last.id)), PilotNet.post_time(last.id),
 					PilotNet.author_name(last)], 30, "dim"),
 					BbsText.cell(PilotNet.fill_tags(last.title), 30, "", _post_url(last.id))]
 		rows.append([[name_line, blurb_line], str(row.topics), str(row.posts), last_lines])
@@ -362,7 +377,8 @@ func _board(id: String, page_number: int) -> void:
 				else ("$" if PilotNetSite.has_gig(post_data) else " "))
 		rows.append([BbsText.dim(mark), BbsText.cell(PilotNet.fill_tags(post_data.title), 51, "", _post_url(post_data.id)),
 				_author_cell(post_data, 16), str(PilotNet.visible_replies(post_data.id).size()),
-				BbsText.cell("D%d %s" % [PilotNet.first_seen_day(post_data.id), PilotNet.post_time(post_data.id)], 16, "dim")])
+				BbsText.cell("%s %s" % [PilotNet.short_date(PilotNet.first_seen_day(post_data.id)), PilotNet.post_time(post_data.id)], 16,
+				"dim")])
 	if rows.is_empty():
 		rows.append(["", BbsText.cell(NO_POSTS, 51, "dim"), "", "", ""])
 	_add_all(BbsText.table(columns, rows))
@@ -463,8 +479,8 @@ func _card(author: String, entry: Dictionary, number: int, day: int, time: Strin
 	left.append(BbsText.dim(BbsText.cut(PilotNetSite.rank(author), CARD_LEFT)))
 	left.append(BbsText.dim(BbsText.cut("Posts: %d" % PilotNet.post_count(author), CARD_LEFT)))
 	if PilotNet.is_met(author):
-		left.append(BbsText.dim(BbsText.cut("Seen: Day %d" % PilotNet.last_seen(author), CARD_LEFT)))
-	var right := [BbsText.spread(BbsText.dim("Day %d %s" % [day, time]), BbsText.dim("#%d" % number), CARD_RIGHT),
+		left.append(BbsText.dim(BbsText.cut("Seen: %s" % PilotNet.short_date(PilotNet.last_seen(author)), CARD_LEFT)))
+	var right := [BbsText.spread(BbsText.dim("%s %s" % [PilotNet.short_date(day), time]), BbsText.dim("#%d" % number), CARD_RIGHT),
 			BbsText.rule(CARD_RIGHT)]
 	right.append_array(message)
 	var out := []
@@ -557,7 +573,7 @@ func _pilots(letter: String) -> void:
 	var rows := []
 	for callsign in listed:
 		var profile := PilotNet.pilot_profile(callsign)
-		var seen := "Day %d" % PilotNet.last_seen(callsign) if PilotNet.is_met(callsign) else "-"
+		var seen := PilotNet.short_date(PilotNet.last_seen(callsign)) if PilotNet.is_met(callsign) else "-"
 		rows.append([BbsText.cell(callsign, 20, "", _pilot_url(callsign)),
 				BbsText.cell(str(profile.get("affiliation", "-")) if not profile.is_empty() else "-", 57, "dim"),
 				str(PilotNet.post_count(callsign)), seen])
@@ -596,7 +612,11 @@ func _pilot(callsign: String) -> void:
 		info.append(BbsText.dim(str(profile.affiliation)))
 	info.append(BbsText.plain("Rank: %s · Posts: %d" % [PilotNetSite.rank(shown), PilotNet.post_count(shown)]))
 	if PilotNet.is_met(shown):
-		info.append(BbsText.plain("Last seen: Day %d" % PilotNet.last_seen(shown)))
+		info.append(BbsText.plain("Last seen: %s" % PilotNet.short_date(PilotNet.last_seen(shown))))
+	var lost := PilotNetSite.memorial_record(shown)
+	if not lost.is_empty():
+		info.append(BbsText.join([BbsText.plain("%s — " % PilotNetSite.lost_text(lost)),
+				BbsText.link(PilotNetSite.MEMORIAL_NAME, NetSites.memorial_record_url(int(lost.id)))]))
 	_add_all(_profile_box(shown, info))
 	_add(BbsText.Seg.new())
 	var bio := []
@@ -639,10 +659,10 @@ func _posts_table(callsign: String) -> void:
 		return
 	var rows := []
 	for post_data in posts:
-		rows.append(["D%d" % PilotNet.first_seen_day(post_data.id),
-				BbsText.cell(PilotNet.fill_tags(post_data.title), 60, "", _post_url(post_data.id)),
+		rows.append([PilotNet.short_date(PilotNet.first_seen_day(post_data.id)),
+				BbsText.cell(PilotNet.fill_tags(post_data.title), 56, "", _post_url(post_data.id)),
 				str(PilotNet.get_board(str(post_data.board)).get("name", post_data.board))])
-	_add_all(BbsText.table([{"title": "DAY", "width": 6}, {"title": "TOPIC", "width": 60}, {"title": "FORUM", "width": 29}], rows))
+	_add_all(BbsText.table([{"title": "DATE", "width": 10}, {"title": "TOPIC", "width": 56}, {"title": "FORUM", "width": 29}], rows))
 
 
 # ---- search -----------------------------------------------------------------------
@@ -664,8 +684,9 @@ func _search(text: String) -> void:
 	for post_data in found.slice(0, SEARCH_COUNT):
 		var board := PilotNet.get_board(str(post_data.board))
 		lines.append(BbsText.cell(PilotNet.fill_tags(post_data.title), inner, "", _post_url(post_data.id)))
-		lines.append(BbsText.dim(BbsText.cut("  %s · %s · by %s · Day %d" % [NetSites.display(_post_url(post_data.id)),
-				str(board.get("name", post_data.board)), PilotNet.author_name(post_data), PilotNet.first_seen_day(post_data.id)], inner)))
+		lines.append(BbsText.dim(BbsText.cut("  %s · %s · by %s · %s" % [NetSites.display(_post_url(post_data.id)),
+				str(board.get("name", post_data.board)), PilotNet.author_name(post_data),
+				PilotNet.short_date(PilotNet.first_seen_day(post_data.id))], inner)))
 	_more(lines, found.size())
 	_add_all(BbsText.box("PILOT.NET: %d post%s found" % [found.size(), "" if found.size() == 1 else "s"], WIDTH,
 			lines if not lines.is_empty() else [BbsText.dim("No posts found.")]))
@@ -766,7 +787,7 @@ func _header_lines() -> Array:
 		offsite.append(BbsText.link("[%s] %s" % [entry[0], entry[1]], str(entry[2])))
 	var me := PlayerProgress.get_callsign()
 	var login := BbsText.join([BbsText.plain("Logged in as "), BbsText.link(me.to_upper(), _pilot_url(me)),
-			BbsText.plain(" · Rep %d · Day %d" % [PlayerProgress.get_reputation(), PilotNet.day])])
+			BbsText.plain(" · Rep %d · %s" % [PlayerProgress.get_reputation(), PilotNet.date_text(PilotNet.day)])])
 	var status := BbsText.dim("%d unread · %s CT" % [PilotNet.unread_count(), BbsText.thousands(int(PlayerProgress.get_money()))])
 	return [
 		BbsText.Seg.new("[font_size=%d]%s[/font_size] %s" % [BANNER_SIZE, BbsText.bright(BANNER).code, BbsText.dim(TAGLINE).code], WIDTH),

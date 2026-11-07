@@ -11,7 +11,8 @@ extends NetPortalBase
 ##   page         the front page in three columns: link lists; the feature
 ##                box (slides with back and next), news, forums and gigs; the
 ##                site buttons, an amazing.com ad and the MONEY, SHOPPING,
-##                WORLD STATUS and PILOTS ONLINE boxes. Other pages: a trail
+##                WORLD STATUS, PILOTS ONLINE and IN MEMORIAM (the Memorial
+##                Wall's newest) boxes. Other pages: a trail
 ##                of links, a title, striped tables, message blocks with the
 ##                pilots' avatars (PilotAvatar)
 ##   footer       links and the small print
@@ -176,7 +177,7 @@ func _left_column() -> VBoxContainer:
 
 
 func _front_middle(middle: VBoxContainer) -> void:
-	middle.add_child(NetUI.text("Day %d" % PilotNet.day, &"NetPortalLabel"))
+	middle.add_child(NetUI.text(PilotNet.date_text(PilotNet.day), &"NetPortalLabel"))
 	_slides = _make_slides()
 	_feature = NetUI.panel(&"NetPortalFeature")
 	middle.add_child(_feature)
@@ -185,7 +186,7 @@ func _front_middle(middle: VBoxContainer) -> void:
 	var news := []
 	for post_data in PilotNetSite.headlines(NEWS_COUNT):
 		news.append(_bullet(PilotNet.fill_tags(post_data.title), PilotNetSite.post_url(post_data.id),
-				"Day %d" % PilotNet.first_seen_day(post_data.id), PilotNet.is_new(post_data.id)))
+				PilotNet.long_date(PilotNet.first_seen_day(post_data.id)), PilotNet.is_new(post_data.id)))
 	middle.add_child(_list("PILOT.NET NEWS", news, ["All news", _url("/board/news")]))
 
 	var topics := []
@@ -336,7 +337,7 @@ func _front_right(right: VBoxContainer) -> void:
 	go.pressed.connect(func(): _submit_quote(quote_field.text))
 	lookup.add_child(go)
 	money.add_child(lookup)
-	money.add_child(NetUI.text("Quotes: Day %d close" % FourX.day(), &"NetPortalMeta"))
+	money.add_child(NetUI.text("Quotes: %s close" % PilotNet.long_date(FourX.day()), &"NetPortalMeta"))
 	right.add_child(_widget("MONEY", money))
 
 	var deals := []
@@ -363,6 +364,15 @@ func _front_right(right: VBoxContainer) -> void:
 		names.append(_link_code(callsign, PilotNetSite.pilot_url(callsign)) if PilotNetSite.is_known(callsign) else esc(callsign))
 	right.add_child(_widget("PILOTS ONLINE", _rich(", ".join(names) + "\n" + _meta_code("and %d guests" % PilotNetSite.guests()))))
 
+	var lost := []
+	for entry in PilotNetSite.in_memoriam():
+		lost.append("† %s\n%s" % [_link_code(str(entry.callsign), NetSites.memorial_record_url(int(entry.id))),
+				_meta_code("%s · %s" % [PilotNet.long_date(int(entry.day)), str(entry.site)])])
+	if lost.is_empty():
+		lost.append(_meta_code(PilotNetSite.NO_POSTS))
+	lost.append("» " + _link_code("Visit the %s" % PilotNetSite.MEMORIAL_NAME, NetSites.memorial_url()))
+	right.add_child(_widget("IN MEMORIAM", _rich("\n".join(lost))))
+
 
 func _submit_quote(text: String) -> void:
 	if text.strip_edges() == "":
@@ -387,7 +397,7 @@ func _forums() -> void:
 			name += "  " + _meta_code("NEW")
 		var last_cell: Control = NetUI.text("-", &"NetPortalMeta")
 		if not last.is_empty():
-			last_cell = _rich("%s\n%s" % [_meta_code("Day %d %s by %s" % [PilotNet.first_seen_day(last.id), PilotNet.post_time(last.id),
+			last_cell = _rich("%s\n%s" % [_meta_code("%s by %s" % [PilotNet.stamp(PilotNet.first_seen_day(last.id), PilotNet.post_time(last.id)),
 					PilotNet.author_name(last)]), _link_code(PilotNet.fill_tags(last.title), PilotNetSite.post_url(last.id))])
 		rows.append([_rich("%s\n%s" % [name, _meta_code(str(board.get("blurb", "")))]), str(row.topics), str(row.posts), last_cell])
 	main.add_child(_table([{"title": "Forum", "width": 0}, {"title": "Topics", "width": 70, "align": "right"},
@@ -444,11 +454,11 @@ func _board(id: String, page_number: int) -> void:
 		rows.append([NetUI.text(", ".join(marks), &"NetPortalMeta"),
 				_rich(_link_code(PilotNet.fill_tags(post_data.title), PilotNetSite.post_url(post_data.id))),
 				_author_link(post_data), str(PilotNet.visible_replies(post_data.id).size()),
-				"Day %d %s" % [PilotNet.first_seen_day(post_data.id), PilotNet.post_time(post_data.id)]])
+				PilotNet.stamp(PilotNet.first_seen_day(post_data.id), PilotNet.post_time(post_data.id))])
 	if rows.is_empty():
 		rows.append(["", NetUI.text(PilotNetSite.NO_POSTS, &"NetPortalMeta"), "", "", ""])
 	main.add_child(_table([{"title": "", "width": 90}, {"title": "Topic", "width": 0}, {"title": "Started by", "width": 140},
-			{"title": "Replies", "width": 70, "align": "right"}, {"title": "Last post", "width": 120}], rows))
+			{"title": "Replies", "width": 70, "align": "right"}, {"title": "Last post", "width": 160}], rows))
 	_add_pages("/board/" + id, page_number, pages)
 	if id == PilotNet.GIGS_BOARD:
 		main.add_child(_link("See the gig board: open gigs, your gigs and their progress »", _url("/gigs")))
@@ -496,14 +506,14 @@ func _message(author: String, entry: Dictionary, number: int, day: int, time: St
 	side.add_child(NetUI.text(PilotNetSite.rank(author), &"NetPortalMeta"))
 	side.add_child(NetUI.text("Posts: %d" % PilotNet.post_count(author), &"NetPortalMeta"))
 	if PilotNet.is_met(author):
-		side.add_child(NetUI.text("Seen: Day %d" % PilotNet.last_seen(author), &"NetPortalMeta"))
+		side.add_child(NetUI.text("Seen: %s" % PilotNet.long_date(PilotNet.last_seen(author)), &"NetPortalMeta"))
 	var panel := NetUI.panel(&"NetPortalAuthor", side)
 	panel.custom_minimum_size.x = AUTHOR_WIDTH
 	row.add_child(panel)
 	var content := NetUI.vbox(&"NetPortalStack")
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var head := NetUI.hbox(&"NetPortalToolbar")
-	var stamp := NetUI.text("Day %d %s" % [day, time], &"NetPortalMeta")
+	var stamp := NetUI.text(PilotNet.stamp(day, time), &"NetPortalMeta")
 	stamp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(stamp)
 	head.add_child(NetUI.text("#%d" % number, &"NetPortalMeta"))
@@ -643,11 +653,11 @@ func _pilots(letter: String) -> void:
 	for callsign in listed:
 		var profile := PilotNet.pilot_profile(callsign)
 		rows.append([_link(callsign, PilotNetSite.pilot_url(callsign)), str(profile.get("affiliation", "-")) if not profile.is_empty() else "-",
-				str(PilotNet.post_count(callsign)), "Day %d" % PilotNet.last_seen(callsign) if PilotNet.is_met(callsign) else "-"])
+				str(PilotNet.post_count(callsign)), PilotNet.long_date(PilotNet.last_seen(callsign)) if PilotNet.is_met(callsign) else "-"])
 	if rows.is_empty():
 		rows.append([NetUI.text(PilotNetSite.NO_POSTS, &"NetPortalMeta"), "", "", ""])
 	main.add_child(_table([{"title": "Callsign", "width": 200}, {"title": "Affiliation", "width": 0},
-			{"title": "Posts", "width": 70, "align": "right"}, {"title": "Last seen", "width": 110}], rows))
+			{"title": "Posts", "width": 70, "align": "right"}, {"title": "Last seen", "width": 120}], rows))
 	main.add_child(NetUI.text("%d pilot%s: profiles and the pilots you have met in the field" % [listed.size(),
 			"" if listed.size() == 1 else "s"], &"NetPortalMeta"))
 
@@ -674,8 +684,13 @@ func _pilot(callsign: String) -> void:
 		lines.append(str(profile.affiliation))
 	lines.append("Rank: %s · Posts: %d" % [PilotNetSite.rank(shown), PilotNet.post_count(shown)])
 	if PilotNet.is_met(shown):
-		lines.append("Last seen: Day %d" % PilotNet.last_seen(shown))
-	main.add_child(_profile_head(shown, lines))
+		lines.append("Last seen: %s" % PilotNet.long_date(PilotNet.last_seen(shown)))
+	var lost := PilotNetSite.memorial_record(shown)
+	var lost_line: Control = null
+	if not lost.is_empty():
+		lost_line = _rich("%s — %s" % [esc(PilotNetSite.lost_text(lost)), _link_code(PilotNetSite.MEMORIAL_NAME,
+				NetSites.memorial_record_url(int(lost.id)))])
+	main.add_child(_profile_head(shown, lines, lost_line))
 	main.add_child(NetUI.text("Bio", &"NetPortalSection"))
 	main.add_child(_rich(esc(PilotNet.fill_tags(str(profile.get("bio", "")))) if not profile.is_empty() else esc("No profile on file.")))
 	var build := PilotNet.known_build(shown)
@@ -693,7 +708,7 @@ func _pilot(callsign: String) -> void:
 	_posts_table(shown)
 
 
-func _profile_head(callsign: String, lines: Array) -> PanelContainer:
+func _profile_head(callsign: String, lines: Array, extra: Control = null) -> PanelContainer:
 	var row := NetUI.hbox(&"NetPortalColumns")
 	row.add_child(PilotAvatar.new(callsign, 12))
 	var words := NetUI.vbox(&"NetPortalTight")
@@ -701,6 +716,8 @@ func _profile_head(callsign: String, lines: Array) -> PanelContainer:
 	words.add_child(NetUI.text(callsign, &"NetPortalTitle", true))
 	for line in lines:
 		words.add_child(NetUI.text(str(line), &"NetPortalText", true))
+	if extra != null:
+		words.add_child(extra)
 	row.add_child(words)
 	return NetUI.panel(&"NetPortalBox", row)
 
@@ -713,10 +730,10 @@ func _posts_table(callsign: String) -> void:
 		return
 	var rows := []
 	for post_data in posts:
-		rows.append(["Day %d" % PilotNet.first_seen_day(post_data.id),
+		rows.append([PilotNet.long_date(PilotNet.first_seen_day(post_data.id)),
 				_rich(_link_code(PilotNet.fill_tags(post_data.title), PilotNetSite.post_url(post_data.id))),
 				str(PilotNet.get_board(str(post_data.board)).get("name", post_data.board))])
-	main.add_child(_table([{"title": "Day", "width": 70}, {"title": "Topic", "width": 0}, {"title": "Forum", "width": 220}], rows))
+	main.add_child(_table([{"title": "Date", "width": 110}, {"title": "Topic", "width": 0}, {"title": "Forum", "width": 220}], rows))
 
 
 # ---- search -----------------------------------------------------------------------
@@ -734,8 +751,8 @@ func _search(text: String) -> void:
 	for post_data in found.slice(0, SEARCH_COUNT):
 		var board := PilotNet.get_board(str(post_data.board))
 		results.append([PilotNet.fill_tags(post_data.title), PilotNetSite.post_url(post_data.id),
-				"%s · by %s · Day %d" % [str(board.get("name", post_data.board)), PilotNet.author_name(post_data),
-				PilotNet.first_seen_day(post_data.id)]])
+				"%s · by %s · %s" % [str(board.get("name", post_data.board)), PilotNet.author_name(post_data),
+				PilotNet.long_date(PilotNet.first_seen_day(post_data.id))]])
 	main.add_child(_results("pilot.net: %d post%s found" % [found.size(), "" if found.size() == 1 else "s"], results, found.size(), []))
 	var pilots := PilotNetSite.directory("").filter(func(c): return wanted.to_lower() in str(c).to_lower())
 	if not pilots.is_empty():
@@ -816,7 +833,7 @@ func _strip() -> PanelContainer:
 	var me := PlayerProgress.get_callsign()
 	row.add_child(NetUI.text("Logged in as", &"NetPortalText"))
 	row.add_child(_link(me.to_upper(), PilotNetSite.pilot_url(me)))
-	row.add_child(NetUI.text("· Day %d · %d unread · %s CT" % [PilotNet.day, PilotNet.unread_count(),
+	row.add_child(NetUI.text("· %s · %d unread · %s CT" % [PilotNet.date_text(PilotNet.day), PilotNet.unread_count(),
 			BbsText.thousands(int(PlayerProgress.get_money()))], &"NetPortalText"))
 	return NetUI.panel(&"NetPortalStrip", row)
 

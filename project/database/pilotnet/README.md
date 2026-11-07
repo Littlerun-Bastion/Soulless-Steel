@@ -278,11 +278,29 @@ Titles, bodies, authors and replies can use these tags. pilot.net fills them in 
 | Tag | Becomes |
 |---|---|
 | `{player}` | The player's callsign. |
-| `{day}` | The current day. |
+| `{day}` | The current day, as a number (`15`). |
+| `{date}` | The current day as a date (`Mon 15 Jan 2035`). |
 | `{flag:name}` | The value of the story flag `name`. |
 | `{world:name}` | The world-status text for the flag `name`. |
 
 pilot.net does not change a tag that it does not know. `PilotNetTest` reports it.
+
+## Dates
+
+The NET shows dates, not day numbers. Day 1 is `PilotNet.CALENDAR_START` (`2035-01-01`, a placeholder), and Day n is n − 1 days later. `PilotNet.day` is still the number underneath.
+
+| Function | Gives | Used on |
+|---|---|---|
+| `PilotNet.date_text(day)` | `Mon 15 Jan 2035` | the login line, the front page |
+| `PilotNet.short_date(day)` | `15/01/2035` | the text-mode look and FourX.net |
+| `PilotNet.long_date(day)` | `15 Jan 2035` | the portal look, Steelapedia, the Memorial Wall |
+| `PilotNet.stamp(day, time)` | `15 Jan 2035 · 03:14` | the portal look's post stamps |
+
+Nothing outside the NET shows a date.
+
+## In memoriam
+
+Both looks have an **In memoriam** box on the front page: the three newest records on the Memorial Wall (`memorialwall.org`), with links to them. A pilot's profile, or the page of a pilot you met, shows `† Lost 15 Jan 2035 — Memorial Wall` when that callsign is on the Wall. See `database/memorial/README.md`.
 
 ## How to test a post in the game
 

@@ -455,7 +455,7 @@ func _test_pages() -> void:
 	var page: PilotNetPage = window.page
 	var text := page.get_text()
 	check("PILOT.NET" in text and "the independent pilots' exchange" in text, "the banner")
-	check("Logged in as %s · Rep 0 · Day 1" % PlayerProgress.get_callsign().to_upper() in text, "the login line")
+	check("Logged in as %s · Rep 0 · %s" % [PlayerProgress.get_callsign().to_upper(), PilotNet.date_text(1)] in text, "the login line")
 	check("[1] HOME  [2] NEWS  [3] GIGS  [4] FORUMS  [5] PILOTS" in text
 			and "[6] STEELAPEDIA  [7] FOURX.NET  [8] AMAZING.COM" in text, "the nav")
 	for widget in ["TOP STORY", "NEWS", "HOT IN THE FORUMS", "GIG BOARD", "MY PILOT", "FOURX MARKETS",
@@ -551,11 +551,12 @@ func _test_page_actions() -> void:
 	PilotNet.note_met("ASH")
 	window.navigate("pilot.net/pilot/Lady%20Volk")
 	text = window.page.get_text()
-	check("[AFFILIATION]" in text and "Last seen: Day 2" in text and "KNOWN BUILD" in text, "a profile")
+	check("[AFFILIATION]" in text and "Last seen: %s" % PilotNet.short_date(2) in text and "KNOWN BUILD" in text, "a profile")
 	check(window.page.get_links().has(NetSites.wiki_url("MSV-L3J-H")), "the build links to Steelapedia")
 	check("[SAMPLE] A thread with a gated reply" in text, "with their posts")
 	window.navigate("pilot.net/pilot/ASH")
-	check("No profile on file." in window.page.get_text() and "Last seen: Day 2" in window.page.get_text(), "a met pilot with no profile")
+	check("No profile on file." in window.page.get_text() and "Last seen: %s" % PilotNet.short_date(2) in window.page.get_text(),
+			"a met pilot with no profile")
 	window.navigate("pilot.net/pilot/" + PlayerProgress.get_callsign())
 	text = window.page.get_text()
 	check("YOUR PROFILE" in text and "Reputation: 0" in text and "Gigs completed: 0" in text and "[SAMPLE] Text tags" in text,

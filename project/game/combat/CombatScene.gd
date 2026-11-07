@@ -61,6 +61,11 @@ const SHED_EXPLOSION_SCALE := 0.6
 const MAX_BODIES := 12
 const STAGE_SCENE_DIR := "res://game/stage/scenes/"
 
+## Whether an NPC killed here goes on the Memorial Wall (PilotNet.memorial):
+## on for Expedition, where deaths are real; off for the Arena, the Test
+## Arena and the Ladder.
+@export var records_losses := false
+
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
 @onready var Trails = $Trails
@@ -473,6 +478,10 @@ func _on_mecha_died(mecha) -> void:
 	# An NPC that extracts arrives here too, without having died (die() sets
 	# is_dead): it leaves Local the same way, but isn't anyone's kill.
 	var was_killed: bool = mecha.is_dead
+	# A pilot killed in a real match goes on the Memorial Wall, read while its
+	# squad, Local lines and killer are still as they were.
+	if was_killed and records_losses and mecha != player:
+		PilotNet.memorial.record_loss(mecha, _killer_of(mecha))
 	mecha.is_dead = true
 	local_pilots.leave(mecha)
 	# Its squad is told (Squad.on_member_died), with who killed it; the

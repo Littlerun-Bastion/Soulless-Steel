@@ -391,7 +391,7 @@ func setup(arena_ref, design_data, _name):
 	if _name and typeof(_name) == TYPE_STRING:
 		mecha_name = _name
 	else:
-		mecha_name = "Mecha " + str(randi()%2000)
+		mecha_name = CallsignGenerator.random()
 
 	set_parts_from_design(design_data)
 

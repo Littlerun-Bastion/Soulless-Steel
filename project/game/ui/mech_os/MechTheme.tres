@@ -11,6 +11,10 @@
 [ext_resource type="FontFile" uid="uid://dqverkie1ffto" path="res://assets/fonts/data/PixelOperator/PixelOperator-Bold.ttf" id="9_pixop_bold"]
 [ext_resource type="FontFile" uid="uid://cmdfxxj2x1uy2" path="res://assets/fonts/data/PixelOperator/PixelOperator8.ttf" id="10_pixop8"]
 [ext_resource type="FontFile" uid="uid://dej0no4jodmdh" path="res://assets/fonts/data/PixelOperator/PixelOperatorSC.ttf" id="11_pixop_sc"]
+[ext_resource type="FontFile" uid="uid://c5i7f04mcfgxy" path="res://assets/fonts/data/Pixellari/Pixellari.ttf" id="12_pixellari"]
+[ext_resource type="FontFile" uid="uid://cdhh4myxpp73b" path="res://assets/fonts/data/PixelifySans/PixelifySans-Bold.ttf" id="13_pixelify_bold"]
+[ext_resource type="FontFile" uid="uid://i7l5pyf34c5j" path="res://assets/fonts/data/PixelifySans/PixelifySans-SemiBold.ttf" id="14_pixelify_semi"]
+[ext_resource type="Script" path="res://game/ui/mech_os/StyleBoxBands.gd" id="15_bands"]
 
 [sub_resource type="StyleBoxFlat" id="sb_alert_critical"]
 content_margin_left = 12.0
@@ -1221,6 +1225,350 @@ corner_detail = 1
 bg_color = Color(0.227, 0.227, 0.227, 1)
 corner_detail = 1
 
+[sub_resource type="FontVariation" id="font_mem_body"]
+fallbacks = Array[Font]([ExtResource("8_pixop")])
+base_font = ExtResource("12_pixellari")
+
+[sub_resource type="StyleBoxTexture" id="sb_net_mem_page"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 24.0
+texture = ExtResource("6_dither")
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBox" id="sb_net_mem_column"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.043, 0.043, 0.043, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+border_width = 1
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2i(2, 2)
+
+[sub_resource type="StyleBox" id="sb_net_mem_glossy"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.839, 0.839, 0.839, 1, 0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1, 0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(1, 0, 0, 1)
+border_width = 0
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_nav"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 1.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_mem_tab"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1, 0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+round_bottom = false
+open_bottom = true
+
+[sub_resource type="StyleBox" id="sb_net_mem_tab_hover"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.839, 0.839, 0.839, 1, 0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+round_bottom = false
+open_bottom = true
+
+[sub_resource type="StyleBox" id="sb_net_mem_tab_active"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 3.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.043, 0.043, 0.043, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+round_bottom = false
+open_bottom = true
+extend_bottom = 1
+
+[sub_resource type="StyleBoxEmpty" id="sb_net_mem_content"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBox" id="sb_net_mem_card"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+
+[sub_resource type="StyleBox" id="sb_net_mem_side_head"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1, 0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+round_bottom = false
+open_bottom = true
+
+[sub_resource type="StyleBox" id="sb_net_mem_side_body"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 4
+round_top = false
+
+[sub_resource type="StyleBox" id="sb_net_mem_quote"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 2.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_radius = 4
+
+[sub_resource type="StyleBox" id="sb_net_mem_tile"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.227, 0.227, 0.227, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.541, 0.541, 0.541, 1)
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2i(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_row"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_row_alt"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.102, 0.102, 0.102, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_mem_table_head"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 8.0
+content_margin_top = 2.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1, 0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_width = 0
+
+[sub_resource type="StyleBox" id="sb_net_mem_pill"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.839, 0.839, 0.839, 1, 0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius = 10
+
+[sub_resource type="StyleBox" id="sb_net_mem_pill_hover"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.949, 0.949, 0.949, 1, 0.541, 0.541, 0.541, 1, 0.227, 0.227, 0.227, 1)
+heights = PackedInt32Array(1, 0, 0)
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_radius = 10
+
+[sub_resource type="StyleBox" id="sb_net_mem_pill_pressed"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.227, 0.227, 0.227, 1, 0.541, 0.541, 0.541, 1)
+heights = PackedInt32Array(0, 0)
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius = 10
+
+[sub_resource type="StyleBox" id="sb_net_mem_pill_disabled"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.227, 0.227, 0.227, 1, 0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(1, 0)
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_radius = 10
+
+[sub_resource type="StyleBox" id="sb_net_mem_badge"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 1.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.949, 0.949, 0.949, 1, 0.839, 0.839, 0.839, 1)
+heights = PackedInt32Array(1, 0)
+border_color = Color(0.102, 0.102, 0.102, 1)
+corner_radius = 2
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_web_badge"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_web_badge_left"]
+content_margin_left = 3.0
+content_margin_top = 0.0
+content_margin_right = 3.0
+content_margin_bottom = 0.0
+bg_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxEmpty" id="sb_net_mem_web_badge_right"]
+content_margin_left = 3.0
+content_margin_top = 0.0
+content_margin_right = 3.0
+content_margin_bottom = 0.0
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_input"]
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 4.0
+content_margin_bottom = 3.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_input_focus"]
+content_margin_left = 4.0
+content_margin_top = 3.0
+content_margin_right = 4.0
+content_margin_bottom = 3.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.541, 0.541, 0.541, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBox" id="sb_net_mem_notice"]
+resource_local_to_scene = false
+resource_name = ""
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+script = ExtResource("15_bands")
+colors = PackedColorArray(0.102, 0.102, 0.102, 1)
+heights = PackedInt32Array(0)
+border_color = Color(0.541, 0.541, 0.541, 1)
+border_width = 2
+
+[sub_resource type="StyleBoxFlat" id="sb_net_mem_footer"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.043, 0.043, 0.043, 1)
+border_width_top = 1
+border_color = Color(0.227, 0.227, 0.227, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxLine" id="sb_net_mem_rule"]
+color = Color(0.227, 0.227, 0.227, 1)
+thickness = 1
+
 [resource]
 default_font = SubResource("font_text")
 default_font_size = 16
@@ -1545,6 +1893,201 @@ NetLogo/base_type = &"Label"
 NetLogo/colors/font_color = Color(0.949, 0.949, 0.949, 1)
 NetLogo/font_sizes/font_size = 40
 NetLogo/fonts/font = ExtResource("5_silk")
+NetMemBadge/base_type = &"PanelContainer"
+NetMemBadge/styles/panel = SubResource("sb_net_mem_badge")
+NetMemBadgeText/base_type = &"Label"
+NetMemBadgeText/colors/font_color = Color(0, 0, 0, 1)
+NetMemBadgeText/font_sizes/font_size = 10
+NetMemBadgeText/fonts/font = ExtResource("13_pixelify_bold")
+NetMemBody/base_type = &"Label"
+NetMemBody/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetMemBody/font_sizes/font_size = 16
+NetMemBody/fonts/font = SubResource("font_mem_body")
+NetMemBright/base_type = &"NetMemBody"
+NetMemBright/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemCallsign/base_type = &"NetMemLink"
+NetMemCallsign/font_sizes/font_size = 20
+NetMemCallsign/fonts/font = ExtResource("13_pixelify_bold")
+NetMemCard/base_type = &"PanelContainer"
+NetMemCard/styles/panel = SubResource("sb_net_mem_card")
+NetMemCloud/base_type = &"HFlowContainer"
+NetMemCloud/constants/h_separation = 8
+NetMemCloud/constants/v_separation = 0
+NetMemColumn/base_type = &"PanelContainer"
+NetMemColumn/styles/panel = SubResource("sb_net_mem_column")
+NetMemColumns/base_type = &"HBoxContainer"
+NetMemColumns/constants/separation = 12
+NetMemContent/base_type = &"PanelContainer"
+NetMemContent/styles/panel = SubResource("sb_net_mem_content")
+NetMemFooter/base_type = &"PanelContainer"
+NetMemFooter/styles/panel = SubResource("sb_net_mem_footer")
+NetMemGlossy/base_type = &"PanelContainer"
+NetMemGlossy/styles/panel = SubResource("sb_net_mem_glossy")
+NetMemGrid/base_type = &"GridContainer"
+NetMemGrid/constants/h_separation = 8
+NetMemGrid/constants/v_separation = 6
+NetMemHeading/base_type = &"Label"
+NetMemHeading/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemHeading/font_sizes/font_size = 20
+NetMemHeading/fonts/font = ExtResource("13_pixelify_bold")
+NetMemInitials/base_type = &"NetMemHeading"
+NetMemInput/base_type = &"LineEdit"
+NetMemInput/colors/caret_color = Color(0.949, 0.949, 0.949, 1)
+NetMemInput/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemInput/colors/font_placeholder_color = Color(0.541, 0.541, 0.541, 1)
+NetMemInput/colors/font_uneditable_color = Color(0.541, 0.541, 0.541, 1)
+NetMemInput/colors/selection_color = Color(0.227, 0.227, 0.227, 1)
+NetMemInput/font_sizes/font_size = 16
+NetMemInput/fonts/font = SubResource("font_mem_body")
+NetMemInput/styles/focus = SubResource("sb_net_mem_input_focus")
+NetMemInput/styles/normal = SubResource("sb_net_mem_input")
+NetMemInput/styles/read_only = SubResource("sb_net_mem_input")
+NetMemLines/base_type = &"VBoxContainer"
+NetMemLines/constants/separation = 6
+NetMemLink/base_type = &"LinkButton"
+NetMemLink/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemLink/colors/font_disabled_color = Color(0.541, 0.541, 0.541, 1)
+NetMemLink/colors/font_focus_color = Color(0.949, 0.949, 0.949, 1)
+NetMemLink/colors/font_hover_color = Color(0.839, 0.839, 0.839, 1)
+NetMemLink/colors/font_hover_pressed_color = Color(0.839, 0.839, 0.839, 1)
+NetMemLink/colors/font_pressed_color = Color(0.839, 0.839, 0.839, 1)
+NetMemLink/font_sizes/font_size = 16
+NetMemLink/fonts/font = SubResource("font_mem_body")
+NetMemLink/styles/focus = SubResource("sb_focus")
+NetMemLinkDim/base_type = &"NetMemLink"
+NetMemLinkDim/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemLinkDim/colors/font_focus_color = Color(0.541, 0.541, 0.541, 1)
+NetMemLogo/base_type = &"Label"
+NetMemLogo/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemLogo/colors/font_shadow_color = Color(0, 0, 0, 1)
+NetMemLogo/constants/shadow_offset_x = 1
+NetMemLogo/constants/shadow_offset_y = 1
+NetMemLogo/constants/shadow_outline_size = 0
+NetMemLogo/font_sizes/font_size = 40
+NetMemLogo/fonts/font = ExtResource("13_pixelify_bold")
+NetMemMeta/base_type = &"NetMemBody"
+NetMemMeta/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemNav/base_type = &"PanelContainer"
+NetMemNav/styles/panel = SubResource("sb_net_mem_nav")
+NetMemNotice/base_type = &"PanelContainer"
+NetMemNotice/styles/panel = SubResource("sb_net_mem_notice")
+NetMemNumber/base_type = &"NetMemHeading"
+NetMemNumber/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemPage/base_type = &"PanelContainer"
+NetMemPage/styles/panel = SubResource("sb_net_mem_page")
+NetMemPill/base_type = &"Button"
+NetMemPill/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemPill/colors/font_disabled_color = Color(0.541, 0.541, 0.541, 1)
+NetMemPill/colors/font_focus_color = Color(0.949, 0.949, 0.949, 1)
+NetMemPill/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetMemPill/colors/font_hover_pressed_color = Color(0.839, 0.839, 0.839, 1)
+NetMemPill/colors/font_pressed_color = Color(0.839, 0.839, 0.839, 1)
+NetMemPill/font_sizes/font_size = 16
+NetMemPill/fonts/font = SubResource("font_mem_body")
+NetMemPill/styles/disabled = SubResource("sb_net_mem_pill_disabled")
+NetMemPill/styles/focus = SubResource("sb_focus")
+NetMemPill/styles/hover = SubResource("sb_net_mem_pill_hover")
+NetMemPill/styles/hover_pressed = SubResource("sb_net_mem_pill_pressed")
+NetMemPill/styles/normal = SubResource("sb_net_mem_pill")
+NetMemPill/styles/pressed = SubResource("sb_net_mem_pill_pressed")
+NetMemQuote/base_type = &"PanelContainer"
+NetMemQuote/styles/panel = SubResource("sb_net_mem_quote")
+NetMemQuoteMark/base_type = &"Label"
+NetMemQuoteMark/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemQuoteMark/font_sizes/font_size = 40
+NetMemQuoteMark/fonts/font = ExtResource("13_pixelify_bold")
+NetMemRegistry/base_type = &"Label"
+NetMemRegistry/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemRegistry/font_sizes/font_size = 30
+NetMemRegistry/fonts/font = ExtResource("14_pixelify_semi")
+NetMemRich/base_type = &"RichTextLabel"
+NetMemRich/colors/default_color = Color(0.839, 0.839, 0.839, 1)
+NetMemRich/colors/font_selected_color = Color(0.949, 0.949, 0.949, 1)
+NetMemRich/colors/selection_color = Color(0.227, 0.227, 0.227, 1)
+NetMemRich/constants/line_separation = 0
+NetMemRich/font_sizes/bold_font_size = 16
+NetMemRich/font_sizes/normal_font_size = 16
+NetMemRich/fonts/bold_font = SubResource("font_mem_body")
+NetMemRich/fonts/normal_font = SubResource("font_mem_body")
+NetMemRich/styles/focus = SubResource("sb_focus")
+NetMemRich/styles/normal = SubResource("sb_focus")
+NetMemRow/base_type = &"PanelContainer"
+NetMemRow/styles/panel = SubResource("sb_net_mem_row")
+NetMemRowAlt/base_type = &"PanelContainer"
+NetMemRowAlt/styles/panel = SubResource("sb_net_mem_row_alt")
+NetMemRule/base_type = &"HSeparator"
+NetMemRule/constants/separation = 1
+NetMemRule/styles/separator = SubResource("sb_net_mem_rule")
+NetMemSideBody/base_type = &"PanelContainer"
+NetMemSideBody/styles/panel = SubResource("sb_net_mem_side_body")
+NetMemSideHead/base_type = &"PanelContainer"
+NetMemSideHead/styles/panel = SubResource("sb_net_mem_side_head")
+NetMemStack/base_type = &"VBoxContainer"
+NetMemStack/constants/separation = 12
+NetMemTab/base_type = &"Button"
+NetMemTab/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTab/colors/font_disabled_color = Color(0.541, 0.541, 0.541, 1)
+NetMemTab/colors/font_focus_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTab/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTab/colors/font_hover_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTab/colors/font_pressed_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTab/font_sizes/font_size = 16
+NetMemTab/fonts/font = SubResource("font_mem_body")
+NetMemTab/styles/disabled = SubResource("sb_net_mem_tab")
+NetMemTab/styles/focus = SubResource("sb_focus")
+NetMemTab/styles/hover = SubResource("sb_net_mem_tab_hover")
+NetMemTab/styles/hover_pressed = SubResource("sb_net_mem_tab_hover")
+NetMemTab/styles/normal = SubResource("sb_net_mem_tab")
+NetMemTab/styles/pressed = SubResource("sb_net_mem_tab_hover")
+NetMemTabActive/base_type = &"NetMemTab"
+NetMemTabActive/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTabActive/colors/font_focus_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTabActive/styles/hover = SubResource("sb_net_mem_tab_active")
+NetMemTabActive/styles/hover_pressed = SubResource("sb_net_mem_tab_active")
+NetMemTabActive/styles/normal = SubResource("sb_net_mem_tab_active")
+NetMemTabActive/styles/pressed = SubResource("sb_net_mem_tab_active")
+NetMemTableHead/base_type = &"PanelContainer"
+NetMemTableHead/styles/panel = SubResource("sb_net_mem_table_head")
+NetMemTabs/base_type = &"HBoxContainer"
+NetMemTabs/constants/separation = 2
+NetMemTag1/base_type = &"NetMemLink"
+NetMemTag1/colors/font_color = Color(0.541, 0.541, 0.541, 1)
+NetMemTag1/colors/font_focus_color = Color(0.541, 0.541, 0.541, 1)
+NetMemTag1/font_sizes/font_size = 10
+NetMemTag1/fonts/font = ExtResource("14_pixelify_semi")
+NetMemTag2/base_type = &"NetMemLink"
+NetMemTag2/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTag2/colors/font_focus_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTag2/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTag3/base_type = &"NetMemLink"
+NetMemTag3/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTag3/colors/font_focus_color = Color(0.839, 0.839, 0.839, 1)
+NetMemTag3/colors/font_hover_color = Color(0.949, 0.949, 0.949, 1)
+NetMemTag3/font_sizes/font_size = 20
+NetMemTag3/fonts/font = ExtResource("14_pixelify_semi")
+NetMemTag4/base_type = &"NetMemLink"
+NetMemTag4/font_sizes/font_size = 30
+NetMemTag4/fonts/font = ExtResource("13_pixelify_bold")
+NetMemTight/base_type = &"VBoxContainer"
+NetMemTight/constants/separation = 2
+NetMemTile/base_type = &"PanelContainer"
+NetMemTile/styles/panel = SubResource("sb_net_mem_tile")
+NetMemTitle/base_type = &"NetMemHeading"
+NetMemTitle/font_sizes/font_size = 30
+NetMemToolbar/base_type = &"HBoxContainer"
+NetMemToolbar/constants/separation = 6
+NetMemWebBadge/base_type = &"PanelContainer"
+NetMemWebBadge/styles/panel = SubResource("sb_net_mem_web_badge")
+NetMemWebBadgeLeft/base_type = &"PanelContainer"
+NetMemWebBadgeLeft/styles/panel = SubResource("sb_net_mem_web_badge_left")
+NetMemWebBadgeRight/base_type = &"PanelContainer"
+NetMemWebBadgeRight/styles/panel = SubResource("sb_net_mem_web_badge_right")
+NetMemWebBadgeSub/base_type = &"NetMemWebBadgeText"
+NetMemWebBadgeSub/colors/font_color = Color(0.839, 0.839, 0.839, 1)
+NetMemWebBadgeText/base_type = &"Label"
+NetMemWebBadgeText/colors/font_color = Color(0.949, 0.949, 0.949, 1)
+NetMemWebBadgeText/font_sizes/font_size = 10
+NetMemWebBadgeText/fonts/font = ExtResource("13_pixelify_bold")
 NetMeta/base_type = &"Label"
 NetMeta/colors/font_color = Color(0.541, 0.541, 0.541, 1)
 NetMeta/font_sizes/font_size = 16

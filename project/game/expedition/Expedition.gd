@@ -273,6 +273,7 @@ func add_entity(scene: PackedScene, spawn_position: Vector2) -> Entity:
 # ---- Stakes ----
 
 func _begin_stakes() -> void:
+	PilotNet.memorial.current_site = get_site_name()
 	PlayerProgress.begin_expedition()
 	MechOS.set_equipment_customizable(false)
 	PauseMenu.quit_warning = QUIT_WARNING

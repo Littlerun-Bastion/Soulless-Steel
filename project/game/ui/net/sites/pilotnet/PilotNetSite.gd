@@ -14,6 +14,9 @@ const NO_POSTS := "(nothing here yet)"
 const ACCEPT := "accept"
 const ACCEPT_POST := "accept_post"
 const ABANDON := "abandon"
+## The In memoriam box: the Memorial Wall's newest records.
+const MEMORIAL_COUNT := 3
+const MEMORIAL_NAME := "Memorial Wall"
 
 
 static func url(page_path: String, page_query := {}) -> String:
@@ -67,8 +70,8 @@ static func teaser(post_data: Dictionary) -> String:
 
 # ---- pilots -------------------------------------------------------------------
 
-## Who's online: the player, the pilots met last, and regulars picked by the
-## day from the callsign pool.
+## Who's online: the player, the pilots met last, and regulars made by the
+## callsign generator from the day.
 static func online() -> Array:
 	var names := [PlayerProgress.get_callsign().to_upper()]
 	var met_names: Array = PilotNet.met.keys()
@@ -76,14 +79,15 @@ static func online() -> Array:
 	for callsign in met_names.slice(0, 4):
 		if not str(callsign) in names:
 			names.append(str(callsign))
-	var pool := LocalPilots.callsign_pool()
-	if not pool.is_empty():
-		var rng := RandomNumberGenerator.new()
-		rng.seed = ("online:%d" % PilotNet.day).hash()
-		for i in rng.randi_range(3, 6):
-			var callsign := str(pool[rng.randi_range(0, pool.size() - 1)])
-			if not callsign in names:
-				names.append(callsign)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = ("online:%d" % PilotNet.day).hash()
+	var taken := {}
+	for callsign in names:
+		taken[callsign] = true
+	for i in rng.randi_range(3, 6):
+		var callsign := CallsignGenerator.generate(rng, taken)
+		taken[callsign] = true
+		names.append(callsign)
 	return names
 
 
@@ -221,10 +225,27 @@ static func offer_title(template: Dictionary) -> String:
 			.replace("{item}", PilotNet.item_name(template))
 
 
-## "Reward: 300 CT   Reputation: +1   Posted: Day 2   By: KESTREL"
+## "Reward: 300 CT   Reputation: +1   Posted: 02/01/2035   By: KESTREL"
 static func gig_terms(gig: Dictionary) -> String:
-	return "Reward: %d CT   Reputation: +%d   Posted: Day %d   By: %s" % [int(gig.reward), int(gig.reputation),
-			int(gig.posted), str(gig.poster)]
+	return "Reward: %d CT   Reputation: +%d   Posted: %s   By: %s" % [int(gig.reward), int(gig.reputation),
+			PilotNet.short_date(int(gig.posted)), str(gig.poster)]
+
+
+## The In memoriam box's records: the Memorial Wall's newest.
+static func in_memoriam(count := MEMORIAL_COUNT) -> Array:
+	PilotNet.memorial.ensure_started()
+	return PilotNet.memorial.newest(count)
+
+
+## The Memorial Wall's record of a callsign (a profile or a met pilot that
+## was lost), {} for none.
+static func memorial_record(callsign: String) -> Dictionary:
+	return PilotNet.memorial.record_of(callsign)
+
+
+## "† Lost 15 Jan 2035", for the line that links a lost pilot to the Wall.
+static func lost_text(record: Dictionary) -> String:
+	return "† Lost %s" % PilotNet.long_date(int(record.get("day", 1)))
 
 
 ## "Reward: 300-600 CT   Reputation: +1"

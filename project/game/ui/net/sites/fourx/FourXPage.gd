@@ -78,8 +78,8 @@ func get_links() -> Array:
 func _markets() -> void:
 	_section = MARKETS
 	page_title = "FourX.net - Markets"
-	_add(BbsText.spread(BbsText.bright("MARKETS"), BbsText.dim("%d instruments · Day %d close" % [FourX.instruments().size(),
-			FourX.day()]), WIDTH))
+	_add(BbsText.spread(BbsText.bright("MARKETS"), BbsText.dim("%d instruments · %s close" % [FourX.instruments().size(),
+			PilotNet.short_date(FourX.day())]), WIDTH))
 	_add(BbsText.Seg.new())
 	_add(BbsText.bright("INDEXES"))
 	_add_all(_quote_table(FourX.instruments(FourX.INDEX_GROUP)))
@@ -132,8 +132,8 @@ func _group(group: String) -> void:
 	_section = group
 	var title := FourX.group_name(group)
 	page_title = "FourX.net - %s" % title.capitalize()
-	_add(BbsText.spread(BbsText.bright(title), BbsText.dim("%d instrument%s · Day %d close" % [members.size(),
-			"" if members.size() == 1 else "s", FourX.day()]), WIDTH))
+	_add(BbsText.spread(BbsText.bright(title), BbsText.dim("%d instrument%s · %s close" % [members.size(),
+			"" if members.size() == 1 else "s", PilotNet.short_date(FourX.day())]), WIDTH))
 	_add(BbsText.Seg.new())
 	members.sort_custom(func(a, b): return a.symbol < b.symbol)
 	_add_all(_quote_table(members))
@@ -153,7 +153,7 @@ func _quote(symbol: String) -> void:
 	var pct := float(shown.change_pct)
 	_add(BbsText.spread(BbsText.join([BbsText.plain("LAST "), BbsText.bright(FourX.format_price(float(shown.last))),
 			BbsText.plain("   "), BbsText.cell("%s (%s)" % [FourX.format_change(float(shown.change)), FourX.format_pct(pct)], 24,
-			_move_style(pct))]), BbsText.dim("DAY %d CLOSE" % FourX.day()), WIDTH))
+			_move_style(pct))]), BbsText.dim("%s CLOSE" % PilotNet.short_date(FourX.day())), WIDTH))
 	_add(BbsText.Seg.new())
 	_add_all(BbsText.box("30-DAY CHART", WIDTH, _chart(shown.prices)))
 	_add(BbsText.Seg.new())
@@ -201,7 +201,7 @@ func _chart(prices: Array) -> Array:
 	var axis_width := prices.size() * CHART_DAY
 	lines.append(BbsText.dim(" ".repeat(CHART_LABEL + 1) + "+" + "-".repeat(axis_width)))
 	var start := "%d DAYS AGO" % (prices.size() - 1)
-	var end := "TODAY (DAY %d)" % FourX.day()
+	var end := "TODAY (%s)" % PilotNet.short_date(FourX.day())
 	lines.append(BbsText.dim(" ".repeat(CHART_LABEL + 2) + start + " ".repeat(maxi(axis_width - start.length() - end.length(), 1)) + end))
 	return lines
 
@@ -293,7 +293,7 @@ func _build(search_text: String) -> void:
 	column.add_child(header)
 	column.add_child(_lookup_row(search_text))
 	screen = _screen([BbsText.rule(WIDTH)] + _lines + [BbsText.Seg.new(), BbsText.rule(WIDTH),
-			BbsText.spread(BbsText.dim(NOTICE), BbsText.dim("Quotes: Day %d close" % FourX.day()), WIDTH)])
+			BbsText.spread(BbsText.dim(NOTICE), BbsText.dim("Quotes: %s close" % PilotNet.short_date(FourX.day())), WIDTH)])
 	column.add_child(screen)
 
 
@@ -307,7 +307,7 @@ func _screen(lines: Array) -> RichTextLabel:
 
 func _header_lines() -> Array:
 	var title := " %s · %s" % [NAME, TAGLINE]
-	var stamp := "DAY %d CLOSE " % FourX.day()
+	var stamp := "%s CLOSE " % PilotNet.short_date(FourX.day())
 	var bar := title + " ".repeat(maxi(WIDTH - title.length() - stamp.length(), 1)) + stamp
 	var keys := [["F1", MARKETS, NetSites.fourx_url()]]
 	for group in FourX.groups():

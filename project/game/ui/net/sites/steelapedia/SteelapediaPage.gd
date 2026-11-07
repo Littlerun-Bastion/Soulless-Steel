@@ -14,7 +14,9 @@ extends NetPage
 ##                                 today's featured picture (a part, one a
 ##                                 session), the sister sites
 ##   /?action=talk                 the Main Page's discussion
-##   /wiki/<slug>                  an article: title, infobox (with a part's
+##   /wiki/<slug>                  an article: title (and under it, for a
+##                                 lost pilot, a link to its Memorial Wall
+##                                 record), infobox (with a part's
 ##                                 picture), contents (three or more sections),
 ##                                 sections with [edit] links, Links, See also,
 ##                                 categories, last modified
@@ -146,6 +148,14 @@ static func featured():
 	return chosen
 
 
+## The Memorial Wall's record of a pilot article (one in "pilots", its title
+## the callsign), {} for none or another kind of article.
+static func memorial_record(entry: Dictionary) -> Dictionary:
+	if not "pilots" in entry.get("categories", []):
+		return {}
+	return PilotNetSite.memorial_record(str(entry.get("title", "")))
+
+
 ## The Main Page's featured picture: a listed part whose picture fits
 ## PICTURE_BOX, picked once a session; [] when none does.
 static func featured_picture() -> Array:
@@ -274,7 +284,7 @@ func _footer() -> PanelContainer:
 	lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var texts := [LICENSE, FOOTER_LINKS]
 	if _modified > 0:
-		texts.push_front("This page was last modified on Day %d." % _modified)
+		texts.push_front("This page was last modified on %s." % PilotNet.long_date(_modified))
 	for text in texts:
 		var label := NetUI.text(text, &"NetWikiMeta", true)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -369,7 +379,7 @@ func _main_page() -> void:
 			else NetUI.text("Nothing in the news.", &"NetWikiMeta")))
 	var fresh := []
 	for entry in Steelapedia.recent_articles(NEW_COUNT):
-		fresh.append("* [[%s]] (Day %d)" % [entry.slug, Steelapedia.last_modified_day(entry.slug)])
+		fresh.append("* [[%s]] (%s)" % [entry.slug, PilotNet.long_date(Steelapedia.last_modified_day(entry.slug))])
 	right.add_child(_mp_box("New articles", _rich(_markup("\n".join(fresh))) if not fresh.is_empty()
 			else NetUI.text("No articles yet.", &"NetWikiMeta")))
 
@@ -448,6 +458,12 @@ func _article() -> void:
 	page_title = "Steelapedia - %s" % article.title
 	_title(article.title)
 	main.add_child(NetUI.text(FROM, &"NetWikiMeta"))
+	var lost := memorial_record(article)
+	if not lost.is_empty():
+		var line := _rich(_markup("%s — [[net:%s|%s]]" % [PilotNetSite.lost_text(lost), NetSites.memorial_record_url(int(lost.id)),
+				PilotNetSite.MEMORIAL_NAME]))
+		line.set_meta("memorial", int(lost.id))
+		main.add_child(line)
 	var columns := NetUI.hbox(&"NetWikiColumns")
 	main.add_child(columns)
 	var body := NetUI.vbox(&"NetWikiStack")
@@ -670,10 +686,11 @@ func _history() -> void:
 	main.add_child(NetUI.text("(cur) = this version, (last) = the one before", &"NetWikiMeta"))
 	var lines := []
 	if article.generated:
-		lines.append("* (cur) (last) '''Day 1''' . . %s (page made from the catalogue)" % EDITOR)
+		lines.append("* (cur) (last) '''%s''' . . %s (page made from the catalogue)" % [PilotNet.long_date(1), EDITOR])
 	if str(article.file) != "":
 		var day := Steelapedia.last_modified_day(article.slug)
-		lines.push_front("* (cur) (last) '''Day %d''' . . Steelapedia (%s)" % [day, "text added" if article.generated else "page created"])
+		lines.push_front("* (cur) (last) '''%s''' . . Steelapedia (%s)" % [PilotNet.long_date(day),
+				"text added" if article.generated else "page created"])
 	main.add_child(_rich(_markup("\n".join(lines))))
 
 

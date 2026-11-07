@@ -2,16 +2,6 @@
 	"_about": "Sample pilot.net posts, for testing only: delete this file when the real posts exist. Every post's title starts with [SAMPLE] and its text is Lorem Ipsum. The post fields are in database/pilotnet/README.md.",
 	"posts": [
 		{
-			"id": "sample_new_look",
-			"board": "news",
-			"author": "SYSOP",
-			"title": "[SAMPLE] A post that comes with the new look",
-			"body": "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat.\n\nTemporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.",
-			"requires": {"flags": {"pilotnet_new_look": true}},
-			"pinned": true,
-			"order": -1
-		},
-		{
 			"id": "sample_news_pinned",
 			"board": "news",
 			"author": "SYSOP",

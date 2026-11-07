@@ -14,16 +14,19 @@ const STORE_DOMAIN := "amazing.com"
 const PILOTNET_DOMAIN := "pilot.net"
 const STEELAPEDIA_DOMAIN := "steelapedia.net"
 const FOURX_DOMAIN := "fourx.net"
+const MEMORIAL_DOMAIN := "memorialwall.org"
 ## The built sites: domain -> name (build() makes their pages).
 const SITES := {
 	STORE_DOMAIN: "amazing.com",
 	PILOTNET_DOMAIN: "pilot.net",
 	STEELAPEDIA_DOMAIN: "Steelapedia",
 	FOURX_DOMAIN: "FourX.net",
+	MEMORIAL_DOMAIN: "The Memorial Wall",
 }
 ## Sites still to build: domain -> name (they show Under Construction).
 const PLANNED := {}
-## The favorites row: [label, domain].
+## The favorites row: [label, domain]. The Memorial Wall is left off: pilots
+## find it from pilot.net.
 const FAVORITES := [
 	["pilot.net", "pilot.net"],
 	["amazing.com", "amazing.com"],
@@ -126,6 +129,8 @@ static func build(domain: String) -> NetPage:
 		page = SteelapediaPage.new()
 	elif domain == FOURX_DOMAIN:
 		page = FourXPage.new()
+	elif domain == MEMORIAL_DOMAIN:
+		page = MemorialWallPage.new()
 	elif kind == BUILT:
 		page = AmazingPage.new()
 	elif kind == PLANNED_SITE:
@@ -172,3 +177,14 @@ static func fourx_url(path := "/", query := {}) -> String:
 ## An instrument's quote page.
 static func quote_url(symbol: String) -> String:
 	return fourx_url("/q/" + symbol)
+
+
+# ---- The Memorial Wall's addresses ----------------------------------------
+
+static func memorial_url(path := "/", query := {}) -> String:
+	return make_url(MEMORIAL_DOMAIN, path, query)
+
+
+## A Memorial Wall record's page.
+static func memorial_record_url(id: int) -> String:
+	return memorial_url("/pilot/%d" % id)

@@ -5,9 +5,10 @@ extends TestSuite
 # NPCs (nobody can die: every mecha keeps its Flag grace), runs MEASURE_SECONDS
 # with the profiler on, and prints the mean and worst milliseconds per frame
 # of every instrumented system beside the engine's process and physics
-# totals; and the sight circle's costs with the camera panned (see
-# _test_sight_circle). The numbers are headless (no rendering), so they say
-# nothing about the GPU side. It never fails on a timing.
+# totals; the sight circle's costs with the camera panned (see
+# _test_sight_circle); and the combat effects made with every NPC round the
+# player (_test_combat_effects). The numbers are headless (no rendering), so
+# they say nothing about the GPU side. It never fails on a timing.
 
 const EXPEDITION := preload("res://game/expedition/Expedition.tscn")
 const NPC_COUNT := 12
@@ -28,6 +29,75 @@ func run_tests() -> void:
 	await case("a frame's script time by system on Helwan", _test_probe)
 	await case("the engine's step with twelve scripted walkers", _test_walkers)
 	await case("the sight circle: senses, streaming and shadows with the camera panned", _test_sight_circle)
+	await case("combat effects with every NPC round the player", _test_combat_effects)
+
+
+## The combat effects case: every NPC placed COMBAT_RING_MIN..MAX px round
+## the player for MEASURE_SECONDS, so they fight. Prints the rounds, muzzle
+## flashes, impacts and trails made per second and how many of them were off
+## screen when made, the live rounds and effects, and the profiler's "shots",
+## "impacts" and "trails" (CombatScene) beside the physics total.
+const COMBAT_RING_MIN := 1200.0
+const COMBAT_RING_MAX := 2500.0
+
+
+func _test_combat_effects() -> void:
+	var saved_skip_intro = Debug.debug_settings.get("skip_intro")
+	await _start()
+	var player = _scene.player
+	var i := 0
+	var enemies := _enemies()
+	# NPCs hold their fire at a mecha in the Flag's grace (Enemy.holds_fire_at):
+	# the player keeps it, the NPCs lose it and fight each other.
+	for enemy in enemies:
+		var offset := Vector2.from_angle(TAU * i / enemies.size()) * randf_range(COMBAT_RING_MIN, COMBAT_RING_MAX)
+		enemy.global_position = _scene._clear_spawn_spot(player.global_position + offset)
+		enemy.flag_grace = 0.0
+		i += 1
+	await wait_seconds(2.0)
+	var made := {}
+	var off_screen := {}
+	var containers := {"rounds": _scene.Projectiles, "flashes": _scene.Flashes,
+			"impacts": _scene.Explosions, "trails": _scene.Trails}
+	for kind in containers:
+		made[kind] = 0
+		off_screen[kind] = 0
+		containers[kind].child_entered_tree.connect(func(node):
+			made[kind] += 1
+			if node is Node2D and not MapSenses.screen_rect(player).has_point(node.global_position):
+				off_screen[kind] += 1)
+	FrameProfiler.reset()
+	FrameProfiler.enabled = true
+	var physics := PackedFloat32Array()
+	var live := {}
+	for kind in containers:
+		live[kind] = PackedFloat32Array()
+	var started := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - started < int(MEASURE_SECONDS * 1000.0):
+		await get_tree().process_frame
+		physics.append(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0)
+		for kind in containers:
+			live[kind].append(containers[kind].get_child_count())
+	FrameProfiler.enabled = false
+	var lines := PackedStringArray(["[FrameCostProbe] combat, %d NPCs %.0f-%.0f px round the player, %.0f s: physics %s (ms per frame: mean / median / 95th pc / worst)" % [
+			enemies.size(), COMBAT_RING_MIN, COMBAT_RING_MAX, MEASURE_SECONDS, _stats(physics)]])
+	lines.append("  %d of the %d NPCs still standing at the end" % [_enemies().size(), enemies.size()])
+	for kind in containers:
+		var counts: PackedFloat32Array = live[kind]
+		counts.sort()
+		lines.append("  %-8s made %6.1f/s, %3.0f%% off screen when made; live: median %.0f, most %.0f" % [
+				kind, made[kind] / MEASURE_SECONDS, 100.0 * off_screen[kind] / maxi(made[kind], 1),
+				counts[counts.size() / 2], counts[counts.size() - 1]])
+	for row in FrameProfiler.report():
+		if row.key in ["shots", "impacts", "trails"]:
+			lines.append("  %-8s mean %6.3f ms  worst %6.2f ms  calls/frame %5.2f" % [row.key, row.mean_ms, row.worst_ms, row.calls_per_frame])
+	print("\n".join(lines))
+	check(FrameProfiler.frames() > 0, "frames were profiled")
+	FrameProfiler.reset()
+	_scene.queue_free()
+	await wait_frames(2)
+	_scene = null
+	Debug.debug_settings["skip_intro"] = saved_skip_intro
 
 
 ## The sight circle case: every head's visual_range set to each of

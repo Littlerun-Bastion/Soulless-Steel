@@ -121,6 +121,7 @@ func _ready():
 	flag_raised.connect(func(_m, voluntary, _by): AICombatLog.record_flag("raised_voluntary" if voluntary else "raised_emergency"))
 
 	steering_setup()
+	_setup_light_shadows()
 
 	logic = LOGIC.new()
 	if Debug.get_setting("ai_behaviour"):
@@ -141,6 +142,8 @@ func _ready():
 
 
 func _physics_process(dt):
+	if (Engine.get_physics_frames() + _think_offset) % LIGHT_SHADOW_INTERVAL == 0:
+		update_light_shadows()
 	if paused or is_dead:
 		return
 	# Physics LOD (see lod_tier): a far NPC runs its whole step, the Mecha
@@ -1934,6 +1937,51 @@ func wants_visuals() -> bool:
 	if is_on_screen():
 		return true
 	return (Engine.get_physics_frames() + _think_offset) % VISUALS_FAR_INTERVAL == 0
+
+
+## The NPC's illuminator (MechaLight) shadows walls with the cheaper PCF5
+## filter (the player's own light keeps PCF13), and casts shadows only while
+## its glow could be on screen: the light within its drawn glow's radius (its
+## texture's half-diagonal at texture_scale, well past the cone's reach in
+## the senses, Illumination.reach; the scale follows the head's visual range)
+## plus LIGHT_SHADOW_BUFFER px of the screen, checked every
+## LIGHT_SHADOW_INTERVAL frames. Further out its shadows change no pixel. What
+## the light lets anyone see is the senses' (MapSenses), which never read its
+## shadows.
+const LIGHT_SHADOW_INTERVAL := 10
+const LIGHT_SHADOW_BUFFER := 1000.0
+
+
+func _setup_light_shadows() -> void:
+	var light := Illumination.light_of(self)
+	if light:
+		light.shadow_filter = Light2D.SHADOW_FILTER_PCF5
+
+
+## How far (px) from the light its glow is drawn: its texture's half-diagonal
+## at its current scale.
+func light_glow_radius() -> float:
+	var light := Illumination.light_of(self)
+	if light == null or light.texture == null:
+		return 0.0
+	return (light.texture.get_size() * light.texture_scale * 0.5).length()
+
+
+## Whether the light's glow could reach the screen (see LIGHT_SHADOW_INTERVAL).
+func light_near_screen() -> bool:
+	var light := Illumination.light_of(self)
+	if light == null or not is_inside_tree():
+		return false
+	return MapSenses.screen_rect(self, light_glow_radius() + LIGHT_SHADOW_BUFFER).has_point(light.global_position)
+
+
+func update_light_shadows() -> void:
+	var light := Illumination.light_of(self)
+	if light == null:
+		return
+	var wanted := light_near_screen()
+	if light.shadow_enabled != wanted:
+		light.shadow_enabled = wanted
 
 
 #-------- Context Steering

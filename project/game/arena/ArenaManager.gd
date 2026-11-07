@@ -7,6 +7,9 @@ const MIL_GRADE_PAYOUT = 1000000.0
 const SOA_GRADE_PAYOUT = 10000000.0
 const UNDERGROUND_PAYOUT_MODIFIER = 1.5
 
+# Every map in MAPS_PATH by name: its scene's path. A map is loaded only when
+# it's asked for (get_map), so the maps not being played hold no memory; the
+# one set to load next starts loading in the background (set_map_to_load).
 @onready var MAPS = {}
 
 var map_to_load = false
@@ -36,13 +39,15 @@ func setup_maps() -> void:
 		if file_name.ends_with(".tscn") or file_name.ends_with(".tscn.remap"):
 			var key = file_name.replace(".tscn.remap", "").replace(".tscn", "")
 			if not MAPS.has(key):
-				MAPS[key] = load(MAPS_PATH + file_name.replace(".remap", ""))
+				MAPS[key] = MAPS_PATH + file_name.replace(".remap", "")
 		file_name = dir.get_next()
 	dir.list_dir_end()
 
 
 func set_map_to_load(map_name):
 	map_to_load = map_name
+	if MAPS.has(map_name):
+		ResourceLoader.load_threaded_request(MAPS[map_name])
 
 
 func get_current_map():
@@ -54,7 +59,14 @@ func get_current_map():
 
 func get_map(map_name):
 	assert(MAPS.has(map_name),"Not a valid map name: " + str(map_name))
-	return MAPS[map_name].instantiate()
+	var path: String = MAPS[map_name]
+	var scene: PackedScene = null
+	# Started by set_map_to_load: wait for that load (most of it is done by now).
+	if ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		scene = ResourceLoader.load_threaded_get(path)
+	if scene == null:
+		scene = load(path)
+	return scene.instantiate()
 	
 func refresh_exhibition():
 	pass #disabled rn due to testing

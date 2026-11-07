@@ -294,6 +294,13 @@ func _on_mecha_create_projectile(mecha, args, weapon) -> void:
 			if not is_instance_valid(self):
 				return
 
+	var profile_start := FrameProfiler.start()
+	_spawn_projectile(mecha, args, weapon)
+	FrameProfiler.add("shots", profile_start)
+
+
+# A shot's round and its muzzle flash (_on_mecha_create_projectile).
+func _spawn_projectile(mecha, args, weapon) -> void:
 	var data = ProjectileManager.create(mecha, args, weapon)
 	if data and data.create_node:
 		Projectiles.add_child(data.node)
@@ -321,6 +328,7 @@ func _on_mecha_create_casing(args) -> void:
 
 func _on_bullet_impact(projectile, effect, clear, body) -> void:
 	if effect:
+		var profile_start := FrameProfiler.start()
 		_evict_oldest_if_full(Explosions, MAX_ACTIVE_EXPLOSIONS)
 		var impact_effect = ProjectileManager.create_explosion(projectile, effect)
 		var mecha_hit = false
@@ -328,15 +336,18 @@ func _on_bullet_impact(projectile, effect, clear, body) -> void:
 			mecha_hit = true
 		impact_effect.setup(projectile.impact_size, projectile.global_rotation, mecha_hit, projectile.shield_hit)
 		Explosions.add_child(impact_effect)
+		FrameProfiler.add("impacts", profile_start)
 	if clear:
 		projectile.queue_free()
 
 
 func _on_create_trail(projectile, trail) -> void:
 	if trail:
+		var profile_start := FrameProfiler.start()
 		_evict_oldest_if_full(Trails, MAX_ACTIVE_TRAILS)
 		var created_trail = ProjectileManager.create_trail(projectile, trail)
 		Trails.add_child(created_trail)
+		FrameProfiler.add("trails", profile_start)
 
 
 # ---- Damage, downs, deaths ----

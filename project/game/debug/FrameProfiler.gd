@@ -20,10 +20,12 @@ extends RefCounted
 ## (BuildingField), "vehicles" (VehicleField), "heat_trails", "blood",
 ## "devices", "entities" (Entity._physics_process), "sand_bodies" (a sand
 ## creature's animation, in _process), "hud" (PlayerHUD), "map_streamer",
-## "prop_layers", "overhead_paths". An indented key is part of the key
-## above it, so the keys' sum counts it twice. A system's own callback time
-## only; what the engine does between callbacks (the physics step,
-## navigation, rendering) is the frame total less the sum.
+## "prop_layers", "overhead_paths", and in CombatScene "shots" (a round
+## and its muzzle flash made), "impacts" (an impact effect made) and
+## "trails" (a trail made). An indented key is part of the key above it, so
+## the keys' sum counts it twice. A system's own callback time only; what
+## the engine does between callbacks (the physics step, navigation,
+## rendering) is the frame total less the sum.
 ##
 ## Cost when off: one static bool read per instrumented callback.
 

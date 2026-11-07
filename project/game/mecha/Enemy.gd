@@ -186,9 +186,14 @@ func _physics_frame(dt):
 	if scripted:
 		contacts.advance(dt)
 	elif thinking:
-		var senses_start := FrameProfiler.start()
-		update_senses(think_dt)
-		FrameProfiler.add("npc_senses", senses_start)
+		# Senses on sensing frames only (is_sensing_frame), over the time
+		# since they last ran.
+		_sense_dt += think_dt
+		if is_sensing_frame():
+			var senses_start := FrameProfiler.start()
+			update_senses(_sense_dt)
+			_sense_dt = 0.0
+			FrameProfiler.add("npc_senses", senses_start)
 		positioning.tick(think_dt)
 		# Squadmates' callouts that are due land now.
 		if knowledge.squad != null:
@@ -1061,6 +1066,7 @@ func _sight_to_blocked(target) -> bool:
 
 
 func update_senses(dt):
+	_has_sensed = true
 	contacts.advance(dt)
 	knowledge.age(dt)
 
@@ -1908,6 +1914,26 @@ func is_thinking_frame() -> bool:
 	var steps := FAR_THINK_STEPS if tier == 1 else VERY_FAR_THINK_STEPS
 	var step_index := floori(float(Engine.get_physics_frames() + _think_offset) / interval)
 	return step_index % steps == 0
+
+
+## A near NPC (LOD tier 0) thinks every frame but senses (update_senses) on
+## every NEAR_SENSE_INTERVAL-th, its own frames set by _think_offset so the
+## near NPCs share them out; between, it acts on what it last sensed (at
+## most a frame old). Its senses take the time since they last ran, so its
+## memory ages as before. A further NPC thinks less often and senses on
+## every thinking frame. Every NPC senses on its first think: it never acts
+## before it has looked (a new one's light, on until its behaviour sets it,
+## shows it what is ahead then).
+const NEAR_SENSE_INTERVAL := 2
+
+var _sense_dt := 0.0
+var _has_sensed := false
+
+
+func is_sensing_frame() -> bool:
+	if not _has_sensed or lod_tier() != 0:
+		return true
+	return (Engine.get_physics_frames() + _think_offset) % NEAR_SENSE_INTERVAL == 0
 
 
 static func think_interval(near_player: bool) -> int:

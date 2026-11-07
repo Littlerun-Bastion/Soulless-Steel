@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/NpcSenseRateTest.gd" id="1_senserate"]
+
+[node name="NpcSenseRateTest" type="Node"]
+script = ExtResource("1_senserate")

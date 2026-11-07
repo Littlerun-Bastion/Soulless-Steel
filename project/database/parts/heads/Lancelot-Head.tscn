@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("4")
 part_name = "Lancelot-Head"
+frame = "Lancelot"
 price = 1000.0
 tech_tier = 3
 composition = Dictionary[String, int]({"silicon": 7, "copper": 4, "steel": 2, "neural_biomatter": 2, "avidendrites": 1})
@@ -22,7 +23,6 @@ image = ExtResource("6")
 heatmap = ExtResource("3_8y55w")
 accuracy_modifier = 1.0
 visual_range = 150
-health = 750
 weight = 2.7
 
 [node name="Sub" type="Sprite2D" parent="."]

@@ -59,7 +59,7 @@ func setup(mecha, weapon_ref, core, _side):
 	if data.is_melee:
 		add_child(weapon_ref.get_attack_animation())
 		melee_anim = $AttackAnimation
-		melee_damage = weapon_ref.damage
+		melee_damage = weapon_ref.melee_damage
 		melee_knockback = weapon_ref.melee_knockback
 	else:
 		if has_node("AttackAnimation"):

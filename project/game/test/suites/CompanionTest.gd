@@ -386,7 +386,7 @@ func _test_rat() -> void:
 	check(not rat.would_betray_player(), "a whole player with another companion about is safe")
 	squad.remove(mate)
 	check(not rat.would_betray_player(), "alone, but whole: still safe")
-	player.hp = player.max_hp * 0.3
+	wear_down(player)
 	# The health it sees refreshes every half second of its own time.
 	rat.knowledge.contacts.advance(1.0)
 	rat.knowledge.see(player, player.global_position)

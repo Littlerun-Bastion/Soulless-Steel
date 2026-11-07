@@ -245,7 +245,6 @@ func see(body, position: Vector2, velocity := Vector2.ZERO) -> Dictionary:
 		if contacts.now - float(contact.get("health_time", -INF)) >= HEALTH_REFRESH:
 			contact.health_time = contacts.now
 			contact.health = _structural_health(body)
-			contact.hp_fraction = clampf(float(body.hp) / float(body.max_hp), 0.0, 1.0) if body.max_hp > 0 else 1.0
 		var flag := flag_state_of(body)
 		var before: int = int(contact.get("flag", FLAG_NONE))
 		if flag != before:
@@ -365,14 +364,6 @@ func health_of(body) -> float:
 	if contact.is_empty():
 		return 1.0
 	return float(contact.health)
-
-
-## The hp fraction `body` had when last seen.
-func hp_fraction_of(body) -> float:
-	var contact := best(body)
-	if contact.is_empty():
-		return 1.0
-	return float(contact.hp_fraction)
 
 
 ## The living bodies in sight right now.

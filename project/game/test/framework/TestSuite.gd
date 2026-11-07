@@ -149,6 +149,21 @@ func wait_until(condition: Callable, timeout := 5.0) -> bool:
 	return true
 
 
+# ---- Set-ups ----
+
+## Leaves `mecha` badly hurt without destroying anything: every armour pip
+## gone and each component down to a third of its hp (at least 1), about a
+## quarter of its structural health (NPCKnowledge._structural_health).
+func wear_down(mecha) -> void:
+	for part_name in mecha.armor:
+		for facing in mecha.armor[part_name]:
+			mecha.armor[part_name][facing].pips = 0
+	for part_name in mecha.components:
+		for comp_name in mecha.components[part_name]:
+			var comp: Dictionary = mecha.components[part_name][comp_name]
+			comp.hp = maxi(floori(comp.max_hp / 3.0), 1)
+
+
 # ---- Internals ----
 
 func _fail(message: String, where := "") -> void:

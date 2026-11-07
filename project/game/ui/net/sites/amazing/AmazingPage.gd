@@ -7,14 +7,20 @@ extends NetPage
 ##   /                         This Week's Picks (chosen once a session) and a featured part
 ##   /hardware /wetware /weapons  the group's categories with their item counts
 ##   /c/<type>?sort=           a category table (sort: price, name, maker)
-##   /p/<type>/<id>            a product page, compared with what's fitted
+##   /p/<type>/<id>            a product page: the part's components, related
+##                             products, and the part compared with what's fitted
 ##   /search?q=                search results
 ##   /makers  /maker/<id>      makers A-Z, one maker's parts by category
 ##   /cart  /checkout  /receipt   buying (Store.checkout)
 ##   /guestbook                under construction
 ## The hit counter starts at VISITOR_START and goes up by one each time a
 ## page opens (not saved). A part row or a product page right-clicks as a
-## store "part" (NetPage).
+## store "part" (NetPage). Part rows start with a thumbnail that links to
+## the part's page.
+##
+## Related products: the rest of a Hardware part's frame (Store.frame_mates),
+## or, for any other part and for one alone in its frame, the parts with the
+## most tags in common (Store.similar).
 
 const LOGO := "amazing.com"
 const TAGLINE := "the region's general store, est. 1994"
@@ -24,8 +30,25 @@ const PICKS_MAX := 6
 const LEFT_WIDTH := 190
 const SPRITE_BOX := Vector2(360, 420)
 const FEATURE_BOX := Vector2(210, 210)
+const THUMB_BOX := Vector2(48, 48)
+## The thumbnail column: the box and a gap before the item's name.
+const THUMB_COLUMN := 60
 const OUT_OF_STOCK := "OUT OF STOCK. Check back after the next shipment."
 const NOTHING_FITTED := "Nothing fitted to compare."
+const RELATED_FRAME := "The rest of the %s frame:"
+const RELATED_SIMILAR := "Parts like this one:"
+## The line over a COMPONENTS table, for parts whose components sit
+## somewhere other than the part itself.
+const COMPONENT_PLACES := {
+	"shoulders": "Each shoulder has these.",
+	"generator": "Fitted in the core.",
+	"chipset": "Fitted in the core.",
+	"thruster": "Fitted in the core.",
+	"arm_weapon": "Fitted in the shoulder on its side.",
+	"shoulder_weapon": "Fitted in the core.",
+}
+## Component tags worth a word in the Notes column (Mecha.component_destroyed).
+const COMPONENT_NOTES := {"critical": "Critical", "shield": "Shield", "mobility": "Mobility", "weapon": "Weapon"}
 const TABS := [["Home", "/"], ["Hardware", "/hardware"], ["Wetware", "/wetware"],
 		["Weapons", "/weapons"], ["Makers A-Z", "/makers"]]
 const TAB_CART := 5
@@ -176,7 +199,6 @@ func _left_column() -> VBoxContainer:
 		link.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		links.add_child(link)
 	column.add_child(NetUI.box("SHOP BY PART", NetUI.panel(&"NetBoxBody", links)))
-	column.add_child(NetUI.construction(["UNDER CONSTRUCTION", "Mil-Grade Imports"]))
 	return column
 
 
@@ -348,7 +370,6 @@ func _product(part_type: String, part_id: String) -> void:
 	var facts := NetUI.vbox(&"NetTightStack")
 	facts.add_child(_fact("Price", "%d CT" % Store.price(part_type, part_id)))
 	facts.add_child(_fact("Part", Store.type_name(part_type)))
-	facts.add_child(_fact("Tech tier", _tier(part)))
 	var item_size = part.get("item_size")
 	if item_size is Array and item_size.size() >= 2:
 		facts.add_child(_fact("Size", "%d × %d" % [int(item_size[0]), int(item_size[1])]))
@@ -365,8 +386,12 @@ func _product(part_type: String, part_id: String) -> void:
 	links.add_child(NetUI.text("|", &"NetMeta"))
 	links.add_child(NetUI.link(self, "Visit maker's site", Manufacturers.domain_of(Store.maker_of(part_type, part_id))))
 	info.add_child(links)
+	var components := _components(part_type, part)
+	if components != null:
+		info.add_child(components)
 	top.add_child(info)
 	main.add_child(top)
+	_related(part_type, part_id)
 
 	main.add_child(NetUI.rule())
 	main.add_child(NetUI.text("COMPARED WITH WHAT YOU HAVE FITTED", &"NetBodyBright"))
@@ -399,11 +424,12 @@ func _cart() -> void:
 		var rows := []
 		for i in Store.cart.size():
 			var entry: Array = Store.cart[i]
-			rows.append([NetUI.link(self, Store.part_name(entry[0], entry[1]), NetSites.product_url(entry[0], entry[1])),
+			rows.append([_thumb_link(entry[0], entry[1]),
+					NetUI.link(self, Store.part_name(entry[0], entry[1]), NetSites.product_url(entry[0], entry[1])),
 					NetUI.text(Store.type_name(entry[0]), &"NetMeta"),
 					NetUI.text("%d CT" % Store.price(entry[0], entry[1])),
 					_remove_link(i)])
-		var table := NetUI.table([{"title": "Item"}, {"title": "Part", "width": 170},
+		var table := NetUI.table([{"title": "", "width": THUMB_COLUMN}, {"title": "Item"}, {"title": "Part", "width": 170},
 				{"title": "Price", "width": 110, "align": "right"}, {"title": "", "width": 100, "align": "right"}], rows)
 		var table_rows := NetUI.table_rows(table)
 		for i in Store.cart.size():
@@ -524,26 +550,26 @@ func _fill_compare(part_type: String, part_id: String) -> void:
 
 # ---- pieces -----------------------------------------------------------------
 
-## A table of parts: Item, (Part,) Maker, Tier, Price and Add to cart. Each
-## row right-clicks as its part.
+## A table of parts: a thumbnail, Item, (Part,) Maker, Price and Add to
+## cart. Each row right-clicks as its part.
 func _part_table(entries: Array, with_type: bool) -> PanelContainer:
-	var columns := [{"title": "Item"}]
+	var columns := [{"title": "", "width": THUMB_COLUMN}, {"title": "Item"}]
 	if with_type:
 		columns.append({"title": "Part", "width": 160})
-	columns.append_array([{"title": "Maker", "width": 150}, {"title": "Tier", "width": 60},
+	columns.append_array([{"title": "Maker", "width": 150},
 			{"title": "Price", "width": 100, "align": "right"}, {"title": "", "width": 130, "align": "right"}])
 	var rows := []
 	for entry in entries:
 		var part_type: String = entry[0]
 		var part_id: String = entry[1]
 		var maker := Store.maker_of(part_type, part_id)
-		var cells := [NetUI.link(self, Store.part_name(part_type, part_id), NetSites.product_url(part_type, part_id))]
+		var cells := [_thumb_link(part_type, part_id),
+				NetUI.link(self, Store.part_name(part_type, part_id), NetSites.product_url(part_type, part_id))]
 		if with_type:
 			cells.append(NetUI.text(Store.type_name(part_type), &"NetMeta"))
 		var buy := NetUI.button("Add to cart")
 		buy.pressed.connect(_add_to_cart.bind(part_type, part_id))
 		cells.append_array([NetUI.link(self, Manufacturers.short_name(maker), NetSites.maker_url(maker)),
-				NetUI.text(_tier(Store.get_part(part_type, part_id)), &"NetMeta"),
 				NetUI.text("%d CT" % Store.price(part_type, part_id)), buy])
 		rows.append(cells)
 	var table := NetUI.table(columns, rows)
@@ -551,6 +577,64 @@ func _part_table(entries: Array, with_type: bool) -> PanelContainer:
 	for i in entries.size():
 		table_rows[i + 1].set_meta("net_part", [str(entries[i][0]), str(entries[i][1])])
 	return table
+
+
+# The part's thumbnail, linking to its page.
+func _thumb_link(part_type: String, part_id: String) -> PanelContainer:
+	var part := Store.get_part(part_type, part_id)
+	var thumb := NetUI.thumbnail(part.get("image") if part != null else null, THUMB_BOX)
+	NetUI.image_link(self, thumb, NetSites.product_url(part_type, part_id))
+	return thumb
+
+
+# RELATED PRODUCTS under a product: the rest of its frame, else similar parts
+# (see the header). Nothing when there are none.
+func _related(part_type: String, part_id: String) -> void:
+	var entries := Store.frame_mates(part_type, part_id)
+	var line := RELATED_FRAME % Store.frame_of(part_type, part_id)
+	if entries.is_empty():
+		entries = Store.similar(part_type, part_id)
+		line = RELATED_SIMILAR
+	if entries.is_empty():
+		return
+	main.add_child(NetUI.rule())
+	main.add_child(NetUI.text("RELATED PRODUCTS", &"NetBodyBright"))
+	main.add_child(NetUI.text(line, &"NetMeta"))
+	var table := _part_table(entries, true)
+	table.set_meta("related", entries)
+	main.add_child(table)
+
+
+# COMPONENTS: what the part brings to the mecha (Mecha.part_components), one
+# row each with its pips, inside or outside, and what its tags mean; null for
+# a part that brings none.
+func _components(part_type: String, part) -> Control:
+	var components: Dictionary = Mecha.part_components(part_type, part)
+	if components.is_empty():
+		return null
+	var box := NetUI.vbox(&"NetTightStack")
+	box.set_meta("components", components.keys())
+	box.add_child(NetUI.text("COMPONENTS", &"NetBodyBright"))
+	if COMPONENT_PLACES.has(part_type):
+		box.add_child(NetUI.text(COMPONENT_PLACES[part_type], &"NetMeta"))
+	var rows := []
+	for component_name in components:
+		var component: Dictionary = components[component_name]
+		var notes := []
+		for tag in component.tags:
+			if COMPONENT_NOTES.has(tag):
+				notes.append(COMPONENT_NOTES[tag])
+		rows.append([component_label(component_name), str(int(component.max_hp)),
+				"External" if "external" in component.tags else "Internal", ", ".join(notes)])
+	box.add_child(NetUI.table([{"title": "Component"}, {"title": "Pips", "width": 70},
+			{"title": "Kind", "width": 100}, {"title": "Notes", "width": 100}], rows))
+	return box
+
+
+## "core_shell" as "Core shell".
+static func component_label(component_name: String) -> String:
+	var words := component_name.replace("_", " ").strip_edges()
+	return words.left(1).to_upper() + words.substr(1)
 
 
 ## Parts in the order the category's sort link asks for.
@@ -612,11 +696,6 @@ func _fitted_text(part_type: String, part_id: String) -> String:
 		if fitted.part_id == part_id:
 			slots.append(CompareWindow.SLOT_NAMES.get(fitted.slot, fitted.slot))
 	return "yes (%s)" % ", ".join(slots) if not slots.is_empty() else "no"
-
-
-static func _tier(part) -> String:
-	var tier = part.get("tech_tier") if part != null else null
-	return Materials.tier_name(tier) if tier is int and tier != item_data.TechTier.NONE else "-"
 
 
 static func _first_sentence(text: String) -> String:

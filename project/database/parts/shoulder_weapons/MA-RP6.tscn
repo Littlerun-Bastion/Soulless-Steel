@@ -17,6 +17,7 @@ composition = Dictionary[String, int]({"steel": 3, "copper": 1, "oil": 1})
 manufacturer_name = "Martel Shipping and SAV Manufacturing"
 manufacturer_name_short = "Martel"
 tagline = "Rocket Pod"
+tags = Array[String](["shoulder_weapon"])
 price = 780.0
 weight = 1.5
 image = ExtResource("2_pv")

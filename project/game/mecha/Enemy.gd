@@ -816,10 +816,9 @@ func should_engage(target) -> bool:
 	threshold += personality.aggression * 0.2
 
 	# Greed: a weakened target looks like an easy kill / easy loot.
-	# Weakness 0.0 (full hp) contributes nothing; weakness 1.0 (near dead) gives full greed bonus.
-	if target.max_hp > 0:
-		var weakness = clampf(1.0 - (float(target.hp) / float(target.max_hp)), 0.0, 1.0)
-		threshold += personality.greed * weakness * 0.3
+	# Weakness 0.0 (whole) contributes nothing; weakness 1.0 (near dead) gives full greed bonus.
+	var weakness := 1.0 - _wholeness(target)
+	threshold += personality.greed * weakness * 0.3
 
 	# Hostility: seeded personality grudges + accumulated provocations push us
 	# toward engaging. 0.0 = no influence; 1.0 (provoked/traitor) = +0.3 threshold.
@@ -827,6 +826,17 @@ func should_engage(target) -> bool:
 	threshold += rel.hostility * 0.3
 
 	return difference < threshold
+
+
+# How whole `body` is, 0 to 1: a mecha's armour and components
+# (NPCKnowledge._structural_health), anything else's hp (an Entity, a decoy).
+func _wholeness(body) -> float:
+	if body is Mecha:
+		return NPCKnowledge._structural_health(body)
+	var top = body.get("max_hp")
+	if (top is float or top is int) and top > 0:
+		return clampf(float(body.get("hp")) / float(top), 0.0, 1.0)
+	return 1.0
 
 
 #AI METHODS
@@ -2947,7 +2957,8 @@ func _on_nearby_projectile_area_entered(area):
 #   extracting    it heads for an exit
 #   idle          now and then while roaming (IDLE_BARK_RATE per second)
 # Once per fight it also broadcasts a help call, when it is under fire below
-# HELP_CALL_HEALTH of its health. A fight starts when it enters a combat
+# HELP_CALL_HEALTH structural health (NPCKnowledge._structural_health: its
+# armour and components). A fight starts when it enters a combat
 # intent or is hit, and ends once it is in a calm intent and no longer under
 # fire. Barks and broadcasts are placeholders for the AI work to replace.
 
@@ -3120,14 +3131,15 @@ func leave_squad(reason: String) -> void:
 
 
 ## Whether a Rat companion would turn on the player now: the player, as it
-## last saw it, at or under BETRAY_PLAYER_HEALTH, and no other companion.
+## last saw it (NPCKnowledge.health_of), at or under BETRAY_PLAYER_HEALTH,
+## and no other companion.
 func would_betray_player() -> bool:
 	var squad = knowledge.squad
 	if personality.type != Personality.Type.RAT or squad == null or not squad.is_player_led():
 		return false
 	if squad.alive_members().size() > 1:
 		return false
-	return knowledge.knows(squad.leader) and knowledge.hp_fraction_of(squad.leader) <= BETRAY_PLAYER_HEALTH
+	return knowledge.knows(squad.leader) and knowledge.health_of(squad.leader) <= BETRAY_PLAYER_HEALTH
 
 
 ## A Rat companion turns on the player: leaves the squad, hates the player,
@@ -3337,7 +3349,7 @@ func _watch_barks(dt: float) -> void:
 			broadcast("found_loot")
 
 	if _in_fight and not _fight_help and (under_fire_timer > 0.0 or hit) \
-			and hp < max_hp * HELP_CALL_HEALTH:
+			and NPCKnowledge._structural_health(self) < HELP_CALL_HEALTH:
 		_fight_help = true
 		broadcast("need_help")
 		# Who it called for help against, for the player answering it.

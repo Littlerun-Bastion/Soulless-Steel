@@ -14,6 +14,10 @@ extends TestSuite
 #     Store button opening it at amazing.com
 #   - every amazing.com page opening without errors, a product page for
 #     every part type, the cart, checkout and receipt
+#   - part rows' thumbnails (no Tier column), related products (the rest of
+#     a Hardware part's frame, else the parts sharing the most tags), a
+#     product's components matching what a fitted mecha gets, no Health in
+#     the readouts, and the pointing hand over links
 # Loads are instant (NetWindow.load_time_scale 0) except in the load cases.
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
@@ -52,6 +56,10 @@ func run_tests() -> void:
 	await case("the title Store button", _test_store_button)
 	await case("every amazing.com page opens", _test_pages)
 	await case("a product page for every part type", _test_product_pages)
+	await case("thumbnails, and no Tier column", _test_thumbnails)
+	await case("related products: the frame, else shared tags", _test_related)
+	await case("a product's components", _test_components)
+	await case("the pointer over links", _test_pointer)
 	await case("buying on amazing.com", _test_buying)
 	NetWindow.load_time_scale = 1.0
 
@@ -637,14 +645,19 @@ func _test_part_compare() -> void:
 	var part = PartManager.get_part("chassis", CHASSIS)
 	var speed := float(part.max_speed)
 	check(is_equal_approx(PartCompare.difference(standard, refined, "max_speed"), speed * 0.05), "Refined walks 5% faster")
-	check(is_equal_approx(PartCompare.difference(standard, refined, "health"), 0.0), "grades don't touch health")
+	check(is_equal_approx(PartCompare.difference(standard, refined, "move_heat"), 0.0), "grades don't touch move heat")
 	var view := PartCompare.new()
 	add_child(view)
 	view.show_compare(standard, refined)
 	check_eq(view.get_header_text(), "%s > Refined %s" % [part.part_name, part.part_name], "the header: SUBJECT > CANDIDATE")
 	check_eq(view.get_row_text("max_speed"), "%s > %s  +%s" % [MechUI.fmt(speed), MechUI.fmt(speed * 1.05), MechUI.fmt(speed * 0.05)],
 			"84 > 102  +18 style")
-	check_eq(view.get_row_text("health"), MechUI.fmt(float(part.health)), "an unchanged row shows one number")
+	check_eq(view.get_row_text("move_heat"), MechUI.fmt(float(part.move_heat)), "an unchanged row shows one number")
+	check(not "health" in view.get_row_ids(), "no Health row")
+	for part_type in ["head", "core", "shoulders", "chassis"]:
+		check(not PartCompare.FIELDS[part_type].any(func(f): return f.id == "health"), "%s: no Health field" % part_type)
+		check(PartManager.get_parts(part_type).values().all(func(p): return p.get("health") == null),
+				"%s: no part has a health stat" % part_type)
 	check_eq(view.get_row_text("is_legs"), "YES" if part.is_legs else "NO", "a yes/no field as text")
 	check(view._rows["is_legs"].bar == null and view._rows["max_speed"].bar != null, "with no bar")
 	check(view._rows["max_speed"].bar.preview_ratio > view._rows["max_speed"].bar.ratio, "a gain hatches the bar")
@@ -735,7 +748,8 @@ func _test_pages() -> void:
 		check(counter.size() == 1 and counter[0].get_meta("digits") == AmazingPage.counter_text(), "%s shows the hit counter" % path)
 	window.navigate("amazing.com/")
 	var home := _text(window.page)
-	check("This Week's Picks!" in home and "SHOP BY PART" in home and "Mil-Grade Imports" in home, "the home page")
+	check("This Week's Picks!" in home and "SHOP BY PART" in home, "the home page")
+	check(not "Mil-Grade Imports" in home and not "UNDER CONSTRUCTION" in home, "with no under-construction box")
 	check("Best viewed at 800x600." in home and "Sign our guestbook!" in home and "You are visitor no." in home, "the footer")
 	check(AmazingPage.picks.size() >= AmazingPage.PICKS_MIN and AmazingPage.picks.size() <= AmazingPage.PICKS_MAX, "4-6 picks")
 	check(AmazingPage.picks.all(func(e): return Store.is_listed(e[0], e[1])) and not AmazingPage.featured.is_empty(), "listed, and a featured part")
@@ -825,6 +839,172 @@ func _test_product_pages() -> void:
 	for entry in MAKE_REAL:
 		PartManager.get_part(entry[0], entry[1]).manufacturer_name = saved[entry[1]]
 	check(not Store.is_listed("chipset", "type_1_chip"), "the test parts are test parts again")
+
+
+# The thumbnail in a part row (meta "thumb"), or null.
+func _thumb_of(row: Node) -> TextureRect:
+	var thumbs: Array = row.find_children("*", "TextureRect", true, false).filter(func(n): return n.has_meta("thumb"))
+	return thumbs[0] if thumbs.size() == 1 else null
+
+
+func _part_rows(page: Node) -> Array:
+	return page.find_children("*", "PanelContainer", true, false).filter(func(n): return n.has_meta("net_part"))
+
+
+func _test_thumbnails() -> void:
+	var window := _net("amazing.com/c/head")
+	check(not "TIER" in _text(window.page), "no Tier column")
+	var rows := _part_rows(window.page)
+	check_eq(rows.size(), Store.catalogue("head").size(), "a row per head")
+	var fit := AmazingPage.THUMB_BOX - Vector2(2, 2)
+	for row in rows:
+		var entry: Array = row.get_meta("net_part")
+		var thumb := _thumb_of(row)
+		if not check(thumb != null and thumb.texture != null, "%s: a thumbnail" % entry[1]):
+			continue
+		var size: Vector2 = thumb.texture.get_size()
+		check(size.x <= fit.x and size.y <= fit.y and (size.x >= fit.x - 1 or size.y >= fit.y - 1),
+				"%s: shrunk to fill the box one way (%s)" % [entry[1], size])
+		var frame: Control = thumb.get_parent()
+		check_eq(frame.get_meta("url", ""), NetSites.product_url(entry[0], entry[1]), "%s: linking to its page" % entry[1])
+		check_eq(frame.mouse_default_cursor_shape, Control.CURSOR_POINTING_HAND, "%s: with the pointing hand" % entry[1])
+	var small: Texture2D = PartManager.get_part("internal", "SK-1").image
+	var grown := NetUI.thumb_texture(small, fit)
+	check(grown != null and grown.get_width() == small.get_width() * floori(minf(fit.x / small.get_width(),
+			fit.y / small.get_height())), "a small sprite grows by a whole number")
+	check(NetUI.thumb_texture(small, fit) == grown, "and is made once")
+	if rows.is_empty():
+		return
+	var first: Array = rows[0].get_meta("net_part")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	_thumb_of(rows[0]).get_parent().gui_input.emit(click)
+	check_eq(window.current_url, NetSites.product_url(first[0], first[1]), "a click on a thumbnail opens the part's page")
+	check(not "Tech tier:" in _text(window.page), "no tech tier on a product page")
+	window.navigate("amazing.com/c/generator")
+	var gens := _part_rows(window.page)
+	check(not gens.is_empty() and gens.all(func(r): return _thumb_of(r) != null), "parts with no sprite get an empty box")
+	Store.add_to_cart(first[0], first[1])
+	window.navigate("amazing.com/cart")
+	rows = _part_rows(window.page)
+	check(rows.size() == 1 and _thumb_of(rows[0]) != null and _thumb_of(rows[0]).texture != null, "the cart shows thumbnails too")
+
+
+func _test_related() -> void:
+	var hardware := []
+	for part_type in Store.FRAME_TYPES:
+		for part_id in Store.catalogue(part_type):
+			hardware.append([part_type, part_id])
+	var frameless := hardware.filter(func(e): return Store.frame_of(e[0], e[1]) == "")
+	check(frameless.is_empty(), "every Hardware part on sale has a frame (%s)" % str(frameless))
+	check_eq(Store.frame_of("head", "Lancelot-Head"), "Lancelot", "Lancelot-Head is a Lancelot")
+	check_eq(Store.frame_of("generator", Store.catalogue("generator")[0]), "", "wetware has none")
+	var mates := Store.frame_mates("head", "Lancelot-Head")
+	check(not mates.is_empty() and mates.all(func(e): return Store.frame_of(e[0], e[1]) == "Lancelot")
+			and not ["head", "Lancelot-Head"] in mates, "its frame mates (%s)" % str(mates))
+	var order: Array = mates.map(func(e): return Store.FRAME_TYPES.find(e[0]))
+	var sorted_order := order.duplicate()
+	sorted_order.sort()
+	check_eq(order, sorted_order, "in shop order")
+	var window := _net(NetSites.product_url("head", "Lancelot-Head"))
+	var tables: Array = window.page.find_children("*", "PanelContainer", true, false).filter(func(n): return n.has_meta("related"))
+	check(tables.size() == 1 and tables[0].get_meta("related") == mates, "the product page lists them")
+	var text := _text(window.page)
+	check("RELATED PRODUCTS" in text and AmazingPage.RELATED_FRAME % "Lancelot" in text, "as the rest of its frame")
+	if tables.size() == 1:
+		check_eq(_part_rows(tables[0]).size(), mates.size(), "a row each, to buy them")
+
+	var alone := hardware.filter(func(e): return Store.frame_mates(e[0], e[1]).is_empty())
+	if not alone.is_empty():
+		var entry: Array = alone[0]
+		window.navigate(NetSites.product_url(entry[0], entry[1]))
+		tables = window.page.find_children("*", "PanelContainer", true, false).filter(func(n): return n.has_meta("related"))
+		check(tables.size() == 1 and tables[0].get_meta("related") == Store.similar(entry[0], entry[1])
+				and AmazingPage.RELATED_SIMILAR in _text(window.page), "%s, alone in its frame, gets parts like it" % entry[1])
+
+	for weapon_id in Store.catalogue("shoulder_weapon"):
+		var tags: Array = PartManager.get_part("shoulder_weapon", weapon_id).tags
+		check("shoulder_weapon" in tags and not "arm_weapon" in tags, "%s is tagged a shoulder weapon" % weapon_id)
+	var shoulder_weapons := Store.catalogue("shoulder_weapon")
+	if not shoulder_weapons.is_empty():
+		var like := Store.similar("shoulder_weapon", shoulder_weapons[0])
+		check(not like.is_empty() and like.size() <= Store.SIMILAR_MAX and like.all(func(e): return e[0] == "shoulder_weapon"),
+				"a shoulder weapon's are shoulder weapons (%d)" % like.size())
+	var claymores := Store.catalogue("arm_weapon").filter(func(id): return "claymore" in PartManager.get_part("arm_weapon", id).tags)
+	if claymores.size() >= 2:
+		var like := Store.similar("arm_weapon", claymores[0])
+		var first: Array = like.slice(0, claymores.size() - 1).map(func(e): return e[1])
+		check(first.all(func(id): return id in claymores), "the other claymores come first (%s)" % str(first))
+		check(not ["arm_weapon", claymores[0]] in like, "never the part itself")
+
+
+func _test_components() -> void:
+	var core_id: String = Store.catalogue("core")[0]
+	var core = PartManager.get_part("core", core_id)
+	var components := Mecha.part_components("core", core)
+	for component_name in ["core_shell", "radiator", "cockpit", Mecha.SHIELD_PROJECTOR]:
+		check(components.has(component_name), "a core has a %s" % component_name)
+	components.core_shell.hp = 0
+	check_eq(Mecha.part_components("core", core).core_shell.hp, 3, "each call gives fresh components")
+	var window := _net(NetSites.product_url("core", core_id))
+	var boxes: Array = window.page.find_children("*", "VBoxContainer", true, false).filter(func(n): return n.has_meta("components"))
+	check(boxes.size() == 1 and boxes[0].get_meta("components") == Mecha.part_components("core", core).keys(), "the core's page lists them")
+	var text := _text(window.page)
+	check("COMPONENTS" in text and "Core shell" in text and "Cockpit" in text and "Critical" in text and "Shield projector" in text,
+			"by name, with what matters about them")
+	var compare: PartCompare = window.page.find_children("*", "PartCompare", true, false)[0]
+	check(not "HEALTH" in text.to_upper() and not "health" in compare.get_row_ids(), "and no Health anywhere on it")
+
+	var generator_id: String = Store.catalogue("generator")[0]
+	window.navigate(NetSites.product_url("generator", generator_id))
+	boxes = window.page.find_children("*", "VBoxContainer", true, false).filter(func(n): return n.has_meta("components"))
+	check(boxes.size() == 1 and boxes[0].get_meta("components") == ["generator"]
+			and AmazingPage.COMPONENT_PLACES.generator in _text(window.page), "a generator adds one to the core")
+	window.navigate(NetSites.product_url("arm_weapon", WEAPON))
+	boxes = window.page.find_children("*", "VBoxContainer", true, false).filter(func(n): return n.has_meta("components"))
+	check(boxes.size() == 1 and boxes[0].get_meta("components") == ["weapon_feed", "cooling_loop"]
+			and AmazingPage.COMPONENT_PLACES.arm_weapon in _text(window.page), "an arm weapon: its feed and its extras, in the shoulder")
+	var tanks := Store.catalogue("chassis").filter(func(id): return PartManager.get_part("chassis", id).movement_type == "tank")
+	if not tanks.is_empty():
+		check(Mecha.part_components("chassis", PartManager.get_part("chassis", tanks[0])).has("tracks"), "a tank chassis has tracks")
+	check(Mecha.part_components("internal", PartManager.get_part("internal", "WD-2")).is_empty(), "an internal brings none")
+	check_eq(AmazingPage.component_label("thruster_nozzles"), "Thruster nozzles", "names read as words")
+
+	# What a fitted mecha has is what the pages list.
+	var hangar = await _open_hangar()
+	var mecha: Mecha = hangar.player_mecha
+	var expected := {"head": Mecha.part_components("head", mecha.build.head),
+			"chassis": Mecha.part_components("chassis", mecha.build.chassis)}
+	var in_core := Mecha.part_components("core", mecha.build.core)
+	for wetware in Mecha.WETWARE_TYPES:
+		if mecha.build[wetware]:
+			in_core.merge(Mecha.part_components(wetware, mecha.build[wetware]), true)
+	for side in ["left", "right"]:
+		var shoulder := Mecha.part_components("shoulders", mecha.build.shoulders)
+		if mecha.build["arm_weapon_" + side]:
+			shoulder.merge(Mecha.part_components("arm_weapon", mecha.build["arm_weapon_" + side]), true)
+		expected[side + "_shoulder"] = shoulder
+		if mecha.build["shoulder_weapon_" + side]:
+			in_core.merge(Mecha.part_components("shoulder_weapon", mecha.build["shoulder_weapon_" + side]), true)
+	expected.core = in_core
+	for slot in expected:
+		var got: Array = mecha.components[slot].keys()
+		got.sort()
+		var want: Array = expected[slot].keys()
+		want.sort()
+		check_eq(got, want, "the fitted %s has what its parts' pages list" % slot)
+	await _close_hangar(hangar)
+
+
+func _test_pointer() -> void:
+	check(MouseManager.sprite_for(DisplayServer.CURSOR_POINTING_HAND) == MouseManager.HAND_CURSOR, "the pointing hand over a link")
+	check(MouseManager.sprite_for(DisplayServer.CURSOR_ARROW) == MouseManager.ARROW_CURSOR, "the arrow elsewhere")
+	check(MouseManager.sprite_for(DisplayServer.CURSOR_IBEAM) == MouseManager.ARROW_CURSOR, "the arrow over a text box too")
+	var window := _net("amazing.com/")
+	var links: Array = window.page.find_children("*", "LinkButton", true, false)
+	check(not links.is_empty() and links.all(func(l): return l.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND),
+			"every link on a page asks for the hand")
 
 
 func _test_buying() -> void:

@@ -1,9 +1,9 @@
 extends TestSuite
 
 # FlagFixTest: the emergency Flag, blood and wrecks. The core shell keeps the
-# cockpit from being hit; both ways into the Flag (hp at 0, the core shell
-# destroyed) start the same grace window, in which nothing hurts the mecha;
-# after it the mecha can be killed; the emergency_flagged signal; the
+# cockpit from being hit; destroying it starts the Flag's grace window, in
+# which nothing hurts the mecha; after it the mecha can be killed; the
+# emergency_flagged signal; the
 # splatter and the pool (BloodStains) and their cap; bleeding from internal
 # components, the small splatter a destroying hit throws and the droplet jet;
 # the body a dead mecha leaves (MechaBody, Wreck), the parts that come off it
@@ -40,7 +40,6 @@ var _arena: FakeArena = null
 func run_tests() -> void:
 	await case("a penetrating core hit never picks the cockpit while the core shell is intact", _test_cockpit_protected)
 	await case("destroying the core shell enters the emergency Flag; the cockpit becomes eligible", _test_core_shell_flag)
-	await case("hp reaching 0 enters the same emergency Flag", _test_hp_flag)
 	await case("the grace window lasts three to five seconds", _test_grace_length)
 	await case("in the grace window hits, blasts, overheat and status damage change nothing", _test_grace)
 	await case("a blast that destroys the core shell doesn't also destroy the cockpit", _test_one_blast)
@@ -49,7 +48,7 @@ func run_tests() -> void:
 	await case("the signal fires once, with the attacker", _test_signal_once)
 	await case("the Flag spawns one splatter away from the attacker, death one pool, under a cap", _test_stains)
 	await case("hits on internal components leak drops; a destroying hit throws a small splatter along it", _test_wounds)
-	await case("a mecha bleeds from damaged internal components, not from low hp", _test_bleeding)
+	await case("a mecha bleeds from damaged internal components, not from lost armour or externals", _test_bleeding)
 	await case("a wreck shows every fitted part except those shed, single chassis too", _test_wreck_parts)
 	await case("a wreck is solid: it blocks movement, shots and sight lines; shed parts aren't", _test_wreck_solid)
 	await case("a body left inside a physics callback is solid, with no errors", _test_solid_in_callback)
@@ -93,9 +92,9 @@ func _source(attacker) -> Dictionary:
 	return {"body": attacker, "name": attacker.mecha_name}
 
 
-# Everything a hit could change: hp, shield, armour pips, component hp.
+# Everything a hit could change: shield, armour pips, component hp.
 func _snapshot(mecha: Mecha) -> Dictionary:
-	return {"hp": mecha.hp, "shield": mecha.shield, "armor": mecha.armor.duplicate(true),
+	return {"shield": mecha.shield, "armor": mecha.armor.duplicate(true),
 			"components": mecha.components.duplicate(true), "dead": mecha.is_dead}
 
 
@@ -157,24 +156,6 @@ func _test_core_shell_flag() -> void:
 	check(is_instance_valid(mecha._flag_marker), "the Flag marker is on")
 
 
-func _test_hp_flag() -> void:
-	var mecha := _mecha()
-	var attacker := _attacker(Vector2(600, 0))
-	var flagged := []
-	mecha.emergency_flagged.connect(func(m, a): flagged.append([m, a]))
-	mecha.take_damage(99999, 1.0, 1.0, 0, 0, false, false, _source(attacker))
-	check(mecha.hp <= 0 and mecha.is_exposed, "hp at 0 Flags the mecha")
-	check(mecha.is_in_flag_grace(), "with the same grace window")
-	check_eq(flagged.size(), 1, "the same signal")
-	check(mecha.is_protected("core", "cockpit"), "the shell is intact, so the cockpit stays protected")
-	# After the window the exposed_hits rule finishes it: one hp hit a second.
-	mecha.flag_grace = 0.0
-	for _i in int(mecha.exposed_hits):
-		mecha.exposed_invuln_timer = mecha.EXPOSED_INVULN_WINDOW
-		mecha.take_damage(10, 1.0, 1.0, 0, 0, false, false, _source(attacker))
-	check(mecha.is_dead, "three hp hits a second apart kill it after the window")
-
-
 func _test_grace_length() -> void:
 	check(Mecha.FLAG_GRACE_TIME >= 3.0 and Mecha.FLAG_GRACE_TIME <= 5.0, "%.1f s" % Mecha.FLAG_GRACE_TIME)
 	var mecha := _mecha()
@@ -190,7 +171,11 @@ func _test_grace() -> void:
 	check(mecha.is_in_flag_grace(), "in the grace window")
 	mecha.flag_grace = 100.0  # keep it open for the whole check
 	var before := _snapshot(mecha)
-	mecha.take_damage(99999, 1.0, 1.0, 500.0, 5.0, "fire", false, _source(attacker))
+	var reports := [0]
+	mecha.took_damage.connect(func(_m, is_status): reports[0] += 0 if is_status else 1)
+	mecha.register_hit(_source(attacker), 50.0)
+	check_eq(reports[0], 0, "a hit isn't reported")
+	check(mecha.pressured_by() == null, "and counts no pressure")
 	for part in ["core", "head", "chassis", "left_shoulder", "right_shoulder"]:
 		for _i in 20:
 			var pen := mecha.armor_check(part, mecha.global_position + Vector2(0, -100), Vector2.DOWN, 10, 3)
@@ -205,7 +190,7 @@ func _test_grace() -> void:
 	mecha.set_status("electrified", 5.0)
 	mecha.set_status("corrosion", 5.0)
 	mecha.take_status_damage(5.0)
-	check_eq(_snapshot(mecha), before, "hp, shield, armour pips and components unchanged")
+	check_eq(_snapshot(mecha), before, "shield, armour pips and components unchanged")
 	check(not mecha.is_dead, "alive")
 
 
@@ -260,7 +245,7 @@ func _test_signal_once() -> void:
 	mecha.last_damage_source = _source(attacker)
 	mecha.damage_component("core", "core_shell", 3)
 	mecha.flag_grace = 0.0
-	mecha.take_damage(99999, 1.0, 1.0, 0, 0, false, false, _source(attacker))
+	mecha.register_hit(_source(attacker), 50.0)
 	mecha.enter_flagged_state()
 	check_eq(flagged.size(), 1, "fired once")
 	check(flagged.size() == 1 and flagged[0][0] == mecha and flagged[0][1] == attacker, "with the mecha and its attacker")
@@ -340,8 +325,19 @@ func _test_wounds() -> void:
 
 
 func _test_bleeding() -> void:
+	# Stripped to the frame outside: no armour left, every external component
+	# gone, the internals sound.
 	var low := _mecha(PlayerProgress.DEFAULT_MECHA, Vector2(-1500, 0))
-	low.hp = int(low.max_hp * 0.1)
+	for part in low.armor:
+		for facing in low.armor[part]:
+			low.armor[part][facing].pips = 0
+	for part in low.components:
+		for comp_name in low.components[part]:
+			var comp: Dictionary = low.components[part][comp_name]
+			if "external" in comp.tags:
+				comp.hp = 0
+				comp.disabled = true
+	low._wound_dirty = true
 	var hurt := _mecha(PlayerProgress.DEFAULT_MECHA, Vector2(1500, 0))
 	check_eq(hurt.get_internal_wound(), 0.0, "a fresh mecha has no internal wound")
 	for _round in 3:
@@ -353,11 +349,13 @@ func _test_bleeding() -> void:
 				if "internal" in comp.tags and comp.hp > 1:
 					hurt.damage_component(part, comp_name, 1)
 	check(hurt.get_internal_wound() >= Mecha.WOUND_BLEED, "internal hits make a wound (%.2f)" % hurt.get_internal_wound())
-	check_eq(hurt.hp, hurt.max_hp, "at full hp")
+	check(hurt.armor.values().all(func(faces): return faces.values().all(func(f): return f.pips == 3 or f.level == 0)),
+			"with its armour whole")
 	for _i in 3:
 		await get_tree().physics_frame
 	check(hurt.Particle.blood[0].emitting, "the wounded mecha drips")
-	check(not low.Particle.blood[0].emitting and not low.Particle.blood[1].emitting, "a mecha at low hp with sound internals doesn't")
+	check(not low.Particle.blood[0].emitting and not low.Particle.blood[1].emitting,
+			"a mecha stripped of armour and externals with sound internals doesn't")
 
 
 func _full_design() -> Dictionary:

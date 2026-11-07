@@ -12,6 +12,10 @@ extends RefCounted
 # The cart lasts for the session and is never saved: one [part_type, part_id]
 # entry per copy. Checkout delivers each entry (deliver), charges only for the
 # ones that arrived, leaves the rest in the cart and spends the money once.
+#
+# Related parts: Hardware parts come in frames (their `frame`, frame_of), and
+# a part's frame_mates are the rest of it on sale. similar() ranks the listed
+# parts by the tags they share with one.
 
 ## Part types in shop order.
 const CATEGORIES := ["head", "core", "shoulders", "chassis", "generator", "chipset", "thruster",
@@ -31,6 +35,10 @@ const TYPE_NAMES := {
 }
 ## The highest tech tier on sale.
 const MAX_TECH_TIER := item_data.TechTier.HIGH
+## The part types that come in frames (frame_of).
+const FRAME_TYPES := ["head", "core", "shoulders", "chassis"]
+## The most parts similar() gives.
+const SIMILAR_MAX := 5
 const ORDER_PREFIX := "AMZ"
 const FIRST_ORDER := 4217
 
@@ -154,6 +162,71 @@ static func group_by_id(group_id: String) -> Dictionary:
 		if group.id == group_id:
 			return group
 	return {}
+
+
+# ---- related parts ------------------------------------------------------
+
+## The frame a Hardware part belongs to (its `frame`), "" for none.
+static func frame_of(part_type: String, part_id: String) -> String:
+	if not part_type in FRAME_TYPES:
+		return ""
+	var part := get_part(part_type, part_id)
+	var value = part.get("frame") if part != null else null
+	return str(value).strip_edges() if value != null else ""
+
+
+## The other listed parts of a Hardware part's frame, in shop order; [] when
+## it has no frame or is the only part of it on sale.
+static func frame_mates(part_type: String, part_id: String) -> Array:
+	var frame := frame_of(part_type, part_id)
+	var mates := []
+	if frame == "":
+		return mates
+	for other_type in FRAME_TYPES:
+		for other_id in catalogue(other_type):
+			if not (other_type == part_type and other_id == part_id) and frame_of(other_type, other_id) == frame:
+				mates.append([other_type, other_id])
+	return mates
+
+
+## Up to SIMILAR_MAX listed parts that share tags with the part: the most
+## tags in common first, then the same type, the same maker, the nearest
+## price and the name.
+static func similar(part_type: String, part_id: String) -> Array:
+	var tags := _tags_of(part_type, part_id)
+	var maker := maker_of(part_type, part_id)
+	var here := price(part_type, part_id)
+	var scored := []
+	for other_type in CATEGORIES:
+		for other_id in catalogue(other_type):
+			if other_type == part_type and other_id == part_id:
+				continue
+			var shared := 0
+			for tag in _tags_of(other_type, other_id):
+				if tag in tags:
+					shared += 1
+			if shared == 0:
+				continue
+			scored.append({"entry": [other_type, other_id], "shared": shared, "same_type": other_type == part_type,
+					"same_maker": maker_of(other_type, other_id) == maker,
+					"gap": absi(price(other_type, other_id) - here), "name": part_name(other_type, other_id)})
+	scored.sort_custom(func(a, b):
+		if a.shared != b.shared:
+			return a.shared > b.shared
+		if a.same_type != b.same_type:
+			return a.same_type
+		if a.same_maker != b.same_maker:
+			return a.same_maker
+		if a.gap != b.gap:
+			return a.gap < b.gap
+		return str(a.name).naturalnocasecmp_to(b.name) < 0)
+	return scored.slice(0, SIMILAR_MAX).map(func(s): return s.entry)
+
+
+static func _tags_of(part_type: String, part_id: String) -> Array:
+	var part := get_part(part_type, part_id)
+	var tags = part.get("tags") if part != null else null
+	return tags if tags is Array else []
 
 
 # ---- the cart -----------------------------------------------------------

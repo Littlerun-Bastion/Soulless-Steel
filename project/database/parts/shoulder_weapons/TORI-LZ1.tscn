@@ -16,6 +16,7 @@ composition = Dictionary[String, int]({"steel": 2, "copper": 3, "silicon": 3})
 manufacturer_name = "Yamaguchi Heavy Industries"
 manufacturer_name_short = "Tamaguchi"
 tagline = "Sweep Laser"
+tags = Array[String](["shoulder_weapon"])
 price = 2300.0
 weight = 2.0
 image = ExtResource("2_pv")

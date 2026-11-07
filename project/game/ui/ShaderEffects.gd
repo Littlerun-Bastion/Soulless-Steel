@@ -62,8 +62,8 @@ func set_shader_params(bar_range, bar_intensity, noise_quality, noise_intensity,
 
 func update_shader_effect(player):
 	if tweens.is_empty():
-		#Noise Intensity
-		var target_noise = ((player.max_hp - player.hp)/float(player.max_hp)) * 0.0035
+		#Noise Intensity: more as the mecha's armour and components go
+		var target_noise = (1.0 - NPCKnowledge._structural_health(player)) * 0.0035
 		var value = lerp(VCREffect.material.get_shader_parameter("noiseIntensity"), target_noise, .9)
 		VCREffect.material.set_shader_parameter("noiseIntensity", value)
 		#Color Offset Intensity

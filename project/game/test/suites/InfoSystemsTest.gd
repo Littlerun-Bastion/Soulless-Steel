@@ -215,7 +215,7 @@ func _test_help() -> void:
 	squad.add(mate)
 	squad.add(guardian)
 	mate.under_fire_timer = 0.5
-	mate.hp = mate.max_hp * 0.3
+	wear_down(mate)
 	guardian.logic.force_intent(guardian, "roam")
 	guardian.logic.evaluate_now(guardian)
 	check_eq(str(guardian.logic.get_current_state()), "help", "a squadmate under fire and hurt is helped")

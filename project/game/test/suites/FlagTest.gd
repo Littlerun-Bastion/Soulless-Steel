@@ -154,8 +154,10 @@ func _source(attacker) -> Dictionary:
 	return {"body": attacker, "name": attacker.mecha_name}
 
 
+# A hit from attacker as the victim hears of it (Mecha.register_hit), worth
+# `amount` pressure.
 func _hit(victim, attacker, amount := 5.0) -> void:
-	victim.take_damage(amount, 1.0, 1.0, 0.0, 0.0, null, false, _source(attacker))
+	victim.register_hit(_source(attacker), amount)
 
 
 # Scores every intent as if the minimum time were over, and gives the winner.

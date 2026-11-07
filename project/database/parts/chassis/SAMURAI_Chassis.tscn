@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=861843828]
 script = ExtResource("1_f3nmu")
 part_name = "SAMURAI-03L"
+frame = "SAMURAI-03"
 price = 1300.0
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 5, "oil": 3, "copper": 1, "nt_fluid": 2})
@@ -23,7 +24,6 @@ is_legs = true
 movement_type = "relative"
 accuracy_modifier = 1.33
 rotation_acc = 1.5
-health = 2200.0
 move_heat = 200
 weight = 12.3
 weight_capacity = 62.5

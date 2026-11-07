@@ -8,6 +8,9 @@ extends RefCounted
 
 const COUNTER_DIGITS := 6
 
+# Thumbnails made so far (thumb_texture): "<texture id>:<w>x<h>" -> texture.
+static var _thumbs := {}
+
 
 static func text(value: String, variation: StringName = &"NetBody", wrapped := false) -> Label:
 	var node := MechUI.label(variation, value, wrapped)
@@ -162,6 +165,7 @@ static func _cell(column: Dictionary, content: Control) -> Control:
 		content.clip_text = true
 		content.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		content.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		if column.get("align") == "right":
 			content.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	holder.add_child(content)
@@ -218,6 +222,67 @@ static func sprite(texture: Texture2D, box_size: Vector2, fallback: String) -> P
 		label.set_meta("fallback", true)
 		frame.add_child(panel(&"NetBoxBody", label))
 	return frame
+
+
+## A part's sprite as a thumbnail centred in a framed box of box_size
+## (thumb_texture); an empty box when there's no sprite.
+static func thumbnail(texture: Texture2D, box_size: Vector2) -> PanelContainer:
+	var frame := panel(&"NetSpriteBox")
+	frame.custom_minimum_size = box_size
+	frame.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var image := TextureRect.new()
+	image.texture = thumb_texture(texture, box_size - Vector2(2, 2))
+	image.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	image.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	image.set_meta("thumb", true)
+	frame.add_child(image)
+	return frame
+
+
+## texture scaled to fit inside `fit`: shrunk smoothly (Lanczos), or, when
+## it's smaller, grown pixel for pixel by the largest whole factor that fits.
+## Each texture is scaled once per size; null without a texture or its image.
+static func thumb_texture(texture: Texture2D, fit: Vector2) -> Texture2D:
+	if texture == null:
+		return null
+	var key := "%d:%dx%d" % [texture.get_instance_id(), int(fit.x), int(fit.y)]
+	if _thumbs.has(key):
+		return _thumbs[key]
+	var source := texture.get_image()
+	if source == null or source.is_empty():
+		return null
+	# A copy: the renderer may hand back the image it keeps for the texture.
+	var image := source.duplicate() as Image
+	if image.is_compressed():
+		image.decompress()
+	var scale := minf(fit.x / image.get_width(), fit.y / image.get_height())
+	if scale >= 1.0:
+		var zoom := floori(scale)
+		image.resize(image.get_width() * zoom, image.get_height() * zoom, Image.INTERPOLATE_NEAREST)
+	else:
+		image.resize(maxi(roundi(image.get_width() * scale), 1), maxi(roundi(image.get_height() * scale), 1),
+				Image.INTERPOLATE_LANCZOS)
+	var thumb := ImageTexture.create_from_image(image)
+	_thumbs[key] = thumb
+	return thumb
+
+
+## Makes node (a thumbnail, say) a link to url on page, like link(): a left
+## click follows it, the pointing hand shows over it and the status bar shows
+## the address. The scroll wheel still reaches the page.
+static func image_link(page: NetPage, node: Control, url: String) -> Control:
+	node.mouse_filter = Control.MOUSE_FILTER_PASS
+	node.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	node.set_meta("url", url)
+	node.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			node.accept_event()
+			page.follow(url))
+	node.mouse_entered.connect(page.hover.bind(url))
+	node.mouse_exited.connect(page.hover.bind(""))
+	return node
 
 
 ## A thin S1 rule between parts of a page.

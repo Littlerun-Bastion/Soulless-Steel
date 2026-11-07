@@ -5,7 +5,6 @@ signal update_lock_mode
 signal update_building_status
 signal reloading
 signal finished_reloading
-signal lost_health
 # A sweep went out (result from Mecha.sweep), or couldn't ("cooldown").
 signal sweep_done(result: Dictionary)
 signal sweep_refused(reason: String)
@@ -417,13 +416,6 @@ static func pan_velocity(mouse: Vector2, screen: Vector2, limit: float) -> Vecto
 	if axes == 2:
 		push /= sqrt(2.0)
 	return push * limit / MOVE_CAMERA_PAN_TIME
-
-
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
-	var prev_hp = hp
-	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name)
-	if prev_hp > hp:
-		emit_signal("lost_health")
 
 
 func do_hitstop():

@@ -9,6 +9,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("1_eel2p")
 part_name = "Crawler D-type Chassis"
+frame = "Crawler D-type"
 price = 1550.0
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 5, "oil": 3, "copper": 2, "nt_fluid": 2})
@@ -24,7 +25,6 @@ friction = 0.22
 rotation_acc = 0.75
 trim_acc = 0.85
 rotation_range = 180.0
-health = 3625.0
 move_heat = 44
 weight = 31.0
 weight_capacity = 152.5

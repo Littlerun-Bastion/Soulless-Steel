@@ -96,6 +96,10 @@ extends Node
 
 @export_category("Melee Behaviours")
 @export var is_melee := false
+## A melee hit's damage pips and armour pen (Mecha.process_hitboxes).
+## Placeholders.
+@export var melee_damage := 1
+@export var melee_pen := 1
 @export var melee_knockback := 20
 
 # Shoulder weapons with a designator work like skills: holding the fire button

@@ -15,6 +15,9 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 ## False keeps the part out of the store and out of the Compare window's
 ## STORE list, for secret parts.
 @export var store_listed := true
+## The frame (model line) the part belongs to, "" for none: amazing.com
+## shows the rest of it under the part (Store.frame_mates).
+@export var frame := ""
 @export var description : String
 @export var image : Texture2D
 ## The shoulders' share of the shield's strength, counted once for both

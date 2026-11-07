@@ -592,15 +592,6 @@ offset_right = 40.0
 offset_bottom = 40.0
 scale = Vector2(0.9, 0.9)
 
-[node name="Armor" parent="TopBar" instance=ExtResource("13")]
-layout_mode = 1
-offset_left = 46.9076
-offset_top = 247.091
-offset_right = 219.908
-offset_bottom = 290.091
-stat_name = "health"
-stat_label = "ARM"
-
 [node name="Shield" parent="TopBar" instance=ExtResource("13")]
 layout_mode = 1
 offset_left = 46.9076

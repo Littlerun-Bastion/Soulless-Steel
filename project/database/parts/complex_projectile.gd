@@ -58,7 +58,6 @@ signal create_trail
 #---DAMAGE---#
 @export var base_damage := 1
 @export var armor_pen := 1
-@export var health_mult := 1.0
 @export var shield_mult := 1.0
 @export var dropoff_modifier := 0.8 
 @export var heat_damage := 10.0
@@ -95,7 +94,6 @@ signal create_trail
 @export var payload_explosion : Resource
 @export var payload_explosion_damage := 0.0
 @export var payload_explosion_shield_mult := 1.0
-@export var payload_explosion_health_mult := 1.0
 @export var payload_explosion_heat_damage := 0.0
 @export var payload_explosion_status_damage := 0.0
 @export var payload_explosion_status_type : String

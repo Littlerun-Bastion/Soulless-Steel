@@ -51,10 +51,8 @@ const FIELDS := {
 		{"id": "accuracy_modifier", "label": "Accuracy"},
 		{"id": "rotation_acc", "label": "Turn rate"},
 		{"id": "rotation_range", "label": "Turn range °"},
-		{"id": "health", "label": "Health"},
 	] + ARMOUR + [{"id": "rcs_factor", "label": "RCS factor", "lower_better": true}] + COMMON,
 	"core": [
-		{"id": "health", "label": "Health"},
 		{"id": "shield_strength", "label": "Shield strength"},
 		{"id": "stability", "label": "Stability"},
 		{"id": "cargo_space", "label": "Cargo space", "kind": "text"},
@@ -77,7 +75,6 @@ const FIELDS := {
 		{"id": "rotation_acc", "label": "Turn rate"},
 		{"id": "move_heat", "label": "Move heat", "lower_better": true},
 		{"id": "is_legs", "label": "Legs", "kind": "flag"},
-		{"id": "health", "label": "Health"},
 	] + ARMOUR + [{"id": "rcs_factor", "label": "RCS factor", "lower_better": true}] + COMMON,
 	"generator": [
 		{"id": "power_output", "label": "Power output kW"},

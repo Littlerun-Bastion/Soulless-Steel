@@ -20,6 +20,7 @@
 script = ExtResource("1")
 coolant_type = ExtResource("coolant_default")
 part_name = "MSV-M2"
+frame = "MSV-M2"
 price = 1100.0
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 4, "copper": 2, "silicon": 1})
@@ -28,7 +29,6 @@ manufacturer_name_short = "Martel"
 tagline = "Light3D Core"
 description = "A more robust, updated version of the L3J, the M2 is a middleweight core part with moderate defenses and space for shoulder-mounted ordnance. Very weight inefficient."
 image = ExtResource("14")
-health = 3825.0
 shield_strength = 2.0
 stability = 120.0
 rotation_range = 25.0

@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=508840769]
 script = ExtResource("1_sb3ns")
 part_name = "'Barong' GTk-1Cr Chassis"
+frame = "'Barong' GTk-1Cr"
 price = 1800.0
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 6, "oil": 4, "copper": 2, "nt_fluid": 2})
@@ -28,7 +29,6 @@ accuracy_modifier = 1.2
 friction = 0.22
 rotation_acc = 0.8
 trim_acc = 45.0
-health = 3375.0
 move_heat = 400
 weight = 29.5
 weight_capacity = 130.0

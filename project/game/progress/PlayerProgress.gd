@@ -93,6 +93,9 @@ var in_expedition := false
 # What the last lost expedition cost, until something shows it to the player
 # (game-over screen or main menu). Saved, so it survives a crash.
 var pending_loss_report: Dictionary = {}
+# How often each frame loss lesson has been shown (FrameLossReport): lesson
+# id -> count. The least shown of those that apply is picked next.
+var lessons_seen: Dictionary = {}
 # Local (LocalPilots): the player's callsign, whether the next deployment is
 # Anonymous (fixed for the run once deployed), and reputation.
 var callsign := DEFAULT_CALLSIGN
@@ -586,6 +589,18 @@ func resolve_abandoned_expedition() -> bool:
 	return true
 
 
+## How many times frame loss lesson `id` has been shown.
+func lesson_count(id: String) -> int:
+	return int(lessons_seen.get(id, 0))
+
+
+## Counts frame loss lesson `id` as shown once more.
+func note_lesson(id: String, should_save := true) -> void:
+	lessons_seen[id] = lesson_count(id) + 1
+	if should_save:
+		_save()
+
+
 func has_loss_report() -> bool:
 	return not pending_loss_report.is_empty()
 
@@ -679,6 +694,7 @@ func reset() -> void:
 	facilities = {}
 	in_expedition = false
 	pending_loss_report = {}
+	lessons_seen = {}
 	callsign = DEFAULT_CALLSIGN
 	deploy_anonymous = false
 	reputation = 0
@@ -700,6 +716,7 @@ func get_save_data() -> Dictionary:
 		"facilities": facilities,
 		"in_expedition": in_expedition,
 		"pending_loss_report": pending_loss_report,
+		"lessons_seen": lessons_seen,
 		"callsign": callsign,
 		"deploy_anonymous": deploy_anonymous,
 		"reputation": reputation,
@@ -721,6 +738,12 @@ func set_save_data(data) -> void:
 	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
+	lessons_seen = {}
+	var seen = data.get("lessons_seen", {})
+	if typeof(seen) == TYPE_DICTIONARY:
+		for id in seen:
+			if (seen[id] is int or seen[id] is float) and int(seen[id]) > 0:
+				lessons_seen[str(id)] = int(seen[id])
 	var saved_callsign = data.get("callsign", DEFAULT_CALLSIGN)
 	callsign = saved_callsign if saved_callsign is String and saved_callsign != "" else DEFAULT_CALLSIGN
 	deploy_anonymous = bool(data.get("deploy_anonymous", false))

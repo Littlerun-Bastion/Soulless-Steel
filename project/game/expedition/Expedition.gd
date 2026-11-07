@@ -156,6 +156,8 @@ func _on_player_lost_health() -> void:
 
 # take_loss_report so the main menu doesn't repeat it.
 func _on_player_destroyed() -> String:
+	# How the frame was lost, and one lesson, to the combat log (LOG › COMBAT).
+	FrameLossReport.write(player, CombatRecorder.of(player))
 	var report := PlayerProgress.lose_expedition(PlayerProgress.LOSS_DESTROYED)
 	PlayerProgress.take_loss_report()  # shown on the debrief, not again in the menu
 	_death_debrief = {"report": report, "kills": player_kills.size(), "details": _run_details(player.global_position)}

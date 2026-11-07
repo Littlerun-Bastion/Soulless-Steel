@@ -1,0 +1,22 @@
+{
+	"_about": "Frame loss lessons: the analysis line written to the combat log (LOG > COMBAT) when the player's frame is lost. One lesson per loss. FrameLossReport.gd decides when each applies and their priority; only the wording lives here. Placeholders: {killer} (who did it), {count} (how many attackers), {key:action} (the key bound to an input action, e.g. {key:sweep}). Never say the pilot died.",
+	"heat": "Heat was cooking your components. Ease off before the heat bar tops out.",
+	"flag_ignored": "{killer} fired on your Flag. Some pilots do; most let a Flagged frame go.",
+	"creature": {
+		"Coyote": "Coyotes hunt by heat and come in packs. A cold mecha is hard for them to find.",
+		"Coyote Spitter": "Coyote Spitters hang back and lob globs from range. Close the distance or break line of sight.",
+		"Fisher": "Fishers sleep through heat but wake on noise. Pass them quietly, or stay out of harpoon range.",
+		"Stalker": "Stalkers hunt in packs and circle to your back. Keep turning to face them.",
+		"Brute": "Brutes open with a charge. Get out of its line before it lands.",
+		"Spitter": "Spitters keep their distance and lob acid. Close in, or get behind cover.",
+		"Tick Swarm": "Ticks jump onto hot mechas and drain their heat. Run cool near a swarm.",
+		"Cyst": "Cysts hatch guards to defend themselves. Clear the guards before you go for the nest.",
+		"default": "Creatures hunt mechas too. Learn what draws each one."
+	},
+	"unseen": "{killer} wasn't on your sensors. A sweep ({key:sweep}) shows what is around before it finds you.",
+	"lit": "Your illuminator was on when {killer} hit you. A lit mecha is seen through walls; {key:toggle_illuminator} turns it off.",
+	"outnumbered": "You were fighting {count} at once. Break line of sight and take them one at a time.",
+	"no_head": "Your head came off, and your sight shrank to almost nothing.",
+	"overweight": "You were over weight capacity, cargo included, and slow because of it.",
+	"shield_flanked": "Your shield ({key:shield}) only covers the front. They came at you from the side."
+}

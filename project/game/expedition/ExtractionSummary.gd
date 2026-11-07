@@ -32,6 +32,8 @@ const WRITTEN_OFF := "WRITTEN OFF"
 const UNSALVAGEABLE := "UNSALVAGEABLE"
 const BOOT_TIME := 1.5   # seconds for the screen to come back after a death
 const WRITE_OFF_NOTE := "Frame beyond repair. A standard mecha has been issued. Your stash and credits are safe."
+## Where the frame loss report is (FrameLossReport).
+const LOSS_REPORT_NOTE := "Frame loss report: LOG › COMBAT."
 const PART_WRITE_OFF_NOTE := "Lost in the field. A standard part has been fitted in each unsalvageable slot."
 const DEBT_NOTE := "Repairs exceeded your credits. Sales pay off the debt; the Store is closed to you until then."
 
@@ -111,6 +113,7 @@ func show_written_off(report: Dictionary, kills: int, mission, details: Dictiona
 	for part_name in parts:
 		_damage_box.add_child(_line(str(part_name), UNSALVAGEABLE, true))
 	_damage_box.add_child(MechUI.label(&"LabelMeta", WRITE_OFF_NOTE, true))
+	_damage_box.add_child(MechUI.label(&"LabelMeta", LOSS_REPORT_NOTE, true))
 	MechLog.write("DEP", "Frame written off", MechLog.Kind.SYSTEM, true)
 	_open(true)
 

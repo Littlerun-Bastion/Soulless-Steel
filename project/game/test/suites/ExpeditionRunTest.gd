@@ -257,6 +257,9 @@ func _test_death() -> void:
 		var text: String = summary.get_text()
 		check(SALVAGE.display_name in text and "WRITTEN OFF" in text, "it lists the lost cargo as written off")
 		check("UNSALVAGEABLE" in text, "and the mecha's parts as unsalvageable")
+		check(ExtractionSummary.LOSS_REPORT_NOTE in text, "and points to the frame loss report")
+		check(MechLog.lines.any(func(line): return line.source == CombatRecorder.SOURCE and str(line.text).begins_with("Frame lost")),
+				"which is in the combat log")
 		check(not PlayerProgress.has_loss_report(), "the loss isn't reported again in the main menu")
 		summary.continue_button.pressed.emit()
 		await wait_frames()

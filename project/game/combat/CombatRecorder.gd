@@ -13,7 +13,8 @@ extends Node
 ##                                      a component destroyed, with what it
 ##                                      did ("destroyed by heat" when an
 ##                                      overheat tick did it)
-##   "Cockpit breached"                 the critical component (critical line)
+##   "Cockpit breached"                 the critical component (critical line;
+##                                      "by heat" when an overheat tick did it)
 ##   "Head lost"                        a part came off; its components go
 ##                                      with it, without lines of their own
 ##   "Overheating"                      overheating starts, at most once every
@@ -53,6 +54,9 @@ var now := 0.0
 var hits: Array = []
 ## When a heat tick damaged a component, in the last MEMORY s.
 var heat_damage: Array = []
+## How the critical component (the cockpit) went: "hit", "heat", or "" while
+## it holds.
+var breach := ""
 
 var _last_hit_by := {}  # attacker key -> time of its last hit
 var _last_overheat_line := -INF
@@ -200,7 +204,8 @@ func _on_component_destroyed(part_name: String, component: String) -> void:
 	if "weapon" in tags and mecha.is_part_lost(_arm_slot(part_name)):
 		return
 	if "critical" in tags:
-		_write("%s breached" % component.replace("_", " ").capitalize(), true)
+		breach = "heat" if mecha.damage_cause == "heat" else "hit"
+		_write("%s breached%s" % [component.replace("_", " ").capitalize(), " by heat" if breach == "heat" else ""], true)
 		return
 	if component == "core_shell":
 		# The emergency Flag follows at once (Mecha.enter_flagged_state) and

@@ -41,6 +41,12 @@ func run_tests() -> void:
 	await case("the Flag: by choice, emergency, with the core shell", _test_flag)
 	await case("overheating gets a line, at most every 20 s", _test_overheating)
 	await case("only the last minute is kept", _test_memory)
+	await case("frame lost: who, with what, from where, how", _test_lost_line)
+	await case("frame lost by heat, while exposed, to nobody, to a swarm", _test_lost_causes)
+	await case("each lesson applies when it should", _test_lessons_apply)
+	await case("a lesson from the frame's state: head, weight, shield", _test_lessons_state)
+	await case("the least shown lesson is picked, and counted", _test_rotation)
+	await case("lesson texts: every lesson and species, keys and names filled in", _test_texts)
 	await before_each()
 
 
@@ -50,6 +56,7 @@ func before_each() -> void:
 		_arena = null
 	MechOS.close_all()
 	MechLog.clear()
+	PlayerProgress.lessons_seen = {}
 	await wait_frames(2)
 	_arena = FakeArena.new()
 	add_child(_arena)
@@ -342,3 +349,230 @@ func _test_memory() -> void:
 	check(rec.heat_damage.is_empty(), "heat damage too")
 	rec.now += 5.0
 	check(rec.recent_hits(10.0).size() == 1 and rec.recent_hits(4.0).is_empty(), "recent hits by age")
+
+
+# ---- The frame loss report (FrameLossReport) ----
+
+func _stalker(pos: Vector2) -> Entity:
+	var stalker: Entity = STALKER.instantiate()
+	stalker.position = pos
+	_arena.add_child(stalker)
+	stalker.setup(_arena)
+	stalker.set_pause(true)
+	return stalker
+
+
+func _lesson_lines() -> Array:
+	var texts := []
+	for line in MechLog.lines:
+		if line.source == FrameLossReport.SOURCE:
+			texts.append(line.text)
+	return texts
+
+
+func _applicable(mecha: Mecha, recorder: CombatRecorder) -> Array:
+	return FrameLossReport.applicable(FrameLossReport.gather(mecha, recorder))
+
+
+func _test_lost_line() -> void:
+	var made := _recorded()
+	var me: Mecha = made[0]
+	var rec: CombatRecorder = made[1]
+	var vex := _mecha(Vector2(0, -1000), "Vex")
+	_hit(me, _source(vex), _weapon_id, "core", "cockpit", 9)
+	check(me.is_dead, "(the cockpit is breached)")
+	var report := FrameLossReport.write(me, rec)
+	var expected := "Frame lost to Vex · %s · from 50 m N · cockpit breached" % _weapon
+	check_eq(report.lost, expected, "who, with what, from where, how")
+	check(_lines().has(expected) and _is_critical(expected), "in the combat log, as a critical line")
+	check_eq(report.lesson, "unseen", "Vex never showed in its contacts: the unseen lesson (before lit)")
+	var lessons := _lesson_lines()
+	check(lessons.size() == 1 and lessons[0] == report.text, "one lesson line, after it")
+	check(report.text.begins_with("Vex wasn't on your sensors") and report.text.contains("(%s)" % MechUI.key_name("sweep")),
+			"naming the attacker and the sweep key")
+	check(MechLog.lines.back().critical, "a lesson shown for the first time stands out")
+	for line in MechLog.lines:
+		for word in BANNED_WORDS:
+			check(not str(line.text).to_lower().contains(word), "'%s' doesn't say '%s'" % [line.text, word])
+
+
+func _test_lost_causes() -> void:
+	var made := _recorded()
+	var me: Mecha = made[0]
+	var rec: CombatRecorder = made[1]
+	var vex := _mecha(Vector2(0, -1000), "Vex")
+	_hit(me, _source(vex), _weapon_id)
+	me.damage_cause = "heat"
+	me.damage_component("core", "cockpit", 9)
+	me.damage_cause = ""
+	check(me.is_dead, "(heat breaches the cockpit)")
+	check(_lines().has("Cockpit breached by heat"), "the breach says heat did it")
+	var facts := FrameLossReport.gather(me, rec)
+	check_eq(FrameLossReport.lost_line(facts), "Frame lost · cockpit breached by heat", "heat did it: nobody is named")
+	check_eq(FrameLossReport.applicable(facts), ["heat"], "the heat lesson")
+
+	var exposed := _recorded()
+	var hull: Mecha = exposed[0]
+	var ash := _mecha(Vector2(1000, 0), "Ash")
+	hull.take_damage(hull.hp + 1, 1.0, 1.0, 0, 0, false, false, _source(ash), _weapon_id)
+	check(hull.is_exposed, "(the hull gives out)")
+	facts = FrameLossReport.gather(hull, exposed[1])
+	check_eq(FrameLossReport.lost_line(facts), "Frame lost to Ash · %s · from 50 m E · finished while exposed" % _weapon,
+			"finished while exposed")
+	check(facts.flag_up and "flag_ignored" in FrameLossReport.applicable(facts), "a mecha finishing a Flagged frame ignored the Flag")
+
+	var plain := _recorded()
+	var lone: Mecha = plain[0]
+	lone.last_damage_source = {"name": "Player"}
+	facts = FrameLossReport.gather(lone, plain[1])
+	check_eq(FrameLossReport.lost_line(facts), "Frame lost", "no attacker at all: just that")
+	check(FrameLossReport.applicable(facts).is_empty(), "and nothing to learn from it")
+	var anon := _mecha(Vector2(0, 1000), "Hidden")
+	anon.is_anonymous = true
+	lone.last_damage_source = _source(anon)
+	facts = FrameLossReport.gather(lone, plain[1])
+	check_eq(FrameLossReport.lost_line(facts), "Frame lost to Unknown · from 50 m S", "an Anonymous pilot: Unknown, and from where")
+	check(FrameLossReport.lesson_text("unseen", facts).begins_with("An unknown pilot wasn't"), "a lesson calls it an unknown pilot")
+	lone.last_damage_source = {"body": null, "name": "Tick Swarm"}
+	facts = FrameLossReport.gather(lone, plain[1])
+	check(FrameLossReport.lost_line(facts) == "Frame lost to Tick Swarm" and facts.species == "Tick Swarm", "a swarm by its name, as a creature")
+	check_eq(FrameLossReport.applicable(facts), ["creature"], "with the creature lesson")
+
+
+func _test_lessons_apply() -> void:
+	var made := _recorded()
+	var me: Mecha = made[0]
+	var rec: CombatRecorder = made[1]
+	var vex := _mecha(Vector2(0, -1000), "Vex")
+	var ash := _mecha(Vector2(0, 1000), "Ash")
+	_hit(me, _source(vex))
+	check_eq(_applicable(me, rec), ["unseen", "lit"], "never in its contacts, and lit at Vex's first hit")
+	me.contacts.report(vex, "mech", vex.global_position, "sight", 5.0)
+	check_eq(_applicable(me, rec), ["lit"], "in its contacts: not unseen")
+
+	var dark := _recorded()
+	var unlit: Mecha = dark[0]
+	unlit.contacts.report(vex, "mech", vex.global_position, "sight", 5.0)
+	unlit.set_illuminator(false)
+	_hit(unlit, _source(vex))
+	unlit.set_illuminator(true)
+	_hit(unlit, _source(vex))
+	check(_applicable(unlit, dark[1]).is_empty(), "lit only if it was on at that attacker's first hit")
+
+	_hit(me, _source(ash))
+	var facts := FrameLossReport.gather(me, rec)
+	check(facts.attackers == 2 and "outnumbered" in FrameLossReport.applicable(facts), "two attackers within 15 s: outnumbered")
+	var text := FrameLossReport.lesson_text("outnumbered", facts)
+	check(text.contains("2") and not text.contains("{"), "saying how many")
+	rec.now += FrameLossReport.OUTNUMBERED_WINDOW + 1.0
+	check(not "outnumbered" in _applicable(me, rec), "not once one of them is 15 s back")
+
+	me.damage_cause = "heat"
+	me.damage_component("core", "radiator", 0)
+	me.damage_cause = ""
+	check_eq(_applicable(me, rec).front(), "heat", "heat damage in the last 30 s: heat, first")
+	rec.now += FrameLossReport.HEAT_WINDOW + 1.0
+	check(not "heat" in _applicable(me, rec), "not after 30 s")
+
+	var flagged := _recorded()
+	var white: Mecha = flagged[0]
+	white.raise_flag(true)
+	white.last_damage_source = _source(vex)
+	check("flag_ignored" in _applicable(white, flagged[1]), "the Flag up and a mecha finished it")
+	var stalker := _stalker(Vector2(400, 0))
+	white.last_damage_source = {"body": stalker, "name": stalker.mecha_name}
+	facts = FrameLossReport.gather(white, flagged[1])
+	check(facts.species == "Stalker" and FrameLossReport.applicable(facts) == ["creature"], "a creature: its lesson, not the Flag's")
+	check_eq(FrameLossReport.lesson_text("creature", facts), FrameLossReport.creature_texts().get("Stalker", "?"), "the Stalker's own line")
+
+
+func _test_lessons_state() -> void:
+	var made := _recorded()
+	var me: Mecha = made[0]
+	var rec: CombatRecorder = made[1]
+	var vex := _mecha(Vector2(0, -1000), "Vex")
+	me.contacts.report(vex, "mech", vex.global_position, "sight", 5.0)
+	me.set_illuminator(false)
+	_hit(me, _source(vex))
+	check(_applicable(me, rec).is_empty(), "seen, dark, one attacker: nothing to learn")
+	var report := FrameLossReport.write(me, rec)
+	check(report.lesson == "" and _lesson_lines().is_empty() and _lines().back().begins_with("Frame lost"), "the frame lost line, and no lesson line")
+	check(me.lose_part("head"), "(the head comes off)")
+	check_eq(_applicable(me, rec), ["no_head"], "without its head")
+	me.is_shielding = true
+	_hit(me, {"body": vex, "name": vex.mecha_name, "from": Vector2(0, 1000)})
+	me.is_shielding = false
+	check("shield_flanked" in _applicable(me, rec), "shielding, hit from behind")
+	var facts := FrameLossReport.gather(me, rec)
+	check(not facts.overweight, "(not over capacity)")
+	facts.overweight = true
+	check("overweight" in FrameLossReport.applicable(facts), "over capacity")
+
+
+func _test_rotation() -> void:
+	check_eq(FrameLossReport.pick(["unseen", "lit"], {}), "unseen", "none shown yet: by priority")
+	check_eq(FrameLossReport.pick(["unseen", "lit"], {"unseen": 1}), "lit", "the least shown")
+	check_eq(FrameLossReport.pick(["unseen", "lit"], {"unseen": 2, "lit": 2}), "unseen", "a tie: by priority")
+	check_eq(FrameLossReport.pick([], {}), "", "none")
+	# Three losses alike.
+	var critical := []
+	for i in 3:
+		var made := _recorded()
+		var vex := _mecha(Vector2(0, -1000), "Vex")
+		_hit(made[0], _source(vex), _weapon_id, "core", "cockpit", 9)
+		FrameLossReport.write(made[0], made[1])
+		critical.append(MechLog.lines.back().critical)
+	var lessons := _lesson_lines()
+	check(lessons.size() == 3 and lessons[0].contains("sensors") and lessons[1].contains("illuminator") and lessons[2].contains("sensors"),
+			"one loss after another alike: unseen, then lit, then unseen again")
+	check_eq(critical, [true, true, false], "new ones stand out, a repeat doesn't")
+	check(PlayerProgress.lesson_count("unseen") == 2 and PlayerProgress.lesson_count("lit") == 1, "each counted")
+	var data := PlayerProgress.get_save_data()
+	check_eq(data.get("lessons_seen"), {"unseen": 2, "lit": 1}, "saved")
+	PlayerProgress.lessons_seen = {}
+	PlayerProgress.set_save_data(data)
+	check_eq(PlayerProgress.lessons_seen, {"unseen": 2, "lit": 1}, "and loaded")
+	PlayerProgress.set_save_data({"lessons_seen": {"lit": 3.0, "junk": "a", "none": 0}})
+	check_eq(PlayerProgress.lessons_seen, {"lit": 3}, "a bad entry in a save is dropped")
+	PlayerProgress.set_save_data({})
+	check(PlayerProgress.lessons_seen.is_empty(), "an older save: none shown yet")
+
+
+func _test_texts() -> void:
+	var facts := {"killer": "Vex", "attackers": 3, "species": "Coyote"}
+	for id in FrameLossReport.ORDER:
+		var text := FrameLossReport.lesson_text(id, facts)
+		check(text != "" and not text.contains("{"), "'%s' has a line, with everything filled in" % id)
+		for word in BANNED_WORDS:
+			check(not text.to_lower().contains(word), "'%s' doesn't say '%s'" % [id, word])
+	check(FrameLossReport.lesson_text("unseen", facts).contains("(%s)" % MechUI.key_name("sweep")), "keys by what they are bound to")
+	var creatures := FrameLossReport.creature_texts()
+	check(creatures.has("default"), "a line for a creature without its own")
+	var species := _species_in("res://game/entities")
+	check(species.size() >= 5, "(found the game's species: %s)" % ", ".join(species))
+	for kind in species:
+		check(creatures.has(kind), "%s has its own line" % kind)
+	for kind in creatures:
+		for word in BANNED_WORDS:
+			check(not str(creatures[kind]).to_lower().contains(word), "%s's line doesn't say '%s'" % [kind, word])
+
+
+# The species the creatures' scenes and scripts give themselves.
+func _species_in(path: String) -> Array:
+	var found := []
+	var pattern := RegEx.create_from_string("^species = \"([^\"]+)\"")
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return found
+	for sub in dir.get_directories():
+		for kind in _species_in(path.path_join(sub)):
+			if not kind in found:
+				found.append(kind)
+	for file in dir.get_files():
+		if not (file.ends_with(".tscn") or file.ends_with(".gd")):
+			continue
+		for line in FileAccess.get_file_as_string(path.path_join(file)).split("\n"):
+			var hit := pattern.search(line.strip_edges())
+			if hit != null and not hit.get_string(1) in found:
+				found.append(hit.get_string(1))
+	return found

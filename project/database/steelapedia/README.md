@@ -62,6 +62,8 @@ The conditions use the `StoryDirector` shapes:
 - `{"not_reached": "chapter_2"}`: the story did not reach it.
 - `{"flags": {"met_martel": true}}`: each flag has that value.
 
+Use true/false flags. A condition on a number flag causes an engine error until the flag has a value (`StoryDirector.meets` compares a flag that is not set with `false`).
+
 ## The markup
 
 | Markup | Result |
@@ -104,7 +106,7 @@ The game makes some articles from its data. You do not need a file for them.
 | Articles | Which ones | Generated data |
 |---|---|---|
 | Parts | Every part that amazing.com sells. A secret part (`store_listed` off) only after the player has owned one. Never test parts. | Infobox: maker, part type, tech tier, price, weight, size and the comparison stats. A link to buy it on amazing.com. |
-| Manufacturers | Every maker but the test maker. | Infobox: name, short name, website, parts in the catalogue. A list of the maker's parts under "Products". A link to the maker's stock on amazing.com. |
+| Manufacturers | Every maker but the test maker. | Infobox: name, short name, website, parts in the catalogue, its FourX stock ("Traded as"). A list of the maker's parts under "Products". A link to the maker's stock on amazing.com. |
 | Entities | Every Entity species with a scene in `game/entities/`. | Infobox: species and `[CLASSIFICATION]`. |
 
 Their prose is Lorem Ipsum. Each article always shows the same Lorem Ipsum.
@@ -132,6 +134,24 @@ summary: The rifle every new pilot starts with.
 == Overview ==
 Your text.
 ```
+
+## What the site shows
+
+Steelapedia looks like a wiki from about 2005: a light page, the logo and three boxes on the left (navigation, search, toolbox), tabs over the article, and a footer.
+
+| Page | What it shows |
+|---|---|
+| Main Page | The welcome line and the portals (the categories). Today's featured article: one article a session, with its `summary` and the first paragraph of its text. In the news: pilot.net's three newest `news` posts. Did you know...: Lorem Ipsum. New articles: the articles that showed last. Today's featured picture: a part's picture, one a session. The sister sites. |
+| An article | The tabs **article**, **discussion**, **view source** and **history**. Each section heading has an **[edit]** link to view source. |
+| view source (`?action=edit`) | The article as markup, with only what shows now: no hidden sections and no `requires` lines. A writer can copy it. |
+| history (`?action=history`) | The day the page appeared. |
+| discussion (`?action=talk`) | An empty discussion page. |
+| What links here (toolbox) | The articles that link to this one: links in their text and infobox, See also, a part's link to its maker, a maker's links to its parts. |
+| Special pages (toolbox) | All pages, the categories, a random article and the search. |
+
+The search box has two buttons. **Go** opens the article with that exact title, if there is one. **Search** always lists the results.
+
+"New articles" uses the day each article first showed. Gate an article with `requires` to make it show there when the story reaches it.
 
 ## The sample files
 

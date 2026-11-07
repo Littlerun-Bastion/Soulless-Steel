@@ -24,7 +24,7 @@ class_name NetWindow
 ## open address again. A load that's stopped or replaced leaves the history
 ## as it was.
 
-const HOME_URL := "amazing.com"
+const HOME_URL := "pilot.net"
 const LOAD_ENABLED := true
 const LOAD_MIN := 1.0
 const LOAD_MAX := 3.0

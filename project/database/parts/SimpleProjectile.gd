@@ -1,4 +1,4 @@
-extends Node2D
+extends Area2D
 
 enum TYPE {INSTANT, REGULAR, COMPLEX}
 
@@ -77,8 +77,18 @@ var deflected_from_body = null
 # doesn't hurt them either (AcidGlob). A mecha's round still stops in the
 # first Entity it meets.
 var _from_entity := false
-## Entities the movement ray looks past in one step, for an Entity's round.
-const MAX_ENTITY_SKIPS := 6
+## How many things the movement ray meets and looks past in one step (walls
+## crossed, vehicles that didn't stop it, Entities for an Entity's round, a
+## bubble that went down) before the round just flies the rest of the step.
+const MAX_HOPS := 32
+## How far (px) a round flies before it is removed, when it meets nothing.
+@export var max_flight_distance := 20000.0
+
+# The movement ray and the inside-a-mecha check, made once per round (_fly);
+# both skip the shooter's body (_skip_shooter).
+var _ray: PhysicsRayQueryParameters2D = null
+var _point: PhysicsPointQueryParameters2D = null
+var _skip: Array[RID] = []
 
 func _ready():
 	LightEffect = get_node("Sprite2D/LightEffect")
@@ -95,82 +105,143 @@ func _physics_process(dt):
 		if deflection_cooldown <= 0:
 			deflected_from_body = null
 	
-	# Building walls and vehicles: each wall crossed costs 1 AP and the shot
-	# stops at the wall where its AP reaches 0; a vehicle stops it by chance
-	# (see MapSenses).
-	var cover := MapSenses.trace_shot(get_world_2d(), position, position + (dir*speed*dt), armor_pen, false, true)
-	armor_pen = cover.ap
-	if cover.stop != null:
-		position = cover.stop - dir * 2.0
-		speed = 0
-		die(null)
+	if not _fly(dir * speed * dt):
 		return
 
-	# Raycast movement to catch high-speed collisions (walls and vehicles
-	# handled above)
-	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(position, position + (dir*speed*dt), MapSenses.SHOT_MASK)
-	query.exclude = [self]
-
-	var result = _cast(space_state, query)
-	# A bubble whose shield went down this frame (its shape goes off at the
-	# end of the frame) stops nothing: look past it.
-	if result and result.collider is Mecha and _is_bubble(result) and not result.collider.shield_blocks(position):
-		query.from = result.position + dir * 2.0
-		result = _cast(space_state, query)
-
-	if result and result.collider:
-		var is_mecha = result.collider.is_in_group("mecha")
-		var distance_to_hit = result.position.distance_to(position)
-		var shielded: bool = result.collider is Mecha and _not_shooter(result.collider) \
-				and result.collider.shield_blocks(position)
-		
-		# A raised shield, met from outside: the shield check, not the armour
-		if shielded and not has_impacted and deflection_cooldown <= 0:
-			handle_shield_hit(result.collider, result.collider.shield_entry_point(position, result.position))
-			if dying:
-				return
-		# Ignore hits that are too close (self-collision)
-		elif distance_to_hit < 15:
-			position += dir*speed*dt
-		# If we hit a mecha, manually trigger armor check
-		elif is_mecha and not has_impacted and deflection_cooldown <= 0:
-			position = result.position
-			if original_mecha_info and original_mecha_info.has("body") and result.collider != original_mecha_info.body:
-				handle_mecha_raycast_hit(result.collider, result.position)
-		# During cooldown, pass through mechas
-		elif is_mecha and deflection_cooldown > 0:
-			position += dir*speed*dt
-		else:
-			# Stop for non-mecha obstacles (walls, terrain, Entities) and die
-			position = result.position
-			speed = 0
-			hit_entity(result.collider)
-			die(result.collider)  # NEW: Die when hitting terrain
-			return  # NEW: Exit immediately
-	else:
-		position += dir*speed*dt
-		
 	distance += speed*dt
+	# A round that met nothing doesn't fly on for ever.
+	if distance >= max_flight_distance:
+		queue_free()
+		return
 	speed = max(speed - (bullet_drag + randf_range(-bullet_drag_var, bullet_drag_var)) * dt, min_speed)
 	final_damage = base_damage * (pow(dropoff_modifier, distance/1000))
 	if not $LifeTimer.is_stopped():
 		modulate.a = min(1.0, ($LifeTimer.time_left/(life_time/4)))
 
 
-# The movement ray's first hit; an Entity's round looks past Entities.
-func _cast(space_state: PhysicsDirectSpaceState2D, query: PhysicsRayQueryParameters2D) -> Dictionary:
-	var result := space_state.intersect_ray(query)
-	if not _from_entity:
-		return result
-	var skipped: Array[RID] = []
-	for _i in MAX_ENTITY_SKIPS:
-		if result.is_empty() or not (result.collider is Node and result.collider.is_in_group("entity")):
-			return result
-		skipped.append(result.rid)
-		query.exclude = skipped
-		result = space_state.intersect_ray(query)
-	return {} if not result.is_empty() and result.collider is Node and result.collider.is_in_group("entity") else result
+# One step of flight along `step`, on one ray that meets what is in the way
+# in order, nearest first:
+#   a building wall    costs 1 AP; the round stops where its AP runs out
+#   a vehicle          stops it by chance (both by MapSenses.cover_hit)
+#   a mecha            a parry, its raised shield, or an armour hit on the
+#                      part there (_meet_mecha); in the deflection cooldown
+#                      the round flies through mechas
+#   an Entity          a hit; an Entity's round flies through Entities
+#   anything else      stops it (terrain, a wreck, a device, which is hit)
+# The shooter is never in the way (_skip). A round already inside a mecha's
+# outline when the step starts (the mecha walked onto it, or the muzzle was
+# inside it) meets that mecha where it is. Returns whether the round flew the
+# whole step.
+func _fly(step: Vector2) -> bool:
+	var space := get_world_2d().direct_space_state
+	if deflection_cooldown <= 0.0 and not has_impacted:
+		var inside := _mecha_at(space, position)
+		if not inside.is_empty():
+			_meet_mecha(inside.collider, position, inside.part)
+			return false
+	var length_sq := step.length_squared()
+	if length_sq < 0.0001:
+		return true
+	var origin := position
+	var skip: Array[RID] = _skip
+	_ray.from = position
+	_ray.to = position + step
+	for _i in MAX_HOPS:
+		_ray.exclude = skip
+		var hit := space.intersect_ray(_ray)
+		if hit.is_empty():
+			break
+		var collider = hit.collider
+		if MapSenses.is_cover(hit):
+			var cover := MapSenses.cover_hit(hit, armor_pen, false, true)
+			armor_pen = cover.ap
+			if cover.stop != null:
+				position = cover.stop - dir * 2.0
+				speed = 0
+				die(null)
+				return false
+			_ray.from = hit.position + dir * 0.5
+		elif collider is Node and collider.is_in_group("mecha"):
+			if deflection_cooldown > 0.0:
+				skip = _skipping(skip, hit.rid)
+				continue
+			var part: String = collider.get_part_name_from_shape(hit.shape)
+			# A bubble whose shield went down this frame (its shape goes off
+			# at the end of the frame) stops nothing: look past it, from
+			# inside the bubble, where the ray doesn't meet it again.
+			if part == "shield" and not collider.shield_blocks(position):
+				_ray.from = hit.position + dir * 2.0
+			else:
+				_meet_mecha(collider, hit.position, part)
+				return false
+		elif _from_entity and collider is Node and collider.is_in_group("entity"):
+			skip = _skipping(skip, hit.rid)
+			continue
+		else:
+			position = hit.position
+			speed = 0
+			hit_entity(collider)
+			die(collider)
+			return false
+		if origin.distance_squared_to(_ray.from) >= length_sq:
+			break
+	position += step
+	return true
+
+
+# `skip` with `rid` added, as a new array: the round's own _skip stays as it
+# is for the next step.
+func _skipping(skip: Array[RID], rid: RID) -> Array[RID]:
+	var more: Array[RID] = skip.duplicate()
+	more.append(rid)
+	return more
+
+
+# The mecha whose outline (a part, not the shield bubble) holds `point`, other
+# than the shooter: {"collider", "part"}, or empty.
+func _mecha_at(space: PhysicsDirectSpaceState2D, point: Vector2) -> Dictionary:
+	_point.position = point
+	_point.exclude = _skip
+	for result in space.intersect_point(_point, 8):
+		var body = result.collider
+		if body is Node and body.is_in_group("mecha"):
+			var part: String = body.get_part_name_from_shape(result.shape)
+			if part != "shield":
+				return {"collider": body, "part": part}
+	return {}
+
+
+# The round meets mecha `body` at `point` on `part`: a parry sends it back (a
+# chassis can't parry); a raised shield met from outside takes it
+# (handle_shield_hit); anything else is an armour hit there
+# (handle_mecha_raycast_hit).
+func _meet_mecha(body, point: Vector2, part: String) -> void:
+	if body.is_parrying and not is_overtime and part != "chassis":
+		position = point
+		_parried_by(body)
+		return
+	if not has_impacted and body.shield_blocks(position):
+		handle_shield_hit(body, body.shield_entry_point(position, point))
+		return
+	position = point
+	handle_mecha_raycast_hit(body, point)
+
+
+# A parry sends the round straight back, as the parrying mecha's round: it
+# can hit its first shooter now, and never the mecha that sent it back.
+func _parried_by(body) -> void:
+	dir = -dir
+	rotation_degrees = rad_to_deg(dir.angle()) + 90
+	original_mecha_info.body = body
+	original_mecha_info.name = body.mecha_name
+	_skip_shooter(body)
+
+
+# The ray and the inside check never meet `shooter`.
+func _skip_shooter(shooter) -> void:
+	_skip = []
+	if shooter is CollisionObject2D:
+		_skip.append(shooter.get_rid())
 
 func setup(mecha, _args, _weapon):
 	if random_rotation:
@@ -186,6 +257,14 @@ func setup(mecha, _args, _weapon):
 		"name": mecha.mecha_name,
 	}
 	_from_entity = mecha is Node and mecha.is_in_group("entity")
+	_ray = PhysicsRayQueryParameters2D.create(Vector2.ZERO, Vector2.ZERO,
+			MapSenses.SHOT_MASK | MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK)
+	_point = PhysicsPointQueryParameters2D.new()
+	_point.collision_mask = collision_mask
+	_skip_shooter(mecha)
+	# Hits are the movement ray's (_fly). The Area stays only so others can
+	# sense the round (an NPC's NearbyProjectile, to dodge); it watches nothing.
+	monitoring = false
 	change_scaling(projectile_size)
 
 	part_id = _weapon
@@ -255,6 +334,13 @@ func handle_mecha_raycast_hit(body, collision_point: Vector2):
 		speed = 0
 		has_impacted = true
 		die(body)
+		return
+
+	# Neither through nor off: the armour stopped the round (or the part it
+	# met has come off). It ends there.
+	speed = 0
+	has_impacted = true
+	die(body)
 
 
 # The round meets a raised shield's bubble at `point`, coming from outside it
@@ -274,15 +360,6 @@ func handle_shield_hit(body, point: Vector2) -> void:
 	die(body)
 
 
-# The movement ray's hit is on a mecha's shield bubble.
-func _is_bubble(result: Dictionary) -> bool:
-	return result.collider.get_part_name_from_shape(result.shape) == "shield"
-
-
-func _not_shooter(body) -> bool:
-	return not (original_mecha_info and original_mecha_info.has("body") and body == original_mecha_info.body)
-
-
 # After a bounce: mechas don't stop the round for a moment, and it ends a
 # little later wherever it is.
 func _deflected_off(body) -> void:
@@ -300,37 +377,6 @@ func _deflected_off(body) -> void:
 	# child, so if this projectile is freed the timer never fires.
 	kill_timer.timeout.connect(_on_deflect_kill_timeout.bind(body))
 	kill_timer.start()
-
-func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_shape):
-	if _from_entity and body.is_in_group("entity"):
-		return
-	# Only parries are handled here: the armour and the shield use the
-	# movement ray (handle_mecha_raycast_hit, handle_shield_hit), so touching
-	# a shield's bubble does nothing here.
-	if body.is_in_group("mecha"):
-		if deflection_cooldown > 0:
-			return
-		if body.is_shape_id_chassis(body_shape_id):
-			return
-		
-		if original_mecha_info and original_mecha_info.has("body") and body != original_mecha_info.body:
-			# Shield parry
-			if body.is_parrying and not is_overtime:
-				dir = -dir
-				rotation_degrees = rad_to_deg(dir.angle()) + 90
-				original_mecha_info.body = body
-				original_mecha_info.name = body.mecha_name
-				return
-		if body.get_part_name_from_shape(body_shape_id) == "shield":
-			return
-
-	# Hit non-mecha
-	if not body.is_in_group("mecha") or\
-	(not is_overtime and original_mecha_info and body != original_mecha_info.body):
-		if not body.is_in_group("mecha"):
-			mech_hit = false
-			hit_entity(body)
-		die(body)
 
 
 # Entities (creatures) have no armour parts: one hit, armour pen against their

@@ -136,26 +136,47 @@ static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop
 		var result := space.intersect_ray(query)
 		if result.is_empty():
 			break
-		var collider: Object = result.collider
-		var field: VehicleField = null
-		if collider is VehicleField:
-			field = collider
-		elif collider != null and collider.get_parent() is VehicleField:
-			field = collider.get_parent()
-		if field != null:
-			var index := field.index_of(collider, result.rid)
-			var stopped := randf() < field.shot_block_for(collider, result.rid)
-			if damage and index >= 0:
-				field.damage(index, SHOT_VEHICLE_DAMAGE)
-			if stopped:
-				return {"ap": ap, "stop": result.position, "by": "vehicle"}
-		else:
-			ap -= 1
-			if ap <= 0 or stop_at_wall:
-				return {"ap": maxi(ap, 0), "stop": result.position, "by": "wall"}
+		var met := cover_hit(result, ap, stop_at_wall, damage)
+		if met.stop != null:
+			return met
+		ap = met.ap
 		start = result.position + dir * 0.5
 		if from.distance_squared_to(start) >= length_sq:
 			break
+	return {"ap": ap, "stop": null, "by": ""}
+
+
+# Whether the body a ray `result` met is cover: a building wall or a vehicle
+# (on WALL_MASK or VEHICLE_MASK).
+static func is_cover(result: Dictionary) -> bool:
+	return PhysicsServer2D.body_get_collision_layer(result.rid) & (WALL_MASK | VEHICLE_MASK) != 0
+
+
+# A shot with `ap` armour pen meeting one piece of cover (a ray `result` on a
+# wall or a vehicle), by trace_shot's rules: a wall costs 1 AP and stops the
+# shot when its AP reaches 0 (or at once if stop_at_wall); a vehicle stops it
+# with its shot_block chance and with `damage` takes SHOT_VEHICLE_DAMAGE.
+# Returns {"ap": AP left, "stop": where it stopped or null, "by": "wall",
+# "vehicle" or ""}. A round that also meets mechas on the way uses it hit by
+# hit (SimpleProjectile._fly).
+static func cover_hit(result: Dictionary, ap: int, stop_at_wall := false, damage := false) -> Dictionary:
+	var collider: Object = result.collider
+	var field: VehicleField = null
+	if collider is VehicleField:
+		field = collider
+	elif collider != null and collider.get_parent() is VehicleField:
+		field = collider.get_parent()
+	if field != null:
+		var index := field.index_of(collider, result.rid)
+		var stopped := randf() < field.shot_block_for(collider, result.rid)
+		if damage and index >= 0:
+			field.damage(index, SHOT_VEHICLE_DAMAGE)
+		if stopped:
+			return {"ap": ap, "stop": result.position, "by": "vehicle"}
+		return {"ap": ap, "stop": null, "by": ""}
+	ap -= 1
+	if ap <= 0 or stop_at_wall:
+		return {"ap": maxi(ap, 0), "stop": result.position, "by": "wall"}
 	return {"ap": ap, "stop": null, "by": ""}
 
 

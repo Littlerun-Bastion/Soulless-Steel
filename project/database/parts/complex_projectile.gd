@@ -41,6 +41,8 @@ signal create_trail
 @export var muzzle_speed:= 400
 @export var life_time = -1.0
 @export var life_time_var = 0.0
+## How far (px) a round flies before it is removed, when it meets nothing.
+@export var max_flight_distance := 20000.0
 @export var random_rotation := false
 @export var release_aligned := true
 @export var momentum_corrected := false
@@ -269,6 +271,10 @@ func _physics_process(dt):
 	
 	# Update projectile state
 	distance += speed*dt
+	# A round that met nothing doesn't fly on for ever.
+	if distance >= max_flight_distance:
+		queue_free()
+		return
 	rotation_degrees = rad_to_deg(dir.angle()) + 90
 	
 	# Apply wiggle movement if configured
@@ -432,17 +438,22 @@ func _on_Projectile_body_shape_entered(_body_id, body, body_shape_id, _local_sha
 				# Get collision point from shape intersection
 				var shape = body.get_shape_from_id(body_shape_id)
 				var shape_polygon
+				# In the shape's own space: global_transform places it.
 				if shape is CollisionShape2D:
-					shape_polygon = ProjectileManager.generate_circle_polygon(shape.shape.radius, shape.global_position)
+					shape_polygon = ProjectileManager.generate_circle_polygon(shape.shape.radius, Vector2.ZERO)
 				else:
 					shape_polygon = shape.polygon
 				var points = ProjectileManager.get_intersection_points(Collision.polygon, Collision.global_transform,\
 																		shape_polygon, shape.global_transform)
-				var collision_point
-				if points.size() > 0:
-					collision_point = points[0]
-				else:
-					collision_point = global_position
+				# Where the round went in: of the points where its outline
+				# crosses the part's, the one nearest where it came from.
+				var collision_point = global_position
+				var nearest := INF
+				for point in points:
+					var d: float = (point as Vector2).distance_squared_to(_last_position)
+					if d < nearest:
+						nearest = d
+						collision_point = point
 				
 				# Find which part was hit using physics point query
 				var space_state = get_world_2d().direct_space_state

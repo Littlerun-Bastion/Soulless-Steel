@@ -35,5 +35,4 @@ polygon = PackedVector2Array(-5, -25, 4, -25, 4, 22, -5, 22)
 
 [node name="LifeTimer" type="Timer" parent="." unique_id=361668291]
 
-[connection signal="body_shape_entered" from="." to="." method="_on_Projectile_body_shape_entered"]
 [connection signal="timeout" from="LifeTimer" to="." method="_on_LifeTimer_timeout"]

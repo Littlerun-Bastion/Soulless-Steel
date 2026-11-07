@@ -1,0 +1,7 @@
+{
+	"_about": "pilot.net's pilot directory (PilotNet). Each key is a callsign (a named NPC's mecha_name). affiliation: one line. bio: the profile text (blank lines make paragraphs). requires (optional): StoryDirector conditions; the profile shows only while they pass. steelapedia (optional): an article slug to link to. The known build on a profile comes from the named NPC's special_npc resource (database/npcs/special_npcs/). See database/pilotnet/README.md. Bios and affiliations are placeholders.",
+	"Lady Volk": {
+		"affiliation": "[AFFILIATION]",
+		"bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+	}
+}

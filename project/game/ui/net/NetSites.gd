@@ -6,21 +6,28 @@ extends RefCounted
 ## An address is "domain/path?query". "http://", "www." and upper case in
 ## the domain are accepted and dropped (parse); the address field shows
 ## "http://www.<domain>/<path>" (display). build() makes the page for a
-## domain: amazing.com is built, the planned sites (PLANNED, and every
-## maker's own site) show Under Construction, and anything else is Server
-## not found.
+## domain: the built sites (SITES) have their own pages (pilot.net's in the
+## look PilotNet.look() names), the planned sites (PLANNED, and every maker's
+## own site) show Under Construction, and anything else is Server not found.
 
 const STORE_DOMAIN := "amazing.com"
-const PLANNED := {
-	"steelapedia.net": "Steelapedia",
-	"pilot.net": "pilot.net",
-	"fourx.net": "FourX.net",
+const PILOTNET_DOMAIN := "pilot.net"
+const STEELAPEDIA_DOMAIN := "steelapedia.net"
+const FOURX_DOMAIN := "fourx.net"
+## The built sites: domain -> name (build() makes their pages).
+const SITES := {
+	STORE_DOMAIN: "amazing.com",
+	PILOTNET_DOMAIN: "pilot.net",
+	STEELAPEDIA_DOMAIN: "Steelapedia",
+	FOURX_DOMAIN: "FourX.net",
 }
+## Sites still to build: domain -> name (they show Under Construction).
+const PLANNED := {}
 ## The favorites row: [label, domain].
 const FAVORITES := [
+	["pilot.net", "pilot.net"],
 	["amazing.com", "amazing.com"],
 	["Steelapedia", "steelapedia.net"],
-	["pilot.net", "pilot.net"],
 	["FourX.net", "fourx.net"],
 ]
 const BUILT := "built"
@@ -87,7 +94,7 @@ static func display(address: String) -> String:
 
 
 static func kind_of(domain: String) -> String:
-	if domain == STORE_DOMAIN:
+	if SITES.has(domain):
 		return BUILT
 	if PLANNED.has(domain):
 		return PLANNED_SITE
@@ -99,8 +106,8 @@ static func kind_of(domain: String) -> String:
 
 ## The site's name, "" for an unknown domain.
 static func site_name(domain: String) -> String:
-	if domain == STORE_DOMAIN:
-		return STORE_DOMAIN
+	if SITES.has(domain):
+		return SITES[domain]
 	if PLANNED.has(domain):
 		return PLANNED[domain]
 	var maker := Manufacturers.of_domain(domain)
@@ -113,7 +120,13 @@ static func site_name(domain: String) -> String:
 static func build(domain: String) -> NetPage:
 	var page: NetPage
 	var kind := kind_of(domain)
-	if kind == BUILT:
+	if domain == PILOTNET_DOMAIN:
+		page = PilotNetPortalPage.new() if PilotNet.look() == PilotNet.LOOK_PORTAL else PilotNetPage.new()
+	elif domain == STEELAPEDIA_DOMAIN:
+		page = SteelapediaPage.new()
+	elif domain == FOURX_DOMAIN:
+		page = FourXPage.new()
+	elif kind == BUILT:
 		page = AmazingPage.new()
 	elif kind == PLANNED_SITE:
 		page = UnderConstructionPage.new()
@@ -143,3 +156,19 @@ static func maker_url(maker_id: String) -> String:
 
 static func search_url(text: String) -> String:
 	return store_url("/search", {"q": text})
+
+
+## A Steelapedia article's address.
+static func wiki_url(slug: String) -> String:
+	return make_url(STEELAPEDIA_DOMAIN, "/wiki/" + slug)
+
+
+# ---- FourX.net addresses --------------------------------------------------
+
+static func fourx_url(path := "/", query := {}) -> String:
+	return make_url(FOURX_DOMAIN, path, query)
+
+
+## An instrument's quote page.
+static func quote_url(symbol: String) -> String:
+	return fourx_url("/q/" + symbol)

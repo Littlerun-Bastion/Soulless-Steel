@@ -181,6 +181,7 @@ func _save_state() -> void:
 	_saved = {
 		"progress": JSON.parse_string(JSON.stringify(PlayerProgress.get_save_data())),
 		"story": JSON.parse_string(JSON.stringify(StoryDirector.get_save_data())),
+		"pilotnet": JSON.parse_string(JSON.stringify(PilotNet.get_save_data())),
 		"mission": MissionManager.current_mission,
 		"profile_loaded": FileManager.profile_loaded,
 		"paths": [FileManager.profile_path, FileManager.backup_path, FileManager.archive_dir],
@@ -196,6 +197,7 @@ func _save_state() -> void:
 	Global.keep_window = true
 	PlayerProgress.autosave = false
 	StoryDirector.autosave = false
+	PilotNet.autosave = false
 	# A test pressing "Continue" or "Return" must not change the scene under
 	# the runner; the target is recorded in TransitionManager.captured.
 	TransitionManager.capture_only = true
@@ -217,10 +219,12 @@ func _restore_state() -> void:
 	MouseManager.reset()
 	await wait_frames(2)  # let freed nodes go before restoring state
 	PlayerProgress.set_save_data(_saved["progress"])
+	PilotNet.set_save_data(_saved["pilotnet"])
 	StoryDirector.set_save_data(_saved["story"])
 	MissionManager.current_mission = _saved["mission"]
 	PlayerProgress.autosave = true
 	StoryDirector.autosave = true
+	PilotNet.autosave = true
 	FileManager.profile_loaded = _saved["profile_loaded"]
 	FileManager.profile_path = _saved["paths"][0]
 	FileManager.backup_path = _saved["paths"][1]

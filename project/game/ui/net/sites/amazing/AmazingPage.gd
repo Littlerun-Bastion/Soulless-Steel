@@ -310,6 +310,8 @@ func _maker(maker_id: String) -> void:
 	var site := NetUI.hbox(&"NetToolbar")
 	site.add_child(NetUI.text("Their own site:", &"NetMeta"))
 	site.add_child(NetUI.link(self, Manufacturers.domain_of(maker_id), Manufacturers.domain_of(maker_id)))
+	site.add_child(NetUI.text("|", &"NetMeta"))
+	site.add_child(NetUI.link(self, "Read about them on Steelapedia", _steelapedia_url(maker_id)))
 	main.add_child(site)
 	var entries := Store.catalogue_of_maker(maker_id)
 	if entries.is_empty():
@@ -622,8 +624,8 @@ static func _first_sentence(text: String) -> String:
 	return text.substr(0, cut + 1) if cut >= 0 else text
 
 
-func _steelapedia_url(part_id: String) -> String:
-	return NetSites.make_url("steelapedia.net", "/parts/" + part_id)
+func _steelapedia_url(slug: String) -> String:
+	return NetSites.wiki_url(slug)
 
 
 # A path's part type, matched without case; "" if it isn't one.

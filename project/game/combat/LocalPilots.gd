@@ -166,6 +166,9 @@ func join(mecha) -> void:
 	_pilots.append(mecha)
 	if mecha.is_anonymous:
 		return
+	# pilot.net remembers the pilots the player has met in an expedition.
+	if PlayerProgress.is_in_expedition() and not (mecha.has_method("is_player") and mecha.is_player()):
+		PilotNet.note_met(str(mecha.callsign))
 	roster_changed.emit()
 	if live:
 		_post(mecha, "joined", "%s has joined Local" % name_of(mecha))

@@ -1,0 +1,7 @@
+{
+	"_about": "pilot.net's look (PilotNet.look()). The site starts as the text-mode board. While new_look.requires passes (StoryDirector conditions; an empty object always passes), it is the web portal instead. new_look.notice (optional) is a line along the top of the portal; it can use the text tags. To switch in the story, set the flag: StoryDirector.set_flag(\"pilotnet_new_look\", true), a story effect {\"flags\": {\"pilotnet_new_look\": true}}, or a map trigger story:flag=pilotnet_new_look. Shift+F9 in the game forces one look for a test. See database/pilotnet/README.md. The notice is a sample.",
+	"new_look": {
+		"requires": {"flags": {"pilotnet_new_look": true}},
+		"notice": "[SAMPLE] pilot.net has a new look."
+	}
+}

@@ -309,7 +309,9 @@ func _test_addresses() -> void:
 	check_eq(NetSites.parse(NetSites.search_url("Rangda core")).query.get("q"), "Rangda core", "a search survives its address")
 	check_eq(NetSites.parse(NetSites.product_url("arm_weapon", "Kruis_CL157.0")).path, "/p/arm_weapon/Kruis_CL157.0", "a part id keeps its case")
 	check_eq(NetSites.kind_of("amazing.com"), NetSites.BUILT, "amazing.com is built")
-	check_eq(NetSites.kind_of("steelapedia.net"), NetSites.PLANNED_SITE, "Steelapedia is planned")
+	check_eq(NetSites.kind_of("fourx.net"), NetSites.BUILT, "FourX.net is built")
+	check_eq(NetSites.kind_of("steelapedia.net"), NetSites.BUILT, "Steelapedia is built")
+	check_eq(NetSites.kind_of("pilot.net"), NetSites.BUILT, "so is pilot.net")
 	check_eq(NetSites.kind_of(Manufacturers.domain_of("claymore")), NetSites.PLANNED_SITE, "a maker's site is planned")
 	check_eq(NetSites.kind_of(Manufacturers.domain_of("test")), NetSites.UNKNOWN, "but not the test maker's")
 	check_eq(NetSites.kind_of("nowhere.example"), NetSites.UNKNOWN, "anything else is unknown")
@@ -319,10 +321,10 @@ func _test_addresses() -> void:
 	check_eq(window.current_url, "amazing.com/c/head", "the window opens the canonical address")
 	check(window.page is AmazingPage, "amazing.com's page")
 	check_eq(window.address_field.text, "http://www.amazing.com/c/head", "the address field")
-	window.navigate("steelapedia.net/parts/x")
+	window.navigate(Manufacturers.domain_of("claymore") + "/forum")
 	check(window.page is UnderConstructionPage, "a planned site: Under Construction")
 	var text := _text(window.page)
-	check("UNDER CONSTRUCTION" in text and "Steelapedia" in text and UnderConstructionPage.MESSAGE in text,
+	check("UNDER CONSTRUCTION" in text and Manufacturers.display_name("claymore") in text and UnderConstructionPage.MESSAGE in text,
 			"with the site's name and the message")
 	check(_find_link(window.page, "Back to the home page") != null, "and a link home")
 	window.navigate("nowhere.example/page")
@@ -332,7 +334,7 @@ func _test_addresses() -> void:
 	window.reload()
 	check(window.page is ServerNotFoundPage and window.current_url == "nowhere.example/page", "RELOAD tries again")
 	_find_link(window.page, "Go to the home page").pressed.emit()
-	check_eq(window.current_url, "amazing.com/", "the link goes home")
+	check_eq(window.current_url, "pilot.net/", "the link goes home (pilot.net)")
 
 
 func _test_history() -> void:
@@ -514,7 +516,7 @@ func _test_frame() -> void:
 	check_eq(window._favorites["amazing.com"].theme_type_variation, &"NetFavoriteActive", "the open site shows bright")
 	check_eq(window._favorites["steelapedia.net"].theme_type_variation, &"NetFavorite", "the others don't")
 	window._favorites["steelapedia.net"].pressed.emit()
-	check(window.page is UnderConstructionPage and window._favorites["steelapedia.net"].theme_type_variation == &"NetFavoriteActive",
+	check(window.page is SteelapediaPage and window._favorites["steelapedia.net"].theme_type_variation == &"NetFavoriteActive",
 			"a favorite opens its site")
 	var maker := _action("net_makers", "maker_claymore")
 	check(not maker.is_empty() and maker.label == "Claymore International", "the Manufacturers menu lists the makers")

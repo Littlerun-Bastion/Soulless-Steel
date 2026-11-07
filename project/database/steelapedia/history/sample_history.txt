@@ -1,0 +1,9 @@
+title: [SAMPLE] Sample history
+summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+requires: {"flags": {"sample_history_unlocked": true}}
+infobox.Year: [YEAR]
+---
+'''Lorem ipsum''' dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. This whole article stays hidden until the flag sample_history_unlocked is set.
+
+== Lorem ipsum ==
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.

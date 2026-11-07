@@ -502,6 +502,7 @@ func _on_mecha_died(mecha) -> void:
 		if _was_hit_by_player(mecha):
 			player_kills.append(mecha.mecha_name)
 			MissionManager.report_kill()
+			PilotNet.report_kill(mecha)
 		FrameSpikeDetector.mark("died:queue_free")
 		mecha.queue_free()
 
@@ -513,6 +514,7 @@ func _on_entity_died(entity) -> void:
 	if _was_hit_by_player(entity):
 		player_kills.append(entity.mecha_name)
 		MissionManager.report_kill()
+		PilotNet.report_kill(entity)
 
 
 # Match-end on player death: hold the view on the arena camera, tear down

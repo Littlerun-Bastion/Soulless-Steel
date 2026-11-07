@@ -65,6 +65,8 @@ func _ready() -> void:
 	MechOS.set_app_available("fabricator", true)
 	MechOS.set_app_available("facilities", true)
 	MechOS.set_app_available("net", true)
+	# Home: pilot.net pays the gigs completed since the last visit.
+	PilotNet.pay_completed()
 	_open_windows()
 	if open_net_url != "":
 		var url := open_net_url

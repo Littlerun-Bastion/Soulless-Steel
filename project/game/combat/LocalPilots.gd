@@ -8,8 +8,9 @@ extends RefCounted
 ## kept after it ends so the LOC app in the hub shows the last run's log.
 ##
 ## Pilots:
-##   - Each has a callsign (Mecha.callsign). NPCs without one are given one
-##     from database/npcs/callsigns.json, never two the same in a match.
+##   - Each has a callsign (Mecha.callsign). NPCs without one are given one by
+##     CallsignGenerator, never two the same in a match (nor a named NPC's,
+##     the player's or one retired on the Memorial Wall).
 ##   - The roster lists the pilots who aren't Anonymous (Mecha.is_anonymous).
 ##   - After the intro (go_live) a pilot that joins is announced: "<name> has
 ##     joined Local". Whoever leaves, dead or extracted, gets the same line:
@@ -36,7 +37,6 @@ signal roster_changed
 ## A mecha hit another (every hit, from Mecha.take_damage): NPCs witness it.
 signal attack_noted(attacker, victim)
 
-const CALLSIGNS_PATH := "res://database/npcs/callsigns.json"
 const UNKNOWN := "Unknown"
 const MAX_LOG := 300
 ## The player's quick chat presets, in menu order. Placeholder list.
@@ -63,8 +63,9 @@ const SPARED_REPUTATION := 5
 
 ## The latest match's channel (null before the first match).
 static var current: LocalPilots = null
-static var _callsign_pool: Array = []
 
+## Rolls the callsigns given to NPCs that join without one.
+var rng := RandomNumberGenerator.new()
 ## While false (before the intro ends), joins are not announced.
 var live := false
 ## Whether the match is still running (false once its scene has gone).
@@ -129,15 +130,8 @@ static func format(entry: Dictionary) -> String:
 	return "%s: %s" % [entry.callsign, entry.text]
 
 
-## The callsign list (database/npcs/callsigns.json), loaded once.
-static func callsign_pool() -> Array:
-	if _callsign_pool.is_empty():
-		var data = JSON.parse_string(FileAccess.get_file_as_string(CALLSIGNS_PATH))
-		if data is Array:
-			_callsign_pool = data
-		else:
-			push_error("LocalPilots: %s isn't a JSON list of names" % CALLSIGNS_PATH)
-	return _callsign_pool
+func _init() -> void:
+	rng.randomize()
 
 
 func go_live() -> void:
@@ -166,6 +160,9 @@ func join(mecha) -> void:
 	_pilots.append(mecha)
 	if mecha.is_anonymous:
 		return
+	# pilot.net remembers the pilots the player has met in an expedition.
+	if PlayerProgress.is_in_expedition() and not (mecha.has_method("is_player") and mecha.is_player()):
+		PilotNet.note_met(str(mecha.callsign))
 	roster_changed.emit()
 	if live:
 		_post(mecha, "joined", "%s has joined Local" % name_of(mecha))
@@ -317,14 +314,7 @@ func _post(sender, kind: String, text: String, bark := false) -> Dictionary:
 
 
 func _free_callsign() -> String:
-	var free := callsign_pool().filter(func(n): return not _used_callsigns.has(n))
-	if not free.is_empty():
-		return str(free.pick_random())
-	var base := str(callsign_pool().pick_random()) if not callsign_pool().is_empty() else "Pilot"
-	var n := 2
-	while _used_callsigns.has("%s %d" % [base, n]):
-		n += 1
-	return "%s %d" % [base, n]
+	return CallsignGenerator.generate(rng, _used_callsigns)
 
 
 static func _is_mecha(node) -> bool:

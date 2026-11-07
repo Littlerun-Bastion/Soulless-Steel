@@ -10,6 +10,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1")
 part_name = "O10-Head"
+frame = "O10"
 price = 700.0
 tech_tier = 2
 composition = Dictionary[String, int]({"silicon": 5, "copper": 3, "steel": 1, "neural_biomatter": 2})
@@ -21,7 +22,6 @@ image = ExtResource("5")
 heatmap = ExtResource("6")
 accuracy_modifier = 1.3
 visual_range = 150
-health = 1800
 weight = 7.0
 
 [node name="Sub" type="Sprite2D" parent="."]

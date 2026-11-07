@@ -177,16 +177,17 @@ func _test_wedges() -> void:
 	var estimates := {}
 	for i in TRIALS:
 		var guess: Vector2 = me.note_round_from(shooter, from)
-		var wedge: Dictionary = me.contacts.wedges({"source": "shot"})[0]
-		inside = inside and ContactStore.wedge_contains(wedge, from)
+		var shot_wedge: Dictionary = me.contacts.wedges({"source": "shot"})[0]
+		inside = inside and ContactStore.wedge_contains(shot_wedge, from)
 		off += int(guess.distance_to(from) > 1.0)
 		estimates[guess.round()] = true
 		if i == 0:
-			check_eq(guess, ContactStore.estimate_point(wedge), "what it makes out is the wedge's estimate point")
+			check_eq(guess, ContactStore.estimate_point(shot_wedge), "what it makes out is the wedge's estimate point")
 	var wedge: Dictionary = me.contacts.wedges({"source": "shot"})[0]
 	check_eq(me.contacts.wedges({"source": "shot"}).size(), 1, "one shooter keeps one shot wedge")
 	check_eq(wedge.width, ContactStore.WEDGES.shot.width, "a shot wedge is %.0f degrees wide" % ContactStore.WEDGES.shot.width)
 	check(inside, "the shooter is inside it every time")
+	@warning_ignore("integer_division")
 	check(off == TRIALS and estimates.size() > TRIALS / 2, "its estimate point is a guess, never the shooter, and it changes shot to shot")
 	check(_angle_off(wedge, from) <= wedge.width * 0.5, "its bearing within half its width of the truth")
 	var centre := (float(wedge.min_range) + float(wedge.max_range)) * 0.5
@@ -393,15 +394,15 @@ func _test_npc_lock() -> void:
 	check(not npc.lock_reason_for(elsewhere), "but not for a mech outside the wedge")
 
 	npc.personality.skill = 0.0
-	var slow := []
-	var fast := []
+	var slow_times := []
+	var fast_times := []
 	for i in 40:
-		slow.append(npc.lock_search_time())
+		slow_times.append(npc.lock_search_time())
 	npc.personality.skill = 1.0
 	for i in 40:
-		fast.append(npc.lock_search_time())
-	check(slow.all(func(t): return t >= 4.5 - 0.001 and t <= 5.0), "skill 0 searches 4.5 to 5 s (%.2f to %.2f)" % [slow.min(), slow.max()])
-	check(fast.all(func(t): return t >= 2.0 and t <= 2.5 + 0.001), "skill 1, 2 to 2.5 s (%.2f to %.2f)" % [fast.min(), fast.max()])
+		fast_times.append(npc.lock_search_time())
+	check(slow_times.all(func(t): return t >= 4.5 - 0.001 and t <= 5.0), "skill 0 searches 4.5 to 5 s (%.2f to %.2f)" % [slow_times.min(), slow_times.max()])
+	check(fast_times.all(func(t): return t >= 2.0 and t <= 2.5 + 0.001), "skill 1, 2 to 2.5 s (%.2f to %.2f)" % [fast_times.min(), fast_times.max()])
 	check(is_equal_approx(npc.lock_slip_chance(), 0.02), "slips 2% a second at skill 1")
 	npc.personality.skill = 0.0
 	check(is_equal_approx(npc.lock_slip_chance(), 0.10), "and 10% at skill 0")
@@ -493,9 +494,9 @@ func _test_sweeps() -> void:
 	var front := RadarCrossSection.relative(mech, sweeper.global_position)
 	for row in [[1.0, "mech"], [0.6, "Coyote"], [0.2, "Raven"], [0.05, "Tick"]]:
 		_set_factor(mech, float(row[0]) / front)
-		var found: Dictionary = sweeper.sweep(Vector2.UP, 30.0).counts
+		var counts: Dictionary = sweeper.sweep(Vector2.UP, 30.0).counts
 		sweeper.sweep_cooldown = 0.0
-		check(found.get(row[1]) == 1 and found.size() == 1, "relative RCS %.2f reads as %s (%s)" % [row[0], row[1], Mecha.describe_sweep(found)])
+		check(counts.get(row[1]) == 1 and counts.size() == 1, "relative RCS %.2f reads as %s (%s)" % [row[0], row[1], Mecha.describe_sweep(counts)])
 	_set_factor(mech, 1.0)
 	mech.global_rotation = PI * 0.5
 	var side := RadarCrossSection.relative(mech, sweeper.global_position)
@@ -539,7 +540,7 @@ func _test_radar() -> void:
 	var unknown := _mecha(o + Vector2(0, sight * 0.5))
 	var far_one := _mecha(o + Vector2(-sight * 0.9, 0))
 	var gone := _mecha(o + Vector2(0, -sight * 2.0))
-	var untracked := _mecha(o + Vector2(sight * 0.5, sight * 0.5))
+	var _untracked := _mecha(o + Vector2(sight * 0.5, sight * 0.5))
 	_player.contacts.report(mech, "mech", mech.global_position, "sight", 1.0)
 	_player.contacts.report(unknown, IRSensing.KIND, unknown.global_position, IRSensing.SOURCE, 1.0)
 	_player.contacts.report(far_one, "Stalker", far_one.global_position, "ward", 1.0)

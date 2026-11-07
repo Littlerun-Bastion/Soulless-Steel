@@ -5,7 +5,6 @@ signal update_lock_mode
 signal update_building_status
 signal reloading
 signal finished_reloading
-signal lost_health
 # A sweep went out (result from Mecha.sweep), or couldn't ("cooldown").
 signal sweep_done(result: Dictionary)
 signal sweep_refused(reason: String)
@@ -389,8 +388,8 @@ func update_camera_offset(dt):
 	if limit <= 0.0:
 		Cam.pan_offset = Vector2.ZERO
 		return
-	var velocity := pan_velocity(get_viewport().get_mouse_position(), get_viewport().get_visible_rect().size, limit)
-	Cam.pan_offset = (Cam.pan_offset + velocity * dt).limit_length(limit)
+	var pan_vector := pan_velocity(get_viewport().get_mouse_position(), get_viewport().get_visible_rect().size, limit)
+	Cam.pan_offset = (Cam.pan_offset + pan_vector * dt).limit_length(limit)
 
 
 ## How fast (px/s) the camera pans with the cursor at `mouse` on a `screen`
@@ -417,13 +416,6 @@ static func pan_velocity(mouse: Vector2, screen: Vector2, limit: float) -> Vecto
 	if axes == 2:
 		push /= sqrt(2.0)
 	return push * limit / MOVE_CAMERA_PAN_TIME
-
-
-func take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
-	var prev_hp = hp
-	super.take_damage(amount, shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name)
-	if prev_hp > hp:
-		emit_signal("lost_health")
 
 
 func do_hitstop():
@@ -712,6 +704,7 @@ func release_internal() -> void:
 		return
 	var held := _internal_held
 	_internal_held = -1.0
+	@warning_ignore("incompatible_ternary")
 	_use_internal_feedback(use_internal(null if held < TAP_TIME else get_global_mouse_position()))
 
 

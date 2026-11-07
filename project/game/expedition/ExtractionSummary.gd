@@ -192,7 +192,7 @@ func _build() -> void:
 
 # One of the three columns: a divider on its right unless it's the last.
 func _column(row: HBoxContainer, title: String, divided: bool) -> VBoxContainer:
-	var holder: Control = MechUI.pane(&"PaneDivider") if divided else MechUI.vbox(&"PaneStack")
+	var holder: Control = (MechUI.pane(&"PaneDivider") as Control) if divided else MechUI.vbox(&"PaneStack")
 	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	holder.size_flags_stretch_ratio = 1.0
 	var area := MechUI.scroll_box(&"StatGroup")

@@ -20,6 +20,7 @@
 script = ExtResource("1")
 coolant_type = ExtResource("coolant_default")
 part_name = "O10-Core"
+frame = "O10"
 price = 1700.0
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 6, "copper": 3, "silicon": 2, "nt_fluid": 2})
@@ -28,7 +29,6 @@ manufacturer_name_short = "Orontes"
 tagline = "Light3D Core"
 description = "A well-rounded defensive core part with space for ordnance, good quality shield projectors, and good weight efficiency for its size and weight bracket. Poor stability amongst its peers."
 image = ExtResource("14")
-health = 5400.0
 shield_strength = 3.0
 stability = 110.0
 rotation_range = 22.0

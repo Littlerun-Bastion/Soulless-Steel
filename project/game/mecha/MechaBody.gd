@@ -517,10 +517,10 @@ func part_look(slot: String, with_glow := false) -> Node2D:
 
 ## A part's material for carrying off: its own copy, with the heat shader's
 ## heat at ambient (0), as a body's parts go once cool.
-static func cold_material(material: Material) -> Material:
-	if not material is ShaderMaterial:
-		return material
-	var copy: ShaderMaterial = material.duplicate()
+static func cold_material(source: Material) -> Material:
+	if not source is ShaderMaterial:
+		return source
+	var copy: ShaderMaterial = source.duplicate()
 	if _has_heat(copy.shader):
 		copy.set_shader_parameter("heat", 0.0)
 	return copy

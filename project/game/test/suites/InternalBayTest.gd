@@ -193,8 +193,8 @@ func _test_ward_pings() -> void:
 	_arena.add_child(field)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	var owner := _mecha(Vector2(-1000, 0), "WD-2")
-	owner.use_internal()
+	var carrier := _mecha(Vector2(-1000, 0), "WD-2")
+	carrier.use_internal()
 	var ward: Device = _devices()[0]
 	var behind_wall := _mecha(Vector2(200, 0))
 	var out_of_range := _mecha(Vector2(-1000, -3200))
@@ -205,13 +205,13 @@ func _test_ward_pings() -> void:
 	stalker.setup(_arena)
 	stalker.set_pause(true)
 	ward.ping()
-	var store := owner.contacts
+	var store := carrier.contacts
 	var seen: Dictionary = store.best_for(behind_wall)
 	check(not seen.is_empty() and seen.source == "ward" and seen.reveal == "ping", "a mecha behind a wall is pinged")
 	check(not store.best_for(stalker).is_empty() and store.best_for(stalker).kind == "Stalker", "a creature too, by species")
 	check(store.best_for(out_of_range).is_empty(), "nothing past 150 m")
 	check(store.best_for(ecm).is_empty(), "an ECM-0.35 mecha at 105 m isn't (it shows within 97 m)")
-	check(store.best_for(owner).is_empty(), "never its owner")
+	check(store.best_for(carrier).is_empty(), "never its owner")
 	ecm.global_position = Vector2(-1000, 1800)
 	ward.ping()
 	check(not store.best_for(ecm).is_empty(), "closer in, it is")
@@ -220,16 +220,16 @@ func _test_ward_pings() -> void:
 	check(not store.best_for(behind_wall).live, "a ghost if no ping comes")
 	var before := store.size()
 	store.clear()
-	owner.set_pause(false)
+	carrier.set_pause(false)
 	var pinged := await wait_until(func(): return store.size() > 0, ward.update_interval * 2.0 + 1.0)
 	check(pinged, "the ward pings by itself every %ds (%d contacts before)" % [roundi(ward.update_interval), before])
-	owner.set_pause(true)
+	carrier.set_pause(true)
 
 
 func _test_drone() -> void:
-	var owner := _mecha(Vector2.ZERO, "DR-4")
-	check_eq(owner.internal_charges, 4, "a drone part comes with 4 charges")
-	owner.use_internal(Vector2(3000, 0))
+	var carrier := _mecha(Vector2.ZERO, "DR-4")
+	check_eq(carrier.internal_charges, 4, "a drone part comes with 4 charges")
+	carrier.use_internal(Vector2(3000, 0))
 	var drone: Device = _devices()[0]
 	check_eq(drone.kind, "drone", "a drone")
 	check(drone.heading.is_equal_approx(Vector2.RIGHT), "heading for the aim")
@@ -238,22 +238,22 @@ func _test_drone() -> void:
 	await wait_until(func(): return drone.global_position.x > 1300.0, 6.0)
 	check(drone.global_position.x > start.x and absf(drone.global_position.y) < 1.0, "it flies straight")
 	drone.ping()
-	check(owner.contacts.best_for(target).source == "drone", "and pings what is within 100 m of it")
+	check(carrier.contacts.best_for(target).source == "drone", "and pings what is within 100 m of it")
 	drone.max_distance = drone.travelled + 50.0
 	var gone := await wait_until(func(): return _devices().is_empty(), 3.0)
 	check(gone, "it self-destructs at the end of its flight")
-	owner.internal_cooldown = 0.0
-	owner.use_internal()
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal()
 	var ahead: Device = _devices()[0]
-	check(ahead.heading.is_equal_approx(owner.get_facing()), "a tap sends it straight ahead")
+	check(ahead.heading.is_equal_approx(carrier.get_facing()), "a tap sends it straight ahead")
 
 
 func _test_destroy() -> void:
-	var owner := _mecha(Vector2.ZERO, "WD-2")
+	var carrier := _mecha(Vector2.ZERO, "WD-2")
 	var shooter := _mecha(Vector2(0, -1000))
 	var alerts := []
-	owner.device_destroyed.connect(func(d): alerts.append(d.kind))
-	owner.use_internal()
+	carrier.device_destroyed.connect(func(d): alerts.append(d.kind))
+	carrier.use_internal()
 	var ward: Device = _devices()[0]
 	ward.take_hit(5.0, 1, Vector2.ZERO, null)
 	check(not ward.is_gone(), "damage with no source does nothing")
@@ -271,8 +271,8 @@ func _test_destroy() -> void:
 	check(ward.is_gone(), "a mecha's shot destroys it")
 	check_eq(alerts, ["ward"], "and the owner hears of it")
 	shot.free()
-	owner.internal_cooldown = 0.0
-	owner.use_internal()
+	carrier.internal_cooldown = 0.0
+	carrier.use_internal()
 	var second: Device = _devices()[0]
 	var blast = BLAST.instantiate()
 	check(blast.is_blast_target(second) and not blast.is_fuse_target(second), "a blast hurts devices, which don't set fuses off")

@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=353767681]
 script = ExtResource("5")
 part_name = "O10-Chassis15k"
+frame = "O10"
 price = 1600.0
 tech_tier = 2
 composition = Dictionary[String, int]({"steel": 6, "oil": 3, "copper": 2, "nt_fluid": 2})
@@ -27,7 +28,6 @@ accuracy_modifier = 1.33
 friction = 0.4
 rotation_acc = 0.86
 rotation_range = 20.0
-health = 4800.0
 move_heat = 450
 weight = 24.5
 weight_capacity = 124.5

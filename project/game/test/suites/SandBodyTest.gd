@@ -77,19 +77,19 @@ func _test_builds() -> void:
 
 
 func _test_gait() -> void:
-	var slow := _make("Coyote")
-	var fast := _make("Coyote")
-	fast.get_parent().position.y = 600.0
+	var slow_coyote := _make("Coyote")
+	var fast_coyote := _make("Coyote")
+	fast_coyote.get_parent().position.y = 600.0
 	for _i in 30:
 		var dt := get_process_delta_time()
-		slow.update_motion(Vector2(120.0, 0.0), dt)
-		fast.update_motion(Vector2(650.0, 0.0), dt)
+		slow_coyote.update_motion(Vector2(120.0, 0.0), dt)
+		fast_coyote.update_motion(Vector2(650.0, 0.0), dt)
 		await get_tree().process_frame
-	check(fast.gait_phase > slow.gait_phase, "a faster Coyote takes more strides")
-	check(fast.gait_blend > slow.gait_blend, "and runs rather than walks")
-	slow.alarm = true
+	check(fast_coyote.gait_phase > slow_coyote.gait_phase, "a faster Coyote takes more strides")
+	check(fast_coyote.gait_blend > slow_coyote.gait_blend, "and runs rather than walks")
+	slow_coyote.alarm = true
 	await wait_seconds(1.0)
-	check(slow.intensity > 0.9, "hunting, its sand flows faster")
+	check(slow_coyote.intensity > 0.9, "hunting, its sand flows faster")
 
 
 func _test_death() -> void:

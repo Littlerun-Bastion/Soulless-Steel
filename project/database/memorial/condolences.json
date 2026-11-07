@@ -1,0 +1,65 @@
+{
+	"_about": "Short messages other pilots leave on Memorial Wall records (MemorialWall). When a record is made, the Wall rolls its messages from these groups and saves them: stranger (anyone), squadmate (a living member of the pilot's squad), entity_loss (anyone, when an Entity killed the pilot), rival (the killer, when it is an NPC Hunter or Rat: short and cold, never cruel) and anonymous (for an Unidentified pilot). {name} becomes the pilot's callsign. Netizen voice: lower case, abbreviations, typos. These are placeholder lines for Yosqi to rewrite. No lore.",
+	"stranger": [
+		"rip",
+		"fly cold {name} o7",
+		"o7",
+		"gone too soon m8",
+		"rip {name}. see u on the other side",
+		"didnt know u but o7",
+		"another one... fly safe ppl",
+		"rest easy pilot",
+		"f",
+		"saw ur posts on the boards. rip",
+		"candle lit. o7",
+		"this page keeps getting longer man"
+	],
+	"squadmate": [
+		"{name} had my back every run. cant believe it",
+		"we were 2 clicks out. 2 clicks",
+		"i shouldve been on ur wing. sorry",
+		"squad wont be the same. o7",
+		"save me a spot {name}",
+		"still got ur spare ammo. not giving it back lol. rip",
+		"u were the best of us",
+		"flying with ur tag on my hull from now on",
+		"we'll finish the run for u",
+		"o7 o7 o7"
+	],
+	"entity_loss": [
+		"those things are getting bolder. watch ur heat",
+		"rip. nobody should go out like that",
+		"hate those things. o7",
+		"cant fight what u cant see. rip",
+		"keep ur lights off out there",
+		"the creatures dont care how good u are. rip {name}",
+		"another one to the wildlife. fly cold",
+		"this is why i run in pairs",
+		"o7. stay cold everyone",
+		"rip. dont go out alone ppl"
+	],
+	"rival": [
+		"gg",
+		"gg {name}",
+		"nothing personal",
+		"gg. good fight",
+		"gg wp",
+		"it was u or me",
+		"respect. gg",
+		"fair fight",
+		"ggs",
+		"was a good fight. o7"
+	],
+	"anonymous": [
+		"who was this",
+		"anyone know who this was?",
+		"rip whoever u were",
+		"no name no tag. rip",
+		"o7 stranger",
+		"somebody must miss u",
+		"rip unknown. fly cold",
+		"they never even told us their name",
+		"whoever u were, o7",
+		"candle for the nameless"
+	]
+}

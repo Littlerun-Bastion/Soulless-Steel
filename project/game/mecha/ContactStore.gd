@@ -104,11 +104,10 @@ const WEDGE_BAND_JITTER := 0.25
 const UNKNOWN_RANGE_ESTIMATE := 3000.0
 ## Details a report may carry on the contact, with their defaults when a
 ## report leaves them out: the body's velocity as seen, and how whole it
-## looked (structural health and hp fraction, for NPC aggression).
+## looked (its structural health, for NPC aggression).
 const DETAIL_DEFAULTS := {
 	"velocity": Vector2.ZERO,
 	"health": 1.0,
-	"hp_fraction": 1.0,
 }
 
 ## Seconds a ghost stays in this store. An NPC's store keeps its memories

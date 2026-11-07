@@ -72,16 +72,16 @@ func before_each() -> void:
 	hand_made.add_child(area)
 	_arena.add_child(hand_made)
 
-	var set := PropSpawnSet.new()
-	set.kinds = PackedStringArray(["truck"])
-	set.kind.append(0)
-	set.position.append(TRUCK)
-	set.rotation.append(0.0)
-	set.size.append(TRUCK_SIZE)
-	set.variant.append(0)
+	var spawn_set := PropSpawnSet.new()
+	spawn_set.kinds = PackedStringArray(["truck"])
+	spawn_set.kind.append(0)
+	spawn_set.position.append(TRUCK)
+	spawn_set.rotation.append(0.0)
+	spawn_set.size.append(TRUCK_SIZE)
+	spawn_set.variant.append(0)
 	var spawner := PropSpawner.new()
 	spawner.name = "PropSpawner"
-	spawner.spawn_set = set
+	spawner.spawn_set = spawn_set
 	_arena.add_child(spawner)
 	var layer := PropSpriteLayer.new()
 	layer.name = "Vehicles"

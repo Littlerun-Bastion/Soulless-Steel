@@ -19,6 +19,7 @@
 script = ExtResource("1")
 coolant_type = ExtResource("coolant_default")
 part_name = "Percival-Core"
+frame = "Percival"
 price = 2800.0
 tech_tier = 3
 composition = Dictionary[String, int]({"steel": 10, "copper": 6, "silicon": 3, "nt_fluid": 3, "nt_engines": 2})
@@ -27,7 +28,6 @@ manufacturer_name_short = "Claymore"
 tagline = "Light3D Core"
 description = "A lightweight core with moderately powerful shield projectors and excellent weight efficiency. While it has almost no armor defenses, its stability is excellent."
 image = ExtResource("13")
-health = 2700.0
 shield_strength = 4.0
 stability = 140.0
 rotation_range = 40.0

@@ -135,9 +135,9 @@ func _test_gap() -> void:
 		candidates.append(centre.lerp(p, 0.8))
 	for local in candidates:
 		var candidate: Vector2 = shape.to_global(local)
-		var query := PhysicsPointQueryParameters2D.new()
-		query.position = candidate
-		var hits := space.intersect_point(query, 8)
+		var point_query := PhysicsPointQueryParameters2D.new()
+		point_query.position = candidate
+		var hits := space.intersect_point(point_query, 8)
 		if hits.any(func(h): return h.collider == mecha and mecha.get_part_name_from_shape(h.shape) == "left_shoulder"):
 			spot = candidate
 			break

@@ -105,7 +105,7 @@ func add_player():
 	player.setup(self)
 	player.position = get_start_position(0)
 	_connect_mecha_signals(player)
-	player.connect("lost_health", Callable(self,"_on_player_lost_health"))
+	player.took_damage.connect(_on_player_hit)
 	player.connect("mecha_extracted", Callable(self,"_on_player_mech_extracted"))
 	all_mechas.push_back(player)
 	_join_local(player)
@@ -162,7 +162,7 @@ func _applies_reputation() -> bool:
 	return false
 
 
-func _on_player_mech_extracted(playerMech):
+func _on_player_mech_extracted(_player_mech):
 	MissionManager.report_extraction()
 	if is_tutorial:
 		TransitionManager.transition_to("res://game/start_menu/StartMenu.tscn", "Rebooting System...")
@@ -215,7 +215,6 @@ func _on_player_mech_extracted(playerMech):
 			"conduct": conduct,
 			"conduct_kill_deduction": conduct_kill_deduction,
 			"conduct_downs_reward": conduct_downs_reward,
-			"damage_taken": playerMech.max_hp - playerMech.hp,
 			"right_arm_ammo_cost": right_arm_ammo_cost,
 			"left_arm_ammo_cost": left_arm_ammo_cost,
 			"right_shoulder_ammo_cost": right_shoulder_ammo_cost,

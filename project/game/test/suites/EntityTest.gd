@@ -194,7 +194,7 @@ func _test_blast() -> void:
 	var shooter := _mecha(Vector2(-2000, 0), design)
 	shooter.battery = 1000000.0
 	var shots := []
-	shooter.create_projectile.connect(func(_m, args, weapon): shots.append([args, weapon]))
+	shooter.create_projectile.connect(func(_m, shot_args, weapon): shots.append([shot_args, weapon]))
 	var fired := await wait_until(func():
 		shooter.shoot("shoulder_weapon_left")
 		return not shots.is_empty(), 3.0)

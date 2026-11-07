@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=674719843]
 script = ExtResource("1_3xd2y")
 part_name = "'Rangda' GTk-2Cr Chassis"
+frame = "'Rangda' GTk-2Cr"
 price = 2100.0
 tech_tier = 3
 composition = Dictionary[String, int]({"steel": 7, "oil": 5, "copper": 2, "nt_fluid": 3, "myofibrilium": 1})
@@ -28,7 +29,6 @@ accuracy_modifier = 1.2
 friction = 0.22
 rotation_acc = 0.8
 trim_acc = 45.0
-health = 3000.0
 move_heat = 300
 weight = 22.8
 weight_capacity = 105.0

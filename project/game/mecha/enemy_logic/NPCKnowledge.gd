@@ -245,7 +245,6 @@ func see(body, position: Vector2, velocity := Vector2.ZERO) -> Dictionary:
 		if contacts.now - float(contact.get("health_time", -INF)) >= HEALTH_REFRESH:
 			contact.health_time = contacts.now
 			contact.health = _structural_health(body)
-			contact.hp_fraction = clampf(float(body.hp) / float(body.max_hp), 0.0, 1.0) if body.max_hp > 0 else 1.0
 		var flag := flag_state_of(body)
 		var before: int = int(contact.get("flag", FLAG_NONE))
 		if flag != before:
@@ -365,14 +364,6 @@ func health_of(body) -> float:
 	if contact.is_empty():
 		return 1.0
 	return float(contact.health)
-
-
-## The hp fraction `body` had when last seen.
-func hp_fraction_of(body) -> float:
-	var contact := best(body)
-	if contact.is_empty():
-		return 1.0
-	return float(contact.hp_fraction)
 
 
 ## The living bodies in sight right now.
@@ -515,10 +506,10 @@ func spot_mines(hurrying: bool) -> Array:
 	for id in known_mines.keys():
 		if not is_instance_valid(known_mines[id].node):
 			known_mines.erase(id)
-	var range := MINE_SIGHT_RANGE
+	var sight_range := MINE_SIGHT_RANGE
 	if MapSenses.in_smoke(npc.global_position):
-		range *= MINE_SMOKE_MULT
-	for mine in npc.mines_near(npc.global_position, range):
+		sight_range *= MINE_SMOKE_MULT
+	for mine in npc.mines_near(npc.global_position, sight_range):
 		var node = mine.node
 		if not is_instance_valid(node):
 			continue
@@ -528,7 +519,7 @@ func spot_mines(hurrying: bool) -> Array:
 			continue
 		if missed_mines.has(id):
 			continue
-		if MapSenses.in_smoke(mine.position) and range > MINE_SIGHT_RANGE * MINE_SMOKE_MULT \
+		if MapSenses.in_smoke(mine.position) and sight_range > MINE_SIGHT_RANGE * MINE_SMOKE_MULT \
 				and npc.global_position.distance_to(mine.position) > MINE_SIGHT_RANGE * MINE_SMOKE_MULT:
 			continue
 		var miss := MINE_MISS_BASE + panic * MINE_MISS_PANIC + (MINE_MISS_HURRY if hurrying else 0.0)

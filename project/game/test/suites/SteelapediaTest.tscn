@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/SteelapediaTest.gd" id="1_steelapedia"]
+
+[node name="SteelapediaTest" type="Node"]
+script = ExtResource("1_steelapedia")

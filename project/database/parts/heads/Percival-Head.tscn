@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("4")
 part_name = "Percival-Head"
+frame = "Percival"
 price = 900.0
 tech_tier = 3
 composition = Dictionary[String, int]({"silicon": 6, "copper": 3, "steel": 2, "neural_biomatter": 2, "avidendrites": 1})
@@ -21,7 +22,6 @@ description = "Very lightweight head part with almost no defenses. Due to its li
 image = ExtResource("7")
 heatmap = ExtResource("6")
 accuracy_modifier = 1.1
-health = 975
 weight = 3.0
 
 [node name="Sub" type="Sprite2D" parent="."]

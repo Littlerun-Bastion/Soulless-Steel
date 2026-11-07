@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("3")
 part_name = "MSV-M2-H"
+frame = "MSV-M2"
 price = 520.0
 tech_tier = 1
 composition = Dictionary[String, int]({"silicon": 4, "copper": 2, "steel": 1})
@@ -22,7 +23,6 @@ image = ExtResource("5")
 heatmap = ExtResource("3_8ou28")
 accuracy_modifier = 1.35
 visual_range = 150
-health = 1275
 weight = 4.5
 
 [node name="Sub" type="Sprite2D" parent="."]

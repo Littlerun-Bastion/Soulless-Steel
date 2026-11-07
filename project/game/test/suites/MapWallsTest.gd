@@ -138,7 +138,7 @@ func _test_grenade() -> void:
 	var shooter := _mecha(Vector2(-1500, 1500), design)
 	shooter.battery = 1000000.0
 	var shots := []
-	shooter.create_projectile.connect(func(_m, args, weapon): shots.append([args, weapon]))
+	shooter.create_projectile.connect(func(_m, shot_args, weapon): shots.append([shot_args, weapon]))
 	var fired := await wait_until(func():
 		shooter.shoot("shoulder_weapon_left")
 		return not shots.is_empty(), 3.0)
@@ -159,8 +159,8 @@ func _test_grenade() -> void:
 	var ref: WeakRef = weakref(grenade)
 	_arena.add_child(grenade)
 	var went_off := await wait_until(func():
-		var g: Object = ref.get_ref()
-		return g == null or g.payload_expended, 4.0)
+		var live: Object = ref.get_ref()
+		return live == null or live.payload_expended, 4.0)
 	var g: Object = ref.get_ref()
 	check(went_off, "it went off")
 	if g != null:

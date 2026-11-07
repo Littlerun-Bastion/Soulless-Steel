@@ -132,6 +132,7 @@ func _test_strip() -> void:
 	var seam := 0.0
 	for x in w:
 		edge_alpha = maxf(edge_alpha, maxf(image.get_pixel(x, 0).a, image.get_pixel(x, h - 1).a))
+		@warning_ignore("integer_division")
 		middle_alpha += image.get_pixel(x, h / 2).a
 	for y in h:
 		seam = maxf(seam, absf(image.get_pixel(0, y).a - image.get_pixel(w - 1, y).a))

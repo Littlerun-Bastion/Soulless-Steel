@@ -34,10 +34,9 @@ extends RefCounted
 ## its own darkness away round it too, once per mecha nearby, until the
 ## ground and the cones went black.
 ##
-## The illuminator's texture is drawn here (light_texture), not taken from
-## the scene: shape_light replaces whatever texture Mecha.tscn gives it. The
-## light points where its mecha's head points (Mecha._aim_light), so its cone
-## turns with the head.
+## The illuminator's texture is drawn here (light_texture) and set by
+## shape_light. The light points where its mecha's head points
+## (Mecha._aim_light), so its cone turns with the head.
 
 ## What each MechaLight lights, drawn in code (light_texture): a cone ahead of
 ## the mecha and a circle round it. The cone is its head's illuminator_angle

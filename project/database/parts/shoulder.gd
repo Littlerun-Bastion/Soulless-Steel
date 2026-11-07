@@ -12,6 +12,12 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 # down into (or takes to build), material id (see Materials) -> amount.
 @export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export var composition: Dictionary[String, int] = {}
+## False keeps the part out of the store and out of the Compare window's
+## STORE list, for secret parts.
+@export var store_listed := true
+## The frame (model line) the part belongs to, "" for none: amazing.com
+## shows the rest of it under the part (Store.frame_mates).
+@export var frame := ""
 @export var description : String
 @export var image : Texture2D
 ## The shoulders' share of the shield's strength, counted once for both

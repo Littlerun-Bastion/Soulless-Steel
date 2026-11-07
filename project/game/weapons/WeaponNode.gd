@@ -59,7 +59,7 @@ func setup(mecha, weapon_ref, core, _side):
 	if data.is_melee:
 		add_child(weapon_ref.get_attack_animation())
 		melee_anim = $AttackAnimation
-		melee_damage = weapon_ref.damage
+		melee_damage = weapon_ref.melee_damage
 		melee_knockback = weapon_ref.melee_knockback
 	else:
 		if has_node("AttackAnimation"):
@@ -104,9 +104,9 @@ var _shown_heat := -1.0
 ## `show` false (the mecha is off screen) skips the shader writes; they
 ## catch up on the next shown frame, as each is compared with the last value
 ## written.
-func update_heat(_heat_dispersion, mecha_heat, dt, show := true):
+func update_heat(_heat_dispersion, mecha_heat, dt, show_heat := true):
 	heat = max(heat - WEAPON_HEAT_DECAY * dt, 0.0)
-	if not show:
+	if not show_heat:
 		return
 	if mecha_heat != _shown_mecha_heat:
 		_shown_mecha_heat = mecha_heat

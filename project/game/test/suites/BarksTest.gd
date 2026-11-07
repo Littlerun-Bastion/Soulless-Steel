@@ -300,10 +300,13 @@ func _test_broadcasts() -> void:
 	npc._watch_barks(0.1)
 	check_eq(got.size(), 1, "no greed, no shout")
 
-	# Help call: in a fight, under fire, below half health; once a fight.
+	# Help call: in a fight, under fire, below half its structure; once a fight.
 	g.set_state("engage")
 	npc._watch_barks(0.1)
-	npc.hp = npc.max_hp * 0.4
+	npc.under_fire_timer = 0.5
+	npc._watch_barks(0.1)
+	check(not got.any(func(e): return e.kind == "need_help"), "no help call under fire while whole")
+	wear_down(npc)
 	npc.under_fire_timer = 0.5
 	npc._watch_barks(0.1)
 	var calls := got.filter(func(e): return e.kind == "need_help")

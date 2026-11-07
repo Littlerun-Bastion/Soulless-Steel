@@ -30,8 +30,21 @@ func set_current_part(part):
 		if part_ref:
 			PartName.text = part_ref.part_name
 	else:
+		current_part_id = ""
 		PartName.text = "EMPTY"
 	
+
+# Right-click (MechOS context menu) on a filled slot targets its part:
+# {"type": "part", "part_type", "part_id", "grade", "slot": <build key>}.
+# The Equipment window around it knows the mecha; an empty slot gives nothing.
+func get_context_target(_global_pos: Vector2) -> Dictionary:
+	var node := get_parent()
+	while node != null and not node is EquipmentWindow:
+		node = node.get_parent()
+	if node == null:
+		return {}
+	return (node as EquipmentWindow).slot_context(self)
+
 
 func set_equipped_part(part_id: String, _item: item_data) -> void:
 	current_part_id = part_id

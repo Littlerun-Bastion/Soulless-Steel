@@ -9,6 +9,8 @@ signal cursor_mode_changed(mode)
 enum CursorMode { AIM, POINTER }
 
 const INVISIBLE_CURSOR = preload("res://assets/images/ui/invisible_cursor.png")
+const ARROW_CURSOR = preload("res://assets/images/ui/menu/cursor_none.png")
+const HAND_CURSOR = preload("res://assets/images/ui/menu/cursor_point.png")
 
 var cursor_layer: CanvasLayer
 var cursor_sprite: Sprite2D
@@ -25,12 +27,15 @@ func _ready() -> void:
 	add_child(cursor_layer)
 
 	cursor_sprite = Sprite2D.new()
-	cursor_sprite.texture = preload("res://assets/images/ui/menu/cursor_none.png")
+	cursor_sprite.texture = ARROW_CURSOR
 	cursor_sprite.centered = false  # anchor top-left to mouse pos so the click lands where the tip points
 	cursor_layer.add_child(cursor_sprite)
 
-	# Always hide the hardware cursor — software cursor replaces it
-	Input.set_custom_mouse_cursor(INVISIBLE_CURSOR)
+	# Always hide the hardware cursor, in every shape a Control can ask for (a
+	# link's pointing hand, a text field's I-beam): the software cursor
+	# replaces it.
+	for shape in Input.CURSOR_HELP + 1:
+		Input.set_custom_mouse_cursor(INVISIBLE_CURSOR, shape as Input.CursorShape)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 
 	_update_mode()
@@ -38,6 +43,13 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	cursor_sprite.global_position = get_viewport().get_mouse_position()
+	cursor_sprite.texture = sprite_for(DisplayServer.cursor_get_shape())
+
+
+## The software cursor for the shape the Control under the mouse asks for:
+## the pointing hand over links, the arrow everywhere else.
+func sprite_for(shape: DisplayServer.CursorShape) -> Texture2D:
+	return HAND_CURSOR if shape == DisplayServer.CURSOR_POINTING_HAND else ARROW_CURSOR
 
 
 func _input(event: InputEvent) -> void:

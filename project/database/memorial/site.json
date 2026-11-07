@@ -1,0 +1,6 @@
+{
+	"_about": "The Memorial Wall's own texts (MemorialWallPage): moderator is the name the moderator posts under, welcome is the short welcome on the front page, about is the About page. The texts are placeholders for Yosqi to write.",
+	"moderator": "[MODERATOR]",
+	"welcome": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+	"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+}

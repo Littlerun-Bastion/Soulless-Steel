@@ -12,6 +12,12 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 # down into (or takes to build), material id (see Materials) -> amount.
 @export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export var composition: Dictionary[String, int] = {}
+## False keeps the part out of the store and out of the Compare window's
+## STORE list, for secret parts.
+@export var store_listed := true
+## The frame (model line) the part belongs to, "" for none: amazing.com
+## shows the rest of it under the part (Store.frame_mates).
+@export var frame := ""
 @export var description : String
 @export var image : Texture2D
 @export var ambient_sfx := preload("res://assets/audio/sfx/chassis_ambient/test_engine.mp3")
@@ -26,7 +32,6 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var rotation_acc = 5.0
 @export var trim_acc = 1.0
 @export var rotation_range = 10.0
-@export var health := 1000.0
 @export var move_heat = 500
 @export var weight := 300.0
 @export var weight_capacity := 1000.0

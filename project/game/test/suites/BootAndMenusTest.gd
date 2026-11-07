@@ -2,7 +2,8 @@ extends TestSuite
 
 # BootAndMenusTest: starting the game and the main menu, on the real scenes.
 #   - the Intro loads the profile from disk and moves on to the main menu
-#   - each main-menu button goes where it should
+#   - each main-menu button goes where it should (Store: the Hangar, with NET
+#     to open at amazing.com; NetStoreTest follows it into the Hangar)
 #   - an incomplete mecha can't be taken into a fight
 #   - a lost expedition is reported once, on the next visit to the menu
 #
@@ -57,12 +58,14 @@ func _test_buttons() -> void:
 		"_on_Expedition_pressed": "res://game/expedition/Expedition.tscn",
 		"_on_Arena_pressed": "res://game/arena/TestArena.tscn",
 		"_on_Observe_pressed": "res://game/arena/ObserverArena.tscn",
-		"_on_Store_pressed": "res://game/ui/customizer/Storepage.tscn",
+		"_on_Store_pressed": "res://game/ui/HangarScreen.tscn",
 	}
 	for button in routes:
 		TransitionManager.captured.clear()
 		menu.call(button)
 		check_eq(TransitionManager.captured, [routes[button]], "%s opens %s" % [button, routes[button].get_file()])
+	check_eq(HangarScreen.open_net_url, "amazing.com", "Store asks the Hangar to open NET at amazing.com")
+	HangarScreen.open_net_url = ""
 	for route in routes.values():
 		check(ResourceLoader.exists(route), "%s exists" % route)
 	TransitionManager.captured.clear()

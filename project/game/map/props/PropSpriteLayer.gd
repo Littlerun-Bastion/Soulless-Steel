@@ -229,6 +229,7 @@ func _pick_variants(s: Dictionary, count: int, h: int) -> PackedInt32Array:
 	var out := PackedInt32Array([first])
 	if layers.has(s.kind):
 		var r: Vector2i = layers[s.kind]
+		@warning_ignore("integer_division")
 		var n := mini(r.x + (h / 7) % (r.y - r.x + 1), count)
 		var k := 1
 		while out.size() < n:

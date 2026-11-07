@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/FourXTest.gd" id="1_fourx"]
+
+[node name="FourXTest" type="Node"]
+script = ExtResource("1_fourx")

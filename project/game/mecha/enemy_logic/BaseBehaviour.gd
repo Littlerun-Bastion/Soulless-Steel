@@ -161,7 +161,8 @@ const SPARE_TIME := 10.0
 const FAKE_SURRENDER_RANGE := 800.0
 ## A Rat wandering raises its Flag at this rate per second times treachery.
 const RAT_WANDER_FLAG_RATE := 0.05
-## A Guardian protects a mech at or under this hp share, from this far (px).
+## A Guardian protects a mech at or under this structural health, from this
+## far (px).
 const PROTECT_DAMAGE := 0.4
 const PROTECT_RANGE := 600.0
 const STALK_WEIGHTS := {"range": 0.8, "behind": 1.5, "travel": 0.4, "open": 0.3, "mines": -1.0, "travel_scale": 1500.0}
@@ -442,7 +443,7 @@ func _mate_in_trouble(enemy, mate) -> bool:
 	var squad = enemy.knowledge.squad
 	if squad == null or not squad.is_in(mate):
 		return false
-	return mate.under_fire_timer > 0.0 and float(mate.hp) < float(mate.max_hp) * HELP_MATE_HEALTH
+	return mate.under_fire_timer > 0.0 and NPCKnowledge._structural_health(mate) < HELP_MATE_HEALTH
 
 
 # The help call this NPC answers: the newest within HELP_RANGE from a pilot
@@ -2210,7 +2211,7 @@ func _protege_valid(enemy, body) -> bool:
 	var rel = enemy.get_relationship(body)
 	if rel.is_traitor or rel.hostility >= 0.3:
 		return false
-	return body.get("flag_up") == true or enemy.knowledge.hp_fraction_of(body) <= PROTECT_DAMAGE
+	return body.get("flag_up") == true or enemy.knowledge.health_of(body) <= PROTECT_DAMAGE
 
 
 # Finishing a Flagged mech, in the open: it says so, closes in lit and

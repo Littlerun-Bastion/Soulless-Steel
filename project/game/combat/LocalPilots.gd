@@ -34,7 +34,7 @@ extends RefCounted
 
 signal message(entry: Dictionary)
 signal roster_changed
-## A mecha hit another (every hit, from Mecha.take_damage): NPCs witness it.
+## A mecha hit another (as Mecha.register_hit reports it): NPCs witness it.
 signal attack_noted(attacker, victim)
 
 const UNKNOWN := "Unknown"

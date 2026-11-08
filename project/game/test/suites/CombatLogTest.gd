@@ -33,7 +33,7 @@ func run_tests() -> void:
 	await case("an attacker's first hit gets a line, its next ones don't for 30 s", _test_new_attackers)
 	await case("every hit is remembered: who, where from, lit, shielding", _test_hit_memory)
 	await case("attackers by name: pilots, creatures, swarms, Unknown; own blasts aren't hits", _test_names)
-	await case("take_damage hits count, and the attacker is known when it is announced", _test_take_damage)
+	await case("register_hit hits count, and the attacker is known when it is announced", _test_register_hit)
 	await case("destroyed components say what they did", _test_destroyed)
 	await case("heat damage is marked, isn't a hit, and says so", _test_heat)
 	await case("a part that comes off is one line", _test_part_lost)
@@ -195,7 +195,7 @@ func _test_names() -> void:
 	check_eq(CombatRecorder.weapon_name("not a part"), "", "an id that isn't a weapon part names none")
 
 
-func _test_take_damage() -> void:
+func _test_register_hit() -> void:
 	var made := _recorded()
 	var me: Mecha = made[0]
 	var rec: CombatRecorder = made[1]
@@ -204,7 +204,7 @@ func _test_take_damage() -> void:
 	me.last_damage_source = _source(vex)
 	var heard := []
 	me.took_damage.connect(func(_m, _status): heard.append(me.last_damage_source))
-	me.take_damage(1, 1.0, 1.0, 0, 0, false, false, _source(ash), _weapon_id)
+	me.register_hit(_source(ash), 0.0, _weapon_id)
 	check(heard.size() == 1 and heard[0].get("body") == ash, "when took_damage is announced, the attacker is already the new one")
 	check_eq(_lines(), ["Hit by Ash (%s)" % _weapon], "a hit with no component: no part")
 	me.emit_signal("took_damage", me, true)
@@ -307,8 +307,9 @@ func _test_flag() -> void:
 
 	MechLog.clear()
 	var hull := _recorded()[0] as Mecha
-	hull.take_damage(hull.hp + 1, 1.0, 1.0, 0, 0, false, false, _source(vex), _weapon_id)
-	check(hull.is_exposed, "(the hull gives out)")
+	hull.last_damage_source = _source(vex)
+	hull.enter_flagged_state()
+	check(hull.is_exposed, "(the emergency Flag, entered directly)")
 	check_eq(_lines().back() if not _lines().is_empty() else "", "Emergency Flag raised", "the emergency Flag on its own")
 
 
@@ -414,8 +415,8 @@ func _test_lost_causes() -> void:
 	var exposed := _recorded()
 	var hull: Mecha = exposed[0]
 	var ash := _mecha(Vector2(1000, 0), "Ash")
-	hull.take_damage(hull.hp + 1, 1.0, 1.0, 0, 0, false, false, _source(ash), _weapon_id)
-	check(hull.is_exposed, "(the hull gives out)")
+	_hit(hull, _source(ash), _weapon_id, "core", "core_shell", 99)
+	check(hull.is_exposed, "(the core shell gives out)")
 	facts = FrameLossReport.gather(hull, exposed[1])
 	check_eq(FrameLossReport.lost_line(facts), "Frame lost to Ash · %s · from 50 m E · finished while exposed" % _weapon,
 			"finished while exposed")

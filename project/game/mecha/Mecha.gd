@@ -30,7 +30,6 @@ const DASH_DECAY = 4
 const FIRE_DAMAGE = 10.0 #TODO convert to kJ in new heat system
 const HITSTOP_TIMESCALE = 0.1
 const HITSTOP_DURATION = 0.25
-const EXPOSED_INVULN_WINDOW = 1
 ## The emergency Flag (enter_flagged_state): how long (s) the mecha takes no
 ## damage of any kind after entering it, and how often (s) the wound spurts
 ## while it stays Flagged. Placeholders.
@@ -45,7 +44,7 @@ const FLAG_SFX := "large_impact1"
 ## PRESSURE_WINDOW s. Placeholders.
 const FLAG_LOWER_TIME := 1.5
 const PRESSURE_WINDOW := 15.0
-## What a pip of component damage counts for against hp damage, in pressure.
+## What a pip of component damage counts for, in pressure.
 const PRESSURE_PER_PIP := 5.0
 const FLAG_RAISE_SFX := "select"
 const FLAG_LOWER_SFX := "back"
@@ -70,6 +69,8 @@ const ELECTRIFIED_SHIELD_DRAIN := 2.0
 const SHIELD_PROJECTOR := "shield_projector"
 const SHIELD_PROJECTORS := 3
 const SHIELD_PROJECTOR_PARTS := ["core", "left_shoulder", "right_shoulder"]
+## The wetware that adds a component to the core (wetware_component).
+const WETWARE_TYPES := ["generator", "chipset", "thruster"]
 const SPOOLING_DISTANCE_ATT = .6 #How much to reduce max distance sfx of base weapon
 const PASSIVE_SOUNDS_INTERVAL = .8 #How frequently to generate passive sounds
 const THROTTLE_STEP = 0.1
@@ -93,7 +94,6 @@ signal died
 signal cargo_overflow(stacks)
 signal exposed
 signal mecha_extracted
-signal parried
 signal made_sound
 signal component_damaged(part_name: String, component_name: String, hp: int, max_hp: int)
 signal component_destroyed_alert(part_name: String, component_name: String)
@@ -114,6 +114,7 @@ signal flag_lowered(mecha)
 # say(): CombatScene shows it to the player if they hear it.
 signal spoke(mecha, text: String, seconds: float, always_heard: bool)
 # Someone's sweep found this mecha (see sweep). Says nothing of who or where.
+@warning_ignore("unused_signal")
 signal swept
 # This mecha swept (see sweep): the cone, what it reported and the bodies it
 # found, for views that draw sweeps (the observer arena), never for NPC code.
@@ -293,8 +294,6 @@ var _last_shield_particle_amount: int = -1  # Caches the previous shield particl
 var passive_sounds_timer = 0.0
 var throttle :float = 1.0
 
-var max_hp = 10
-var hp = 10
 ## The shield (see SHIELDS). SC now and full (the generator's
 ## shield_capacity); SS from the parts (shield_base_strength) and with the
 ## projectors that still work (shield_strength); how many work.
@@ -324,14 +323,12 @@ var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
 var weight = 0.0
-var exposed_hits = 3.0
-var exposed_invuln_timer = 0.0
 ## Seconds left of the emergency Flag's grace window (0 outside it).
 var flag_grace := 0.0
 ## The Flag: up (weapons locked, others expected to hold fire), whether the
 ## pilot raised it by choice, and the seconds left of the wind-up while it is
-## being lowered (0 otherwise). is_exposed is the emergency state (the cockpit
-## exposed, exposed_hits counting), which lowering the Flag doesn't end.
+## being lowered (0 otherwise). is_exposed is the emergency state (the core
+## shell gone, the cockpit open to hits), which lowering the Flag doesn't end.
 var flag_up := false
 var flag_voluntary := false
 var flag_lowering := 0.0
@@ -634,7 +631,6 @@ func _physics_step(dt):
 				Particle.blood[1].emitting = false
 	
 	if is_exposed:
-		exposed_invuln_timer = min(exposed_invuln_timer + dt, EXPOSED_INVULN_WINDOW)
 		# The wound spurts in time with a heartbeat while Flagged.
 		_heartbeat -= dt
 		if _heartbeat <= 0.0:
@@ -872,26 +868,10 @@ func update_speed(_max_speed, _move_acc, _friction, _rotation_acc):
 	animation.track_set_key_value(track, 5, move_acc/100.0)
 
 
-func update_max_life_from_parts():
-	var value = 0
-	if build.core:
-		value += build.core.health
-	if build.head:
-		value += build.head.health
-	if build.chassis:
-		value += build.chassis.health
-	set_max_life(value)
-
-
 func is_overweight():
 	weight_capacity = get_stat("weight_capacity")
 	weight = get_total_weight()
 	return weight > weight_capacity
-
-
-func set_max_life(value):
-	max_hp = value
-	hp = max_hp
 
 
 func set_max_energy(value):
@@ -899,52 +879,27 @@ func set_max_energy(value):
 	energy = max_energy
 
 
-## The old hp damage, from melee hitboxes and the legacy projectiles. The
-## shield doesn't take part in it (see SHIELDS): only a parry stops it.
-func take_damage(amount, _shield_mult, health_mult, heat_damage, status_amount, status_type, hitstop, source_info, weapon_name := "Test"):
+## A hit from source_info ({"body", "name"}, and "from": where it was fired)
+## landed on this mecha; its damage goes through armor_check and
+## damage_component. took_damage fires, Local hears of the attack (first
+## strike, treachery, witnesses: LocalPilots.note_attack), an NPC turns to
+## the shooter, and `pressure` counts toward pressured_by(). Nothing while
+## dead or in the Flag's grace window.
+func register_hit(source_info, pressure := 0.0, weapon_name := "") -> void:
 	if is_dead or is_in_flag_grace():
 		return
-
-	if hitstop:
-		if source_info.name == "Player" or self.name == "Player":
-			do_hitstop()
-	
-	if is_parrying:
-		emit_signal("parried")
-		do_hitstop()
-		return
-
 	# Before took_damage: whoever hears it reads who hit (CombatRecorder).
-	last_damage_source = source_info
-	last_damage_weapon = weapon_name
-	hp = round(max(hp - (health_mult * amount), 0))
-	increase_heat(heat_damage)
-	if status_type and status_amount > 0.0:
-		set_status(status_type, status_amount)
-	if amount > max_hp/0.25:
-		Particle.blood[2].emitting = true
-
+	if typeof(source_info) == TYPE_DICTIONARY:
+		last_damage_source = source_info
+		if weapon_name != "":
+			last_damage_weapon = weapon_name
 	emit_signal("took_damage", self, false)
-	if amount > 0:
-		_shake_ticks(1)
-
 	_note_attack(source_info)
 	if typeof(source_info) == TYPE_DICTIONARY:
 		var shooter = source_info.get("body")
 		if is_instance_valid(shooter) and shooter != self and shooter.is_in_group("mecha"):
 			_on_round_hit(shooter, source_info.get("from", shooter.global_position))
-	_note_pressure(source_info, float(amount) * float(health_mult))
-
-	if hp <= 0 and not is_exposed:
-		enter_flagged_state()
-	elif hp <= 0 and is_exposed:
-		if exposed_invuln_timer == EXPOSED_INVULN_WINDOW:
-			exposed_hits -= 1
-			exposed_invuln_timer = 0.0
-			if exposed_hits <= 0:
-				AudioManager.play_sfx("final_explosion", global_position, null, null, 1.25, 10000)
-				create_sound("loud", "explosion", 10000)
-				die(source_info, weapon_name)
+	_note_pressure(source_info, pressure)
 
 
 func do_hitstop():
@@ -1007,13 +962,6 @@ func take_status_damage(dt):
 	if has_status("electrified"):
 		if shield > 0.0:
 			take_shield_damage(ELECTRIFIED_SHIELD_DRAIN * dt)
-		emit_signal("took_damage", self, true)
-
-	if has_status("corrosion"):
-		if hp <= 0:
-			enter_flagged_state()
-		else:
-			hp = round(max(hp - (dt * (hp/100.0)), 1))
 		emit_signal("took_damage", self, true)
 
 func overheat_damage_tick():
@@ -1823,7 +1771,6 @@ func set_core(part_name):
 		set_shoulder_weapon(null, SIDE.RIGHT)
 	CoreSub.texture = build.core.get_sub()
 	CoreGlow.texture = build.core.get_glow()
-	update_max_life_from_parts()
 	stability = get_stat("stability")
 	reset_offsets()
 	
@@ -1836,30 +1783,12 @@ func set_core(part_name):
 	
 	# Initialize components from defaults + part data
 	components.core = initialize_components("core", part_data)
-	
+
 	# Add wetware components (generator, chipset, thruster) if equipped
-	if build.generator:
-		components.core["generator"] = {
-			"hp": 3, "max_hp": 3,
-			"tags": ["internal"],
-			"weight": 1.0,
-			"disabled": false
-		}
-	if build.chipset:
-		components.core["chipset"] = {
-			"hp": 2, "max_hp": 2,
-			"tags": ["internal"],
-			"weight": 1.0,
-			"disabled": false
-		}
-	if build.thruster:
-		components.core["thruster"] = {
-			"hp": 3, "max_hp": 3,
-			"tags": ["internal"],
-			"weight": 1.0,
-			"disabled": false
-		}
-	
+	for wetware in WETWARE_TYPES:
+		if build.get(wetware):
+			components.core[wetware] = wetware_component(wetware)
+
 	# Size cargo to the core. Same rules as HangarScreen: a never-sized grid
 	# is initialised; an existing one is only repacked when the size actually
 	# changes (resize_and_migrate re-places every item, which would shuffle
@@ -1994,30 +1923,10 @@ func set_chassis(part_name):
 	
 	# Initialize components
 	components.chassis = initialize_components("chassis", part_data)
-	
+
 	# Add movement-type specific components
-	match part_data.movement_type:
-		"legs":
-			components.chassis["left_leg_actuator"] = {
-				"hp": 2, "max_hp": 2,
-				"tags": ["internal", "mobility"],
-				"weight": 1.5,
-				"disabled": false
-			}
-			components.chassis["right_leg_actuator"] = {
-				"hp": 2, "max_hp": 2,
-				"tags": ["internal", "mobility"],
-				"weight": 1.5,
-				"disabled": false
-			}
-		"wheels", "tank":
-			components.chassis["tracks"] = {
-				"hp": 3, "max_hp": 3,
-				"tags": ["external", "mobility"],
-				"weight": 2.0,
-				"disabled": false
-			}
-	
+	components.chassis.merge(movement_components(part_data.movement_type), true)
+
 	set_chassis_parts()
 
 
@@ -2049,7 +1958,6 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	movement_type = chassis.movement_type
 	var walk_speed: float = chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
 	update_speed(walk_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
-	update_max_life_from_parts()
 
 
 func remove_chassis(type):
@@ -2096,7 +2004,6 @@ func set_head(part_name):
 			"side": {"level": 0, "pips": 0},
 			"rear": {"level": 0, "pips": 0}
 		}
-	update_max_life_from_parts()
 	Illumination.shape_light(self)
 
 
@@ -2171,9 +2078,6 @@ func reset_offsets():
 
 #ATTRIBUTE METHODS
 
-func get_max_hp():
-	return max_hp
-
 func get_cargo_space():
 	var total_cargo_space = [0,0]
 	for part in build.values():
@@ -2229,11 +2133,11 @@ func get_stat(stat_name):
 
 func _sum_stat(stat_name) -> float:
 	var total_stat = 0.0
-	var weight: bool = stat_name == "weight"
+	var is_weight: bool = stat_name == "weight"
 	for slot in build:
 		var part = build[slot]
 		if part and part.get(stat_name):
-			var share := _weight_share(slot) if weight else 1.0
+			var share := _weight_share(slot) if is_weight else 1.0
 			total_stat += part[stat_name] * Grades.stat_mult(part_grades.get(slot), stat_name) * share
 
 	if stat_name.contains("max_speed") and is_overweight():
@@ -3063,6 +2967,7 @@ func designator_clip(slot: String, point: Vector2) -> Vector2:
 # cooldown), no_ammo, too_hot, too_close, too_far, not_facing.
 func can_fire_at_point(slot: String, point: Vector2) -> String:
 	var weapon = build.get(slot)
+	@warning_ignore("incompatible_ternary")
 	var node = get_weapon_part(slot) if weapon else null
 	if not weapon or not node:
 		return "no_weapon"
@@ -3203,6 +3108,7 @@ func _fire_designator_round(slot: String, point: Vector2) -> void:
 	var dir := from.direction_to(landing)
 	if dir == Vector2.ZERO:
 		dir = get_facing()
+	@warning_ignore("incompatible_ternary")
 	var args := {
 		"projectile": weapon.projectile,
 		"pos": from,
@@ -3777,16 +3683,16 @@ func add_lingering_hitbox(data):
 
 
 func process_hitboxes(dt):
-	#Process lingering hitboxes
+	# A melee hit lands the way an Entity's attack does (EntityAttack.hit_mecha:
+	# the shield, then the armour and the components, a scuff and the
+	# knockback), with the weapon's melee_damage pips and melee_pen.
 	for data in lingering_hitboxes:
-		add_decal(data.body_shape_id, data.collision_point, data.decal_type, data.decal_size)
-		
 		var weapon_ref = data.data
-		take_damage(weapon_ref.damage*data.damage_mul, weapon_ref.shield_mult,\
-					weapon_ref.health_mult, weapon_ref.heat_damage, weapon_ref.status_damage,\
-					weapon_ref.status_type, weapon_ref.hitstop, data.origin)
-		if weapon_ref.melee_knockback > 0.0 and data.knockback_mul > 0.0:
-			knockback(weapon_ref.melee_knockback*data.knockback_mul, data.collision_point - data.hitbox_position, true)
+		var attacker = data.origin
+		if is_instance_valid(attacker):
+			EntityAttack.hit_mecha(attacker, self, maxi(roundi(weapon_ref.melee_damage * data.damage_mul), 1),
+					weapon_ref.melee_pen, weapon_ref.melee_knockback * data.knockback_mul)
+			register_hit({"body": attacker, "name": attacker.mecha_name})
 		processed_hitboxes.append([data.id, data.dur])
 	lingering_hitboxes.clear()
 	
@@ -4143,8 +4049,10 @@ func select_component_by_weight(part_name: String, eligible_components: Array) -
 	# Fallback (shouldn't reach here)
 	return eligible_components[0]
 
-# Returns default components for a given part type
-func get_default_components(part_type: String) -> Dictionary:
+## The components every part of a Hardware type has (each shoulder gets the
+## shoulders' set); {} for other types. A part's additional_components go on
+## top (initialize_components, part_components).
+static func get_default_components(part_type: String) -> Dictionary:
 	match part_type:
 		"core":
 			return {
@@ -4248,7 +4156,7 @@ func get_default_components(part_type: String) -> Dictionary:
 
 # One of the shield's projectors (see SHIELDS). Its hp and weight are
 # placeholders.
-func _shield_projector_component() -> Dictionary:
+static func _shield_projector_component() -> Dictionary:
 	return {
 		"hp": 2, "max_hp": 2,
 		"tags": ["external", "shield"],
@@ -4256,23 +4164,87 @@ func _shield_projector_component() -> Dictionary:
 		"disabled": false
 	}
 
+
+## The component a generator, chipset or thruster adds to the core; {} for
+## other types.
+static func wetware_component(part_type: String) -> Dictionary:
+	match part_type:
+		"generator":
+			return {"hp": 3, "max_hp": 3, "tags": ["internal"], "weight": 1.0, "disabled": false}
+		"chipset":
+			return {"hp": 2, "max_hp": 2, "tags": ["internal"], "weight": 1.0, "disabled": false}
+		"thruster":
+			return {"hp": 3, "max_hp": 3, "tags": ["internal"], "weight": 1.0, "disabled": false}
+	return {}
+
+
+## The components a chassis's movement_type adds to it.
+static func movement_components(movement: String) -> Dictionary:
+	match movement:
+		"legs":
+			return {
+				"left_leg_actuator": {"hp": 2, "max_hp": 2, "tags": ["internal", "mobility"], "weight": 1.5, "disabled": false},
+				"right_leg_actuator": {"hp": 2, "max_hp": 2, "tags": ["internal", "mobility"], "weight": 1.5, "disabled": false},
+			}
+		"wheels", "tank":
+			return {"tracks": {"hp": 3, "max_hp": 3, "tags": ["external", "mobility"], "weight": 2.0, "disabled": false}}
+	return {}
+
+
+## The feed an arm weapon adds to the shoulder on its side.
+static func weapon_feed_component() -> Dictionary:
+	return {"hp": 1, "max_hp": 1, "tags": ["external", "weapon"], "weight": 1.0, "disabled": false}
+
+
+## A part's own additional_components (the example in chassis.gd), as
+## components by name.
+static func additional_components_of(part_data) -> Dictionary:
+	var result := {}
+	if part_data == null or not "additional_components" in part_data:
+		return result
+	var additional = part_data.additional_components
+	if not additional is Array:
+		return result
+	for comp_data in additional:
+		result[comp_data.name] = {
+			"hp": comp_data.hp,
+			"max_hp": comp_data.max_hp,
+			"tags": comp_data.tags.duplicate(),
+			"weight": comp_data.weight,
+			"disabled": false
+		}
+	return result
+
+
+## Every component one part brings, by name, as fitting it gives them: a
+## Hardware part's own (get_default_components, then its
+## additional_components, then a chassis's movement components), the one a
+## generator, chipset or thruster adds to the core, an arm weapon's feed and
+## extras (in its shoulder), a shoulder weapon's extras (in the core). {} for
+## an internal.
+static func part_components(part_type: String, part_data) -> Dictionary:
+	var result := {}
+	match part_type:
+		"core", "head", "shoulders", "chassis":
+			result = get_default_components(part_type)
+			result.merge(additional_components_of(part_data), true)
+			if part_type == "chassis" and part_data != null:
+				result.merge(movement_components(str(part_data.get("movement_type"))), true)
+		"generator", "chipset", "thruster":
+			result[part_type] = wetware_component(part_type)
+		"arm_weapon":
+			result["weapon_feed"] = weapon_feed_component()
+			result.merge(additional_components_of(part_data), true)
+		"shoulder_weapon":
+			result = additional_components_of(part_data)
+	return result
+
+
 func initialize_components(part_type: String, part_data) -> Dictionary:
 	_wound_dirty = true
 	# Start with defaults
-	var result = get_default_components(part_type)
-	
-	if "additional_components" in part_data:
-		var additional = part_data.additional_components
-		if additional != null and additional is Array:
-			for comp_data in additional:
-				result[comp_data.name] = {
-					"hp": comp_data.hp,
-					"max_hp": comp_data.max_hp,
-					"tags": comp_data.tags.duplicate(),
-					"weight": comp_data.weight,
-					"disabled": false
-				}
-	
+	var result := get_default_components(part_type)
+	result.merge(additional_components_of(part_data), true)
 	return result
 
 # hit_dir: the way the hit travelled (a shot's direction, a blast's from its
@@ -4396,107 +4368,29 @@ func refresh_dynamic_components():
 	_wound_dirty = true
 	# Refresh wetware components in core
 	if build.core:
-		# Remove old wetware if present
-		if components.core.has("generator"):
-			components.core.erase("generator")
-		if components.core.has("chipset"):
-			components.core.erase("chipset")
-		if components.core.has("thruster"):
-			components.core.erase("thruster")
-		
-		# Add current wetware
-		if build.generator:
-			components.core["generator"] = {
-				"hp": 3, "max_hp": 3,
-				"tags": ["internal"],
-				"weight": 1.0,
-				"disabled": false
-			}
-		if build.chipset:
-			components.core["chipset"] = {
-				"hp": 2, "max_hp": 2,
-				"tags": ["internal"],
-				"weight": 1.0,
-				"disabled": false
-			}
-		if build.thruster:
-			components.core["thruster"] = {
-				"hp": 3, "max_hp": 3,
-				"tags": ["internal"],
-				"weight": 1.0,
-				"disabled": false
-			}
-		
+		# The fitted wetware's components, made fresh
+		for wetware in WETWARE_TYPES:
+			components.core.erase(wetware)
+			if build.get(wetware):
+				components.core[wetware] = wetware_component(wetware)
+
 		#Add shoulder weapon components to core
 		for weapon in [build.shoulder_weapon_left, build.shoulder_weapon_right]:
-			if weapon and "additional_components" in weapon:
-				for comp_data in weapon.additional_components:
-					components.core[comp_data.name] = {
-						"hp": comp_data.hp,
-						"max_hp": comp_data.max_hp,
-						"tags": comp_data.tags.duplicate(),
-						"weight": comp_data.weight,
-						"disabled": false
-					}
-	
-	# Refresh weapon feeds and arm weapon components in shoulders
+			components.core.merge(additional_components_of(weapon), true)
+
+	# Refresh weapon feeds and arm weapon components in shoulders: the
+	# weapon-tagged ones come off, then each fitted arm weapon's feed and
+	# extras go on its side's shoulder.
 	if build.shoulders:
-		# Left shoulder
-		# First, remove all weapon-related components
-		var left_to_remove = []
-		for comp_name in components.left_shoulder:
-			var comp = components.left_shoulder[comp_name]
-			if "weapon" in comp.tags:
-				left_to_remove.append(comp_name)
-		for comp_name in left_to_remove:
-			components.left_shoulder.erase(comp_name)
-		
-		# Add weapon feed if arm weapon equipped
-		if build.arm_weapon_left:
-			components.left_shoulder["weapon_feed"] = {
-				"hp": 1, "max_hp": 1,
-				"tags": ["external", "weapon"],
-				"weight": 1.0,
-				"disabled": false
-			}
-			#Add arm weapon's additional components
-			if "additional_components" in build.arm_weapon_left:
-				for comp_data in build.arm_weapon_left.additional_components:
-					components.left_shoulder[comp_data.name] = {
-						"hp": comp_data.hp,
-						"max_hp": comp_data.max_hp,
-						"tags": comp_data.tags.duplicate(),
-						"weight": comp_data.weight,
-						"disabled": false
-					}
-		
-		# Right shoulder
-		var right_to_remove = []
-		for comp_name in components.right_shoulder:
-			var comp = components.right_shoulder[comp_name]
-			if "weapon" in comp.tags:
-				right_to_remove.append(comp_name)
-		for comp_name in right_to_remove:
-			components.right_shoulder.erase(comp_name)
-		
-		# Add weapon feed if arm weapon equipped
-		if build.arm_weapon_right:
-			components.right_shoulder["weapon_feed"] = {
-				"hp": 1, "max_hp": 1,
-				"tags": ["external", "weapon"],
-				"weight": 1.0,
-				"disabled": false
-			}
-			#Add arm weapon's additional components
-			if "additional_components" in build.arm_weapon_right:
-				for comp_data in build.arm_weapon_right.additional_components:
-					components.right_shoulder[comp_data.name] = {
-						"hp": comp_data.hp,
-						"max_hp": comp_data.max_hp,
-						"tags": comp_data.tags.duplicate(),
-						"weight": comp_data.weight,
-						"disabled": false
-					}
+		for side in ["left", "right"]:
+			var shoulder: Dictionary = components[side + "_shoulder"]
+			for comp_name in shoulder.keys():
+				if "weapon" in shoulder[comp_name].tags:
+					shoulder.erase(comp_name)
+			var arm_weapon = build["arm_weapon_" + side]
+			if arm_weapon:
+				shoulder["weapon_feed"] = weapon_feed_component()
+				shoulder.merge(additional_components_of(arm_weapon), true)
 
 func debug_print_components():
 	print("\n=== MECHA COMPONENT DEBUG ===")
@@ -4540,19 +4434,17 @@ func debug_print_components():
 	
 	print("=============================\n")
 
-# The emergency Flag. Both ways in come here: hp reaching 0 (take_damage) and
-# the core shell destroyed (component_destroyed). The grace window starts at
-# once, inside the damage that caused it, so the rest of that blast or burst
-# does nothing (take_damage, armor_check, damage_component and
-# take_status_damage all check it). The weapons lock (shoot,
-# can_fire_at_point) and a salvo still going out stops. After the window the
-# cockpit can be hit (is_protected) and the exposed_hits rule counts.
+# The emergency Flag, entered when the core shell is destroyed
+# (component_destroyed). The grace window starts at once, inside the damage
+# that caused it, so the rest of that blast or burst does nothing
+# (register_hit, armor_check, damage_component and take_status_damage all
+# check it). The weapons lock (shoot, can_fire_at_point) and a salvo still
+# going out stops. After the window the cockpit can be hit (is_protected).
 func enter_flagged_state():
 	if is_exposed or is_dead:
 		return
 	is_exposed = true
 	flag_grace = FLAG_GRACE_TIME
-	exposed_invuln_timer = 0.0
 	_heartbeat = FLAG_HEARTBEAT_TIME
 	var attacker = get_last_attacker()
 	_show_flag_entry(attacker)
@@ -4940,6 +4832,7 @@ func _sync_ticks(group: int) -> void:
 			tick.middle = false
 		return
 	members.sort_custom(func(a, b): return a.time_left < b.time_left)
+	@warning_ignore("integer_division")
 	var middle: Tick = members[members.size() / 2]
 	for tick in members:
 		tick.time_left = clampf(tick.time_left, middle.time_left - TICK_SYNC_SPREAD, middle.time_left + TICK_SYNC_SPREAD)

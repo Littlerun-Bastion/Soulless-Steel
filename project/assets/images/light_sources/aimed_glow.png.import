@@ -3,20 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cpf232ltrufel"
-path="res://.godot/imported/aimed_glow.png-a06e143931183796279981be9bf8bcf7.ctex"
+path.bptc="res://.godot/imported/aimed_glow.png-a06e143931183796279981be9bf8bcf7.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/images/light_sources/aimed_glow.png"
-dest_files=["res://.godot/imported/aimed_glow.png-a06e143931183796279981be9bf8bcf7.ctex"]
+dest_files=["res://.godot/imported/aimed_glow.png-a06e143931183796279981be9bf8bcf7.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=2059767897]
 script = ExtResource("5")
 part_name = "MSV-M2-L"
+frame = "MSV-M2"
 price = 950.0
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "oil": 2, "copper": 1})
@@ -25,7 +26,6 @@ max_speed = 350
 accuracy_modifier = 1.3
 friction = 0.2
 rotation_acc = 0.8
-health = 3400.0
 move_heat = 250
 weight = 15.7
 weight_capacity = 85.4

@@ -19,6 +19,7 @@
 script = ExtResource("12")
 coolant_type = ExtResource("coolant_default")
 part_name = "MSV-L3J"
+frame = "MSV-L3J"
 price = 900.0
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "copper": 2, "silicon": 1})
@@ -27,7 +28,6 @@ manufacturer_name_short = "Martel"
 tagline = "L3JC"
 description = "A light, scrapyard core part manufactured solely for its cheapness. Has no merit other than its light weight. No space for shoulder-mounted equipment."
 image = ExtResource("13")
-health = 2475.0
 shield_strength = 2.0
 stability = 0.0
 rotation_range = 28.0

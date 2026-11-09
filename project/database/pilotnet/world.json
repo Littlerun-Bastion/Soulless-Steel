@@ -1,0 +1,6 @@
+{
+	"_about": "pilot.net's WORLD STATUS box (front page). Each key is a story flag name. label: the line's name. values: the text for each value of the flag, keyed by the value as text ('0', '1', 'true', 'false'...). default (optional, text): the value to use while the flag isn't set. requires (optional): StoryDirector conditions; the line shows only while they pass. The story script sets a value with StoryDirector.set_flag(name, value); a value with no text shows as it is. See database/pilotnet/README.md. These entries are samples.",
+	"sample_threat": {"label": "[SAMPLE] Helwan threat", "values": {"0": "Quiet", "1": "Active", "2": "Swarming"}, "default": "0"},
+	"sample_road": {"label": "[SAMPLE] Ice road", "values": {"false": "Closed", "true": "Open"}, "default": "false"},
+	"sample_gated": {"label": "[SAMPLE] Gated line", "values": {"0": "Calm"}, "default": "0", "requires": {"flags": {"sample_world_gate": true}}}
+}

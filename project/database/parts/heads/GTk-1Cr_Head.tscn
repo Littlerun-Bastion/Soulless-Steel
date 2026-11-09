@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1_e1vdi")
 part_name = "'Barong' GTk-1Cr Head"
+frame = "'Barong' GTk-1Cr"
 price = 750.0
 tech_tier = 2
 composition = Dictionary[String, int]({"silicon": 5, "copper": 3, "steel": 1, "neural_biomatter": 2})
@@ -21,7 +22,6 @@ image = ExtResource("2_5otfk")
 heatmap = ExtResource("3_i6y2j")
 accuracy_modifier = 1.4
 visual_range = 150
-health = 2025
 weight = 7.85
 
 [node name="Sub" type="Sprite2D" parent="."]

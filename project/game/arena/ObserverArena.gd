@@ -588,5 +588,5 @@ func update_camera(real_dt: float, mouse_over_panel: bool) -> void:
 		elif mouse.y >= size.y - EDGE_PAN_MARGIN:
 			move.y += 1.0
 	if move != Vector2.ZERO:
-		var speed := CAMERA_SPEED * (CAMERA_FAST if Input.is_physical_key_pressed(KEY_SHIFT) else 1.0)
-		ArenaCam.position += move.normalized() * speed / ArenaCam.zoom.x * real_dt
+		var pan_speed := CAMERA_SPEED * (CAMERA_FAST if Input.is_physical_key_pressed(KEY_SHIFT) else 1.0)
+		ArenaCam.position += move.normalized() * pan_speed / ArenaCam.zoom.x * real_dt

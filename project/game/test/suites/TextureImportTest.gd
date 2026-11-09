@@ -12,7 +12,6 @@ const COMPRESSED := [
 	"res://database/maps/arena_oldgate2.png",
 	"res://assets/images/map/floor/tutorial_room.png",
 	"res://assets/images/map/floor/TestArenaBox.png",
-	"res://assets/images/light_sources/aimed_glow.png",
 	"res://assets/images/ui/player_ui/ui_vignette.png",
 ]
 

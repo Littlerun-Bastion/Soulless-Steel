@@ -72,6 +72,7 @@ func _ready() -> void:
 func run_suite() -> void:
 	_save_state()
 	_take_errors_as("setup")
+	@warning_ignore("redundant_await")
 	await run_tests()
 	_take_errors_as("outside a case")
 	await _restore_state()
@@ -83,6 +84,7 @@ func case(case_name: String, test: Callable) -> void:
 	_case_name = case_name
 	var failed_before := failed
 	_take_errors_as("before " + case_name)
+	@warning_ignore("redundant_await")
 	await before_each()
 	# A script error inside a waiting case stops it without returning, which
 	# would hang the run; so the case runs on its own and gets a time limit.
@@ -147,6 +149,21 @@ func wait_until(condition: Callable, timeout := 5.0) -> bool:
 	return true
 
 
+# ---- Set-ups ----
+
+## Leaves `mecha` badly hurt without destroying anything: every armour pip
+## gone and each component down to a third of its hp (at least 1), about a
+## quarter of its structural health (NPCKnowledge._structural_health).
+func wear_down(mecha) -> void:
+	for part_name in mecha.armor:
+		for facing in mecha.armor[part_name]:
+			mecha.armor[part_name][facing].pips = 0
+	for part_name in mecha.components:
+		for comp_name in mecha.components[part_name]:
+			var comp: Dictionary = mecha.components[part_name][comp_name]
+			comp.hp = maxi(floori(comp.max_hp / 3.0), 1)
+
+
 # ---- Internals ----
 
 func _fail(message: String, where := "") -> void:
@@ -181,6 +198,7 @@ func _save_state() -> void:
 	_saved = {
 		"progress": JSON.parse_string(JSON.stringify(PlayerProgress.get_save_data())),
 		"story": JSON.parse_string(JSON.stringify(StoryDirector.get_save_data())),
+		"pilotnet": JSON.parse_string(JSON.stringify(PilotNet.get_save_data())),
 		"mission": MissionManager.current_mission,
 		"profile_loaded": FileManager.profile_loaded,
 		"paths": [FileManager.profile_path, FileManager.backup_path, FileManager.archive_dir],
@@ -196,6 +214,7 @@ func _save_state() -> void:
 	Global.keep_window = true
 	PlayerProgress.autosave = false
 	StoryDirector.autosave = false
+	PilotNet.autosave = false
 	# A test pressing "Continue" or "Return" must not change the scene under
 	# the runner; the target is recorded in TransitionManager.captured.
 	TransitionManager.capture_only = true
@@ -210,14 +229,19 @@ func _restore_state() -> void:
 	MechOS.set_app_available("materials", false)
 	MechOS.set_app_available("fabricator", false)
 	MechOS.set_app_available("facilities", false)
+	MechOS.set_app_available("net", false)
+	Store.clear_cart()
+	HangarScreen.open_net_url = ""
 	get_tree().paused = false
 	MouseManager.reset()
 	await wait_frames(2)  # let freed nodes go before restoring state
 	PlayerProgress.set_save_data(_saved["progress"])
+	PilotNet.set_save_data(_saved["pilotnet"])
 	StoryDirector.set_save_data(_saved["story"])
 	MissionManager.current_mission = _saved["mission"]
 	PlayerProgress.autosave = true
 	StoryDirector.autosave = true
+	PilotNet.autosave = true
 	FileManager.profile_loaded = _saved["profile_loaded"]
 	FileManager.profile_path = _saved["paths"][0]
 	FileManager.backup_path = _saved["paths"][1]

@@ -266,6 +266,7 @@ static func _stats(samples: PackedFloat32Array) -> String:
 	for s in sorted:
 		total += s
 	var n := sorted.size()
+	@warning_ignore("integer_division")
 	return "%.2f / %.2f / %.2f / %.2f" % [total / n, sorted[n / 2], sorted[mini(int(n * 0.95), n - 1)], sorted[n - 1]]
 
 

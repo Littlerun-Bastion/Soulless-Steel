@@ -340,15 +340,15 @@ func _draw_sweep(entry: Dictionary, to_screen: Transform2D, zoom: float, color: 
 # A box of `lines` on a G1 backing, centred on `anchor` across: hanging
 # below it, or standing on it when `above`. With `wrap` above 0 the text
 # wraps at that width; otherwise the box is as wide as its widest line.
-func _draw_box(anchor: Vector2, lines: PackedStringArray, wrap: float, color: Color, above: bool) -> void:
+func _draw_box(anchor: Vector2, lines: PackedStringArray, wrap_width: float, color: Color, above: bool) -> void:
 	var text := "\n".join(lines)
-	var width := wrap
+	var width := wrap_width
 	if width <= 0.0:
 		width = 0.0
 		for line in lines:
 			width = maxf(width, _font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, TAG_SIZE).x)
 	var size := _font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, width, TAG_SIZE)
-	if wrap > 0.0:
+	if wrap_width > 0.0:
 		width = minf(width, size.x + 1.0)
 	var box := Rect2(anchor.x - width * 0.5 - TAG_PAD, anchor.y, width + TAG_PAD * 2.0, size.y + TAG_PAD * 2.0)
 	if above:

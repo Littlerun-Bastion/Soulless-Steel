@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/PilotNetTest.gd" id="1_pilotnet"]
+
+[node name="PilotNetTest" type="Node"]
+script = ExtResource("1_pilotnet")

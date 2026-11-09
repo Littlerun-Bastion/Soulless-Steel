@@ -48,15 +48,15 @@ func get_random_npc():
 
 
 ## A personality type name drawn by PERSONALITY_WEIGHTS.
-static func pick_personality_name() -> String:
+func pick_personality_name() -> String:
 	var total := 0.0
 	for weight in PERSONALITY_WEIGHTS.values():
 		total += float(weight)
 	var roll := randf() * total
-	for name in PERSONALITY_WEIGHTS:
-		roll -= float(PERSONALITY_WEIGHTS[name])
+	for personality in PERSONALITY_WEIGHTS:
+		roll -= float(PERSONALITY_WEIGHTS[personality])
 		if roll <= 0.0:
-			return name
+			return personality
 	return "professional"
 
 
@@ -143,7 +143,7 @@ func get_design_data(npc, personality_name := ""):
 	return data
 
 
-static func _personality_from_string(type_name: String) -> Personality:
+func _personality_from_string(type_name: String) -> Personality:
 	var p = Personality.new()
 	match type_name:
 		"scavenger":

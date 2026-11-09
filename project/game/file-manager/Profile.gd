@@ -83,6 +83,7 @@ func get_save_data():
 		"debug": Debug.debug_settings,
 		"progress": PlayerProgress.get_save_data(),
 		"story": StoryDirector.get_save_data(),
+		"pilotnet": PilotNet.get_save_data(),
 	}
 	
 	return data
@@ -108,6 +109,11 @@ func set_save_data(data):
 		PlayerProgress.set_save_data(data["progress"])
 	else:
 		PlayerProgress.set_save_data(PlayerProgress.migrate_legacy_save(data))
+
+	# Before the story: the story's state_changed then shows pilot.net's posts
+	# against its loaded read state, so nothing it already showed is new.
+	if data.has("pilotnet"):
+		PilotNet.set_save_data(data["pilotnet"])
 
 	if data.has("story"):
 		StoryDirector.set_save_data(data["story"])

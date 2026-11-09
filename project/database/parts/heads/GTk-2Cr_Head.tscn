@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1_beknh")
 part_name = "'Rangda' GTk-2Cr Head"
+frame = "'Rangda' GTk-2Cr"
 price = 850.0
 tech_tier = 2
 composition = Dictionary[String, int]({"silicon": 6, "copper": 3, "steel": 2, "neural_biomatter": 2})
@@ -21,7 +22,6 @@ image = ExtResource("2_skso1")
 heatmap = ExtResource("3_1xwlc")
 accuracy_modifier = 1.37
 visual_range = 150
-health = 1800
 weight = 6.95
 
 [node name="Sub" type="Sprite2D" parent="."]

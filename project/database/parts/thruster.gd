@@ -10,6 +10,9 @@ extends Resource
 # down into (or takes to build), material id (see Materials) -> amount.
 @export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export var composition: Dictionary[String, int] = {}
+## False keeps the part out of the store and out of the Compare window's
+## STORE list, for secret parts.
+@export var store_listed := true
 @export var image : Texture2D
 @export var thrust_speed_multiplier := 3.0
 @export var thrust_max_speed := 400

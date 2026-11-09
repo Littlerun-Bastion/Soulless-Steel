@@ -22,6 +22,7 @@ extends Node
 #   - messenger reply "story_effects" applied when the player picks the reply
 #   - messenger reply "requires"      hides the reply until conditions are met
 #   - map_trigger named "story:..."   routed by CombatScene (Arena and Expedition), see handle_trigger()
+#   - more effect keys                any system can add one (register_effect)
 #
 # Testing:
 #   - debug_7 (F7) prints the current story state
@@ -41,6 +42,10 @@ var history: Array = []
 var flags: Dictionary = {}
 
 var autosave := true
+
+# Effect keys beyond "flags" and "advance": key -> Callable(value). Any system
+# can add one with register_effect (see there).
+var _effect_handlers: Dictionary = {}
 
 
 func _ready() -> void:
@@ -123,7 +128,24 @@ func apply_effects(effects: Dictionary) -> void:
 	if effects.has("advance"):
 		var parts := _split_id(effects["advance"])
 		advance_to(parts[0], parts[1], false)
+	for key in effects:
+		if key != "flags" and key != "advance" and _effect_handlers.has(key):
+			_effect_handlers[key].call(effects[key])
 	_save()
+
+
+## Adds an effect key that apply_effects() understands, beside "flags" and
+## "advance": apply_effects calls handler with the key's value. A map
+## trigger "story:<key>=<text>" calls it too, with the text (handle_trigger).
+## Not only for pilot.net (PilotNet registers "pilotnet"): any system, the
+## story script included, can register its own keys. Registering a key again
+## replaces its handler.
+func register_effect(key: String, handler: Callable) -> void:
+	_effect_handlers[key] = handler
+
+
+func has_effect(key: String) -> bool:
+	return _effect_handlers.has(key)
 
 
 # An empty dictionary always passes.
@@ -146,6 +168,9 @@ func meets(conditions: Dictionary) -> bool:
 # Map triggers named "story:<command>" land here via Arena. Commands:
 #   "advance=chapter/beat"  moves the story
 #   "flag=name"             sets flag to true
+#   "<key>=text"            calls the handler registered for <key>
+#                           (register_effect) with the text, e.g.
+#                           "pilotnet=volk_rumour_1"
 func handle_trigger(command: String) -> void:
 	var pair := command.split("=", true, 1)
 	if pair.size() != 2:
@@ -157,7 +182,11 @@ func handle_trigger(command: String) -> void:
 		"flag":
 			apply_effects({"flags": {pair[1]: true}})
 		_:
-			push_error("Unknown story trigger command: " + command)
+			if _effect_handlers.has(pair[0]):
+				_effect_handlers[pair[0]].call(pair[1])
+				_save()
+			else:
+				push_error("Unknown story trigger command: " + command)
 
 
 func _on_mission_completed(mission) -> void:

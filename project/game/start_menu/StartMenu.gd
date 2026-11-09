@@ -108,9 +108,12 @@ func _on_Expedition_pressed():
 	TransitionManager.transition_to("res://game/expedition/Expedition.tscn", "Launching Expedition...")
 
 
+# The store is amazing.com on the NET, which only runs in the Hangar: go
+# there and open it.
 func _on_Store_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
+	HangarScreen.open_net_url = NetSites.STORE_DOMAIN
+	TransitionManager.transition_to("res://game/ui/HangarScreen.tscn", "Dialling in...")
 
 # An expedition lost without a game-over screen (quit from pause, game closed
 # or crashed mid-run) is reported here, once.

@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "Lancelot-Pauldron"
+frame = "Lancelot"
 price = 700.0
 tech_tier = 2
 shield_strength = 3.0

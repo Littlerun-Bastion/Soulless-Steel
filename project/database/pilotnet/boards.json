@@ -1,0 +1,9 @@
+{
+	"_about": "pilot.net's boards, in the order the site lists them (PilotNet, game/net/pilotnet/PilotNet.gd). id: what a post's 'board' names. name: the board's title on the site. blurb: one line under the name. requires (optional): StoryDirector conditions; the board and its posts show only while they pass. See database/pilotnet/README.md. The blurbs are placeholder text.",
+	"boards": [
+		{"id": "news", "name": "NEWS & EVENTS", "blurb": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."},
+		{"id": "gigs", "name": "GIGS", "blurb": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."},
+		{"id": "general", "name": "GENERAL CHATTER", "blurb": "Ut enim ad minim veniam, quis nostrud exercitation ullamco."},
+		{"id": "trade", "name": "BUY / SELL / TRADE", "blurb": "Duis aute irure dolor in reprehenderit in voluptate velit esse."}
+	]
+}

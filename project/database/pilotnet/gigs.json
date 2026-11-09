@@ -1,0 +1,13 @@
+{
+	"_about": "pilot.net gig templates (PilotNet). The GIGS board rolls open gigs from these by weight. id: unique. title: may use {count}, {kind}, {kind_plural} and {item}. type: 'kill' (kill count of kind; kind is 'mech' or an Entity species, and only kinds the Expedition spawns are offered), 'extract' (extract count times) or 'extract_with' (extract carrying count of item; item is an item id or a tag such as 'bio'). count, reward: [min, max], rolled once when the gig is posted (the reward rounded to 10). reputation: added when paid. weight: how often it is rolled. requires (optional): StoryDirector conditions. Optional: poster (a callsign; else a random one), kind_plural (else kind + 's'), item_name (else the item's name). See database/pilotnet/README.md. All templates are samples with placeholder numbers.",
+	"gigs": [
+		{"id": "sample_coyote_cull", "title": "[SAMPLE] Clear {count} {kind_plural} near Helwan", "type": "kill", "kind": "Coyote", "count": [4, 8], "reward": [300, 600], "reputation": 1, "weight": 1.0},
+		{"id": "sample_spitter_hunt", "title": "[SAMPLE] Put down {count} {kind_plural}", "type": "kill", "kind": "Coyote Spitter", "count": [2, 4], "reward": [350, 700], "reputation": 1, "weight": 0.8},
+		{"id": "sample_fisher_bounty", "title": "[SAMPLE] Bounty: {count} {kind}", "type": "kill", "kind": "Fisher", "count": [1, 1], "reward": [800, 1200], "reputation": 2, "weight": 0.5},
+		{"id": "sample_tick_burn", "title": "[SAMPLE] Burn out {count} {kind_plural}", "type": "kill", "kind": "Tick Swarm", "count": [3, 6], "reward": [250, 500], "reputation": 1, "weight": 0.8},
+		{"id": "sample_mech_contract", "title": "[SAMPLE] Take down {count} hostile {kind_plural}", "type": "kill", "kind": "mech", "count": [1, 3], "reward": [500, 900], "reputation": 1, "weight": 0.5},
+		{"id": "sample_courier", "title": "[SAMPLE] Make {count} clean extractions", "type": "extract", "count": [1, 2], "reward": [200, 400], "reputation": 1, "weight": 0.7},
+		{"id": "sample_bio_haul", "title": "[SAMPLE] Bring home {count} {item}", "type": "extract_with", "item": "bio", "item_name": "bio salvage", "count": [3, 6], "reward": [400, 700], "reputation": 1, "weight": 0.7},
+		{"id": "sample_gated_gig", "title": "[SAMPLE] Gated gig: {count} {kind_plural}", "type": "kill", "kind": "Coyote", "count": [2, 3], "reward": [200, 300], "reputation": 0, "weight": 1.0, "requires": {"flags": {"sample_gig_gate": true}}}
+	]
+}

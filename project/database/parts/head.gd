@@ -9,6 +9,12 @@ extends Node2D
 # down into (or takes to build), material id (see Materials) -> amount.
 @export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export var composition: Dictionary[String, int] = {}
+## False keeps the part out of the store and out of the Compare window's
+## STORE list, for secret parts.
+@export var store_listed := true
+## The frame (model line) the part belongs to, "" for none: amazing.com
+## shows the rest of it under the part (Store.frame_mates).
+@export var frame := ""
 @export var description : String
 @export var image : Texture2D
 @export var heatmap : Resource
@@ -31,7 +37,6 @@ extends Node2D
 ## (Illumination.shape_light). What the cone falls on is lit, and the mecha
 ## sees it out to its sight circle, the player and an NPC alike. Placeholder.
 @export_range(2.0, 360.0, 0.5) var illuminator_angle := 30.0
-@export var health := 1500
 @export var weight := 1.0
 ## How big it looks to radar for its size (RadarCrossSection): 0.2 a
 ## stealth part, 1.0 an ordinary one, 3.0 flat, bulky armour. Its shape and

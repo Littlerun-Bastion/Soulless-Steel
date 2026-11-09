@@ -1,0 +1,8 @@
+title: [SAMPLE] Sample place
+summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+infobox.Region: [REGION]
+---
+'''Lorem ipsum''' dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+== Lorem ipsum ==
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.

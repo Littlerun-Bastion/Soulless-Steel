@@ -1,0 +1,25 @@
+title: [SAMPLE] Markup sample
+summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+infobox.Type: [SAMPLE]
+infobox.First seen: Day 1
+see_also: sample_pilot, sample_place, martel
+---
+'''Lorem ipsum''' dolor sit amet, ''consectetur'' adipiscing elit. Sed do eiusmod tempor [[martel]] incididunt ut labore et dolore [[sample_place|magna aliqua]].
+
+Ut enim ad minim veniam, quis nostrud exercitation [[no_such_article|ullamco laboris]] nisi ut aliquip ex ea commodo consequat.
+
+== Lorem ipsum ==
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. [[net:pilot.net/board/news|Excepteur sint occaecat]] cupidatat non proident.
+
+* Sunt in culpa qui officia.
+* Deserunt mollit anim id est laborum.
+
+=== Dolor sit ===
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+
+== Hidden until a flag ==
+requires: {"flags": {"sample_steelapedia_section": true}}
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.
+
+== Consectetur ==
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.

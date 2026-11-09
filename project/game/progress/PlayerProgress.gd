@@ -37,6 +37,8 @@ extends Node
 signal money_changed(new_amount)
 signal mecha_changed(design)
 signal expedition_lost(report)
+signal expedition_started
+signal expedition_extracted
 signal materials_changed(materials)
 signal blueprints_changed
 signal facilities_changed
@@ -521,6 +523,7 @@ func cargo_sell_value() -> int:
 func begin_expedition() -> void:
 	in_expedition = true
 	_log("expedition started")
+	expedition_started.emit()
 	_save()
 
 
@@ -535,6 +538,9 @@ func extract_expedition() -> void:
 		return
 	in_expedition = false
 	_log("expedition extracted")
+	# Listeners (PilotNet's gigs) see the cargo brought home; their changes
+	# go into the same save.
+	expedition_extracted.emit()
 	_save()
 
 

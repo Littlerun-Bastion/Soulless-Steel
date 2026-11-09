@@ -237,13 +237,13 @@ func assign_roles() -> void:
 	if alive.is_empty():
 		return
 	var direct: Array = alive.filter(func(m): return _is_direct_fire(m))
-	var anchor = leader if leader_alive() and _is_direct_fire(leader) else (direct[0] if not direct.is_empty() else leader)
-	if anchor == null:
-		anchor = alive[0]
-	roles[anchor.get_instance_id()] = ROLE_ANCHOR
+	var anchor_mecha = leader if leader_alive() and _is_direct_fire(leader) else (direct[0] if not direct.is_empty() else leader)
+	if anchor_mecha == null:
+		anchor_mecha = alive[0]
+	roles[anchor_mecha.get_instance_id()] = ROLE_ANCHOR
 	var flanker = null
 	for m in direct:
-		if not is_same(m, anchor):
+		if not is_same(m, anchor_mecha):
 			flanker = m
 			break
 	if flanker != null:

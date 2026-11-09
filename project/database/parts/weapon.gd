@@ -15,6 +15,9 @@ extends Node
 # these breaks down into, material id (see Materials) -> amount.
 @export var tech_tier: item_data.TechTier = item_data.TechTier.LOW
 @export var composition: Dictionary[String, int] = {}
+## False keeps the part out of the store and out of the Compare window's
+## STORE list, for secret parts.
+@export var store_listed := true
 @export var ai_engage_range := 2000
 @export var is_indirect_fire := false
 @export var additional_components: Array[Dictionary] = [
@@ -93,6 +96,10 @@ extends Node
 
 @export_category("Melee Behaviours")
 @export var is_melee := false
+## A melee hit's damage pips and armour pen (Mecha.process_hitboxes).
+## Placeholders.
+@export var melee_damage := 1
+@export var melee_pen := 1
 @export var melee_knockback := 20
 
 # Shoulder weapons with a designator work like skills: holding the fire button
@@ -123,7 +130,8 @@ extends Node
 var cur_stage = 0
 var firing_timer = 0.0
 var part_id
-# Projectile values read once by get_aoe_info().
+# Projectile values read once (_read_projectile) for get_aoe_info() and
+# get_projectile_stat().
 var _projectile_info := {}
 
 
@@ -167,24 +175,9 @@ func has_designator() -> bool:
 
 
 # What NPC code needs to use this weapon (see AoE weapons.md, "For NPC code").
-# The blast radius comes from the projectile scene, instantiated once and
-# cached: instantiate() doesn't run _ready, so it has no side effects.
+# The blast radius comes from the projectile scene (_read_projectile).
 func get_aoe_info() -> Dictionary:
-	if _projectile_info.is_empty():
-		_projectile_info = {"blast_radius": 0.0, "muzzle_speed": 0.0, "submunitions": 0}
-		if projectile is PackedScene:
-			var inst: Node = projectile.instantiate()
-			var radius = inst.get("payload_explosion_radius")
-			var speed = inst.get("muzzle_speed")
-			var subs = inst.get("payload_subprojectile_count")
-			var has_subs: bool = inst.get("payload_subprojectile") != null
-			inst.free()
-			if radius != null:
-				_projectile_info.blast_radius = float(radius)
-			if speed != null:
-				_projectile_info.muzzle_speed = float(speed)
-			if subs != null and has_subs:
-				_projectile_info.submunitions = int(subs)
+	_read_projectile()
 	return {
 		"fire_type": "indirect" if is_indirect_fire else "direct",
 		"designator": designator,
@@ -200,5 +193,39 @@ func get_aoe_info() -> Dictionary:
 		"submunitions": _projectile_info.submunitions,
 		"requires_lock": requires_lock,
 	}
+
+
+## A number off the projectile's root ("base_damage", "armor_pen"), or null
+## when the weapon has no projectile or its projectile has no such field.
+func get_projectile_stat(stat_name: String):
+	_read_projectile()
+	return _projectile_info.stats.get(stat_name)
+
+
+# Reads the projectile scene's root once and caches what it needs:
+# instantiate() never adds it to the tree and doesn't run _ready, so it has no
+# side effects.
+func _read_projectile() -> void:
+	if not _projectile_info.is_empty():
+		return
+	_projectile_info = {"blast_radius": 0.0, "muzzle_speed": 0.0, "submunitions": 0, "stats": {}}
+	if not projectile is PackedScene:
+		return
+	var inst: Node = projectile.instantiate()
+	var radius = inst.get("payload_explosion_radius")
+	var speed = inst.get("muzzle_speed")
+	var subs = inst.get("payload_subprojectile_count")
+	var has_subs: bool = inst.get("payload_subprojectile") != null
+	for stat_name in ["base_damage", "armor_pen"]:
+		var value = inst.get(stat_name)
+		if value is int or value is float:
+			_projectile_info.stats[stat_name] = value
+	inst.free()
+	if radius != null:
+		_projectile_info.blast_radius = float(radius)
+	if speed != null:
+		_projectile_info.muzzle_speed = float(speed)
+	if subs != null and has_subs:
+		_projectile_info.submunitions = int(subs)
 
 	

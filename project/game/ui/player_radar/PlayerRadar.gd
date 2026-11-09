@@ -273,10 +273,10 @@ func _draw_lock(radius: float, bearing: float, half: float, color: Color) -> voi
 			var edge := Vector2.from_angle(end)
 			draw_line(edge * (radius + LOCK_ARC * 0.5), edge * (radius - LOCK_CAP), color, LOCK_ARC * 0.5, true)
 	var font: Font = THEME.default_font if THEME.default_font != null else ThemeDB.fallback_font
-	var size := font.get_string_size(LABEL, HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_SIZE)
+	var text_size := font.get_string_size(LABEL, HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_SIZE)
 	# The label's box sits just outside the band: its centre is as far out
 	# as the box reaches back toward the ring along `dir`.
-	var reach := absf(dir.x) * size.x * 0.5 + absf(dir.y) * size.y * 0.5
+	var reach := absf(dir.x) * text_size.x * 0.5 + absf(dir.y) * text_size.y * 0.5
 	var centre := dir * (radius + LOCK_ARC + LABEL_GAP + reach)
-	draw_string(font, centre + Vector2(-size.x * 0.5, size.y * 0.5 - font.get_descent(LABEL_SIZE)), LABEL,
+	draw_string(font, centre + Vector2(-text_size.x * 0.5, text_size.y * 0.5 - font.get_descent(LABEL_SIZE)), LABEL,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, LABEL_SIZE, color)

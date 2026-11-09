@@ -9,6 +9,7 @@
 [node name="Part" type="Node" unique_id=1262009843]
 script = ExtResource("1")
 part_name = "Percival-Chassis"
+frame = "Percival"
 price = 2600.0
 tech_tier = 3
 composition = Dictionary[String, int]({"steel": 9, "oil": 5, "copper": 3, "nt_fluid": 3, "myofibrilium": 2})
@@ -23,7 +24,6 @@ accuracy_modifier = 0.85
 rotation_acc = 1.25
 trim_acc = 1.1
 rotation_range = 180.0
-health = 2400.0
 move_heat = 650
 weight = 10.5
 weight_capacity = 60.0

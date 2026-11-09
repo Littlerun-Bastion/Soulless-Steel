@@ -19,6 +19,7 @@
 script = ExtResource("1")
 coolant_type = ExtResource("coolant_default")
 part_name = "Lancelot-Core"
+frame = "Lancelot"
 price = 3200.0
 tech_tier = 3
 composition = Dictionary[String, int]({"steel": 10, "copper": 6, "silicon": 4, "nt_fluid": 4, "nt_engines": 2})
@@ -27,7 +28,6 @@ manufacturer_name_short = "Claymore"
 tagline = "Light3D Core"
 description = "An ultralight core constructed only from a bare skeleton and paper-thin plating suitable only for protecting against armor. Revered for its excellent stability and mobility performance. No space for shoulder armament."
 image = ExtResource("13")
-health = 2250.0
 shield_strength = 4.0
 stability = 140.0
 rotation_range = 46.0

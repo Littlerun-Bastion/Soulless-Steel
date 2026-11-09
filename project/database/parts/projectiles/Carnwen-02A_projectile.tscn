@@ -17,7 +17,6 @@ life_time = 0.4
 life_time_var = 0.02
 impact_effect = ExtResource("2_abadl")
 impact_size = 0.5
-health_mult = 0.5
 shield_mult = 1.5
 dropoff_modifier = 0.95
 heat_damage = 8.0

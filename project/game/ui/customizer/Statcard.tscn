@@ -102,11 +102,6 @@ layout_mode = 2
 theme_override_constants/separation = 60
 alignment = 1
 
-[node name="Armor" parent="parts/head" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Armor"
-stat_name = "health"
-
 [node name="Accuracy" parent="parts/head" instance=ExtResource("2")]
 layout_mode = 2
 stat_title = "Accuracy Mod."
@@ -129,11 +124,6 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 60
 alignment = 1
-
-[node name="Armor" parent="parts/core" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Armor"
-stat_name = "health"
 
 [node name="Shield" parent="parts/core" instance=ExtResource("2")]
 layout_mode = 2
@@ -196,11 +186,6 @@ visible = false
 layout_mode = 2
 theme_override_constants/separation = 60
 alignment = 1
-
-[node name="Armor" parent="parts/chassis" instance=ExtResource("2")]
-layout_mode = 2
-stat_title = "Armor"
-stat_name = "health"
 
 [node name="Walk Speed" parent="parts/chassis" instance=ExtResource("2")]
 layout_mode = 2

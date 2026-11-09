@@ -1,4 +1,5 @@
 extends Control
+class_name HangarScreen
 
 # The Hangar: refit the mecha between expeditions and recycle salvage.
 # Built on Mech OS windows — the same ones used in the field — so the Hangar
@@ -14,6 +15,11 @@ extends Control
 # they change. The design is handed to PlayerProgress on every equip, so any
 # save (recycling, say) writes parts, cargo and stash that agree; leaving or
 # closing the game saves it all.
+#
+# NET (the browser) is on the sidebar here and only here for now. A screen
+# that sends the player to the Hangar to shop (the title screen's Store
+# button) sets open_net_url first; the Hangar opens NET there once, on
+# arrival, and clears it.
 
 const TEST_ITEM_DATA := preload("res://database/items/test/TestItem.tres")
 
@@ -28,6 +34,12 @@ const EQUIPMENT_SIZE := Vector2(820, 900)
 const CARGO_SIZE := Vector2(440, 420)
 const STASH_HEIGHT := 900.0
 
+## An address for NET to open when the Hangar next loads ("" = none).
+static var open_net_url := ""
+
+## Debug builds only: what the button by the credits adds (CT).
+const DEBUG_MONEY := 100000
+
 @onready var player_mecha: Mecha = $Mecha
 @onready var credits_label: Label = $HangarBar/Row/Credits/CreditsLabel
 @onready var materials_label: Label = $HangarBar/Row/Materials/MaterialsLabel
@@ -36,6 +48,7 @@ const STASH_HEIGHT := 900.0
 @onready var leave_button: Button = $HangarBar/Row/LeaveButton
 
 var stash_inventory: Inventory = null
+var debug_money_button: Button = null
 
 
 func _ready() -> void:
@@ -55,12 +68,21 @@ func _ready() -> void:
 	MechOS.set_app_available("materials", true)
 	MechOS.set_app_available("fabricator", true)
 	MechOS.set_app_available("facilities", true)
+	MechOS.set_app_available("net", true)
+	# Home: pilot.net pays the gigs completed since the last visit.
+	PilotNet.pay_completed()
 	_open_windows()
+	if open_net_url != "":
+		var url := open_net_url
+		open_net_url = ""
+		MechOS.open_net(url)
 
 	PlayerProgress.materials_changed.connect(_on_materials_changed)
 	_on_materials_changed(PlayerProgress.get_materials())
 	PlayerProgress.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerProgress.get_money())
+	if OS.is_debug_build():
+		_add_debug_money_button()
 	leave_button.pressed.connect(_on_BackButton_pressed)
 	_update_leave_guard()
 
@@ -69,6 +91,7 @@ func _exit_tree() -> void:
 	MechOS.set_app_available("materials", false)
 	MechOS.set_app_available("fabricator", false)
 	MechOS.set_app_available("facilities", false)
+	MechOS.set_app_available("net", false)
 	MechOS.close_all()
 	MechOS.recycling_enabled = false
 	MechOS.set_player(null)
@@ -157,6 +180,17 @@ func _on_cargo_overflow(stacks: Array) -> void:
 func _on_money_changed(amount: float) -> void:
 	credits_label.text = "%d CT" % int(amount)
 	credits_label.theme_type_variation = &"Badge" if amount < 0.0 else &"LabelBodyBright"
+
+
+# Debug builds only: a button by the credits that adds DEBUG_MONEY.
+func _add_debug_money_button() -> void:
+	debug_money_button = Button.new()
+	debug_money_button.text = "+%dK CT" % roundi(DEBUG_MONEY / 1000.0)
+	debug_money_button.tooltip_text = "Debug: adds %d CT" % DEBUG_MONEY
+	debug_money_button.focus_mode = Control.FOCUS_NONE
+	debug_money_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	debug_money_button.pressed.connect(func(): PlayerProgress.add_money(DEBUG_MONEY))
+	credits_label.get_parent().add_child(debug_money_button)
 
 
 # A short total per tech tier; the MAT window has the full list.

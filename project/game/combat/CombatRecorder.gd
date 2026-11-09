@@ -25,9 +25,10 @@ extends Node
 ## Other hits, amounts and armour rolls aren't written: the log stays short.
 ##
 ## A hit is anything that damages a component (rounds, beams, blasts, bites:
-## the attacker is in Mecha.last_damage_source by then) or takes hp through
-## Mecha.take_damage. Heat ticks (Mecha.damage_cause "heat") aren't hits. Hits
-## from the mecha itself (its own blast) aren't written.
+## the attacker is in Mecha.last_damage_source by then) or is reported through
+## Mecha.register_hit (took_damage, not a status's). Heat ticks
+## (Mecha.damage_cause "heat") aren't hits. Hits from the mecha itself (its
+## own blast) aren't written.
 
 const NODE_NAME := "CombatRecorder"
 const SOURCE := "CBT"

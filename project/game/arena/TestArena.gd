@@ -222,8 +222,9 @@ func _begin_stakes() -> void:
 	pass
 
 
-func _on_player_lost_health() -> void:
-	ShaderEffects.damage_burst_effect()
+func _on_player_hit(_mecha, is_status) -> void:
+	if not is_status:
+		ShaderEffects.damage_burst_effect()
 
 
 func _on_player_destroyed() -> String:

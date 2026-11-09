@@ -11,6 +11,7 @@
 [node name="Part" type="Node2D"]
 script = ExtResource("1_mg7rs")
 part_name = "Crawler D-type Head"
+frame = "Crawler D-type"
 price = 620.0
 tech_tier = 2
 composition = Dictionary[String, int]({"silicon": 4, "copper": 3, "steel": 1, "neural_biomatter": 1})
@@ -22,7 +23,6 @@ image = ExtResource("2_iprcr")
 heatmap = ExtResource("3_2kame")
 accuracy_modifier = 1.5
 visual_range = 150
-health = 2175
 weight = 8.5
 
 [node name="Sub" type="Sprite2D" parent="."]

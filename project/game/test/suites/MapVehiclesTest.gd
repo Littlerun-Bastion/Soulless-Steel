@@ -62,17 +62,17 @@ func _clear() -> void:
 func _setup(vehicles: Array, buildings: Array = [], stream := false) -> void:
 	_arena = FakeArena.new()
 	add_child(_arena)
-	var set := PropSpawnSet.new()
-	set.kinds = PackedStringArray(["vehicle", "truck"])
+	var spawn_set := PropSpawnSet.new()
+	spawn_set.kinds = PackedStringArray(["vehicle", "truck"])
 	for v in vehicles:
-		set.kind.append(0 if v[0] == "vehicle" else 1)
-		set.position.append(v[1])
-		set.rotation.append(v[2])
-		set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
-		set.variant.append(0)
+		spawn_set.kind.append(0 if v[0] == "vehicle" else 1)
+		spawn_set.position.append(v[1])
+		spawn_set.rotation.append(v[2])
+		spawn_set.size.append(CAR_SIZE if v[0] == "vehicle" else TRUCK_SIZE)
+		spawn_set.variant.append(0)
 	var spawner := PropSpawner.new()
 	spawner.name = "PropSpawner"
-	spawner.spawn_set = set
+	spawner.spawn_set = spawn_set
 	_arena.add_child(spawner)
 	if not buildings.is_empty():
 		var footprints := BuildingFootprints.new()
@@ -224,7 +224,7 @@ func _test_real_bullet() -> void:
 	var shooter := _mecha(Vector2(-1500, 1500))
 	shooter.battery = 1000000.0
 	var shots := []
-	shooter.create_projectile.connect(func(_m, args, weapon): shots.append([args, weapon]))
+	shooter.create_projectile.connect(func(_m, shot_args, weapon): shots.append([shot_args, weapon]))
 	var fired := await wait_until(func():
 		shooter.shoot("arm_weapon_left")
 		return not shots.is_empty(), 3.0)

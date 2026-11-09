@@ -149,9 +149,10 @@ func _before_entity_removed(entity) -> void:
 	entity.queue_free()
 
 
-func _on_player_lost_health() -> void:
-	super._on_player_lost_health()
-	ExpeditionDirector.notify_player_damaged()
+func _on_player_hit(mecha, is_status) -> void:
+	super._on_player_hit(mecha, is_status)
+	if not is_status:
+		ExpeditionDirector.notify_player_damaged()
 
 
 # take_loss_report so the main menu doesn't repeat it.
@@ -275,6 +276,7 @@ func add_entity(scene: PackedScene, spawn_position: Vector2) -> Entity:
 # ---- Stakes ----
 
 func _begin_stakes() -> void:
+	PilotNet.memorial.current_site = get_site_name()
 	PlayerProgress.begin_expedition()
 	MechOS.set_equipment_customizable(false)
 	PauseMenu.quit_warning = QUIT_WARNING
@@ -305,7 +307,7 @@ func _add_player() -> void:
 	CombatRecorder.attach(player)
 	player.position = _player_start_position()
 	_connect_mecha_signals(player)
-	player.connect("lost_health", Callable(self, "_on_player_lost_health"))
+	player.took_damage.connect(_on_player_hit)
 	player.connect("mecha_extracted", Callable(self, "_on_player_extracted"))
 	all_mechas.append(player)
 	_join_local(player)

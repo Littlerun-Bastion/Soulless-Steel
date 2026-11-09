@@ -6,7 +6,7 @@ const LOCKING_SPRITES = {
 	"locking_ecm": preload("res://assets/images/ui/player_ui/locking_on_ecm_highlight.png")
 }
 const HOLE_FADE_DUR = .1
-const BULLET_THRESHOLD = .75 #On what percent of max helth should player start getting holes
+const BULLET_THRESHOLD = .75 #Below this structural health (armour and components) hits leave holes
 const BULLET_CHANCE = .8 #Chance that a bullet will appear on hud
 const LOCKING_INIT_SCALE = .15
 const LOCKING_FINAL_SCALE = .25
@@ -219,8 +219,8 @@ func show_speech(mecha, text: String, seconds: float) -> void:
 # A buddy-up offer from `name` (CombatScene.offer_buddy): the prompt with its
 # keys (Player.ACCEPT_ACTION, DECLINE_ACTION), up for `seconds`, as long as
 # the offer stands.
-func show_offer(name: String, seconds: float) -> void:
-	hud_alerts.show_notice("%s OFFERS TO BUDDY UP · [%s] ACCEPT · [%s] DECLINE" % [name.to_upper(),
+func show_offer(offer_name: String, seconds: float) -> void:
+	hud_alerts.show_notice("%s OFFERS TO BUDDY UP · [%s] ACCEPT · [%s] DECLINE" % [offer_name.to_upper(),
 			MechUI.key_name("accept_offer"), MechUI.key_name("decline_offer")], seconds)
 
 
@@ -304,7 +304,7 @@ func play_blink_sound():
 
 func _on_player_took_damage(_p, is_status):
 	#Bullet holes logic
-	if not player.is_shielding and player.hp < player.max_hp*BULLET_THRESHOLD and\
+	if not player.is_shielding and NPCKnowledge._structural_health(player) < BULLET_THRESHOLD and\
 	randf() <= BULLET_CHANCE and not is_status:
 		var visible_holes = []
 		for hole in Bulletholes.get_children():

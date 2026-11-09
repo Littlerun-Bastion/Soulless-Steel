@@ -13,7 +13,7 @@ extends Node2D
 #                                 default a MechaBody with no loot
 #   _before_entity_removed(entity) called when an Entity (creature) dies
 #   _plays_ambience()             whether to start ambient BGM after the intro
-#   _on_player_lost_health()      override and call super to add reactions
+#   _on_player_hit(mecha, is_status)  override and call super to add reactions
 #   _on_player_destroyed()        the player just died; returns extra text for
 #                                 the game-over screen (e.g. what was lost)
 #
@@ -60,6 +60,11 @@ const SHED_EXPLOSION_SCALE := 0.6
 # Bodies left where no wreck is (_leave_body), oldest removed first.
 const MAX_BODIES := 12
 const STAGE_SCENE_DIR := "res://game/stage/scenes/"
+
+## Whether an NPC killed here goes on the Memorial Wall (PilotNet.memorial):
+## on for Expedition, where deaths are real; off for the Arena, the Test
+## Arena and the Ladder.
+@export var records_losses := false
 
 @onready var Mechas = $Mechas
 @onready var Projectiles = $Projectiles
@@ -178,9 +183,10 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("debug_1"):
 		activate_debug_cam()
 	elif event.is_action_pressed("debug_2"):
-		# Hit the player for 500 to test the damage/death flow.
+		# Damage one of the player's components (2 pips, no armour check) to
+		# test the damage/death flow.
 		if player:
-			player.take_damage(500, 1.0, 1.0, 0, 0, false, false, player)
+			EntityAttack.hit_through(player, player, 2)
 	elif event.is_action_pressed("debug_4"):
 		play_stage(Debug.get_setting("stage_scene"))
 
@@ -188,7 +194,7 @@ func _input(event: InputEvent) -> void:
 # ---- Setup helpers ----
 
 # Connects the signals every mecha (player or NPC) needs. Player-only signals
-# (lost_health, mecha_extracted) are connected by the subclass.
+# (took_damage, mecha_extracted) are connected by the subclass.
 func _connect_mecha_signals(mecha) -> void:
 	mecha.connect("create_projectile", Callable(self, "_on_mecha_create_projectile"))
 	mecha.connect("create_casing", Callable(self, "_on_mecha_create_casing"))
@@ -352,8 +358,10 @@ func _on_create_trail(projectile, trail) -> void:
 
 # ---- Damage, downs, deaths ----
 
-func _on_player_lost_health() -> void:
-	ShaderEffects.damage_burst_effect()
+# The player took a hit (Mecha.took_damage); a status's damage doesn't count.
+func _on_player_hit(_mecha, is_status) -> void:
+	if not is_status:
+		ShaderEffects.damage_burst_effect()
 
 
 func _on_mecha_exposed(mecha) -> void:
@@ -484,6 +492,10 @@ func _on_mecha_died(mecha) -> void:
 	# An NPC that extracts arrives here too, without having died (die() sets
 	# is_dead): it leaves Local the same way, but isn't anyone's kill.
 	var was_killed: bool = mecha.is_dead
+	# A pilot killed in a real match goes on the Memorial Wall, read while its
+	# squad, Local lines and killer are still as they were.
+	if was_killed and records_losses and mecha != player:
+		PilotNet.memorial.record_loss(mecha, _killer_of(mecha))
 	mecha.is_dead = true
 	local_pilots.leave(mecha)
 	# Its squad is told (Squad.on_member_died), with who killed it; the
@@ -513,6 +525,7 @@ func _on_mecha_died(mecha) -> void:
 		if _was_hit_by_player(mecha):
 			player_kills.append(mecha.mecha_name)
 			MissionManager.report_kill()
+			PilotNet.report_kill(mecha)
 		FrameSpikeDetector.mark("died:queue_free")
 		mecha.queue_free()
 
@@ -524,6 +537,7 @@ func _on_entity_died(entity) -> void:
 	if _was_hit_by_player(entity):
 		player_kills.append(entity.mecha_name)
 		MissionManager.report_kill()
+		PilotNet.report_kill(entity)
 
 
 # Match-end on player death: hold the view on the arena camera, tear down

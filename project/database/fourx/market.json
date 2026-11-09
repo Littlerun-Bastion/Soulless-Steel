@@ -1,0 +1,17 @@
+{
+	"_about": "FourX.net's market (FourX, game/net/fourx/FourX.gd). The game makes the maker stocks, the salvage quotes and the two indexes from its own data; this file sets their groups, can set symbols, adds instruments and adds story events. See database/fourx/README.md. The instrument and the event here are samples.",
+	"groups": [
+		{"id": "index", "name": "INDEXES"},
+		{"id": "makers", "name": "MAKERS", "volatility": 0.025, "reversion": 0.04, "drift": 0.0},
+		{"id": "salvage", "name": "SALVAGE", "volatility": 0.05, "reversion": 0.08, "drift": 0.0},
+		{"id": "bio", "name": "BIO", "volatility": 0.07, "reversion": 0.1, "drift": 0.0},
+		{"id": "other", "name": "OTHER", "volatility": 0.03, "reversion": 0.05, "drift": 0.0}
+	],
+	"symbols": {},
+	"instruments": [
+		{"symbol": "SMPL", "name": "[SAMPLE] An instrument from market.json", "group": "other", "base": 100, "volatility": 0.04}
+	],
+	"events": [
+		{"id": "sample_bio_rally", "requires": {"flags": {"sample_bio_rally": true}}, "targets": ["group:bio"], "drift": 0.03, "volatility": 0.02}
+	]
+}

@@ -141,14 +141,14 @@ func _test_anonymous() -> void:
 func _test_callsigns() -> void:
 	var local := LocalPilots.new()
 	var names := {}
-	var count: int = LocalPilots.callsign_pool().size() + 5
-	check(LocalPilots.callsign_pool().size() >= 30, "the callsign list has names (%d)" % LocalPilots.callsign_pool().size())
+	var count := 60
 	for i in count:
 		var pilot := _pilot()
 		local.join(pilot)
-		check(pilot.callsign != "", "a pilot without a callsign gets one")
-		names[pilot.callsign] = true
-	check_eq(names.size(), count, "none repeats, even past the end of the list")
+		check(pilot.callsign != "" and pilot.callsign.length() <= CallsignGenerator.MAX_LENGTH,
+				"a pilot without a callsign gets one (%s)" % pilot.callsign)
+		names[pilot.callsign.to_lower()] = true
+	check_eq(names.size(), count, "none repeats")
 	var named := _pilot("Lady Volk")
 	local.join(named)
 	check_eq(named.callsign, "Lady Volk", "a callsign it already has is kept")
@@ -335,10 +335,10 @@ func _test_match() -> void:
 	Debug.debug_settings["skip_intro"] = true
 	_scene = TEST_ARENA.instantiate()
 	add_child(_scene)
-	var ready := await wait_until(func(): return _scene.all_mechas.size() > 2 and _scene.local_pilots.live, 20.0)
+	var is_ready := await wait_until(func(): return _scene.all_mechas.size() > 2 and _scene.local_pilots.live, 20.0)
 	Debug.debug_settings["skip_intro"] = saved_skip
-	check(ready, "the Test Arena started and Local went live")
-	if not ready:
+	check(is_ready, "the Test Arena started and Local went live")
+	if not is_ready:
 		return
 	var local: LocalPilots = _scene.local_pilots
 	check(LocalPilots.current == local, "it is the current channel")

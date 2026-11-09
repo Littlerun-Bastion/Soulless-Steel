@@ -145,4 +145,5 @@ func _on_hangar_pressed():
 
 func _on_store_pressed():
 	AudioManager.play_sfx("confirm")
-	TransitionManager.transition_to("res://game/ui/customizer/Storepage.tscn", "Loading Store...")
+	HangarScreen.open_net_url = NetSites.STORE_DOMAIN
+	TransitionManager.transition_to("res://game/ui/HangarScreen.tscn", "Dialling in...")

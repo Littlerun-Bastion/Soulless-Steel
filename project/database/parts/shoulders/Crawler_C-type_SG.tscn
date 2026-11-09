@@ -8,6 +8,7 @@
 [node name="Part" type="Node"]
 script = ExtResource("3")
 part_name = "Crawler C-type SG"
+frame = "Crawler C-type"
 price = 450.0
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "oil": 2, "copper": 1})

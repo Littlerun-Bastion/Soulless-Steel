@@ -12,6 +12,7 @@
 [node name="Part3" type="Node" unique_id=1487005652]
 script = ExtResource("5")
 part_name = "MSV-L3J-L"
+frame = "MSV-L3J"
 price = 700.0
 tech_tier = 1
 composition = Dictionary[String, int]({"steel": 3, "oil": 2})
@@ -24,7 +25,6 @@ movement_type = "relative"
 accuracy_modifier = 1.33
 rotation_acc = 1.5
 trim_acc = 45.0
-health = 2200.0
 move_heat = 240
 weight = 12.3
 weight_capacity = 62.5

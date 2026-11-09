@@ -179,6 +179,7 @@ static func think_stats(kind: String) -> Dictionary:
 	var list: PackedFloat32Array = _think[kind]
 	var sorted := list.duplicate()
 	sorted.sort()
+	@warning_ignore("integer_division")
 	return {"n": list.size(), "median": sorted[sorted.size() / 2],
 			"p95": sorted[mini(int(sorted.size() * 0.95), sorted.size() - 1)], "max": sorted[sorted.size() - 1]}
 
@@ -294,4 +295,5 @@ static func _band_counts(list: PackedFloat32Array) -> String:
 static func _median(list: PackedFloat32Array) -> float:
 	var sorted := list.duplicate()
 	sorted.sort()
+	@warning_ignore("integer_division")
 	return sorted[sorted.size() / 2]

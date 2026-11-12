@@ -21,7 +21,6 @@ var debug_settings = {
 	"ai_log": false,  # prints AICombatLog summaries (shot distances, stuck events)
 	"all_contacts": false,  # the HUD draws every mecha's contacts (HudContacts)
 	"verbose_logging": true,  # gates diagnostic prints (ExpeditionDirector metrics, etc.)
-	"stage_scene": "demo",
 }
 
 

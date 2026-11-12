@@ -54,11 +54,11 @@ func run_tests() -> void:
 	await _close()
 
 	await _open()
-	await case("playing it the way F4 does runs it through", _test_played_like_f4)
+	await case("playing it by name runs it through", _test_played_by_name)
 	await _close()
 
 	await _open()
-	await case("playing it in a live world, like F4 in game", _test_played_live)
+	await case("playing it in a live world", _test_played_live)
 	await case("everything it does not direct is frozen", _test_world_frozen)
 	await _close()
 
@@ -206,7 +206,7 @@ func _test_skip() -> void:
 	check_eq(_demo.get_dialogue().get_body_label().text, "", "a skipped scene leaves no dialogue up")
 
 
-func _test_played_like_f4() -> void:
+func _test_played_by_name() -> void:
 	_demo.queue_free()
 	await wait_frames(2)
 

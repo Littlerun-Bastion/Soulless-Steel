@@ -187,8 +187,6 @@ func _input(event: InputEvent) -> void:
 		# test the damage/death flow.
 		if player:
 			EntityAttack.hit_through(player, player, 2)
-	elif event.is_action_pressed("debug_4"):
-		play_stage(Debug.get_setting("stage_scene"))
 
 
 # ---- Setup helpers ----

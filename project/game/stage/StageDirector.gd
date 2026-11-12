@@ -85,6 +85,21 @@ func is_aborted() -> bool:
 	return _aborted
 
 
+func hand_over() -> void:
+	if _bars != null:
+		_bars.hide_bars()
+	_release_camera()
+	_set_control_locked(false)
+
+
+func take_back() -> void:
+	if not is_playing or _aborted:
+		return
+	_show_bars()
+	_take_camera()
+	_set_control_locked(true)
+
+
 func get_steps() -> Array[StageStep]:
 	var steps: Array[StageStep] = []
 	for child in get_children():

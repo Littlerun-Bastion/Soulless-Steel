@@ -63,7 +63,10 @@ class FakeMech extends Node2D:
 
 
 class FakePlayer extends Node2D:
+	signal systems_repaired
+
 	var controls_locked := false
+	var flagged := false
 	var cam: Camera2D = null
 
 	func _ready() -> void:
@@ -76,6 +79,9 @@ class FakePlayer extends Node2D:
 
 	func get_cam() -> Camera2D:
 		return cam
+
+	func is_flagged() -> bool:
+		return flagged
 
 	func lock_controls() -> void:
 		controls_locked = true
@@ -95,6 +101,12 @@ func run_tests() -> void:
 	await case("cinema bars come in and go out with the scene", _test_bars)
 	await case("bars can be turned off", _test_bars_disabled)
 	await case("the scene takes control and gives it back", _test_takes_control)
+	await case("a player turn hands control over and takes it back", _test_player_turn_hands_over)
+	await case("a player turn ends when the player presses its action", _test_player_turn_action)
+	await case("a player turn ends once the player has moved far enough", _test_player_turn_travel)
+	await case("a player turn ends on a signal from the player", _test_player_turn_signal)
+	await case("a player turn ends once the Flag is down, even if it already is", _test_player_turn_flag_down)
+	await case("a player turn keeps its instruction on screen", _test_player_turn_hint)
 	await case("taking control can be turned off", _test_control_disabled)
 	await case("look-at drives the camera to its own position", _test_camera_look_at)
 	await case("look-at can hold until the camera arrives", _test_camera_waits)
@@ -273,6 +285,158 @@ func _test_bars_disabled() -> void:
 
 	check(director.get_bars() == null, "no bars were built when they are turned off")
 	director.queue_free()
+
+
+func _player_turn_scene(turn: StageWaitForPlayer) -> Array:
+	var alone := await wait_until(func(): return _players_left().is_empty(), 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var player := FakePlayer.new()
+	add_child(player)
+	var director := _make_director()
+	director.add_child(turn)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	return [director, player, after]
+
+
+func _players_left() -> Array:
+	return get_tree().get_nodes_in_group("mecha").filter(func(n): return n.has_method("is_player") and n.is_player())
+
+
+func _end_player_turn_scene(scene: Array) -> void:
+	scene[0].abort()
+	await wait_until(func(): return not scene[0].is_playing, 5.0)
+	scene[0].queue_free()
+	scene[1].queue_free()
+
+
+func _test_player_turn_hands_over() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+
+	director.play()
+	await wait_frames(2)
+	check(director.current_step == turn, "the scene is on the player's turn")
+	check(not player.controls_locked, "the player has control during it")
+	var bars_gone := await wait_until(func(): return not director.get_bars().is_shown(), 5.0)
+	check(bars_gone, "the bars go away while the player plays")
+
+	player.systems_repaired.emit()
+	await wait_frames(2)
+	check(director.current_step == scene[2], "the scene moved on")
+	check(player.controls_locked, "control was taken back")
+	var bars_back := await wait_until(func(): return director.get_bars().is_shown(), 5.0)
+	check(bars_back, "and the bars came back")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_action() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.action = "thruster_dash"
+	var scene := await _player_turn_scene(turn)
+	scene[0].play()
+	await wait_frames(2)
+
+	var other := InputEventAction.new()
+	other.action = "shield"
+	other.pressed = true
+	Input.parse_input_event(other)
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "another action does not end the turn")
+
+	var dash := InputEventAction.new()
+	dash.action = "thruster_dash"
+	dash.pressed = true
+	Input.parse_input_event(dash)
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "pressing its action ends the turn")
+	var release := InputEventAction.new()
+	release.action = "thruster_dash"
+	Input.parse_input_event(release)
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_travel() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.travel = 500.0
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	await wait_frames(2)
+
+	player.position += Vector2(300, 0)
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "a short move is not enough")
+
+	player.position += Vector2(0, 400)
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "moving far enough ends the turn")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_signal() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "the turn waits for the signal")
+
+	player.systems_repaired.emit()
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "the signal ends the turn")
+	check(not player.systems_repaired.is_connected(turn._on_player_signal), "the turn let go of the signal")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_flag_down() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.flag_down = true
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	player.flagged = true
+	scene[0].play()
+	await wait_frames(3)
+	check(scene[0].current_step == turn, "the turn waits while the Flag is up")
+
+	player.flagged = false
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "lowering it ends the turn")
+	await _end_player_turn_scene(scene)
+
+	var again := StageWaitForPlayer.new()
+	again.flag_down = true
+	var down_already := await _player_turn_scene(again)
+	down_already[0].play()
+	var passed := await wait_until(func(): return down_already[0].current_step == down_already[2], 2.0)
+	check(passed, "a Flag already down ends it at once")
+	await _end_player_turn_scene(down_already)
+
+
+func _test_player_turn_hint() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	turn.speaker = "Trobairitz"
+	turn.hint = "Grab the kit with {interact}."
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	var dialogue: StageDialogue = scene[0].get_dialogue()
+	await wait_until(func(): return not dialogue.is_revealing(), 5.0)
+
+	check_eq(dialogue.get_body_label().text, "Grab the kit with [%s]." % MechUI.key_name("interact"), "the instruction stays up, keys named")
+	check_eq(dialogue.get_speaker_label().text, "Trobairitz", "with who said it")
+	check(not dialogue.get_hint_label().visible, "with no prompt to press a key")
+
+	player.systems_repaired.emit()
+	await wait_frames(2)
+	check_eq(dialogue.get_body_label().text, "", "it is cleared once the turn ends")
+	await _end_player_turn_scene(scene)
 
 
 func _test_takes_control() -> void:

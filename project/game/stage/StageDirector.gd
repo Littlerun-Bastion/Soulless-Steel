@@ -24,6 +24,7 @@ var _frozen: Array = []
 var _taken: Array = []
 var _sweep_timer := 0.0
 var _aborted := false
+var _sweeping := false
 
 
 func play() -> void:
@@ -38,6 +39,7 @@ func play() -> void:
 	_set_control_locked(true)
 	_take_camera()
 	_freeze_world()
+	_sweeping = true
 	started.emit()
 	for step in get_steps():
 		if _aborted:
@@ -48,6 +50,7 @@ func play() -> void:
 	current_step = null
 	if _dialogue != null:
 		_dialogue.clear()
+	_sweeping = false
 	_release_actors()
 	_thaw_world()
 	await _hide_bars()
@@ -201,7 +204,7 @@ func find_actor(actor_name: String) -> Node:
 
 
 func _process(dt: float) -> void:
-	if not is_playing or not freezes_world:
+	if not _sweeping or not freezes_world:
 		return
 	_sweep_timer -= dt
 	if _sweep_timer <= 0.0:

@@ -4,6 +4,7 @@ const WALK_SPEED := 400.0
 const WALK_DISTANCE := 1200.0
 const SLOW_REVEAL_SECONDS := 3.0
 const SLOW_CAMERA_SPEED := 1.0
+const FREEZE_SWEEP_LONGER_THAN := StageDirector.FREEZE_SWEEP_INTERVAL
 
 
 class RecordingStep extends StageStep:
@@ -31,6 +32,16 @@ class FakeSpeaker extends Node2D:
 
 	func say(text: String, _seconds: float, _always_heard: bool) -> void:
 		heard.append(text)
+
+
+class FakeBystander extends Node2D:
+	var paused := false
+
+	func _ready() -> void:
+		add_to_group("mecha")
+
+	func set_pause(value: bool) -> void:
+		paused = value
 
 
 class FakeMech extends Node2D:
@@ -101,6 +112,7 @@ func run_tests() -> void:
 	await case("cinema bars come in and go out with the scene", _test_bars)
 	await case("bars can be turned off", _test_bars_disabled)
 	await case("the scene takes control and gives it back", _test_takes_control)
+	await case("bystanders stay thawed while the bars go away", _test_thawed_after_bars)
 	await case("a player turn hands control over and takes it back", _test_player_turn_hands_over)
 	await case("a player turn ends when the player presses its action", _test_player_turn_action)
 	await case("a player turn ends once the player has moved far enough", _test_player_turn_travel)
@@ -438,6 +450,28 @@ func _test_player_turn_hint() -> void:
 	await wait_frames(2)
 	check_eq(dialogue.get_body_label().text, "", "it is cleared once the turn ends")
 	await _end_player_turn_scene(scene)
+
+
+func _test_thawed_after_bars() -> void:
+	var bystander := FakeBystander.new()
+	add_child(bystander)
+	var director := _make_director()
+	director.takes_control = false
+	var wait := StageWait.new()
+	wait.seconds = 0.5
+	director.add_child(wait)
+
+	director.play()
+	await wait_frames(2)
+	check(bystander.paused, "the scene froze the bystander")
+	var ended := [false]
+	director.finished.connect(func(): ended[0] = true)
+	await wait_until(func(): return ended[0], 10.0)
+
+	check(director.get_bars().transition_time > FREEZE_SWEEP_LONGER_THAN, "the bars took long enough to go that a sweep ran meanwhile")
+	check(not bystander.paused, "it moves again once the scene is over")
+	director.queue_free()
+	bystander.queue_free()
 
 
 func _test_takes_control() -> void:

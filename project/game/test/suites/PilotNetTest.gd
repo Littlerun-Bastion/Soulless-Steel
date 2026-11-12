@@ -225,10 +225,12 @@ func _test_tags() -> void:
 func _test_unread() -> void:
 	check_eq(PilotNet.unread_count(), 1, "only the notify post is unread")
 	check_eq(MechOS.taskbar.badges["net"].text, "1", "the NET tile shows it")
-	var log_size := MechLog.lines.size()
+	for i in MechLog.MAX_LINES:
+		MechLog.write("TST", "earlier line %d" % i)
+	var last_line: Dictionary = MechLog.lines[-1]
 	PilotNet.show_post(SAMPLE_MANUAL)
 	check_eq(PilotNet.unread_count(), 2, "a shown notify post counts")
-	check(MechLog.lines.size() > log_size and MechLog.lines[-1].text == "New on pilot.net: [SAMPLE] Shown only by show_post or a story effect"
+	check(not is_same(MechLog.lines[-1], last_line) and MechLog.lines[-1].text == "New on pilot.net: [SAMPLE] Shown only by show_post or a story effect"
 			and MechLog.lines[-1].source == "NET", "one log line when it appears")
 	PilotNet.open_post(SAMPLE_NOTIFY)
 	PilotNet.open_post(SAMPLE_MANUAL)

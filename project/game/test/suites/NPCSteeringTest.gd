@@ -25,6 +25,7 @@ const CAR_SIZE := Vector2(80, 40)
 const TRUCK_SIZE := Vector2(190, 74)
 const WALK := 480.0
 const CRAWLER := "Crawler_C-type_Chassis"
+const TUTORIAL_MAP := preload("res://database/maps/tutorial.tscn")
 
 
 class FakeArena extends Node2D:
@@ -56,6 +57,7 @@ func run_tests() -> void:
 	await case("a light build steers round a car; a heavy build pushes through", _test_light_vs_heavy)
 	await case("a fire engine ahead is never a way through", _test_fire_engine_hard)
 	await case("a gap narrower than the mecha counts as shut", _test_narrow_gap)
+	await case("a scripted NPC told to walk straight goes through a doorway", _test_straight_through_doorway)
 	await case("a light NPC walks round a parked car without touching it", _test_walk_round_car)
 	await case("NPCs go round buildings unless their destination is inside", _test_buildings)
 	await case("a car that jammed becomes a hard obstacle", _test_jammed)
@@ -211,6 +213,23 @@ func _test_fire_engine_hard() -> void:
 	heavy.global_position = Vector2(0, -3000)
 	light.global_position = Vector2.ZERO
 	check(_choice(light) > 20.0, "and so does the light build")
+
+
+func _test_straight_through_doorway() -> void:
+	await _setup([])
+	_arena.add_child(TUTORIAL_MAP.instantiate())
+	await get_tree().physics_frame
+	var below_the_door := Vector2(-1125, 2850)
+	var enemy := _enemy(Vector2(-1125, 1800), PlayerProgress.DEFAULT_MECHA)
+	var drift := [0.0]
+
+	enemy.walk_straight_to(below_the_door)
+	var through := await wait_until(func():
+		drift[0] = maxf(drift[0], absf(enemy.global_position.x - below_the_door.x))
+		return enemy.global_position.distance_to(below_the_door) < 120.0, 15.0)
+
+	check(through, "it went through the tutorial map's small door (at %s)" % enemy.global_position.round())
+	check(drift[0] < 40.0, "on a straight line, not drawn off it by the walls (drift %d)" % roundi(drift[0]))
 
 
 func _test_narrow_gap() -> void:

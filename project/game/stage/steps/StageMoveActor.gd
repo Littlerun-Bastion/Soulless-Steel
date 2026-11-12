@@ -6,6 +6,7 @@ extends StageStep
 @export var arrive_distance := 260.0
 @export var wait_for_arrival := true
 @export var give_up_after := 20.0
+@export var straight := false
 
 var _mech: Node = null
 var _elapsed := 0.0
@@ -66,6 +67,9 @@ func _push() -> bool:
 		_mech.scripted_aim = point
 		_finish()
 		return false
-	_mech.walk_to(point)
+	if straight and _mech.has_method("walk_straight_to"):
+		_mech.walk_straight_to(point)
+	else:
+		_mech.walk_to(point)
 	_mech.scripted_aim = point
 	return true

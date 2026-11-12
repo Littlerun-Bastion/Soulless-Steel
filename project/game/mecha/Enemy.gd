@@ -71,6 +71,7 @@ var ai_aim_point = null
 var scripted := false
 var scripted_destination = null
 var scripted_aim = null
+var scripted_straight := false
 var ai_projectile_speed := 0.0    # avg direct-fire muzzle speed (0 = don't lead)
 var ai_lead_accuracy := 0.55      # 0 = aim at current pos, 1 = perfect intercept
 var relationships = {}  # { mecha_ref: { "hostility": float, "is_traitor": bool } }
@@ -1746,6 +1747,14 @@ func set_scripted(value: bool) -> void:
 
 func walk_to(point) -> void:
 	scripted_destination = point
+	scripted_straight = false
+
+
+## Straight at the point, past the steering that keeps it off walls: through
+## a gap too narrow for that steering to try. The way must be clear.
+func walk_straight_to(point) -> void:
+	scripted_destination = point
+	scripted_straight = true
 
 
 func stop_walking() -> void:
@@ -1761,10 +1770,16 @@ func _drive_scripted(dt) -> void:
 		if scripted_aim != null:
 			apply_rotation_by_point(dt, scripted_aim, false)
 		return
-	NavAgent.target_position = scripted_destination
-	going_to_position = true
 	if throttle < 1.0:
 		increase_throttle(false, dt / SCRIPTED_THROTTLE_TIME)
+	if scripted_straight:
+		going_to_position = false
+		var heading: Vector2 = global_position.direction_to(scripted_destination)
+		apply_movement(dt, heading if movement_type == "tank" else heading.rotated(-global_rotation))
+		apply_rotation_by_point(dt, scripted_aim if scripted_aim != null else scripted_destination, false)
+		return
+	NavAgent.target_position = scripted_destination
+	going_to_position = true
 	navigate_to_target(dt)
 
 

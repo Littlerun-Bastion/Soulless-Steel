@@ -14,6 +14,7 @@ var _speaker: Label
 var _body: Label
 var _hint: Label
 var _revealing := false
+var _expects_input := true
 
 
 func _ready() -> void:
@@ -23,7 +24,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout)
 
 
-func say(speaker_name: String, text: String) -> void:
+func say(speaker_name: String, text: String, expects_input := true) -> void:
+	_expects_input = expects_input
 	_speaker.text = speaker_name
 	_speaker.visible = speaker_name != ""
 	_body.text = text
@@ -40,7 +42,7 @@ func is_revealing() -> bool:
 func finish_reveal() -> void:
 	_body.visible_ratio = 1.0
 	_revealing = false
-	_hint.visible = true
+	_hint.visible = _expects_input
 
 
 func clear() -> void:
@@ -115,5 +117,4 @@ func _process(dt: float) -> void:
 		return
 	_body.visible_ratio = minf(_body.visible_ratio + dt * reveal_speed / maxf(_body.text.length(), 1.0), 1.0)
 	if _body.visible_ratio >= 1.0:
-		_revealing = false
-		_hint.visible = true
+		finish_reveal()

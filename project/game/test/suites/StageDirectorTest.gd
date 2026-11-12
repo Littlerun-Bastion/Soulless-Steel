@@ -22,6 +22,17 @@ class FakeActor extends Node2D:
 		add_to_group("mecha")
 
 
+class FakeSpeaker extends Node2D:
+	var mecha_name := ""
+	var heard: Array = []
+
+	func _ready() -> void:
+		add_to_group("mecha")
+
+	func say(text: String, _seconds: float, _always_heard: bool) -> void:
+		heard.append(text)
+
+
 class FakeMech extends Node2D:
 	var mecha_name := ""
 	var scripted := false
@@ -94,6 +105,9 @@ func run_tests() -> void:
 	await case("the first press finishes the reveal, the second advances", _test_say_two_stage)
 	await case("a player action button advances a line", _test_say_input)
 	await case("a timed line advances on its own", _test_say_timed)
+	await case("a timed line does not ask for a key", _test_timed_line_has_no_prompt)
+	await case("a line names the key bound to an action", _test_say_names_keys)
+	await case("an actor's spoken line names keys too", _test_actor_say_names_keys)
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
 	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
 	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
@@ -529,6 +543,56 @@ func _test_say_timed() -> void:
 
 	check(ended, "a timed line advanced without any input")
 	director.queue_free()
+
+
+func _test_timed_line_has_no_prompt() -> void:
+	var director := _plain_director()
+	var step := _say_step(director, "radio check")
+	step.advance_on = StageSay.Advance.TIMED
+	step.seconds = 30.0
+
+	director.play()
+	var dialogue := director.get_dialogue()
+	var revealed := await wait_until(func(): return not dialogue.is_revealing(), 5.0)
+
+	check(revealed, "the line finished revealing")
+	check(dialogue.get_body_label().visible, "and stays on screen")
+	check(not dialogue.get_hint_label().visible, "with no prompt to press a key")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_say_names_keys() -> void:
+	var director := _plain_director()
+	var step := _say_step(director, "Press {interact} to grab it. {not_an_action} stays.")
+
+	director.play()
+	await wait_frames(2)
+
+	check_eq(director.get_dialogue().get_body_label().text,	"Press [%s] to grab it. {not_an_action} stays." % MechUI.key_name("interact"),	"the action became its key and unknown names were left alone")
+	step.advance()
+	step.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_actor_say_names_keys() -> void:
+	var director := _plain_director()
+	var speaker := FakeSpeaker.new()
+	speaker.mecha_name = "KeyTeacher"
+	add_child(speaker)
+	var step := StageActorSay.new()
+	step.actor = "KeyTeacher"
+	step.text = "Dash with {thruster_dash}."
+	step.seconds = 0.1
+	director.add_child(step)
+
+	await director.play()
+
+	check_eq(speaker.heard, ["Dash with [%s]." % MechUI.key_name("thruster_dash")], "the spoken line names the key")
+	director.queue_free()
+	speaker.queue_free()
 
 
 func _test_timed_line_does_not_bleed() -> void:

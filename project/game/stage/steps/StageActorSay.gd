@@ -22,7 +22,7 @@ func _start() -> void:
 	if speaker == null or not speaker.has_method("say"):
 		_finish()
 		return
-	speaker.say(text, seconds, true)
+	speaker.say(StageKeys.expand(text), seconds, true)
 	_elapsed = 0.0
 	if not wait:
 		_finish()

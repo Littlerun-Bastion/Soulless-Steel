@@ -1,0 +1,155 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/stage/StageDirector.gd" id="1_director"]
+[ext_resource type="Script" path="res://game/stage/steps/StageCameraFollow.gd" id="2_follow"]
+[ext_resource type="Script" path="res://game/stage/steps/StageWait.gd" id="3_wait"]
+[ext_resource type="Script" path="res://game/stage/steps/StageMoveActor.gd" id="4_move"]
+[ext_resource type="Script" path="res://game/stage/steps/StageSay.gd" id="5_say"]
+[ext_resource type="Script" path="res://game/stage/steps/StageSpawn.gd" id="6_spawn"]
+[ext_resource type="Script" path="res://game/stage/steps/StageWaitForPlayer.gd" id="7_turn"]
+[ext_resource type="Script" path="res://game/stage/steps/StageActorLeave.gd" id="8_leave"]
+[ext_resource type="PackedScene" path="res://game/items/RepairKit.tscn" id="9_kit"]
+[ext_resource type="Script" path="res://game/stage/steps/StageOverlay.gd" id="10_overlay"]
+[ext_resource type="PackedScene" path="res://game/onboarding/SavReboot.tscn" id="11_reboot"]
+
+[node name="Onboarding" type="Node"]
+script = ExtResource("1_director")
+withholds = Array[String](["move", "dash", "shield"])
+
+[node name="WatchPlayer" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "Player"
+snap = true
+
+[node name="Wake" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 1.5
+
+[node name="ThroughTheDoor" type="Node2D" parent="."]
+position = Vector2(-1125, 2850)
+script = ExtResource("4_move")
+actor = "Trobairitz"
+straight = true
+
+[node name="ToThePlayer" type="Node2D" parent="."]
+script = ExtResource("4_move")
+actor = "Trobairitz"
+destination_actor = "Player"
+arrive_distance = 200.0
+straight = true
+
+[node name="Halts" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 0.5
+
+[node name="FindsThePlayer" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "What the hell are you doing all the way out here...?"
+
+[node name="Reboot" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Hold still. I'm running a remote reboot on your SAV."
+
+[node name="BeforeReboot" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 0.8
+
+[node name="RemoteReboot" type="Node2D" parent="."]
+script = ExtResource("10_overlay")
+overlay = ExtResource("11_reboot")
+
+[node name="Rebooted" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "There. You're up, but most of your systems are fried."
+
+[node name="DropKit" type="Node2D" parent="."]
+position = Vector2(-10, 3205)
+script = ExtResource("6_spawn")
+scene = ExtResource("9_kit")
+alias = "Kit"
+
+[node name="KitDropped" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "I'm leaving you a repair kit. Patch yourself up."
+
+[node name="GrabKit" type="Node2D" parent="."]
+script = ExtResource("7_turn")
+player_signal = "systems_repaired"
+speaker = "Trobairitz"
+hint = "Grab the repair kit with {interact}."
+
+[node name="Repaired" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Better. Now let's see if you can still drive that thing."
+
+[node name="Drive" type="Node2D" parent="."]
+script = ExtResource("7_turn")
+travel = 600.0
+speaker = "Trobairitz"
+hint = "Drive around with {up} {left} {down} {right}."
+grants = Array[String](["move"])
+
+[node name="Dash" type="Node2D" parent="."]
+script = ExtResource("7_turn")
+action = "thruster_dash"
+speaker = "Trobairitz"
+hint = "Tap {thruster_dash} to dash."
+grants = Array[String](["dash"])
+
+[node name="Shield" type="Node2D" parent="."]
+script = ExtResource("7_turn")
+action = "shield"
+speaker = "Trobairitz"
+hint = "Hold {shield} to raise your shield."
+grants = Array[String](["shield"])
+
+[node name="Shadow" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "I'll shadow you from here."
+
+[node name="BackToTheDoor" type="Node2D" parent="."]
+position = Vector2(-1125, 2850)
+script = ExtResource("4_move")
+actor = "Trobairitz"
+straight = true
+
+[node name="OutOfSight" type="Node2D" parent="."]
+position = Vector2(-1125, 500)
+script = ExtResource("4_move")
+actor = "Trobairitz"
+straight = true
+
+[node name="LeaveMap" type="Node2D" parent="."]
+script = ExtResource("8_leave")
+actor = "Trobairitz"
+
+[node name="BackToPlayer" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "Player"
+
+[node name="OneMoreThing" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Oh, and finally, press {raise_flag} to Flag and un-Flag yourself."
+
+[node name="WhatTheFlagIs" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Being Flagged means you're waving your white flag, and can't shoot your guns! Your SAV Flags itself when you've taken severe systems damage, which is why it's been on."
+
+[node name="Sorry" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Sorry I didn't tell you sooner - just a safety precaution. You don't know what crazy idiots might be out here!"
+
+[node name="LowerFlag" type="Node2D" parent="."]
+script = ExtResource("7_turn")
+flag_down = true
+speaker = "Trobairitz"
+hint = "Press {raise_flag} to lower your Flag."

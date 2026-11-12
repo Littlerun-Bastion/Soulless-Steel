@@ -127,6 +127,7 @@ func run_tests() -> void:
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
+	await case("a scene can put a thing on the map, under a name", _test_spawn)
 
 
 func _make_director() -> StageDirector:
@@ -947,3 +948,24 @@ func _test_actor_shoot() -> void:
 	director.queue_free()
 	mech.queue_free()
 	mark.queue_free()
+
+
+func _test_spawn() -> void:
+	var director := _plain_director()
+	var step := StageSpawn.new()
+	step.scene = preload("res://game/items/RepairKit.tscn")
+	step.alias = "Kit"
+	step.global_position = Vector2(700, -300)
+	director.add_child(step)
+
+	await director.play()
+
+	var kit = director.find_actor("Kit")
+	check(kit is RepairKit, "the thing was made and can be found by its name")
+	check(kit != null and kit.global_position.is_equal_approx(Vector2(700, -300)), "where the step stands")
+	check(kit != null and kit.get_parent() != director, "and it outlives the scene")
+	director.queue_free()
+	await wait_frames(2)
+	check(is_instance_valid(kit), "it is still there once the scene is gone")
+	if is_instance_valid(kit):
+		kit.queue_free()

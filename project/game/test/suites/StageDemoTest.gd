@@ -73,6 +73,7 @@ func run_tests() -> void:
 	await _close()
 
 	await _open()
+	await case("an actor can leave the map", _test_actor_leaves)
 	await case("the player dying ends a running scene", _test_death_ends_the_scene)
 	await _close()
 
@@ -413,6 +414,31 @@ func _test_trigger_plays() -> void:
 	check(_scene.current_stage == null, "the scene let go of its reference to it")
 	check(_count_stage_layers() < layers_before,\
 	"its bars and dialogue layers went with it instead of piling up")
+
+
+func _test_actor_leaves() -> void:
+	var leaver: Mecha = _npc
+	var mechas_before: int = _scene.all_mechas.size()
+	var wrecks_before: int = _scene.Wrecks.get_child_count()
+	var kills_before: int = _scene.player_kills.size()
+	var director := StageDirector.new()
+	director.shows_bars = false
+	director.takes_control = false
+	director.takes_camera = false
+	director.set_actor("Leaver", leaver)
+	var step := StageActorLeave.new()
+	step.actor = "Leaver"
+	director.add_child(step)
+	_scene.add_child(director)
+
+	await director.play()
+	await wait_frames(2)
+
+	check(not is_instance_valid(leaver), "the actor is gone")
+	check_eq(_scene.all_mechas.size(), mechas_before - 1, "and off the scene's list")
+	check_eq(_scene.Wrecks.get_child_count(), wrecks_before, "it left no wreck")
+	check_eq(_scene.player_kills.size(), kills_before, "and isn't anyone's kill")
+	director.queue_free()
 
 
 func _test_death_ends_the_scene() -> void:

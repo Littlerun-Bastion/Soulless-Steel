@@ -3752,7 +3752,12 @@ func _on_ExtractTimer_timeout():
 	if self.name == "Player":
 		emit_signal("mecha_extracted", self)
 	else:
-		emit_signal("died", self)
+		leave_map()
+
+
+## Gone from the map without dying: no wreck, and nobody's kill.
+func leave_map() -> void:
+	emit_signal("died", self)
 
 
 func _on_MeleeHitboxes_create_hitbox(data, side):

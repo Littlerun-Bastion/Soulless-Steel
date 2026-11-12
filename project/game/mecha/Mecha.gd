@@ -1956,8 +1956,11 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	glow.texture = chassis.get_glow(side)
 	collision.polygon = collision_shape_of(chassis.get_collision(side))
 	movement_type = chassis.movement_type
-	var walk_speed: float = chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
-	update_speed(walk_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
+	update_speed(_walk_speed(), chassis.move_acc, chassis.friction, chassis.rotation_acc)
+
+
+func _walk_speed() -> float:
+	return build.chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
 
 
 func remove_chassis(type):
@@ -5108,6 +5111,37 @@ func _destroy_components(part_name: String, which: Callable) -> void:
 		component_destroyed(part_name, comp_name)
 		if is_dead:
 			return
+
+
+signal systems_repaired()
+
+
+## Losing the core shell this way raises the emergency Flag.
+func cripple_systems() -> void:
+	var is_system := func(_comp_name, comp): return not ("critical" in comp.tags or "weapon" in comp.tags)
+	for part_name in components:
+		_destroy_components(part_name, is_system)
+
+
+## The Flag stays as it is: lowering it is the pilot's call.
+func repair_systems() -> void:
+	for part_name in components:
+		if is_part_lost(part_name):
+			continue
+		for comp in components[part_name].values():
+			comp.hp = comp.max_hp
+			comp.disabled = false
+	_wound_dirty = true
+	for slot in DISABLED_WEAPON_KEYS:
+		disabled_systems[DISABLED_WEAPON_KEYS[slot]] = is_part_lost(slot)
+	for system in ["mobility", "sensors", "heat_dispersion", "shield_regen"]:
+		disabled_systems[system] = 1.0
+	if build.chassis:
+		update_speed(_walk_speed(), build.chassis.move_acc, get_chassis_friction(), get_chassis_rotation_acc())
+	update_shield_strength()
+	is_exposed = false
+	flag_grace = 0.0
+	systems_repaired.emit()
 
 
 func _lost_part_position(part_name: String) -> Vector2:

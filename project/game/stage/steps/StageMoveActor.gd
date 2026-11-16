@@ -62,7 +62,8 @@ func _push() -> bool:
 		_mech.stop_walking()
 		_finish()
 		return false
-	if _mech.global_position.distance_to(point) <= arrive_distance:
+	var slide: float = _mech.stopping_distance() if _mech.has_method("stopping_distance") else 0.0
+	if _mech.global_position.distance_to(point) <= arrive_distance + slide:
 		_mech.stop_walking()
 		_mech.scripted_aim = point
 		_finish()

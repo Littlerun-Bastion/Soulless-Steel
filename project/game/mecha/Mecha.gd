@@ -5328,6 +5328,13 @@ func get_closest_interactable():
 	return closest
 
 
+## How far it slides from its speed now once it stops driving: friction takes
+## its share of the speed every physics tick (apply_movement).
+func stopping_distance() -> float:
+	var friction := get_chassis_friction()
+	return velocity.length() * get_physics_process_delta_time() * (1.0 - friction) / friction
+
+
 func get_chassis_friction() -> float:
 	if build.chassis:
 		return build.chassis.friction

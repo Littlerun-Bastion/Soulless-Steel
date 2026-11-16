@@ -58,6 +58,7 @@ func run_tests() -> void:
 	await case("a fire engine ahead is never a way through", _test_fire_engine_hard)
 	await case("a gap narrower than the mecha counts as shut", _test_narrow_gap)
 	await case("a scripted NPC told to walk straight goes through a doorway", _test_straight_through_doorway)
+	await case("a mecha slides to a stop where it says it will", _test_stopping_distance)
 	await case("a light NPC walks round a parked car without touching it", _test_walk_round_car)
 	await case("NPCs go round buildings unless their destination is inside", _test_buildings)
 	await case("a car that jammed becomes a hard obstacle", _test_jammed)
@@ -230,6 +231,20 @@ func _test_straight_through_doorway() -> void:
 
 	check(through, "it went through the tutorial map's small door (at %s)" % enemy.global_position.round())
 	check(drift[0] < 40.0, "on a straight line, not drawn off it by the walls (drift %d)" % roundi(drift[0]))
+
+
+func _test_stopping_distance() -> void:
+	await _setup([])
+	var enemy := _enemy(Vector2.ZERO, PlayerProgress.DEFAULT_MECHA)
+	await get_tree().physics_frame
+	enemy.velocity = Vector2(450, 0)
+	var predicted: float = enemy.stopping_distance()
+
+	await wait_until(func(): return enemy.velocity.length() < 1.0, 5.0)
+
+	var slid := enemy.global_position.length()
+	check(slid > 30.0, "it slid a fair way (%d px)" % roundi(slid))
+	check(absf(slid - predicted) < 0.15 * slid, "as far as it said it would (%d of %d px)" % [roundi(slid), roundi(predicted)])
 
 
 func _test_narrow_gap() -> void:

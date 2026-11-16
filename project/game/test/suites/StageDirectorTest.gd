@@ -73,6 +73,13 @@ class FakeMech extends Node2D:
 		global_position = global_position.move_toward(scripted_destination, walk_speed * dt)
 
 
+class SlidingMech extends FakeMech:
+	var slide := 200.0
+
+	func stopping_distance() -> float:
+		return slide
+
+
 class FakePlayer extends Node2D:
 	signal systems_repaired
 
@@ -140,6 +147,7 @@ func run_tests() -> void:
 	await case("aborting ends the scene without running the rest", _test_abort_ends_the_scene)
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
+	await case("an actor that slides is stopped early enough to come to rest at the mark", _test_move_actor_slides)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
 	await case("a scene can put a thing on the map, under a name", _test_spawn)
 
@@ -966,6 +974,29 @@ func _test_move_actor() -> void:
 	check(mech.global_position.distance_to(Vector2(1500, 0)) <= step.arrive_distance,\
 	"the actor ended up at the mark")
 	check(mech.scripted_destination == null, "the actor was told to stop walking")
+	director.queue_free()
+	mech.queue_free()
+
+
+func _test_move_actor_slides() -> void:
+	var director := _plain_director()
+	var mech := SlidingMech.new()
+	mech.mecha_name = "Slider"
+	mech.walk_speed = 150.0
+	add_child(mech)
+	var step := StageMoveActor.new()
+	step.actor = "Slider"
+	step.global_position = Vector2(600, 0)
+	step.arrive_distance = 100.0
+	director.add_child(step)
+
+	director.play()
+	var stopped := await wait_until(func(): return not director.is_playing, 10.0)
+
+	var gap := mech.global_position.distance_to(Vector2(600, 0))
+	check(stopped, "the walk ended")
+	check(gap > step.arrive_distance + mech.slide - 30.0 and gap <= step.arrive_distance + mech.slide,
+			"told to stop its slide short of the arrive distance (%d)" % roundi(gap))
 	director.queue_free()
 	mech.queue_free()
 

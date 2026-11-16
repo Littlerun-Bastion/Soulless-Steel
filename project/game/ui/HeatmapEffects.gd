@@ -5,7 +5,8 @@ extends CanvasLayer
 # a soft edge MASK_EDGE px wide, centred on the player's place on the screen.
 # The circle's radius on the screen is the sight radius times the camera's
 # zoom. The mask is off with no player, once the player is dead, and while
-# controls are locked (cutscenes). The HUD (PlayerHUD, later on this layer,
+# controls are locked (cutscenes) unless the player keeps its view in them
+# (Player.keeps_view_in_scenes). The HUD (PlayerHUD, later on this layer,
 # and the higher layers) draws over it.
 
 const MASK_EDGE := 2.0
@@ -26,8 +27,7 @@ func set_player(player_ref) -> void:
 
 
 func _process(_delta: float) -> void:
-	var on: bool = is_instance_valid(player) and not player.is_dead and not player.controls_locked \
-			and player.is_inside_tree()
+	var on: bool = is_instance_valid(player) and player.is_view_limited() and player.is_inside_tree()
 	if _mask.visible != on:
 		_mask.visible = on
 	if not on:

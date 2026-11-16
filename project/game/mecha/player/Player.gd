@@ -1023,8 +1023,16 @@ func _sweep_mark() -> Dictionary:
 # is_tethered_to): the player can follow the tether to it. Past the sight
 # circle the mask still covers it.
 
+## A scene shows everything unless it keeps the player's view as play does.
+var keeps_view_in_scenes := false
+
+
+func is_view_limited() -> bool:
+	return not is_dead and (not controls_locked or keeps_view_in_scenes)
+
+
 func can_see_body(body: Node2D) -> bool:
-	if controls_locked or is_dead:
+	if not is_view_limited():
 		return true
 	# A Fisher's harpoon in the player: it's on the end of the tether.
 	if body.has_method("is_tethered_to") and body.is_tethered_to(self):
@@ -1125,7 +1133,7 @@ func _track_by_heat(body: Node2D) -> void:
 # circle (a tethered Fisher, shown for its tether) or the view is a
 # cutscene's (controls locked: everything is shown).
 func _report_sight(body: Node2D) -> void:
-	if controls_locked or is_dead:
+	if not is_view_limited():
 		return
 	if global_position.distance_to(body.global_position) > sight_radius():
 		return

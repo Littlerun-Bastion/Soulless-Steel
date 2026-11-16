@@ -44,6 +44,7 @@ func _ready() -> void:
 func _add_trobairitz() -> void:
 	var design = NPCManager.get_design_data(NPCManager.get_special_npc(TROBAIRITZ))
 	trobairitz = add_enemy(design, TROBAIRITZ, TrobairitzStart.global_position)
+	trobairitz.hides_debug_state = true
 	trobairitz.component_damaged.connect(_on_trobairitz_damaged)
 
 

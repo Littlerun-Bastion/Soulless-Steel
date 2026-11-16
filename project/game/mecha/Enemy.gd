@@ -69,6 +69,8 @@ var combat_behaviour: String = "default"
 # by navigate_to_target for weapon/body rotation; null = aim at the target.
 var ai_aim_point = null
 var scripted := false
+## Keeps the AI state label off this one, debug setting or not.
+var hides_debug_state := false
 var scripted_destination = null
 var scripted_aim = null
 var scripted_straight := false
@@ -275,7 +277,7 @@ func _physics_frame(dt):
 	elif lock_search_target != null:
 		lock_search_target = null
 		
-	if Debug.get_setting("enemy_state"):
+	if Debug.get_setting("enemy_state") and not hides_debug_state:
 		var state = logic.get_current_state()
 		var text: String = str(state) if state else "?"
 		if Debug.get_setting("ai_overlay"):

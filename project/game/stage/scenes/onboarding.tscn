@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://game/items/RepairKit.tscn" id="9_kit"]
 [ext_resource type="Script" path="res://game/stage/steps/StageOverlay.gd" id="10_overlay"]
 [ext_resource type="PackedScene" path="res://game/onboarding/SavReboot.tscn" id="11_reboot"]
+[ext_resource type="Script" path="res://game/stage/steps/StageCameraLookAt.gd" id="12_look"]
 
 [node name="Onboarding" type="Node"]
 script = ExtResource("1_director")
@@ -113,17 +114,26 @@ script = ExtResource("5_say")
 speaker = "Trobairitz"
 text = "I'll shadow you from here."
 
+[node name="FollowHer" type="Node2D" parent="."]
+script = ExtResource("2_follow")
+actor = "Trobairitz"
+
 [node name="BackToTheDoor" type="Node2D" parent="."]
 position = Vector2(-1125, 2850)
 script = ExtResource("4_move")
 actor = "Trobairitz"
 straight = true
 
+[node name="HoldAtTheDoor" type="Node2D" parent="."]
+position = Vector2(-1125, 2850)
+script = ExtResource("12_look")
+
 [node name="OutOfSight" type="Node2D" parent="."]
 position = Vector2(-1125, 500)
 script = ExtResource("4_move")
 actor = "Trobairitz"
 straight = true
+until_out_of_frame = true
 
 [node name="LeaveMap" type="Node2D" parent="."]
 script = ExtResource("8_leave")
@@ -132,6 +142,11 @@ actor = "Trobairitz"
 [node name="BackToPlayer" type="Node2D" parent="."]
 script = ExtResource("2_follow")
 actor = "Player"
+
+[node name="FindTheExit" type="Node2D" parent="."]
+script = ExtResource("5_say")
+speaker = "Trobairitz"
+text = "Find the extraction point and get yourself out of here. Your SAV will mark the way."
 
 [node name="OneMoreThing" type="Node2D" parent="."]
 script = ExtResource("5_say")

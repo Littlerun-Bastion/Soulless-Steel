@@ -1,8 +1,7 @@
 extends TestSuite
 
 const ONBOARDING := preload("res://game/onboarding/Onboarding.tscn")
-const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "LowerFlag"]
-const LEFT_THE_SCREEN := 1300.0
+const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "FindTheExit", "LowerFlag"]
 const CLEAR_OF_THE_PLAYER := 190.0
 
 var _scene = null
@@ -13,7 +12,9 @@ var _seen_when_she_speaks := false
 var _camera_off_player := INF
 var _gap_at_the_kit := 0.0
 var _hud_when_she_speaks_again := ""
-var _gap_when_she_leaves := 0.0
+var _camera_on_her_at_the_door := INF
+var _in_frame_when_she_leaves := true
+var _past_frame_when_she_leaves := INF
 var _saved_skip_intro = null
 
 
@@ -57,7 +58,9 @@ func _open() -> void:
 	_camera_off_player = INF
 	_gap_at_the_kit = 0.0
 	_hud_when_she_speaks_again = ""
-	_gap_when_she_leaves = 0.0
+	_camera_on_her_at_the_door = INF
+	_in_frame_when_she_leaves = true
+	_past_frame_when_she_leaves = INF
 	_scene = ONBOARDING.instantiate()
 	add_child(_scene)
 	var started := await wait_until(func(): return _stage() != null and _stage().is_playing, 20.0)
@@ -83,8 +86,22 @@ func _on_step_started(step: StageStep) -> void:
 		_camera_off_player = get_viewport().get_camera_2d().get_screen_center_position().distance_to(player.global_position)
 	elif step.name == "GrabKit":
 		_gap_at_the_kit = gap
+	elif step.name == "OutOfSight":
+		_camera_on_her_at_the_door = _camera_centre().distance_to(trobairitz.global_position)
 	elif step.name == "LeaveMap":
-		_gap_when_she_leaves = gap
+		_in_frame_when_she_leaves = _camera_frame().has_point(trobairitz.global_position)
+		var frame := _camera_frame()
+		_past_frame_when_she_leaves = frame.position.y - trobairitz.global_position.y
+
+
+func _camera_centre() -> Vector2:
+	return get_viewport().get_camera_2d().get_screen_center_position()
+
+
+func _camera_frame() -> Rect2:
+	var cam := get_viewport().get_camera_2d()
+	var size: Vector2 = get_viewport().get_visible_rect().size / cam.zoom
+	return Rect2(_camera_centre() - size / 2.0, size)
 
 
 func _close() -> void:
@@ -162,6 +179,7 @@ func _test_wakes_up() -> void:
 	check(_trobairitz() != null, "Trobairitz is on the map")
 	await wait_frames(2)
 	check(_scene.PlayerHUD.is_dark(), "the HUD is dark")
+	check(not _trobairitz().get_node("Debug/StateLabel").visible, "and Trobairitz shows no AI debug label")
 	check(_scene.Heatmap.mask_state().on, "the scene keeps the player's view cut to its sight circle")
 	check(not StoryDirector.has_flag(Onboarding.DONE_FLAG), "the onboarding isn't done yet")
 
@@ -202,7 +220,7 @@ func _test_plays_through() -> void:
 
 	var player = _scene.player
 	var order := _seen.filter(func(step_name): return step_name in ORDER)
-	check_eq(order, ORDER, "the reboot, kit, lessons, her leaving and the Flag came in that order")
+	check_eq(order, ORDER, "the reboot, kit, lessons, her leaving, the way out and the Flag came in that order")
 	check(_gap_when_she_speaks < _sight_when_she_speaks, "Trobairitz walked into the player's sight before speaking (gap %d of %d)" % [roundi(minf(_gap_when_she_speaks, 99999.0)), roundi(_sight_when_she_speaks)])
 	check(_seen_when_she_speaks, "where the player sees her")
 	check(_gap_at_the_kit > CLEAR_OF_THE_PLAYER, "and she stopped clear of the player (gap %d)" % roundi(_gap_at_the_kit))
@@ -212,7 +230,9 @@ func _test_plays_through() -> void:
 	check(not player.is_flagged(), "the player lowered the Flag")
 	check(not player.is_shielding and not player.is_sprinting, "the shield and dash held through a lesson's end were let go")
 	check(_trobairitz() == null, "Trobairitz left the map")
-	check(_gap_when_she_leaves >= LEFT_THE_SCREEN, "out of the player's view first (gap %d)" % roundi(_gap_when_she_leaves))
+	check(_camera_on_her_at_the_door < 200.0, "the camera followed her to the door (%d off)" % roundi(minf(_camera_on_her_at_the_door, 99999.0)))
+	check(not _in_frame_when_she_leaves, "and she walked out of its frame before she went")
+	check(_past_frame_when_she_leaves < 400.0, "going as soon as she was out of it (%d past the edge)" % roundi(minf(_past_frame_when_she_leaves, 99999.0)))
 	check(not player.controls_locked, "the player has control")
 	var mission = MissionManager.current_mission
 	check(mission != null and mission.objectives.any(func(o): return o.type == "extract"), "the goal now is to extract")

@@ -31,6 +31,7 @@ var options = {
 	"invert_x": true,
 	"invert_y": false,
 	"invert_deadzone_angle": 90,
+	"anti_aliasing": 2,
 }
 
 var controls = {
@@ -126,6 +127,7 @@ func set_save_data(data):
 		edit_control_action(action, controls[action])
 
 	Global.apply_window_mode()
+	Global.apply_anti_aliasing()
 
 func set_data(data, idx, default_values, ignore_deprecated := false):
 	if not data.has(idx):

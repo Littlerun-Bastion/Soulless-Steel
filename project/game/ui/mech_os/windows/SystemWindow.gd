@@ -42,6 +42,7 @@ const QUIT_CONFIRM := "CONFIRM: QUIT ABANDONS THE EXPEDITION"
 var _volume_rows: Dictionary = {}  # option -> {"bar": StatBar, "value": Label}
 var _toggle_buttons: Dictionary = {}  # option -> Button
 var quit_button: Button
+var anti_aliasing_button: Button
 
 
 func _ready() -> void:
@@ -53,7 +54,7 @@ func _ready() -> void:
 	var area := MechUI.scroll_box(&"StatsColumn")
 	column.add_child(area[0])
 	var sections: VBoxContainer = area[1]
-	sections.add_child(_section("DISPLAY", _toggle_rows()))
+	sections.add_child(_section("DISPLAY", _toggle_rows() + [_anti_aliasing_row()]))
 	sections.add_child(_section("AUDIO", _volume_rows_list()))
 	sections.add_child(_section("CONTROLS", _control_rows()))
 
@@ -86,6 +87,12 @@ func set_toggle(option: String, enabled: bool) -> void:
 	_refresh()
 
 
+func set_anti_aliasing(level: int) -> void:
+	Profile.set_option("anti_aliasing", level, true)
+	Global.apply_anti_aliasing()
+	_refresh()
+
+
 # ---- building -----------------------------------------------------------
 
 func _section(title: String, rows: Array) -> VBoxContainer:
@@ -110,6 +117,18 @@ func _toggle_rows() -> Array:
 		_toggle_buttons[toggle.option] = button
 		rows.append(row)
 	return rows
+
+
+func _anti_aliasing_row() -> Control:
+	var row := MechUI.hbox()
+	row.add_child(MechUI.label(&"LabelMeta", "ANTI-ALIASING"))
+	row.add_child(MechUI.spacer())
+	anti_aliasing_button = MechUI.button("", &"Tab")
+	anti_aliasing_button.toggle_mode = true
+	var levels := Global.ANTI_ALIASING_NAMES.size()
+	anti_aliasing_button.pressed.connect(func(): set_anti_aliasing((int(Profile.get_option("anti_aliasing")) + 1) % levels))
+	row.add_child(anti_aliasing_button)
+	return row
 
 
 func _volume_rows_list() -> Array:
@@ -162,6 +181,9 @@ func _refresh() -> void:
 		var button: Button = _toggle_buttons[option]
 		button.set_pressed_no_signal(on)
 		button.text = "ON" if on else "OFF"
+	var level := int(Profile.get_option("anti_aliasing"))
+	anti_aliasing_button.text = Global.ANTI_ALIASING_NAMES[level]
+	anti_aliasing_button.set_pressed_no_signal(level != Global.ANTI_ALIASING_OFF)
 
 
 func _on_save_pressed() -> void:

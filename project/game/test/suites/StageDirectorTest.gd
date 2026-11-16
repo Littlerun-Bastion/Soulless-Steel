@@ -176,6 +176,7 @@ func run_tests() -> void:
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
 	await case("an actor that slides is stopped early enough to come to rest at the mark", _test_move_actor_slides)
+	await case("a walk can end as soon as the actor is out of the camera's frame", _test_move_actor_out_of_frame)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
 	await case("a scene can put a thing on the map, under a name", _test_spawn)
 	await case("an overlay plays over the scene, which waits for it", _test_overlay)
@@ -1102,6 +1103,35 @@ func _test_move_actor_slides() -> void:
 			"told to stop its slide short of the arrive distance (%d)" % roundi(gap))
 	director.queue_free()
 	mech.queue_free()
+
+
+func _test_move_actor_out_of_frame() -> void:
+	var cam := Camera2D.new()
+	add_child(cam)
+	cam.make_current()
+	var director := _plain_director()
+	var mech := FakeMech.new()
+	mech.mecha_name = "Leaver"
+	mech.walk_speed = 600.0
+	add_child(mech)
+	var step := StageMoveActor.new()
+	step.actor = "Leaver"
+	step.global_position = Vector2(6000, 0)
+	step.until_out_of_frame = true
+	director.add_child(step)
+	await wait_frames(2)
+	var half_width: float = get_viewport().get_visible_rect().size.x / 2.0
+
+	director.play()
+	var ended := await wait_until(func(): return not director.is_playing, 10.0)
+
+	check(ended, "the walk ended")
+	check(mech.global_position.x > half_width, "once the actor was past the frame's edge (x %d)" % roundi(mech.global_position.x))
+	check(mech.global_position.x < half_width + 600.0, "and not long after (x %d of edge %d)" % [roundi(mech.global_position.x), roundi(half_width)])
+	check(mech.scripted_destination == null, "where it was told to stop")
+	director.queue_free()
+	mech.queue_free()
+	cam.queue_free()
 
 
 func _test_move_to_actor() -> void:

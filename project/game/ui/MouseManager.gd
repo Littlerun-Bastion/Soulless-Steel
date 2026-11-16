@@ -19,6 +19,7 @@ var cursor_mode: CursorMode = CursorMode.POINTER
 var aim_available: bool = false
 var pointer_forced: bool = false
 var free_cursor_held: bool = false
+var mouse_in_window: bool = true
 
 
 func _ready() -> void:
@@ -36,7 +37,6 @@ func _ready() -> void:
 	# replaces it.
 	for shape in Input.CURSOR_HELP + 1:
 		Input.set_custom_mouse_cursor(INVISIBLE_CURSOR, shape as Input.CursorShape)
-	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 
 	_update_mode()
 
@@ -63,6 +63,10 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		free_cursor_held = false
 		_update_mode()
+	elif what == NOTIFICATION_WM_MOUSE_EXIT or what == NOTIFICATION_WM_MOUSE_ENTER:
+		mouse_in_window = what == NOTIFICATION_WM_MOUSE_ENTER
+		if is_node_ready():
+			_update_mode()
 
 
 # Called by CombatScene when the player is set up (true)
@@ -90,13 +94,19 @@ func is_aiming() -> bool:
 	return cursor_mode == CursorMode.AIM
 
 
+## Held in the window only while aiming, so the window can be moved from a menu.
+func window_mouse_mode() -> Input.MouseMode:
+	return Input.MOUSE_MODE_CONFINED if is_aiming() else Input.MOUSE_MODE_VISIBLE
+
+
 func _update_mode() -> void:
 	var new_mode := CursorMode.POINTER
 	if aim_available and not pointer_forced and not free_cursor_held:
 		new_mode = CursorMode.AIM
 
-	cursor_sprite.visible = new_mode == CursorMode.POINTER
-
-	if new_mode != cursor_mode:
-		cursor_mode = new_mode
+	var changed := new_mode != cursor_mode
+	cursor_mode = new_mode
+	cursor_sprite.visible = cursor_mode == CursorMode.POINTER and mouse_in_window
+	Input.set_mouse_mode(window_mouse_mode())
+	if changed:
 		cursor_mode_changed.emit(cursor_mode)

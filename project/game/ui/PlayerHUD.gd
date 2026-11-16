@@ -45,10 +45,15 @@ const BLINK_PITCH_TARGET_MOD = .40
 # The sensor sweep's aim and readout, under the alerts (game/ui/hud/).
 @onready var hud_sweep: HudSweep = $SubViewportContainer/SubViewport/HudSweep
 @onready var hud_viewport: SubViewport = $SubViewportContainer/SubViewport
+@onready var mission_tracker = $SubViewportContainer/SubViewport/MissionTracker
+
+signal booted
 
 const CINEMATIC_LAYER := 1 << 1
 
 var _full_cull_mask := 0
+var _cinematic := false
+var _boot: HudBoot = null
 
 
 var player = false
@@ -167,6 +172,10 @@ static func lock_beep_interval(progress: float) -> float:
 func _ready() -> void:
 	_full_cull_mask = hud_viewport.canvas_cull_mask
 	_draw_in_cinematic(hud_world_labels)
+	_boot = HudBoot.new()
+	_boot.booted.connect(booted.emit)
+	_boot.lit_changed.connect(_refresh_top_strip)
+	add_child(_boot)
 
 
 func _draw_in_cinematic(item: Node) -> void:
@@ -178,12 +187,54 @@ func _draw_in_cinematic(item: Node) -> void:
 
 ## While a scene plays only the names and speech over the mechas stay drawn.
 func set_cinematic(on: bool) -> void:
+	_cinematic = on
 	hud_viewport.canvas_cull_mask = CINEMATIC_LAYER if on else _full_cull_mask
-	top_strip.visible = not on and player is Node
+	_refresh_top_strip()
 
 
 func is_cinematic() -> bool:
 	return hud_viewport.canvas_cull_mask == CINEMATIC_LAYER
+
+
+## Nothing drawn until boot() brings it back.
+func go_dark() -> void:
+	_boot.go_dark(_boot_systems())
+	_refresh_top_strip()
+
+
+func boot() -> void:
+	_boot.boot()
+
+
+func is_dark() -> bool:
+	return _boot.is_dark()
+
+
+func is_booting() -> bool:
+	return _boot.is_booting()
+
+
+func get_boot_log_text() -> String:
+	return _boot.get_log_text()
+
+
+func _boot_systems() -> Array:
+	var systems := [
+		["FRAME", [hud_status]],
+		["WEAPONS", [hud_weapons]],
+		["TARGETING", [Cursor, LockingSprite, DashCooldown]],
+		["RADAR", [PlayerRadar]],
+		["NAV", [top_strip, mission_tracker, exit_marker, interact_prompt]],
+	]
+	var named := []
+	for system in systems:
+		named.append_array(system[1])
+	systems.append(["COMMS", hud_viewport.get_children().filter(func(n): return n is CanvasItem and not n in named)])
+	return systems
+
+
+func _refresh_top_strip() -> void:
+	top_strip.visible = not _cinematic and player is Node and _boot.is_lit(top_strip)
 
 
 func setup(player_ref, mechas_ref):

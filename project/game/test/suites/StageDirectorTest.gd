@@ -73,6 +73,13 @@ class FakeMech extends Node2D:
 		global_position = global_position.move_toward(scripted_destination, walk_speed * dt)
 
 
+class FlaggedMech extends FakeMech:
+	var marker_shown := false
+
+	func show_flag_marker() -> void:
+		marker_shown = true
+
+
 class SlidingMech extends FakeMech:
 	var slide := 200.0
 
@@ -180,6 +187,7 @@ func run_tests() -> void:
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
 	await case("a scene can put a thing on the map, under a name", _test_spawn)
 	await case("an overlay plays over the scene, which waits for it", _test_overlay)
+	await case("a step shows an actor's Flag marker, skipped or not", _test_show_flag_marker)
 	await case("skipping takes an overlay off at once", _test_overlay_skipped)
 
 
@@ -1280,3 +1288,28 @@ func _test_overlay_skipped() -> void:
 
 	check(_shown_overlays(director).is_empty(), "the overlay is gone")
 	director.queue_free()
+
+
+func _test_show_flag_marker() -> void:
+	for skipped in [false, true]:
+		var director := _plain_director()
+		var mech := FlaggedMech.new()
+		mech.mecha_name = "Flagged %s" % skipped
+		add_child(mech)
+		if skipped:
+			var hold := StageWait.new()
+			hold.seconds = 30.0
+			director.add_child(hold)
+		var step := StageShowFlagMarker.new()
+		step.actor = mech.mecha_name
+		director.add_child(step)
+
+		director.play()
+		await wait_frames(2)
+		if skipped:
+			director.skip()
+		await wait_until(func(): return not director.is_playing, 5.0)
+
+		check(mech.marker_shown, "the marker is shown%s" % (" when the scene is skipped" if skipped else ""))
+		director.queue_free()
+		mech.queue_free()

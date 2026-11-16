@@ -338,6 +338,13 @@ var _pressure: Array[Dictionary] = []
 var extra_bloom := 0.0
 var _heartbeat := 0.0
 var _flag_marker: FlagMarker = null
+## Off the screen until show_flag_marker, as the onboarding keeps it until it
+## explains the Flag.
+var hides_flag_marker := false:
+	set(value):
+		hides_flag_marker = value
+		if _flag_marker:
+			_flag_marker.visible = not value
 var _spurt: GPUParticles2D = null
 var spooling = {
 	"arm_weapon_left": false,
@@ -4505,10 +4512,18 @@ func raise_flag(voluntary := true) -> void:
 	if is_inside_tree():
 		if _flag_marker == null:
 			_flag_marker = FlagMarker.new()
+			_flag_marker.visible = not hides_flag_marker
 			add_child(_flag_marker)
 		AudioManager.play_sfx(FLAG_RAISE_SFX, global_position)
 	_set_flag_up(voluntary)
 	emit_signal("flagged")
+
+
+func show_flag_marker() -> void:
+	hides_flag_marker = false
+	if _flag_marker:
+		_flag_marker.pop()
+		AudioManager.play_sfx(FLAG_SFX, global_position)
 
 
 ## Starts lowering the Flag: the wind-up (FLAG_LOWER_TIME) is visible on the
@@ -4608,6 +4623,7 @@ func _show_flag_entry(attacker) -> void:
 		return
 	if _flag_marker == null:
 		_flag_marker = FlagMarker.new()
+		_flag_marker.visible = not hides_flag_marker
 		add_child(_flag_marker)
 	_flag_marker.restart_entry()
 	AudioManager.play_sfx(FLAG_SFX, global_position)

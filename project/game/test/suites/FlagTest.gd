@@ -50,6 +50,7 @@ var _spoken: Array = []
 func run_tests() -> void:
 	await case("a Flag goes up at once and comes down with a wind-up; weapons lock, smoke and the bay don't", _test_flag)
 	await case("the emergency Flag is a Flag; lowering it keeps the capsule exposed; the HUD; the key", _test_emergency_and_hud)
+	await case("a hidden Flag marker stays hidden until shown, then pops in", _test_hidden_marker)
 	await case("the pilot that pressed a mecha into its Flag is named", _test_pressure)
 	await case("NPCs respect a Flag by personality; a low reputation makes some ignore the player's", _test_respect)
 	await case("lowering a Flag raised by choice and attacking is treachery; an emergency Flag isn't", _test_treachery)
@@ -172,6 +173,21 @@ func _decide(enemy) -> String:
 func _rig_barks() -> void:
 	for event in Barks.data().chances:
 		Barks.data().chances[event] = 1.0
+
+
+func _test_hidden_marker() -> void:
+	var mecha := _mecha(Vector2.ZERO, _design(SMOKE_LAUNCHER, "DC-2"))
+	mecha.hides_flag_marker = true
+
+	mecha.enter_flagged_state()
+	await wait_frames(2)
+	check(is_instance_valid(mecha._flag_marker) and not mecha._flag_marker.visible, "the emergency Flag is up, its marker hidden")
+
+	mecha.show_flag_marker()
+	check(mecha._flag_marker.visible, "showing it puts it on screen")
+	check(mecha._flag_marker.is_popping(), "with a pop")
+	var settled := await wait_until(func(): return not mecha._flag_marker.is_popping(), 3.0)
+	check(settled and mecha._flag_marker.scale.is_equal_approx(Vector2.ONE), "that settles at its size")
 
 
 func _test_flag() -> void:

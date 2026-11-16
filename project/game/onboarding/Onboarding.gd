@@ -31,6 +31,7 @@ func _ready() -> void:
 	PlayerHUD.go_dark()
 	player.systems_repaired.connect(PlayerHUD.boot)
 	_setup_heatmap()
+	player.hides_flag_marker = true
 	player.cripple_systems()
 	_add_trobairitz()
 	IntroAnimation.play("Entrance")
@@ -67,6 +68,12 @@ func _on_IntroAnimation_animation_ending() -> void:
 	var stage := play_stage(STAGE)
 	if stage != null:
 		stage.finished.connect(_setup_mission, CONNECT_ONE_SHOT)
+		stage.finished.connect(_stop_hiding_the_flag, CONNECT_ONE_SHOT)
+
+
+func _stop_hiding_the_flag() -> void:
+	if is_instance_valid(player):
+		player.hides_flag_marker = false
 
 
 func _setup_mission() -> void:

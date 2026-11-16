@@ -13,6 +13,8 @@ var _seen_when_she_speaks := false
 var _camera_off_player := INF
 var _gap_at_the_kit := 0.0
 var _hud_when_she_speaks_again := ""
+var _ring_before_the_lesson := true
+var _ring_at_the_lesson := false
 var _camera_on_her_at_the_door := INF
 var _in_frame_when_she_leaves := true
 var _past_frame_when_she_leaves := INF
@@ -59,6 +61,8 @@ func _open() -> void:
 	_camera_off_player = INF
 	_gap_at_the_kit = 0.0
 	_hud_when_she_speaks_again = ""
+	_ring_before_the_lesson = true
+	_ring_at_the_lesson = false
 	_camera_on_her_at_the_door = INF
 	_in_frame_when_she_leaves = true
 	_past_frame_when_she_leaves = INF
@@ -72,6 +76,10 @@ func _open() -> void:
 
 func _on_step_started(step: StageStep) -> void:
 	_seen.append(step.name)
+	if step.name == "FindTheExit":
+		_ring_before_the_lesson = _flag_ring_shown()
+	elif step.name == "OneMoreThing":
+		_ring_at_the_lesson = _flag_ring_shown()
 	if step.name == "Repaired":
 		var hud = _scene.PlayerHUD
 		_hud_when_she_speaks_again = "booting" if hud.is_booting() else ("dark" if hud.is_dark() else "up")
@@ -93,6 +101,11 @@ func _on_step_started(step: StageStep) -> void:
 		_in_frame_when_she_leaves = _camera_frame().has_point(trobairitz.global_position)
 		var frame := _camera_frame()
 		_past_frame_when_she_leaves = frame.position.y - trobairitz.global_position.y
+
+
+func _flag_ring_shown() -> bool:
+	var marker = _scene.player._flag_marker
+	return is_instance_valid(marker) and marker.is_visible_in_tree()
 
 
 func _camera_centre() -> Vector2:
@@ -181,6 +194,7 @@ func _test_wakes_up() -> void:
 	check(_trobairitz() != null, "Trobairitz is on the map")
 	await wait_frames(2)
 	check(_scene.PlayerHUD.is_dark(), "the HUD is dark")
+	check(not _flag_ring_shown(), "and the player's Flag ring is kept off the screen")
 	check(not _trobairitz().get_node("Debug/StateLabel").visible, "and Trobairitz shows no AI debug label")
 	check(_scene.Heatmap.mask_state().on, "the scene keeps the player's view cut to its sight circle")
 	check(not StoryDirector.has_flag(Onboarding.DONE_FLAG), "the onboarding isn't done yet")
@@ -229,6 +243,7 @@ func _test_plays_through() -> void:
 	check(_camera_off_player < 100.0, "with the camera on the player (%d off)" % roundi(minf(_camera_off_player, 99999.0)))
 	check(not player.is_exposed, "the kit repaired the player")
 	check_eq(_hud_when_she_speaks_again, "up", "and the HUD booted in the player's turn, before she spoke again")
+	check(not _ring_before_the_lesson and _ring_at_the_lesson, "the Flag ring showed only once she came to the Flag")
 	check(not player.is_flagged(), "the player lowered the Flag")
 	check(not player.is_shielding and not player.is_sprinting, "the shield and dash held through a lesson's end were let go")
 	check(_trobairitz() == null, "Trobairitz left the map")
@@ -278,6 +293,7 @@ func _test_shot_at() -> void:
 	check(stopped, "the scene stopped")
 	check(not trobairitz.scripted and not trobairitz.paused, "she is her own pilot again")
 	check(not _scene.player.controls_locked, "the player has control")
+	check(not _scene.player.hides_flag_marker, "its Flag ring is no longer kept hidden")
 	check(not _scene.player.is_withheld("move") and not _scene.player.is_withheld("shield"), "all of it, lessons or not")
 	var fights := await wait_until(func(): return is_same(trobairitz.valid_target, _scene.player), 10.0)
 	check(fights, "she turns on the player")

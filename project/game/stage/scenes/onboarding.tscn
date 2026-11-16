@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://game/stage/steps/StageOverlay.gd" id="10_overlay"]
 [ext_resource type="PackedScene" path="res://game/onboarding/SavReboot.tscn" id="11_reboot"]
 [ext_resource type="Script" path="res://game/stage/steps/StageCameraLookAt.gd" id="12_look"]
+[ext_resource type="Script" path="res://game/stage/steps/StageShowFlagMarker.gd" id="13_flag"]
 
 [node name="Onboarding" type="Node"]
 script = ExtResource("1_director")
@@ -147,6 +148,14 @@ actor = "Player"
 script = ExtResource("5_say")
 speaker = "Trobairitz"
 text = "Find the extraction point and get yourself out of here. Your SAV will mark the way."
+
+[node name="ShowTheFlag" type="Node2D" parent="."]
+script = ExtResource("13_flag")
+actor = "Player"
+
+[node name="FlagPops" type="Node2D" parent="."]
+script = ExtResource("3_wait")
+seconds = 0.8
 
 [node name="OneMoreThing" type="Node2D" parent="."]
 script = ExtResource("5_say")

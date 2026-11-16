@@ -11,16 +11,27 @@ extends PanelContainer
 ##                        Mecha.lock_warning), status effects, ECM
 ##                        interference on a lock
 ##   notice (outlined)    a passing event for NOTICE_TIME s (show_notice):
-##                        "YOU WERE SWEPT" (no bearing), "WARD DESTROYED";
-##                        extracting
+##                        "YOU WERE SWEPT" (no bearing), "WARD DESTROYED",
+##                        "EXTRACTION CANCELLED"; extracting, with the time
+##                        left. While extracting a bar fills under whatever
+##                        alert is on show.
 ## Replaces the old blinking WRN labels, the ECM readout, the exposed banner
 ## and the extracting label. Order of urgency is the order in _pick().
 
 ## Placeholder.
 const NOTICE_TIME := 3.0
 
+const CANCELLED := "EXTRACTION CANCELLED"
+const BAR_WIDTH := 320.0
+
 var player = null
-var extracting := false
+var extracting := false:
+	set(value):
+		if extracting and not value and is_instance_valid(player):
+			show_notice(CANCELLED)
+		elif value and _notice == CANCELLED:
+			_notice_time = 0.0
+		extracting = value
 var _notice := ""
 var _notice_time := 0.0
 
@@ -28,12 +39,20 @@ const STATUS_WORDS := {"fire": "FIRE", "freezing": "FREEZING", "corrosion": "COR
 	"electrified": "ELECTRIFIED", "overheating": "OVERHEATING"}
 
 var _label: Label
+var _bar: HudGauge
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var stack := MechUI.vbox()
+	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(stack)
 	_label = MechUI.label(&"AlertCriticalText")
-	add_child(_label)
+	stack.add_child(_label)
+	_bar = HudGauge.new()
+	_bar.custom_minimum_size.x = BAR_WIDTH
+	_bar.visible = false
+	stack.add_child(_bar)
 	visible = false
 
 
@@ -51,6 +70,14 @@ func get_current() -> String:
 	return _label.text if visible else ""
 
 
+func is_extract_bar_shown() -> bool:
+	return visible and _bar.visible
+
+
+func get_extract_ratio() -> float:
+	return _bar.ratio
+
+
 ## A passing notice, outlined, for `seconds`; a newer one replaces it.
 func show_notice(text: String, seconds := NOTICE_TIME) -> void:
 	_notice = text
@@ -65,6 +92,13 @@ func show_swept() -> void:
 func _process(delta: float) -> void:
 	_notice_time = maxf(_notice_time - delta, 0.0)
 	var alert := _pick()
+	var progress: float = player.get_extract_progress() if extracting and is_instance_valid(player) else -1.0
+	var bar_shown := progress >= 0.0
+	if _bar.visible != bar_shown:
+		_bar.visible = bar_shown
+		reset_size()
+	if bar_shown:
+		_bar.ratio = progress
 	visible = not alert.is_empty()
 	if not visible:
 		return
@@ -104,5 +138,6 @@ func _pick() -> Dictionary:
 	if _notice_time > 0.0:
 		return {"text": _notice, "critical": false}
 	if extracting:
-		return {"text": "EXTRACTING", "critical": false}
+		var left: float = player.get_extract_time_left() if is_instance_valid(player) else 0.0
+		return {"text": "EXTRACTING  %.1fs" % left, "critical": false}
 	return {}

@@ -3746,6 +3746,18 @@ func play_step_sound(is_left := true):
 func extracting():
 	$ExtractTimer.start()
 
+
+## How far through extracting, 0 to 1, or -1 when not extracting.
+func get_extract_progress() -> float:
+	var timer: Timer = $ExtractTimer
+	if timer.is_stopped():
+		return -1.0
+	return 1.0 - timer.time_left / timer.wait_time
+
+
+func get_extract_time_left() -> float:
+	return $ExtractTimer.time_left
+
 # CALLBACKS
 
 func _on_ExtractTimer_timeout():

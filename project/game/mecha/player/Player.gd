@@ -1175,6 +1175,10 @@ func lock_controls() -> void:
 	cancel_designating()
 	for weapon_type in WeaponSFXs.keys():
 		stop_shooting(weapon_type)
+	shield_down()
+	sprinting_timer = 0.0
+	if is_sprinting:
+		stop_sprinting(Vector2.ZERO)
 	if cur_mode == MODES.ACTIVATING_LOCK or cur_mode == MODES.LOCK:
 		locking_to = false
 		cur_mode = MODES.NEUTRAL

@@ -139,13 +139,19 @@ func _take_turn(turn: StageWaitForPlayer, director: StageDirector) -> void:
 	elif turn.travel > 0.0:
 		player.global_position += Vector2.LEFT * (turn.travel + 50.0)
 	elif turn.action != "":
-		for pressed in [true, false]:
-			var event := InputEventAction.new()
-			event.action = turn.action
-			event.pressed = pressed
-			Input.parse_input_event(event)
+		_send(turn.action, true)
+		await wait_until(func(): return not turn.is_running(), 5.0)
+		await wait_frames(2)
+		_send(turn.action, false)
 	elif turn.flag_down:
 		player.lower_flag()
+
+
+func _send(action: String, pressed: bool) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = pressed
+	Input.parse_input_event(event)
 
 
 func _test_wakes_up() -> void:
@@ -204,6 +210,7 @@ func _test_plays_through() -> void:
 	check(not player.is_exposed, "the kit repaired the player")
 	check_eq(_hud_when_she_speaks_again, "up", "and the HUD booted in the player's turn, before she spoke again")
 	check(not player.is_flagged(), "the player lowered the Flag")
+	check(not player.is_shielding and not player.is_sprinting, "the shield and dash held through a lesson's end were let go")
 	check(_trobairitz() == null, "Trobairitz left the map")
 	check(_gap_when_she_leaves >= LEFT_THE_SCREEN, "out of the player's view first (gap %d)" % roundi(_gap_when_she_leaves))
 	check(not player.controls_locked, "the player has control")

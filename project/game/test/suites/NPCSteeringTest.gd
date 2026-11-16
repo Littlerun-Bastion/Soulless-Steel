@@ -59,6 +59,8 @@ func run_tests() -> void:
 	await case("a gap narrower than the mecha counts as shut", _test_narrow_gap)
 	await case("a scripted NPC told to walk straight goes through a doorway", _test_straight_through_doorway)
 	await case("a mecha slides to a stop where it says it will", _test_stopping_distance)
+	await case("a scripted NPC shoves a mecha in its way aside", _test_shoves_aside)
+	await case("a scripted NPC shoves a mecha out of a doorway it needs", _test_shoves_out_of_doorway)
 	await case("a light NPC walks round a parked car without touching it", _test_walk_round_car)
 	await case("NPCs go round buildings unless their destination is inside", _test_buildings)
 	await case("a car that jammed becomes a hard obstacle", _test_jammed)
@@ -231,6 +233,45 @@ func _test_straight_through_doorway() -> void:
 
 	check(through, "it went through the tutorial map's small door (at %s)" % enemy.global_position.round())
 	check(drift[0] < 40.0, "on a straight line, not drawn off it by the walls (drift %d)" % roundi(drift[0]))
+
+
+func _blocker(pos: Vector2) -> Mecha:
+	var mecha: Mecha = MECHA.instantiate()
+	mecha.mech_inventory = Inventory.new()
+	mecha.position = pos
+	_arena.add_child(mecha)
+	mecha.set_parts_from_design(PlayerProgress.DEFAULT_MECHA)
+	mecha.set_pause(true)
+	_arena.mechas.append(mecha)
+	return mecha
+
+
+func _test_shoves_aside() -> void:
+	await _setup([])
+	var enemy := _enemy(Vector2.ZERO, PlayerProgress.DEFAULT_MECHA)
+	var blocker := _blocker(Vector2(600, 0))
+	var mark := Vector2(1500, 0)
+
+	enemy.walk_straight_to(mark)
+	var through := await wait_until(func(): return enemy.global_position.distance_to(mark) < 150.0, 10.0)
+
+	check(through, "the NPC got where it was going (at %s)" % enemy.global_position.round())
+	check(absf(blocker.global_position.y) > 100.0, "shoving the mecha in its way aside (to %s)" % blocker.global_position.round())
+
+
+func _test_shoves_out_of_doorway() -> void:
+	await _setup([])
+	_arena.add_child(TUTORIAL_MAP.instantiate())
+	await get_tree().physics_frame
+	var enemy := _enemy(Vector2(-1125, 3150), PlayerProgress.DEFAULT_MECHA)
+	var blocker := _blocker(Vector2(-1136, 2470))
+	blocker.global_rotation = PI / 2.0
+	var mark := Vector2(-1125, 2000)
+
+	enemy.walk_straight_to(mark)
+	var through := await wait_until(func(): return enemy.global_position.distance_to(mark) < 150.0, 15.0)
+
+	check(through, "the NPC got through the door the mecha stood in (at %s)" % enemy.global_position.round())
 
 
 func _test_stopping_distance() -> void:

@@ -30,6 +30,7 @@ const STUCK_RESET_TIME := 8.0
 const STUCK_RELOCATE_TIME := 15.0
 ## An NPC within this distance (px) of the camera's view counts as on screen.
 const ON_SCREEN_MARGIN := 400.0
+const SHOVE_SPEED := 450.0
 const SCRIPTED_THROTTLE_TIME := 0.6
 var stuck_timer: float = 0.0
 
@@ -1774,15 +1775,31 @@ func _drive_scripted(dt) -> void:
 		return
 	if throttle < 1.0:
 		increase_throttle(false, dt / SCRIPTED_THROTTLE_TIME)
+	var heading: Vector2 = global_position.direction_to(scripted_destination)
 	if scripted_straight:
 		going_to_position = false
-		var heading: Vector2 = global_position.direction_to(scripted_destination)
 		apply_movement(dt, heading if movement_type == "tank" else heading.rotated(-global_rotation))
 		apply_rotation_by_point(dt, scripted_aim if scripted_aim != null else scripted_destination, false)
-		return
-	NavAgent.target_position = scripted_destination
-	going_to_position = true
-	navigate_to_target(dt)
+	else:
+		NavAgent.target_position = scripted_destination
+		going_to_position = true
+		navigate_to_target(dt)
+	_shove_blockers(dt, heading)
+
+
+## A mecha the scene isn't moving that stands in the way is shoved off the
+## path, or on along it where a wall leaves no room to the side.
+func _shove_blockers(dt: float, heading: Vector2) -> void:
+	var step := SHOVE_SPEED * dt
+	for i in get_slide_collision_count():
+		var body = get_slide_collision(i).get_collider()
+		if body == self or not (body is Mecha) or body.get("scripted"):
+			continue
+		var offset: Vector2 = body.global_position - global_position
+		var aside := offset - heading * offset.dot(heading)
+		aside = aside.normalized() if aside.length() > 1.0 else heading.orthogonal()
+		if body.move_and_collide(aside * step) != null:
+			body.move_and_collide(heading * step)
 
 
 func get_navigation_path():

@@ -2,6 +2,7 @@ extends TestSuite
 
 const ONBOARDING := preload("res://game/onboarding/Onboarding.tscn")
 const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "FindTheExit", "LowerFlag"]
+const IN_THE_DOORWAY := Vector2(-1000, 2470)
 const CLEAR_OF_THE_PLAYER := 190.0
 
 var _scene = null
@@ -154,7 +155,8 @@ func _take_turn(turn: StageWaitForPlayer, director: StageDirector) -> void:
 		if kit != null:
 			kit.interact(player)
 	elif turn.travel > 0.0:
-		player.global_position += Vector2.LEFT * (turn.travel + 50.0)
+		player.global_position = IN_THE_DOORWAY
+		player.global_rotation = PI / 2.0
 	elif turn.action != "":
 		_send(turn.action, true)
 		await wait_until(func(): return not turn.is_running(), 5.0)

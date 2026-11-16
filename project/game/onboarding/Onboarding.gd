@@ -7,6 +7,22 @@ const STAGE := "onboarding"
 const DONE_FLAG := "onboarding_done"
 const TROBAIRITZ := "Trobairitz"
 const TROBAIRITZ_DEAD := "trobairitz_dead"
+const CALM_NOISE_QUALITY := 5000.0
+
+@export_multiline var boot_text := "\n".join([
+	"SURFACE ACTIVITY VEHICLE NEURALOS - EMERGENCY RESTART",
+	"HunterOS ver. 1.02 LN // RECOVERY MODE",
+	"LAST SESSION ........... TERMINATED ABNORMALLY",
+	"PILOT VITALS ........... UNSTABLE",
+	"HULL INTEGRITY ......... CRITICAL",
+	"PRIMARY SYSTEMS ........ OFFLINE",
+	"SAFETY FLAG ............ RAISED (AUTO)",
+	"DISTRESS BEACON ........ BROADCASTING",
+	"---Waiting for a reply---",
+])
+@export_multiline var boot_card := "SURFACE ACTIVITY VEHICLE NEURALOS - EMERGENCY RESTART\n\n\n\nHold on, Pilot. Someone may be listening."
+@export var boot_commands: Array[String] = ["/startup --recovery", "/diag --all", "/beacon --broadcast"]
+@export var boot_text_inset := Vector2(100, 72)
 
 @onready var TrobairitzStart: Marker2D = $TrobairitzStart
 
@@ -20,7 +36,7 @@ static func is_due() -> bool:
 func _ready() -> void:
 	FrameSpikeDetector.mark("scene_load:Onboarding")
 	ShaderEffects.reset_shader_effect("arena")
-	ShaderEffects.play_transition(0.0, 5000.0, 5.0)
+	ShaderEffects.play_transition(CALM_NOISE_QUALITY, CALM_NOISE_QUALITY, 5.0)
 	_setup_sight_lighting()
 	_setup_exits()
 	_setup_triggers()
@@ -34,7 +50,8 @@ func _ready() -> void:
 	player.hides_flag_marker = true
 	player.cripple_systems()
 	_add_trobairitz()
-	IntroAnimation.play("Entrance")
+	IntroAnimation.inset_text(boot_text_inset)
+	IntroAnimation.play_retold("Entrance", boot_text, boot_card, boot_commands)
 	await _prewarm_fx()
 	set_mechas_block_status(true)
 	if Debug.get_setting("skip_intro"):

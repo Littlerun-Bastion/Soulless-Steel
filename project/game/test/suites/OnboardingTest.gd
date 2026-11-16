@@ -4,6 +4,15 @@ const ONBOARDING := preload("res://game/onboarding/Onboarding.tscn")
 const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "FindTheExit", "LowerFlag"]
 const IN_THE_DOORWAY := Vector2(-1000, 2470)
 const CLEAR_OF_THE_PLAYER := 190.0
+const CARD_READ_TIME := 2.5
+const HEAVY_VCR := "IntroAnimation/VCREffect:visible"
+const LIGHT_VCR := "IntroAnimation/VCREffect2:visible"
+const STATIC_BURST := "IntroAnimation/Ent_misc4:playing"
+const CALM_NOISE_QUALITY := 2000.0
+const OPENING_FRAMES := 10
+const ARENA_COLOUR_SPLIT := 0.026
+const SCREEN_EDGE_MARGIN := 60.0
+const INTRO := preload("res://game/ui/IntroAnimation.tscn")
 
 var _scene = null
 var _seen: Array[String] = []
@@ -19,6 +28,8 @@ var _camera_on_her_at_the_door := INF
 var _in_frame_when_she_leaves := true
 var _past_frame_when_she_leaves := INF
 var _saved_skip_intro = null
+var _noise_quality_at_start := 0.0
+var _colour_split_at_start := 0.0
 
 
 func _init() -> void:
@@ -33,6 +44,9 @@ func run_tests() -> void:
 
 	await _open()
 	await case("the player wakes up wrecked and Flagged, and Trobairitz comes", _test_wakes_up)
+	await case("the boot screen tells the onboarding's own story", _test_own_boot_screen)
+	await case("the boot screen is readable all through, with time to read its card", _test_boot_screen_readable)
+	await case("the boot text sits clear of the screen's edges", _test_boot_text_clear_of_edges)
 	await case("before her lessons the player can't drive, dash or raise the shield", _test_lessons_first)
 	await case("the onboarding plays through in order", _test_plays_through)
 	await case("extracting finishes the onboarding and goes to the menu", _test_extract)
@@ -68,6 +82,13 @@ func _open() -> void:
 	_past_frame_when_she_leaves = INF
 	_scene = ONBOARDING.instantiate()
 	add_child(_scene)
+	_noise_quality_at_start = INF
+	_colour_split_at_start = 0.0
+	var screen: ShaderMaterial = ShaderEffects.VCREffect.material
+	for i in OPENING_FRAMES:
+		await wait_frames(1)
+		_noise_quality_at_start = minf(_noise_quality_at_start, screen.get_shader_parameter("noiseQuality"))
+		_colour_split_at_start = maxf(_colour_split_at_start, screen.get_shader_parameter("colorOffsetIntensity"))
 	var started := await wait_until(func(): return _stage() != null and _stage().is_playing, 20.0)
 	check(started, "the onboarding scene started")
 	if started:
@@ -184,6 +205,96 @@ func _send(action: String, pressed: bool) -> void:
 	event.action = action
 	event.pressed = pressed
 	Input.parse_input_event(event)
+
+
+func _screen_texts(animation: Animation) -> Array:
+	var track := animation.find_track(NodePath("IntroAnimation/ScreenText:text"), Animation.TYPE_VALUE)
+	var texts := []
+	for i in animation.track_get_key_count(track):
+		texts.append(animation.track_get_key_value(track, i))
+	return texts
+
+
+func _test_own_boot_screen() -> void:
+	var intro: AnimationPlayer = _scene.IntroAnimation.get_node("AnimationPlayer")
+	var played := intro.get_animation(intro.assigned_animation)
+	var texts := _screen_texts(played)
+	var first_line: String = _scene.boot_text.split("\n")[0]
+
+	check(intro.assigned_animation != "Entrance", "it is not the usual boot")
+	check(texts.any(func(t): return first_line in t), "it types the onboarding's boot text")
+	check(texts.any(func(t): return _scene.boot_card in t), "and ends on its own card")
+	check(not texts.any(func(t): return "Good hunting" in t), "with nothing of the usual boot's")
+	check(_screen_texts(intro.get_animation("Entrance")).any(func(t): return "Good hunting" in t), "which is left as it was for the other modes")
+
+
+func _test_boot_screen_readable() -> void:
+	var intro: AnimationPlayer = _scene.IntroAnimation.get_node("AnimationPlayer")
+	var played := intro.get_animation(intro.assigned_animation)
+	var usual := intro.get_animation("Entrance")
+	var lines: PackedStringArray = _scene.boot_text.split("
+")
+	var first_line := lines[0]
+	var half_line := first_line.substr(0, first_line.length() / 2)
+	var text_at := _first_time(played, func(t): return t != "")
+	var typed_at := _first_time(played, func(t): return t.ends_with(lines[lines.size() - 1]))
+	var card_at := _first_time(played, func(t): return _scene.boot_card in t)
+	var ending := _method_time(played, &"entrance_animation_ending")
+
+	check(_screen_texts(played).any(func(t): return t.ends_with(half_line)), "its lines type out")
+	check(card_at - typed_at >= 0.5, "the last line is up a moment before the card (%.2fs)" % (card_at - typed_at))
+	check(ending - card_at >= CARD_READ_TIME, "and the card %.1fs before the scene takes over (%.2fs)" % [CARD_READ_TIME, ending - card_at])
+	check(not _ever_true(played, HEAVY_VCR), "the heavy VCR never smears it")
+	check(_value_at(played, LIGHT_VCR, text_at) and _value_at(played, LIGHT_VCR, card_at), "the light one is on from its first line to its card")
+	check(not played.track_is_enabled(played.find_track(NodePath(STATIC_BURST), Animation.TYPE_VALUE)), "without the static burst that marks a smeared screen clearing")
+	check(_noise_quality_at_start >= CALM_NOISE_QUALITY, "and the screen isn't ramped in from noise (%d)" % _noise_quality_at_start)
+	check(_colour_split_at_start <= ARENA_COLOUR_SPLIT, "or split in colour like a damaged screen (%.3f)" % _colour_split_at_start)
+	check(_value_at(usual, HEAVY_VCR, 5.0) and usual.track_is_enabled(usual.find_track(NodePath(STATIC_BURST), Animation.TYPE_VALUE)),
+			"the other modes keep their boot as it was")
+
+
+func _test_boot_text_clear_of_edges() -> void:
+	var screen := get_viewport().get_visible_rect().grow(-SCREEN_EDGE_MARGIN)
+	for label_name in ["ScreenText", "CommandLine"]:
+		var label: Control = _scene.IntroAnimation.get_node(label_name)
+		var box := label.get_global_rect()
+		check(box.position.x >= screen.position.x and box.end.y <= screen.end.y,
+				"%s is %d px from the left and %d from the bottom" % [label_name, box.position.x, get_viewport().get_visible_rect().end.y - box.end.y])
+
+	var usual: Node = INTRO.instantiate()
+	add_child(usual)
+	check(usual.get_node("ScreenText").get_global_rect().position.x < screen.position.x, "the other modes' boot text stays where it was")
+	usual.free()
+
+
+func _first_time(animation: Animation, matches: Callable) -> float:
+	var track := animation.find_track(NodePath("IntroAnimation/ScreenText:text"), Animation.TYPE_VALUE)
+	for i in animation.track_get_key_count(track):
+		if matches.call(animation.track_get_key_value(track, i)):
+			return animation.track_get_key_time(track, i)
+	return INF
+
+
+func _method_time(animation: Animation, method: StringName) -> float:
+	for track in animation.get_track_count():
+		if animation.track_get_type(track) != Animation.TYPE_METHOD:
+			continue
+		for i in animation.track_get_key_count(track):
+			if animation.method_track_get_name(track, i) == method:
+				return animation.track_get_key_time(track, i)
+	return INF
+
+
+func _ever_true(animation: Animation, path: String) -> bool:
+	var track := animation.find_track(NodePath(path), Animation.TYPE_VALUE)
+	for i in animation.track_get_key_count(track):
+		if animation.track_get_key_value(track, i):
+			return true
+	return false
+
+
+func _value_at(animation: Animation, path: String, time: float):
+	return animation.value_track_interpolate(animation.find_track(NodePath(path), Animation.TYPE_VALUE), time)
 
 
 func _test_wakes_up() -> void:

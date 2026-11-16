@@ -178,6 +178,8 @@ func run_tests() -> void:
 	await case("an actor that slides is stopped early enough to come to rest at the mark", _test_move_actor_slides)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
 	await case("a scene can put a thing on the map, under a name", _test_spawn)
+	await case("an overlay plays over the scene, which waits for it", _test_overlay)
+	await case("skipping takes an overlay off at once", _test_overlay_skipped)
 
 
 func _make_director() -> StageDirector:
@@ -1181,3 +1183,70 @@ func _test_spawn() -> void:
 	check(is_instance_valid(kit), "it is still there once the scene is gone")
 	if is_instance_valid(kit):
 		kit.queue_free()
+
+
+const OVERLAY_SOURCE := "extends CanvasLayer
+signal finished
+var played := false
+func play() -> void:
+	played = true
+"
+
+
+func _overlay_scene() -> PackedScene:
+	var script := GDScript.new()
+	script.source_code = OVERLAY_SOURCE
+	script.reload()
+	var root := CanvasLayer.new()
+	root.set_script(script)
+	var packed := PackedScene.new()
+	packed.pack(root)
+	root.free()
+	return packed
+
+
+func _overlay_director() -> Array:
+	var director := _plain_director()
+	var step := StageOverlay.new()
+	step.overlay = _overlay_scene()
+	director.add_child(step)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	return [director, step, after]
+
+
+func _shown_overlays(director: StageDirector) -> Array:
+	return director.get_children().filter(func(n): return n is CanvasLayer and n.get("played") != null and not n.is_queued_for_deletion())
+
+
+func _test_overlay() -> void:
+	var parts := _overlay_director()
+	var director: StageDirector = parts[0]
+	director.play()
+	await wait_frames(2)
+
+	var shown := _shown_overlays(director)
+	check(director.current_step == parts[1], "the scene waits on the overlay")
+	check(shown.size() == 1 and shown[0].played, "which is on screen and playing")
+
+	shown[0].finished.emit()
+	await wait_frames(2)
+	check(director.current_step == parts[2], "the scene moves on once it is over")
+	check(_shown_overlays(director).is_empty(), "and takes it off")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_overlay_skipped() -> void:
+	var parts := _overlay_director()
+	var director: StageDirector = parts[0]
+	director.play()
+	await wait_frames(2)
+
+	director.skip()
+	await wait_frames(2)
+
+	check(_shown_overlays(director).is_empty(), "the overlay is gone")
+	director.queue_free()

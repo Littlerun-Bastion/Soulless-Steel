@@ -80,12 +80,31 @@ class SlidingMech extends FakeMech:
 		return slide
 
 
+class FakeHud extends Node:
+	var booting := false
+
+	func is_booting() -> bool:
+		return booting
+
+	func set_cinematic(_on: bool) -> void:
+		pass
+
+
+class FakeScene extends Node2D:
+	var player = null
+	var PlayerHUD = null
+
+	func activate_arena_cam() -> void:
+		pass
+
+
 class FakePlayer extends Node2D:
 	signal systems_repaired
 
 	var controls_locked := false
 	var flagged := false
 	var cam: Camera2D = null
+	var withheld := {}
 
 	func _ready() -> void:
 		add_to_group("mecha")
@@ -107,6 +126,12 @@ class FakePlayer extends Node2D:
 	func unlock_controls() -> void:
 		controls_locked = false
 
+	func withhold(ability: String) -> void:
+		withheld[ability] = true
+
+	func grant(ability: String) -> void:
+		withheld.erase(ability)
+
 
 func run_tests() -> void:
 	await case("an empty director plays and finishes", _test_empty_director)
@@ -126,6 +151,9 @@ func run_tests() -> void:
 	await case("a player turn ends on a signal from the player", _test_player_turn_signal)
 	await case("a player turn ends once the Flag is down, even if it already is", _test_player_turn_flag_down)
 	await case("a player turn keeps its instruction on screen", _test_player_turn_hint)
+	await case("a player turn holds until the HUD has booted", _test_player_turn_waits_for_the_hud)
+	await case("a scene withholds what it hasn't taught; the turn that teaches it grants it", _test_withheld_until_taught)
+	await case("whatever is still withheld comes back when the scene ends", _test_withheld_back_at_the_end)
 	await case("taking control can be turned off", _test_control_disabled)
 	await case("look-at drives the camera to its own position", _test_camera_look_at)
 	await case("look-at can hold until the camera arrives", _test_camera_waits)
@@ -355,6 +383,79 @@ func _test_player_turn_hands_over() -> void:
 	var bars_back := await wait_until(func(): return director.get_bars().is_shown(), 5.0)
 	check(bars_back, "and the bars came back")
 	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_waits_for_the_hud() -> void:
+	var alone := await wait_until(func(): return _players_left().is_empty(), 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var scene := FakeScene.new()
+	scene.PlayerHUD = FakeHud.new()
+	scene.add_child(scene.PlayerHUD)
+	add_child(scene)
+	var player := FakePlayer.new()
+	scene.add_child(player)
+	scene.player = player
+	var director := StageDirector.new()
+	scene.add_child(director)
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	director.add_child(turn)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	director.play()
+	await wait_frames(2)
+
+	scene.PlayerHUD.booting = true
+	player.systems_repaired.emit()
+	await wait_frames(4)
+	check(director.current_step == turn, "the turn holds while the HUD boots")
+	check(not player.controls_locked, "with the player still in control")
+
+	scene.PlayerHUD.booting = false
+	var moved := await wait_until(func(): return director.current_step == after, 2.0)
+	check(moved, "and ends once it has booted")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	scene.queue_free()
+	await wait_until(func(): return _players_left().is_empty(), 2.0)
+
+
+func _test_withheld_until_taught() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	turn.grants = ["move"]
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+	director.withholds = ["move", "dash"]
+
+	director.play()
+	await wait_frames(2)
+
+	check(director.current_step == turn, "the scene is on the player's turn")
+	check(not player.withheld.has("move"), "the turn grants what it teaches")
+	check(player.withheld.has("dash"), "what no turn has taught yet stays withheld")
+	await _end_player_turn_scene(scene)
+
+
+func _test_withheld_back_at_the_end() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+	director.withholds = ["move", "dash"]
+	director.play()
+	await wait_frames(2)
+	check(player.withheld.has("move") and player.withheld.has("dash"), "both are withheld in the scene")
+
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+
+	check(player.withheld.is_empty(), "an aborted scene gives them all back")
+	director.queue_free()
+	player.queue_free()
 
 
 func _test_player_turn_action() -> void:

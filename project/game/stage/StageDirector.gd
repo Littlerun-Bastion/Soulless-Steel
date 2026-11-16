@@ -12,6 +12,8 @@ const FREEZE_SWEEP_INTERVAL := 0.2
 @export var takes_camera := true
 @export var freezes_world := true
 @export var hides_hud := true
+## What the player can't do until a turn grants it (Player.withhold).
+@export var withholds: Array[String] = []
 
 var is_playing := false
 var is_skipping := false
@@ -39,6 +41,7 @@ func play() -> void:
 	_show_bars()
 	_set_hud_cinematic(true)
 	_set_control_locked(true)
+	_withhold_from_player()
 	_take_camera()
 	_freeze_world()
 	_sweeping = true
@@ -59,6 +62,7 @@ func play() -> void:
 	_set_hud_cinematic(false)
 	_release_camera()
 	_set_control_locked(false)
+	_grant_withheld()
 	is_playing = false
 	finished.emit()
 
@@ -106,6 +110,25 @@ func take_back() -> void:
 	_set_hud_cinematic(true)
 	_take_camera()
 	_set_control_locked(true)
+
+
+func grant(ability: String) -> void:
+	var player := get_player()
+	if player != null and player.has_method("grant"):
+		player.grant(ability)
+
+
+func _withhold_from_player() -> void:
+	var player := get_player()
+	if player == null or not player.has_method("withhold"):
+		return
+	for ability in withholds:
+		player.withhold(ability)
+
+
+func _grant_withheld() -> void:
+	for ability in withholds:
+		grant(ability)
 
 
 func get_steps() -> Array[StageStep]:
@@ -277,9 +300,18 @@ func _set_control_locked(locked: bool) -> void:
 		player.call(method)
 
 
-func _set_hud_cinematic(on: bool) -> void:
+func is_hud_booting() -> bool:
+	var hud = _hud()
+	return is_instance_valid(hud) and hud.has_method("is_booting") and hud.is_booting()
+
+
+func _hud():
 	var scene := get_scene_root()
-	var hud = scene.get("PlayerHUD") if scene != null else null
+	return scene.get("PlayerHUD") if scene != null else null
+
+
+func _set_hud_cinematic(on: bool) -> void:
+	var hud = _hud()
 	if hides_hud and is_instance_valid(hud) and hud.has_method("set_cinematic"):
 		hud.set_cinematic(on)
 

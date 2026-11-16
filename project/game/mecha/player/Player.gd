@@ -141,7 +141,7 @@ func _physics_process(dt):
 		apply_movement(dt, scripted_move)
 	else:
 		check_input()
-		apply_movement(dt, get_input())
+		apply_movement(dt, Vector2.ZERO if is_withheld(ABILITY_MOVE) else get_input())
 	_update_designators(dt)
 	_update_view(dt)
 	FrameProfiler.add("player", profile_start)
@@ -314,7 +314,7 @@ func _input(event):
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
-	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked():
+	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked() and not is_withheld(ABILITY_DASH):
 		sprinting_timer = SPRINTING_TIMEOUT
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0 and movement_type != "tank":
@@ -323,7 +323,7 @@ func _input(event):
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
-	elif event.is_action_pressed("shield"):
+	elif event.is_action_pressed("shield") and not is_withheld(ABILITY_SHIELD):
 		shield_up()
 	elif event.is_action_released("shield"):
 		shield_down()
@@ -1144,6 +1144,26 @@ func _exit_tree() -> void:
 	for body in _view_bodies:
 		if is_instance_valid(body):
 			body.modulate.a = 1.0
+
+
+const ABILITY_MOVE := "move"
+const ABILITY_DASH := "dash"
+const ABILITY_SHIELD := "shield"
+
+var _withheld := {}
+
+
+## Takes an ability (ABILITY_*) away from the pilot until it is granted back.
+func withhold(ability: String) -> void:
+	_withheld[ability] = true
+
+
+func grant(ability: String) -> void:
+	_withheld.erase(ability)
+
+
+func is_withheld(ability: String) -> bool:
+	return _withheld.has(ability)
 
 
 func lock_controls() -> void:

@@ -11,6 +11,7 @@ const FREEZE_SWEEP_INTERVAL := 0.2
 @export var takes_control := true
 @export var takes_camera := true
 @export var freezes_world := true
+@export var hides_hud := true
 
 var is_playing := false
 var is_skipping := false
@@ -36,6 +37,7 @@ func play() -> void:
 	_frozen = []
 	_sweep_timer = FREEZE_SWEEP_INTERVAL
 	_show_bars()
+	_set_hud_cinematic(true)
 	_set_control_locked(true)
 	_take_camera()
 	_freeze_world()
@@ -54,6 +56,7 @@ func play() -> void:
 	_release_actors()
 	_thaw_world()
 	await _hide_bars()
+	_set_hud_cinematic(false)
 	_release_camera()
 	_set_control_locked(false)
 	is_playing = false
@@ -91,6 +94,7 @@ func is_aborted() -> bool:
 func hand_over() -> void:
 	if _bars != null:
 		_bars.hide_bars()
+	_set_hud_cinematic(false)
 	_release_camera()
 	_set_control_locked(false)
 
@@ -99,6 +103,7 @@ func take_back() -> void:
 	if not is_playing or _aborted:
 		return
 	_show_bars()
+	_set_hud_cinematic(true)
 	_take_camera()
 	_set_control_locked(true)
 
@@ -270,6 +275,13 @@ func _set_control_locked(locked: bool) -> void:
 	var method := "lock_controls" if locked else "unlock_controls"
 	if player.has_method(method):
 		player.call(method)
+
+
+func _set_hud_cinematic(on: bool) -> void:
+	var scene := get_scene_root()
+	var hud = scene.get("PlayerHUD") if scene != null else null
+	if hides_hud and is_instance_valid(hud) and hud.has_method("set_cinematic"):
+		hud.set_cinematic(on)
 
 
 func _show_bars() -> void:

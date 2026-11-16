@@ -133,6 +133,8 @@ func run_tests() -> void:
 	await case("a line names the key bound to an action", _test_say_names_keys)
 	await case("an actor's spoken line names keys too", _test_actor_say_names_keys)
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
+	await case("a line is a subtitle in the bottom bar, centred on a dark box", _test_dialogue_in_the_bar)
+	await case("even a long line fits in the bottom bar", _test_long_line_in_the_bar)
 	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
 	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
 	await case("aborting ends the scene without running the rest", _test_abort_ends_the_scene)
@@ -867,6 +869,50 @@ func _test_abort_ends_the_scene() -> void:
 	check(director.is_aborted(), "it reports itself aborted")
 	check(order.is_empty(), "the steps after it never ran")
 	director.queue_free()
+
+
+const LONG_LINE := "Being Flagged means you're waving your white flag, and can't shoot your guns! Your SAV Flags itself when you've taken severe systems damage, which is why it's been on."
+
+
+func _box_in_the_bar(line: String) -> Array:
+	var director := _make_director()
+	director.takes_control = false
+	var step := _say_step(director, line)
+	director.play()
+	var dialogue := director.get_dialogue()
+	await wait_until(func(): return not dialogue.is_revealing() and director.get_bars().is_shown(), 5.0)
+	await wait_frames(2)
+	var screen := get_viewport().get_visible_rect().size
+	var result := [dialogue.get_box().get_global_rect(), screen, screen.y * director.get_bars().height_ratio]
+	step.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+	return result
+
+
+func _test_dialogue_in_the_bar() -> void:
+	var found := await _box_in_the_bar("hello player")
+	var box: Rect2 = found[0]
+	var screen: Vector2 = found[1]
+	var bar: float = found[2]
+	check(box.position.y >= screen.y - bar and box.end.y <= screen.y,
+			"the box sits inside the bottom bar (%s, bar from %d)" % [box, roundi(screen.y - bar)])
+	check(absf(box.get_center().x - screen.x / 2.0) < 2.0, "centred (%s)" % box)
+
+	var director := _plain_director()
+	var style = director.get_dialogue().get_box().get_theme_stylebox("panel")
+	check(style is StyleBoxFlat and style.bg_color.a >= 0.6, "on a dark box, readable over the game when the bars are away")
+	director.queue_free()
+
+
+func _test_long_line_in_the_bar() -> void:
+	var found := await _box_in_the_bar(LONG_LINE)
+	var box: Rect2 = found[0]
+	var screen: Vector2 = found[1]
+	var bar: float = found[2]
+	check(box.position.y >= screen.y - bar and box.end.y <= screen.y,
+			"the longest onboarding line still fits (%s, bar from %d)" % [box, roundi(screen.y - bar)])
+	check(box.size.x <= screen.x * 0.8, "without spanning the whole screen")
 
 
 func _test_dialogue_is_visible() -> void:

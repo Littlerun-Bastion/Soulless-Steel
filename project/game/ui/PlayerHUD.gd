@@ -44,6 +44,11 @@ const BLINK_PITCH_TARGET_MOD = .40
 @onready var hud_quick_chat: HudQuickChat = $SubViewportContainer/SubViewport/HudQuickChat
 # The sensor sweep's aim and readout, under the alerts (game/ui/hud/).
 @onready var hud_sweep: HudSweep = $SubViewportContainer/SubViewport/HudSweep
+@onready var hud_viewport: SubViewport = $SubViewportContainer/SubViewport
+
+const CINEMATIC_LAYER := 1 << 1
+
+var _full_cull_mask := 0
 
 
 var player = false
@@ -158,6 +163,28 @@ func _update_lock_warning(dt: float) -> void:
 ## How far apart (s) the warning's beeps come at `progress` (0..1).
 static func lock_beep_interval(progress: float) -> float:
 	return lerpf(LOCK_BEEP_SLOW, LOCK_BEEP_FAST, clampf(progress, 0.0, 1.0))
+
+func _ready() -> void:
+	_full_cull_mask = hud_viewport.canvas_cull_mask
+	_draw_in_cinematic(hud_world_labels)
+
+
+func _draw_in_cinematic(item: Node) -> void:
+	if item is CanvasItem:
+		item.visibility_layer |= CINEMATIC_LAYER
+	for child in item.get_children():
+		_draw_in_cinematic(child)
+
+
+## While a scene plays only the names and speech over the mechas stay drawn.
+func set_cinematic(on: bool) -> void:
+	hud_viewport.canvas_cull_mask = CINEMATIC_LAYER if on else _full_cull_mask
+	top_strip.visible = not on and player is Node
+
+
+func is_cinematic() -> bool:
+	return hud_viewport.canvas_cull_mask == CINEMATIC_LAYER
+
 
 func setup(player_ref, mechas_ref):
 	player = player_ref

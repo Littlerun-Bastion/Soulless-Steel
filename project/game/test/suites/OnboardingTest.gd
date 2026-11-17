@@ -53,6 +53,10 @@ func run_tests() -> void:
 	await _close()
 
 	await _open()
+	await case("after the boot the screen shows the damage, and the repair clears it", _test_damaged_screen)
+	await _close()
+
+	await _open()
 	await case("dying in the onboarding loses nothing and starts it again", _test_death)
 	await _close()
 
@@ -85,8 +89,12 @@ func _open() -> void:
 	_noise_quality_at_start = INF
 	_colour_split_at_start = 0.0
 	var screen: ShaderMaterial = ShaderEffects.VCREffect.material
+	var booting := [true]
+	_scene.IntroAnimation.animation_ending.connect(func(): booting[0] = false, CONNECT_ONE_SHOT)
 	for i in OPENING_FRAMES:
 		await wait_frames(1)
+		if not booting[0]:
+			break
 		_noise_quality_at_start = minf(_noise_quality_at_start, screen.get_shader_parameter("noiseQuality"))
 		_colour_split_at_start = maxf(_colour_split_at_start, screen.get_shader_parameter("colorOffsetIntensity"))
 	var started := await wait_until(func(): return _stage() != null and _stage().is_playing, 20.0)
@@ -265,6 +273,18 @@ func _test_boot_text_clear_of_edges() -> void:
 	add_child(usual)
 	check(usual.get_node("ScreenText").get_global_rect().position.x < screen.position.x, "the other modes' boot text stays where it was")
 	usual.free()
+
+
+func _test_damaged_screen() -> void:
+	var screen: ShaderMaterial = ShaderEffects.VCREffect.material
+	var torn := await wait_until(func(): return screen.get_shader_parameter("noiseIntensity") > 0.0 \
+			and screen.get_shader_parameter("colorOffsetIntensity") > ARENA_COLOUR_SPLIT, 3.0)
+	check(torn, "the crippled mech's screen tears and splits (noise %.4f, split %.3f)" % [screen.get_shader_parameter("noiseIntensity"), screen.get_shader_parameter("colorOffsetIntensity")])
+
+	_scene.player.repair_systems()
+	var cleared := await wait_until(func(): return screen.get_shader_parameter("noiseIntensity") < 0.0001 \
+			and screen.get_shader_parameter("colorOffsetIntensity") <= ARENA_COLOUR_SPLIT + 0.001, 3.0)
+	check(cleared, "and settles back once it is repaired (noise %.4f, split %.3f)" % [screen.get_shader_parameter("noiseIntensity"), screen.get_shader_parameter("colorOffsetIntensity")])
 
 
 func _first_time(animation: Animation, matches: Callable) -> float:

@@ -82,6 +82,7 @@ func _leave_body(mecha) -> void:
 
 func _on_IntroAnimation_animation_ending() -> void:
 	super()
+	ShaderEffects.end_transitions()
 	var stage := play_stage(STAGE)
 	if stage != null:
 		stage.finished.connect(_setup_mission, CONNECT_ONE_SHOT)

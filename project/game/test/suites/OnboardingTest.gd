@@ -13,6 +13,8 @@ const OPENING_FRAMES := 10
 const ARENA_COLOUR_SPLIT := 0.026
 const SCREEN_EDGE_MARGIN := 60.0
 const INTRO := preload("res://game/ui/IntroAnimation.tscn")
+const COMMAND_TEXT := "IntroAnimation/CommandLine:text"
+const COMMAND_SHOWN := "IntroAnimation/CommandLine:visible_ratio"
 
 var _scene = null
 var _seen: Array[String] = []
@@ -47,6 +49,7 @@ func run_tests() -> void:
 	await case("the boot screen tells the onboarding's own story", _test_own_boot_screen)
 	await case("the boot screen is readable all through, with time to read its card", _test_boot_screen_readable)
 	await case("the boot text sits clear of the screen's edges", _test_boot_text_clear_of_edges)
+	await case("each boot command is typed before what it brings up", _test_commands_lead)
 	await case("before her lessons the player can't drive, dash or raise the shield", _test_lessons_first)
 	await case("the onboarding plays through in order", _test_plays_through)
 	await case("extracting finishes the onboarding and goes to the menu", _test_extract)
@@ -227,7 +230,7 @@ func _test_own_boot_screen() -> void:
 	var intro: AnimationPlayer = _scene.IntroAnimation.get_node("AnimationPlayer")
 	var played := intro.get_animation(intro.assigned_animation)
 	var texts := _screen_texts(played)
-	var first_line: String = _scene.boot_text.split("\n")[0]
+	var first_line: String = _screen_lines()[0]
 
 	check(intro.assigned_animation != "Entrance", "it is not the usual boot")
 	check(texts.any(func(t): return first_line in t), "it types the onboarding's boot text")
@@ -240,9 +243,8 @@ func _test_boot_screen_readable() -> void:
 	var intro: AnimationPlayer = _scene.IntroAnimation.get_node("AnimationPlayer")
 	var played := intro.get_animation(intro.assigned_animation)
 	var usual := intro.get_animation("Entrance")
-	var lines: PackedStringArray = _scene.boot_text.split("
-")
-	var first_line := lines[0]
+	var lines := _screen_lines()
+	var first_line: String = lines[0]
 	var half_line := first_line.substr(0, first_line.length() / 2)
 	var text_at := _first_time(played, func(t): return t != "")
 	var typed_at := _first_time(played, func(t): return t.ends_with(lines[lines.size() - 1]))
@@ -285,6 +287,42 @@ func _test_damaged_screen() -> void:
 	var cleared := await wait_until(func(): return screen.get_shader_parameter("noiseIntensity") < 0.0001 \
 			and screen.get_shader_parameter("colorOffsetIntensity") <= ARENA_COLOUR_SPLIT + 0.001, 3.0)
 	check(cleared, "and settles back once it is repaired (noise %.4f, split %.3f)" % [screen.get_shader_parameter("noiseIntensity"), screen.get_shader_parameter("colorOffsetIntensity")])
+
+
+func _screen_lines() -> Array:
+	return Array(_scene.boot_text.split("\n")).filter(func(line): return not line.begins_with(_scene.IntroAnimation.COMMAND_MARK))
+
+
+func _test_commands_lead() -> void:
+	var intro: AnimationPlayer = _scene.IntroAnimation.get_node("AnimationPlayer")
+	var played := intro.get_animation(intro.assigned_animation)
+	var lines: PackedStringArray = _scene.boot_text.split("\n")
+	var commands := 0
+	for i in lines.size() - 1:
+		if not lines[i].begins_with(_scene.IntroAnimation.COMMAND_MARK):
+			continue
+		commands += 1
+		var command := lines[i].trim_prefix(_scene.IntroAnimation.COMMAND_MARK)
+		var next_line := lines[i + 1]
+		var typed_at := _command_typed_at(played, command)
+		var output_at := _first_time(played, func(t): return t.ends_with(next_line.left(1)) and (t.count("\n") >= _screen_lines().find(next_line)))
+		check(typed_at < output_at, "%s is typed (%.2fs) before \"%s\" comes up (%.2fs)" % [command, typed_at, next_line.left(20), output_at])
+
+	check(commands >= 3, "the boot text has its commands (%d)" % commands)
+	check(not _screen_texts(played).any(func(t): return _scene.IntroAnimation.COMMAND_MARK in t), "and none of them shows among the screen's lines")
+
+
+func _command_typed_at(animation: Animation, command: String) -> float:
+	var text_track := animation.find_track(NodePath(COMMAND_TEXT), Animation.TYPE_VALUE)
+	var shown_track := animation.find_track(NodePath(COMMAND_SHOWN), Animation.TYPE_VALUE)
+	for i in animation.track_get_key_count(text_track):
+		if animation.track_get_key_value(text_track, i) != command:
+			continue
+		var start := animation.track_get_key_time(text_track, i)
+		for k in animation.track_get_key_count(shown_track):
+			if animation.track_get_key_time(shown_track, k) >= start and animation.track_get_key_value(shown_track, k) >= 1.0:
+				return animation.track_get_key_time(shown_track, k)
+	return INF
 
 
 func _first_time(animation: Animation, matches: Callable) -> float:

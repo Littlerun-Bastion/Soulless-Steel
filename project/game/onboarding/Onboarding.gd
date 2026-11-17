@@ -9,19 +9,23 @@ const TROBAIRITZ := "Trobairitz"
 const TROBAIRITZ_DEAD := "trobairitz_dead"
 const CALM_NOISE_QUALITY := 5000.0
 
+## One line a row; a row starting with "> " is a command, typed at the
+## bottom just before the rows it brings up.
 @export_multiline var boot_text := "\n".join([
+	"> /startup --recovery",
 	"SURFACE ACTIVITY VEHICLE NEURALOS - EMERGENCY RESTART",
 	"HunterOS ver. 1.02 LN // RECOVERY MODE",
+	"> /diag --all",
 	"LAST SESSION ........... TERMINATED ABNORMALLY",
 	"PILOT VITALS ........... UNSTABLE",
 	"HULL INTEGRITY ......... CRITICAL",
 	"PRIMARY SYSTEMS ........ OFFLINE",
 	"SAFETY FLAG ............ RAISED (AUTO)",
+	"> /beacon --broadcast",
 	"DISTRESS BEACON ........ BROADCASTING",
 	"---Waiting for a reply---",
 ])
 @export_multiline var boot_card := "SURFACE ACTIVITY VEHICLE NEURALOS - EMERGENCY RESTART\n\n\n\nHold on, Pilot. Someone may be listening."
-@export var boot_commands: Array[String] = ["/startup --recovery", "/diag --all", "/beacon --broadcast"]
 @export var boot_text_inset := Vector2(100, 72)
 
 @onready var TrobairitzStart: Marker2D = $TrobairitzStart
@@ -51,7 +55,7 @@ func _ready() -> void:
 	player.cripple_systems()
 	_add_trobairitz()
 	IntroAnimation.inset_text(boot_text_inset)
-	IntroAnimation.play_retold("Entrance", boot_text, boot_card, boot_commands)
+	IntroAnimation.play_retold("Entrance", boot_text, boot_card)
 	await _prewarm_fx()
 	set_mechas_block_status(true)
 	if Debug.get_setting("skip_intro"):

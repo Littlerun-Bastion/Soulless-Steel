@@ -35,7 +35,7 @@ Tests only run when you start them; committing doesn't run them.
   `TransitionManager.captured` (so a test can check "Continue goes to the main
   menu"). A suite opens the next screen itself.
 - **Nothing hangs.** A case that doesn't finish within 60 seconds (a script
-  error stopped it, or it's stuck waiting) fails; a whole run over 10 minutes
+  error stopped it, or it's stuck waiting) fails; a whole run over 15 minutes
   is stopped and fails.
 
 ## Writing a suite

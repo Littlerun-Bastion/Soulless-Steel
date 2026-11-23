@@ -15,6 +15,7 @@ func run_tests() -> void:
 	await case("maps are known by path, not loaded at boot", _test_paths)
 	await case("every map opens", _test_every_map)
 	await case("the map set to load next opens from its background load", _test_next_map)
+	await case("the tutorial map's starts and exits are all on walkable ground", _test_tutorial_navigation)
 
 
 func _test_paths() -> void:
@@ -45,3 +46,15 @@ func _test_next_map() -> void:
 	if map:
 		map.free()
 	ArenaManager.map_to_load = saved
+
+
+func _test_tutorial_navigation() -> void:
+	var map: Node = ArenaManager.get_map("tutorial")
+	var region: NavigationRegion2D = map.get_node("NavigationRegion2D")
+	var outline: PackedVector2Array = map.get_navigation_polygon().get_outline(0)
+	for group in ["StartPositions", "Exits"]:
+		var holder: Node2D = map.get_node(group)
+		for point in holder.get_children():
+			var on_region: Vector2 = region.transform.affine_inverse() * (holder.transform * point.position)
+			check(Geometry2D.is_point_in_polygon(on_region, outline), "%s/%s is on the navigation" % [group, point.name])
+	map.free()

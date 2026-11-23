@@ -22,9 +22,9 @@
 [ext_resource type="PackedScene" uid="uid://bpk0f6sknlcu0" path="res://database/buildings/map_trigger.tscn" id="20_yke2c"]
 
 [sub_resource type="NavigationPolygon" id="8"]
-vertices = PackedVector2Array(-2409, -1992, 2385, -1996, 2385, 1148, -2412, 1145)
+vertices = PackedVector2Array(-2412, -1996, 2385, -1996, 2385, 5632, -2412, 5632)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-2412, 1145, 2385, 1148, 2385, -1996, -2409, -1992)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-2412, 5632, 2385, 5632, 2385, -1996, -2412, -1996)])
 
 [node name="Map" type="Node2D"]
 script = ExtResource("1")

@@ -16,6 +16,9 @@ const START_MENU := preload("res://game/start_menu/StartMenu.tscn")
 
 func run_tests() -> void:
 	await case("boot loads the profile and opens the main menu", _test_boot)
+	await case("a brand new profile boots into the onboarding", _test_new_profile_onboards)
+	await case("a profile that never finished the onboarding goes back to it", _test_unfinished_onboarding)
+	await case("the menu has a button for the onboarding", _test_onboarding_button)
 	await case("main menu buttons go where they should", _test_buttons)
 	await case("an incomplete mecha can't deploy", _test_incomplete_mecha)
 	await case("a lost expedition is reported once", _test_loss_notice)
@@ -23,7 +26,17 @@ func run_tests() -> void:
 
 func before_each() -> void:
 	PlayerProgress.reset()
+	StoryDirector.reset(false)
 	TransitionManager.captured.clear()
+
+
+func _boot() -> Array:
+	var intro = INTRO.instantiate()
+	add_child(intro)
+	await wait_until(func(): return not TransitionManager.captured.is_empty(), 10.0)
+	intro.queue_free()
+	await wait_frames()
+	return TransitionManager.captured.duplicate()
 
 
 func _open_menu() -> Node:
@@ -48,6 +61,38 @@ func _test_boot() -> void:
 	check(FileManager.profile_loaded, "the profile was loaded")
 	check_eq(PlayerProgress.get_money(), 777.0, "with the saved progress")
 	intro.queue_free()
+	await wait_frames()
+
+
+func _test_new_profile_onboards() -> void:
+	for path in [FileManager.profile_path, FileManager.backup_path]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
+	FileManager.profile_loaded = false
+
+	check_eq(await _boot(), [Onboarding.SCENE_PATH], "a first boot goes to the onboarding")
+	check(StoryDirector.get_flag(Onboarding.DONE_FLAG) == false, "the new profile has it still to do")
+
+
+func _test_unfinished_onboarding() -> void:
+	StoryDirector.set_flag(Onboarding.DONE_FLAG, false, false)
+	FileManager.profile_loaded = true
+	FileManager.save_profile()
+	FileManager.profile_loaded = false
+	StoryDirector.reset(false)
+
+	check_eq(await _boot(), [Onboarding.SCENE_PATH], "back to the onboarding")
+
+
+func _test_onboarding_button() -> void:
+	var menu = await _open_menu()
+	var buttons: Array = menu.find_children("*", "Button", true, false).filter(
+			func(b): return b.pressed.is_connected(Callable(menu, "_on_Onboarding_pressed")))
+	check_eq(buttons.size(), 1, "one menu button plays the onboarding")
+	if buttons.size() == 1:
+		buttons[0].pressed.emit()
+	check_eq(TransitionManager.captured, [Onboarding.SCENE_PATH], "and it opens the onboarding")
+	menu.queue_free()
 	await wait_frames()
 
 

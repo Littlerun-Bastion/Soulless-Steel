@@ -12,7 +12,7 @@ class_name TestSession
 # passed, 1 otherwise.
 
 const SUITES_DIR := "res://game/test/suites/"
-const MAX_RUN_SECONDS := 600
+const MAX_RUN_SECONDS := 900
 
 var watch := TestErrorWatch.new()
 var _results: Array = []  # {name, passed, failed, failures, seconds, skipped}

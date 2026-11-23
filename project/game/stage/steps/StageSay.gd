@@ -39,7 +39,7 @@ func _start() -> void:
 	if dialogue == null:
 		_finish()
 		return
-	dialogue.say(speaker, text)
+	dialogue.say(speaker, StageKeys.expand(text), advance_on == Advance.INPUT)
 	_elapsed = 0.0
 
 

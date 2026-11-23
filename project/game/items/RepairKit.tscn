@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/items/RepairKit.gd" id="1_kit"]
+[ext_resource type="Texture2D" uid="uid://c5biylaxbd3px" path="res://assets/images/light_sources/light_point_soft.png" id="2_glow"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+radius = 220.0
+
+[node name="RepairKit" type="Node2D"]
+script = ExtResource("1_kit")
+
+[node name="Marker" type="Sprite2D" parent="."]
+modulate = Color(0.35, 1, 0.55, 0.45)
+scale = Vector2(3, 3)
+texture = ExtResource("2_glow")
+
+[node name="Case" type="Polygon2D" parent="."]
+color = Color(0.85, 0.87, 0.82, 1)
+polygon = PackedVector2Array(-34, -26, 34, -26, 34, 26, -34, 26)
+
+[node name="Cross" type="Polygon2D" parent="."]
+color = Color(0.1, 0.62, 0.3, 1)
+polygon = PackedVector2Array(-7, -18, 7, -18, 7, -7, 18, -7, 18, 7, 7, 7, 7, 18, -7, 18, -7, 7, -18, 7, -18, -7, -7, -7)
+
+[node name="InteractArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("CircleShape2D_range")

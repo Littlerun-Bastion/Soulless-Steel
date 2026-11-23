@@ -4,6 +4,7 @@ extends Node
 # straight from the editor (F6) skip the Intro, so nothing is loaded and
 # saving there would overwrite the real profile with blank defaults.
 var profile_loaded := false
+var profile_created := false
 
 # Where the profile lives. Automated tests point these at test files so the
 # real profile is never read or written (see game/test/suites/SaveFileTest).
@@ -33,6 +34,7 @@ func load_game():
 
 
 func load_profile():
+	profile_created = false
 	var profile_file
 	if FileAccess.file_exists(backup_path):
 		push_warning("Something went wrong with profile in a previous sessions, trying to fix it")
@@ -89,6 +91,7 @@ func load_profile():
 		PlayerProgress.start_new_profile()
 		PilotNet.reset(false)
 		profile_loaded = true
+		profile_created = true
 		save_profile()
 		
 	profile_file = FileAccess.open(profile_path, FileAccess.READ)

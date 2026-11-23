@@ -1,8 +1,26 @@
 extends Node
 
+const ANTI_ALIASING_OFF := 0
+const ANTI_ALIASING_LOW := 1
+const ANTI_ALIASING_HIGH := 2
+const ANTI_ALIASING_NAMES := ["OFF", "LOW", "HIGH"]
+
 var previous_windowed_pos = false
 # Automated tests set this so loading a test profile doesn't resize the window.
 var keep_window := false
+
+## Off draws textures as the project always has (Nearest). Low smooths them,
+## through their mipmaps as the camera pulls back; High also puts 4x MSAA on
+## edges and lines. Only the game's own viewport: the HUD draws in a viewport
+## of its own and is left as it is.
+func apply_anti_aliasing() -> void:
+	var level: int = Profile.get_option("anti_aliasing")
+	var root := get_tree().root
+	var smooth := level != ANTI_ALIASING_OFF
+	root.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS if smooth \
+			else Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
+	root.msaa_2d = Viewport.MSAA_4X if level == ANTI_ALIASING_HIGH else Viewport.MSAA_DISABLED
+
 
 func toggle_fullscreen():
 	var window = get_window()

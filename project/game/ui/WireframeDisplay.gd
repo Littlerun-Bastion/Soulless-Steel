@@ -118,6 +118,7 @@ func _process(_delta: float) -> void:
 func _connect_signals() -> void:
 	player.component_damaged.connect(_on_component_damaged)
 	player.component_destroyed_alert.connect(_on_component_destroyed)
+	player.systems_repaired.connect(_refresh_all)
 	if player.has_signal("part_lost"):
 		player.part_lost.connect(_on_part_lost)
 

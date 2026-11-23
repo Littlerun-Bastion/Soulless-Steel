@@ -6,10 +6,13 @@ extends CanvasLayer
 ## (The HUD used to curve on its own, which left MechOS flat on top of it.)
 
 const SCREEN_CURVE := 0.15
+const DAMAGED_NOISE := 0.0035
+const DAMAGED_COLOUR_SPLIT := 0.175
 
 @onready var VCREffect = $VCREffect
 
 var tweens = []
+var _calm_colour_split := 0.0
 
 func enable():
 	VCREffect.show()
@@ -29,10 +32,14 @@ func change_noise_quality(value):
 	VCREffect.material.set_shader_parameter("noiseQuality", value)
 
 
-func reset_shader_effect(mode):
+func end_transitions() -> void:
 	for tween in tweens:
 		tween.kill()
 	tweens = []
+
+
+func reset_shader_effect(mode):
+	end_transitions()
 	if mode == "arena":
 		set_shader_params(0.05, 0.0, 2000.0, 0.0, 0.026, 0.002, 0.48, 0.002, 0.492, SCREEN_CURVE)
 	elif mode == "gameover":
@@ -48,6 +55,7 @@ func reset_shader_effect(mode):
 func set_shader_params(bar_range, bar_intensity, noise_quality, noise_intensity,\
 					color_intensity, red_multiplier, red_intensity,\
 					green_multiplier, green_intensity, warp_amount):
+	_calm_colour_split = color_intensity
 	VCREffect.material.set_shader_parameter("barRange", bar_range)
 	VCREffect.material.set_shader_parameter("barOffsetIntensity", bar_intensity)
 	VCREffect.material.set_shader_parameter("noiseQuality", noise_quality)
@@ -60,19 +68,20 @@ func set_shader_params(bar_range, bar_intensity, noise_quality, noise_intensity,
 	VCREffect.material.set_shader_parameter("warpAmount", warp_amount)
 
 
+## The screen tears and splits in colour as the player's mecha breaks. Only
+## once the transitions have ended (end_transitions); as it stands, only the
+## onboarding ends them.
 func update_shader_effect(player):
 	if tweens.is_empty():
-		#Noise Intensity: more as the mecha's armour and components go
-		var target_noise = (1.0 - NPCKnowledge._structural_health(player)) * 0.0035
-		var value = lerp(VCREffect.material.get_shader_parameter("noiseIntensity"), target_noise, .9)
+		var damage := 1.0 - NPCKnowledge._structural_health(player)
+		var value = lerp(VCREffect.material.get_shader_parameter("noiseIntensity"), damage * DAMAGED_NOISE, .9)
 		VCREffect.material.set_shader_parameter("noiseIntensity", value)
-		#Color Offset Intensity
-		value = lerp(VCREffect.material.get_shader_parameter("colorOffsetIntensity"), 0.175, .9)
+		value = lerp(VCREffect.material.get_shader_parameter("colorOffsetIntensity"), lerpf(_calm_colour_split, DAMAGED_COLOUR_SPLIT, damage), .9)
 		VCREffect.material.set_shader_parameter("colorOffsetIntensity", value)
 
 func damage_burst_effect():
 	if tweens.is_empty():
 		var tween = create_tween()
 		tween.set_parallel()
-		tween.tween_property(VCREffect.material, "shader_param/noiseIntensity", 0.02, .1)
-		tween.tween_property(VCREffect.material, "shader_param/colorOffsetIntensity", 1.2, .1)
+		tween.tween_property(VCREffect.material, "shader_parameter/noiseIntensity", 0.02, .1)
+		tween.tween_property(VCREffect.material, "shader_parameter/colorOffsetIntensity", 1.2, .1)

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://database/npcs/special_npc.gd" id="1_npc"]
+[ext_resource type="Script" path="res://database/npcs/Personality.gd" id="2_personality"]
+
+[sub_resource type="Resource" id="Resource_guardian"]
+script = ExtResource("2_personality")
+type = 1
+aggression = 0.4
+courage = 0.8
+greed = 0.1
+loyalty = 0.9
+treachery = 0.0
+skill = 0.7
+
+[resource]
+script = ExtResource("1_npc")
+mecha_name = "Trobairitz"
+combat_behaviour = "default"
+difficulty = 5.0
+personality = SubResource("Resource_guardian")
+head = Array[String](["MSV-L3J-H"])
+core = Array[String](["MSV-L3J-C"])
+shoulders = Array[String](["MSV-L3J-SG"])
+generator = Array[String](["type_1_gen"])
+chipset = Array[String](["type_2_chip"])
+chassis = Array[String](["MSV-L3J-L"])
+thruster = Array[String](["type_1_thruster"])
+arm_weapon_left = Array[String](["MA-L127"])
+arm_weapon_right = Array[String](["MA-L127"])
+shoulder_weapon_left = Array[String]([])
+shoulder_weapon_right = Array[String]([])

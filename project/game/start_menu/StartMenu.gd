@@ -98,6 +98,12 @@ func _on_Observe_pressed():
 	TransitionManager.transition_to("res://game/arena/ObserverArena.tscn", "Loading Observer Arena...")
 
 
+func _on_Onboarding_pressed():
+	AudioManager.play_sfx("confirm")
+	AudioManager.stop_bgm()
+	TransitionManager.transition_to(Onboarding.SCENE_PATH, "Rebooting System...")
+
+
 func _on_Expedition_pressed():
 	if not _mecha_ready_to_deploy():
 		return

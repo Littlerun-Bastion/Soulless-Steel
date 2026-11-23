@@ -338,6 +338,13 @@ var _pressure: Array[Dictionary] = []
 var extra_bloom := 0.0
 var _heartbeat := 0.0
 var _flag_marker: FlagMarker = null
+## Off the screen until show_flag_marker, as the onboarding keeps it until it
+## explains the Flag.
+var hides_flag_marker := false:
+	set(value):
+		hides_flag_marker = value
+		if _flag_marker:
+			_flag_marker.visible = not value
 var _spurt: GPUParticles2D = null
 var spooling = {
 	"arm_weapon_left": false,
@@ -1956,8 +1963,11 @@ func set_chassis_nodes(main,sub,glow,collision,side = false):
 	glow.texture = chassis.get_glow(side)
 	collision.polygon = collision_shape_of(chassis.get_collision(side))
 	movement_type = chassis.movement_type
-	var walk_speed: float = chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
-	update_speed(walk_speed, chassis.move_acc, chassis.friction, chassis.rotation_acc)
+	update_speed(_walk_speed(), chassis.move_acc, chassis.friction, chassis.rotation_acc)
+
+
+func _walk_speed() -> float:
+	return build.chassis.max_speed * Grades.stat_mult(part_grades.get("chassis"), "max_speed")
 
 
 func remove_chassis(type):
@@ -3743,13 +3753,30 @@ func play_step_sound(is_left := true):
 func extracting():
 	$ExtractTimer.start()
 
+
+## How far through extracting, 0 to 1, or -1 when not extracting.
+func get_extract_progress() -> float:
+	var timer: Timer = $ExtractTimer
+	if timer.is_stopped():
+		return -1.0
+	return 1.0 - timer.time_left / timer.wait_time
+
+
+func get_extract_time_left() -> float:
+	return $ExtractTimer.time_left
+
 # CALLBACKS
 
 func _on_ExtractTimer_timeout():
 	if self.name == "Player":
 		emit_signal("mecha_extracted", self)
 	else:
-		emit_signal("died", self)
+		leave_map()
+
+
+## Gone from the map without dying: no wreck, and nobody's kill.
+func leave_map() -> void:
+	emit_signal("died", self)
 
 
 func _on_MeleeHitboxes_create_hitbox(data, side):
@@ -4485,10 +4512,18 @@ func raise_flag(voluntary := true) -> void:
 	if is_inside_tree():
 		if _flag_marker == null:
 			_flag_marker = FlagMarker.new()
+			_flag_marker.visible = not hides_flag_marker
 			add_child(_flag_marker)
 		AudioManager.play_sfx(FLAG_RAISE_SFX, global_position)
 	_set_flag_up(voluntary)
 	emit_signal("flagged")
+
+
+func show_flag_marker() -> void:
+	hides_flag_marker = false
+	if _flag_marker:
+		_flag_marker.pop()
+		AudioManager.play_sfx(FLAG_SFX, global_position)
 
 
 ## Starts lowering the Flag: the wind-up (FLAG_LOWER_TIME) is visible on the
@@ -4588,6 +4623,7 @@ func _show_flag_entry(attacker) -> void:
 		return
 	if _flag_marker == null:
 		_flag_marker = FlagMarker.new()
+		_flag_marker.visible = not hides_flag_marker
 		add_child(_flag_marker)
 	_flag_marker.restart_entry()
 	AudioManager.play_sfx(FLAG_SFX, global_position)
@@ -5110,6 +5146,37 @@ func _destroy_components(part_name: String, which: Callable) -> void:
 			return
 
 
+signal systems_repaired()
+
+
+## Losing the core shell this way raises the emergency Flag.
+func cripple_systems() -> void:
+	var is_system := func(_comp_name, comp): return not ("critical" in comp.tags or "weapon" in comp.tags)
+	for part_name in components:
+		_destroy_components(part_name, is_system)
+
+
+## The Flag stays as it is: lowering it is the pilot's call.
+func repair_systems() -> void:
+	for part_name in components:
+		if is_part_lost(part_name):
+			continue
+		for comp in components[part_name].values():
+			comp.hp = comp.max_hp
+			comp.disabled = false
+	_wound_dirty = true
+	for slot in DISABLED_WEAPON_KEYS:
+		disabled_systems[DISABLED_WEAPON_KEYS[slot]] = is_part_lost(slot)
+	for system in ["mobility", "sensors", "heat_dispersion", "shield_regen"]:
+		disabled_systems[system] = 1.0
+	if build.chassis:
+		update_speed(_walk_speed(), build.chassis.move_acc, get_chassis_friction(), get_chassis_rotation_acc())
+	update_shield_strength()
+	is_exposed = false
+	flag_grace = 0.0
+	systems_repaired.emit()
+
+
 func _lost_part_position(part_name: String) -> Vector2:
 	match part_name:
 		"arm_weapon_left": return LeftArmWeapon.global_position
@@ -5287,6 +5354,13 @@ func get_closest_interactable():
 			closest_dist = d
 			closest = thing
 	return closest
+
+
+## How far it slides from its speed now once it stops driving: friction takes
+## its share of the speed every physics tick (apply_movement).
+func stopping_distance() -> float:
+	var friction := get_chassis_friction()
+	return velocity.length() * get_physics_process_delta_time() * (1.0 - friction) / friction
 
 
 func get_chassis_friction() -> float:

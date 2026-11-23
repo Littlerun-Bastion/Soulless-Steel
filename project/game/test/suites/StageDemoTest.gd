@@ -54,11 +54,11 @@ func run_tests() -> void:
 	await _close()
 
 	await _open()
-	await case("playing it the way F4 does runs it through", _test_played_like_f4)
+	await case("playing it by name runs it through", _test_played_by_name)
 	await _close()
 
 	await _open()
-	await case("playing it in a live world, like F4 in game", _test_played_live)
+	await case("playing it in a live world", _test_played_live)
 	await case("everything it does not direct is frozen", _test_world_frozen)
 	await _close()
 
@@ -73,6 +73,8 @@ func run_tests() -> void:
 	await _close()
 
 	await _open()
+	await case("the HUD steps aside during a scene and comes back for a player turn", _test_hud_steps_aside)
+	await case("an actor can leave the map", _test_actor_leaves)
 	await case("the player dying ends a running scene", _test_death_ends_the_scene)
 	await _close()
 
@@ -206,7 +208,7 @@ func _test_skip() -> void:
 	check_eq(_demo.get_dialogue().get_body_label().text, "", "a skipped scene leaves no dialogue up")
 
 
-func _test_played_like_f4() -> void:
+func _test_played_by_name() -> void:
 	_demo.queue_free()
 	await wait_frames(2)
 
@@ -413,6 +415,76 @@ func _test_trigger_plays() -> void:
 	check(_scene.current_stage == null, "the scene let go of its reference to it")
 	check(_count_stage_layers() < layers_before,\
 	"its bars and dialogue layers went with it instead of piling up")
+
+
+func _drawn(hud, item: CanvasItem) -> bool:
+	var viewport: SubViewport = hud.get_node("SubViewportContainer/SubViewport")
+	return (item.visibility_layer & viewport.canvas_cull_mask) != 0
+
+
+func _test_hud_steps_aside() -> void:
+	var hud = _scene.PlayerHUD
+	var director := StageDirector.new()
+	director.takes_camera = false
+	var opening := StageWait.new()
+	opening.seconds = 0.5
+	director.add_child(opening)
+	var turn := StageWaitForPlayer.new()
+	turn.action = "shield"
+	director.add_child(turn)
+	var hold := StageWait.new()
+	hold.seconds = 30.0
+	director.add_child(hold)
+	_scene.add_child(director)
+
+	director.play()
+	await wait_frames(2)
+	var speech_box: Control = hud.hud_world_labels._boxes[0].panel
+	check(hud.is_cinematic(), "the HUD is out of the way while the scene plays")
+	check(not _drawn(hud, hud.hud_status) and not _drawn(hud, hud.hud_weapons), "its panels aren't drawn")
+	check(not hud.top_strip.visible, "nor the top strip")
+	check(_drawn(hud, hud.hud_world_labels) and _drawn(hud, speech_box) and _drawn(hud, speech_box.get_child(0)),
+			"names and speech boxes still are")
+
+	var in_turn := await wait_until(func(): return director.current_step == turn, 10.0)
+	check(in_turn and not hud.is_cinematic(), "the HUD is back for the player's turn")
+	for pressed in [true, false]:
+		var event := InputEventAction.new()
+		event.action = "shield"
+		event.pressed = pressed
+		Input.parse_input_event(event)
+	var held := await wait_until(func(): return director.current_step == hold, 5.0)
+	check(held and hud.is_cinematic(), "and out of the way again after it")
+
+	director.skip()
+	await _await_stage_end(director)
+	check(not hud.is_cinematic() and hud.top_strip.visible and _drawn(hud, hud.hud_status), "all of it is back once the scene is over")
+	director.queue_free()
+
+
+func _test_actor_leaves() -> void:
+	var leaver: Mecha = _npc
+	var mechas_before: int = _scene.all_mechas.size()
+	var wrecks_before: int = _scene.Wrecks.get_child_count()
+	var kills_before: int = _scene.player_kills.size()
+	var director := StageDirector.new()
+	director.shows_bars = false
+	director.takes_control = false
+	director.takes_camera = false
+	director.set_actor("Leaver", leaver)
+	var step := StageActorLeave.new()
+	step.actor = "Leaver"
+	director.add_child(step)
+	_scene.add_child(director)
+
+	await director.play()
+	await wait_frames(2)
+
+	check(not is_instance_valid(leaver), "the actor is gone")
+	check_eq(_scene.all_mechas.size(), mechas_before - 1, "and off the scene's list")
+	check_eq(_scene.Wrecks.get_child_count(), wrecks_before, "it left no wreck")
+	check_eq(_scene.player_kills.size(), kills_before, "and isn't anyone's kill")
+	director.queue_free()
 
 
 func _test_death_ends_the_scene() -> void:

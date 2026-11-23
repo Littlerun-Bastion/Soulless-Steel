@@ -52,6 +52,7 @@ func run_tests() -> void:
 	await case("the pan stops at the circle; no head, no pan; a shake leaves the pan", _test_pan)
 	await case("the black mask past the circle", _test_mask)
 	await case("the player sees nothing past the circle, and tracks nothing past it", _test_player_view)
+	await case("a scene that keeps the view masks and hides as play does", _test_view_kept_in_scenes)
 	await case("an NPC sees nothing past its circle; heat only matters to IR", _test_npc_sight)
 	await case("lights are noticed inside the circle; Entities within a screen", _test_lights)
 	await case("the darkness on the camera's centre, sound at the player", _test_darkness_and_sound)
@@ -232,6 +233,25 @@ func _test_player_view() -> void:
 	_player.controls_locked = true
 	check(_player.can_see_body(outside), "a cutscene shows everything, as before")
 	_player.controls_locked = false
+
+
+func _test_view_kept_in_scenes() -> void:
+	var effects = HEATMAP.instantiate()
+	add_child(effects)
+	effects.set_player(_player)
+	var r: float = _player.sight_radius()
+	var outside := _mecha(Vector2(-r * 1.05, 0))
+	outside.set_illuminator(true)
+	_player.keeps_view_in_scenes = true
+	_player.controls_locked = true
+	await wait_frames(2)
+
+	check(effects.mask_state().on, "the mask stays on in the scene")
+	check(not _player.can_see_body(outside), "and a body past the circle stays hidden")
+
+	_player.controls_locked = false
+	_player.keeps_view_in_scenes = false
+	effects.queue_free()
 
 
 func _test_npc_sight() -> void:

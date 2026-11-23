@@ -141,7 +141,7 @@ func _physics_process(dt):
 		apply_movement(dt, scripted_move)
 	else:
 		check_input()
-		apply_movement(dt, get_input())
+		apply_movement(dt, Vector2.ZERO if is_withheld(ABILITY_MOVE) else get_input())
 	_update_designators(dt)
 	_update_view(dt)
 	FrameProfiler.add("player", profile_start)
@@ -314,7 +314,7 @@ func _input(event):
 		locking_to = false
 		cur_mode = MODES.NEUTRAL
 		emit_signal("update_lock_mode", false)
-	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked():
+	elif event.is_action_pressed("thruster_dash") and not is_stunned() and not is_movement_locked() and not is_withheld(ABILITY_DASH):
 		sprinting_timer = SPRINTING_TIMEOUT
 	elif event.is_action_released("thruster_dash") and not is_stunned() and not is_movement_locked():
 		if sprinting_timer > 0.0 and movement_type != "tank":
@@ -323,7 +323,7 @@ func _input(event):
 		sprinting_timer = 0.0
 	elif event.is_action_pressed("debug_3"):
 		die(self, "Myself")
-	elif event.is_action_pressed("shield"):
+	elif event.is_action_pressed("shield") and not is_withheld(ABILITY_SHIELD):
 		shield_up()
 	elif event.is_action_released("shield"):
 		shield_down()
@@ -1023,8 +1023,16 @@ func _sweep_mark() -> Dictionary:
 # is_tethered_to): the player can follow the tether to it. Past the sight
 # circle the mask still covers it.
 
+## A scene shows everything unless it keeps the player's view as play does.
+var keeps_view_in_scenes := false
+
+
+func is_view_limited() -> bool:
+	return not is_dead and (not controls_locked or keeps_view_in_scenes)
+
+
 func can_see_body(body: Node2D) -> bool:
-	if controls_locked or is_dead:
+	if not is_view_limited():
 		return true
 	# A Fisher's harpoon in the player: it's on the end of the tether.
 	if body.has_method("is_tethered_to") and body.is_tethered_to(self):
@@ -1125,7 +1133,7 @@ func _track_by_heat(body: Node2D) -> void:
 # circle (a tethered Fisher, shown for its tether) or the view is a
 # cutscene's (controls locked: everything is shown).
 func _report_sight(body: Node2D) -> void:
-	if controls_locked or is_dead:
+	if not is_view_limited():
 		return
 	if global_position.distance_to(body.global_position) > sight_radius():
 		return
@@ -1138,6 +1146,26 @@ func _exit_tree() -> void:
 			body.modulate.a = 1.0
 
 
+const ABILITY_MOVE := "move"
+const ABILITY_DASH := "dash"
+const ABILITY_SHIELD := "shield"
+
+var _withheld := {}
+
+
+## Takes an ability (ABILITY_*) away from the pilot until it is granted back.
+func withhold(ability: String) -> void:
+	_withheld[ability] = true
+
+
+func grant(ability: String) -> void:
+	_withheld.erase(ability)
+
+
+func is_withheld(ability: String) -> bool:
+	return _withheld.has(ability)
+
+
 func lock_controls() -> void:
 	if controls_locked:
 		return
@@ -1147,6 +1175,10 @@ func lock_controls() -> void:
 	cancel_designating()
 	for weapon_type in WeaponSFXs.keys():
 		stop_shooting(weapon_type)
+	shield_down()
+	sprinting_timer = 0.0
+	if is_sprinting:
+		stop_sprinting(Vector2.ZERO)
 	if cur_mode == MODES.ACTIVATING_LOCK or cur_mode == MODES.LOCK:
 		locking_to = false
 		cur_mode = MODES.NEUTRAL

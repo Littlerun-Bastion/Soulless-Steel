@@ -34,8 +34,12 @@ var voluntary := false
 ## 0 while the Flag is up, rising to 1 as it is lowered.
 var lowering := 0.0
 
+const POP_TIME := 0.6
+const POP_FROM := 0.15
+
 var _age := 0.0
 var _entry := -1.0
+var _pop: Tween = null
 
 
 func _ready() -> void:
@@ -49,6 +53,20 @@ func _ready() -> void:
 ## Plays the entry flash and ring (the emergency Flag's start).
 func restart_entry() -> void:
 	_entry = 0.0
+
+
+## Grows in from small past its size and back, with the entry flash and ring.
+func pop() -> void:
+	restart_entry()
+	if _pop != null:
+		_pop.kill()
+	scale = Vector2.ONE * POP_FROM
+	_pop = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_pop.tween_property(self, "scale", Vector2.ONE, POP_TIME)
+
+
+func is_popping() -> bool:
+	return _pop != null and _pop.is_running()
 
 
 func _process(delta: float) -> void:

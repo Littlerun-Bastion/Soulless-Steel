@@ -4,6 +4,7 @@ const WALK_SPEED := 400.0
 const WALK_DISTANCE := 1200.0
 const SLOW_REVEAL_SECONDS := 3.0
 const SLOW_CAMERA_SPEED := 1.0
+const FREEZE_SWEEP_LONGER_THAN := StageDirector.FREEZE_SWEEP_INTERVAL
 
 
 class RecordingStep extends StageStep:
@@ -20,6 +21,27 @@ class FakeActor extends Node2D:
 
 	func _ready() -> void:
 		add_to_group("mecha")
+
+
+class FakeSpeaker extends Node2D:
+	var mecha_name := ""
+	var heard: Array = []
+
+	func _ready() -> void:
+		add_to_group("mecha")
+
+	func say(text: String, _seconds: float, _always_heard: bool) -> void:
+		heard.append(text)
+
+
+class FakeBystander extends Node2D:
+	var paused := false
+
+	func _ready() -> void:
+		add_to_group("mecha")
+
+	func set_pause(value: bool) -> void:
+		paused = value
 
 
 class FakeMech extends Node2D:
@@ -51,9 +73,45 @@ class FakeMech extends Node2D:
 		global_position = global_position.move_toward(scripted_destination, walk_speed * dt)
 
 
+class FlaggedMech extends FakeMech:
+	var marker_shown := false
+
+	func show_flag_marker() -> void:
+		marker_shown = true
+
+
+class SlidingMech extends FakeMech:
+	var slide := 200.0
+
+	func stopping_distance() -> float:
+		return slide
+
+
+class FakeHud extends Node:
+	var booting := false
+
+	func is_booting() -> bool:
+		return booting
+
+	func set_cinematic(_on: bool) -> void:
+		pass
+
+
+class FakeScene extends Node2D:
+	var player = null
+	var PlayerHUD = null
+
+	func activate_arena_cam() -> void:
+		pass
+
+
 class FakePlayer extends Node2D:
+	signal systems_repaired
+
 	var controls_locked := false
+	var flagged := false
 	var cam: Camera2D = null
+	var withheld := {}
 
 	func _ready() -> void:
 		add_to_group("mecha")
@@ -66,11 +124,20 @@ class FakePlayer extends Node2D:
 	func get_cam() -> Camera2D:
 		return cam
 
+	func is_flagged() -> bool:
+		return flagged
+
 	func lock_controls() -> void:
 		controls_locked = true
 
 	func unlock_controls() -> void:
 		controls_locked = false
+
+	func withhold(ability: String) -> void:
+		withheld[ability] = true
+
+	func grant(ability: String) -> void:
+		withheld.erase(ability)
 
 
 func run_tests() -> void:
@@ -84,6 +151,16 @@ func run_tests() -> void:
 	await case("cinema bars come in and go out with the scene", _test_bars)
 	await case("bars can be turned off", _test_bars_disabled)
 	await case("the scene takes control and gives it back", _test_takes_control)
+	await case("bystanders stay thawed while the bars go away", _test_thawed_after_bars)
+	await case("a player turn hands control over and takes it back", _test_player_turn_hands_over)
+	await case("a player turn ends when the player presses its action", _test_player_turn_action)
+	await case("a player turn ends once the player has moved far enough", _test_player_turn_travel)
+	await case("a player turn ends on a signal from the player", _test_player_turn_signal)
+	await case("a player turn ends once the Flag is down, even if it already is", _test_player_turn_flag_down)
+	await case("a player turn keeps its instruction on screen", _test_player_turn_hint)
+	await case("a player turn holds until the HUD has booted", _test_player_turn_waits_for_the_hud)
+	await case("a scene withholds what it hasn't taught; the turn that teaches it grants it", _test_withheld_until_taught)
+	await case("whatever is still withheld comes back when the scene ends", _test_withheld_back_at_the_end)
 	await case("taking control can be turned off", _test_control_disabled)
 	await case("look-at drives the camera to its own position", _test_camera_look_at)
 	await case("look-at can hold until the camera arrives", _test_camera_waits)
@@ -94,13 +171,24 @@ func run_tests() -> void:
 	await case("the first press finishes the reveal, the second advances", _test_say_two_stage)
 	await case("a player action button advances a line", _test_say_input)
 	await case("a timed line advances on its own", _test_say_timed)
+	await case("a timed line does not ask for a key", _test_timed_line_has_no_prompt)
+	await case("a line names the key bound to an action", _test_say_names_keys)
+	await case("an actor's spoken line names keys too", _test_actor_say_names_keys)
 	await case("the dialogue is actually on screen", _test_dialogue_is_visible)
+	await case("a line is a subtitle in the bottom bar, centred on a dark box", _test_dialogue_in_the_bar)
+	await case("even a long line fits in the bottom bar", _test_long_line_in_the_bar)
 	await case("a line ended early never clears a later one", _test_timed_line_does_not_bleed)
 	await case("pausing holds the scene where it is", _test_pause_holds_the_scene)
 	await case("aborting ends the scene without running the rest", _test_abort_ends_the_scene)
 	await case("an actor walks to a mark and the scene waits", _test_move_actor)
 	await case("an actor walks to another actor that keeps moving", _test_move_to_actor)
+	await case("an actor that slides is stopped early enough to come to rest at the mark", _test_move_actor_slides)
+	await case("a walk can end as soon as the actor is out of the camera's frame", _test_move_actor_out_of_frame)
 	await case("an actor shoots a target a set number of times", _test_actor_shoot)
+	await case("a scene can put a thing on the map, under a name", _test_spawn)
+	await case("an overlay plays over the scene, which waits for it", _test_overlay)
+	await case("a step shows an actor's Flag marker, skipped or not", _test_show_flag_marker)
+	await case("skipping takes an overlay off at once", _test_overlay_skipped)
 
 
 func _make_director() -> StageDirector:
@@ -259,6 +347,253 @@ func _test_bars_disabled() -> void:
 
 	check(director.get_bars() == null, "no bars were built when they are turned off")
 	director.queue_free()
+
+
+func _player_turn_scene(turn: StageWaitForPlayer) -> Array:
+	var alone := await wait_until(func(): return _players_left().is_empty(), 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var player := FakePlayer.new()
+	add_child(player)
+	var director := _make_director()
+	director.add_child(turn)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	return [director, player, after]
+
+
+func _players_left() -> Array:
+	return get_tree().get_nodes_in_group("mecha").filter(func(n): return n.has_method("is_player") and n.is_player())
+
+
+func _end_player_turn_scene(scene: Array) -> void:
+	scene[0].abort()
+	await wait_until(func(): return not scene[0].is_playing, 5.0)
+	scene[0].queue_free()
+	scene[1].queue_free()
+
+
+func _test_player_turn_hands_over() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+
+	director.play()
+	await wait_frames(2)
+	check(director.current_step == turn, "the scene is on the player's turn")
+	check(not player.controls_locked, "the player has control during it")
+	var bars_gone := await wait_until(func(): return not director.get_bars().is_shown(), 5.0)
+	check(bars_gone, "the bars go away while the player plays")
+
+	player.systems_repaired.emit()
+	await wait_frames(2)
+	check(director.current_step == scene[2], "the scene moved on")
+	check(player.controls_locked, "control was taken back")
+	var bars_back := await wait_until(func(): return director.get_bars().is_shown(), 5.0)
+	check(bars_back, "and the bars came back")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_waits_for_the_hud() -> void:
+	var alone := await wait_until(func(): return _players_left().is_empty(), 2.0)
+	check(alone, "no player is left over from an earlier case")
+	var scene := FakeScene.new()
+	scene.PlayerHUD = FakeHud.new()
+	scene.add_child(scene.PlayerHUD)
+	add_child(scene)
+	var player := FakePlayer.new()
+	scene.add_child(player)
+	scene.player = player
+	var director := StageDirector.new()
+	scene.add_child(director)
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	director.add_child(turn)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	director.play()
+	await wait_frames(2)
+
+	scene.PlayerHUD.booting = true
+	player.systems_repaired.emit()
+	await wait_frames(4)
+	check(director.current_step == turn, "the turn holds while the HUD boots")
+	check(not player.controls_locked, "with the player still in control")
+
+	scene.PlayerHUD.booting = false
+	var moved := await wait_until(func(): return director.current_step == after, 2.0)
+	check(moved, "and ends once it has booted")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	scene.queue_free()
+	await wait_until(func(): return _players_left().is_empty(), 2.0)
+
+
+func _test_withheld_until_taught() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	turn.grants = ["move"]
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+	director.withholds = ["move", "dash"]
+
+	director.play()
+	await wait_frames(2)
+
+	check(director.current_step == turn, "the scene is on the player's turn")
+	check(not player.withheld.has("move"), "the turn grants what it teaches")
+	check(player.withheld.has("dash"), "what no turn has taught yet stays withheld")
+	await _end_player_turn_scene(scene)
+
+
+func _test_withheld_back_at_the_end() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var director: StageDirector = scene[0]
+	var player: FakePlayer = scene[1]
+	director.withholds = ["move", "dash"]
+	director.play()
+	await wait_frames(2)
+	check(player.withheld.has("move") and player.withheld.has("dash"), "both are withheld in the scene")
+
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+
+	check(player.withheld.is_empty(), "an aborted scene gives them all back")
+	director.queue_free()
+	player.queue_free()
+
+
+func _test_player_turn_action() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.action = "thruster_dash"
+	var scene := await _player_turn_scene(turn)
+	scene[0].play()
+	await wait_frames(2)
+
+	var other := InputEventAction.new()
+	other.action = "shield"
+	other.pressed = true
+	Input.parse_input_event(other)
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "another action does not end the turn")
+
+	var dash := InputEventAction.new()
+	dash.action = "thruster_dash"
+	dash.pressed = true
+	Input.parse_input_event(dash)
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "pressing its action ends the turn")
+	var release := InputEventAction.new()
+	release.action = "thruster_dash"
+	Input.parse_input_event(release)
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_travel() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.travel = 500.0
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	await wait_frames(2)
+
+	player.position += Vector2(300, 0)
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "a short move is not enough")
+
+	player.position += Vector2(0, 400)
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "moving far enough ends the turn")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_signal() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	await wait_frames(2)
+	check(scene[0].current_step == turn, "the turn waits for the signal")
+
+	player.systems_repaired.emit()
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "the signal ends the turn")
+	check(not player.systems_repaired.is_connected(turn._on_player_signal), "the turn let go of the signal")
+	await _end_player_turn_scene(scene)
+
+
+func _test_player_turn_flag_down() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.flag_down = true
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	player.flagged = true
+	scene[0].play()
+	await wait_frames(3)
+	check(scene[0].current_step == turn, "the turn waits while the Flag is up")
+
+	player.flagged = false
+	var moved := await wait_until(func(): return scene[0].current_step == scene[2], 2.0)
+	check(moved, "lowering it ends the turn")
+	await _end_player_turn_scene(scene)
+
+	var again := StageWaitForPlayer.new()
+	again.flag_down = true
+	var down_already := await _player_turn_scene(again)
+	down_already[0].play()
+	var passed := await wait_until(func(): return down_already[0].current_step == down_already[2], 2.0)
+	check(passed, "a Flag already down ends it at once")
+	await _end_player_turn_scene(down_already)
+
+
+func _test_player_turn_hint() -> void:
+	var turn := StageWaitForPlayer.new()
+	turn.player_signal = "systems_repaired"
+	turn.speaker = "Trobairitz"
+	turn.hint = "Grab the kit with {interact}."
+	var scene := await _player_turn_scene(turn)
+	var player: FakePlayer = scene[1]
+	scene[0].play()
+	var dialogue: StageDialogue = scene[0].get_dialogue()
+	await wait_until(func(): return not dialogue.is_revealing(), 5.0)
+
+	check_eq(dialogue.get_body_label().text, "Grab the kit with [%s]." % MechUI.key_name("interact"), "the instruction stays up, keys named")
+	check_eq(dialogue.get_speaker_label().text, "Trobairitz", "with who said it")
+	check(not dialogue.get_hint_label().visible, "with no prompt to press a key")
+
+	player.systems_repaired.emit()
+	await wait_frames(2)
+	check_eq(dialogue.get_body_label().text, "", "it is cleared once the turn ends")
+	await _end_player_turn_scene(scene)
+
+
+func _test_thawed_after_bars() -> void:
+	var bystander := FakeBystander.new()
+	add_child(bystander)
+	var director := _make_director()
+	director.takes_control = false
+	var wait := StageWait.new()
+	wait.seconds = 0.5
+	director.add_child(wait)
+
+	director.play()
+	await wait_frames(2)
+	check(bystander.paused, "the scene froze the bystander")
+	var ended := [false]
+	director.finished.connect(func(): ended[0] = true)
+	await wait_until(func(): return ended[0], 10.0)
+
+	check(director.get_bars().transition_time > FREEZE_SWEEP_LONGER_THAN, "the bars took long enough to go that a sweep ran meanwhile")
+	check(not bystander.paused, "it moves again once the scene is over")
+	director.queue_free()
+	bystander.queue_free()
 
 
 func _test_takes_control() -> void:
@@ -531,6 +866,56 @@ func _test_say_timed() -> void:
 	director.queue_free()
 
 
+func _test_timed_line_has_no_prompt() -> void:
+	var director := _plain_director()
+	var step := _say_step(director, "radio check")
+	step.advance_on = StageSay.Advance.TIMED
+	step.seconds = 30.0
+
+	director.play()
+	var dialogue := director.get_dialogue()
+	var revealed := await wait_until(func(): return not dialogue.is_revealing(), 5.0)
+
+	check(revealed, "the line finished revealing")
+	check(dialogue.get_body_label().visible, "and stays on screen")
+	check(not dialogue.get_hint_label().visible, "with no prompt to press a key")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_say_names_keys() -> void:
+	var director := _plain_director()
+	var step := _say_step(director, "Press {interact} to grab it. {not_an_action} stays.")
+
+	director.play()
+	await wait_frames(2)
+
+	check_eq(director.get_dialogue().get_body_label().text,	"Press [%s] to grab it. {not_an_action} stays." % MechUI.key_name("interact"),	"the action became its key and unknown names were left alone")
+	step.advance()
+	step.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_actor_say_names_keys() -> void:
+	var director := _plain_director()
+	var speaker := FakeSpeaker.new()
+	speaker.mecha_name = "KeyTeacher"
+	add_child(speaker)
+	var step := StageActorSay.new()
+	step.actor = "KeyTeacher"
+	step.text = "Dash with {thruster_dash}."
+	step.seconds = 0.1
+	director.add_child(step)
+
+	await director.play()
+
+	check_eq(speaker.heard, ["Dash with [%s]." % MechUI.key_name("thruster_dash")], "the spoken line names the key")
+	director.queue_free()
+	speaker.queue_free()
+
+
 func _test_timed_line_does_not_bleed() -> void:
 	var director := _plain_director()
 	var timed := _say_step(director, "a timed line")
@@ -606,6 +991,50 @@ func _test_abort_ends_the_scene() -> void:
 	director.queue_free()
 
 
+const LONG_LINE := "Being Flagged means you're waving your white flag, and can't shoot your guns! Your SAV Flags itself when you've taken severe systems damage, which is why it's been on."
+
+
+func _box_in_the_bar(line: String) -> Array:
+	var director := _make_director()
+	director.takes_control = false
+	var step := _say_step(director, line)
+	director.play()
+	var dialogue := director.get_dialogue()
+	await wait_until(func(): return not dialogue.is_revealing() and director.get_bars().is_shown(), 5.0)
+	await wait_frames(2)
+	var screen := get_viewport().get_visible_rect().size
+	var result := [dialogue.get_box().get_global_rect(), screen, screen.y * director.get_bars().height_ratio]
+	step.advance()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+	return result
+
+
+func _test_dialogue_in_the_bar() -> void:
+	var found := await _box_in_the_bar("hello player")
+	var box: Rect2 = found[0]
+	var screen: Vector2 = found[1]
+	var bar: float = found[2]
+	check(box.position.y >= screen.y - bar and box.end.y <= screen.y,
+			"the box sits inside the bottom bar (%s, bar from %d)" % [box, roundi(screen.y - bar)])
+	check(absf(box.get_center().x - screen.x / 2.0) < 2.0, "centred (%s)" % box)
+
+	var director := _plain_director()
+	var style = director.get_dialogue().get_box().get_theme_stylebox("panel")
+	check(style is StyleBoxFlat and style.bg_color.a >= 0.6, "on a dark box, readable over the game when the bars are away")
+	director.queue_free()
+
+
+func _test_long_line_in_the_bar() -> void:
+	var found := await _box_in_the_bar(LONG_LINE)
+	var box: Rect2 = found[0]
+	var screen: Vector2 = found[1]
+	var bar: float = found[2]
+	check(box.position.y >= screen.y - bar and box.end.y <= screen.y,
+			"the longest onboarding line still fits (%s, bar from %d)" % [box, roundi(screen.y - bar)])
+	check(box.size.x <= screen.x * 0.8, "without spanning the whole screen")
+
+
 func _test_dialogue_is_visible() -> void:
 	var director := _plain_director()
 	var step := _say_step(director, "hello player")
@@ -659,6 +1088,58 @@ func _test_move_actor() -> void:
 	check(mech.scripted_destination == null, "the actor was told to stop walking")
 	director.queue_free()
 	mech.queue_free()
+
+
+func _test_move_actor_slides() -> void:
+	var director := _plain_director()
+	var mech := SlidingMech.new()
+	mech.mecha_name = "Slider"
+	mech.walk_speed = 150.0
+	add_child(mech)
+	var step := StageMoveActor.new()
+	step.actor = "Slider"
+	step.global_position = Vector2(600, 0)
+	step.arrive_distance = 100.0
+	director.add_child(step)
+
+	director.play()
+	var stopped := await wait_until(func(): return not director.is_playing, 10.0)
+
+	var gap := mech.global_position.distance_to(Vector2(600, 0))
+	check(stopped, "the walk ended")
+	check(gap > step.arrive_distance + mech.slide - 30.0 and gap <= step.arrive_distance + mech.slide,
+			"told to stop its slide short of the arrive distance (%d)" % roundi(gap))
+	director.queue_free()
+	mech.queue_free()
+
+
+func _test_move_actor_out_of_frame() -> void:
+	var cam := Camera2D.new()
+	add_child(cam)
+	cam.make_current()
+	var director := _plain_director()
+	var mech := FakeMech.new()
+	mech.mecha_name = "Leaver"
+	mech.walk_speed = 600.0
+	add_child(mech)
+	var step := StageMoveActor.new()
+	step.actor = "Leaver"
+	step.global_position = Vector2(6000, 0)
+	step.until_out_of_frame = true
+	director.add_child(step)
+	await wait_frames(2)
+	var half_width: float = get_viewport().get_visible_rect().size.x / 2.0
+
+	director.play()
+	var ended := await wait_until(func(): return not director.is_playing, 10.0)
+
+	check(ended, "the walk ended")
+	check(mech.global_position.x > half_width, "once the actor was past the frame's edge (x %d)" % roundi(mech.global_position.x))
+	check(mech.global_position.x < half_width + 600.0, "and not long after (x %d of edge %d)" % [roundi(mech.global_position.x), roundi(half_width)])
+	check(mech.scripted_destination == null, "where it was told to stop")
+	director.queue_free()
+	mech.queue_free()
+	cam.queue_free()
 
 
 func _test_move_to_actor() -> void:
@@ -719,3 +1200,116 @@ func _test_actor_shoot() -> void:
 	director.queue_free()
 	mech.queue_free()
 	mark.queue_free()
+
+
+func _test_spawn() -> void:
+	var director := _plain_director()
+	var step := StageSpawn.new()
+	step.scene = preload("res://game/items/RepairKit.tscn")
+	step.alias = "Kit"
+	step.global_position = Vector2(700, -300)
+	director.add_child(step)
+
+	await director.play()
+
+	var kit = director.find_actor("Kit")
+	check(kit is RepairKit, "the thing was made and can be found by its name")
+	check(kit != null and kit.global_position.is_equal_approx(Vector2(700, -300)), "where the step stands")
+	check(kit != null and kit.get_parent() != director, "and it outlives the scene")
+	director.queue_free()
+	await wait_frames(2)
+	check(is_instance_valid(kit), "it is still there once the scene is gone")
+	if is_instance_valid(kit):
+		kit.queue_free()
+
+
+const OVERLAY_SOURCE := "extends CanvasLayer
+signal finished
+var played := false
+func play() -> void:
+	played = true
+"
+
+
+func _overlay_scene() -> PackedScene:
+	var script := GDScript.new()
+	script.source_code = OVERLAY_SOURCE
+	script.reload()
+	var root := CanvasLayer.new()
+	root.set_script(script)
+	var packed := PackedScene.new()
+	packed.pack(root)
+	root.free()
+	return packed
+
+
+func _overlay_director() -> Array:
+	var director := _plain_director()
+	var step := StageOverlay.new()
+	step.overlay = _overlay_scene()
+	director.add_child(step)
+	var after := StageWait.new()
+	after.seconds = 30.0
+	director.add_child(after)
+	return [director, step, after]
+
+
+func _shown_overlays(director: StageDirector) -> Array:
+	return director.get_children().filter(func(n): return n is CanvasLayer and n.get("played") != null and not n.is_queued_for_deletion())
+
+
+func _test_overlay() -> void:
+	var parts := _overlay_director()
+	var director: StageDirector = parts[0]
+	director.play()
+	await wait_frames(2)
+
+	var shown := _shown_overlays(director)
+	check(director.current_step == parts[1], "the scene waits on the overlay")
+	check(shown.size() == 1 and shown[0].played, "which is on screen and playing")
+
+	shown[0].finished.emit()
+	await wait_frames(2)
+	check(director.current_step == parts[2], "the scene moves on once it is over")
+	check(_shown_overlays(director).is_empty(), "and takes it off")
+	director.abort()
+	await wait_until(func(): return not director.is_playing, 5.0)
+	director.queue_free()
+
+
+func _test_overlay_skipped() -> void:
+	var parts := _overlay_director()
+	var director: StageDirector = parts[0]
+	director.play()
+	await wait_frames(2)
+
+	director.skip()
+	await wait_frames(2)
+
+	check(_shown_overlays(director).is_empty(), "the overlay is gone")
+	director.queue_free()
+
+
+func _test_show_flag_marker() -> void:
+	for skipped in [false, true]:
+		var director := _plain_director()
+		var mech := FlaggedMech.new()
+		mech.mecha_name = "Flagged %s" % skipped
+		add_child(mech)
+		if skipped:
+			var hold := StageWait.new()
+			hold.seconds = 30.0
+			director.add_child(hold)
+		var step := StageShowFlagMarker.new()
+		step.actor = mech.mecha_name
+		director.add_child(step)
+
+		director.play()
+		await wait_frames(2)
+		if skipped:
+			director.skip()
+		await wait_until(func(): return not director.is_playing, 5.0)
+
+		check(mech.marker_shown, "the marker is shown%s" % (" when the scene is skipped" if skipped else ""))
+		director.queue_free()
+		mech.queue_free()

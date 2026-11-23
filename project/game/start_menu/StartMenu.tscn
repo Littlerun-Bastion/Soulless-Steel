@@ -72,6 +72,21 @@ offset_bottom = 1268.0
 scale = Vector2(0.36, 0.36)
 theme_override_constants/separation = 100
 
+[node name="OnboardingContainer" type="VBoxContainer" parent="MainButtons"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="MainButtons/OnboardingContainer"]
+layout_mode = 2
+theme = ExtResource("12")
+text = "Onboarding"
+alignment = 0
+
+[node name="Descriptor" type="Label" parent="MainButtons/OnboardingContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5")
+theme_override_font_sizes/font_size = 50
+text = "New pilot first boot"
+
 [node name="NewGameContainer" type="VBoxContainer" parent="MainButtons" unique_id=1609014192]
 layout_mode = 2
 
@@ -297,6 +312,9 @@ theme_override_font_sizes/font_size = 49
 text = "v0.0.2dev"
 horizontal_alignment = 2
 
+[connection signal="mouse_entered" from="MainButtons/OnboardingContainer/Button" to="." method="_on_Button_mouse_entered"]
+[connection signal="mouse_exited" from="MainButtons/OnboardingContainer/Button" to="." method="_on_Button_mouse_exited"]
+[connection signal="pressed" from="MainButtons/OnboardingContainer/Button" to="." method="_on_Onboarding_pressed"]
 [connection signal="mouse_entered" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_entered"]
 [connection signal="mouse_exited" from="MainButtons/NewGameContainer/Button" to="." method="_on_Button_mouse_exited"]
 [connection signal="pressed" from="MainButtons/NewGameContainer/Button" to="." method="_on_Arena_pressed"]

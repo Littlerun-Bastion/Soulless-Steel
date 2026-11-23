@@ -65,6 +65,7 @@ func _ready() -> void:
 	_setup_wrecks()
 	_setup_entities()
 	_add_player()
+	_start_combat_log()
 	_setup_heatmap()
 	_begin_stakes()
 
@@ -294,6 +295,19 @@ func _exit_tree() -> void:
 
 # ---- Spawning ----
 
+# What happens to the player's frame goes to the LOG's COMBAT tab from here on
+# (CombatRecorder). Called just after _add_player; Onboarding calls it once it
+# has crippled the frame, so the crippling isn't logged as a fight.
+func _start_combat_log() -> void:
+	CombatRecorder.attach(player)
+
+
+## The cargo the player's mecha carries: the saved one, at stake on the run.
+## Onboarding gives it a throwaway one instead.
+func _player_cargo() -> Inventory:
+	return PlayerProgress.get_mech_inventory()
+
+
 func _add_player() -> void:
 	player = PLAYER.instantiate()
 	Mechas.add_child(player)
@@ -301,10 +315,8 @@ func _add_player() -> void:
 	# mecha, and equipping the core sizes mech_inventory to its cargo space
 	# (keeping what's inside). Assigning it afterwards left a never-sized
 	# (0x0) cargo for players who hadn't opened the Hangar yet.
-	player.mech_inventory = PlayerProgress.get_mech_inventory()
+	player.mech_inventory = _player_cargo()
 	player.setup(self)
-	# What happens to the frame goes to the LOG's COMBAT tab.
-	CombatRecorder.attach(player)
 	player.position = _player_start_position()
 	_connect_mecha_signals(player)
 	player.took_damage.connect(_on_player_hit)

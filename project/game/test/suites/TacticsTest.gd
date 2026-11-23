@@ -214,7 +214,8 @@ func _test_one_v_one() -> void:
 			closest = minf(closest, last)
 	check(closest > eff.cqb * 0.5, "it never closes to point-blank (closest %.0f px, cqb %.0f)" % [closest, eff.cqb])
 	check(last > eff.min_kite * 0.5 and last < eff.max_kite * 1.6, "and ends near its band (%.0f px for %.0f to %.0f)" % [last, eff.min_kite, eff.max_kite])
-	check(str(enemy.logic.get_current_state()) == "engage", "still fighting")
+	var state := str(enemy.logic.get_current_state())
+	check(state == "engage", "still fighting (%s)" % state)
 
 
 func _test_indirect() -> void:

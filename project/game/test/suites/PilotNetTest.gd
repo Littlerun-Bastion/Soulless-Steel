@@ -43,6 +43,7 @@ func run_tests() -> void:
 	await case("gigs: accepting and the limit", _test_gig_accept)
 	await case("gigs: kills by kind and a lost run", _test_gig_kills)
 	await case("gigs: extract and extract_with", _test_gig_extract)
+	await case("gigs: a complete extract_with gig takes what it was paid for", _test_gig_delivery)
 	await case("gigs: payment once, and abandoning", _test_gig_pay)
 	await case("pilots met and the known build", _test_pilots)
 	await case("every pilot.net page opens", _test_pages)
@@ -404,8 +405,34 @@ func _test_gig_extract() -> void:
 	PlayerProgress.begin_expedition()
 	PlayerProgress.extract_expedition()
 	check_eq(int(PilotNet.get_gig(haul.id).progress), mini(2, haul.count), "extract_with counts the cargo")
+	if haul.count > 2:
+		check_eq(PilotNet.cargo_count("bio"), 2, "a gig not complete yet takes nothing")
 	var courier_now := PilotNet.get_gig(courier.id)
 	check(courier_now.is_empty() == false and (int(courier_now.progress) == 1 or courier_now.state == "complete"), "extract counts an extraction")
+
+
+func _test_gig_delivery() -> void:
+	var haul := _active_gig(BIO_GIG)
+	var count: int = haul.count
+	var cargo := Inventory.new()
+	cargo.initialize_grid(8, 10)
+	PlayerProgress.set_mech_inventory(cargo)
+	for i in count + 1:
+		cargo.add_stack_anywhere(item_stack.from_generic(BIO_ITEM))
+	var loom := item_stack.from_generic(load("res://database/items/salvage/wiring_loom.tres"))
+	cargo.add_stack_anywhere(loom)
+	MechLog.clear()
+	PlayerProgress.begin_expedition()
+	PlayerProgress.extract_expedition()
+	check_eq(PilotNet.get_gig(haul.id).state, "complete", "(the haul is complete)")
+	check_eq(PilotNet.cargo_count("bio"), 1, "the %d delivered are taken out of the cargo, one left over" % count)
+	check(cargo.get_stacks().has(loom), "what isn't part of the gig stays")
+	check(MechLog.lines.any(func(line): return str(line.text).begins_with("Delivered %d" % count)), "the log says what was delivered")
+	var next := _active_gig(BIO_GIG)
+	PlayerProgress.begin_expedition()
+	PlayerProgress.extract_expedition()
+	check(PilotNet.get_gig(next.id).state != "complete", "so the same cargo can't complete the next haul")
+	check_eq(int(PilotNet.get_gig(next.id).progress), 1, "it counts only what is left")
 
 
 func _test_gig_pay() -> void:

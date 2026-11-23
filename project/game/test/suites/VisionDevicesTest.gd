@@ -174,9 +174,15 @@ func _test_seeker_follows() -> void:
 	await get_tree().create_timer(1.5).timeout
 	var off := seeker.global_position.distance_to(carrier.global_position)
 	check(off >= nearest and off <= furthest, "it hovers by its owner (%d px off)" % roundi(off))
+	# Physics frames, not a timer: the drift runs on physics steps, which fall
+	# behind the clock under load, and at some phases it moves slowly for a
+	# while; over 180 steps it can't stay put.
 	var was := seeker.global_position
-	await get_tree().create_timer(1.0).timeout
-	check(seeker.global_position.distance_to(was) > 10.0, "and drifts about while its owner stands still")
+	var furthest_drift := 0.0
+	for i in 180:
+		await get_tree().physics_frame
+		furthest_drift = maxf(furthest_drift, seeker.global_position.distance_to(was))
+	check(furthest_drift > 10.0, "and drifts about while its owner stands still (%d px at most)" % roundi(furthest_drift))
 	carrier.global_position = Vector2(1500, 500)
 	carrier.global_rotation = PI * 0.5
 	await get_tree().physics_frame

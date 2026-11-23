@@ -3695,14 +3695,16 @@ func add_lingering_hitbox(data):
 func process_hitboxes(dt):
 	# A melee hit lands the way an Entity's attack does (EntityAttack.hit_mecha:
 	# the shield, then the armour and the components, a scuff and the
-	# knockback), with the weapon's melee_damage pips and melee_pen.
+	# knockback), with the weapon's melee_damage pips and melee_pen. The weapon
+	# is recorded as what hit (the combat log names it).
 	for data in lingering_hitboxes:
 		var weapon_ref = data.data
 		var attacker = data.origin
 		if is_instance_valid(attacker):
+			var weapon_id: String = str(weapon_ref.part_id) if weapon_ref.get("part_id") != null else ""
 			EntityAttack.hit_mecha(attacker, self, maxi(roundi(weapon_ref.melee_damage * data.damage_mul), 1),
-					weapon_ref.melee_pen, weapon_ref.melee_knockback * data.knockback_mul)
-			register_hit({"body": attacker, "name": attacker.mecha_name})
+					weapon_ref.melee_pen, weapon_ref.melee_knockback * data.knockback_mul, null, weapon_id)
+			register_hit({"body": attacker, "name": attacker.mecha_name}, 0.0, weapon_id)
 		processed_hitboxes.append([data.id, data.dur])
 	lingering_hitboxes.clear()
 	

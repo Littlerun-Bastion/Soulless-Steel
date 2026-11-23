@@ -61,7 +61,10 @@ func _test_world_mipmaps() -> void:
 	check(textures.size() > 400, "the world's art was found (%d pictures)" % textures.size())
 	check(missing.is_empty(), "every picture has mipmaps (%d without: %s)" % [missing.size(), missing.slice(0, 5)])
 	var mecha := load("res://assets/images/mechas/legs/MSV-L3J/msv-l3j_lleg_main.png") as Texture2D
-	check(mecha != null and mecha.get_image().has_mipmaps(), "and the imported pictures carry them")
+	# Set to mipmaps but loaded without them: the import cache (.godot/imported)
+	# is older than the .import file, not a problem in the project.
+	check(mecha != null and mecha.get_image().has_mipmaps(),
+			"and the imported pictures carry them (if not: a stale import cache; open the editor, or run Godot --headless --import, and run again)")
 
 
 func _texture_imports(dir: String) -> Array:

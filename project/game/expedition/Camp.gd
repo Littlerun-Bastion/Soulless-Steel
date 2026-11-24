@@ -22,6 +22,10 @@ extends RefCounted
 #   tick_swarm   a tick swarm (an entry's "motes" is its size)
 #   hunt         an encounter: an NPC fighting a Coyote pack
 #   duel         an encounter: two NPCs fighting each other
+#   roamer       a roaming NPC, or a squad of them, travelling the map on
+#                paper while dormant (CampField): its pilots are in Local
+#                all along (PaperPilot), and its mechas keep their damage
+#                and ammo from one time on the map to the next
 # An encounter is armed at a time (armed_at) and its fight runs for
 # `duration` s from then whether anyone is there or not (progress()). Once
 # it wakes, its NPCs are released to the world and what is left of the pack
@@ -34,6 +38,7 @@ const FISHER := "fisher"
 const TICK_SWARM := "tick_swarm"
 const HUNT := "hunt"
 const DUEL := "duel"
+const ROAMER := "roamer"
 const ENCOUNTERS := [HUNT, DUEL]
 
 ## What a sweep counts one tick as (Mecha.TICK_KIND).
@@ -47,11 +52,20 @@ var state := State.DORMANT
 var roster: Array[Dictionary] = []
 ## {"scene": PackedScene, "offset": Vector2}.
 var remains: Array[Dictionary] = []
-## An encounter's NPCs before it wakes: {"design": Dictionary, "name":
-## String, "offset": Vector2}.
+## Its NPCs while dormant: {"design": Dictionary, "name": String, "offset":
+## Vector2, "pilot": PaperPilot, "state": Dictionary (CampField.snapshot;
+## empty for a fresh mecha), "hits": [[pips, pen, attacker name], ...] taken
+## on paper, put on the mecha when it wakes}.
 var mechas: Array[Dictionary] = []
 ## The Entities on the map while it is awake.
 var members: Array = []
+## A roamer's NPCs on the map while it is awake.
+var npcs: Array = []
+## A roamer: where it is heading on paper, its squad ({"tag", "anonymous"},
+## empty for a lone pilot), and when (CampField's clock) it leaves the map.
+var destination := Vector2.INF
+var squad := {}
+var leave_at := INF
 ## Never held back by the awake budget, and never dropped (a quest target).
 var pinned := false
 ## Encounters: when the fight began (CampField's clock), how long it lasts.
@@ -100,6 +114,11 @@ func living() -> Array:
 ## Whether there is anything left to put on the map.
 func is_empty() -> bool:
 	return roster.is_empty() and remains.is_empty() and mechas.is_empty() and living().is_empty()
+
+
+## A roamer's NPCs on the map, alive.
+func living_npcs() -> Array:
+	return npcs.filter(func(m): return is_instance_valid(m) and not m.is_dead)
 
 
 ## What a sweep finds of it while dormant: {kind: count}, as the bodies

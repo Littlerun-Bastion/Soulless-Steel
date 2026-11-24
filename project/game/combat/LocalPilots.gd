@@ -178,6 +178,18 @@ func leave(mecha) -> void:
 	_post(mecha, "left", "%s has left Local" % name_of(mecha))
 
 
+## `new` takes `old`'s place on the roster, with its callsign, and no
+## lines are posted: the same pilot, now with or without its mecha on the
+## map (PaperPilot).
+func replace(old, new) -> void:
+	var at := _pilots.find(old)
+	if at == -1 or not is_instance_valid(new):
+		return
+	new.callsign = old.callsign
+	_pilots[at] = new
+	roster_changed.emit()
+
+
 func is_in_local(mecha) -> bool:
 	return _pilots.has(mecha)
 

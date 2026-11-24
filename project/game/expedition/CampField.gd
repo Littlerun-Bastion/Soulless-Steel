@@ -46,7 +46,23 @@ extends Node
 # (Camp.progress): hurt, some of the pack dead, and once it is over, the
 # loser dead (a wreck or carcasses). The NPCs are then ordinary NPCs. A fight
 # that ended unvisited is given up after ABANDON_TIME s: the pack's
-# survivors stay on as a pack camp, the NPCs are gone.
+# survivors stay on as a pack camp, the NPCs leave Local.
+#
+# Roamers (Camp.ROAMER, add_roamer): a roaming NPC or squad. Dormant, it
+# travels on paper: its site walks toward its destination at PAPER_SPEED,
+# straight, and picks a new one where it gets there (the scene's
+# get_wander_point); a loud sound within earshot sends it there with chance
+# HEARING_CHANCE (hear), and the director can send it somewhere
+# (send_roamer). Its pilots are in Local all along (PaperPilot). It wakes
+# like any camp, each mecha as it was: its armour, components, lost parts
+# and ammo (snapshot, restore), and the paper hits it took since. It goes
+# back to sleep the same way, once nothing but its own members has been
+# near for SLEEP_DELAY s and none of them is fighting, under fire,
+# extracting, scripted or on the player's screen. At leave_at it leaves the
+# map: off Local, gone. A dormant roamer within PAPER_REACH of a dormant
+# pack or Fisher fights it on paper as a distant NPC does, its hits kept
+# for when it wakes (at most PAPER_HITS_KEPT pips a mecha).
+# Encounters' NPCs are in Local the same way from the moment they are armed.
 
 signal camp_woken(camp, was_encounter: bool)
 signal camp_slept(camp)
@@ -86,6 +102,13 @@ const HUNT_PACK_LOSS := 0.6
 const HUNT_NPC_WIN := 0.6
 ## An encounter's NPCs stand this far apart (px), its pack round them.
 const ENCOUNTER_GAP := 700.0
+## Roamers (placeholders): paper walking speed (px/s), the chance a loud
+## sound in earshot draws one, the most pips of paper hits kept per mecha,
+## and how far apart a squad's mechas stand (px).
+const PAPER_SPEED := 300.0
+const HEARING_CHANCE := 0.5
+const PAPER_HITS_KEPT := 24
+const SQUAD_SPACING := 600.0
 
 const COYOTE = preload("res://game/entities/coyote/Coyote.tscn")
 const COYOTE_SPITTER = preload("res://game/entities/coyote/CoyoteSpitter.tscn")
@@ -142,10 +165,15 @@ func update() -> void:
 	for camp in camps.duplicate():
 		match camp.state:
 			Camp.State.DORMANT:
+				if camp.kind == Camp.ROAMER and not _travel(camp, TICK):
+					continue
 				if _watched(camp.site, wakers, 0.0):
 					wake(camp)
 			Camp.State.AWAKE:
-				_tend_awake(camp, wakers)
+				if camp.kind == Camp.ROAMER:
+					_tend_roamer(camp, wakers)
+				else:
+					_tend_awake(camp, wakers)
 	_adopt_loose(wakers)
 	for k in range(camps.size() - 1, -1, -1):
 		if camps[k].state == Camp.State.CLEARED:
@@ -197,22 +225,22 @@ func hint_circle(camp: Camp, radius: float) -> Dictionary:
 
 # ---- Who notices ----
 
-# [[position, reach], ...] of everything that wakes camps.
+# [[position, reach, node], ...] of everything that wakes camps.
 func _wakers() -> Array:
 	var found := []
 	var player = arena.get("player")
 	if is_instance_valid(player) and not player.is_dead:
-		found.append([player.global_position, full_sight(player) + WAKE_MARGIN])
+		found.append([player.global_position, full_sight(player) + WAKE_MARGIN, player])
 	if arena.has_method("get_mechas"):
 		for m in arena.get_mechas():
 			if m == player or not is_instance_valid(m) or m.is_dead:
 				continue
 			if m.has_method("is_distant") and m.is_distant():
 				continue
-			found.append([m.global_position, full_sight(m) + WAKE_MARGIN])
+			found.append([m.global_position, full_sight(m) + WAKE_MARGIN, m])
 	for device in get_tree().get_nodes_in_group("device"):
 		if device is Device and not device.is_gone() and device.sensor_range > 0.0:
-			found.append([device.global_position, device.sensor_range + WAKE_MARGIN])
+			found.append([device.global_position, device.sensor_range + WAKE_MARGIN, device])
 	return found
 
 
@@ -224,10 +252,13 @@ static func full_sight(mecha) -> float:
 	return mecha.sight_radius()
 
 
-# Whether anything in `wakers` reaches `point`, with `slack` px more reach;
-# also the player's screen, grown by WAKE_MARGIN + slack.
-func _watched(point: Vector2, wakers: Array, slack: float) -> bool:
+# Whether anything in `wakers` but `own` reaches `point`, with `slack` px
+# more reach; also the player's screen, grown by WAKE_MARGIN + slack. A
+# device counts as its owner's: it is ignored when its owner is in `own`.
+func _watched(point: Vector2, wakers: Array, slack: float, own: Array = []) -> bool:
 	for w in wakers:
+		if not own.is_empty() and (w[2] in own or (w[2] is Device and w[2].owner_mecha in own)):
+			continue
 		var r: float = w[1] + slack
 		if point.distance_squared_to(w[0]) < r * r:
 			return true
@@ -248,6 +279,8 @@ func wake(camp: Camp) -> void:
 	var encounter := camp.is_encounter()
 	if encounter:
 		_wake_encounter(camp)
+	elif camp.kind == Camp.ROAMER:
+		_wake_roamer(camp)
 	else:
 		_put_remains(camp)
 		_put_members(camp)
@@ -466,16 +499,23 @@ func sweep_counts(sweeper: Node2D, direction: Vector2, width: float) -> Dictiona
 # ---- Paper fights ----
 
 func _paper_fights() -> void:
-	if not arena.has_method("get_mechas"):
+	var packs := camps.filter(func(c): return c.state == Camp.State.DORMANT and not c.is_encounter() \
+			and c.kind != Camp.ROAMER and not c.roster.is_empty())
+	if packs.is_empty():
 		return
-	for npc in arena.get_mechas():
-		if not is_instance_valid(npc) or npc.is_dead or not npc.has_method("is_distant") or not npc.is_distant():
-			continue
-		for camp in camps:
-			if camp.state != Camp.State.DORMANT or camp.is_encounter() or camp.roster.is_empty():
+	if arena.has_method("get_mechas"):
+		for npc in arena.get_mechas():
+			if not is_instance_valid(npc) or npc.is_dead or not npc.has_method("is_distant") or not npc.is_distant():
 				continue
-			if npc.global_position.distance_to(camp.site) <= PAPER_REACH:
-				paper_round(camp, npc)
+			for camp in packs:
+				if npc.global_position.distance_to(camp.site) <= PAPER_REACH:
+					paper_round(camp, npc)
+	for roamer in camps:
+		if roamer.kind != Camp.ROAMER or roamer.state != Camp.State.DORMANT or roamer.mechas.is_empty():
+			continue
+		for camp in packs:
+			if roamer.site.distance_to(camp.site) <= PAPER_REACH:
+				paper_round_roamer(camp, roamer)
 
 
 ## One PAPER_TICK of `npc` fighting dormant `camp` (see the top).
@@ -491,6 +531,29 @@ func paper_round(camp: Camp, npc) -> void:
 	if randf() < PAPER_KILL_CHANCE * float(PAPER_STATS[str(victim.species)][3]):
 		camp.roster.erase(victim)
 		camp.remains.append({"scene": victim.scene, "offset": victim.offset})
+
+
+## One PAPER_TICK of dormant `roamer` fighting dormant `camp`, as
+## paper_round, its hits noted on its mechas for when they wake.
+func paper_round_roamer(camp: Camp, roamer: Camp) -> void:
+	var fighters := camp.roster.filter(func(e): return PAPER_STATS.has(str(e.species)))
+	if fighters.is_empty():
+		return
+	for entry in fighters:
+		var stats: Array = PAPER_STATS[str(entry.species)]
+		if randf() >= float(stats[0]):
+			continue
+		var mecha: Dictionary = roamer.mechas.pick_random()
+		var taken := 0
+		for hit in mecha.hits:
+			taken += int(hit[0])
+		if taken < PAPER_HITS_KEPT:
+			mecha.hits.append([int(stats[1]), int(stats[2]), str(entry.species)])
+	for k in roamer.mechas.size():
+		var victim: Dictionary = fighters.pick_random()
+		if camp.roster.has(victim) and randf() < PAPER_KILL_CHANCE * float(PAPER_STATS[str(victim.species)][3]):
+			camp.roster.erase(victim)
+			camp.remains.append({"scene": victim.scene, "offset": victim.offset})
 
 
 ## A hit of `pips` on `mecha` from `from`, by `attacker_name`, on a random
@@ -563,7 +626,7 @@ func arm_encounter(kind: String, site: Dictionary, intensity: float, designs: Ar
 		var design: Dictionary = designs[k] if k < designs.size() else NPCManager.random_design_data()
 		var side := Vector2.from_angle(randf() * TAU) * ENCOUNTER_GAP * 0.5 if count > 1 else Vector2.ZERO
 		_encounter_count += 1
-		camp.mechas.append({"design": design, "name": "Camp_%d" % _encounter_count, "offset": side * (1 if k == 0 else -1)})
+		camp.mechas.append(_paper_mecha(design, "Camp_%d" % _encounter_count, side * (1 if k == 0 else -1)))
 	if kind == Camp.HUNT:
 		var size := 3 + roundi(clampf(intensity, 0.0, 1.0) * 3.0)
 		fill_pack(camp, size, 1 if size < 5 else 2)
@@ -602,6 +665,8 @@ func _encounter_clocks(dt: float) -> void:
 # NPCs are gone.
 func _abandon(camp: Camp) -> void:
 	_free_site(camp)
+	for m in camp.mechas:
+		_leave_local(m.pilot)
 	camp.mechas.clear()
 	camp.remains.clear()
 	if camp.kind == Camp.HUNT:
@@ -637,7 +702,7 @@ func _wake_encounter(camp: Camp) -> void:
 	var p := camp.progress(clock)
 	var npcs := []
 	for m in camp.mechas:
-		var npc = arena.add_enemy(m.design, m.name, camp.site + m.offset)
+		var npc = _put_npc(m, camp.site + m.offset)
 		if npc != null:
 			npcs.append(npc)
 	camp.mechas.clear()
@@ -676,11 +741,264 @@ func _wake_encounter(camp: Camp) -> void:
 		if not prey.is_empty() and entity.has_method("acquire_target"):
 			entity.acquire_target(prey.pick_random())
 	if loser != null:
-		var killer: String = "Coyote" if camp.kind == Camp.HUNT else str(npcs[0 if npcs[1] == loser else 1].mecha_name)
-		loser.die({"body": null, "name": killer}, "")
+		if camp.kind == Camp.HUNT:
+			loser.die({"body": null, "name": "Coyote"}, "")
+		else:
+			var winner = npcs[0 if npcs[1] == loser else 1]
+			loser.die({"body": winner, "name": winner.mecha_name}, "")
 	_free_site(camp)
 	_gunfire.erase(camp)
 	camp.kind = Camp.PACK
 	camp.armed_at = -1.0
 	if camp.living().is_empty() and camp.roster.is_empty():
 		camp.state = Camp.State.CLEARED
+
+# ---- Roamers ----
+
+## A dormant roaming camp at `site`: one NPC per design (NPCManager design
+## data), as a squad when `squad` is {"tag": String, "anonymous": bool}
+## (the designs carry it as add_squad's do), on the map until `leave_at`
+## (CampField's clock). Its pilots join Local now.
+func add_roamer(designs: Array, site: Vector2, squad := {}, leave_at := INF) -> Camp:
+	var camp := Camp.new(Camp.ROAMER, site)
+	camp.squad = squad
+	camp.leave_at = leave_at
+	for k in designs.size():
+		var offset := Vector2.ZERO if k == 0 else Vector2.from_angle(TAU * k / designs.size()) * SQUAD_SPACING
+		_encounter_count += 1
+		camp.mechas.append(_paper_mecha(designs[k], "Roamer_%d" % _encounter_count, offset))
+	camp.destination = _wander_point(site)
+	camps.append(camp)
+	return camp
+
+
+## Sends a dormant roamer toward `point`.
+func send_roamer(camp: Camp, point: Vector2) -> void:
+	camp.destination = point
+
+
+## Dormant roamers, for the director.
+func dormant_roamers() -> Array:
+	return camps.filter(func(c): return c.kind == Camp.ROAMER and c.state == Camp.State.DORMANT)
+
+
+## A loud sound (the scene's _on_mecha_made_sound) draws dormant roamers in
+## earshot, each with chance HEARING_CHANCE.
+func hear(sound_data: Dictionary) -> void:
+	if sound_data.get("volume_type") != "loud" or sound_data.get("entities_only", false):
+		return
+	var at: Vector2 = sound_data.position
+	var reach: float = float(sound_data.get("max_distance", 0.0))
+	for camp in dormant_roamers():
+		if camp.site.distance_to(at) <= reach and randf() < HEARING_CHANCE:
+			camp.destination = at
+
+
+# An NPC off the map: its pilot joins Local now. Whether it is Anonymous is
+# settled here, by the same chances an NPC rolls (Enemy.setup), so Local
+# and the mecha agree once it is on the map.
+func _paper_mecha(design: Dictionary, name_: String, offset: Vector2) -> Dictionary:
+	if not design.has("anonymous") and not design.get("callsign") is String 			and str(design.get("squad_tag", "")) == "":
+		var personality = design.get("personality")
+		var hunter: bool = personality is Personality and personality.type == Personality.Type.HUNTER
+		design["anonymous"] = randf() < (ENEMY_SCRIPT.HUNTER_ANONYMOUS_CHANCE if hunter else ENEMY_SCRIPT.ANONYMOUS_CHANCE)
+	var pilot := PaperPilot.from_design(design, name_)
+	var local = arena.get("local_pilots")
+	if local != null:
+		local.join(pilot)
+	return {"design": design, "name": name_, "offset": offset, "pilot": pilot, "state": {}, "hits": []}
+
+
+func _leave_local(pilot) -> void:
+	var local = arena.get("local_pilots")
+	if local != null and pilot != null:
+		local.leave(pilot)
+
+
+func _wander_point(from: Vector2) -> Vector2:
+	if arena.has_method("get_wander_point"):
+		return arena.get_wander_point(from)
+	return from + Vector2.from_angle(randf() * TAU) * 8000.0
+
+
+# A dormant roamer's paper walk for `dt` s. False once it has left the map.
+func _travel(camp: Camp, dt: float) -> bool:
+	if clock >= camp.leave_at:
+		for m in camp.mechas:
+			_leave_local(m.pilot)
+		camp.mechas.clear()
+		camp.state = Camp.State.CLEARED
+		return false
+	if camp.destination == Vector2.INF or camp.site.distance_to(camp.destination) < PAPER_SPEED * dt:
+		camp.destination = _wander_point(camp.site)
+	camp.site = camp.site.move_toward(camp.destination, PAPER_SPEED * dt)
+	for m in camp.mechas:
+		m.pilot.global_position = camp.site + m.offset
+	return true
+
+
+# The mecha of `entry` on the map at `at` (on open ground near it), taking
+# its pilot's place in Local, as it was when it went off (restore) and with
+# the paper hits it took since.
+func _put_npc(entry: Dictionary, at: Vector2) -> Node:
+	if arena.has_method("_open_spot_near"):
+		at = arena._open_spot_near(at)
+	var npc = arena.add_enemy(entry.design, entry.name, at, false)
+	if npc == null:
+		return null
+	var local = arena.get("local_pilots")
+	if local != null and local.is_in_local(entry.pilot):
+		local.replace(entry.pilot, npc)
+	elif local != null:
+		local.join(npc)
+	restore(npc, entry.state)
+	for hit in entry.hits:
+		paper_hit(npc, at + Vector2.from_angle(randf() * TAU) * 400.0, int(hit[0]), int(hit[1]), str(hit[2]))
+	return npc
+
+
+func _wake_roamer(camp: Camp) -> void:
+	var squad: Squad = null
+	if not camp.squad.is_empty() and camp.mechas.size() > 1:
+		squad = Squad.new()
+		squad.setup(str(camp.squad.get("tag", "")), camp.squad.get("anonymous", false) == true)
+	for m in camp.mechas:
+		var npc = _put_npc(m, camp.site + m.offset)
+		if npc == null:
+			continue
+		npc.set_meta(&"camp", camp)
+		camp.npcs.append(npc)
+		if squad != null:
+			squad.add(npc)
+	camp.mechas.clear()
+	if squad != null and not squad.members.is_empty() and "squads" in arena:
+		arena.squads.append(squad)
+
+
+func _tend_roamer(camp: Camp, wakers: Array) -> void:
+	var living := camp.living_npcs()
+	camp.npcs = living
+	if living.is_empty():
+		camp.state = Camp.State.CLEARED
+		return
+	var busy := false
+	var watched := false
+	for npc in living:
+		if _roamer_busy(npc):
+			busy = true
+		if _watched(npc.global_position, wakers, SLEEP_SLACK, living):
+			watched = true
+		if busy and watched:
+			break
+	if busy or watched:
+		camp.quiet = 0.0
+		return
+	camp.quiet += TICK
+	if camp.quiet >= SLEEP_DELAY:
+		sleep_roamer(camp)
+
+
+# Whether an NPC on the map can't go off it now: fighting, under fire,
+# extracting, scripted or on the player's screen.
+func _roamer_busy(npc) -> bool:
+	if npc.get("scripted") == true or npc.get("valid_target"):
+		return true
+	if float(npc.get("under_fire_timer") if npc.get("under_fire_timer") != null else 0.0) > 0.0:
+		return true
+	var logic = npc.get("logic")
+	if logic != null and logic.has_method("get_current_state") and str(logic.get_current_state()) == "extract":
+		return true
+	var player = arena.get("player")
+	return is_instance_valid(player) and MapSenses.screen_rect(player, WAKE_MARGIN).has_point(npc.global_position)
+
+
+## Takes a roamer's NPCs off the map (see Roamers): each goes in its roster
+## as it is, and its pilot takes its place in Local again.
+func sleep_roamer(camp: Camp) -> void:
+	var living := camp.living_npcs()
+	if living.is_empty():
+		camp.state = Camp.State.CLEARED
+		return
+	var centre := Vector2.ZERO
+	for npc in living:
+		centre += npc.global_position
+	centre /= living.size()
+	var local = arena.get("local_pilots")
+	for npc in living:
+		var pilot := PaperPilot.from_mecha(npc)
+		var design: Dictionary = npc.get_design_data()
+		design["personality"] = npc.personality
+		design["anonymous"] = npc.is_anonymous
+		if npc.squad_tag != "":
+			design["squad_tag"] = npc.squad_tag
+		camp.mechas.append({"design": design, "name": npc.mecha_name,
+				"offset": (npc.global_position - centre).limit_length(SQUAD_SPACING * 2.0),
+				"pilot": pilot, "state": snapshot(npc), "hits": []})
+		if local != null and local.is_in_local(npc):
+			local.replace(npc, pilot)
+		if arena.has_method("stow_mecha"):
+			arena.stow_mecha(npc)
+		else:
+			npc.queue_free()
+	camp.npcs.clear()
+	camp.site = centre
+	camp.destination = _wander_point(centre)
+	camp.quiet = 0.0
+	camp.state = Camp.State.DORMANT
+	camp_slept.emit(camp)
+
+
+## What of `mecha` has to come back with it: armour pips, component hp,
+## lost parts and each weapon's ammo.
+static func snapshot(mecha) -> Dictionary:
+	var armour := {}
+	for part in mecha.armor:
+		armour[part] = {}
+		for facing in mecha.armor[part]:
+			armour[part][facing] = int(mecha.armor[part][facing].pips)
+	var parts := {}
+	for part in mecha.components:
+		parts[part] = {}
+		for comp in mecha.components[part]:
+			parts[part][comp] = int(mecha.components[part][comp].hp)
+	var ammo := {}
+	for slot in ["arm_weapon_left", "arm_weapon_right", "shoulder_weapon_left", "shoulder_weapon_right"]:
+		var node = mecha.get_weapon_part(slot) if not mecha.is_part_lost(slot) else null
+		if node is Node:
+			ammo[slot] = [node.clip_ammo, node.total_ammo]
+	return {"armor": armour, "components": parts, "lost": mecha.lost_parts.keys(), "ammo": ammo}
+
+
+## Puts `state` (snapshot) back on a freshly made `mecha`: damage through
+## damage_component, so what it disables is disabled again.
+static func restore(mecha, state: Dictionary) -> void:
+	if state.is_empty():
+		return
+	var parts: Dictionary = state.get("components", {})
+	for part in parts:
+		if not mecha.components.has(part):
+			continue
+		for comp in parts[part]:
+			if not mecha.components[part].has(comp):
+				continue
+			var missing := int(mecha.components[part][comp].hp) - int(parts[part][comp])
+			if missing > 0:
+				mecha.damage_component(part, comp, missing)
+	var armour: Dictionary = state.get("armor", {})
+	for part in armour:
+		if not mecha.armor.has(part):
+			continue
+		for facing in armour[part]:
+			if mecha.armor[part].has(facing):
+				mecha.armor[part][facing].pips = mini(int(mecha.armor[part][facing].pips), int(armour[part][facing]))
+	for part in state.get("lost", []):
+		mecha.lose_part(part)
+	var ammo: Dictionary = state.get("ammo", {})
+	for slot in ammo:
+		var node = mecha.get_weapon_part(slot) if not mecha.is_part_lost(slot) else null
+		if not node is Node:
+			continue
+		if not (node.clip_ammo is bool):
+			node.clip_ammo = ammo[slot][0]
+		if not (node.total_ammo is bool):
+			node.total_ammo = ammo[slot][1]

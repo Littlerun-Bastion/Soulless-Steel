@@ -23,9 +23,12 @@ extends Node
 ## The counts here (NPCs, Entities, their targets and caps) are for a map
 ## reference_map_size px across. A map with a larger navigation area
 ## multiplies them by its area over that one's, up to max_population_scale
-## (population_scale()).
+## (population_scale()); the NPCs always on the map (the roaming ones and
+## soft spawns) only up to max_npc_population_scale (scaled_npcs), the
+## rest of a big map's people being roamers in camps.
 @export var reference_map_size: float = 50000.0
 @export var max_population_scale: float = 2.0
+@export var max_npc_population_scale: float = 1.0
 ## On a map that tells open ground (Expedition.is_spawn_spot_open),
 ## initial_near_share of the starting NPCs and Entities spawn
 ## min_spawn_distance_from_player..max_spawn_distance_from_player px from the
@@ -122,6 +125,19 @@ extends Node
 @export var min_encounter_pressure: float = 0.2
 @export var encounter_chance: float = 0.5
 @export var duel_chance := {"industrial": 0.6, "market": 0.6, "residential": 0.3, "farmland": 0.2}
+## Roamers (CampField.add_roamer): NPCs and squads that travel the map off
+## it until someone could notice them. min_initial_roamers..
+## max_initial_roamers at the start, anywhere on the map like the starting
+## NPCs; while fewer than target_roamers are dormant, a newcomer arrives
+## every roamer_arrival_cooldown s, out of the player's sight. Each stays
+## roamer_stay s (a random time in that range), then leaves the map. Squads
+## as for NPCs (squad_chance, squad_three_chance). Counts are scaled to the
+## map (scaled). Placeholders.
+@export var min_initial_roamers: int = 2
+@export var max_initial_roamers: int = 4
+@export var target_roamers: int = 4
+@export var roamer_arrival_cooldown: float = 150.0
+@export var roamer_stay := Vector2(480.0, 1200.0)
 
 const COYOTE = preload("res://game/entities/coyote/Coyote.tscn")
 const COYOTE_SPITTER = preload("res://game/entities/coyote/CoyoteSpitter.tscn")
@@ -167,6 +183,9 @@ var elapsed: float = 0.0
 var encounters_armed: int = 0
 var _tension_timer: float = 0.0
 var _encounter_timer: float = 0.0
+var total_roamer_arrivals: int = 0
+var time_since_roamer_arrival: float = 0.0
+var _roamer_index: int = 0
 
 
 func start(arena_ref) -> void:
@@ -209,6 +228,12 @@ func scaled(count: int) -> int:
 	return roundi(count * _population_scale)
 
 
+## An NPC count from the exports, scaled to this map up to
+## max_npc_population_scale.
+func scaled_npcs(count: int) -> int:
+	return roundi(count * minf(_population_scale, maxf(max_npc_population_scale, 0.0)))
+
+
 func _measure_population_scale() -> float:
 	if not arena.has_method("_get_map_nav_polygon"):
 		return 1.0
@@ -220,7 +245,7 @@ func _measure_population_scale() -> float:
 
 
 func _populate_initial_world() -> void:
-	var count = randi_range(scaled(min_initial_enemies), scaled(max_initial_enemies))
+	var count = randi_range(scaled_npcs(min_initial_enemies), scaled_npcs(max_initial_enemies))
 	var spawned := 0
 	var spawn_index := 0
 	while spawned < count:
@@ -254,9 +279,16 @@ func _populate_initial_world() -> void:
 		if pos != null:
 			add_tick_swarm(pos)
 			swarms += 1
+	var roamers := 0
+	if camps != null:
+		for i in randi_range(scaled(min_initial_roamers), scaled(max_initial_roamers)):
+			var pos = _pick_initial_spot(min_spawn_distance_from_player)
+			if pos != null:
+				add_roamer(pos)
+				roamers += 1
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", spawned, " NPCs, ", packs, " Coyote packs, ",
+		print("[ExpeditionDirector] World populated with ", spawned, " NPCs, ", roamers, " roamers, ", packs, " Coyote packs, ",
 				fishers, " Fishers and ", swarms, " tick swarms (population scale ", _population_scale, ")")
 
 
@@ -302,6 +334,7 @@ func _process(dt: float) -> void:
 	time_since_last_spawn += dt
 	time_since_last_redirect += dt
 	time_since_pack_respawn += dt
+	time_since_roamer_arrival += dt
 	elapsed += dt
 
 	_tension_timer -= dt
@@ -324,6 +357,7 @@ func _process(dt: float) -> void:
 		soft_spawn_check_timer = soft_spawn_check_interval
 		_try_soft_spawn()
 		_try_pack_respawn()
+		_try_roamer_arrival()
 
 	redirect_check_timer -= dt
 	if redirect_check_timer <= 0.0:
@@ -377,7 +411,7 @@ func _camp_summary() -> String:
 			awake += 1
 		elif camp.state == Camp.State.DORMANT:
 			dormant += 1
-	return "%d dormant/%d awake" % [dormant, awake]
+	return "%d dormant/%d awake (%d roamers dormant)" % [dormant, awake, camps.dormant_roamers().size()]
 
 
 func _nearest_enemy_distance() -> float:
@@ -439,11 +473,11 @@ func notify_mecha_died(mecha) -> void:
 func _try_soft_spawn() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
-	if total_soft_spawns >= scaled(max_total_soft_spawns):
+	if total_soft_spawns >= scaled_npcs(max_total_soft_spawns):
 		return
 
 	var pop = _alive_npc_count()
-	if pop >= scaled(target_population):
+	if pop >= scaled_npcs(target_population):
 		return  # population is healthy, leave it alone
 
 	# Tighter cooldown when population gets desperate.
@@ -679,6 +713,62 @@ func _try_pack_respawn() -> void:
 		print("[ExpeditionDirector] a ", arrival, " arrived at ", pos)
 
 
+# ---- Roamers ----
+
+## A dormant roamer at `pos`: one NPC, or a squad (squad_chance), staying
+## roamer_stay s. Null without camps.
+func add_roamer(pos: Vector2) -> Camp:
+	if camps == null:
+		return null
+	_roamer_index += 1
+	var designs: Array = []
+	var squad := {}
+	if arena.has_method("_free_squad_tag") and randf() < squad_chance:
+		designs = NPCManager.pick_squad_designs(3 if randf() < squad_three_chance else 2)
+		squad = {"tag": arena._free_squad_tag(), "anonymous": randf() < arena.SQUAD_ANONYMOUS_CHANCE}
+		for design in designs:
+			if squad.anonymous:
+				design["anonymous"] = true
+			else:
+				design["squad_tag"] = squad.tag
+	else:
+		designs = [NPCManager.random_design_data()]
+	var stay := randf_range(roamer_stay.x, roamer_stay.y)
+	return camps.add_roamer(designs, pos, squad, camps.clock + stay)
+
+
+# A newcomer, while few roamers are about (see the Camps exports).
+func _try_roamer_arrival() -> void:
+	if camps == null or not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+	if camps.dormant_roamers().size() >= scaled(target_roamers) or time_since_roamer_arrival < roamer_arrival_cooldown:
+		return
+	var pos = _pick_offscreen_spawn_position()
+	if pos == null:
+		return
+	add_roamer(pos)
+	total_roamer_arrivals += 1
+	time_since_roamer_arrival = 0.0
+	if Debug.get_setting("verbose_logging"):
+		print("[ExpeditionDirector] a roamer arrived at ", pos)
+
+
+# With no distant idle NPC to redirect, a dormant roamer far enough away is
+# sent toward the player instead.
+func _redirect_roamer() -> void:
+	if camps == null:
+		return
+	var from: Vector2 = arena.player.global_position
+	var far := camps.dormant_roamers().filter(func(c): return c.site.distance_to(from) >= min_redirect_distance)
+	if far.is_empty():
+		return
+	var dest := from + Vector2(randf_range(-redirect_destination_jitter, redirect_destination_jitter),
+			randf_range(-redirect_destination_jitter, redirect_destination_jitter))
+	camps.send_roamer(far.pick_random(), dest)
+	total_redirects += 1
+	time_since_last_redirect = 0.0
+
+
 # ---- Tension and encounters ----
 
 ## Whether the player is in a fight: hit in the last few seconds, or hunted
@@ -762,6 +852,7 @@ func _try_redirect() -> void:
 
 	var candidate = _find_distant_idle_npc()
 	if candidate == null:
+		_redirect_roamer()
 		return
 
 	# Synthesize a "loud" noise event near the player. The NPC will path toward

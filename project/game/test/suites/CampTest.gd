@@ -14,6 +14,11 @@ extends TestSuite
 # pack is dead and the rest hunt it; a duel nobody reached in time has one
 # pilot dead; an abandoned hunt leaves its pack as a camp. The tension rises
 # in a lull, falls in a fight, and eases off for a battered mecha.
+# Roamers: in Local while dormant, walking on paper, waking as the same
+# pilot with no Local lines; through a sleep a mecha keeps its damage and
+# ammo; a squad wakes as one squad, tagged; a loud sound draws a dormant
+# roamer, and it leaves Local when its time is up; its paper fight with a
+# pack comes with it as wounds.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const ENEMY := preload("res://game/mecha/Enemy.tscn")
@@ -55,13 +60,31 @@ class FakeArena extends Node2D:
 		entities.erase(entity)
 		entity.died.disconnect(_on_died)
 	var enemy_maker: Callable
-	func add_enemy(design, enemy_name: String, pos = null) -> Mecha:
-		return enemy_maker.call(design, enemy_name, pos)
+	func add_enemy(design, enemy_name: String, pos = null, join_local := true) -> Mecha:
+		var enemy: Mecha = enemy_maker.call(design, enemy_name, pos)
+		enemy.is_anonymous = design.get("anonymous", false) == true
+		if str(design.get("squad_tag", "")) != "" and not enemy.is_anonymous:
+			enemy.squad_tag = design.squad_tag
+		if join_local:
+			local_pilots.join(enemy)
+		return enemy
 	func _on_mecha_made_sound(sound_data) -> void:
 		sounds.append(sound_data)
 	var field: CampField = null
 	func dormant_sweep_counts(sweeper, direction, width) -> Dictionary:
 		return field.sweep_counts(sweeper, direction, width)
+	var local_pilots := LocalPilots.new()
+	var squads: Array = []
+	func get_wander_point(from: Vector2) -> Vector2:
+		return from + Vector2(8000, 0)
+	func stow_mecha(mecha) -> void:
+		for squad in squads.duplicate():
+			if squad.is_in(mecha):
+				squad.remove(mecha)
+				if squad.members.is_empty():
+					squads.erase(squad)
+		mechas.erase(mecha)
+		mecha.queue_free()
 
 
 var _arena: FakeArena = null
@@ -83,6 +106,11 @@ func run_tests() -> void:
 	await case("a duel nobody reached in time has one pilot dead", _test_duel_over)
 	await case("an abandoned hunt leaves its pack as a camp", _test_abandoned)
 	await case("the tension rises in a lull, falls in a fight, eases off for a battered mecha", _test_tension)
+	await case("a roamer is in Local while dormant, walks on paper, and wakes as the same pilot", _test_roamer_wakes)
+	await case("through a sleep a roamer's mecha keeps its damage and ammo", _test_roamer_keeps_state)
+	await case("a roaming squad wakes as one squad, tagged", _test_roamer_squad)
+	await case("a loud sound draws a dormant roamer; it leaves Local when its time is up", _test_roamer_hears_and_leaves)
+	await case("a dormant roamer's paper fight with a pack comes with it as wounds", _test_roamer_paper_fight)
 	await _clear()
 
 
@@ -423,3 +451,118 @@ func _test_tension() -> void:
 	check(t.pressure(0.2) < t.pressure(1.0), "a battered mecha feels less of it")
 	t.found_encounter()
 	check(absf(t.value - (0.8 - TensionMeter.FOUND_DROP)) < 0.001, "finding an encounter drops it")
+
+
+func _roamer_npcs() -> Array:
+	return _arena.mechas.filter(func(m): return m.mecha_name.begins_with("Roamer_") and not m.is_dead)
+
+
+func _named() -> Dictionary:
+	var design := _design()
+	design["anonymous"] = false
+	return design
+
+
+func _test_roamer_wakes() -> void:
+	var at := Vector2(_reach() + 20000.0, 0.0)
+	var camp := _field.add_roamer([_named()], at)
+	var local: LocalPilots = _arena.local_pilots
+	check_eq(local.get_roster().size(), 1, "its pilot is on the Local roster while it is off the map")
+	check(_roamer_npcs().is_empty(), "and no mecha is on the map")
+	var callsign: String = camp.mechas[0].pilot.callsign
+	check(callsign != "", "with a callsign")
+	var was := camp.site
+	for k in 10:
+		_field.advance(CampField.TICK)
+	check(absf(camp.site.distance_to(was) - CampField.PAPER_SPEED * 10 * CampField.TICK) < 5.0, "it walks on paper at PAPER_SPEED")
+	check(camp.site.x > was.x, "toward its destination")
+	var lines := local.get_log().size()
+	_player.global_position = camp.site - Vector2(_reach() - 500.0, 0.0)
+	_field.update()
+	var npcs := _roamer_npcs()
+	if not check_eq(npcs.size(), 1, "near, its mecha is on the map"):
+		return
+	check_eq(npcs[0].callsign, callsign, "flying the same callsign")
+	check(local.is_in_local(npcs[0]) and local.get_roster().size() == 1, "in its pilot's place in Local")
+	check_eq(local.get_log().size(), lines, "with no joined or left lines")
+
+
+func _test_roamer_keeps_state() -> void:
+	var camp := _field.add_roamer([_named()], Vector2(_reach() - 500.0, 0.0))
+	_field.update()
+	var npc: Mecha = _roamer_npcs()[0]
+	npc.set_pause(true)
+	for k in 6:
+		CampField.paper_hit(npc, npc.global_position + Vector2(300, 0), 1, 3, "test")
+	var health := NPCKnowledge._structural_health(npc)
+	check(health < 1.0, "hurt (%.2f)" % health)
+	var gun = npc.get_weapon_part("arm_weapon_right")
+	var had_clip: bool = gun != null and not (gun.clip_ammo is bool)
+	if had_clip:
+		gun.clip_ammo = maxi(int(gun.clip_ammo) - 3, 0)
+	var clip = gun.clip_ammo if gun != null else null
+	var callsign := npc.callsign
+	await _walk_away()
+	check_eq(camp.state, Camp.State.DORMANT, "with nobody near it goes off the map")
+	check(_roamer_npcs().is_empty(), "its mecha with it")
+	check(_arena.local_pilots.get_roster().size() == 1, "its pilot still in Local")
+	_player.global_position = camp.site - Vector2(_reach() - 500.0, 0.0)
+	_field.update()
+	var back: Mecha = _roamer_npcs()[0]
+	check_eq(back.callsign, callsign, "it comes back as the same pilot")
+	check(absf(NPCKnowledge._structural_health(back) - health) < 0.01,
+			"as hurt as it was (%.2f, %.2f)" % [NPCKnowledge._structural_health(back), health])
+	if had_clip:
+		check_eq(back.get_weapon_part("arm_weapon_right").clip_ammo, clip, "with the ammo it had")
+
+
+func _test_roamer_squad() -> void:
+	var designs := [_design(), _design()]
+	for d in designs:
+		d["squad_tag"] = "TST"
+	var camp := _field.add_roamer(designs, Vector2(_reach() + 20000.0, 0.0), {"tag": "TST", "anonymous": false})
+	check_eq(_arena.local_pilots.count_tag("TST"), 2, "both on the roster under their tag while dormant")
+	_player.global_position = camp.site - Vector2(_reach() - 500.0, 0.0)
+	_field.update()
+	var npcs := _roamer_npcs()
+	check_eq(npcs.size(), 2, "both on the map")
+	check(npcs.all(func(m): return m.squad_tag == "TST"), "tagged")
+	check(_arena.squads.size() == 1 and _arena.squads[0].members.size() == 2, "as one squad")
+	check(npcs.all(func(m): return m.knowledge.squad == _arena.squads[0]), "that each knows")
+
+
+func _test_roamer_hears_and_leaves() -> void:
+	var camp := _field.add_roamer([_named()], Vector2(_reach() + 20000.0, 0.0), {}, 30.0)
+	var noise := camp.site + Vector2(0, 3000)
+	seed(1)
+	var drawn := false
+	for k in 20:
+		_field.hear({"volume_type": "loud", "type": "gunshot", "position": noise, "max_distance": 5000.0})
+		if camp.destination == noise:
+			drawn = true
+			break
+	check(drawn, "a loud sound in earshot sends it there")
+	_field.hear({"volume_type": "loud", "type": "gunshot", "position": camp.site + Vector2(0, 9000), "max_distance": 5000.0})
+	check_eq(camp.destination, noise, "one out of earshot doesn't")
+	for k in 70:
+		_field.advance(CampField.TICK)
+	check(_arena.local_pilots.get_roster().is_empty(), "its time up, it has left Local")
+	check(not _field.camps.has(camp), "and the map")
+
+
+func _test_roamer_paper_fight() -> void:
+	seed(5)
+	var at := Vector2(_reach() + 20000.0, 0.0)
+	var pack := _field.add_camp(Camp.PACK, at, 6, 1)
+	var camp := _field.add_roamer([_named()], at + Vector2(500, 0))
+	for k in 40:
+		_field.paper_round_roamer(pack, camp)
+	check(pack.roster.size() < 6, "it killed members (%d left)" % pack.roster.size())
+	var pips := 0
+	for hit in camp.mechas[0].hits:
+		pips += int(hit[0])
+	check(pips > 0 and pips <= CampField.PAPER_HITS_KEPT, "the pack's hits are noted (%d pips)" % pips)
+	_player.global_position = camp.site - Vector2(_reach() - 500.0, 0.0)
+	_field.update()
+	var npc: Mecha = _roamer_npcs()[0]
+	check(NPCKnowledge._structural_health(npc) < 1.0, "and it wakes with the wounds")

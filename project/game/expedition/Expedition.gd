@@ -297,6 +297,26 @@ func add_entity(scene: PackedScene, spawn_position: Vector2, prepare := Callable
 	return entity
 
 
+## Takes a living NPC off the map without its dying or leaving Local (a
+## roaming camp going back to sleep, CampField): out of its squad and the
+## mecha list, then freed.
+func stow_mecha(mecha) -> void:
+	for squad in squads.duplicate():
+		if squad.is_in(mecha):
+			squad.remove(mecha)
+			if squad.members.is_empty():
+				squads.erase(squad)
+	all_mechas.erase(mecha)
+	mecha.queue_free()
+
+
+# Sounds reach roaming camps off the map too (CampField.hear).
+func _on_mecha_made_sound(sound_data) -> void:
+	super._on_mecha_made_sound(sound_data)
+	if ExpeditionDirector != null and ExpeditionDirector.camps != null:
+		ExpeditionDirector.camps.hear(sound_data)
+
+
 ## What camps off the map add to `sweeper`'s sweep (Mecha.sweep,
 ## CampField.sweep_counts): {kind: count}.
 func dormant_sweep_counts(sweeper: Node2D, direction: Vector2, width: float) -> Dictionary:
@@ -352,7 +372,10 @@ func _add_player() -> void:
 		PlayerHUD.set_site(get_site_name(), _get_navpoly_bounds(navpoly))
 
 
-func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
+# A design's "anonymous" and "squad_tag" (add_squad) go on the NPC before
+# it joins Local: a tagged squad's members are never Anonymous. With join_local false it doesn't join: the caller hands it
+# a place there (a camp's pilot, CampField).
+func add_enemy(design_data, enemy_name: String, spawn_position = null, join_local := true) -> Mecha:
 	var enemy = ENEMY.instantiate()
 	# Caller can pass an explicit position (used by ExpeditionDirector soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
@@ -370,7 +393,15 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	_connect_mecha_signals(enemy)
 	all_mechas.append(enemy)
 	enemy.setup(self, design_data, enemy_name)
-	_join_local(enemy)
+	if design_data is Dictionary:
+		if design_data.has("anonymous"):
+			enemy.is_anonymous = design_data["anonymous"] == true
+		var tag = design_data.get("squad_tag", "")
+		if tag is String and tag != "" and design_data.get("anonymous", false) != true:
+			enemy.squad_tag = tag
+			enemy.is_anonymous = false
+	if join_local:
+		_join_local(enemy)
 	return enemy
 
 

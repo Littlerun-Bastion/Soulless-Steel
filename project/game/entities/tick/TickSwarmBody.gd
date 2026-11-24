@@ -9,7 +9,8 @@ class_name TickSwarmBody
 # redrawn while on screen.
 #
 # What the Entity uses: flash (0..1, white when hit), dead, update_motion()
-# and die(), like any Entity body.
+# and die(), like any Entity body. A killed swarm's Carcass shows
+# make_corpse(): a few dead ticks clumped where it was.
 
 ## Placeholders.
 const MOTE_SIZE := 3.5
@@ -41,6 +42,23 @@ func update_motion(_velocity: Vector2, _dt: float) -> void:
 func die() -> void:
 	dead = true
 	flash = 0.0
+
+
+## What a Carcass shows for a killed swarm: its motes are gone, so a fixed
+## clump of dead ticks.
+func make_corpse() -> Node2D:
+	return DeadMotes.new()
+
+
+class DeadMotes extends Node2D:
+	var dead := true
+	const POINTS := [Vector2(0, 0), Vector2(9, 4), Vector2(-7, 6), Vector2(4, -8), Vector2(-10, -3),
+			Vector2(13, -5), Vector2(-3, 12)]
+	const COLOR := Color(0.45, 0.45, 0.45)
+
+	func _draw() -> void:
+		for point in POINTS:
+			draw_circle(point, MOTE_SIZE, COLOR)
 
 
 func _process(_delta: float) -> void:

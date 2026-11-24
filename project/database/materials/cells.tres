@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "cells"
+display_name = "Cells"
+unit = "Wh"
+display_unit = "kWh"
+kg_per_unit = 0.025
+value = 0.005
+description = "Reclaimed battery cells, counted by the energy they can still hold. Every battery breaks into them. Used in generators, batteries and energy weapons."

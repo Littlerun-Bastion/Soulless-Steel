@@ -89,6 +89,14 @@ func _open() -> void:
 	var populated := await wait_until(func(): return _enemies().size() > 0, 20.0)
 	check(populated, "the expedition populated")
 	_scene.ExpeditionDirector.set_process(false)
+	# The director's Entities wait in camps (CampField): all of them on the
+	# map, so there are some to freeze.
+	var camps: CampField = _scene.ExpeditionDirector.camps
+	if camps != null:
+		camps.set_process(false)
+		camps.awake_budget = 1000
+		for camp in camps.camps.duplicate():
+			camps.wake(camp)
 	await wait_frames(2)
 	for entity in _scene.get_entities():
 		entity.set_pause(true)

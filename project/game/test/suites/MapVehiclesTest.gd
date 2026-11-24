@@ -45,6 +45,7 @@ func run_tests() -> void:
 	await case("a real bullet stops in a car that always blocks", _test_real_bullet)
 	await case("vehicles don't block sight", _test_sight)
 	await case("vehicles only have boxes near a mecha", _test_streaming)
+	await case("kept_share thins a kind's generated spawns, the same ones every time", _test_kept_share)
 
 
 func before_each() -> void:
@@ -157,7 +158,7 @@ func _test_shove_car() -> void:
 	check(_field.awake_count() == 0 and not _field.is_awake(0), "it settles")
 	var placed := _field.vehicle_transform(0).origin
 	check(placed.x > 550.0, "it settled further along (x %.0f)" % placed.x)
-	var sprite_pos: Vector2 = _layer._by_spawn[0][0][2]
+	var sprite_pos: Vector2 = _layer.sprite_position(0)
 	check(sprite_pos.distance_to(_layer.to_local(placed)) < 1.0, "its sprite is back on the layer there")
 	_field._block[0] = 1.0
 	var hit := MapSenses.trace_shot(_arena.get_world_2d(), placed + Vector2(0, -300), placed + Vector2(0, 300), 3)
@@ -281,3 +282,31 @@ func _test_streaming() -> void:
 	check_eq(_field.static_body_count(), 1, "the near car's box went and the far car's came")
 	far = MapSenses.trace_shot(_arena.get_world_2d(), Vector2(20000, -300), Vector2(20000, 300), 3)
 	check(far.by == "vehicle", "the far car now stops shots")
+
+
+func _test_kept_share() -> void:
+	var cars := []
+	for i in 400:
+		cars.append(["vehicle", Vector2(i * 300.0, 0.0), 0.0])
+	for i in 20:
+		cars.append(["truck", Vector2(i * 400.0, 2000.0), 0.0])
+	await _setup(cars)
+	var spawner: PropSpawner = _arena.get_node("PropSpawner")
+	check_eq(_field.vehicle_count(), 420, "every vehicle is there with nothing thinned")
+	spawner.kept_share = {"vehicle": 0.6}
+	spawner._ensure_built()
+	var kept := spawner.indices_of_kinds(PackedStringArray(["vehicle"]))
+	check(kept.size() > 200 and kept.size() < 280, "about 60%% of the cars are kept (%d of 400)" % kept.size())
+	check_eq(spawner.indices_of_kinds(PackedStringArray(["truck"])).size(), 20, "a kind not listed keeps all of its spawns")
+	var first := PackedVector2Array()
+	for i in kept:
+		first.append(spawner.spawn_position(i))
+	spawner.kept_share = {"vehicle": 0.6}
+	spawner._ensure_built()
+	var again := PackedVector2Array()
+	for i in spawner.indices_of_kinds(PackedStringArray(["vehicle"])):
+		again.append(spawner.spawn_position(i))
+	check(again == first, "the same cars are kept on a rebuild")
+	spawner.kept_share = {}
+	spawner._ensure_built()
+	check_eq(spawner.indices_of_kinds(PackedStringArray(["vehicle"])).size(), 400, "an empty kept_share keeps them all")

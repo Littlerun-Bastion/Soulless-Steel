@@ -6,5 +6,9 @@
 script = ExtResource("1_material")
 id = "myofibrilium"
 display_name = "Myofibrilium"
-tech_tier = 3
-description = "An AVIS-synthesised material found on larger Entities. Extraordinarily tough, lightweight and flexible, it is considered to be a wonder material rivalling carbon nanotubes; with the added benefit of its ability to contract or expand based on the reception of electrical signals, analogous to biological muscle. Used extensively in state-of-the-art SAV hardware."
+origin = 1
+unit = "g"
+display_unit = "kg"
+kg_per_unit = 0.001
+value = 0.02
+description = "The glue and muscle that holds an Entity's AVI-Polymer together. Extraordinarily tough, lightweight and flexible, it contracts or expands with the electrical signals it receives, like biological muscle. Entities hold small amounts; the actuator bundles of higher-tech SAVs hold more. Used in the actuators of higher-tech SAV parts."

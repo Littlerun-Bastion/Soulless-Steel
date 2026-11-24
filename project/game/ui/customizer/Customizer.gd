@@ -324,8 +324,9 @@ func _on_ItemFrame_mouse_exited():
 func update_weight():
 	Weight.current_bar.max_value = DisplayMecha.get_stat("weight_capacity")
 	Weight.current_bar.value = DisplayMecha.get_stat("weight")
-	Weight.current_label.text = str(DisplayMecha.get_stat("weight")) 
-	Weight.max_label.text = str(DisplayMecha.get_stat("weight_capacity"))
+	# Tonnes; the "t" is the Metric label beside each value.
+	Weight.current_label.text = Units.number(DisplayMecha.get_stat("weight"))
+	Weight.max_label.text = Units.number(DisplayMecha.get_stat("weight_capacity"))
 
 
 func _on_Save_pressed():

@@ -142,7 +142,7 @@ func _test_incomplete_mecha() -> void:
 func _test_loss_notice() -> void:
 	var cargo := Inventory.new()
 	cargo.initialize_grid(6, 8)
-	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/wiring_loom.tres")))
+	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/wiring_harness.tres")))
 	PlayerProgress.set_mech_inventory(cargo)
 	PlayerProgress.begin_expedition()
 	PlayerProgress.lose_expedition(PlayerProgress.LOSS_ABANDONED)
@@ -151,7 +151,7 @@ func _test_loss_notice() -> void:
 	check(menu.has_node("LossNotice"), "the menu reports the lost expedition")
 	if menu.has_node("LossNotice"):
 		var text := str(menu.get_node("LossNotice").find_children("*", "Label", true, false).map(func(l): return l.text))
-		check("ABANDONED" in text and "Wiring Loom" in text, "saying it was abandoned and what was lost")
+		check("ABANDONED" in text and "Wiring Harness" in text, "saying it was abandoned and what was lost")
 	menu.queue_free()
 	await wait_frames()
 

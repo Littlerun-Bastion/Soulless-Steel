@@ -33,6 +33,10 @@ extends RefCounted
 #     shot meets takes 1 point of damage (VehicleField.damage).
 #   - Vehicles don't block sight: they are lower than a mecha.
 #
+# Barriers (BARRIER_LAYER): the map's border band and the generator's pipes
+# and pools. Mechas and Entities collide with them; no ray mask includes them,
+# so shots fly over and sight passes.
+#
 # Ray masks:
 #   SHOT_MASK      the main hit ray of a projectile; walls and vehicles are
 #                  handled by trace_shot first.
@@ -54,11 +58,16 @@ const HEAVY_VEHICLE_LAYER := 12
 const CAR_MASK := 1 << (VEHICLE_LAYER - 1)
 const HEAVY_VEHICLE_MASK := 1 << (HEAVY_VEHICLE_LAYER - 1)
 const VEHICLE_MASK := CAR_MASK | HEAVY_VEHICLE_MASK
+## Barriers: low ground obstacles that mechas and Entities move against but
+## every ray passes over (the map's border band, pipe runs, pools). See
+## MapBounds and ObstacleField.
+const BARRIER_LAYER := 14
+const BARRIER_MASK := 1 << (BARRIER_LAYER - 1)
 ## Damage a shot does to each vehicle it meets.
 const SHOT_VEHICLE_DAMAGE := 1.0
-const NON_WALL_MASK := 0xFFFFFFFF & ~WALL_MASK
-const SHOT_MASK := 0xFFFFFFFF & ~(WALL_MASK | VEHICLE_MASK)
-const SIGHT_MASK := 0xFFFFFFFF & ~VEHICLE_MASK
+const NON_WALL_MASK := 0xFFFFFFFF & ~(WALL_MASK | BARRIER_MASK)
+const SHOT_MASK := 0xFFFFFFFF & ~(WALL_MASK | VEHICLE_MASK | BARRIER_MASK)
+const SIGHT_MASK := 0xFFFFFFFF & ~(VEHICLE_MASK | BARRIER_MASK)
 const MAX_WALLS := 16
 const MAX_SHOT_HITS := 24
 const MAX_SOLID_SKIPS := 4
@@ -120,7 +129,8 @@ static func smoke_between(a: Vector2, b: Vector2) -> bool:
 # vehicles on the way, in order. Each wall costs 1 AP and the shot stops at
 # the wall where its AP reaches 0, or at the first wall if stop_at_wall (an
 # impact fuse). Each vehicle stops it with the vehicle's shot_block chance,
-# and with `damage` takes SHOT_VEHICLE_DAMAGE.
+# and with `damage` takes SHOT_VEHICLE_DAMAGE. With `damage`, the market
+# stalls under the path flown also break (StallField); they don't stop it.
 # Returns {"ap": AP left, "stop": where it stopped or null, "by": "wall",
 # "vehicle" or ""}.
 static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop_at_wall := false, damage := false) -> Dictionary:
@@ -138,11 +148,15 @@ static func trace_shot(world: World2D, from: Vector2, to: Vector2, ap: int, stop
 			break
 		var met := cover_hit(result, ap, stop_at_wall, damage)
 		if met.stop != null:
+			if damage:
+				StallField.shot_through(null, from, met.stop)
 			return met
 		ap = met.ap
 		start = result.position + dir * 0.5
 		if from.distance_squared_to(start) >= length_sq:
 			break
+	if damage:
+		StallField.shot_through(null, from, to)
 	return {"ap": ap, "stop": null, "by": ""}
 
 

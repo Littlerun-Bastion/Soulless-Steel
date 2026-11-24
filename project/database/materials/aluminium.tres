@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "aluminium"
+display_name = "Aluminium"
+unit = "kg"
+display_unit = "t"
+kg_per_unit = 1.0
+value = 0.02
+description = "A light metal, found in wheels, missile bodies, air conditioners and bulk aluminium. Makers of light parts, such as Sparrowhawk and Artes Estrella, build in it where others use steel."

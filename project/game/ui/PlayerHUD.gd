@@ -35,6 +35,8 @@ const BLINK_PITCH_TARGET_MOD = .40
 @onready var exit_marker: ExitMarker = $SubViewportContainer/SubViewport/ExitMarker
 # Ping contacts (wards, drones) as markers through walls (game/ui/hud/).
 @onready var hud_contacts: HudContacts = $SubViewportContainer/SubViewport/HudContacts
+# Brackets round the salvage sources in sight (game/ui/hud/).
+@onready var hud_salvage: HudSalvage = $SubViewportContainer/SubViewport/HudSalvage
 # Mechas the Seeker covers, outlined (game/ui/hud/).
 @onready var hud_vision_outlines: HudVisionOutlines = $SubViewportContainer/SubViewport/HudVisionOutlines
 # Local: name tags and speech boxes over mechas, the feed (top left) and the
@@ -260,6 +262,7 @@ func setup(player_ref, mechas_ref):
 	hud_alerts.setup(player)
 	interact_prompt.setup(player)
 	hud_contacts.setup(player, mechas)
+	hud_salvage.setup(player)
 	hud_vision_outlines.setup(player)
 	hud_world_labels.setup(player, mechas)
 	hud_quick_chat.setup(player)
@@ -360,6 +363,7 @@ func player_died():
 	hud_alerts.player_died()
 	interact_prompt.player_died()
 	hud_contacts.player_died()
+	hud_salvage.player_died()
 	hud_vision_outlines.player_died()
 	hud_world_labels.player_died()
 	hud_local_feed.player_died()

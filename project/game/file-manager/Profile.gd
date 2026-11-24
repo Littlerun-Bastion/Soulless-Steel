@@ -27,6 +27,9 @@ var options = {
 	# target and the body follows the cursor (Player.aim_at). Off: the head
 	# follows the cursor too.
 	"lock_head_tracking": true,
+	# On: salvage in the cargo turns into materials when the player extracts.
+	# Parts stay. Needs Recycler Mk II (PlayerProgress.extract_expedition).
+	"auto_salvage": false,
 	"locale": 0,
 	"invert_x": true,
 	"invert_y": false,

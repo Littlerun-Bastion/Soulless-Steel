@@ -6,9 +6,13 @@ class_name FabricatorWindow
 ## ("BLUEPRINT 2/3"). The selected one on the right: what it costs (materials
 ## had / needed, credits), what comes out, and BUILD, which puts the part in
 ## the stash. Recycling parts in the Hangar teaches their blueprints.
+## When the build is short of materials that AVI-Polymer can fill
+## (Fabricator), FILL WITH AVI-POLYMER shows; switched on, the cost lists
+## the filler and BUILD uses it.
 
 var build_button: Button
 var block_label: Label
+var fill_button: Button
 
 var _selected: Array = []  # [part_type, part_id], or [] for none
 var _group := ButtonGroup.new()
@@ -117,6 +121,11 @@ func _build() -> void:
 	sections.add_child(heading)
 	_cost_box = MechUI.vbox(&"TightStack")
 	sections.add_child(_section("COST", _cost_box))
+	fill_button = MechUI.button("FILL WITH AVI-POLYMER", &"Tab")
+	fill_button.toggle_mode = true
+	fill_button.focus_mode = Control.FOCUS_NONE
+	fill_button.toggled.connect(func(_on): _queue_refresh())
+	sections.add_child(fill_button)
 	_output = MechUI.label(&"LabelBody", "", true)
 	sections.add_child(_section("OUTPUT", _output))
 
@@ -172,24 +181,33 @@ func _fill_detail() -> void:
 		block_label.text = "! NO BLUEPRINT"
 		_block_box.visible = true
 		build_button.disabled = true
+		fill_button.visible = false
 		return
 	var part_type: String = _selected[0]
 	var part_id: String = _selected[1]
 	_title.text = _part_name(_selected).to_upper()
 	_meta.text = _row_meta(_selected)
 	var cost := Fabricator.material_cost(part_type, part_id)
+	var filler := Fabricator.filler_cost(part_type, part_id)
+	fill_button.visible = filler != 0
+	fill_button.disabled = not Fabricator.can_fill(part_type, part_id)
+	var filling := using_filler(part_type, part_id)
 	for material_id in Materials.ids():
 		if not cost.has(material_id):
 			continue
 		var have := PlayerProgress.get_material_count(material_id)
+		var enough: bool = have >= cost[material_id] or (filling and not material_id in Fabricator.UNFILLABLE)
 		_cost_box.add_child(_cost_row(Materials.display_name(material_id).to_upper(),
-				"%d / %d" % [have, cost[material_id]], have >= cost[material_id]))
+				Materials.format_pair(material_id, have, cost[material_id]), enough))
+	if filling:
+		_cost_box.add_child(_cost_row("AVI-POLYMER FILLER",
+				"+ " + Materials.format_amount(Materials.AVI_POLYMER, filler), true))
 	var credits := Fabricator.credit_cost(part_type, part_id)
 	_cost_box.add_child(_cost_row("CREDITS", "%d / %d CT" % [int(PlayerProgress.get_money()), credits],
 			PlayerProgress.can_afford(credits)))
 	_output.text = "Into the stash. Fabricator %s: %s." % [Facilities.level_name(Fabricator.level()),
 			Facilities.describe(Facilities.FABRICATOR, Fabricator.level())]
-	var reason := Fabricator.block_reason(part_type, part_id)
+	var reason := Fabricator.block_reason(part_type, part_id, filling)
 	block_label.text = "! " + reason if reason != "" else ""
 	_block_box.visible = reason != ""
 	build_button.disabled = reason != ""
@@ -206,7 +224,7 @@ func _cost_row(title: String, value: String, enough: bool) -> HBoxContainer:
 func _on_build_pressed() -> void:
 	if _selected.is_empty():
 		return
-	var stack := Fabricator.build(_selected[0], _selected[1])
+	var stack := Fabricator.build(_selected[0], _selected[1], null, using_filler(_selected[0], _selected[1]))
 	if stack == null:
 		AudioManager.play_sfx("back")
 		refresh()
@@ -215,6 +233,12 @@ func _on_build_pressed() -> void:
 	MechLog.write("FAB", "Built %s" % Grades.label(stack.grade, _part_name(_selected)), MechLog.Kind.LOOT)
 	MechOS.refresh_inventory_windows()
 	refresh()
+
+
+## Whether BUILD fills the selected build's shortfall with AVI-Polymer: the
+## toggle is on and the filler covers it.
+func using_filler(part_type: String, part_id: String) -> bool:
+	return fill_button.button_pressed and Fabricator.can_fill(part_type, part_id)
 
 
 func _queue_refresh() -> void:
@@ -248,7 +272,7 @@ func _row_meta(entry: Array) -> String:
 	var tier = part.get("tech_tier") if part != null else null
 	var bits := [str(entry[0]).replace("_", " ").to_upper()]
 	if tier is int and tier != item_data.TechTier.NONE:
-		bits.append("%s TECH" % Materials.tier_name(tier).to_upper())
+		bits.append("%s TECH" % item_data.tier_name(tier).to_upper())
 	var progress := PlayerProgress.blueprint_progress(entry[0], entry[1])
 	bits.append("KNOWN" if progress >= PlayerProgress.BLUEPRINT_COPIES
 			else "BLUEPRINT %d/%d" % [progress, PlayerProgress.BLUEPRINT_COPIES])

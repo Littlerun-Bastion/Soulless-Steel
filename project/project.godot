@@ -305,6 +305,14 @@ decline_offer={
 ]
 }
 
+[layer_names]
+
+2d_physics/layer_10="building_walls"
+2d_physics/layer_11="cars"
+2d_physics/layer_12="heavy_vehicles"
+2d_physics/layer_13="devices"
+2d_physics/layer_14="map_barrier"
+
 [physics]
 
 common/enable_pause_aware_picking=true

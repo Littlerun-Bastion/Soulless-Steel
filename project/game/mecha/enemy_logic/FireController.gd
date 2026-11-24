@@ -31,6 +31,9 @@ extends RefCounted
 ##     player's calls with their cooldowns and charges
 ##   - with no target and nobody shooting at it, the NPC shoots enemy wards,
 ##     drones, Seekers and decoys it can see within DEVICE_RANGE
+##   - an NPC in the distant tier fires by the rough rules: the same choices,
+##     but no round flies and no ray is cast (Enemy.rough_shot,
+##     Enemy.rough_fire_at)
 ## Every shot an NPC fires goes through here, so AICombatLog sees them all.
 ## Weapon roles come from Enemy._weapon_roles (see Enemy._weapon_role).
 
@@ -157,7 +160,9 @@ func blind_fire_at(point: Vector2) -> bool:
 	var to_point: Vector2 = point - npc.global_position
 	if absf(Vector2.UP.rotated(npc.global_rotation).angle_to(to_point)) > BLIND_FIRE_CONE:
 		return false
-	var walls: int = MapSenses.wall_hits(npc.get_world_2d(), npc.global_position, point).size()
+	# A distant NPC casts no rays: its rounds get through (Enemy, Distant tier).
+	var distant: bool = npc.is_distant()
+	var walls: int = 0 if distant else MapSenses.wall_hits(npc.get_world_2d(), npc.global_position, point).size()
 	var fired := false
 	for slot in npc.WEAPON_SLOTS:
 		if role(slot) != "gun" or int(npc._weapon_ap.get(slot, 0)) <= walls:
@@ -168,8 +173,11 @@ func blind_fire_at(point: Vector2) -> bool:
 		if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
 			node.reload()
 		elif node.can_shoot():
-			npc.shoot(slot)
-			fired = true
+			if distant:
+				fired = npc.rough_fire_at(slot, point) == "" or fired
+			else:
+				npc.shoot(slot)
+				fired = true
 	if fired:
 		last_shot_time = npc.knowledge.now()
 		AICombatLog.record_shot(npc, to_point.length(), true)
@@ -407,7 +415,8 @@ func _poor_shot(target_pos: Vector2, distance: float, eff: Dictionary) -> bool:
 
 
 func _fire_at(slot: String, point: Vector2) -> bool:
-	if npc.fire_at_point(slot, point) != "":
+	var reason: String = npc.rough_fire_at(slot, point) if npc.is_distant() else npc.fire_at_point(slot, point)
+	if reason != "":
 		return false
 	salvos_fired[slot] = int(salvos_fired.get(slot, 0)) + 1
 	return true
@@ -422,6 +431,8 @@ func _try_to_shoot(slot: String, target) -> bool:
 		node.reload()
 		return false
 	if node.can_shoot() and npc.can_see_target(target):
+		if npc.is_distant():
+			return npc.rough_shot(slot, target)
 		npc.shoot(slot)
 		return true
 	return false

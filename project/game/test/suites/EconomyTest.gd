@@ -10,8 +10,8 @@ extends TestSuite
 # Each case starts from fresh progress (PlayerProgress.reset).
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
-const PLATE := preload("res://database/items/salvage/armor_plate_fragment.tres")  # price 10
-const ENGINE := preload("res://database/items/salvage/damaged_nt_engine.tres")   # price 220
+const PLATE := preload("res://database/items/salvage/oil_drum.tres")  # price 10
+const ENGINE := preload("res://database/items/salvage/fisher_shell.tres")   # price 240
 const BIG_CORE := "Lancelot-Core"  # price 3200: a sale over SELL_CONFIRM_OVER
 
 
@@ -70,9 +70,9 @@ func _part_stack(part_type: String, part_id: String) -> item_stack:
 
 func _test_sell_value() -> void:
 	check_eq(PlayerProgress.SELL_RATE, 0.5, "the Store sells at full value and buys back at half")
-	check_eq(PlayerProgress.sell_value(_stack(ENGINE)), 110, "a 220 ct engine sells for 110")
+	check_eq(PlayerProgress.sell_value(_stack(ENGINE)), 120, "a 240 ct shell sells for 120")
 	check_eq(PlayerProgress.sell_value(_stack(PLATE, 3)), 15, "a stack sells as a whole (3 x 10 ct -> 15)")
-	check_eq(PlayerProgress.sell_value(_stack(PLATE)), 5, "one 10 ct plate -> 5")
+	check_eq(PlayerProgress.sell_value(_stack(PLATE)), 5, "one 10 ct drum -> 5")
 	var core := _part_stack("core", BIG_CORE)
 	check(core != null, "a part in the stash")
 	check_eq(PlayerProgress.sell_value(core), 1600, "a part sells for half its price (3200 -> 1600)")
@@ -131,9 +131,9 @@ func _test_sell_all() -> void:
 	stash.add_stack_anywhere(_stack(PLATE, 2))
 	stash.add_stack_anywhere(_stack(ENGINE))
 	var core := _part_stack("core", BIG_CORE)
-	check_eq(PlayerProgress.salvage_sell_value(stash), 120, "the preview counts salvage only (10 + 110)")
-	check_eq(PlayerProgress.sell_all_salvage(stash), 120, "Sell all salvage pays for every piece")
-	check_eq(PlayerProgress.get_money(), 120.0, "credits added")
+	check_eq(PlayerProgress.salvage_sell_value(stash), 130, "the preview counts salvage only (10 + 120)")
+	check_eq(PlayerProgress.sell_all_salvage(stash), 130, "Sell all salvage pays for every piece")
+	check_eq(PlayerProgress.get_money(), 130.0, "credits added")
 	check_eq(stash.get_stacks(), [core], "the part stays: parts sell one at a time")
 	check_eq(PlayerProgress.sell_all_salvage(stash), 0, "nothing left to sell")
 
@@ -144,7 +144,7 @@ func _test_cargo_value() -> void:
 	var gun := _weapon_stack()
 	for stack in [_stack(ENGINE), _stack(PLATE, 3), gun]:
 		check(cargo.add_stack_anywhere(stack), "packed into the cargo")
-	var expected := 110 + 15 + PlayerProgress.sell_value(gun)
+	var expected := 120 + 15 + PlayerProgress.sell_value(gun)
 	check_eq(PlayerProgress.cargo_sell_value(), expected, "everything in the cargo counts, parts too")
 
 
@@ -162,7 +162,7 @@ func _test_sell_actions() -> void:
 	ctx["recycle_allowed"] = true
 	check(sell["visible_if"].call(ctx), "shown in the Hangar")
 	check(sell["enabled_if"].call(ctx) == "", "enabled on things with a value")
-	check_eq(sell["label"].call(ctx), "Sell (110 ct)", "the label says what it pays")
+	check_eq(sell["label"].call(ctx), "Sell (120 ct)", "the label says what it pays")
 	check_eq(sell["confirm"].call(ctx), "", "a small sale goes straight through")
 	var ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
 	check("recycle" in ids and "sell" in ids, "offered next to Recycle")
@@ -178,7 +178,7 @@ func _test_sell_actions() -> void:
 	check_eq(sell["confirm"].call(core_ctx), "Confirm: sell for 1600 ct?", "a big sale asks first")
 
 	sell["run"].call(ctx)
-	check_eq(PlayerProgress.get_money(), 110.0, "Sell sells it")
+	check_eq(PlayerProgress.get_money(), 120.0, "Sell sells it")
 	check(not stash.get_stacks().has(engine), "and takes it out of the stash")
 
 	var inv_ctx := {"type": "inventory", "inventory": stash, "recycle_allowed": true}
@@ -188,7 +188,7 @@ func _test_sell_actions() -> void:
 	check_eq(sell_all["label"].call(inv_ctx), "Sell all salvage (10 ct)", "its label previews the total")
 	check_eq(sell_all["confirm"].call(inv_ctx), "", "a small total doesn't ask")
 	sell_all["run"].call(inv_ctx)
-	check_eq(PlayerProgress.get_money(), 120.0, "Sell all salvage sells the salvage")
+	check_eq(PlayerProgress.get_money(), 130.0, "Sell all salvage sells the salvage")
 	check_eq(stash.get_stacks(), [core], "and leaves the part")
 	check(not sell_all["visible_if"].call({"type": "inventory", "inventory": Inventory.new(), "recycle_allowed": true}),
 			"no Sell all on an empty inventory")
@@ -273,6 +273,6 @@ func _test_debt() -> void:
 	stash.add_stack_anywhere(engine)
 	check(PlayerProgress.can_sell(engine), "selling works in debt")
 	PlayerProgress.sell_stack(stash, engine, false)
-	check_eq(PlayerProgress.get_money(), -40.0, "and pays the debt off first")
+	check_eq(PlayerProgress.get_money(), -30.0, "and pays the debt off first")
 	PlayerProgress.add_money(60, false)
 	check(not PlayerProgress.is_in_debt() and PlayerProgress.can_afford(20), "out of debt, buying again")

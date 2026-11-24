@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c07dvh0fkiip0" path="res://assets/images/ui/player_ui/weapon_types/electrical_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "electric_motor"
+display_name = "Electric Motor"
+description = "A big industrial electric motor. Steel frame, copper windings."
+icon = ExtResource("2_icon")
+weight = 0.4
+price = 5
+tags = Array[String](["salvage"])
+item_size = [2, 2]
+max_stack = 1
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 300, "copper": 100})

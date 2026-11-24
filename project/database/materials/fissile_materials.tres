@@ -5,6 +5,10 @@
 [resource]
 script = ExtResource("1_material")
 id = "fissile_materials"
-display_name = "Fissile Materials"
-tech_tier = 1
-description = "Used as a power source for all but the very bleeding-edge SAV Generators, fissile material such as Uranium or Plutonium is critical in the functioning of SAVs, generating electricity and thermal energy to drive SAV hardware. Hard to procure aside from taking generator cores from other SAVs or Entities, but can be found sparingly in old human surface facilities."
+display_name = "Fissile"
+origin = 1
+unit = "kg"
+display_unit = "kg"
+kg_per_unit = 1.0
+value = 66.0
+description = "Any fissile material a SAV generator can use, such as uranium or plutonium. Comes from the fuel cassettes of dead SAVs with higher-tier generators, and from the RTG cores of remote masts. Used in higher-tier generators."

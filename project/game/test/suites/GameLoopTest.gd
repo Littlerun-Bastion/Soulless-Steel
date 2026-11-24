@@ -11,8 +11,8 @@ extends TestSuite
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
 const EXPEDITION := preload("res://game/expedition/Expedition.tscn")
-const SALVAGE := preload("res://database/items/salvage/hydraulic_actuator.tres")   # 2 steel, 2 oil
-const LOOT := preload("res://database/items/salvage/circuit_board.tres")           # 2 silicon, 1 copper
+const SALVAGE := preload("res://database/items/salvage/jerry_can.tres")   # 20 L Oil
+const LOOT := preload("res://database/items/salvage/wiring_harness.tres")           # 25 kg Copper, 2 kg Electronics
 const NEW_WEAPON := "Clarent-01"
 
 var _saved_skip_intro = null
@@ -126,6 +126,6 @@ func _test_hangar_back() -> void:
 	var grid = MechOS.open_windows["mech_cargo"].inventory_grid
 	_action("inventory", "recycle_all")["run"].call({"type": "inventory", "inventory": cargo, "recycle_allowed": true, "source": grid})
 	check(cargo.is_empty(), "everything recycled")
-	check_eq(PlayerProgress.get_materials(), {"steel": 2, "oil": 2, "silicon": 2, "copper": 1}, "into the right materials")
+	check_eq(PlayerProgress.get_materials(), {"oil": 20000, "copper": 25, "electronics": 2}, "into the right materials, 1 to 1")
 	hangar.queue_free()
 	await wait_frames(2)

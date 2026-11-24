@@ -813,7 +813,7 @@ Modified by the SAV's Chassis."
 mouse_filter = 1
 theme = ExtResource( 1 )
 custom_fonts/font = ExtResource( 2 )
-text = "Weight Capacity"
+text = "Weight Capacity (t)"
 
 [node name="ComparisonValue" type="Label" parent="CategoryContainers/MobilityContainer/VBoxContainer/WeightCapacity"]
 offset_left = 342.0

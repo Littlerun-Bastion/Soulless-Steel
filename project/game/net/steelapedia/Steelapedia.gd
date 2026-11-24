@@ -523,9 +523,9 @@ static func part_infobox(part_type: String, part_id: String) -> Array:
 	rows.append(["Maker", "[[%s|%s]]" % [maker, Manufacturers.display_name(maker)] if maker != "" else "-"])
 	rows.append(["Part type", Store.type_name(part_type)])
 	var tier = part.get("tech_tier")
-	rows.append(["Tech tier", Materials.tier_name(tier) if tier is int and tier != item_data.TechTier.NONE else "-"])
+	rows.append(["Tech tier", item_data.tier_name(tier) if tier is int and tier != item_data.TechTier.NONE else "-"])
 	rows.append(["Price", "%d CT" % Store.price(part_type, part_id)])
-	rows.append(["Weight", MechUI.fmt(float(part.get("weight")))])
+	rows.append(["Weight", Units.weight(float(part.get("weight")))])
 	var size = part.get("item_size")
 	if size is Array and size.size() >= 2:
 		rows.append(["Size", "%d × %d" % [int(size[0]), int(size[1])]])

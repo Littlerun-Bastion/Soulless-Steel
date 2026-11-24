@@ -6,7 +6,7 @@ extends Marker2D
 # and rotation are used; `chance` is rolled once per map seed, so a point can
 # be there in some raids and not others.
 
-@export_enum("vehicle", "truck", "vehicle_wreck", "tree", "bush", "debris") var kind := "vehicle":
+@export_enum("vehicle", "truck", "vehicle_wreck", "tree", "bush", "debris", "stall", "bus", "military", "container", "hut", "clutter") var kind := "vehicle":
 	set(value):
 		kind = value
 		_changed()

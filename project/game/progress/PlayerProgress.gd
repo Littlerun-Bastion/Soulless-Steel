@@ -9,7 +9,9 @@ extends Node
 #                      carry theirs on the stack, item_stack.grade)
 #   - stash          : the hangar grid inventory (bought and looted parts/items)
 #   - mech cargo     : the grid inventory carried inside the mecha
-#   - materials      : crafting materials from recycling salvage (Materials)
+#   - materials      : crafting materials from recycling salvage (Materials):
+#                      material id -> whole stored units (kg of Steel, mL
+#                      of Oil...). A ledger: they take no stash space
 #   - blueprints     : parts the Fabricator can build (learned by recycling)
 #   - facilities     : Hangar facility levels (Facilities)
 #   - Local          : the callsign other pilots see, whether the next
@@ -30,6 +32,14 @@ extends Node
 # they extract; the stash and money at home are always safe. The in-expedition
 # flag is saved, so a crash or closing the game mid-run counts as abandoning
 # it — FileManager resolves that on the next boot.
+#
+# Salvage is worth exactly its materials. Recycling it at home is lossless:
+# it gives its whole composition (parts scale by their grade), and the loss
+# is at the Fabricator, which takes twice the composition. Currency items
+# (.50 Cartridges, item_data.CURRENCY_TAG) sell and recycle 1 to 1 into
+# credits; out on an expedition they are cargo like any loot, lost with the
+# mecha. With the "auto_salvage" setting on and Recycler Mk II built,
+# extracting recycles the cargo's salvage (parts stay).
 #
 # Testing: game/test/suites/PlayerProgressTest.tscn runs self-checks (F6 in the
 # editor) with autosave off, restoring the real progress afterwards.
@@ -103,6 +113,8 @@ var lessons_seen: Dictionary = {}
 var callsign := DEFAULT_CALLSIGN
 var deploy_anonymous := false
 var reputation := 0
+# What the last extraction's auto-salvage recycled (material id -> amount).
+var last_auto_salvage: Dictionary = {}
 
 var autosave := true  # tests turn this off so the real profile isn't written
 
@@ -325,55 +337,104 @@ func add_materials(amounts: Dictionary, should_save := true) -> void:
 		_save()
 
 
-# Salvage and parts with a composition can be recycled — at home only:
-# recycling mid-run would turn loot into materials that can't be lost.
+# Salvage and parts with a composition can be recycled, and currency (into
+# credits) — at home only: recycling mid-run would turn loot into materials
+# that can't be lost.
 func can_recycle(stack: item_stack) -> bool:
-	return not in_expedition and not recycle_value(stack).is_empty()
+	if in_expedition or stack == null:
+		return false
+	return is_currency(stack) or not recycle_value(stack).is_empty()
 
 
-# What recycling the whole stack yields: material id -> amount.
+# What recycling the whole stack yields: material id -> amount. Salvage
+# gives exactly its composition; a part's grade scales its yield, rounded
+# to the nearest unit.
 func recycle_value(stack: item_stack) -> Dictionary:
 	var value := {}
 	if stack == null:
 		return value
 	var composition := stack.get_composition()
+	var mult := Grades.recycle_mult(stack.grade) if stack.is_part() else 1.0
 	for material_id in composition:
-		# A part's grade and the Recycler (Facilities) scale the yield,
-		# rounded to the nearest unit.
-		var mult := Grades.recycle_mult(stack.grade) * Facilities.recycle_mult()
 		var amount := roundi(int(composition[material_id]) * stack.quantity * mult)
 		if amount > 0:
 			value[material_id] = amount
 	return value
 
 
-# Removes the stack from inv and adds its materials. Returns what was gained
-# ({} if it can't be recycled).
+# Recycler Mk III by-products: the credits recycling this salvage pays on
+# top of its materials (Facilities.byproduct_rate of what they are worth).
+# Parts and currency give none.
+func recycle_byproducts(stack: item_stack) -> int:
+	if stack == null or stack.is_part() or is_currency(stack):
+		return 0
+	return int(floor(Materials.value_of(recycle_value(stack)) * Facilities.byproduct_rate()))
+
+
+# Removes the stack from inv and adds its materials (currency: its credits;
+# by-products: credits too). Returns the materials gained ({} if it can't
+# be recycled, and for currency).
 func recycle_stack(inv: Inventory, stack: item_stack, should_save := true) -> Dictionary:
 	if inv == null or not can_recycle(stack) or not inv.get_stacks().has(stack):
 		return {}
+	if is_currency(stack):
+		inv.remove_item_stack(stack)
+		add_money(currency_value(stack), should_save)
+		return {}
 	var gained := recycle_value(stack)
+	var byproducts := recycle_byproducts(stack)
 	inv.remove_item_stack(stack)
 	learn_from(stack)
+	if byproducts > 0:
+		add_money(byproducts, false)
 	add_materials(gained, should_save)
 	return gained
 
 
-# Recycles every piece of salvage in inv. Parts stay, weapons included: they
-# are only recycled one at a time. Saves once.
+# Recycles every piece of salvage in inv, currency included. Parts stay,
+# weapons included: they are only recycled one at a time. Saves once.
 func recycle_all(inv: Inventory) -> Dictionary:
 	var gained := {}
 	if inv == null:
 		return gained
+	var any := false
 	for stack in inv.get_stacks():
-		if stack.is_part():
+		if stack.is_part() or not can_recycle(stack):
 			continue
+		any = true
 		var got := recycle_stack(inv, stack, false)
 		for material_id in got:
 			gained[material_id] = int(gained.get(material_id, 0)) + int(got[material_id])
-	if not gained.is_empty():
+	if any:
 		_save()
 	return gained
+
+
+# ---- Currency ----
+
+# A .50 Cartridge and the like: money in item form (item_data.CURRENCY_TAG).
+func is_currency(stack: item_stack) -> bool:
+	if stack == null or stack.is_part():
+		return false
+	var source = stack.get_resource()
+	var tags = source.get("tags") if source != null else null
+	return tags is Array and item_data.CURRENCY_TAG in tags
+
+
+# What a currency stack is worth: its price per item, 1 to 1 (no sell rate).
+func currency_value(stack: item_stack) -> int:
+	if not is_currency(stack):
+		return 0
+	var price = stack.get_resource().get("price")
+	return int(price) * stack.quantity if price is int or price is float else 0
+
+
+# ---- Auto-salvage ----
+
+# Whether extracting recycles the cargo's salvage: the "auto_salvage"
+# setting (SYS) is on and the Recycler is Mk II or better.
+func auto_salvage_on() -> bool:
+	return bool(Profile.get_option("auto_salvage")) and Facilities.auto_salvage_unlocked()
 
 
 # ---- Hangar facilities (Facilities) ----
@@ -462,10 +523,13 @@ func can_sell(stack: item_stack) -> bool:
 
 
 # What selling the whole stack pays: SELL_RATE of its value (price, scaled by
-# a part's grade), in whole credits (0 for things with no value).
+# a part's grade), in whole credits (0 for things with no value). Currency
+# sells 1 to 1.
 func sell_value(stack: item_stack) -> int:
 	if stack == null:
 		return 0
+	if is_currency(stack):
+		return currency_value(stack)
 	var source = stack.get_resource()
 	var price = source.get("price") if source != null else null
 	if not (price is int or price is float) or price <= 0:
@@ -532,15 +596,27 @@ func is_in_expedition() -> bool:
 
 
 # Cargo already lives in mech_inventory, so extracting only has to end the
-# run and save what the player brought back.
+# run and save what the player brought back. With auto-salvage on
+# (auto_salvage_on), the cargo's salvage is then recycled; what it gave is
+# kept in last_auto_salvage ({} when nothing was).
 func extract_expedition() -> void:
 	if not in_expedition:
 		return
 	in_expedition = false
 	_log("expedition extracted")
-	# Listeners (PilotNet's gigs) see the cargo brought home; their changes
-	# go into the same save.
+	# Listeners (PilotNet's gigs) see the cargo brought home, before any
+	# auto-salvage; their changes go into the same save.
 	expedition_extracted.emit()
+	last_auto_salvage = {}
+	if auto_salvage_on() and mech_inventory != null:
+		var money_before := money
+		last_auto_salvage = recycle_all(mech_inventory)
+		var credits := int(money - money_before)
+		if not last_auto_salvage.is_empty() or credits > 0:
+			var text := Materials.describe(last_auto_salvage)
+			if credits > 0:
+				text += (", " if text != "" else "") + "%d CT" % credits
+			MechLog.write("HANGAR", "Auto-salvage: " + text, MechLog.Kind.LOOT)
 	_save()
 
 
@@ -701,6 +777,7 @@ func reset() -> void:
 	in_expedition = false
 	pending_loss_report = {}
 	lessons_seen = {}
+	last_auto_salvage = {}
 	callsign = DEFAULT_CALLSIGN
 	deploy_anonymous = false
 	reputation = 0
@@ -718,6 +795,7 @@ func get_save_data() -> Dictionary:
 		"stash_inventory": _inventory_to_dict(stash_inventory),
 		"mech_inventory": _inventory_to_dict(mech_inventory),
 		"materials": materials,
+		"materials_units": LegacySave.UNITS_VERSION,
 		"blueprints": blueprints,
 		"facilities": facilities,
 		"in_expedition": in_expedition,
@@ -735,13 +813,23 @@ func set_save_data(data) -> void:
 	money = float(data.get("money", 0.0))
 	current_mecha = _with_default_slots(data.get("current_mecha"))
 	current_grades = _grades_from_dict(data.get("current_grades", {}))  # older saves: all Standard
-	stash_inventory = _inventory_from_dict(data.get("stash_inventory"))
-	mech_inventory = _inventory_from_dict(data.get("mech_inventory"))
-	materials = _materials_from_dict(data.get("materials", {}))
+	in_expedition = bool(data.get("in_expedition", false))
+	# Saves from before real units: their materials are converted, and the
+	# removed salvage items in them are recycled (LegacySave). Cargo out on
+	# an expedition is still at stake, so it is left as it is.
+	var legacy := LegacySave.is_legacy(data)
+	var old_items := {}
+	stash_inventory = _inventory_from_dict(data.get("stash_inventory"), old_items, legacy)
+	mech_inventory = _inventory_from_dict(data.get("mech_inventory"), old_items, legacy and not in_expedition)
+	var saved_materials = data.get("materials", {})
+	if legacy and typeof(saved_materials) == TYPE_DICTIONARY:
+		saved_materials = LegacySave.convert_materials(saved_materials)
+	materials = _materials_from_dict(saved_materials)
+	for material_id in old_items:
+		materials[material_id] = get_material_count(material_id) + int(old_items[material_id])
 	blueprints = _blueprints_from_dict(data.get("blueprints", {}))
 	facilities = _facilities_from_dict(data.get("facilities", {}))
 	fit_stash()
-	in_expedition = bool(data.get("in_expedition", false))
 	var report = data.get("pending_loss_report", {})
 	pending_loss_report = report if typeof(report) == TYPE_DICTIONARY else {}
 	lessons_seen = {}
@@ -894,7 +982,9 @@ func _inventory_to_dict(inv: Inventory) -> Dictionary:
 	}
 
 
-func _inventory_from_dict(data) -> Inventory:
+# With recycle_old, removed salvage items of old saves (LegacySave) are
+# recycled into salvaged (material id -> amount) instead of being dropped.
+func _inventory_from_dict(data, salvaged: Dictionary = {}, recycle_old := false) -> Inventory:
 	# Be defensive: old saves might have wrong types here.
 	if typeof(data) != TYPE_DICTIONARY or data.is_empty():
 		return null
@@ -930,6 +1020,12 @@ func _inventory_from_dict(data) -> Inventory:
 			# load as blank squares; drop them instead.
 			var item_path := str(entry.get("item_path", ""))
 			var res = load(item_path) if item_path != "" and ResourceLoader.exists(item_path) else null
+			if res == null and recycle_old and LegacySave.is_old_item(item_path):
+				var got := LegacySave.old_item_materials(item_path, stack.quantity)
+				for material_id in got:
+					salvaged[material_id] = int(salvaged.get(material_id, 0)) + int(got[material_id])
+				_log("recycled old item '%s' from save" % item_path)
+				continue
 			if res == null:
 				push_warning("PlayerProgress: dropping saved item '%s' (file missing)" % item_path)
 				continue

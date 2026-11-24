@@ -49,7 +49,7 @@ func update_info() -> void:
 	if item_count_label != null:
 		item_count_label.text = "Items: %d" % inventory_grid.get_item_count()
 	if weight_label != null:
-		weight_label.text = "Weight: %.1f" % inventory_grid.get_total_weight()
+		weight_label.text = "Weight: %s" % Units.weight(inventory_grid.get_total_weight())
 
 
 func refresh() -> void:

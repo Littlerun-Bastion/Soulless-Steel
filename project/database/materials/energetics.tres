@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://database/materials/MaterialData.gd" id="1_material"]
+
+[resource]
+script = ExtResource("1_material")
+id = "energetics"
+display_name = "Energetics"
+unit = "kg"
+display_unit = "kg"
+kg_per_unit = 1.0
+value = 2.0
+description = "Propellants and explosives, reclaimed from shells, missiles, rockets, mortar bombs and bulk ammunition. Found almost only at military sites and in military vehicles. Used in ammunition, missiles, rockets and explosive weapons."

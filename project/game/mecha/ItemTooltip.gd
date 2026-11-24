@@ -70,9 +70,14 @@ func show_item(stack: item_stack) -> void:
 		elif progress > 0:
 			lines.append("Blueprint: %d/%d recycled" % [progress, PlayerProgress.BLUEPRINT_COPIES])
 
+	# Weight is in tonnes (Units.weight: "5 t", "400 kg", "115 g"); a stack
+	# shows the whole stack's too.
 	var weight_val = res.get("weight")
 	if typeof(weight_val) == TYPE_FLOAT or typeof(weight_val) == TYPE_INT:
-		lines.append("Weight: %s" % weight_val)
+		var weight_text := "Weight: %s" % Units.weight(float(weight_val))
+		if stack.quantity > 1:
+			weight_text += " each, %s in all" % Units.weight(float(weight_val) * stack.quantity)
+		lines.append(weight_text)
 
 	var w := stack.width_cells()
 	var h := stack.height_cells()
@@ -86,11 +91,13 @@ func show_item(stack: item_stack) -> void:
 	# Salvage: tech tier and what recycling it yields (per item).
 	var tier_val = res.get("tech_tier")
 	if typeof(tier_val) == TYPE_INT and tier_val != item_data.TechTier.NONE:
-		lines.append("Tech: %s" % str(item_data.TechTier.keys()[tier_val]).capitalize())
+		lines.append("Tech: %s" % item_data.tier_name(tier_val))
 	var composition_val = res.get("composition")
-	if composition_val is Dictionary and not composition_val.is_empty():
-		# What one of them really gives: a part's grade and the Recycler
-		# (Facilities) scale it.
+	if PlayerProgress.is_currency(stack):
+		lines.append("Currency: sells and recycles 1 to 1 into credits")
+	elif composition_val is Dictionary and not composition_val.is_empty():
+		# What one of them really gives: salvage its composition, a part
+		# scaled by its grade.
 		var one: item_stack = stack.duplicate()
 		one.quantity = 1
 		var yields := PlayerProgress.recycle_value(one)

@@ -16,11 +16,13 @@ extends Node2D
 # mecha (more than stream_radius from both the shooter and the target) goes
 # through it.
 #
-# Pushing: Mecha.move() calls push_from() after it moves. A mecha's mass
-# grows faster than its weight (pusher_mass): a mecha of MASS_PIVOT_WEIGHT
-# counts as MECHA_KG_PER_WEIGHT kg per point, and the mass scales with weight
-# to the power MASS_CURVE, so heavy builds are much less held back by what
-# they push. When it first runs into a vehicle, the two collide like bodies
+# Pushing: Mecha.move() calls push_from() after it moves. Mecha weight is in
+# tonnes, but the push uses a feel mass, not the real one: a mecha of
+# MASS_PIVOT_WEIGHT tonnes pushes with MECHA_KG_PER_WEIGHT kg per tonne, and
+# the mass scales with weight to the power MASS_CURVE, so heavy builds are
+# much less held back by what they push. (Real tonnes would be 1000 kg per
+# tonne; with that a mecha barely notices a car.) Vehicle masses (mass_kg)
+# are real kg. When it first runs into a vehicle, the two collide like bodies
 # with RESTITUTION bounce. While it keeps pushing, the vehicle moves at the
 # speed the two would share as one body (the mecha's speed times mecha mass /
 # both masses). The mecha can only follow as fast as the vehicle in front of
@@ -78,8 +80,10 @@ extends Node2D
 # variant (from sprite_catalogue.json). A shot_block is the chance that a
 # shot passing through the vehicle stops in it (MapSenses.trace_shot).
 
+## Push mass (kg) per tonne of mecha weight, a feel value (see above).
 const MECHA_KG_PER_WEIGHT := 50.0
-## Weight at which a mecha counts as exactly MECHA_KG_PER_WEIGHT kg per point.
+## Weight (t) at which a mecha counts as exactly MECHA_KG_PER_WEIGHT kg per
+## tonne.
 const MASS_PIVOT_WEIGHT := 45.0
 ## Mass grows with weight to this power (1 = linear).
 const MASS_CURVE := 2.5
@@ -419,6 +423,11 @@ func is_destroyed(i: int) -> bool:
 	return _state[i] == DESTROYED
 
 
+# Vehicle i's spawn kind ("vehicle", "truck", "vehicle_wreck", "bus", ...).
+func vehicle_kind(i: int) -> String:
+	return _kind[i]
+
+
 # Whether vehicle i is a car (see trample_max_mass).
 func is_car(i: int) -> bool:
 	return _mass[i] <= trample_max_mass
@@ -583,22 +592,19 @@ func _build() -> void:
 		return
 	if not _layer.rebuilt.is_connected(_on_layer_rebuilt):
 		_layer.rebuilt.connect(_on_layer_rebuilt)
-	var spawns := spawner.get_spawns()
-	for si in spawns.size():
-		var s: Dictionary = spawns[si]
-		if not kinds.has(s.kind):
-			continue
-		var variant := _layer.variant_of(s)
-		var kind_masses: PackedFloat32Array = masses.get(s.kind, PackedFloat32Array())
-		var kind_blocks: PackedFloat32Array = shot_blocks.get(s.kind, PackedFloat32Array())
+	for si in spawner.indices_of_kinds(kinds):
+		var kind := spawner.spawn_kind(si)
+		var variant := _layer.variant_of_spawn(si)
+		var kind_masses: PackedFloat32Array = masses.get(kind, PackedFloat32Array())
+		var kind_blocks: PackedFloat32Array = shot_blocks.get(kind, PackedFloat32Array())
 		_spawn_index.append(si)
-		_kind.append(s.kind)
+		_kind.append(kind)
 		_variant.append(variant)
 		_state.append(INTACT)
 		_damage.append(0.0)
-		_pos.append(spawner.to_global(s.position))
-		_rot.append(s.rotation + spawner.global_rotation)
-		_size.append(s.size)
+		_pos.append(spawner.to_global(spawner.spawn_position(si)))
+		_rot.append(spawner.spawn_rotation(si) + spawner.global_rotation)
+		_size.append(spawner.spawn_size(si))
 		_mass.append(kind_masses[variant] if variant >= 0 and variant < kind_masses.size() else default_mass)
 		_block.append(kind_blocks[variant] if variant >= 0 and variant < kind_blocks.size() else default_shot_block)
 		_moved.append(0)
@@ -656,8 +662,9 @@ func _wake(i: int) -> RigidBody2D:
 	body.angular_damp = angular_damp
 	body.collision_layer = _layer_mask(i)
 	# Not layer 1: the physics engine would let a mecha shove the vehicle
-	# like an unstoppable body. Mechas push only through push().
-	body.collision_mask = MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK
+	# like an unstoppable body. Mechas push only through push(). The map's
+	# barriers (pipes, pools, the border band) stop it like walls.
+	body.collision_mask = MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK | MapSenses.BARRIER_MASK
 	body.set_meta("vehicle_index", i)
 	var col := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()

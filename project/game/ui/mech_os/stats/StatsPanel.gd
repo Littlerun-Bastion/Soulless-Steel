@@ -5,7 +5,8 @@ extends VBoxContainer
 ## Reads a build dictionary (part key -> part resource, the same shape as
 ## Mecha.build) and sums each stat across the parts, like Mecha.get_stat()
 ## but without the overweight speed penalty: this shows the design's own
-## numbers, and the LOAD tile shows whether it is overweight.
+## numbers, and the LOAD tile shows whether it is overweight. Weight is in
+## tonnes ("54.27 t", Units.weight).
 ##
 ## Pass a preview build (one part swapped) to show the comparison:
 ##   "84 > 102 +18" with hatching on the bar for a gain,
@@ -93,9 +94,9 @@ func show_stats(build: Dictionary, cargo_weight: float,
 	var cap_now := sum_stat(build, "weight_capacity", grades)
 	var load_new := sum_stat(preview, "weight") + cargo_weight if comparing else load_now
 	var cap_new := sum_stat(preview, "weight_capacity", preview_grades) if comparing else cap_now
-	_set_tile("load", load_now, load_new, comparing, "OF %s CAPACITY" % _fmt(cap_new))
+	_set_tile("load", load_now, load_new, comparing, "OF %s CAPACITY" % Units.weight(cap_new))
 	if load_new > cap_new and cap_new > 0.0:
-		_tiles["load"].note.text = "OVER %s CAPACITY" % _fmt(cap_new)
+		_tiles["load"].note.text = "OVER %s CAPACITY" % Units.weight(cap_new)
 
 	# Stat rows
 	for group in GROUPS:
@@ -240,10 +241,11 @@ func _build_row(stat: Dictionary) -> Control:
 
 # ---- helpers ------------------------------------------------------------
 
+# The LOAD tile's values are weights, so they show in tonnes.
 func _set_tile(key: String, cur: float, new: float, comparing: bool, note: String) -> void:
 	var tile: Dictionary = _tiles[key]
 	var changed := comparing and not is_equal_approx(cur, new)
-	tile.value.text = (_fmt(cur) + " > " + _fmt(new)) if changed else _fmt(cur)
+	tile.value.text = (Units.weight(cur) + " > " + Units.weight(new)) if changed else Units.weight(cur)
 	tile.note.text = note
 
 

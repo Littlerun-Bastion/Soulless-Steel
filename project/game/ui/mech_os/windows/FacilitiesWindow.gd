@@ -58,7 +58,7 @@ func _fill(id: String) -> void:
 			if cost.materials.has(material_id):
 				var have := PlayerProgress.get_material_count(material_id)
 				section.add_child(_row(Materials.display_name(material_id).to_upper(),
-						"%d / %d" % [have, cost.materials[material_id]], have >= cost.materials[material_id]))
+						Materials.format_pair(material_id, have, cost.materials[material_id]), have >= cost.materials[material_id]))
 		section.add_child(_row("CREDITS", "%d / %d CT" % [int(PlayerProgress.get_money()), cost.credits],
 				PlayerProgress.can_afford(cost.credits)))
 

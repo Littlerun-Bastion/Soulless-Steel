@@ -442,15 +442,18 @@ func _world_parent() -> Node:
 
 
 ## A body off screen (OFF_SCREEN_MARGIN px past the view) animates every
-## OFF_SCREEN_INTERVAL frames instead of every frame: its legs, braids and
-## grains are the dearest per-frame drawing on the map, and nobody sees
-## them. The clocks still run every frame, so it is in step when it comes
-## into view. Its braids, ropes, shadows and claws are redrawn only while it
-## may be seen (may_be_seen: within the player's sight circle, or near the
-## screen). Placeholders.
+## OFF_SCREEN_INTERVAL frames instead of every frame, and one that can't be
+## seen at all (not may_be_seen) only every UNSEEN_INTERVAL frames: its
+## legs, braids and grains are the dearest per-frame drawing on the map, and
+## nobody sees them. The clocks still run every frame, and the step after
+## skipped frames covers them, so it is in step when it comes into view.
+## Its braids, ropes, shadows and claws are redrawn only while it may be
+## seen (may_be_seen: within the player's sight circle, or near the screen).
+## Placeholders.
 const OFF_SCREEN_MARGIN := 600.0
 const OFF_SCREEN_INTERVAL := 6
-var _frame_offset := randi() % OFF_SCREEN_INTERVAL
+const UNSEEN_INTERVAL := 30
+var _frame_offset := randi() % UNSEEN_INTERVAL
 var _skipped_frames := 0.0
 
 
@@ -491,9 +494,11 @@ func _process_step(delta: float) -> void:
 			* (frenzy_flow if frenzy else 1.0)
 	var near_screen := not is_inside_tree() \
 			or MapSenses.screen_rect(self, OFF_SCREEN_MARGIN).has_point(global_position)
+	var seen := near_screen or may_be_seen()
 	if not near_screen:
 		_skipped_frames += delta
-		if (Engine.get_physics_frames() + _frame_offset) % OFF_SCREEN_INTERVAL != 0:
+		var interval := OFF_SCREEN_INTERVAL if seen else UNSEEN_INTERVAL
+		if (Engine.get_physics_frames() + _frame_offset) % interval != 0:
 			return
 		# One animation step for the frames skipped, so the gait keeps pace.
 		delta += _skipped_frames
@@ -510,7 +515,7 @@ func _process_step(delta: float) -> void:
 	m.set_shader_parameter(&"intensity", intensity)
 	m.set_shader_parameter(&"agitation", maxf(flash, kick))
 	_grains.amount_ratio = lerpf(0.35, 1.0, maxf(maxf(intensity, flash), kick)) * (1.0 - 0.85 * _retract)
-	if near_screen or may_be_seen():
+	if seen:
 		_redraw_chains()
 
 

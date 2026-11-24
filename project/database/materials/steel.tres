@@ -6,5 +6,8 @@
 script = ExtResource("1_material")
 id = "steel"
 display_name = "Steel"
-tech_tier = 1
-description = "An iron-carbon alloy, found all over the world in buildings, machines and all sorts of human constructs. Can sometimes be substituted for more fragile aluminium. Used in almost all SAV parts as structural reinforcement, armor plating, circuit shielding, and any number of other applications."
+unit = "kg"
+display_unit = "t"
+kg_per_unit = 1.0
+value = 0.008
+description = "An iron-carbon alloy, found all over the world in buildings, machines and all sorts of human constructs. Car scrap, engines, track links and bulk steel break into it. Used in almost all SAV parts as structural reinforcement, armour plating, circuit shielding, and any number of other applications."

@@ -1,7 +1,9 @@
 extends TestSuite
 
 # WreckTest: Expedition wrecks. What WreckLoot rolls for a destroyed mecha
-# (per-part salvage pools, weapon drops), moving stacks between inventories
+# (per-part salvage pools, weapon drops, and the SAV items: Pilot Capsule,
+# Actuator Bundles, Fissile Fuel Cassette, NT Fluid Canister, .50
+# Cartridges), moving stacks between inventories
 # (Take / Take all), part weights in cargo, the Wreck states, the Mech OS
 # "Take" actions, and the parts a wreck shed: listed UNSALVAGEABLE and
 # crossed out under its loot, never in the inventory, and gone from the list
@@ -11,8 +13,10 @@ extends TestSuite
 
 const WRECK := preload("res://game/mecha/Wreck.tscn")
 const MECHA := preload("res://game/mecha/Mecha.tscn")
-const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 2x1
-const HIGH_ITEM := preload("res://database/items/salvage/damaged_nt_engine.tres")    # 2x2
+const LOW_ITEM := preload("res://database/items/salvage/track_links.tres")   # 2x1
+const HIGH_ITEM := preload("res://database/items/salvage/rtg_core.tres")    # 2x2
+## Mid tech legs, arms, generator and an NT Fluid-cooled core.
+const MID_SAV := {"chassis": "O30-Chassis12w", "shoulders": "GTk-2Cr_Shoulder", "generator": "EGV-P1", "core": "O30-Core"}
 
 const DESIGN_ROLLS := 5000
 
@@ -33,6 +37,7 @@ func run_tests() -> void:
 	await case("pool tier spread", _test_pool_tiers)
 	await case("weapon drops", _test_weapon_drops)
 	await case("weapon drops when switched on", _test_weapons_on)
+	await case("a dead SAV's pilot capsule and higher-tech items", _test_sav_items)
 	await case("transfer between inventories", _test_transfer)
 	await case("transfer turns items to fit", _test_transfer_rotates)
 	await case("part weight in cargo", _test_part_weight)
@@ -67,13 +72,13 @@ func _inventory(w: int, h: int) -> Inventory:
 func _test_salvage_chance() -> void:
 	var design := PlayerProgress.DEFAULT_MECHA.duplicate()
 	var rng := _seeded_rng()
-	var always := WreckLoot.roll(design, rng, 1.0, 0.0)
+	var always := WreckLoot.roll_parts(design, rng, 1.0, 0.0)
 	check(always.size() == _equipped_count(design), "chance 1 gives one item per equipped part")
 	for stack in always:
 		check(stack.kind == item_stack.ItemKind.GENERIC and stack.item.tech_tier != item_data.TechTier.NONE,
 				"salvage is tiered generic loot")
-	check(WreckLoot.roll(design, rng, 0.0, 0.0).is_empty(), "chance 0 gives nothing")
-	check(WreckLoot.roll({"head": false, "core": false}, rng, 1.0, 0.0).is_empty(), "empty slots give nothing")
+	check(WreckLoot.roll_parts(design, rng, 0.0, 0.0).is_empty(), "chance 0 gives nothing")
+	check(WreckLoot.roll({"head": false, "core": false}, rng, 1.0, 0.0).is_empty(), "empty slots give nothing, SAV items included")
 
 
 func _test_salvage_average() -> void:
@@ -81,7 +86,7 @@ func _test_salvage_average() -> void:
 	var rng := _seeded_rng()
 	var total := 0
 	for _i in DESIGN_ROLLS:
-		total += WreckLoot.roll(design, rng, WreckLoot.SALVAGE_CHANCE, 0.0).size()
+		total += WreckLoot.roll_parts(design, rng, WreckLoot.SALVAGE_CHANCE, 0.0).size()
 	var average := float(total) / DESIGN_ROLLS
 	var expected := WreckLoot.SALVAGE_CHANCE * _equipped_count(design)
 	print("    %d wrecks of the default mecha: %.2f salvage each (expected %.2f)" % [DESIGN_ROLLS, average, expected])
@@ -123,7 +128,7 @@ func _test_salvage_by_part() -> void:
 		var design := _only({slot: PlayerProgress.DEFAULT_MECHA.get(slot, "X")})
 		var stray := 0
 		for _i in 300:
-			for stack in WreckLoot.roll(design, rng, 1.0, 0.0):
+			for stack in WreckLoot.roll_parts(design, rng, 1.0, 0.0):
 				if not stack.item in pool:
 					stray += 1
 		check(stray == 0, "a wreck with only a %s drops from its pool" % slot)
@@ -132,28 +137,30 @@ func _test_salvage_by_part() -> void:
 	var entry := LootEntry.new()
 	entry.item = LOW_ITEM
 	only_low.entries.append(entry)
-	var stacks := WreckLoot.roll(PlayerProgress.DEFAULT_MECHA.duplicate(), rng, 1.0, 0.0, only_low)
+	var stacks := WreckLoot.roll_parts(PlayerProgress.DEFAULT_MECHA.duplicate(), rng, 1.0, 0.0, only_low)
 	check(not stacks.is_empty() and stacks.all(func(s): return s.item == LOW_ITEM), "a given table overrides the pools")
 
 
 func _test_pool_tiers() -> void:
 	var rng := _seeded_rng()
 	var rolls := 4000
-	# Full pool: about 70 / 25 / 5.
+	# The full pool has low and mid tech: about 70 / 30 (high rolls give mid).
 	var counts := {item_data.TechTier.LOW: 0, item_data.TechTier.MID: 0, item_data.TechTier.HIGH: 0}
-	var frame := WreckLoot.table_for_slot("chassis")
 	for _i in rolls:
-		counts[frame.roll_stack(rng).item.tech_tier] += 1
-	print("    chassis pool over %d rolls: low %d, mid %d, high %d" % [rolls, counts[1], counts[2], counts[3]])
+		counts[WreckLoot.SALVAGE_TABLE.roll_stack(rng).item.tech_tier] += 1
+	print("    wreck salvage over %d rolls: low %d, mid %d, high %d" % [rolls, counts[1], counts[2], counts[3]])
 	check(absf(counts[item_data.TechTier.LOW] / float(rolls) - 0.70) < 0.03, "about 70% low tech")
-	check(absf(counts[item_data.TechTier.HIGH] / float(rolls) - 0.05) < 0.015, "about 5% high tech")
-	# No high-tech item in the pool: high rolls give mid instead.
-	var core := WreckLoot.table_for_slot("core")
-	var high := 0
-	for _i in 1000:
-		if core.roll_stack(rng).item.tech_tier == item_data.TechTier.HIGH:
-			high += 1
-	check(high == 0, "core pool never gives high tech")
+	check(absf(counts[item_data.TechTier.MID] / float(rolls) - 0.30) < 0.03, "about 30% mid tech")
+	# High-tech wreck items come from the SAV rules, never a part's pool.
+	for slot in PlayerProgress.DEFAULT_MECHA:
+		check(WreckLoot.table_for_slot(slot).get_entries_of_tier(item_data.TechTier.HIGH).is_empty(), "%s pool has no high tech" % slot)
+	# A pool of low tech only: always low.
+	var frame := WreckLoot.table_for_slot("chassis")
+	var other := 0
+	for _i in 500:
+		if frame.roll_stack(rng).item.tech_tier != item_data.TechTier.LOW:
+			other += 1
+	check(other == 0, "the frame pool is scrap: low tech only")
 
 
 func _test_weapon_drops() -> void:
@@ -163,7 +170,7 @@ func _test_weapon_drops() -> void:
 	var weapons := 0
 	var with_weapon := 0
 	for _i in DESIGN_ROLLS:
-		var parts := WreckLoot.roll(design, rng).filter(func(s): return s.is_part()).size()
+		var parts := WreckLoot.roll_parts(design, rng).filter(func(s): return s.is_part()).size()
 		weapons += parts
 		if parts > 0:
 			with_weapon += 1
@@ -172,18 +179,51 @@ func _test_weapon_drops() -> void:
 	check(absf(per_wreck - 0.4) < 0.04, "about 20% per equipped weapon")
 	# A weapon that drops isn't also scrapped: with every roll succeeding,
 	# the two arms give weapons and every other part gives salvage.
-	var stacks := WreckLoot.roll(design, rng, 1.0, 1.0)
+	var stacks := WreckLoot.roll_parts(design, rng, 1.0, 1.0)
 	var dropped := stacks.filter(func(s): return s.is_part()).size()
 	check(dropped == 2 and stacks.size() == _equipped_count(design), "a dropped weapon replaces its salvage")
 
 
 func _test_weapons_on() -> void:
 	var design := PlayerProgress.DEFAULT_MECHA.duplicate()  # MA-L127 on both arms
-	var stacks := WreckLoot.roll(design, _seeded_rng(), 0.0, 1.0)
+	var stacks := WreckLoot.roll_parts(design, _seeded_rng(), 0.0, 1.0)
 	check(stacks.size() == 2, "one drop per equipped weapon")
 	for stack in stacks:
 		check(stack.kind == item_stack.ItemKind.PART and stack.item_type == "arm_weapon"
 				and stack.item_id == "MA-L127", "weapon drops as its own part")
+
+
+func _ids(stacks: Array) -> Array:
+	var ids := stacks.map(func(s): return s.item.id if s.item != null else s.item_id)
+	ids.sort()
+	return ids
+
+
+func _test_sav_items() -> void:
+	# The default mecha: all civ grade, two .50 chainguns (MA-L127).
+	var civ := WreckLoot.sav_items(PlayerProgress.DEFAULT_MECHA.duplicate(), _seeded_rng())
+	check_eq(_ids(civ), ["cartridge_50", "cartridge_50", "pilot_capsule"], "a civ SAV: its pilot capsule and its .50 rounds")
+	for stack in civ:
+		if stack.item.id == "cartridge_50":
+			check(stack.quantity >= WreckLoot.CARTRIDGES.x and stack.quantity <= WreckLoot.CARTRIDGES.y,
+					"%d to %d cartridges per .50 weapon (%d)" % [WreckLoot.CARTRIDGES.x, WreckLoot.CARTRIDGES.y, stack.quantity])
+
+	var design := PlayerProgress.DEFAULT_MECHA.duplicate()
+	design.merge(MID_SAV, true)
+	design["arm_weapon_left"] = "MA-L178"
+	design["arm_weapon_right"] = false
+	check(WreckLoot.uses_nt_coolant(design), "a core with NT Fluid in it is NT Fluid-cooled")
+	check(not WreckLoot.uses_nt_coolant(PlayerProgress.DEFAULT_MECHA), "the civ core isn't")
+	check_eq(_ids(WreckLoot.sav_items(design, _seeded_rng())),
+			["actuator_bundle", "actuator_bundle", "fuel_cassette", "nt_canister", "pilot_capsule"],
+			"mid tech: actuator bundles for legs and arms, a fuel cassette, an NT Fluid canister")
+
+	# roll() is the parts' salvage plus the SAV items.
+	var all := WreckLoot.roll(design, _seeded_rng(), 0.0, 0.0)
+	check_eq(_ids(all), _ids(WreckLoot.sav_items(design, _seeded_rng())), "roll adds the SAV items")
+	var wreck := _make_wreck(WreckLoot.roll(design, _seeded_rng(), 1.0, 1.0))
+	check_eq(wreck.inventory.get_stacks().size(), WreckLoot.roll(design, _seeded_rng(), 1.0, 1.0).size(), "and a wreck holds it all")
+	wreck.queue_free()
 
 
 # ---- Inventory transfers ----

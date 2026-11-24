@@ -459,20 +459,20 @@ func _test_no_trample_truck() -> void:
 
 func _test_trampled_sprite() -> void:
 	await _setup([["vehicle", Vector2(400, 0), 0.0], ["vehicle", Vector2(400, 600), 0.0]])
-	var base: float = _layer._by_spawn[0][0][10]
+	var base: float = _layer.sprite_base_tone(0)
 	_field._trample(0, null)
-	check(is_equal_approx(float(_layer._by_spawn[0][0][5]), base * VehicleField.TRAMPLED_TONE), "with no trampled sprite, the car is darkened")
-	check(not _layer._by_spawn[0][0][8], "and still drawn on the layer")
+	check(is_equal_approx(float(_layer.sprite_tone(0)), base * VehicleField.TRAMPLED_TONE), "with no trampled sprite, the car is darkened")
+	check(not _layer.is_sprite_hidden(0), "and still drawn on the layer")
 	var tex := ImageTexture.create_from_image(Image.create(64, 32, false, Image.FORMAT_RGBA8))
 	_field._flat_textures[HATCHBACK.resource_path.get_basename() + "_trampled.png"] = tex
 	_field._trample(1, null)
 	check(_field._flat_sprites.has(1), "with one, a sprite draws it")
 	var sprite: Sprite2D = _field._flat_sprites.get(1)
 	check(sprite != null and sprite.texture == tex and sprite.global_position.distance_to(Vector2(400, 600)) < 1.0, "in the car's place")
-	check(_layer._by_spawn[1][0][8], "and the layer hides the normal sprite")
+	check(_layer.is_sprite_hidden(1), "and the layer hides the normal sprite")
 	_layer.mark_dirty()
 	await wait_frames(2)
-	check(_layer._by_spawn[1][0][8] and is_equal_approx(float(_layer._by_spawn[0][0][5]), base * VehicleField.TRAMPLED_TONE), "both survive a layer rebuild")
+	check(_layer.is_sprite_hidden(1) and is_equal_approx(float(_layer.sprite_tone(0)), base * VehicleField.TRAMPLED_TONE), "both survive a layer rebuild")
 
 
 func _test_route() -> void:
@@ -499,8 +499,20 @@ func _test_route() -> void:
 	enemy.set_scripted(false)
 	enemy.paused = true
 	await get_tree().physics_frame
-	var next: Vector2 = enemy._route_next(Vector2(4000, 0), 1.0 / 60.0)
+	var next: Vector2 = await _routed_next(enemy, Vector2(4000, 0))
 	check(next != Vector2(4000, 0) and next.y > 0.0, "an NPC heading there aims for the route's first point (%s)" % str(next))
+
+
+# What an NPC heading for `goal` aims at once the route it asks for has come
+# back from the field's solver thread (a frame or a few later).
+func _routed_next(enemy, goal: Vector2) -> Vector2:
+	var next: Vector2 = enemy._route_next(goal, 1.0 / 60.0)
+	for _i in 60:
+		if enemy._route_ticket == 0:
+			break
+		await get_tree().physics_frame
+		next = enemy._route_next(goal, 1.0 / 60.0)
+	return next
 
 
 func _test_clear_spot() -> void:
@@ -591,7 +603,7 @@ func _test_car_damage() -> void:
 	check(not _field.is_destroyed(2), "one blast damages a car")
 	_field.damage_in_radius(Vector2(3100, 0), 300.0, VehicleField.BLAST_DAMAGE)
 	check(_field.is_destroyed(2), "two destroy it")
-	check(is_equal_approx(float(_layer._by_spawn[2][0][5]), float(_layer._by_spawn[2][0][10]) * VehicleField.DESTROYED_TONE), "a wreck with no destroyed sprite is darkened")
+	check(is_equal_approx(float(_layer.sprite_tone(2)), float(_layer.sprite_base_tone(2)) * VehicleField.DESTROYED_TONE), "a wreck with no destroyed sprite is darkened")
 
 
 func _test_dash_destroys() -> void:
@@ -701,5 +713,5 @@ func _test_forced_route() -> void:
 	var goal := Vector2(1400, 0)
 	check(enemy._route_next(goal, 1.0 / 60.0) == goal, "a short trip goes straight at first")
 	enemy._on_blocked()
-	var next: Vector2 = enemy._route_next(goal, 1.0 / 60.0)
+	var next: Vector2 = await _routed_next(enemy, goal)
 	check(next != goal and absf(next.y) > 500.0, "once blocked it routes round the U (%s)" % str(next.round()))

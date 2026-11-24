@@ -342,7 +342,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var thing = get_closest_interactable()
 		if thing != null and thing.has_method("interact"):
 			thing.interact(self)
-			if thing is LootContainer:
+			if thing is LootContainer and thing.opens_window:
 				current_open_container = thing
 				var screen_size := get_viewport().get_visible_rect().size
 				
@@ -1043,11 +1043,50 @@ func can_see_body(body: Node2D) -> bool:
 		return false
 	if Illumination.seen_lit(self, body) or IRSensing.identifies(self, body):
 		return true
+	var body_key := MapSenses.building_key_of(body)
+	if body_key != MapSenses.building_key_of(self) and _is_damaged_building(body_key):
+		# Seen from above through the roof's holes: the roof mesh draws over
+		# the body everywhere else.
+		return dist <= VIEW_PERIPHERAL or Illumination.point_lit(self, to, Illumination.body_radius(body), "", true)
 	if dist > VIEW_PERIPHERAL:
 		return false
-	if MapSenses.building_key_of(self) != MapSenses.building_key_of(body):
+	if MapSenses.building_key_of(self) != body_key:
 		return false
 	return not MapSenses.sight_blocked(get_world_2d(), global_position, to)
+
+
+# Whether a MapSenses building key is a generated building in the damaged
+# ruin state (its roof has holes).
+func _is_damaged_building(key: String) -> bool:
+	if not key.begins_with("field:"):
+		return false
+	var field := BuildingField.find(self)
+	return field != null and field.state_of(key.substr(6).to_int()) == BuildingFootprints.DAMAGED
+
+
+## Whether the player sees a point in the world (a salvage source), by the
+## rules that show a body: in the sight circle, and either lit by a light cone
+## (Illumination.point_lit) with no smoke between, or within VIEW_PERIPHERAL
+## with no wall or smoke between; and in the same building as the player, or
+## both outside. `margin` (px) is how far the thing reaches round the point. A
+## point on a roof (`on_roof`) is seen when the roof is: in the sight circle,
+## and lit or within VIEW_PERIPHERAL; walls don't hide a roof.
+func can_see_point(point: Vector2, on_roof := false, margin := 0.0) -> bool:
+	if is_dead:
+		return false
+	var dist := global_position.distance_to(point)
+	if dist > sight_radius() + margin:
+		return false
+	if on_roof:
+		return dist <= VIEW_PERIPHERAL + margin or Illumination.point_lit(self, point, margin, "", true)
+	var key := MapSenses.building_key_at(self, point)
+	if key != MapSenses.building_key_of(self):
+		return false
+	if Illumination.point_lit(self, point, margin, key) and not MapSenses.smoke_between(global_position, point):
+		return true
+	if dist > VIEW_PERIPHERAL + margin:
+		return false
+	return not MapSenses.sight_blocked(get_world_2d(), global_position, point)
 
 
 # Whether `point` is inside the light cone (angle and reach only, no walls).

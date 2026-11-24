@@ -554,11 +554,18 @@ func _recycle_question(stack: item_stack) -> String:
 	return ""
 
 
-# "Recycle (2 Steel, 2 Oil)", or just "Recycle" when it can't be.
+# "Recycle (200 kg Steel, 40 L Oil)", "Recycle (250 ct)" for currency (and
+# "+ 3 ct" for Recycler by-products), or just "Recycle" when it can't be.
 func _recycle_label(stack: item_stack) -> String:
 	if not PlayerProgress.can_recycle(stack):
 		return "Recycle"
-	return "Recycle (%s)" % Materials.describe(PlayerProgress.recycle_value(stack))
+	if PlayerProgress.is_currency(stack):
+		return "Recycle (%d ct)" % PlayerProgress.currency_value(stack)
+	var text := Materials.describe(PlayerProgress.recycle_value(stack))
+	var byproducts := PlayerProgress.recycle_byproducts(stack)
+	if byproducts > 0:
+		text += " + %d ct" % byproducts
+	return "Recycle (%s)" % text
 
 
 # "Sell (120 ct)", or just "Sell" when it's worth nothing.

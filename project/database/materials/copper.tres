@@ -6,5 +6,8 @@
 script = ExtResource("1_material")
 id = "copper"
 display_name = "Copper"
-tech_tier = 1
-description = "Found in every electronic device, copper is the most important component to facilitate any kind of electronic circuit, and is used as an electrical conductor and as a thermal conductor. Used in every single SAV part."
+unit = "kg"
+display_unit = "t"
+kg_per_unit = 1.0
+value = 0.03
+description = "Found in every electronic device, copper is the most important component to facilitate any kind of electronic circuit, and is used as an electrical conductor and as a thermal conductor. Wiring, motors, transformers, cable drums and brass cases break into it. Used in generators, actuators and energy weapons, and in nearly every SAV part."

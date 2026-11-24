@@ -22,7 +22,7 @@ extends TestSuite
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
 const START_MENU := preload("res://game/start_menu/StartMenu.tscn")
-const SALVAGE := preload("res://database/items/salvage/wiring_loom.tres")
+const SALVAGE := preload("res://database/items/salvage/wiring_harness.tres")
 const HEAD := "MSV-M2-H"
 const OTHER_HEAD := "O10-Head"
 const CARGO_HEAD := "Percival-Head"

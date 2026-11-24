@@ -104,7 +104,11 @@ func _physics_process(dt):
 		if deflection_cooldown <= 0:
 			deflected_from_body = null
 	
-	if not _fly(dir * speed * dt):
+	var flown_from := position
+	var flew := _fly(dir * speed * dt)
+	# Market stalls under the path the round just flew break (they don't stop it).
+	StallField.shot_through(self, flown_from, position)
+	if not flew:
 		return
 
 	distance += speed*dt

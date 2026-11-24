@@ -1,11 +1,12 @@
 extends MechWindow
 class_name MaterialsWindow
 
-## MAT: the player's crafting materials (Hangar only), grouped by tech tier
-## with a total per tier. Zero counts are dim; a material nothing in the game
-## recycles into reads NO KNOWN SOURCE. Hovering a row shows its description
-## and what to recycle for it. Counts follow PlayerProgress.materials_changed,
-## so recycling updates the window live.
+## MAT: the player's crafting materials (Hangar only), grouped by origin
+## (Scrap, Strange), each amount in its own unit ("1.2 t", "40 L"). Zero
+## counts are dim; a material nothing in the game recycles into reads NO
+## KNOWN SOURCE. Hovering a row shows its description and what to recycle
+## for it. Counts follow PlayerProgress.materials_changed, so recycling
+## updates the window live. Materials are a ledger: they take no stash space.
 
 const DETAIL_HINT := "Hover a material to read about it."
 const SALVAGE_DIR := "res://database/items/salvage/"
@@ -13,7 +14,6 @@ const WEAPON_TYPES := ["arm_weapon", "shoulder_weapon"]
 
 var _counts: Dictionary = {}       # material id -> count Label
 var _names: Dictionary = {}        # material id -> name Label
-var _totals: Dictionary = {}       # tier -> total Label
 var _detail_title: Label
 var detail_label: Label            # the description (HangarTest reads it)
 var _detail_sources: Label
@@ -50,8 +50,8 @@ func _build() -> void:
 	var area := MechUI.scroll_box(&"StatsColumn")
 	column.add_child(area[0])
 	var groups: VBoxContainer = area[1]
-	for tier in Materials.TIERS:
-		groups.add_child(_make_group(tier))
+	for origin in Materials.ORIGINS:
+		groups.add_child(_make_group(origin))
 
 	var detail := MechUI.vbox(&"TightStack")
 	_detail_title = MechUI.label(&"LabelMeta")
@@ -66,17 +66,11 @@ func _build() -> void:
 	_show_detail(null)
 
 
-func _make_group(tier) -> VBoxContainer:
+func _make_group(origin: int) -> VBoxContainer:
 	var group := MechUI.vbox(&"StatGroup")
-	var heading := MechUI.hbox()
-	heading.add_child(MechUI.label(&"LabelMetaBright", "%s TECH" % Materials.tier_name(tier).to_upper()))
-	heading.add_child(MechUI.spacer())
-	var total := MechUI.label(&"LabelMetaBright")
-	heading.add_child(total)
-	_totals[tier] = total
-	group.add_child(heading)
+	group.add_child(MechUI.label(&"LabelMetaBright", Materials.origin_name(origin).to_upper()))
 	group.add_child(HSeparator.new())
-	for mat in Materials.of_tier(tier):
+	for mat in Materials.of_origin(origin):
 		group.add_child(_make_row(mat))
 	return group
 
@@ -101,19 +95,15 @@ func _make_row(mat: MaterialData) -> Control:
 # ---- behaviour ----------------------------------------------------------
 
 func _on_materials_changed(materials: Dictionary) -> void:
-	for tier in Materials.TIERS:
-		var total := 0
-		for mat in Materials.of_tier(tier):
-			var amount := int(materials.get(mat.id, 0))
-			total += amount
-			var count: Label = _counts[mat.id]
-			var has_any := amount > 0
-			# No count to show and nothing gives it: say so instead of "0".
-			var no_source := not has_any and get_sources(mat.id).is_empty()
-			count.text = "NO KNOWN SOURCE" if no_source else str(amount)
-			count.theme_type_variation = &"LabelMeta" if no_source else (&"LabelBody" if has_any else &"LabelDim")
-			_names[mat.id].theme_type_variation = &"LabelBody" if has_any else &"LabelDim"
-		_totals[tier].text = str(total)
+	for mat in Materials.ALL:
+		var amount := int(materials.get(mat.id, 0))
+		var count: Label = _counts[mat.id]
+		var has_any := amount > 0
+		# No count to show and nothing gives it: say so instead of "0".
+		var no_source := not has_any and get_sources(mat.id).is_empty()
+		count.text = "NO KNOWN SOURCE" if no_source else Materials.format_amount(mat.id, amount)
+		count.theme_type_variation = &"LabelMeta" if no_source else (&"LabelBody" if has_any else &"LabelDim")
+		_names[mat.id].theme_type_variation = &"LabelBody" if has_any else &"LabelDim"
 
 
 func _show_detail(mat: MaterialData) -> void:
@@ -122,8 +112,8 @@ func _show_detail(mat: MaterialData) -> void:
 		detail_label.text = DETAIL_HINT
 		_detail_sources.text = ""
 		return
-	_detail_title.text = "%s · %s TECH" % [mat.display_name.to_upper(),
-			Materials.tier_name(mat.tech_tier).to_upper()]
+	_detail_title.text = "%s · %s · %s" % [mat.display_name.to_upper(),
+			Materials.origin_name(mat.origin).to_upper(), mat.display_unit]
 	detail_label.text = mat.description
 	var sources := get_sources(mat.id)
 	_detail_sources.text = "SOURCES: " + (", ".join(sources) if not sources.is_empty() else "none known")

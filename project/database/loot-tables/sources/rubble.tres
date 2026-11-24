@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SalvageLoot" format=3]
+
+[ext_resource type="Script" path="res://game/map/salvage/SalvageLoot.gd" id="loot"]
+[ext_resource type="Script" path="res://game/map/salvage/SalvageLootEntry.gd" id="entry"]
+[ext_resource type="Resource" path="res://database/items/salvage/scrap_metal.tres" id="item_0"]
+[ext_resource type="Resource" path="res://database/items/salvage/wiring_harness.tres" id="item_1"]
+[ext_resource type="Resource" path="res://database/items/salvage/air_conditioner.tres" id="item_2"]
+[ext_resource type="Resource" path="res://database/items/salvage/solar_panel.tres" id="item_3"]
+
+[sub_resource type="Resource" id="e0"]
+script = ExtResource("entry")
+item = ExtResource("item_0")
+chance = 0.8
+count = Vector2i(1, 3)
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("entry")
+item = ExtResource("item_1")
+chance = 0.3
+count = Vector2i(1, 1)
+
+[sub_resource type="Resource" id="e2"]
+script = ExtResource("entry")
+item = ExtResource("item_2")
+chance = 0.2
+count = Vector2i(1, 1)
+
+[sub_resource type="Resource" id="e3"]
+script = ExtResource("entry")
+item = ExtResource("item_3")
+chance = 0.15
+count = Vector2i(1, 2)
+
+[resource]
+script = ExtResource("loot")
+entries = Array[ExtResource("entry")]([SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3")])

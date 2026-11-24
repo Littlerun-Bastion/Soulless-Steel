@@ -373,7 +373,7 @@ func _product(part_type: String, part_id: String) -> void:
 	var item_size = part.get("item_size")
 	if item_size is Array and item_size.size() >= 2:
 		facts.add_child(_fact("Size", "%d × %d" % [int(item_size[0]), int(item_size[1])]))
-	facts.add_child(_fact("Weight", MechUI.fmt(float(part.get("weight")))))
+	facts.add_child(_fact("Weight", Units.weight(float(part.get("weight")))))
 	facts.add_child(_fact("In your stash", str(PlayerProgress.count_part(part_type, part_id))))
 	facts.add_child(_fact("Fitted", _fitted_text(part_type, part_id)))
 	info.add_child(facts)

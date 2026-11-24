@@ -201,7 +201,7 @@ Add the template to the list in `gigs.json`.
 | `title` | Yes | The title. It can use `{count}`, `{kind}`, `{kind_plural}` and `{item}`. |
 | `type` | Yes | `kill`, `extract` or `extract_with`. |
 | `kind` | For `kill` | `"mech"` or an Entity species, for example `"Coyote"`. The board offers only kinds that the Expedition spawns. |
-| `item` | For `extract_with` | An item id (`"acid_gland"`) or a tag (`"bio"`). |
+| `item` | For `extract_with` | An item id (`"entity_residue"`) or a tag (`"bio"`). |
 | `count` | Yes | `[min, max]`. The board picks a number one time, when it posts the gig. |
 | `reward` | Yes | `[min, max]` in credits. The board rounds it to the nearest 10. |
 | `reputation` | No | Reputation that the player gets on payment. |

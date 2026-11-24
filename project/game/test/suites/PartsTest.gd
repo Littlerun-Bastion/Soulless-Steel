@@ -4,7 +4,11 @@ extends TestSuite
 # has the data the game relies on (including the tech tier and composition
 # recycling and the Fabricator use), equips onto a real mecha, and every weapon
 # fires a projectile. A new or edited part that breaks any of this fails here
-# before it can break a fight.
+# before it can break a fight. Compositions follow the material rules: what a
+# part breaks into weighs well under the part (MAX_MASS_SHARE, so even a
+# Prototype copy's x1.5 does), non-civ cores, heads and chipsets need 2 to 5
+# kg of Avidendrites and civ-grade (low tech) ones none, and the AVI makers'
+# parts need AVI-Polymer.
 #
 # Data that's missing but harmless (no description, no icon on an internal
 # part) is listed as a note at the end, not a failure.
@@ -20,6 +24,10 @@ const SLOTS := {
 }
 
 const VISIBLE_TYPES := ["head", "core", "shoulders", "chassis", "arm_weapon", "shoulder_weapon"]
+## What a part breaks into weighs at most this share of the part.
+const MAX_MASS_SHARE := 0.6
+const AVIDENDRITE_TYPES := ["core", "head", "chipset"]
+const AVI_MAKERS := ["nordomeccanica", "wu_zhi", "espada", "kaguya"]
 
 var _mecha: Mecha = null
 var _notes: Array[String] = []
@@ -70,13 +78,24 @@ func _test_part_data() -> void:
 		# Shown as the item's value (tooltip) and in the Store.
 		check(float(part.get("price")) > 0.0, "%s has a price" % label)
 		# Recycling and the Fabricator: a tier and what it's made of.
-		check(part.get("tech_tier") in Materials.TIERS, "%s has a tech tier" % label)
+		check(part.get("tech_tier") in LootTable.ROLLED_TIERS, "%s has a tech tier" % label)
 		var composition = part.get("composition")
 		check(composition is Dictionary and not composition.is_empty(), "%s has a composition" % label)
 		if composition is Dictionary:
 			for material_id in composition:
 				check(Materials.is_valid(material_id) and int(composition[material_id]) > 0,
 						"%s is made of a known material (%s)" % [label, material_id])
+			var mass := Materials.mass_of(composition)
+			check(mass <= float(weight) * 1000.0 * MAX_MASS_SHARE + 0.01,
+					"%s breaks into %d kg, under %d%% of its %s" % [label, roundi(mass), roundi(MAX_MASS_SHARE * 100), Units.weight(float(weight))])
+			var avidendrites := int(composition.get("avidendrites", 0))
+			if entry[0] in AVIDENDRITE_TYPES and part.get("tech_tier") != item_data.TechTier.LOW:
+				check(avidendrites >= 2 and avidendrites <= 5, "%s (non-civ) needs 2-5 kg of Avidendrites (%d)" % [label, avidendrites])
+			elif part.get("tech_tier") == item_data.TechTier.LOW:
+				check(avidendrites == 0, "%s (civ grade) needs no Avidendrites" % label)
+			var avi_maker := Manufacturers.of_part(part) in AVI_MAKERS
+			check(avi_maker == composition.has(Materials.AVI_POLYMER),
+					"%s needs AVI-Polymer directly only from an AVI maker" % label)
 		if str(part.get("description")) == "":
 			_notes.append("%s has no description" % label)
 

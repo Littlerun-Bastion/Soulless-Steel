@@ -338,13 +338,51 @@ static func seen_lit(observer: Node2D, body: Node2D) -> bool:
 	return MapSenses.building_key_of(observer) == MapSenses.building_key_of(body)
 
 
+## Whether a point (`point_key`: its MapSenses building key) is in a shining
+## mecha's light cone, reaching `margin` px round it: as is_lit() for a body,
+## the light must be in the same building and have no wall in the way. With
+## `ignore_walls` (a point on a roof, lit from above the walls) only the cone
+## counts. `node` is any node in the scene.
+static func point_lit(node: Node, point: Vector2, margin := 0.0, point_key := "", ignore_walls := false) -> bool:
+	for mecha in shining_mechas(node):
+		if not is_instance_valid(mecha) or not in_cone(light_of(mecha), point, margin):
+			continue
+		if ignore_walls:
+			return true
+		if MapSenses.building_key_of(mecha) != point_key:
+			continue
+		if not MapSenses.walls_between(mecha.get_world_2d(), mecha.global_position, point):
+			return true
+	return false
+
+
+## How brightly a light lights a point (0..1), by the same cone, circle and
+## fades as its drawn texture (light_texture), walls not counted.
+static func light_strength(light: PointLight2D, point: Vector2) -> float:
+	if light == null:
+		return 0.0
+	var offset: Vector2 = point - light.global_position
+	var r := offset.length()
+	var local := 1.0 - smoothstep(LOCAL_RADIUS - LOCAL_SOFT, LOCAL_RADIUS + LOCAL_SOFT, r)
+	var cone_reach := reach(light)
+	var soft := range_soft(cone_reach)
+	var cone := 1.0 - smoothstep(cone_reach - soft, cone_reach + soft, r)
+	var angle := _rounded_angle(cone_angle(light))
+	if angle < 360.0 and cone > 0.0:
+		var half_angle := deg_to_rad(angle * 0.5)
+		var edge := minf(deg_to_rad(CONE_EDGE_SOFT), half_angle * 0.5)
+		var forward := Vector2.UP.rotated(light.global_rotation)
+		cone *= 1.0 - smoothstep(half_angle - edge, half_angle + edge, absf(forward.angle_to(offset)))
+	return maxf(local, cone)
+
+
 # The mechas with their illuminator on, once per physics frame: every lit
-# check walks them.
+# check walks them (shining_mechas).
 static var _shining_cache: Array = []
 static var _shining_cache_frame := -1
 
 
-static func _shining_mechas(node: Node) -> Array:
+static func shining_mechas(node: Node) -> Array:
 	var frame := Engine.get_physics_frames()
 	if frame != _shining_cache_frame:
 		_shining_cache_frame = frame
@@ -359,7 +397,7 @@ static func _lit_lookup(body: Node2D) -> bool:
 	var body_key := ""
 	var key_known := false
 	var margin := -1.0
-	for mecha in _shining_mechas(body):
+	for mecha in shining_mechas(body):
 		if mecha == body or not is_instance_valid(mecha):
 			continue
 		if margin < 0.0:

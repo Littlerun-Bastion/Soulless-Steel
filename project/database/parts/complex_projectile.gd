@@ -777,12 +777,13 @@ func explosion():
 	var space_state = get_world_2d().direct_space_state
 	var blast_key := "roof" if roof_burst else MapSenses.building_key_at(self, global_position)
 
-	# Cars in the blast radius take blast damage (see VehicleField). Cars are
-	# always outside.
+	# Cars in the blast radius take blast damage (see VehicleField), and
+	# market stalls in it break (StallField). Both are always outside.
 	if payload_explosion_radius > 0.0 and blast_key == "":
 		var vehicles := VehicleField.find(self)
 		if vehicles:
 			vehicles.damage_in_radius(global_position, payload_explosion_radius, VehicleField.BLAST_DAMAGE)
+		StallField.blast_at(global_position, payload_explosion_radius)
 
 	# Process each mecha in explosion radius
 	for body in explosion_targets.duplicate():

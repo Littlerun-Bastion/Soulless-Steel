@@ -6,5 +6,9 @@
 script = ExtResource("1_material")
 id = "nt_fluid"
 display_name = "NT Fluid"
-tech_tier = 2
-description = "The 'blood' of larger, more advanced Entities, it is used commonly in military-grade weapons and SAV hardware as a vastly more efficient coolant than water-based solutions. Found in sizeable quantities in large Entities or Cysts."
+origin = 1
+unit = "mL"
+display_unit = "L"
+kg_per_unit = 0.001
+value = 0.003
+description = "The 'blood' of Entities. Most Entities hold a little of it; SAVs that use it as coolant carry it in canisters. A vastly more efficient coolant than water-based solutions, used in military-grade weapons and SAV hardware. AVF coolant is made from it."

@@ -1,12 +1,23 @@
 class_name MapStreamer
 extends Node
 
-# Streams a map at runtime, in two ways:
+# Streams a map at runtime, in three ways:
 #
 # Drawing, round the camera: every map chunk mesh (MeshInstance2D) under
 # `chunks_root`, and every sprite batch of the PropSpriteLayers under it, is
 # hidden while its bounds are more than view_margin outside the camera's view.
 # Hidden nodes cost nothing to draw or to cull.
+#
+# Mesh loading, round the camera: a ChunkMesh's mesh is loaded (on a
+# background thread) while its bounds are within mesh_load_margin of the
+# camera's view, and freed once they are more than mesh_load_margin +
+# mesh_unload_slack away. A chunk within MESH_WAIT_MARGIN of the view when
+# its mesh is missing (after a jump) is loaded at once, waiting for it;
+# waited_loads counts those waits. During the loading screen the expedition
+# calls preload_around() at the player's start, which loads every chunk the
+# first view wants, all together, so play never starts with such a wait.
+# Godot's headless renderer can't make meshes on two threads at once, so a
+# headless run (the tests) loads every chunk mesh on the main thread.
 #
 # Hand-made scenes, round every mecha and round the camera: each
 # StreamedScene in the tree is loaded (on a background thread) while any
@@ -29,17 +40,57 @@ const INTERVAL := 0.2
 @export var view_margin := 2000.0
 @export var load_distance := 4000.0
 @export var unload_slack := 1500.0
+## How far (px) outside the camera's view chunk meshes are loaded.
+@export var mesh_load_margin := 6000.0
+@export var mesh_unload_slack := 4000.0
+## A chunk this close (px) to the camera's view when its mesh is missing is
+## loaded at once: the view may reach it before the next check.
+const MESH_WAIT_MARGIN := 600.0
+
+## How many times a chunk mesh near the view had to be waited for since the
+## streamer started, and how long those waits took in all (ms).
+var waited_loads := 0
+var waited_ms := 0.0
 
 var _items: Array = []  # [CanvasItem, Rect2 in global space]
+var _chunk_meshes: Array = []  # [ChunkMesh, Rect2 in global space]
 var _timer := 0.0
 var _dirty := true
+var _headless := DisplayServer.get_name() == "headless"
 
 
 func _ready() -> void:
+	add_to_group("map_streamer")
 	if Engine.is_editor_hint():
 		set_process(false)
 		return
 	_watch_layers.call_deferred()
+
+
+static func find(node: Node) -> MapStreamer:
+	if node == null or not node.is_inside_tree():
+		return null
+	return node.get_tree().get_first_node_in_group("map_streamer") as MapStreamer
+
+
+## Loads now every chunk mesh a camera at `global_pos` showing `view_size`
+## (world px) would want: those within mesh_load_margin of that view. They
+## load together on background threads, and this waits for all of them (the
+## loading screen covers it). Returns how many it loaded.
+func preload_around(global_pos: Vector2, view_size: Vector2) -> int:
+	_collect()
+	var area := Rect2(global_pos - view_size * 0.5, view_size).grow(mesh_load_margin)
+	var wanted: Array[ChunkMesh] = []
+	for it in _chunk_meshes:
+		var chunk := it[0] as ChunkMesh
+		if is_instance_valid(chunk) and not chunk.is_loaded() and area.intersects(it[1]):
+			wanted.append(chunk)
+	if not _headless:
+		for chunk in wanted:
+			chunk.stream_in()
+	for chunk in wanted:
+		chunk.load_now()
+	return wanted.size()
 
 
 func _process(delta: float) -> void:
@@ -50,6 +101,7 @@ func _process(delta: float) -> void:
 	_timer = INTERVAL
 	if _dirty:
 		_collect()
+	_update_meshes()
 	_update_chunks()
 	_update_scenes()
 	FrameProfiler.add("map_streamer", profile_start)
@@ -71,6 +123,18 @@ func item_count() -> int:
 	return _items.size()
 
 
+func loaded_mesh_count() -> int:
+	var n := 0
+	for it in _chunk_meshes:
+		if is_instance_valid(it[0]) and (it[0] as ChunkMesh).is_loaded():
+			n += 1
+	return n
+
+
+func chunk_mesh_count() -> int:
+	return _chunk_meshes.size()
+
+
 func _watch_layers() -> void:
 	var root := get_node_or_null(chunks_root)
 	if root == null:
@@ -84,12 +148,17 @@ func _watch_layers() -> void:
 func _collect() -> void:
 	_dirty = false
 	_items.clear()
+	_chunk_meshes.clear()
 	var root := get_node_or_null(chunks_root)
 	if root == null:
 		return
 	for node in root.find_children("*", "MeshInstance2D", true, false):
 		var mi := node as MeshInstance2D
-		if mi.mesh:
+		if mi is ChunkMesh:
+			var rect := (mi as ChunkMesh).global_bounds()
+			_chunk_meshes.append([mi, rect])
+			_items.append([mi, rect])
+		elif mi.mesh:
 			_items.append([mi, _global_rect(mi, mi.mesh.get_aabb())])
 	for layer in root.find_children("*", "PropSpriteLayer", true, false):
 		for child in layer.get_children(true):
@@ -117,6 +186,35 @@ func _update_chunks() -> void:
 		var near: bool = view.intersects(it[1])
 		if item.visible != near:
 			item.visible = near
+
+
+func _update_meshes() -> void:
+	var view := _camera_rect()
+	if not view.has_area():
+		return
+	var near := view.grow(MESH_WAIT_MARGIN)
+	var keep := view.grow(mesh_load_margin)
+	var drop := view.grow(mesh_load_margin + mesh_unload_slack)
+	for it in _chunk_meshes:
+		var chunk := it[0] as ChunkMesh
+		if not is_instance_valid(chunk):
+			continue
+		var rect: Rect2 = it[1]
+		if near.intersects(rect):
+			chunk.poll()
+			if not chunk.is_loaded():
+				var started := Time.get_ticks_usec()
+				chunk.load_now()
+				waited_loads += 1
+				waited_ms += (Time.get_ticks_usec() - started) / 1000.0
+		elif keep.intersects(rect):
+			if _headless:
+				chunk.load_now()
+			else:
+				chunk.stream_in()
+		elif not drop.intersects(rect):
+			chunk.stream_out()
+		chunk.poll()
 
 
 func _camera_rect() -> Rect2:

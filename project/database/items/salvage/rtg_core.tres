@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "rtg_core"
+display_name = "RTG Core"
+description = "The heat source of a radioisotope generator from a remote mast. Still warm."
+icon = ExtResource("2_icon")
+weight = 0.6
+price = 136
+tags = Array[String](["salvage"])
+item_size = [2, 2]
+max_stack = 1
+tech_tier = 3
+composition = Dictionary[String, int]({"steel": 500, "fissile_materials": 2})

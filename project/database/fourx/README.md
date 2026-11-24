@@ -31,7 +31,7 @@ The game makes a symbol of 3 or 4 letters from each name:
 To set a symbol yourself, add it to `"symbols"` in `market.json`. The key is the maker id or the item id:
 
 ```json
-"symbols": {"silver_star_europe": "SSEU", "acid_gland": "ACID"}
+"symbols": {"silver_star_europe": "SSEU", "entity_residue": "RESID"}
 ```
 
 A symbol is 1 to 5 capital letters or digits. Do not change a symbol after release: saves keep the prices by symbol.

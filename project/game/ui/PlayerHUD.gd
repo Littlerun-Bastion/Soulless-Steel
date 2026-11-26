@@ -340,6 +340,19 @@ func set_site(site_name: String, bounds: Rect2) -> void:
 	top_strip.set_site(site_name, bounds)
 
 
+# A named place of the map (Landmarks): show_place when the player enters
+# it (a passing notice), set_place for the one the player is in now ("" for
+# none), shown after the site in the top strip; a notice still waiting for
+# a place the player has left is dropped.
+func show_place(place_name: String) -> void:
+	hud_alerts.show_place(place_name.to_upper())
+
+
+func set_place(place_name: String) -> void:
+	top_strip.set_place(place_name)
+	hud_alerts.set_current_place(place_name.to_upper())
+
+
 func set_pause(_value):
 	#Cursor.visible = not value
 	pass

@@ -93,12 +93,81 @@ TABLES = {
         ("air_conditioner", 0.2, 1, 1),
         ("solar_panel", 0.15, 1, 2),
     ],
+    # Landmarks: a telescope in an observatory dome (its drive motors,
+    # electronics and aluminium tube), cases of laboratory equipment, a
+    # hospital's store room.
+    "telescope": [
+        ("electric_motor", 0.9, 1, 2),
+        ("control_cabinet", 0.5, 1, 1),
+        ("bulk_electronics", 0.6, 1, 2),
+        ("bulk_aluminium", 0.5, 1, 1),
+        ("wiring_harness", 0.5, 1, 2),
+    ],
+    "lab_equipment": [
+        ("bulk_electronics", 0.8, 1, 2),
+        ("wiring_harness", 0.6, 1, 2),
+        ("control_cabinet", 0.35, 1, 1),
+        ("electric_motor", 0.2, 1, 1),
+        ("solar_panel", 0.2, 1, 2),
+    ],
+    "medical_store": [
+        ("bulk_electronics", 0.7, 1, 2),
+        ("bulk_batteries", 0.6, 1, 2),
+        ("wiring_harness", 0.6, 1, 3),
+        ("air_conditioner", 0.15, 1, 1),
+    ],
+    # The parts shelf and bench of a garage, truck yard or depot workshop
+    # (sites.py): car parts and scrap, never fuel.
+    "car_parts": [
+        ("car_battery", 0.6, 1, 2),
+        ("alloy_wheel", 0.5, 1, 4),
+        ("catalytic_converter", 0.25, 1, 1),
+        ("wiring_harness", 0.5, 1, 2),
+        ("scrap_metal", 0.8, 1, 4),
+        ("electric_motor", 0.15, 1, 1),
+    ],
     # A destroyed car's pieces (picked up, no window).
     "car_wreck": [
         ("scrap_metal", 1.0, 1, 3),
         ("car_battery", 0.15, 1, 1),
         ("alloy_wheel", 0.6, 1, 4),
         ("catalytic_converter", 0.08, 1, 1),
+    ],
+    # Rail: a metro car (traction gear under the floor, roof air
+    # conditioning) and a goods wagon (one kind of load).
+    "railcar": [
+        ("electric_motor", 0.7, 1, 2),
+        ("wiring_harness", 0.8, 1, 3),
+        ("air_conditioner", 0.5, 1, 2),
+        ("control_cabinet", 0.35, 1, 1),
+        ("bulk_copper", 0.25, 1, 1),
+        ("bulk_batteries", 0.15, 1, 1),
+        ("scrap_metal", 0.6, 1, 3),
+    ],
+    "freight_wagon": {"pick_one": True, "entries": [
+        ("bulk_steel", 0.25, 1, 2),
+        ("scrap_metal", 0.2, 2, 5),
+        ("bulk_aluminium", 0.12, 1, 1),
+        ("bulk_copper", 0.08, 1, 1),
+        ("cable_drum", 0.12, 1, 2),
+        ("electric_motor", 0.08, 1, 2),
+        ("industrial_pump", 0.07, 1, 1),
+        ("valve_assembly", 0.08, 1, 2),
+    ]},
+    # An electrical substation's switchgear bay: copper busbars, breakers
+    # and their control gear.
+    "switchgear": [
+        ("bulk_copper", 0.7, 1, 2),
+        ("control_cabinet", 0.6, 1, 1),
+        ("wiring_harness", 0.6, 1, 2),
+        ("bulk_electronics", 0.3, 1, 1),
+        ("cable_drum", 0.25, 1, 1),
+    ],
+    # Rebar stacks and the yard of a building site.
+    "building_materials": [
+        ("bulk_steel", 0.7, 1, 2),
+        ("scrap_metal", 0.8, 2, 5),
+        ("wiring_harness", 0.2, 1, 1),
     ],
 }
 

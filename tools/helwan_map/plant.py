@@ -72,6 +72,7 @@ import heapq
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage as ndi
+from shapely import get_coordinates
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
@@ -794,7 +795,7 @@ class Plant:
             for i, k in enumerate(kinds):
                 self.source(str(k), S, 5.0 + 7.5 * i, q0 + 3.5)
         self.yards += yards
-        self.ops.append(lambda L: [(kit.pave(L, g, 0.12, 0.9, sub="interiors"),
+        self.ops.append(lambda L: [(kit.pave(L, off_buildings(self.site, g), 0.12, 0.9, sub="interiors"),
                                     kit.fence(L, g.exterior, rng, v=0.26)) for g in yards])
 
     def yard(self, cell):
@@ -817,7 +818,8 @@ class Plant:
                 if i < len(picks):
                     self.source(str(picks[i]), S, p, q)
                     i += 1
-        self.ops.append(lambda L: (kit.pave(L, g, 0.12, 0.9, sub="interiors"), kit.fence(L, g.exterior, rng, v=0.26)))
+        self.ops.append(lambda L: (kit.pave(L, off_buildings(self.site, g), 0.12, 0.9, sub="interiors"),
+                                   kit.fence(L, g.exterior, rng, v=0.26)))
 
     # -- network -----------------------------------------------------------
 
@@ -1114,7 +1116,7 @@ class Plant:
                     ends = axis.intersection(cp.area.exterior)
                     self.gates += [p for p in getattr(ends, "geoms", [ends]) if p.geom_type == "Point"
                                    and g.distance(p) < 1.5]
-        cp.draw(lambda L: [kit.pave(L, g, 0.24, 0.9, sub="groundlines") for g in roads])
+        cp.draw(lambda L: [kit.pave(L, off_buildings(site, g), 0.24, 0.9, sub="groundlines") for g in roads])
         for op in self.ops:
             cp.draw(op)
         for g in self.pools:
@@ -1124,7 +1126,7 @@ class Plant:
         for run in self.runs:
             seed = int(rng.integers(1 << 30))
             cp.draw(lambda L, run=run, s=seed: draw_run(L, run, np.random.default_rng(s)))
-            cp.draw(lambda L, run=run: end_marks(L, run))
+            cp.draw(lambda L, run=run: end_marks(L, run, self.houses))
         self.box = box
         cp.space.take(box)
         for g in self.pads + self.yards + [Polygon(ring) for ring in self.walls] +                 [n.S.box() for n in self.nodes.values() if n.kind == "pool"]:
@@ -1173,12 +1175,32 @@ class Plant:
         }
 
 
-def end_marks(L, run):
+def off_buildings(site, geom):
+    """geom less the finished map's building footprints (density.Built; for
+    a ground object drawn once every module has built)."""
+    import density
+    return density.built(site).off(geom, roads=False, obstacles=False)
+
+
+def end_marks(L, run, walls=()):
     """A flange across each end of a run: the nozzle at equipment, the joint
-    at a tee."""
+    at a tee. A run that ends inside one of walls (the footprints of the
+    plant's tanks and houses) has its nozzle where it comes out of the
+    wall."""
     c = run.centre()
-    for kind, d in zip(run.ends, (0.15, c.length - 0.15)):
-        if kind in ("equip", "tee") and not run.raised_at(d):
+    for k, (kind, d) in enumerate(zip(run.ends, (0.15, c.length - 0.15))):
+        if kind not in ("equip", "tee"):
+            continue
+        end = Point(c.coords[-k])
+        for g in walls:
+            if g.contains(end):
+                out = c.difference(g)
+                ds = [c.project(Point(p)) for p in get_coordinates(out)]
+                ds = [x for x in ds if (x > 0.05 if k == 0 else x < c.length - 0.05)]
+                if ds:
+                    d = min(ds) + 0.15 if k == 0 else max(ds) - 0.15
+                break
+        if not run.raised_at(d):
             L.line("interiors", perp_segment(c, d, run.width / 2 + 0.15), 0.3, 0.58)
 
 

@@ -32,9 +32,12 @@ Put all hand-made content in `helwan_master.tscn`.
 ### 1.1 What the generated scene contains
 
 - `Ground`: the ground texture and road meshes.
-- `City`: the meshes, in six sublayers: ground, ground lines, halos,
-  interiors, roofs, and overheads (pipe bridges, strut frames and conveyor
-  gantries; they draw above mechas and fade over the player).
+- `City`: the meshes, in seven sublayers: ground, ground lines, halos,
+  interiors, roofs, overheads (pipe bridges, strut frames, conveyor
+  gantries, platform canopies, gas-station canopies and depot shelters;
+  they draw above mechas and fade over the player and, within 300 px, over
+  every other mecha or Entity the player can see, as talls do: section
+  6.4), and talls (things that stand well above the roofs; section 6.4).
 - `MapBounds`: the map's edges and the border band (section 2.4).
 - `Vehicles`, `Stalls` and `Foliage`: sprite layers that draw the prop
   spawns.
@@ -51,6 +54,8 @@ Put all hand-made content in `helwan_master.tscn`.
   - It fades the roofs near the player.
   - It makes the building walls for shots and sight (see section 4).
 - `SalvageField`: the salvage sources (section 10).
+- `Landmarks`: the named places (`assets/maps/helwan/landmarks.res`, from
+  the work dir's `landmarks.json`; section 6.5).
 - `Overheads`: the viaduct.
 
 Buildings are not separate nodes. Each chunk of buildings is one mesh, and
@@ -326,10 +331,56 @@ The `PropSpawner` merges spawn points from three sources:
 
 A `CLEAR` zone does not remove a `PropSpawnPoint`.
 
+**Thinning.** The `PropSpawner`'s `kept_share` (kind -> 0..1) keeps that
+share of a kind's generated spawns, without a new generator run; which
+ones go is fixed by `map_seed` and each spawn's place in the list. The
+master scene keeps 65% of `vehicle` and 80% of `vehicle_wreck` spawns.
+
+**Set pieces.** Every prop the site modules place (`landmarks.py` to
+`sites.py`; `run_all.py` turns `Props.set_piece` on while they run) is a
+`props.SetPiece` item: props.json gives it an 8th field of 1, and it loads
+into `PropSpawnSet.placed`. `kept_share` never thins a set piece, so a car
+park's rows, a dealership's cars or a depot's buses stay whole (on the
+merged map 1,472 cars and 159 wrecks; `stats.json` `set_piece_props` has
+the count per kind). Tune `kept_share` knowing it only thins the generic
+kerb parking and traffic. A `CLEAR` zone still removes set pieces.
+
 Kinds: `vehicle`, `truck`, `vehicle_wreck`, `tree`, `bush`, `debris`,
-`stall`, `bus`, `military`, `container`. At this time, the game draws all of
-them except `debris`. Vehicles, trucks, wrecks, buses, military vehicles and
-containers have bodies (section 5). Stalls have none (section 9.2).
+`stall`, `bus`, `military`, `container`, `hut`, `clutter`, `railcar` and any
+the generator adds (`props.KINDS`). At this time, the game draws all of them
+except `debris`. Vehicles, trucks, wrecks, buses, military vehicles,
+containers and rail vehicles have bodies (section 5). Stalls have none
+(section 9.2).
+
+The game reads every kind by its name (each work file lists its kind
+names); nothing in the game lists them. To add a kind:
+
+- **A vehicle kind with bodies** (for example `railcar`): append it to
+  `props.KINDS` and `props.SIZE_M`; add its sprites as `VEHICLES` rows in
+  `prep_sprites.py` with the new kind name (length, mass, shot block, spawn
+  weight 0 if only your module places it, salvage source kind or None) and
+  their `HEIGHTS`, and placeholders in `make_placeholders.py`; append the
+  kind to `gen_scene.VEHICLE_KINDS` (the `Vehicles` layer and the
+  `VehicleField` both use it) and to `render_preview.py`'s PROPS kinds.
+  Mass decides the rest: over 3,000 kg it is a heavy vehicle (layer 12,
+  can't be trampled or destroyed, costs the route grid 2.0).
+- **A small kind with no body**: the simplest is a new variant of `clutter`
+  (a `CLUTTER` row, a `HEIGHTS` entry and a placeholder; place it with
+  kind `clutter` and that variant's index). A kind of its own needs its
+  sprites under its own name in `sprite_catalogue.json` (a `prep_sprites.py`
+  branch for its file prefix), the kind in `props.KINDS`/`SIZE_M`, and its
+  name in `gen_scene.CLUTTER_KINDS` and `render_preview.py`'s PROPS kinds.
+  A kind that breaks like a stall needs a layer and a `StallField` of its
+  own in `gen_scene.py`.
+- **A salvage kind**: append it to `salvage.KINDS` (and
+  `salvage.VEHICLE_KINDS` if it rides on a vehicle), add its loot table to
+  `tools/salvage_loot/make_source_loot.py` `TABLES` and run it (the game
+  warns about a kind with no table and leaves its sources empty). The HUD
+  names it from its name (`rail_freight` shows as RAIL FREIGHT) unless
+  `SalvageField.KIND_NAMES` has a better name.
+
+A work file may name at most 256 kinds (one byte per point);
+`build_meshes.gd` refuses a longer list rather than load wrong kinds.
 
 Some vehicle spawns are also salvage sources at the same spot: every bus,
 container truck, tank, APC and military truck, and some of the containers
@@ -436,12 +487,17 @@ vehicles are not nodes.
 
 - A vehicle can have a static box on physics layer 11
   (`MapSenses.VEHICLE_LAYER`). The box is the vehicle's length by its width.
-- Only vehicles near a mecha have boxes. The map is divided into 50 m
-  cells. Vehicles in the cells within 100 m of any mecha
-  (`stream_radius` 2000 px) have boxes. The other vehicles are only
-  pictures. The cells are checked every 10 physics frames.
+- Only vehicles near the player or an NPC in full simulation have boxes
+  (`VehicleField.wakes_vehicles`: not NPCs in the distant tier, which move
+  with no physics, not dead mechas and not mechas a camp is taking off the
+  map). The map is divided into 50 m cells. Vehicles in the cells within
+  100 m of such a mecha (`stream_radius` 2000 px) have boxes. The other
+  vehicles are only pictures. The cells are checked every 10 physics
+  frames. NPC steering reads the vehicles directly, so it steers round
+  vehicles with no box.
 - Because of this, a shot that passes a vehicle more than 100 m from every
-  mecha goes through it. Set `stream` to off to give every vehicle a box.
+  such mecha goes through it. Set `stream` to off to give every vehicle a
+  box.
 - Mechas collide with the boxes. Entities do not; they go round and under
   vehicles.
 - When a mecha pushes a vehicle, the vehicle wakes. It becomes a
@@ -536,6 +592,62 @@ they have collision. NPCs far from the player must still meet their walls.
 
 When a scene is freed, its changes are lost (for example, opened doors or
 looted crates). Keep that state outside the scene.
+
+### 6.4 Talls
+
+The `talls` sublayer holds things that stand well above the roofs: crane
+masts and jibs, pylons and wires, minarets, the upper floors of building
+frames. Every vertex has a height in metres (the mesh file's channel flag
+2; `build_meshes.gd` puts it in `UV.x` through
+`project/game/map/MapMeshFile.gd`). The `City/Talls` node
+(`project/game/map/TallsLean.gd`, shader
+`project/assets/shaders/TallsLean.gdshader`) leans every vertex away from
+the centre of the screen by its height:
+`shift = (vertex - screen centre) * h / (150 - h)`, with h clamped to
+100 m, so tall things lean as in a real top-down view. `render_preview.py`
+draws them with the same rule (`EYE_M`, `MAX_H_M`; keep both in step with
+`TallsLean.EYE_M` and `MAX_HEIGHT_M`). The screen centre is read every
+frame from the viewport, so camera pan, shake and zoom are all in it. With
+no camera (the editor) talls stand flat. Talls within 600 px of the player
+fade to 0.25 alpha (measured at each vertex's ground and drawn position),
+so a jib over the player never hides it. Where they are drawn within 300 px
+of another mecha or Entity the player can see (`ghost_radius`), they fade
+the same way, so a leaning tower top never hides an enemy far from the
+tower's foot; a body the player's view hides (alpha 0) makes no hole. They
+are lit by the map's lights like everything else, at their drawn position.
+The grain stays fixed to the object as the camera moves; on side faces the
+height runs across it too, so walls get grain both ways.
+
+A leaned vertex is always further from the screen centre than its ground
+position, so a chunk whose ground bounds are off screen also draws off
+screen: chunk hiding and mesh streaming work on the ground bounds as for
+the other sublayers. Each talls chunk's cull rect is still grown by 1000 px
+(`cull_margin`).
+
+To see talls in the game without the generator: `TallsRenderProbe`
+(section 11).
+
+### 6.5 Named places (Landmarks)
+
+The site modules register named places (`Site.add_landmark`); `run_all.py`
+writes them to `<work dir>/landmarks.json` and `build_meshes.gd` to
+`assets/maps/helwan/landmarks.res` (`MapLandmarks`). The generated scene's
+`Landmarks` node (`project/game/map/Landmarks.gd`, `Landmarks.find(node)`)
+loads that file by path when it is ready (no file: no places, so the scene
+still opens between `run_all.py` and `build_meshes.gd`) and answers:
+
+- `at(pos)`: the place whose outline holds a position (a place with no
+  outline: within its radius); the smaller one where two overlap.
+- `nearest(pos, max_px)`: the nearest place, by the distance to its area.
+- `describe(pos)`: a phrase for a hint: "near <name>" inside a place or
+  within 200 m of it, "<n> m <direction> of <name>" out to 1.5 km.
+
+When the player enters a place, the HUD shows its name as a notice (below
+every other notice and the extraction countdown) and in the top strip while
+the player is inside. The notice shows again only after the player has been
+out of the place for 60 s (`reentry_time`). A notice still waiting behind
+another is dropped when the player leaves the place first. The place the
+player starts in is not announced. Nothing is saved.
 
 ## 7. Districts
 
@@ -926,6 +1038,482 @@ collapsed is a ruin from the start. The chances per candidate spot are the
 `*_CHANCE` constants at the top of `district_life.py`; `stats.json` counts
 what was made (`district_life`, `military_camp`).
 
+### 9.6 Landmarks (landmarks.py, lm_*.py, lmkit.py)
+
+Named set pieces at real Helwan places, built from the OSM data at each
+place. `landmarks.py` runs first of the site modules: each builder claims
+its land (`Site.claim`), registers its name (`Site.add_landmark`, written
+to `landmarks.json`), clears what the district modules put there (their
+buildings, props and sources, and, through `lmkit.mask_drawers`, what their
+drawers would draw there and the sources they would register while
+drawing; their ground obstacles there go too) and builds only when its land
+touches the window of a window run. A builder skips its landmark when the
+land is not free (`Site.is_free` without the district check: outside the
+play area, in a KeepOut area, within 20 m of a marker or on an earlier
+claim).
+
+The builders lay a landmark out from the whole map's layout
+(`site.full_layout`: its roads, and the large roofs that stay on the land,
+through `lmkit.roads_near`, `kept_roofs` and `standing`), never from the
+window's cut of `site.roads` or `site.buildings`, and draw their random
+numbers whether or not a building stands in the window, so a window run
+anywhere over a landmark shows what the full run makes there.
+
+| Name | Module | Where (OSM) | What is built |
+|---|---|---|---|
+| Japanese Garden | `lm_garden.py` | the block holding the "Japanese Garden Mosque", the two ponds and the footways south of Sherif Street | coped wall with roofed gates at the ends of the paved spine, frozen ponds, plank footbridges, gravel paths, the hill with a two-tier pavilion (its upper tier in the talls), a round pavilion, water pavilions on both ponds (East-Asian roofs), rows of seated Buddhas facing the spine, a large Buddha in the round plaza, stone lanterns, rocks, raked gravel beds, bare trees; the OSM gatehouse at the west gate with a hipped roof; the mosque keeps its footprint with a domed roof and a 30 m minaret (talls) standing inside it; a yard with a shed, a generator and a cable drum; a pump by the largest pond |
+| Helwan Observatory | `lm_observatory.py` | the "Helwan Observatory Museum" and the two `man_made=observatory` outlines on Al Marsed Street | a walled compound with the OSM buildings (flat roofs with observation domes), the main telescope dome at the OSM dome, a second dome, two outbuildings, a met enclosure, a 48 m guyed mast (talls), drives; the museum in a walled forecourt; the far dome fenced |
+| Helwan Hospital | `lm_hospital.py` | the cluster of OSM hospital wards (no campus name in OSM) | the real buildings in a campus wall with gates where roads and paths enter, paved courts, lawns, paths, benches, an ambulance bay with ambulances, wrecks at the main gate; ambulances on the drive of the six-storey hospital block on Ismail Kamel Street |
+| Helwan University | `lm_university.py` | the faculties at the north edge of the play area, grown from the Faculty of Medicine | the faculty buildings (an OSM building the large roofs lost, the Faculty of Education, is put back from its outline), campus wall (open where the campus runs on north), a main gate of two pylons and a lintel (talls), a paved quad on the largest open ground with a dry fountain, benches, lamp posts and a ring of trees |
+| Helwan Court | `lm_court.py` | the OSM courthouse on Sherif Street | colonnade, steps, paved forecourt to the street of its address, flagpoles (talls), iron railings on a low plinth, guard hut |
+| Helwan Cement Works | `lm_cement.py` | the cement works `industrial.py` builds in `density.CEMENT_BOX_M` and the OSM "Helwan Cement Plant" | no land taken: the preheater towers (about 50 m), silos (28 m) and chimneys (65 m) stand in the talls, the lowest drawn first (the talls have no depth test); a gutted one stands at half height, a collapsed one not at all. The name covers the works' compound plots (laid out again from `full_layout` with `industrial.plots`) and the OSM plant, grown 12 m, closed and joined into one outline, not the housing round them |
+
+The landmarks' own building kinds (`lm_pavilion`, `lm_kiosk`, `lm_mosque`,
+`lm_dome`, `lm_flat_domes`) are drawn by the roof functions in `lmkit.py`
+and the standard ruin drawing; their ruin states are pinned to intact or
+damaged so the set pieces stay readable. Everything else in a landmark is
+drawn ground (walls are drawn, not buildings: mechas cross them as they
+cross every wall). `stats.json` (`districts.landmarks`) counts what each
+landmark made.
+### 9.7 Infrastructure (infra.py)
+
+`infra.py` is the second site module (after `landmarks.py`). It claims all
+the land it builds on (`Site.claim`, owners `infra:...`), so the later site
+modules build round it. Its parts, in the order they claim land:
+
+- **The metro** (`metro.py`): Cairo Metro line 1, the OSM "Helwan-ElMarg
+  Railway" (OSM `railway=subway`, which `gen_city` does not draw). A walled
+  double-track corridor runs from the north edge of the map to the Helwan
+  terminus, along the middle of the two OSM direction lines; houses in it
+  are removed or trimmed back to the walls. The terminus has an island and
+  two side platforms with canopies (overheads), buffer stops, a concourse
+  and a station hall; Ain Helwan station gets side platforms where OSM maps
+  them. Overhead line portals and contact wires are in the talls sublayer.
+  Three stopped trains (8, 6 and 6 cars) stand at the terminus and on the
+  open line; half the cars are `railcar` salvage sources. Landmarks:
+  "Helwan Metro Station", "Ain Helwan Metro Station".
+- **The rail yard** (`railyard.py`), round the OSM sidings north of the
+  town (`YARD_BOX`): a depot shed (building kind `rail_shed`, drawn by its
+  own function: tracks and inspection pits inside, skylights over each
+  track, doors where the tracks enter, a car inside, pinned damaged) over
+  the dead ends of the fan of sidings; a sawtooth works hall along the OSM
+  traverser and the traverser pit with its table; goods trains (boxcars,
+  hoppers, flat wagons, some carrying containers) on the free stretches of
+  the sidings (`RAKE_SHARE`, `RAKE_FILL`; a share are `freight_wagon` or
+  `shipping_container` sources; what the district modules left on a
+  wagon's place, such as a lorry the industrial module parked across the
+  sidings at a loading dock, is removed), broken by crossings: bands
+  `CROSSING_M` wide across the yard every `CROSSING_EVERY_M` where no
+  wagon stands (plates drawn over the tracks), so mechas can cross the
+  sidings without pushing 25-60 t wagons; buffer stops and signals; one or
+  two container terminals in the largest free rectangles (rows of
+  containers in pairs, 15 m lanes and cross lanes, stacks 1 to 3 high, a
+  gantry crane, floodlight masts); the traction substation's yard.
+  Landmark: "Helwan Rail Yard". The yard's places depend on what the
+  district modules built round it, so a window preview matches the full
+  run only when it takes in the industrial blocks east of the yard too
+  (`--window 400,-2700,1500,-1400`).
+- **Container stacks.** Stacks of 2 or 3 are drawn in the talls sublayer.
+  The stacks that touch form a block (`railkit.split_blocks`), and each
+  block is one ground obstacle and one gutted building of kind
+  `container_stack` that draws nothing itself (`railkit.stack_runs`): the
+  obstacle stops mechas, the building's walls stop shots and sight and
+  cast light shadows, so a stack gives cover like a container vehicle or
+  a wall. A block smaller than 60 m² (`STACK_RUN_MIN_M2`) would be too
+  small to be a building, so its containers stay single `container`
+  vehicles instead. `industrial_stacks` stacks the blocks of the two
+  outermost rows on each side of the industrial container yards
+  (`YARD_STACK_SHARE`); the rows further in stay containers a mecha can
+  push. `lot_yards` adds a small container yard (rows in pairs, no crane)
+  to each industrial factory or depot lot that still has a free rectangle
+  (`LOT_YARD_MIN_M`, `LOT_CLEAR_M` from everything on the lot; the
+  industrial module exposes its lots as `site.industrial_lots`). The
+  density pass fills most lots, so only a few have room.
+- **Pylon lines and substations** (`power.py`): `SUBSTATIONS` (anchors)
+  and `LINES` (from a stretch of a map edge, or from another substation).
+  A line follows the cheapest path on a 7.5 m grid of the whole map in
+  which buildings (with `CLEAR_M` round them), landmark claims and the real
+  places in `RESERVED` are closed, and roads, rail, water and the
+  industrial and market districts cost more. Towers then go along it
+  every 250-350 m where the straight span crosses no building and the foot
+  is on free ground. A substation no line reaches (the rail yard's: the
+  town closes it in, so no route keeps a line off the roofs) is fed by
+  underground cable and built all the same. Towers are
+  36 m lattice pylons with three cross-arms (talls), their base a ground
+  obstacle; six conductors and an earth wire run between them. The land
+  under the wires (`SPAN_CLAIM_M` either side) is claimed, so the later
+  site modules build nothing under them. Substations:
+  fenced gravel yard, entry gantries, busbar portals, breaker bays
+  (`switchgear` sources), two or three transformers (sources, obstacles),
+  a control building, a cable drum and a control cabinet.
+- **Flyovers** (`flyover.py`): `FLYOVERS` names the road kind and the
+  junction. The deck (`DECK_H_M` over the middle, ramps of `RAMP_M` running
+  linearly to the ground) follows the road's middle (the median of a dual
+  carriageway). In the talls sublayer: deck (`DECK_V`, darker than the
+  road concrete under it), side faces, parapets with light tops, a dark
+  expansion joint over each pillar, lane markings, lamp posts, pier caps
+  and pillars. On the ground: a pillar obstacle every `PILLAR_STEP_M`
+  (none on crossing roads or rail), the deck's shadow under it and its
+  shade along both edges (`SHADE_M` wide at full height, narrowing down
+  the ramps), which marks the deck as raised where it does not lean (near
+  the screen centre). Like the OSM viaduct, the deck itself does not collide:
+  on Helwan's roads it is about as wide as the road, so a solid ramp end
+  would close the road; instead mechas keep the whole road all along it,
+  and the low ramp end fades near the player like the rest of the deck.
+  No vehicle stands under the ramp where it is lower than `LOW_UNDER_M`.
+  Under the arterial flyover a market fills the road between the pillars
+  ("the Flyover Market").
+
+Stacked containers, pylons, portals, gantries and the flyover decks are in
+the `talls` sublayer (section 1.1); parked cars and traffic keep off the
+pillars, ramps, the market and the metro corridor (`props.ROAD_KEEP_OFF`).
+`stats.json` `districts.infra` has the counts of each part (and the
+substations' places and each line's tower points).
+### 9.8 Civic places (civic.py)
+
+`civic.py` runs third of the site modules. Its parts, in the order they
+take land (`Site.claim`): `cemetery.py`, `worship.py` (OSM mosques),
+`grounds.py` (the club, then schools and pitches), `worship.py` (the
+rest); shared helpers are in `civickit.py`. Every place is chosen over the
+whole map from `site.full_layout` and claimed there, and built only where
+it touches the window, so a window preview shows what a full run makes.
+
+**Cemeteries** (`cemetery.py`): the two OSM `landuse=cemetery` areas in the
+play area, "the East Cemetery" (about 7 ha after the roads) and "the West
+Cemetery" (trimmed to its largest pieces, about 10.5 ha), both registered
+as landmarks (their outline is the kept land with the lanes between its
+pieces closed). The OSM service lanes inside stay; each piece between them
+is laid out on its own as a maze of walled family plots (hosh, 60 to
+400 m2), with lanes 10 to 16 m wide:
+
+- Straight streets across long pieces (75 to 120 m apart; the middle one in
+  each cemetery's largest piece is an avenue, 16 to 20 m).
+- Bands of plots along the piece's long axis, two rows back to back (9 to
+  13.5 m deep each; one row at an edge where that fits better), the
+  arrangement that puts the most ground under plots; lanes of 10.5 to
+  14.5 m between them. In a largest piece three or more bands wide the
+  middle lane is a second avenue, crossing the first.
+- Cross lanes (10 to 13 m) cut each band into blocks 35 to 80 m long,
+  placed afresh in every band, so they meet the lanes at T-junctions and
+  offsets; 30% open one row only (dead-end niches). Half the blocks sit up
+  to 2.5 m off their band's line, so the lanes jog (kept 10 to 16 m).
+- Each row is split into plots 7.5 to 15.5 m wide (some 16 to 26 m, some
+  through both rows), clipped to the piece; now and then a plot stands
+  across a lane between two of its openings (a dead end on each side, each
+  with a way out). Ground still a lane's width from every plot gets bands
+  of its own.
+- Land 7 m or more from every plot (where the OSM service lanes are too
+  close together for walled plots and mecha-wide lanes, as in the East
+  Cemetery's south) is open burial ground: rows of simple graves, drawn
+  only.
+
+Plots stand 2.5 m back from the roads, so a 3.5 m service lane is a street
+about 10 m wide. A 10 m mecha can reach every lane from outside the
+cemetery without crossing a plot wall.
+
+- A plot is a building of kind `hosh` pinned to the gutted state: its
+  outline is a wall (sight, shots by AP, edge slow) but a mecha in it is
+  not "inside" (no camera zoom). It draws itself as an open-topped walled
+  enclosure: ground (some paved), cenotaphs, a small domed tomb room in
+  about half, the walls with a gate towards a lane.
+- Where the damage map says gutted, half the plots are damaged, plus 10%
+  anywhere: their game wall stays whole, as a gutted building's does, and
+  their breaches are drawn as the wall fallen into a heap of rubble along
+  its line, so the outline still reads closed. Where it says collapsed,
+  45% of the plots are collapsed (wall stubs, rubble, no game wall), plus
+  4% anywhere; 35% of the collapsed ones are a `rubble` salvage source.
+- Large domed mausoleums (`mausoleum`, about 0.5 per hectare) stand at
+  block ends (the avenues' first) as ordinary roofed buildings.
+- The perimeter wall is drawn only (as the farm yards' and military
+  compounds' walls are): where a piece faces the outside of the cemetery,
+  with a gate wherever a lane meets it. Bare trees stand in the lanes (one
+  per 700 m2) and in some plots. The cemetery land is in `solid_extra`, so
+  the generic props keep out of it, and the OSM lanes inside its outline
+  are in `props.ROAD_KEEP_OFF`, so no parked cars, traffic or junction
+  wrecks stand on them (the road props' kerb debris does).
+
+**Mosques** (`worship.py`). Every mosque has a minaret in the talls
+sublayer (`civickit.minaret`: Mamluk-like octagonal tiers with balconies
+and a bulb, a slim Ottoman pencil with a cone cap, or a modern square
+shaft with a balcony box; 25 to 40 m) at the footprint's corner nearest
+the road, and a dome on its roof (plain, ribbed or a main dome with two
+small ones), behind a crenellated parapet (kind `mosque`). The main dome
+sits at the roof's middle where it fits clear of the minaret, else at the
+nearest point where it does, else as large as fits at the point deepest
+inside the roof (`worship.dome_spot`). A mosque keeps
+the damage map's ruin state but no worse than damaged; where the map says
+gutted or worse, half of them are gutted with only a stump of the minaret.
+
+- The OSM mosques in the play area, except the Japanese Garden Mosque
+  (built by `landmarks.py`); where the ground beside one is free (also of
+  what the district modules built), a walled courtyard with an octagonal
+  ablution fountain.
+- Neighbourhood mosques: one per cell of a 6 x 6 grid over the play area,
+  converting the best street-corner or street-facing building of 200 to
+  1,500 m2 (at least 10 m wide, not a sliver) in a residential or market
+  area, at least 250 m from any other mosque, large ones included (34 on
+  this map). A building that fails `Site.is_free` (KeepOut, markers) is
+  passed over. Where a
+  district module has taken the chosen building, the best other building
+  within 150 m that keeps the spacing is used (`neighbourhood_moved_to` in
+  the stats).
+- Large mosques (2 or 3) on main roads, 700 m or more from the OSM mosques
+  and from each other (the neighbourhood mosques, chosen after them, keep
+  250 m):
+  a rebuilt compound with the prayer hall on the side towards the qibla
+  (south-east), a courtyard with a domed fountain, arcades (`riwaq`, flat
+  with crenellations or a dome per bay) round it, and two minarets on the
+  front.
+
+**Coptic church compounds** (3): a walled yard with a gate, the church
+(`church`) along the compound's axis nearest east-west with a row of small
+domes over the sanctuary at its east end, a larger dome over the nave and
+twin bell towers at its west front (talls, 20 to 25 m), a paved forecourt
+before the west door with a path from the gate, a service building and
+trees round the inside of the wall.
+
+**Schools and sports grounds** (`grounds.py`):
+
+- The Helwan General Club, at the OSM sports centre (a landmark): the large
+  OSM roof there is replaced by a 400 m running track round a football
+  pitch, a main stand with a canopy and a small one (`stand`), four
+  floodlight masts (talls, 21 to 25 m), tennis courts, a drained pool (a
+  `pool` obstacle), a volleyball court, the clubhouse with an electrical
+  cabinet against its front (a `control_cabinet` source); trees round the
+  inside of the wall, clear of the buildings, courts and gates. It is not
+  built where a district module has built on its ground (`club_district`
+  in the stats).
+- Schools (10): an L- or U-shaped building (`school`) round a yard with a
+  football pitch and a basketball court where they fit, a flagpole (talls)
+  by the gate, trees along the front wall (clear of the gate).
+- Municipal pitches (5): a walled football ground with a small stand, a
+  changing room and four floodlight masts (17 to 20 m).
+
+Compound sites (schools, pitches, churches, large mosques) are rectangles
+slid along residential (and, for mosques, market) street blocks with a road
+in front, preferring open ground, a main road and a block corner, one per
+cell of a coarse grid and 250 m or more apart (`civickit.compound_sites`,
+`grid_pick`). Their walls are drawn only; the buildings in them are
+ordinary buildings with walls and ruin states. Pitches and courts are
+marked in `groundlines`, drawn in one chunk per compound (a large ground
+fill drawn in a later chunk would otherwise cover markings in the chunk
+next to it).
+
+`stats.json` under `districts.civic`: per cemetery the plots, collapsed and
+damaged plots, tomb rooms, mausoleums, trees and grave fields (m2) in the
+run; OSM mosques and courtyards; schools, pitches and the club; large
+mosques, churches and neighbourhood mosques, with the map positions
+(`*_at`, metres) of every chosen compound and mosque.
+
+On the full run of 24 November the civic places drew about 170,000
+triangles (8,000 of them talls) in all: 254 plots in the East Cemetery and
+333 in the West, about 57,000 triangles in a 580 x 460 m window over the
+East Cemetery.
+### 9.9 Urban fabric (fabric.py, estates.py, construction.py)
+
+`fabric.py` is the fourth site module (after landmarks, infra and civic).
+It builds on land that is still free (`Site.is_free`), claims what it
+builds, and also keeps off the blocks that the district modules rebuild,
+the OSM cemeteries and parks, and the real places of the other site modules
+(`construction.reserved_area`).
+
+**Public housing estates (`estates.py`).** Rows of identical slab blocks
+(four to six storeys, 10 to 13 m deep, 28 to 66 m long) with 20 to 28 m of
+open ground between the rows. The estates are at the places where the
+satellite image shows such rows (`estates.PLACES`), and in large regular
+residential blocks of generated lots while there are fewer than
+`MIN_ESTATES`. Each estate has one design: all its blocks have the same
+plan (a plain slab, an L or a U with the wings at the back), the same stair
+cores and the same roof (a stair head over each core with water tanks
+beside it); dish rows, shacks and pigeon towers vary from block to block.
+A street block piece that would hold fewer than two blocks keeps its
+lots. An estate takes only the land its rows use (`estates.estate_land`):
+within half a row gap of its blocks, its lanes, and the generated lots that
+reach into these, which are removed; lots beyond it stay. In the middle of
+the open ground between two rows (past the wing tips of an L or U) there
+is an access lane in every other gap, with cars parked along it (the
+design's `lane_cars`, at most `MAX_CARS` per estate), or a footpath; both
+run on to the street when it is within `LANE_REACH_M`. There are entrance
+paths to the stair cores, worn ground, bare trees, washing lines and
+rubbish, and one to three kiosks (`KIOSKS`, hut props) at the lane mouths
+by the street, or else along the estate's edge by a street. The blocks are
+buildings of kind `estate` with the usual ruin states; their interiors
+show the flats either side of the stairwells.
+
+**Building sites (`construction.py`).** A large site beside the OSM road
+under construction (as near its concrete as there is room, over generated
+lots if need be), `LARGE_SITES` more on open ground beside streets in the
+city, and `INFILL_SITES` small ones in dense residential blocks, where the
+two to five lots of the plot are taken out. The road under construction
+itself is graded gravel with tyre tracks, barrier blocks across both ends
+and a few gravel heaps. Sites keep `ROAD_SETBACK_M` off all other road
+concrete, and the generic props keep off them. A site's half-built concrete
+frame is a building of kind `frame` pinned to the collapsed state: the game
+gives it no walls, no slow, no occluder and no route cost, so mechas walk
+in and see and shoot through it. Its upper floors (3.2 m apart, 2 to 6 of
+them) are in the talls sublayer: columns as posts, the poured bays as
+translucent slabs (`SLAB_A`, less on tall frames: where the floors stack
+straight below the camera they cover at most `SLAB_COVER` together, so a
+mecha under them still shows), the beams, rebar on the top columns; the top
+floor is only partly poured. The stair and lift core is a solid prism and a
+ground obstacle. Large sites also have a tower crane (talls: a 35 to 50 m
+lattice mast, a 40 to 60 m jib, the counter-jib and counterweight, the cab,
+the hook with a load; its 6 m base pad is a ground obstacle with a
+`control_cabinet` source behind it), sometimes a mobile crane (its chassis
+an obstacle), a fence and gate, portacabins and a guard hut (huts), and a
+yard: rebar stacks (a `building_materials` source), sand and gravel heaps,
+formwork, pallets and sacks, a `cable_drum` source and a genset (a clutter
+prop with no source: the sites give no fuel). The biggest large site is a
+landmark ("the Big Crane", or "the Crane" when its crane is under
+`BIG_CRANE_M`, 44 m). No dump trucks or tankers.
+
+Every run, a window run too, lays out the estates and sites of the whole
+map, claims their land and registers the landmark; only the ones that
+touch the window are built. Outside the window an estate's land is worked
+out with the whole map's lots and large roofs (`Site.full_layout`) in place
+of the buildings, so the claims match the full run's but for what the
+district modules built there.
+
+**Rooftop variety (the Cairo roof kit, `style.py`).** Flat house roofs in
+the residential and market districts (`buildings.CAIRO_DISTRICTS`) take
+their items from `style.CAIRO_ITEMS`: the house items plus pigeon towers
+(the lattice and cage stand 4.5 to 8 m up in the talls sublayer), water
+tank stands and clusters, rooftop shacks with tin roofs and dish rows.
+`UNFINISHED_SHARE` of these roofs (of at least `UNFINISHED_MIN_M2`) are an
+unfinished top floor: a bare slab with no parapet, concrete columns with
+rebar on a grid along the edge and across it, half-built brick walls, bricks
+and sand, and a stair head. These items, the dishes and the tanks are
+drawn with `style.Batch` (quads and fans of few sides, no shapely work),
+which keeps them cheap in triangles. Gutted roofs have no items; on damaged
+roofs the items keep clear of the holes.
+
+`stats.json` (`districts.fabric`) lists the estates and sites claimed
+(`names`, the whole map's in every run) and counts what was built, and
+`triangles`: the triangles drawn by each part of the
+kit, the estates and the sites (`style.KIT_TRIS`), with `estates_all` and
+`sites_all` the totals of everything the estates and sites draw, in every
+sublayer (`style.counted`).
+### 9.10 Service sites (sites.py, sitekit.py, sitelots.py)
+
+`sites.py` runs last of the site modules, on the land the others left. It
+builds gas stations, garages, dealerships, truck repair yards, car parks,
+bus depots and parking in front of large buildings. The site types are
+rows of a table (`SITE_TYPES`, class `SiteType`): each names its lot finder
+(the candidate places), how many and how far apart, how a candidate is
+scored, its planner (the lot shaper and the pieces with their placement
+rules) and its builder; the garages and the parking beside and in front of
+buildings have choosers of their own. The types choose in the table's order
+over the whole map from the city layout (also in a window run), each
+keeping off the places the ones before chose, with random numbers seeded
+by the position. At build time a place whose land another module took is
+built on the free part only: a gas station is laid out again on its corner
+lot less the land taken (and less the other site types' places beside it),
+the others are cut back to what is free; a place is skipped when its
+pieces no longer fit (it is not replaced, so 23 stations are chosen to
+leave 20 or so). Each site claims what it builds on (`Site.claim`), and the
+lot keeps the generic props (bushes, trees, kiosks) out (`solid_extra`). Lots leave the large
+roofs and 2 m round them out (`Ctx.cut_big`). No place is chosen within
+reach of a marker (start positions, exits, spawn zones) or in a KeepOut
+area (`Ctx.blocked`): these are known in a window run too, so the next
+candidate is chosen instead, the same way in both.
+
+**Site templates** (`sitekit.py`). A site type is a lot finder, a lot
+shaper and pieces:
+
+- Lot finders: street corners (a convex block corner where a main road
+  meets another road, `street_corners`) and frontages (points along the
+  block edges that face a road, `frontages`). A street drawn under a rail
+  line does not count.
+- Lot shaper: the block near the corner (a parallelogram spanned by the two
+  road edges) or along the frontage, kept 1 m off the road concrete. So the
+  lot's outline follows the street layout. The generated houses it cuts are
+  trimmed, or dropped when too little is left (less than half of the house,
+  or under 60 m2 from a house that was larger; `trimmed_house`), and the lot
+  grows over the ground they leave (`take_land`).
+- Pieces: fixed shapes placed by rules in the lot's frame (x along the
+  road, y into the block).
+- Ground (`shape_ground`): the driveways are cut where the lot meets the
+  roads; the lanes from the driveways round the pieces are joined and
+  closed with a radius (`FILLET_M`) and become the apron (concrete like the
+  roads, an edge line, slab joints). What is left of the lot becomes
+  islands and verges (dark rough ground with a light kerb line): the verges
+  along the roads, wide leftovers, and the street corner; thin strips along
+  the back are paved.
+- Vehicles (`Parker`): cars in bays, at pumps and in queues, kept clear of
+  every vehicle the sites put down (`Placed`, on the Site), of buildings,
+  of obstacles and of the islands. On the road, the other props are checked
+  too (`Props.clear_of`). The generic road vehicles placed later
+  (`props.build`) test their room with circles a little shorter than a car,
+  so the sites' road vehicles (queues, cars at a garage's kerb) are marked
+  in the props' room grid with a circle round their whole outline
+  (`guard_vehicles`). The sites' clutter keeps off their vehicles, and a
+  `car_parts` source goes down before its site's vehicles.
+
+**Gas stations** (`STATIONS`, 23; at street corners on trunk, secondary
+and tertiary roads, `STATION_SPACING_M` apart). The kiosk (one of four
+outlines, building kind `fuel_kiosk`, a light fascia band along its front)
+faces the main road, behind the canopy across a lane or beside it, never
+within `CORNER_CLEAR_M` of the corner. The canopy (`CANOPIES`: one row of
+two or three islands along the road, or two or three rows) covers the pump
+islands (`overheads`: above mechas, fades near the player); a station takes
+the first canopy size in a drawn order that fits its lot. Its deck is
+see-through (`sitekit.CANOPY_A`), so the pump islands, pumps and cars
+under it show and it does not pass for a roof (it stops neither shots nor
+sight), with a thin bright fascia along its edge and light fittings over
+the lanes. The pump islands
+are ground obstacles (kind pipe) with `LANE_M` (13 m) lanes between the
+rows; the canopy's pillars stand on them. NPC route planning (12.5 m cells,
+obstacles grown by 2 m) counts the whole pump area as blocked, so NPCs
+route round a canopy like round a small building; their steering near it
+uses the lanes. Two fuel pumps (clutter
+`fuel_pump`) per island. An entry and an exit on the main road (arrows,
+stop line), one more on the side road; the street corner is an island with
+the price sign pylon (`talls`, 8 to 12 m, so it leans), at the point of the
+island nearest the corner. Tank fill covers on
+the apron, an air and water post, tyres and drums by the kiosk, dry bushes
+on the larger islands. `WASH_SHARE` of the stations want a drive-through
+car wash (building kind `car_wash`, its long side along a lane, its ends
+drawn open: the game still gives it four walls, like any building) and try
+`WASH_TRIES` more layouts for room for one; about a third of the stations
+get one. Cars at the pumps and in front of the kiosk, a few wrecks; on
+`QUEUE_SHARE` of them an abandoned queue (`QUEUE_CARS`) nosed into the entry
+and running back along the kerb lane of the main road (traffic drives on
+the right). The pumps give nothing and do not explode: no fuel sources.
+
+**Other sites** (`sitelots.py`):
+
+| Site | How many | What |
+|---|---|---|
+| Backstreet garage | `GARAGES` 30 | A house on a residential or market street becomes a one-bay workshop (kind `garage`: sheet roof with a light sign board along the street side; the open bay, `GARAGE_BAY_W_M` 5 to 7 m wide, shows as a dark floor with an inspection pit between light jambs); on `GARAGE_YARD_SHARE` the next house is cleared into a walled yard of wrecks and parts. A car or wreck nosed into the bay (`garage_bay_cars`; shorter cars are tried in a narrow lane, and where none fits a car stands at the kerb in front of the bay), a tyre stack, drums and tyres along the wall on both sides of the mouth, one or two cars or wrecks at the kerb beside it, an oil stain, an engine, a `car_parts` source by the bay |
+| Dealership | `DEALERSHIPS` 4, main roads | A showroom (kind `showroom`: deep glass front with mullions) at the back, two rows of new cars facing the road and the showroom, a pole sign (talls) |
+| Truck repair yard | `TRUCK_YARDS` 6, industrial ground the industrial module left | A workshop hall (kind `workshop_hall`, bay doors), trucks nosed to the doors and parked round the yard (tankers and dump trucks only on industrial ground; they are in for repair, drained and stripped, so they carry no salvage source: `STRIPPED`), a fence, a `car_parts` source |
+| Car park | `CAR_PARKS` 20, residential and market streets | Rows of bays and aisles (the lot shrinks to them, so the houses behind stay), `CAR_PARK_FULL` full, wrecks, kerbed islands, a guard hut on the island by the driveway |
+| Bus depot | `BUS_DEPOTS` 5, main roads | A workshop hall, a row of buses under a see-through canopy (as the stations') at the back, a middle row in the open (buses where the lot is deep enough, else minibuses) with a 14 m aisle behind it (`DEPOT_AISLE_M`; the buses hold a mecha back) and a narrower one in front (its other side is the minibuses, which a mecha pushes aside), a row of minibuses along the front, a 14 m gate lane (`DEPOT_GATE_M`) kept open from the road to the back aisle, buses left askew off those lanes, a wall, a `car_parts` source |
+| Parking out front | `FRONT_SHARE` of the free strips | Where the front of a large roof, or of a generated building of at least `FRONT_LOT_MIN_M2`, is 6 to 26 m from the road and the strip has no houses: bays straight in, angled where it is shallow, two rows and an aisle where it is deep; built only while the building stands, on the part of the strip that is free |
+| Side car park | `SIDE_PARKS` 40 at most | On open ground beside a large roof (or a generated building of at least `SIDE_LOT_MIN_M2`) that reaches a road: an aisle along the wall and one or two rows of bays; the ground they leave (the plots of houses it grew over) becomes kerbed islands |
+
+New clutter sprites (grey placeholders, `make_placeholders.py`
+`SITES_CLUTTER`): `fuel_pump`, `air_post`, `tyre_stack`, `engine`. New
+salvage source kind `car_parts` (car battery, alloy wheels, catalytic
+converter, wiring harness, scrap, sometimes an electric motor; table in
+`tools/salvage_loot/make_source_loot.py`).
+
+The sites' buildings (kiosk, car wash, garage, showroom, halls) take their
+ruin state from the damage map like the others, but never worse than gutted
+(`sitekit.pin_state`): a collapsed one is drawn as a rubble heap and the
+site would no longer read.
+
+`stats.json` `districts.sites` counts what was chosen and built (the
+stations' canopy sizes as `canopies_<rows>x<per row>`), the vehicles still
+on the map by kind (`vehicles`, `vehicles_total`; `vehicles_cleared_later`
+those a later place's land took), the houses removed, the places skipped
+because another module took their land (`stations_replanned` the stations
+laid out again), and the triangles
+the sites' ground, canopies and signs add (`triangles`; their buildings are
+counted with the others). `chosen` lists every place chosen over the whole
+map (kind and centre in metres), also in a window run, so a window can be
+aimed at one; `places` lists the ones built.
+
 ## 10. Salvage sources
 
 The generator writes every salvage source to
@@ -952,7 +1540,15 @@ what it gives. No source is placed in the border band or in a KeepOut area
 | `oil_drums`, `cable_drum` | Industrial yards, farms | ground mesh |
 | `tractor` | Farmyards, fields | ground mesh |
 | `relay_mast` | Military sites, high bare ground | ground mesh |
-| `rubble` | One search point in 30% of the collapsed buildings | the rubble |
+| `rubble` | One search point in 30% of the collapsed buildings and 35% of the collapsed cemetery plots | the rubble |
+| `telescope` | Each observatory dome (inside the dome) | the dome roof |
+| `lab_equipment` | By an observatory outbuilding and two university faculties | cases on a pallet |
+| `medical_store` | By the hospital's outpatient clinics and its largest ward | cases marked with a cross |
+| `railcar` | Stopped metro trains (half the cars), a car in the depot shed | `railcar` vehicle prop (metro car) |
+| `freight_wagon` | Goods trains on the yard's sidings (a share of the boxcars and hoppers) | `railcar` vehicle prop |
+| `switchgear` | Breaker bays of the substations | ground mesh |
+| `building_materials` | The rebar stacks of a large building site | ground mesh |
+| `car_parts` | Garages, truck repair yards, bus depot workshops (section 9.10) | an engine block and tyre stacks |
 
 Ruin states change rooftop sources: a damaged roof keeps them, a gutted or
 collapsed one has none.
@@ -986,9 +1582,27 @@ These suites test sections 4, 5 and 6:
 
 - `MapWallsTest`: walls, AP, fuses, sight and foliage.
 - `MapVehiclesTest`: pushing, heavy vehicles, settling, chain pushes,
-  walls, shot chance, sight and vehicle streaming.
+  walls, shot chance, sight, vehicle streaming and `kept_share` thinning
+  (never set pieces).
 - `MapStreamingTest`: chunk hiding, streamed scenes, and the NPC thinking
   rule.
+- `MapTallsTest`: the talls height channel, the lean rule, the Talls
+  node's material, and the ghosts both the talls and the overheads fade
+  over.
+- `MapLandmarksTest`: named places, their look-ups and the HUD notice.
+- `MapKindsTest`: new prop and salvage kinds work by name.
+
+Probes (run only when named): `VehicleStreamProbe` (the cost of 15,700
+parked vehicles, steering in a dense car park, the route grid) and
+`TallsRenderProbe`, which needs a renderer:
+
+```
+godot --rendering-driver d3d12 --resolution 1920x1080 res://game/test/RunAllTests.tscn -- --suite=TallsRenderProbe --quit --bins=<dir of talls_*.bin> --out=<dir> [--centre=x,y]
+```
+
+`--bins` can be any work dir of a run (a window run's `talls_*.bin`
+files); `--centre` (world px) puts the camera over one object, for example
+a crane, instead of the middle of all the meshes.
 
 Run them from the `project/` folder:
 
@@ -1012,8 +1626,14 @@ godot --headless res://game/test/RunAllTests.tscn -- --suite=MapWalls,MapVehicle
 | `plant.py` | Process plants: the pipe network, the nodes, overhead racks, pipe bridges and the two passability checks (section 9.1a). |
 | `pipes.py` | How pipes, racks and pipe bridges are shaped and drawn. |
 | `district_life.py` | Small things for the residential, market and farmland districts (section 9.5). |
+| `landmarks.py`, `lm_garden.py`, `lm_observatory.py`, `lm_hospital.py`, `lm_university.py`, `lm_court.py`, `lm_cement.py` | Named set pieces at real places (section 9.6). |
+| `lmkit.py` | Drawing helpers for the landmarks: ponds, bridges, statues, lanterns, walls and gates, East-Asian roofs, domes, minaret, mast. |
+| `civic.py`, `cemetery.py`, `worship.py`, `grounds.py`, `civickit.py` | Civic places: cemeteries, mosques, church compounds, schools and sports grounds (section 9.8). |
 | `density.py` | The industrial density pass: medium and small things on every lot, huts, clutter, thin pipes, road racks, tankers and dump trucks (section 9.1b). |
+| `infra.py`, `metro.py`, `railyard.py`, `power.py`, `flyover.py`, `railkit.py` | Infrastructure: the metro line and stations, the rail yard, container stacks, pylon lines and substations, flyovers, and their drawing helpers (section 9.7). |
+| `fabric.py`, `estates.py`, `construction.py` | The urban fabric site module: public housing estates, building sites with frames and cranes (section 9.9). |
 | `kit.py` | Helpers for the district modules: frames, free space, fences, paving. |
+| `sites.py`, `sitekit.py`, `sitelots.py` | Service sites (section 9.10): the module and gas stations; the site templates (lot finders and shapers, apron and islands, bays, vehicles, the sites' building kinds); garages, dealerships, truck yards, car parks, bus depots and parking. |
 | `buildings.py` | The building record, the building kinds, and drawing every building by kind and ruin state. |
 | `ruins.py` | Ruin states (section 8). |
 | `style.py` | The mesh layers, roofs and roof kit, pitched roofs and interiors; writes the mesh files. |
@@ -1033,7 +1653,8 @@ godot --headless res://game/test/RunAllTests.tscn -- --suite=MapWalls,MapVehicle
 Work files (in the work dir): `<sublayer>_<row>_<col>.bin` and
 `manifest.json` (meshes), `footprints.bin` (outlines, ruin states,
 districts), `districts.bin`, `obstacles.bin`, `props.json`, `salvage.json`,
-`stats.json`, `city_cache.pkl`.
+`landmarks.json` (named places, section 6.5), `stats.json`,
+`city_cache.pkl`.
 
 ## 13. Repository size
 

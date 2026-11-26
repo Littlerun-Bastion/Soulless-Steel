@@ -8,6 +8,10 @@ extends CanvasLayer
 ## above it so the text shows. The grid square is the player's cell in a
 ## 5 x 5 grid over the map bounds (A–E across, 1–5 down), the same grid the
 ## Deployments survey will use. Without a site (Arena), only the OS hint shows.
+## While the player is in a named place of the map (Landmarks, set_place),
+## its name follows the site: HELWAN · JAPANESE GARDEN // GRID C3 ...
+## The place drops a leading site name, which the strip already shows:
+## "Helwan University" reads HELWAN · UNIVERSITY (place_label).
 ## The run clock stops while the game is paused.
 
 const GRID := 5
@@ -17,6 +21,8 @@ const STRIP_HEIGHT := 30
 var player = null
 var elapsed := 0.0
 var _site := ""
+var _place := ""
+var _place_name := ""
 var _bounds := Rect2()
 
 var _site_label: Label
@@ -63,7 +69,25 @@ func setup(player_ref) -> void:
 func set_site(site_name: String, bounds: Rect2) -> void:
 	_site = site_name.to_upper()
 	_bounds = bounds
+	_place = place_label(_place_name)
 	_refresh_left()
+
+
+## The named place the player is in ("" for none).
+func set_place(place_name: String) -> void:
+	_place_name = place_name
+	_place = place_label(place_name)
+	_refresh_left()
+
+
+## How the strip shows a place after the site: upper case, without a
+## leading site name and space.
+func place_label(place_name: String) -> String:
+	var shown := place_name.strip_edges()
+	var site := _site.strip_edges().to_lower()
+	if site != "" and shown.to_lower().begins_with(site + " "):
+		shown = shown.substr(site.length() + 1).strip_edges()
+	return shown.to_upper()
 
 
 func player_died() -> void:
@@ -93,7 +117,7 @@ func _refresh_left() -> void:
 	if _site_label == null:
 		return
 	var hint := "[%s] OS" % MechUI.key_name("free_cursor") if InputMap.has_action("free_cursor") else "[ALT] OS"
-	_site_label.text = _site
+	_site_label.text = _site + (" · " + _place if _place != "" and _site != "" else "")
 	_site_label.visible = _site != ""
 	var square := grid_square(player.global_position) if is_instance_valid(player) and _site != "" else ""
 	_detail_label.text = ("// GRID %s · %s" % [square, hint]) if square != "" else hint

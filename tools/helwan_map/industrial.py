@@ -35,8 +35,9 @@ compound keeps a clear circle of plant.KEEP_CLEAR_M round it.
 How pipes are shaped and drawn is in pipes.py.
 """
 import numpy as np
-from shapely.geometry import LineString, Point
-from shapely.ops import unary_union
+from shapely import affinity, get_coordinates
+from shapely.geometry import LineString, Point, Polygon
+from shapely.ops import linemerge, unary_union
 
 import buildings as bl
 import density
@@ -75,6 +76,12 @@ PLANT_SHARE = 0.75
 CONTAINER_SOURCE_SHARE = 0.5
 ## Share of factories whose yard is a bus depot instead of a container yard.
 BUS_DEPOT_SHARE = 0.1
+## Loading docks: the apron's depth in front of the hall's wall, and how far
+## the wall may step in or out across one door (m).
+DOCK_APRON_M = 14.0
+DOCK_WALL_STEP_M = 0.6
+## A conveyor gantry and what is built later keep this far apart (m).
+CONVEYOR_CLEAR_M = 2.0
 
 
 # -------------------------------------------------------------- buildings
@@ -244,6 +251,11 @@ class Compound:
         self.things = list(self.halls)
         self.lot = "factory"
         self.bunds = []
+        # Ground the lot uses that is not a thing standing on it (dock
+        # aprons, the ground under conveyors and overhead racks); it joins
+        # the things once they are counted, so the site modules that add to
+        # the lots later keep off it.
+        self.used = []
 
     def draw(self, fn):
         self.ops.append(fn)
@@ -320,7 +332,9 @@ def yard(cp, x0, y0, x1, y1, kinds=None):
     g = F.rect(x0, y0, x1, y1)
     cp.thing(g)
     gate = g.exterior.interpolate(0.1, normalized=True)
-    cp.draw(lambda L: (kit.pave(L, g, 0.12, 0.9, sub="interiors"), kit.fence(L, g.exterior, rng, gate=gate, v=0.26)))
+    site = cp.site
+    cp.draw(lambda L: (kit.pave(L, density.built(site).off(g, roads=False, obstacles=False), 0.12, 0.9, sub="interiors"),
+                       fence_off(L, site, g.exterior, rng, [gate], 0.26)))
     kinds = kinds or ["transformer", "control_cabinet", "cable_drum", "oil_drums", "diesel_generator",
                       "electric_motor"]
     picks = list(rng.choice(kinds, size=min(len(kinds), int(rng.integers(2, 5))), replace=False))
@@ -388,41 +402,135 @@ def container_yard(cp, region=None, n_max=24):
             xx += ln + rng.uniform(0.4, 1.2)
 
 
+def sweep(poly, dx, dy):
+    """The ground a polygon passes over when it is moved by (dx, dy)."""
+    parts = [poly, affinity.translate(poly, dx, dy)]
+    pts = list(poly.exterior.coords)
+    for a, b in zip(pts[:-1], pts[1:]):
+        q = Polygon([a, b, (b[0] + dx, b[1] + dy), (a[0] + dx, a[1] + dy)])
+        if q.area > 1e-6:
+            parts.append(q)
+    return unary_union(parts)
+
+
+def ground_taken(site, zone, but=None):
+    """What already stands in zone that a ground object of a lot must keep
+    off: the buildings (but one) grown by 0.5 m, road concrete and the
+    ground obstacles."""
+    parts = [b.poly.buffer(0.5) for b in site.buildings if b.poly is not but and b.poly.intersects(zone)]
+    roads = site.full_roads_near(zone, 0.0)
+    if roads is not None:
+        parts.append(roads)
+    if site.obstacles is not None:
+        x0, y0, x1, y1 = zone.bounds
+        for _, p in site.obstacles.items:
+            if p[:, 0].max() >= x0 and p[:, 0].min() <= x1 and p[:, 1].max() >= y0 and p[:, 1].min() <= y1:
+                parts.append(Polygon(p).buffer(0))
+    return unary_union(parts) if parts else None
+
+
+def dock_apron(cp, hall, F, side, yard):
+    """The apron of a loading dock on one long side of a hall (side +1: the
+    frame's y1 side, -1: y0): the ground of the dock's yard (the strip the
+    lot keeps in front of the hall) that lies within DOCK_APRON_M in front
+    of the hall's walls on that side, off what already stands there
+    (ground_taken), in the pieces that reach the hall. None if there is
+    none."""
+    dx, dy = -F.sin * side * DOCK_APRON_M, F.cos * side * DOCK_APRON_M
+    front = sweep(hall, dx, dy).difference(hall).intersection(yard)
+    taken = ground_taken(cp.site, front.buffer(1.0), but=hall) if not front.is_empty else None
+    if taken is not None:
+        front = front.difference(taken)
+    parts = [g for g in style.polys(front) if g.area >= 60 and g.distance(hall) < 0.6]
+    return unary_union(parts) if parts else None
+
+
+def dock_doors(apron, hall, F, side, xs):
+    """Of the door places xs (local x) on one side of a hall, the ones
+    where the hall's outermost wall on that side runs straight across the
+    door and its mark and stop bar lie on the apron: {x: (wall y, mark,
+    bar)}. The mark and the bar follow the wall where it runs a little
+    askew of the hall's frame."""
+    room = apron.buffer(0.3)
+
+    def wall(x):
+        cut = F.line([(x, F.y0 - 1.0), (x, F.y1 + 1.0)]).intersection(hall)
+        ys = [F.to_local(px, py)[1] for px, py in get_coordinates(cut)]
+        return (max(ys) if side > 0 else min(ys)) if ys else None
+
+    doors = {}
+    for xd in xs:
+        ws = [wall(xd + k) for k in (-1.8, -1.6, 0.0, 1.6, 1.8)]
+        if None in ws or max(ws) - min(ws) > DOCK_WALL_STEP_M:
+            continue
+        mark = F.poly([(xd - 1.6, ws[1]), (xd + 1.6, ws[3]), (xd + 1.6, ws[3] + 1.4 * side), (xd - 1.6, ws[1] + 1.4 * side)])
+        bar = F.line([(xd - 1.8, ws[0] + 1.5 * side), (xd + 1.8, ws[4] + 1.5 * side)])
+        if room.contains(mark) and room.contains(bar) and mark.intersection(hall).area < 0.05:
+            doors[xd] = (ws[2], mark, bar)
+    return doors
+
+
 def docks(cp, hall):
-    """Loading docks along one long side of a hall: door marks, an apron,
-    and trucks backed up to some of them (container trucks are sources)."""
+    """Loading docks along one long side of a hall: the lot keeps a yard in
+    front of the hall's frame on a side picked at random; in it, an apron,
+    door marks and trucks backed up to some of the doors (container trucks
+    are sources). Door places are spaced along the hall from one end; the
+    apron and the doors are only where dock_apron and dock_doors allow."""
     F = kit.Frame(hall)
     rng = cp.rng
     side = 1 if rng.random() < 0.5 else -1
     y = F.y1 if side > 0 else F.y0
-    apron = F.rect(F.x0 + 2, min(y, y + 14 * side), F.x1 - 2, max(y, y + 14 * side)).intersection(cp.area)
+    yard = F.rect(F.x0 + 2, min(y, y + DOCK_APRON_M * side), F.x1 - 2, max(y, y + DOCK_APRON_M * side))
+    yard = yard.intersection(cp.area)
     others = [h for h in cp.halls if h is not hall]
     if others:
-        apron = apron.difference(unary_union(others).buffer(0.5))
-    apron = kit.largest(apron)
-    if apron is None or apron.area < 60:
+        yard = yard.difference(unary_union(others).buffer(0.5))
+    yard = kit.largest(yard)
+    if yard is None or yard.area < 60:
         return
-    cp.space.take(apron)
-    doors = list(np.arange(F.x0 + 5, F.x1 - 4, rng.uniform(5.5, 8.0)))
-
-    def draw(L):
-        kit.pave(L, apron, 0.2, 0.9, sub="groundlines")
-        for xd in doors:
-            L.fill("interiors", F.rect(xd - 1.6, min(y, y + 1.4 * side), xd + 1.6, max(y, y + 1.4 * side)), 0.05)
-            L.line("interiors", F.line([(xd - 1.8, y + 1.5 * side), (xd + 1.8, y + 1.5 * side)]), 0.12, 0.45)
-    cp.draw(draw)
+    cp.space.take(yard)
+    xs = [float(x) for x in np.arange(F.x0 + 5, F.x1 - 4, rng.uniform(5.5, 8.0))]
+    apron = dock_apron(cp, hall, F, side, yard)
+    at = dock_doors(apron, hall, F, side, xs) if apron is not None else {}
+    if at:
+        dock_draw(cp, apron, at)
     # The trucks that call at a dock: the ones with a spawn weight (not the
-    # tanker or the dump truck).
+    # tanker or the dump truck). The draws are made for every door place, so
+    # the lot's random numbers run the same whether a door stands there or
+    # not.
     cat = props.CATALOGUE.get("truck", [])
     trucks = [i for i, e in enumerate(cat) if e.get("weight", 1.0) > 0]
-    for xd in doors:
+    for xd in xs:
         if not trucks or rng.random() > 0.35:
             continue
         v = trucks[int(rng.integers(len(trucks)))]
+        if xd not in at:
+            continue
         ln, wd = cat[v]["length_m"], cat[v]["width_m"]
-        px, py = F.pt(xd, y + side * (ln / 2 + 1.6))
+        px, py = F.pt(xd, at[xd][0] + side * (ln / 2 + 1.6))
         if apron.buffer(2.0).contains(Point(px, py)):
             cp.vehicle(cp.site.salvage, "truck", px, py, F.rad + side * np.pi / 2, (ln, wd), v)
+
+
+def dock_draw(cp, apron, at):
+    """Queues the drawing of a dock: the apron paved, off what the finished
+    map has on it, and a dark mark and a stop bar at each door that is
+    still clear. The site modules keep off the apron (Compound.used)."""
+    cp.used.append(apron)
+    site = cp.site
+
+    def draw(L):
+        B = density.built(site)
+        zone = apron.buffer(2.0)
+        cover = B.cover(zone)
+        kit.pave(L, apron if cover is None else apron.difference(cover), 0.2, 0.9, sub="groundlines")
+        cover = B.cover(zone, gap=0.0)
+        for _, mark, bar in at.values():
+            if cover is not None and (mark.intersection(cover).area > 0.05 or bar.buffer(0.06).intersection(cover).area > 0.02):
+                continue
+            L.fill("interiors", mark, 0.05)
+            L.line("interiors", bar, 0.12, 0.45)
+    cp.draw(draw)
 
 
 def silos(cp, d_min=7.0):
@@ -434,10 +542,31 @@ def silos(cp, d_min=7.0):
     if got is None:
         return None
     x, y, _ = got
+    cluster = []
     for i in range(n):
         px, py = F.pt(x + 1.5 + d / 2 + i * (d + 1.0), y + 2 + d / 2)
-        cp.building(kit.disc(px, py, d / 2), "silo")
-    return F.pt(x + w / 2, y + h / 2)
+        cluster.append(cp.building(kit.disc(px, py, d / 2), "silo").poly)
+    return F.pt(x + w / 2, y + h / 2), cluster
+
+
+def gantry(cp, cluster, main, longest):
+    """A conveyor gantry from a silo cluster (its centre, its silos) to the
+    nearest point of the main hall's wall, if it is 5 m to `longest` long
+    and passes over no building but those. Called once the lot's layout is
+    done; the ground under the gantry, and CONVEYOR_CLEAR_M round that, is
+    kept free of what the density pass adds."""
+    s, silo_polys = cluster
+    q = main.boundary.interpolate(main.boundary.project(Point(s)))
+    line = LineString([s, (q.x, q.y)])
+    if not 5 < line.length < longest:
+        return
+    band = line.buffer(1.4)
+    if any(b.poly.intersects(band) for b in cp.site.buildings
+           if b.poly is not main and not any(b.poly is g for g in silo_polys)):
+        return
+    cp.space.take(line.buffer(1.4 + CONVEYOR_CLEAR_M))
+    cp.used.append(band)
+    cp.draw(lambda L: conveyor(L, line))
 
 
 def factory(site, cp):
@@ -476,13 +605,7 @@ def factory(site, cp):
         if got is not None:
             c = got[2].centroid
             cp.building(kit.disc(c.x, c.y, rng.uniform(1.8, 2.4), 16), "chimney")
-    if rng.random() < 0.5:
-        s = silos(cp)
-        if s is not None and main is not None:
-            q = main.boundary.interpolate(main.boundary.project(Point(s)))
-            gantry = LineString([s, (q.x, q.y)])
-            if 5 < gantry.length < 60:
-                cp.draw(lambda L: conveyor(L, gantry))
+    s = silos(cp) if rng.random() < 0.5 else None
     if rng.random() < 0.5:
         got = cp.place(rng.uniform(22, 36), rng.uniform(16, 24), margin=3.0)
         if got is not None:
@@ -493,6 +616,8 @@ def factory(site, cp):
         if got is not None:
             x, y, r = got
             yard(cp, x, y, *cp.corner(r))
+    if s is not None and main is not None:
+        gantry(cp, s, main, 60.0)
 
 
 def cement_works(site, cp):
@@ -516,18 +641,33 @@ def cement_works(site, cp):
         cp.building(F.rect(x, y, x + 11.0, y + 11.0), "tower")
         cp.building(F.rect(x + 11.0, y + 3.2, x + w - 11.0, y + 7.8), "kiln")
         cp.building(F.rect(x + w - 11.0, y + 0.5, x + w, y + 10.5), "workshop")
-    for _ in range(int(rng.integers(1, 3))):
-        s = silos(cp, d_min=9.0)
-        if s is not None and main is not None:
-            q = main.boundary.interpolate(main.boundary.project(Point(s)))
-            gantry = LineString([s, (q.x, q.y)])
-            if 5 < gantry.length < 70:
-                cp.draw(lambda L, g=gantry: conveyor(L, g))
+    clusters = [silos(cp, d_min=9.0) for _ in range(int(rng.integers(1, 3)))]
     for _ in range(int(rng.integers(1, 3))):
         got = cp.place(rng.uniform(14, 22), rng.uniform(8, 12), margin=2.0)
         if got is not None:
             x, y, r = got
             yard(cp, x, y, *cp.corner(r))
+    for s in clusters:
+        if s is not None and main is not None:
+            gantry(cp, s, main, 70.0)
+
+
+def fence_off(L, site, ring, rng, gates, v):
+    """A fence along a ring (kit.fence, with its gates), broken where a
+    building of the finished map stands across it."""
+    line = LineString(ring.coords)
+    cover = density.built(site).cover(line.buffer(1.0), roads=False, obstacles=False)
+    if cover is None or cover.is_empty:
+        kit.fence(L, ring, rng, gates=gates, v=v)
+        return
+    rest = line.difference(cover)
+    parts = [g for g in getattr(rest, "geoms", [rest]) if g.geom_type == "LineString"]
+    if len(parts) > 1:
+        rest = linemerge(parts)
+        parts = [g for g in getattr(rest, "geoms", [rest]) if g.geom_type == "LineString"]
+    for part in parts:
+        if part.length >= 1.0:
+            kit.fence(L, part, rng, gates=[g for g in gates if g is not None and part.distance(g) < 4.5], v=v)
 
 
 def truss_stats(overhead):
@@ -596,7 +736,8 @@ def build(site):
         lots = []
         estates.append((blk, service, axes, lots, rng))
         if service:
-            site.drawers.append(lambda L, g=service: [kit.pave(L, r, 0.24, 0.8, sub="groundlines") for r in g])
+            site.drawers.append(lambda L, g=service: [kit.pave(L, density.built(site).off(r, obstacles=False), 0.24, 0.8,
+                                                               sub="groundlines") for r in g])
         for plot, kind in parts:
             area = kit.largest(plot.buffer(-FENCE_INSET_M, join_style="mitre"))
             if area is None or area.area < MIN_BLOCK_M2 * 0.7:
@@ -632,7 +773,7 @@ def build(site):
                 kit.pave(L, area, 0.15, 0.5, sub="groundlines", edge=False)
                 for fn in ops:
                     fn(L)
-                kit.fence(L, area.exterior, rng, gates=gates, v=0.3)
+                fence_off(L, site, area.exterior, rng, gates, 0.3)
             site.drawers.append(draw)
             site.solid_extra.append(area)
     plant.npc_access(site, plants)
@@ -667,6 +808,7 @@ def build(site):
                 made["lot_racks"] += len(extra)
                 link = density.stub(site, racks, max(cp.halls, key=lambda g: g.area) if cp.halls else None, "equip", rng)
             made["stubs"] += link is not None
+            cp.used += [r.centre().buffer(density.rack_half(r.pipes)) for r in extra + ([link] if link is not None else [])]
             overhead["lot"] += extra
             overhead["stub"] += [link] if link is not None else []
             pipes_m["overhead_racks"] += sum(r.length for r in extra + ([link] if link is not None else []))
@@ -686,6 +828,9 @@ def build(site):
     site.stats["industrial"] = {"plants": len(plants), "factories": n_factories, "plant_links": len(links)}
     site.stats["plant_network"] = plant.summary(plants, links)
     every = [cp for *_, lots, _ in estates for cp in lots]
+    # The lots (Compound: area, lot type, things) for the site modules that
+    # add to them later.
+    site.industrial_lots = every
     overhead["plant"] = [r for P in plants for r in P.runs if r.role in plant.OVERHEAD_ROLES]
     overhead["link"] = [k["run"] for k in links]
     vehicles = {}
@@ -701,4 +846,6 @@ def build(site):
                                                     for k, v in overhead.items()},
                              "vehicle_list": [[name, where, round(x * props.PX_PER_M), round(y * props.PX_PER_M)]
                                               for name, where, x, y in parked]}
+    for cp in every:
+        cp.things += cp.used
     return site

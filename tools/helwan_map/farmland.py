@@ -34,7 +34,7 @@ grows: flat land with old furrows, partly covered by drift.
 import cv2
 import numpy as np
 from scipy import ndimage as ndi
-from shapely import affinity
+from shapely import affinity, contains_xy
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import split as shp_split, substring, unary_union
 
@@ -68,7 +68,11 @@ CANAL_W_M = (6.0, 8.0)
 BURN_W_M = (2.0, 3.0)
 PUMP_EVERY_M = 320.0
 FARMHOUSE_EVERY_M2 = 50000.0
+## Spots tried for each farmyard on its region's edge.
+FARMHOUSE_TRIES = 30
 SOLAR_ARRAY_EVERY_M2 = 400000.0
+## Fields looked at per solar array (the largest ones).
+ARRAY_CHOICE = 6
 FIELD_TRACTORS_PER_KM2 = 6.0
 WATERWAYS = {"canal", "stream", "ditch", "drain", "river"}
 
@@ -190,6 +194,48 @@ def canal(L, axis, width, rng):
         crack = LineString([(p.x - np.cos(a) * width, p.y - np.sin(a) * width),
                             (p.x + np.cos(a) * width, p.y + np.sin(a) * width)]).intersection(ice)
         L.line("groundlines", crack, 0.05, 0.22, 0.8)
+
+
+def array_ground(field, cell=1.0):
+    """The ground for a solar array in a field, and the angle of its rows:
+    the largest rectangle along the field's long axis that lies 1 m inside
+    the field (the array's fence reaches 0.6 m past the box it is given),
+    or None. The field is sampled on a grid of cells in its own frame; a
+    cell counts when its middle is 1 m plus half its diagonal inside, and
+    the rectangle is the largest block of such cells."""
+    ang, _ = style.frame_of(field)
+    F = kit.Frame(field, ang)
+    room = field.buffer(-(1.0 + cell * 0.71))
+    if room.is_empty:
+        return None
+    loc = F.local(room)
+    x0, y0, x1, y1 = loc.bounds
+    xs = x0 + cell * (np.arange(int(np.ceil((x1 - x0) / cell))) + 0.5)
+    ys = y0 + cell * (np.arange(int(np.ceil((y1 - y0) / cell))) + 0.5)
+    if len(xs) == 0 or len(ys) == 0:
+        return None
+    gx, gy = np.meshgrid(xs, ys)
+    inside = contains_xy(loc, gx, gy)
+    # Largest rectangle of inside cells: per row, the run of inside cells
+    # above each column is a histogram, and its largest rectangle is found
+    # with a stack of rising bars.
+    best, run = None, np.zeros(len(xs), int)
+    for j in range(len(ys)):
+        run = np.where(inside[j], run + 1, 0)
+        stack = []
+        for i in range(len(xs) + 1):
+            h = run[i] if i < len(xs) else 0
+            start = i
+            while stack and stack[-1][1] >= h:
+                start, sh = stack.pop()
+                if best is None or sh * (i - start) > best[0]:
+                    best = (sh * (i - start), start, i, j - sh + 1, j + 1)
+            stack.append((start, h))
+    if best is None or best[0] == 0:
+        return None
+    _, i0, i1, j0, j1 = best
+    rect = F.rect(xs[i0] - cell / 2, ys[j0] - cell / 2, xs[i1 - 1] + cell / 2, ys[j1 - 1] + cell / 2)
+    return rect, ang
 
 
 def burn(L, axis, width):
@@ -341,13 +387,15 @@ def build(site):
                         w = rrng.uniform(*BURN_W_M)
                         burns.append((part, w))
                         cuts.append(part.buffer(w / 2 + 1.5))
-        pieces = style.polys(reg.difference(unary_union(cuts))) if cuts else [reg]
+        taken = unary_union(cuts) if cuts else None
+        pieces = style.polys(reg.difference(taken)) if cuts else [reg]
         n_farms = int(reg.area // FARMHOUSE_EVERY_M2) + (1 if reg.area > FARMHOUSE_EVERY_M2 * 0.4 else 0)
         for _ in range(n_farms):
-            cp = farmhouse(site, reg, pieces, rrng)
+            cp = farmhouse(site, reg, pieces, rrng, taken)
             if cp is not None:
                 compounds.append(cp)
                 pieces = [g for p in pieces for g in style.polys(p.difference(cp.buffer(3.0)))]
+                taken = cp.buffer(3.0) if taken is None else taken.union(cp.buffer(3.0))
         reg_fields = []
         for piece in pieces:
             if piece.area < MIN_FIELD_M2 * 0.6:
@@ -359,23 +407,36 @@ def build(site):
     site.stats["farmland"] = {"regions": len(regions), "area_m2": round(total), "fields": len(fields),
                               "canals": len(canals), "burns": len(burns), "farmhouses": len(compounds)}
 
-    pumps = []
+    # Pump houses keep off every canal's and burn's banks but their own and
+    # off the farmyards: on the bank picked, or else on the other one.
+    banks = unary_union([line.buffer(w / 2 + 1.6, cap_style="flat") for line, w in canals] +
+                        [line.buffer(w / 2 + 0.6, cap_style="flat") for line, w in burns] + compounds)
+    pumps, houses = [], []
     for line, w in canals:
         for d in np.arange(rng.uniform(60, 160), line.length - 20, PUMP_EVERY_M):
             p = line.interpolate(d)
             q = line.interpolate(min(d + 1, line.length))
             t = np.array([q.x - p.x, q.y - p.y])
             t /= max(np.hypot(*t), 1e-9)
-            nrm = np.array([-t[1], t[0]]) * (1 if rng.random() < 0.5 else -1)
-            cx, cy = p.x + nrm[0] * (w / 2 + 4.5), p.y + nrm[1] * (w / 2 + 4.5)
+            side = 1 if rng.random() < 0.5 else -1
             ang = np.degrees(np.arctan2(t[1], t[0]))
-            house = affinity.rotate(Polygon([(cx - 3, cy - 2.2), (cx + 3, cy - 2.2), (cx + 3, cy + 2.2),
-                                             (cx - 3, cy + 2.2)]), ang, origin=(cx, cy))
-            if not area.buffer(2).contains(house):
-                continue
-            site.buildings.append(bl.Building(house, float(site.sampler.value(cx, cy)), "pumphouse"))
-            px, py = cx + t[0] * 5.2, cy + t[1] * 5.2
-            pumps.append((px, py, float(np.arctan2(t[1], t[0]))))
+            for k, s in enumerate((side, -side)):
+                nrm = np.array([-t[1], t[0]]) * s
+                cx, cy = p.x + nrm[0] * (w / 2 + 4.5), p.y + nrm[1] * (w / 2 + 4.5)
+                house = affinity.rotate(Polygon([(cx - 3, cy - 2.2), (cx + 3, cy - 2.2), (cx + 3, cy + 2.2),
+                                                 (cx - 3, cy + 2.2)]), ang, origin=(cx, cy))
+                if not area.buffer(2).contains(house):
+                    if k == 0:
+                        break
+                    continue
+                px, py = cx + t[0] * 5.2, cy + t[1] * 5.2
+                if banks.intersects(house.buffer(0.3)) or banks.intersects(Point(px, py).buffer(1.5)):
+                    continue
+                site.buildings.append(bl.Building(house, float(site.sampler.value(cx, cy)), "pumphouse"))
+                houses.append(house)
+                pumps.append((px, py, float(np.arctan2(t[1], t[0]))))
+                break
+    pump_u = unary_union([h.buffer(0.5, join_style="mitre") for h in houses]) if houses else None
 
     field_geoms = [f for f, _ in fields]
     hedges = []
@@ -411,11 +472,17 @@ def build(site):
             continue
         site.props.add("tree", x, y, rng.uniform(0, 2 * np.pi), (s, s))
 
-    arrays = []
+    # Solar arrays: an array fills the box it is given, so it gets the
+    # field's array_ground, not the field; of the ARRAY_CHOICE largest
+    # fields per array, the ones whose array_ground is largest.
     n_arrays = int(total // SOLAR_ARRAY_EVERY_M2)
     order = sorted(range(len(field_geoms)), key=lambda i: -field_geoms[i].area)
-    for i in order[:n_arrays]:
-        arrays.append(field_geoms[i])
+    cands = []
+    for i in order[:n_arrays * ARRAY_CHOICE]:
+        got = array_ground(field_geoms[i])
+        if got is not None:
+            cands.append((-got[0].area, i, got))
+    arrays = [(field_geoms[i], *got) for _, i, got in sorted(cands, key=lambda t: t[:2])[:n_arrays]]
     field_tractors = []
     for _ in range(int(total / 1e6 * FIELD_TRACTORS_PER_KM2)):
         if not field_geoms:
@@ -426,15 +493,19 @@ def build(site):
 
     seed = int(rng.integers(1 << 30))
 
-    array_ids = {id(g) for g in arrays}
+    array_at = {id(g): rect for g, rect, _ in arrays}
 
     def draw(L):
         r = np.random.default_rng(seed)
         for f, turned in fields:
-            if id(f) in array_ids:
-                continue
-            L.fill("groundlines", f, r.choice([0.0, 0.3]), r.uniform(0.06, 0.16))
             ang, _ = style.frame_of(f)
+            if id(f) in array_at:
+                f = f.difference(array_at[id(f)].buffer(3.0, join_style="mitre"))
+                if f.area < 20.0:
+                    continue
+            if pump_u is not None and pump_u.intersects(f):
+                f = f.difference(pump_u)
+            L.fill("groundlines", f, r.choice([0.0, 0.3]), r.uniform(0.06, 0.16))
             furrows(L, f, ang + (90 if turned else 0), r, drift)
         seen = set()
         for i, f in enumerate(field_geoms):
@@ -450,11 +521,16 @@ def build(site):
                 if strip is None:
                     continue
                 ditch = r.random() < 0.4
-                L.fill("groundlines", strip.buffer(0.4), 0.0, 0.25 if not ditch else 0.4)
+                bund = strip.buffer(0.4)
+                if pump_u is not None and pump_u.intersects(bund):
+                    strip, bund = strip.difference(pump_u), bund.difference(pump_u)
+                L.fill("groundlines", bund, 0.0, 0.25 if not ditch else 0.4)
                 L.fill("groundlines", strip, 0.03 if ditch else 0.25, 0.8)
                 if not ditch and r.random() < WALL_SHARE:
                     # A low mud wall along the shared edge, with gaps.
                     edge = f.exterior.intersection(g.buffer(1.5))
+                    if pump_u is not None and pump_u.intersects(edge):
+                        edge = edge.difference(pump_u)
                     for part in getattr(edge, "geoms", [edge]):
                         if part.geom_type != "LineString" or part.length < 6.0:
                             continue
@@ -469,8 +545,8 @@ def build(site):
             canal(L, line, w, r)
         for line, w in burns:
             burn(L, line, w)
-        for g in arrays:
-            got = solar.ground_array(L, g, style.frame_of(g)[0], r, None)
+        for _, rect, ang in arrays:
+            got = solar.ground_array(L, rect, ang, r, None)
             if got is not None:
                 bl.add_poly_source(site.salvage, "solar_panels", got[0], -1, got[1])
         for px, py, a in pumps:
@@ -483,11 +559,12 @@ def build(site):
     return site
 
 
-def farmhouse(site, reg, pieces, rng):
+def farmhouse(site, reg, pieces, rng, avoid=None):
     """A walled farmyard on the edge of a region, near a road if one is
-    close: house, barn, dovecote, pens, a well, a tractor."""
+    close, clear of avoid (the canals' and burns' banks, the other yards):
+    house, barn, dovecote, pens, a well, a tractor."""
     near = site.road_union_near(reg, 10.0)
-    for _ in range(12):
+    for _ in range(FARMHOUSE_TRIES):
         p = reg.exterior.interpolate(rng.uniform(0, 1), normalized=True)
         if near is not None and p.distance(near) > 30 and rng.random() < 0.7:
             continue
@@ -501,7 +578,7 @@ def farmhouse(site, reg, pieces, rng):
         ang = np.degrees(np.arctan2(dy, dx)) + 90
         yard = affinity.rotate(Polygon([(cx - w / 2, cy - h / 2), (cx + w / 2, cy - h / 2), (cx + w / 2, cy + h / 2),
                                         (cx - w / 2, cy + h / 2)]), ang, origin=(cx, cy))
-        if not reg.contains(yard):
+        if not reg.contains(yard) or (avoid is not None and avoid.intersects(yard)):
             continue
         break
     else:
@@ -510,8 +587,9 @@ def farmhouse(site, reg, pieces, rng):
     mv = float(site.sampler.value(cx, cy))
     add = lambda poly, kind: site.buildings.append(bl.Building(poly, mv, kind))
     hx = F.x0 + 2.0
-    add(F.rect(hx, F.y0 + 2.0, hx + rng.uniform(9, 12), F.y0 + 2.0 + rng.uniform(7, 9)), "farmhouse")
-    bw = rng.uniform(15, 20)
+    hw = rng.uniform(9, 12)
+    add(F.rect(hx, F.y0 + 2.0, hx + hw, F.y0 + 2.0 + rng.uniform(7, 9)), "farmhouse")
+    bw = min(rng.uniform(15, 20), F.x1 - 2.0 - (hx + hw + 3.0))
     add(F.rect(F.x1 - 2.0 - bw, F.y0 + 2.0, F.x1 - 2.0, F.y0 + 2.0 + rng.uniform(9, 11)), "barn")
     dx_, dy_ = F.pt(F.x1 - 5.0, F.y1 - 5.0)
     add(kit.disc(dx_, dy_, rng.uniform(2.2, 2.8), 16), "dovecote")

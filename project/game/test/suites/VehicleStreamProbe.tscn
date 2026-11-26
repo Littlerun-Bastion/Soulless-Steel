@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/VehicleStreamProbe.gd" id="1_vstream"]
+
+[node name="VehicleStreamProbe" type="Node"]
+script = ExtResource("1_vstream")

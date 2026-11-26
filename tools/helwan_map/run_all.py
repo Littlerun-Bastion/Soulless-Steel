@@ -48,13 +48,17 @@ from shapely.geometry import Point, Polygon, box
 from shapely.ops import linemerge
 
 import buildings as bl
+import civic
 import district_life
 import districts
+import fabric
 import farmland
 import gen_city as gc
 import gen_ground as gg
 import gen_scene as gs
 import industrial
+import infra
+import landmarks
 import market
 import markers
 import master_io
@@ -63,6 +67,7 @@ import obstacles
 import props
 import ruins
 import salvage
+import sites
 import style
 from features import compute
 from geo import load
@@ -158,6 +163,7 @@ def main(project, work, window=None, reuse=False, city=None):
     tidy = style.tidy_big_roofs(big)
     D = districts.build(feats, f, zone, roads, [g for g, _ in tidy] + [l for l, _, _ in lots], painted)
     clock.lap("districts")
+    full_layout = {"roads": roads, "blocks": blocks, "big": [g for g, _ in tidy], "lots": [l for l, _, _ in lots]}
     if preview and city:
         win = box(*window)
         near = win.buffer(120)
@@ -170,6 +176,12 @@ def main(project, work, window=None, reuse=False, city=None):
     site = Site(water, roads, blocks, viaducts, D, keep_out, f, zone)
     site.feats = feats
     site.markers = master_io.read_markers(master_path)
+    # The whole map's layout, also in a window run with --city: the site
+    # modules choose their places over the whole map from it, then build only
+    # the ones that touch site.window (None in a full run), so a window
+    # preview shows what the full run makes there.
+    site.full_layout = full_layout
+    site.window = box(*window) if preview else None
     site.buildings = [bl.Building(g, mv, "big") for g, mv in tidy] + [bl.Building(l, mv, "house") for l, mv, _ in lots]
     site.salvage = salvage.Salvage(keep_out)
     site.obstacles = obstacles.Obstacles()
@@ -193,6 +205,16 @@ def main(project, work, window=None, reuse=False, city=None):
     military.build(site)
     tag("military")
     clock.lap("military")
+    # The site modules run after the district modules and claim their land
+    # (Site.claim); each one builds only on land still free, so the order is
+    # their priority. Their props are set pieces (props.SetPiece).
+    site.props.set_piece = True
+    for name, module in (("landmarks", landmarks), ("infra", infra), ("civic", civic), ("fabric", fabric),
+                         ("sites", sites)):
+        site.stats[name] = module.build(site)
+        tag(name)
+        clock.lap(name)
+    site.props.set_piece = False
     for b in site.buildings:
         b.district = D.of_geom(b.poly)
     site.stats["overlaps"] = {"before": overlap_counts(site.buildings)}
@@ -243,6 +265,11 @@ def main(project, work, window=None, reuse=False, city=None):
                     life=lambda P, S, rd, jn, rng: site.stats.__setitem__(
                         "district_life", district_life.place(P, S, D, rd, jn, rng)))
     P.write(os.path.join(work, "props.json"))
+    with open(os.path.join(work, "landmarks.json"), "w", encoding="utf-8") as fh:
+        json.dump({"items": [{**lm, "x": lm["x"] * gc.PX_PER_M, "y": lm["y"] * gc.PX_PER_M,
+                              "radius": lm["radius"] * gc.PX_PER_M,
+                              "outline": [[x * gc.PX_PER_M, y * gc.PX_PER_M] for x, y in lm["outline"]]}
+                             for lm in site.landmarks]}, fh, indent=1, ensure_ascii=False)
     site.salvage.write(os.path.join(work, "salvage.json"))
     site.obstacles.write(os.path.join(work, "obstacles.bin"))
     D.write(os.path.join(work, "districts.bin"))
@@ -277,6 +304,11 @@ def main(project, work, window=None, reuse=False, city=None):
         stats["buildings_by_district_and_state"][k] = stats["buildings_by_district_and_state"].get(k, 0) + 1
     for k, *_ in P.items:
         stats["props"][props.KINDS[k]] = stats["props"].get(props.KINDS[k], 0) + 1
+    stats["set_piece_props"] = {}
+    for it in P.items:
+        if isinstance(it, props.SetPiece):
+            name = props.KINDS[it[0]]
+            stats["set_piece_props"][name] = stats["set_piece_props"].get(name, 0) + 1
     with open(os.path.join(work, "stats.json"), "w", encoding="utf-8") as fh:
         json.dump(stats, fh, indent=1)
     print(json.dumps(stats, indent=1))

@@ -23,6 +23,7 @@ direction (dx, dy) is turned by atan2(-dx, dy).
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import unary_union
+from shapely.strtree import STRtree
 
 import buildings as bl
 import equipment
@@ -51,6 +52,10 @@ SQUARE_M = ((45.0, 70.0), (30.0, 50.0))
 ## crates, hand cart.
 STALL_WEIGHTS = (0.3, 0.35, 0.27, 0.08)
 AWNING_DEPTH_M = (1.6, 2.2)
+## How far (m) an awning may reach past the edge of the road concrete in
+## front of its shop (over the kerb), and the shallowest awning drawn.
+AWNING_KERB_M = 0.3
+AWNING_MIN_M = 0.9
 PAVING_V = 0.24
 
 
@@ -96,18 +101,61 @@ def roof_hall(L, b, rng):
 bl.KINDS["hall"] = (roof_hall, True, style.HALO_BIG_M)
 
 
-def awning(L, g, edge_line, depth, rng, striped):
-    """A canvas awning along a shop's street side."""
+def built(site):
+    """The buildings as build_layers draws them (site.buildings once every
+    module and resolve_overlaps have run): (STR tree of their footprints,
+    the buildings, their ids). Made once per buildings list, for drawers
+    that keep their detail off the final buildings."""
+    got = getattr(site, "_built", None)
+    if got is None or got[1] is not site.buildings:
+        bs = site.buildings
+        got = (STRtree([b.poly for b in bs]), bs, {id(b) for b in bs})
+        site._built = got
+    return got
+
+
+def others_near(site, geom, own=None, grow=0.0):
+    """The final footprints (built) that come within grow of geom, other
+    than own's, as one geometry grown by grow, or None."""
+    tree, bs, _ = built(site)
+    near = [bs[i].poly for i in tree.query(geom.buffer(grow + 0.05)) if bs[i] is not own]
+    if not near:
+        return None
+    return unary_union([p.buffer(grow, join_style="mitre") if grow else p for p in near])
+
+
+def awning(L, g, edge_line, depth, rng, striped, roads=None, others=None):
+    """A canvas awning along a shop's street side, over the ground in front
+    of it: no deeper than the gap from the shop to the road's concrete plus
+    AWNING_KERB_M, and clear of the other buildings (others)."""
     seg = edge_line
     if seg.length < 2.0:
         return
+    if roads is not None:
+        depth = min(depth, seg.distance(roads) + AWNING_KERB_M)
+    if depth < AWNING_MIN_M:
+        return
+    side = 1.0
     out = seg.buffer(depth, single_sided=True)
     if out.intersects(g.buffer(-0.05)):
+        side = -1.0
         out = seg.buffer(-depth, single_sided=True)
     out = out.difference(g)
-    if out.is_empty:
+    # The shadow spreads 0.35 m past the awning's ends, not further out
+    # than the awning itself.
+    (ax, ay), (bx, by) = seg.coords[0], seg.coords[-1]
+    t = np.array([bx - ax, by - ay]) / seg.length * 0.35
+    ext = LineString([(ax - t[0], ay - t[1]), (bx + t[0], by + t[1])])
+    shadow = out.buffer(0.35, join_style="mitre").intersection(ext.buffer(side * depth, single_sided=True))
+    shadow = shadow.difference(g)
+    if others is not None:
+        out = out.difference(others)
+        shadow = shadow.difference(others)
+    parts = [p for p in style.polys(out) if p.area >= 0.8 and not p.buffer(-0.25).is_empty]
+    if not parts:
         return
-    L.fill("interiors", out.buffer(0.35), 0.0, 0.35)
+    out = unary_union(parts)
+    L.fill("interiors", shadow, 0.0, 0.35)
     L.fill("interiors", out, 0.3 if striped else rng.uniform(0.18, 0.32))
     if striped:
         n = int(seg.length // 0.6)
@@ -117,7 +165,8 @@ def awning(L, g, edge_line, depth, rng, striped):
             stripe = LineString([a, b2]).buffer(depth + 0.1, single_sided=True, cap_style="flat")
             stripe2 = LineString([a, b2]).buffer(-depth - 0.1, single_sided=True, cap_style="flat")
             L.fill("interiors", unary_union([stripe, stripe2]).intersection(out), 0.1)
-    L.line("interiors", out.exterior, 0.06, 0.42)
+    for p in parts:
+        L.line("interiors", p.exterior, 0.06, 0.42)
 
 
 def street_edges(poly, street, min_len=2.5):
@@ -298,20 +347,30 @@ def build(site):
         for b in shops:
             for seg in street_edges(b.poly, street):
                 if rng.random() < 0.7:
-                    awn.append((b.poly, seg, rng.uniform(*AWNING_DEPTH_M), rng.random() < 0.5))
+                    awn.append((b, seg, rng.uniform(*AWNING_DEPTH_M), rng.random() < 0.5))
         paving += lanes
         seed = int(rng.integers(1 << 30))
+        roads = site.road_union_near(blk, 3.0) if awn else None
 
-        def draw(L, paving=paving, awn=awn, seed=seed):
+        def draw(L, paving=paving, awn=awn, seed=seed, roads=roads):
             r = np.random.default_rng(seed)
             for g in paving:
+                under = others_near(site, g)
+                if under is not None:
+                    g = g.difference(under)
                 kit.pave(L, g, PAVING_V, 0.85, sub="groundlines")
                 for pg in style.polys(g):
                     x0, y0, x1, y1 = pg.bounds
                     for x in np.arange(x0, x1, 2.5):
                         L.line("groundlines", LineString([(x, y0), (x, y1)]).intersection(pg), 0.04, 0.17, 0.6)
-            for g, seg, depth, striped in awn:
-                awning(L, g, seg, depth, r, striped)
+            # A shop that a later module took or turned into something else
+            # loses its awning; the rest keep off the buildings as drawn.
+            live = built(site)[2]
+            for b, seg, depth, striped in awn:
+                if id(b) not in live or b.kind != "house":
+                    continue
+                others = others_near(site, seg.buffer(depth + 0.5), own=b)
+                awning(L, b.poly, seg, depth, r, striped, roads, others)
         site.drawers.append(draw)
         site.solid_extra += paving
         n_blocks += 1

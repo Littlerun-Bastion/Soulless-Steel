@@ -11,10 +11,11 @@ extends Node2D
 #
 # Streaming: every ray pays for each body along its path, whatever its mask,
 # so with `stream` on, only vehicles in the CELL_SIZE cells within
-# stream_radius of a mecha have boxes. The cells are checked every
-# STREAM_INTERVAL physics frames. A shot that passes a vehicle far from every
-# mecha (more than stream_radius from both the shooter and the target) goes
-# through it.
+# stream_radius of a mecha that wakes vehicles (wakes_vehicles: the player
+# and NPCs in full simulation, not distant-tier NPCs, which move with no
+# physics) have boxes. The cells are checked every STREAM_INTERVAL physics
+# frames. A shot that passes a vehicle far from every such mecha (more than
+# stream_radius from both the shooter and the target) goes through it.
 #
 # Pushing: Mecha.move() calls push_from() after it moves. Mecha weight is in
 # tonnes, but the push uses a feel mass, not the real one: a mecha of
@@ -63,8 +64,9 @@ extends Node2D
 # hit, so a shoved car can shunt the next one.
 #
 # Settling: a woken vehicle that has stopped for SETTLE_TIME, with no mecha
-# near it, becomes a static body again where it stopped, and its sprite goes
-# back to the layer there. At most MAX_AWAKE vehicles are awake at once.
+# that wakes vehicles near it, becomes a static body again where it
+# stopped, and its sprite goes back to the layer there. At most MAX_AWAKE
+# vehicles are awake at once.
 #
 # Car alarms: when a mecha first runs into an intact car (each new push
 # contact, not every frame it keeps pushing), the car starts its alarm with
@@ -243,6 +245,19 @@ static func find(node: Node) -> VehicleField:
 	if node == null or not node.is_inside_tree():
 		return null
 	return node.get_tree().get_first_node_in_group("vehicle_field") as VehicleField
+
+
+## Whether the vehicles near this mecha get boxes (see Streaming): the
+## player and NPCs in full simulation. Not a distant-tier NPC
+## (Enemy.is_distant), a dead mecha, one being freed (a camp stowing it off
+## the map) or one outside the tree.
+static func wakes_vehicles(m: Object) -> bool:
+	var node := m as Node2D
+	if node == null or not node.is_inside_tree() or node.is_queued_for_deletion():
+		return false
+	if node.get("is_dead") == true:
+		return false
+	return not (node.has_method("is_distant") and node.call("is_distant"))
 
 
 func push(mecha: CharacterBody2D, intended: Vector2) -> void:
@@ -513,6 +528,18 @@ func steering_obstacles_into(pos: Vector2, radius: float, out: PackedFloat32Arra
 			_append_obstacle(out, j, p, body.global_rotation)
 
 
+# Appends the global position and mass of every vehicle still standing (not
+# trampled or destroyed), in one pass: the route grid (BuildingField) reads
+# them all at once.
+func standing_vehicles_into(positions: PackedVector2Array, masses: PackedFloat32Array) -> void:
+	var any_awake := not _awake.is_empty()
+	for i in _pos.size():
+		if _state[i] != INTACT:
+			continue
+		positions.append((_awake[i] as Node2D).global_position if any_awake and _awake.has(i) else _pos[i])
+		masses.append(_mass[i])
+
+
 func _append_obstacle(out: PackedFloat32Array, j: int, p: Vector2, rot: float) -> void:
 	var n := out.size()
 	out.resize(n + STEER_STRIDE)
@@ -560,11 +587,14 @@ func _physics_process(delta: float) -> void:
 
 
 func _physics_step(delta: float) -> void:
-	var mechas := get_tree().get_nodes_in_group("mecha")
-	if stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0:
-		_update_streaming(mechas)
+	var stream_now := stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0
 	if not _alarm_left.is_empty():
 		_update_alarms(delta)
+	if not stream_now and _awake.is_empty():
+		return
+	var mechas := get_tree().get_nodes_in_group("mecha")
+	if stream_now:
+		_update_streaming(mechas)
 	if _awake.is_empty():
 		return
 	for i in _awake.keys():
@@ -730,7 +760,7 @@ func _mecha_near(body: RigidBody2D, mechas: Array) -> bool:
 	var i: int = body.get_meta("vehicle_index")
 	var reach := _size[i].length() / 2.0 + SETTLE_CLEARANCE
 	for m in mechas:
-		if m is Node2D and (m as Node2D).global_position.distance_to(body.global_position) < reach + 100.0:
+		if wakes_vehicles(m) and (m as Node2D).global_position.distance_to(body.global_position) < reach + 100.0:
 			return true
 	return false
 
@@ -878,13 +908,13 @@ func _flat_texture(i: int) -> Texture2D:
 	return _flat_textures[flat_path]
 
 
-# Gives boxes to the sleeping vehicles in cells near a mecha, and removes
-# them from cells that no mecha is near any more.
+# Gives boxes to the sleeping vehicles in cells near a mecha that wakes
+# vehicles, and removes them from cells that no such mecha is near any more.
 func _update_streaming(mechas: Array) -> void:
 	var wanted := {}
 	var span := ceili(stream_radius / CELL_SIZE)
 	for m in mechas:
-		if not (m is Node2D) or not (m as Node2D).is_inside_tree():
+		if not wakes_vehicles(m):
 			continue
 		var c := _cell_of((m as Node2D).global_position)
 		for cx in range(c.x - span, c.x + span + 1):

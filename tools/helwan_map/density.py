@@ -93,6 +93,10 @@ REACH_SPARE_M = 1.0
 ## footprint (a stub or a lot rack may end at the wall of the building it
 ## serves).
 ROOF_CLEAR_M = 1.5
+## Ground detail drawn round the finished map (Built) stops this short of a
+## building, road concrete or a ground obstacle it would run onto (under the
+## building's halo, clear of the road's edge line).
+BUILT_GAP_M = 0.3
 ## Lots in this box (map-frame metres) are the cement works.
 CEMENT_BOX_M = (-1500.0, 1850.0, -600.0, 2750.0)
 ## Chances that set how many tankers and dump trucks are parked (about 60 of
@@ -111,8 +115,11 @@ HEAP_AT_SILOS = 0.8
 ## its service road.
 ROAD_RACK_PIPES = (3, 4)
 ROAD_RACK_SIDE_M = 3.5
-## A road rack is at least this long.
+## A road rack is at least this long, and its centre line stays this far
+## from the concrete of the streets round the estate (its end stations and
+## supports keep off them).
 ROAD_RACK_MIN_M = 30.0
+ROAD_RACK_STREET_M = 4.5
 ## A vehicle on a service road stands at least this far from every building.
 ROAD_PARK_M = 1.0
 
@@ -139,6 +146,74 @@ def draw_tank(L, c, r, v):
     L.fill("interiors", kit.disc(c[0], c[1], r * 0.6, 16), min(v * 1.25, 0.5))
     L.line("interiors", body.exterior, 0.12, v * 0.5)
     L.fill("interiors", kit.disc(c[0] + r * 0.35, c[1] - r * 0.3, max(0.25, r * 0.12), 8), 0.08)
+
+
+class Built:
+    """The finished map round the ground detail a drawer draws: the
+    building footprints, the road concrete (not rail) and the ground
+    obstacles. The drawers run once every module has built and the
+    footprint overlaps are resolved, so these are the ones the game gets."""
+
+    def __init__(self, site):
+        self.site = site
+        self.polys = [b.poly for b in site.buildings]
+        self.tree = STRtree(self.polys)
+        obs = [Polygon(p) for _, p in site.obstacles.items] if site.obstacles is not None else []
+        self.obs = [g if g.is_valid else g.buffer(0) for g in obs]
+        self.obs_tree = STRtree(self.obs)
+
+    def cover(self, zone, buildings=True, roads=True, obstacles=True, gap=BUILT_GAP_M):
+        """What of those lies in zone, grown by gap, as one geometry (None
+        for nothing)."""
+        near = zone.buffer(gap) if gap else zone
+        parts = []
+        if buildings:
+            parts += [self.polys[i] for i in self.tree.query(near)]
+        if obstacles:
+            parts += [self.obs[i] for i in self.obs_tree.query(near)]
+        if roads:
+            r = self.site.road_union_near(near, 0.0)
+            if r is not None:
+                parts.append(r.intersection(near.buffer(1.0)))
+        if not parts:
+            return None
+        u = unary_union(parts)
+        return (u.buffer(gap) if gap else u).intersection(zone)
+
+    def off(self, geom, **kw):
+        """A polygon geom less what cover() finds round it, without the
+        slivers under 0.5 m across that this leaves (between two buildings
+        standing close together)."""
+        if geom.is_empty:
+            return geom
+        c = self.cover(geom.envelope.buffer(0.5), **kw)
+        if c is None or c.is_empty:
+            return geom
+        rest = geom.difference(c)
+        parts = [g for g in getattr(rest, "geoms", [rest]) if g.geom_type == "Polygon" and not g.buffer(-0.25).is_empty]
+        return unary_union(parts) if parts else Polygon()
+
+
+def built(site):
+    """The Built of the finished map, made once per drawing pass."""
+    key = (id(site.buildings), len(site.buildings), len(site.obstacles.items) if site.obstacles is not None else 0)
+    got = getattr(site, "_built", None)
+    if got is None or got[0] != key:
+        got = (key, Built(site))
+        site._built = got
+    return got[1]
+
+
+def lines_off(lines, cover, min_m=0.5):
+    """Thin lines cut where they would run over cover, less the bits under
+    min_m long."""
+    out = []
+    for g, w in lines:
+        if cover is not None:
+            g = g.difference(cover)
+        parts = [p for p in getattr(g, "geoms", [g]) if p.geom_type == "LineString" and p.length >= min_m]
+        out += [(p, w) for p in parts]
+    return out
 
 
 def truck_variant(name):
@@ -555,13 +630,20 @@ class Filler:
                         self.thin.append((LineString([end, (q.x, q.y)]), 0.14))
 
     def flush(self):
-        """Queues the thin pipes for drawing, cut where they would run over
-        a big thing. Returns their length."""
+        """Queues the thin pipes for drawing, kept inside the lot's fence,
+        cut where they would run over a big thing, and (when drawn) over a
+        building, road concrete or a ground obstacle: a pipe that meets one
+        ends at it. Returns their length."""
         if not self.thin:
             return 0.0
-        lines = [(g.difference(self.keep), w) for g, w in self.thin]
+        lines = [(g.intersection(self.cp.area).difference(self.keep), w) for g, w in self.thin]
         lines = [(g, w) for g, w in lines if not g.is_empty]
-        self.cp.draw(lambda L: [L.line("groundlines", g, w, THIN_V) for g, w in lines])
+        site, zone = self.site, self.cp.area.buffer(3.0)
+
+        def draw(L):
+            for g, w in lines_off(lines, built(site).cover(zone)):
+                L.line("groundlines", g, w, THIN_V)
+        self.cp.draw(draw)
         return float(sum(g.length for g, _ in lines))
 
 
@@ -596,11 +678,11 @@ def clear_houses(site, cp):
 
 def fill_plant(site, cp, P):
     """Fills a process plant. The plant's rectangle was taken whole when it
-    was built; here it is opened again, less what stands in it, its roads
-    and the ground under its racks."""
+    was built; here it is opened again, less what stands in it, the fences
+    of its yards, its roads and the ground under its racks."""
     if P.box in cp.space.taken:
         cp.space.taken.remove(P.box)
-    for g in P.occupied + P.corridors + P.blockers:
+    for g in P.occupied + P.corridors + P.blockers + [y.exterior.buffer(1.0) for y in P.yards]:
         cp.space.take(g)
     for run in P.runs:
         # Under an overhead rack: its supports and ROOF_CLEAR_M more (a new
@@ -645,11 +727,13 @@ def fill_plant(site, cp, P):
 def lot_rack(site, cp, W, hall):
     """An overhead rack from the wall of a lot's hall to the rim of one of
     its new tanks, the farthest it can reach clear of every other building
-    (both ends at equipment). Returns its Run, or None."""
+    and of road concrete (both ends at equipment). Returns its Run, or
+    None."""
     if hall is None or not W.tanks:
         return None
     F = cp.F
     roofs = Roofs(site)
+    streets = site.full_roads_near(cp.area, 0.0)
     pipes = rack_pipes(cp.rng, 3, dia=(0.3, 0.6))
     seed = int(cp.rng.integers(1 << 30))
     half = rack_half(pipes)
@@ -672,6 +756,8 @@ def lot_rack(site, cp, W, hall):
             body = substring(path, 2.0, path.length - 2.0)
             if not roofs.clear(body, half) or any(g is not hall and g.distance(Point(t)) > 0.5
                                                   for g in roofs.near(path, half + ROOF_CLEAR_M)):
+                continue
+            if streets is not None and path.buffer(half).intersects(streets):
                 continue
             run = Run(list(path.coords), pipes, True, ("equip", "equip"), "lot")
             run.add_bridge(0.0, run.length, "overhead")
@@ -748,6 +834,9 @@ def road_racks(site, blk, axes, rng):
     (+1 left of its road's centre line, -1 right) for road_vehicles."""
     roofs = Roofs(site)
     inner = blk.buffer(-3.0)
+    streets = site.full_roads_near(blk, ROAD_RACK_STREET_M)
+    if streets is not None:
+        inner = inner.difference(streets.buffer(ROAD_RACK_STREET_M))
     pieces = []
     for axis in axes:
         pipes = rack_pipes(rng, int(rng.integers(ROAD_RACK_PIPES[0], ROAD_RACK_PIPES[1] + 1)), dia=(0.4, 0.8))

@@ -32,8 +32,13 @@ KINDS = [
     "solar_panels", "roof_ac", "diesel_generator", "transformer", "electric_motor",
     "industrial_pump", "control_cabinet", "valve_assembly", "oil_drums", "cable_drum",
     "tractor", "relay_mast", "rubble", "tanker", "dump_truck",
+    "telescope", "lab_equipment", "medical_store",
+    "railcar", "freight_wagon", "switchgear",
+    "building_materials",
+    "car_parts",
 ]
-VEHICLE_KINDS = {"bus", "tank", "military_vehicle", "container_truck", "shipping_container", "tanker", "dump_truck"}
+VEHICLE_KINDS = {"bus", "tank", "military_vehicle", "container_truck", "shipping_container", "tanker", "dump_truck",
+                 "railcar", "freight_wagon"}
 
 
 class Salvage:

@@ -10,6 +10,8 @@ Usage: python make_placeholders.py
   vehicle_container_truck, vehicle_tanker,
   vehicle_dump_truck                           kind "truck"
   vehicle_container_20ft_a/_b, _40ft           kind "container"
+  vehicle_metro_cab, _metro_car, _boxcar,
+  _flatcar, _flatcar_container, _hopper        kind "railcar"
   stall_<name>.png and stall_<name>_broken.png kind "stall": lean_to, canopy,
                                                table, hand_cart
   hut_<name>.png and hut_<name>_broken.png     kind "hut": guard, cabin, shed,
@@ -20,7 +22,8 @@ Usage: python make_placeholders.py
                                                rubbish, tyres, crates, sacks,
                                                tarp, washing, genset,
                                                haystack, cart, jerrycans,
-                                               sandbags
+                                               sandbags, fuel_pump, air_post,
+                                               tyre_stack, engine
 
 Vehicles are drawn front up, like the other vehicle sources (prep_sprites
 turns them to face +x). Stalls are drawn as the game uses them: the counter
@@ -357,6 +360,115 @@ def dump_truck(rng):
     P.save("vehicle_dump_truck.png")
 
 
+def bogies(P, hl, hw, inset=2.2):
+    """Two bogie frames showing under a wagon's ends."""
+    for y in (-hl + inset, hl - inset):
+        P.rect(-hw - 0.08, y - 1.2, -hw + 0.1, y + 1.2, grey(14))
+        P.rect(hw - 0.1, y - 1.2, hw + 0.08, y + 1.2, grey(14))
+
+
+def couplers(P, hl):
+    for y in (-hl - 0.35, hl):
+        P.rect(-0.22, y, 0.22, y + 0.35, grey(22), grey(50), 1)
+
+
+def metro_car(name, cab, rng):
+    """A metro car seen from above: a long roof with a walkway, two air
+    conditioning housings, a pantograph on the motor cars, and a driving cab
+    with its windscreen at the front of a cab car."""
+    length, w = 20.0, 2.9
+    P = Pen(w, length, V_PX, pad_m=0.6)
+    hl, hw = length / 2, w / 2
+    couplers(P, hl)
+    P.rect(-hw, -hl, hw, hl, grey(38), grey(84), 2, r=0.45 if cab else 0.15)
+    P.rect(-hw + 0.25, -hl + 0.3, hw - 0.25, hl - 0.3, grey(46))
+    for y in np.arange(-hl + 1.2, hl - 1.0, 2.4):
+        P.line([(-hw + 0.08, y), (-hw + 0.08, y + 1.6)], grey(18), 0.12)
+        P.line([(hw - 0.08, y), (hw - 0.08, y + 1.6)], grey(18), 0.12)
+    for y in (-hl + 4.0, hl - 6.5):
+        P.rect(-0.9, y, 0.9, y + 2.5, grey(30), grey(70), 1)
+        for yy in np.arange(y + 0.3, y + 2.3, 0.3):
+            P.line([(-0.75, yy), (0.75, yy)], grey(22), 0.05)
+    P.line([(0, -hl + 1.0), (0, hl - 1.0)], grey(56), 0.05)
+    if cab:
+        P.rect(-hw + 0.2, -hl + 0.12, hw - 0.2, -hl + 0.9, grey(12), r=0.3)
+        P.rect(-0.5, -hl + 1.1, 0.5, -hl + 1.6, grey(60))
+    else:
+        P.rect(-0.7, -1.5, 0.7, 1.5, grey(26), grey(64), 1)
+        P.line([(-0.6, -1.2), (0.6, 1.2)], grey(70), 0.08)
+        P.line([(0.6, -1.2), (-0.6, 1.2)], grey(70), 0.08)
+        P.line([(-0.9, 0.0), (0.9, 0.0)], grey(80), 0.1)
+    P.grain(rng, 5)
+    P.save(f"vehicle_{name}.png")
+
+
+def boxcar(rng):
+    """A covered goods wagon: a ribbed roof with a running board."""
+    length, w = 14.0, 3.0
+    P = Pen(w, length, V_PX, pad_m=0.6)
+    hl, hw = length / 2, w / 2
+    couplers(P, hl)
+    bogies(P, hl, hw)
+    P.rect(-hw, -hl, hw, hl, grey(34), grey(78), 2)
+    for y in np.arange(-hl + 0.5, hl - 0.3, 0.7):
+        P.line([(-hw + 0.1, y), (hw - 0.1, y)], grey(24), 0.08)
+    P.rect(-0.3, -hl + 0.3, 0.3, hl - 0.3, grey(52), grey(70), 1)
+    P.rect(-hw - 0.05, -1.4, -hw + 0.12, 1.4, grey(60))
+    P.grain(rng, 5)
+    P.save("vehicle_boxcar.png")
+
+
+def flatcar(name, loaded, rng):
+    """A flat wagon: a planked deck on a side sill, with stanchion pockets,
+    or carrying a 40 ft container."""
+    length, w = 14.0, 2.9
+    P = Pen(w, length, V_PX, pad_m=0.6)
+    hl, hw = length / 2, w / 2
+    couplers(P, hl)
+    P.rect(-hw, -hl, hw, hl, grey(30), grey(70), 2)
+    P.rect(-hw + 0.2, -hl + 0.2, hw - 0.2, hl - 0.2, grey(40))
+    for x in np.arange(-hw + 0.45, hw - 0.2, 0.3):
+        P.line([(x, -hl + 0.25), (x, hl - 0.25)], grey(30), 0.04)
+    for y in np.arange(-hl + 1.0, hl - 0.5, 1.6):
+        P.rect(-hw, y, -hw + 0.18, y + 0.25, grey(70))
+        P.rect(hw - 0.18, y, hw, y + 0.25, grey(70))
+    if loaded:
+        container_body(P, -1.22, -6.095, 1.22, 6.095, int(rng.choice([36, 48, 60])), rng)
+    P.grain(rng, 5)
+    P.save(f"vehicle_{name}.png")
+
+
+def hopper(rng):
+    """An open hopper wagon: three bays heaped with stone, thick rims and
+    cross beams."""
+    length, w = 12.0, 3.0
+    P = Pen(w, length, V_PX, pad_m=0.6)
+    hl, hw = length / 2, w / 2
+    couplers(P, hl)
+    P.rect(-hw, -hl, hw, hl, grey(44), grey(88), 2)
+    bays = np.linspace(-hl + 0.4, hl - 0.4, 4)
+    for ya, yb in zip(bays[:-1], bays[1:]):
+        P.rect(-hw + 0.25, ya + 0.15, hw - 0.25, yb - 0.15, grey(18))
+        for _ in range(26):
+            x, y = rng.uniform(-hw + 0.45, hw - 0.45), rng.uniform(ya + 0.4, yb - 0.4)
+            P.disc(x, y, rng.uniform(0.1, 0.28), grey(int(rng.integers(30, 52))))
+        P.line([(-hw, yb), (hw, yb)], grey(64), 0.14)
+    P.grain(rng, 5)
+    P.save("vehicle_hopper.png")
+
+
+def railcars():
+    """The rail vehicles (kind "railcar"), each with its own seed so they do
+    not change the other placeholders."""
+    os.makedirs(OUT, exist_ok=True)
+    metro_car("metro_cab", True, np.random.default_rng(601))
+    metro_car("metro_car", False, np.random.default_rng(602))
+    boxcar(np.random.default_rng(603))
+    flatcar("flatcar", False, np.random.default_rng(604))
+    flatcar("flatcar_container", True, np.random.default_rng(605))
+    hopper(np.random.default_rng(606))
+
+
 H_PX = 24  # px per metre for huts
 C_PX = 32  # px per metre for clutter
 
@@ -659,9 +771,62 @@ CLUTTER2 = {"rubbish": clutter_rubbish, "tyres": clutter_tyres, "crates": clutte
             "cart": clutter_cart, "jerrycans": clutter_jerrycans, "sandbags": clutter_sandbags}
 
 
+def clutter_fuel_pump(rng):
+    """A fuel dispenser: a narrow cabinet with a display on each face and a
+    hose hanging at each end."""
+    P = Pen(1.0, 0.6, C_PX, pad_m=0.15)
+    P.rect(-0.38, -0.16, 0.5, 0.34, (0, 0, 0, 90))
+    P.rect(-0.45, -0.25, 0.45, 0.25, grey(78), grey(120), 1, r=0.06)
+    P.rect(-0.28, -0.2, 0.28, 0.2, grey(40), grey(96), 1)
+    P.rect(-0.18, -0.12, 0.18, 0.0, grey(110))
+    for s in (-1, 1):
+        P.line([(s * 0.45, 0.05), (s * 0.55, 0.2), (s * 0.5, 0.3)], grey(24), 0.06)
+    return P
+
+
+def clutter_air_post(rng):
+    """An air and water post: a small pillar with a coiled hose beside it."""
+    P = Pen(0.7, 0.5, C_PX, pad_m=0.1)
+    P.rect(-0.3, -0.15, -0.02, 0.15, grey(88), grey(130), 1)
+    P.disc(0.18, 0.0, 0.17, None, grey(30), 2)
+    P.disc(0.18, 0.0, 0.08, None, grey(30), 1)
+    return P
+
+
+def clutter_tyre_stack(rng):
+    """Two stacks of old tyres seen from above, one taller than the other."""
+    P = Pen(1.8, 0.95, C_PX, pad_m=0.1)
+    for x, r in ((-0.42, 0.44), (0.44, 0.42)):
+        P.disc(x + 0.06, 0.06, r, (0, 0, 0, 90))
+        P.disc(x, 0.0, r, grey(20), grey(52), 2)
+        P.disc(x, 0.0, r * 0.72, grey(28), grey(44), 1)
+        P.disc(x, 0.0, r * 0.42, grey(46))
+    return P
+
+
+def clutter_engine(rng):
+    """An engine block on a pallet: the block, its row of cylinder heads and
+    the gearbox bell."""
+    P = Pen(1.3, 0.85, C_PX, pad_m=0.1)
+    P.rect(-0.65, -0.42, 0.65, 0.42, grey(58), grey(32), 1)
+    for y in (-0.3, 0.0, 0.3):
+        P.line([(-0.63, y), (0.63, y)], grey(40), 0.03)
+    P.rect(-0.5, -0.24, 0.3, 0.24, grey(46), grey(100), 1)
+    for x in np.arange(-0.38, 0.25, 0.2):
+        P.disc(x, 0.0, 0.07, grey(90))
+    P.disc(0.44, 0.0, 0.2, grey(38), grey(96), 1)
+    return P
+
+
+# The service sites' clutter (sites.py): gas stations and garages.
+SITES_CLUTTER = {"fuel_pump": clutter_fuel_pump, "air_post": clutter_air_post, "tyre_stack": clutter_tyre_stack,
+                 "engine": clutter_engine}
+
+
 HUTS = {"guard": hut_guard, "cabin": hut_cabin, "shed": hut_shed, "shelter": hut_shelter,
         "kiosk": hut_kiosk, "tent": hut_tent}
 CLUTTER.update(CLUTTER2)
+CLUTTER.update(SITES_CLUTTER)
 
 
 def main():
@@ -690,6 +855,7 @@ def main():
         P = fn(np.random.default_rng(300 + i))
         P.grain(np.random.default_rng(400 + i), 4)
         P.save(f"clutter_{name}.png")
+    railcars()
     print("wrote placeholders to", OUT)
 
 

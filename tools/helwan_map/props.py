@@ -22,6 +22,10 @@ Kinds and rules:
                  "military_vehicle"
   container      shipping containers in yards; each is a
                  "shipping_container" salvage source
+  railcar        metro cars and goods wagons standing on the tracks
+                 (infra.py); metro cars are "railcar" sources, boxcars and
+                 hoppers "freight_wagon", flat wagons with a container
+                 "shipping_container"
 Container trucks are a "truck" sprite; each one placed is a
 "container_truck" salvage source.
 
@@ -34,8 +38,10 @@ prep_sprites.py). Each vehicle spawn picks one sprite, by its spawn weight,
 and takes that sprite's real length and width as its footprint.
 
 props.json: {"kinds": [...], "items": [[kind index, x, y, rotation (radians),
-size x, size y, variant], ...]} with positions and sizes in px. variant is
-the index into the kind's sprite list, or -1 to leave it to the game.
+size x, size y, variant(, 1)], ...]} with positions and sizes in px. variant
+is the index into the kind's sprite list, or -1 to leave it to the game. A
+set piece (a point a site module placed, see SetPiece) has an 8th field
+of 1.
 """
 import json
 import os
@@ -51,7 +57,7 @@ from gen_city import FRAME, HALF_M, MOCK_N, PX_PER_M
 from zones import HOUSING, OPEN
 
 KINDS = ["vehicle", "truck", "vehicle_wreck", "tree", "bush", "debris", "stall", "bus", "military", "container",
-         "hut", "clutter"]
+         "hut", "clutter", "railcar"]
 TREES = ("tree",)
 # Wrecks use the car sprites, drawn darker.
 SPRITE_KIND = {"vehicle_wreck": "vehicle"}
@@ -61,8 +67,12 @@ SIZE_M = {
     "vehicle": (4.4, 1.8), "truck": (8.5, 2.5), "vehicle_wreck": (4.4, 1.9),
     "tree": (12.0, 12.0), "bush": (3.0, 3.0), "debris": (1.2, 1.2),
     "stall": (3.0, 2.2), "bus": (12.0, 2.55), "military": (7.0, 3.0), "container": (6.06, 2.44),
-    "hut": (4.0, 3.0), "clutter": (1.5, 1.2),
+    "hut": (4.0, 3.0), "clutter": (1.5, 1.2), "railcar": (14.0, 3.0),
 }
+# Polygons (map metres) on the road concrete that the parked cars, the
+# abandoned traffic and the junction wrecks keep off: flyover pillars and
+# ramps, platforms and markets that a site module builds over a road.
+ROAD_KEEP_OFF = []
 PARKING_ROADS = {"residential", "unclassified", "tertiary", "tertiary_link", "secondary", "service"}
 MAIN_ROADS = {"secondary", "trunk", "tertiary"}
 # How busy each arterial road was: scales kerb parking and abandoned traffic.
@@ -75,6 +85,13 @@ KERB_STRIP_M = 2.8
 GRID_M = 1.0
 
 
+class SetPiece(tuple):
+    """A props item (the same 7 fields as any) that a site module placed as
+    part of a set piece. props.json gives it an 8th field of 1, and the
+    game's PropSpawner.kept_share does not thin it."""
+    __slots__ = ()
+
+
 class Props:
     def __init__(self, keep_out=None):
         self.items = []
@@ -82,6 +99,9 @@ class Props:
         self.keep_out = keep_out if keep_out is not None and not keep_out.is_empty else None
         if self.keep_out is not None:
             prepare(self.keep_out)
+        # While set_piece is on (run_all turns it on for the site modules),
+        # added points are SetPiece items.
+        self.set_piece = False
 
     def add(self, kind, x, y, rot, size=None, variant=-1):
         """Adds a spawn point unless it is off the map (the OSM roads run on
@@ -92,9 +112,20 @@ class Props:
         if self.keep_out is not None and self.keep_out.contains(Point(x, y)):
             return False
         sx, sy = size or SIZE_M[kind]
-        self.items.append((KINDS.index(kind), x, y, rot, sx, sy, variant))
+        item = (KINDS.index(kind), x, y, rot, sx, sy, variant)
+        self.items.append(SetPiece(item) if self.set_piece else item)
         self._grid.setdefault((int(x // 10), int(y // 10)), []).append((kind, x, y, max(sx, sy) / 2))
         return True
+
+    def replace_items(self, items):
+        """Makes items (a subset of the spawn points, as they are: a SetPiece
+        stays one) the spawn list and rebuilds the room grid clear_of reads
+        from them. Anything else written straight into the grid (the road
+        vehicle marks of sitekit.guard_vehicles) is dropped."""
+        self.items = list(items)
+        self._grid = {}
+        for k, x, y, _, sx, sy, _ in self.items:
+            self._grid.setdefault((int(x // 10), int(y // 10)), []).append((KINDS[k], x, y, max(sx, sy) / 2))
 
     def clear_of(self, x, y, r, kinds=None):
         """True when no placed prop (of the given kinds) is within r of its own
@@ -114,7 +145,8 @@ class Props:
             "kinds": KINDS,
             "items": [[k, round(x * PX_PER_M, 1), round(y * PX_PER_M, 1), round(rot, 3),
                        round(sx * PX_PER_M, 1), round(sy * PX_PER_M, 1), v]
-                      for k, x, y, rot, sx, sy, v in self.items],
+                      + ([1] if isinstance(it, SetPiece) else [])
+                      for it in self.items for k, x, y, rot, sx, sy, v in (it,)],
         }
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(data, fh, separators=(",", ":"))
@@ -440,6 +472,8 @@ def build(footprints_px, roads, water, under, big, f, zone, keep_out=None, seed=
     footprints_m = [Polygon(np.asarray(p) / PX_PER_M) for p in footprints_px]
     S = Space(footprints_m, roads, water, under, extra_solid)
     concrete = unary_union([g for g, *_, kind, _ in roads if not kind.startswith("rail:")]).buffer(-0.2)
+    if ROAD_KEEP_OFF:
+        concrete = concrete.difference(unary_union(ROAD_KEEP_OFF))
     prepare(concrete)
     junctions = junction_points(roads)
     P = P if P is not None else Props(keep_out)

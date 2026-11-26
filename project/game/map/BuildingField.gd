@@ -1012,15 +1012,19 @@ func _start_route_build() -> void:
 	var veh_pos := PackedVector2Array()
 	var veh_mass := PackedFloat32Array()
 	if vehicles:
-		for i in vehicles.vehicle_count():
-			if not vehicles.is_trampled(i) and not vehicles.is_destroyed(i):
-				var at := to_local(vehicles.vehicle_transform(i).origin)
-				if area.has_area() and not area.has_point(at):
-					continue
-				veh_pos.append(at)
-				veh_mass.append(vehicles.vehicle_mass(i))
-				if not area.has_area():
-					bounds = bounds.expand(at)
+		var standing := PackedVector2Array()
+		var standing_mass := PackedFloat32Array()
+		vehicles.standing_vehicles_into(standing, standing_mass)
+		var inv := global_transform.affine_inverse()
+		var has_area := area.has_area()
+		for k in standing.size():
+			var at := inv * standing[k]
+			if has_area and not area.has_point(at):
+				continue
+			veh_pos.append(at)
+			veh_mass.append(standing_mass[k])
+			if not has_area:
+				bounds = bounds.expand(at)
 	var solids := _static_outlines()
 	solids.append_array(_obstacle_outlines())
 	if not area.has_area():

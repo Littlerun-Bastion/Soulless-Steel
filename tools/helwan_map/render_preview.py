@@ -1,5 +1,5 @@
 """Renders a window of a generator run to a PNG, to look at the map without
-Godot. It draws the work dir's mesh files (all six sublayers, in the game's
+Godot. It draws the work dir's mesh files (all seven sublayers, in the game's
 order) with their vertex greys, the props as their sprites, and, with
 --annotate, the salvage sources (yellow boxes), the obstacles (red outlines)
 and the ruin state of each building (a coloured dot: green damaged, orange
@@ -8,8 +8,12 @@ gutted, red collapsed). The game's grain shaders and lighting are not drawn.
 Usage: python render_preview.py <work dir> <project> <out.png>
                                  --window x0,y0,x1,y1 [--scale px_per_m]
                                  [--annotate] [--no-props] [--districts]
+                                 [--camera x,y | --flat]
 
 The window is in map-frame metres (origin at the map centre, y down).
+Talls lean away from the window's centre, as the game leans them from the
+screen's centre; --camera x,y leans them from another point, --flat draws
+them standing in place.
 --districts draws the district grid of the whole map instead (one pixel per
 cell, coloured), with the play area's edge.
 """
@@ -22,7 +26,12 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 PX_PER_M = 20.0
-DRAW_ORDER = ("ground", "groundlines", "halos", "interiors", "PROPS", "roofs", "FOLIAGE", "overheads")
+DRAW_ORDER = ("ground", "groundlines", "halos", "interiors", "PROPS", "roofs", "FOLIAGE", "overheads", "talls")
+# Eye height (metres) of the talls shift; the game's talls shader uses the
+# same rule, shift = (vertex - camera) * h / (EYE_M - h), with h clamped to
+# MAX_H_M (TallsLean.EYE_M, MAX_HEIGHT_M).
+EYE_M = 150.0
+MAX_H_M = 100.0
 GROUND_GREY = 0.16
 DISTRICT_COLOURS = {0: (120, 120, 120), 1: (200, 90, 40), 2: (220, 190, 40), 3: (90, 160, 70)}
 STATE_COLOURS = {1: (80, 220, 80), 2: (255, 150, 30), 3: (240, 40, 40)}
@@ -30,13 +39,22 @@ SALVAGE_COLOUR = (255, 230, 60)
 OBSTACLE_COLOUR = (255, 60, 60)
 
 
-def read_mesh(path):
+def read_mesh(path, camera=None, eye=EYE_M):
+    """Vertices (world px), grey/alpha and indices of one mesh file. Talls
+    vertices are shifted away from camera (world px) by their height, as the
+    game's talls shader does with eye metres for its eye height; with no
+    camera they stay where they stand."""
     with open(path, "rb") as fh:
-        n, ni, has_roof = struct.unpack("<iii", fh.read(12))
+        n, ni, flag = struct.unpack("<iii", fh.read(12))
         xy = np.frombuffer(fh.read(n * 8), np.float32).reshape(n, 2)
         ga = np.frombuffer(fh.read(n * 2), np.uint8).reshape(n, 2).astype(np.float32) / 255
-        if has_roof:
+        if flag == 1:
             fh.read(n * 8)
+        elif flag == 2:
+            h = np.clip(np.frombuffer(fh.read(n * 4), np.float32), 0.0, MAX_H_M)
+            if camera is not None:
+                k = h / np.maximum(eye - h, 1.0)
+                xy = xy + (xy - np.asarray(camera, np.float32)) * k[:, None]
         idx = np.frombuffer(fh.read(ni * 4), np.uint32)
     return xy, ga, idx
 
@@ -115,14 +133,14 @@ def load_sprites(project, catalogue):
     return out
 
 
-def draw_layer(cv, work, manifest, sub):
+def draw_layer(cv, work, manifest, sub, camera=None):
     x0, y0, x1, y1 = (v * PX_PER_M for v in (cv.x0, cv.y0, cv.x1, cv.y1))
     for name, (bx, by, bw, bh) in sorted(manifest.items()):
         if name.rsplit("_", 2)[0] != sub:
             continue
         if bx > x1 or by > y1 or bx + bw < x0 or by + bh < y0:
             continue
-        xy, ga, idx = read_mesh(os.path.join(work, name + ".bin"))
+        xy, ga, idx = read_mesh(os.path.join(work, name + ".bin"), camera)
         tri = idx.reshape(-1, 3)
         pts = cv.to_px(xy / PX_PER_M)[tri]
         cv.triangles(pts, ga[tri, 0], ga[tri, 1])
@@ -197,8 +215,14 @@ def annotate(img, cv, work):
                 d.text(tp(x + w / 2 + 0.5, y - h / 2), data["kinds"][it[0]], fill=SALVAGE_COLOUR)
 
 
-def render(work, project, out, window, scale=4.0, show_props=True, notes=False):
+def render(work, project, out, window, scale=4.0, show_props=True, notes=False, camera="centre"):
+    """camera: where the talls lean away from, in map metres; "centre" is the
+    window's centre (as the game leans them from the screen's centre), None
+    draws them standing flat."""
     manifest = json.load(open(os.path.join(work, "manifest.json"), encoding="utf-8"))
+    if camera == "centre":
+        camera = ((window[0] + window[2]) / 2, (window[1] + window[3]) / 2)
+    cam_px = None if camera is None else (camera[0] * PX_PER_M, camera[1] * PX_PER_M)
     cat_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sprite_catalogue.json")
     catalogue = json.load(open(cat_path, encoding="utf-8"))
     sprites = load_sprites(project, catalogue)
@@ -208,13 +232,14 @@ def render(work, project, out, window, scale=4.0, show_props=True, notes=False):
         if sub == "PROPS":
             if props:
                 draw_props(cv, props, catalogue, sprites, ("vehicle_wreck", "vehicle", "truck", "bus", "military",
-                                                           "container", "stall", "debris", "clutter", "hut"))
+                                                           "container", "stall", "debris", "clutter", "hut",
+                                                           "railcar"))
             continue
         if sub == "FOLIAGE":
             if props:
                 draw_props(cv, props, catalogue, sprites, ("bush", "tree"))
             continue
-        draw_layer(cv, work, manifest, sub)
+        draw_layer(cv, work, manifest, sub, cam_px if sub == "talls" else None)
     grey = (np.clip(cv.img, 0, 1) * 255).astype(np.uint8)
     img = Image.fromarray(grey).convert("RGB")
     if notes:
@@ -257,11 +282,19 @@ if __name__ == "__main__":
         i = args.index("--scale")
         opts["--scale"] = float(args[i + 1])
         del args[i:i + 2]
+    cam = "centre"
+    if "--camera" in args:
+        i = args.index("--camera")
+        cam = tuple(float(v) for v in args[i + 1].split(","))
+        del args[i:i + 2]
     flags = {a for a in args if a.startswith("--")}
     args = [a for a in args if not a.startswith("--")]
+    if "--flat" in flags:
+        cam = None
     if "--districts" in flags:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from frame import PLAY_HALF_M
         print(render_districts(args[0], args[2], PLAY_HALF_M))
     else:
-        print(render(args[0], args[1], args[2], win, opts["--scale"], "--no-props" not in flags, "--annotate" in flags))
+        print(render(args[0], args[1], args[2], win, opts["--scale"], "--no-props" not in flags, "--annotate" in flags,
+                     cam))

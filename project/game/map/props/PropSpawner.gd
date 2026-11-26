@@ -24,7 +24,8 @@ extends Node2D
 # emitted whenever the list is rebuilt.
 #
 # kept_share thins the generated points of chosen kinds (fewer parked cars,
-# say) without regenerating the map.
+# say) without regenerating the map. Set pieces (PropSpawnSet.placed) are
+# never thinned.
 #
 # With no CLEAR zone and nothing thinned, the generated points are taken over
 # as they are (packed arrays are shared until written), so a big map loads
@@ -39,6 +40,7 @@ const DEFAULT_SIZE := {
 	"stall": Vector2(60, 50), "bus": Vector2(240, 50), "military": Vector2(180, 72),
 	"container": Vector2(122, 49),
 	"hut": Vector2(120, 60), "clutter": Vector2(40, 40),
+	"railcar": Vector2(280, 60),
 }
 const MARKER_COLOR := {
 	"vehicle": Color(1.0, 0.78, 0.25), "truck": Color(1.0, 0.55, 0.1),
@@ -48,6 +50,7 @@ const MARKER_COLOR := {
 	"stall": Color(0.95, 0.5, 0.85), "bus": Color(1.0, 0.65, 0.2),
 	"hut": Color(0.8, 0.45, 0.95), "clutter": Color(0.6, 0.6, 0.7),
 	"military": Color(0.7, 0.8, 0.35), "container": Color(0.4, 0.7, 1.0),
+	"railcar": Color(0.3, 0.85, 0.85),
 }
 const CELL_SIZE := 2000.0
 const SOURCES := ["generated", "zone", "manual"]
@@ -290,9 +293,11 @@ func _take_generated(clears: Array[PropZone]) -> void:
 		_s_source.fill(GENERATED)
 		return
 	var clear_outlines := clears.map(func(z): return z.outline())
+	var has_placed := spawn_set.placed.size() >= n
 	for i in n:
 		var kid: int = spawn_set.kind[i]
-		if not shares.is_empty() and shares[kid] < 1.0 and _unit_hash(i) >= shares[kid]:
+		if not shares.is_empty() and shares[kid] < 1.0 and _unit_hash(i) >= shares[kid] \
+				and not (has_placed and spawn_set.placed[i] == 1):
 			continue
 		var k: String = spawn_set.kinds[kid]
 		var p: Vector2 = spawn_set.position[i]

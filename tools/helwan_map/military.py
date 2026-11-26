@@ -28,6 +28,7 @@ from shapely.ops import unary_union
 import district_life
 import equipment
 import kit
+import market
 import props
 import ruins
 from frame import PLAY_HALF_M
@@ -42,6 +43,8 @@ ROADBLOCKS = 4
 CONVOYS = 3
 RELAY_MASTS = 4
 SITE_SIZE_M = ((110.0, 150.0), (80.0, 110.0))
+## Least gap (m) between a checkpoint's sandbag walls and a building.
+SANDBAG_CLEAR_M = 0.8
 MAIN = {"trunk", "secondary"}
 
 
@@ -73,6 +76,33 @@ def sandbags(L, line, rng):
         L.fill("interiors", Point(p.x, p.y).buffer(0.45, quad_segs=2), rng.uniform(0.22, 0.3))
         d += 0.75
     L.line("interiors", line, 0.08, 0.38, 0.6)
+
+
+def checkpoint_walls(L, site, walls, pole, rng):
+    """A checkpoint's sandbag walls and its barrier pole across the road.
+    walls: per side of the road, the wall's line beside the road and, in
+    its place where a building (as drawn, market.built) comes within
+    SANDBAG_CLEAR_M of it, its line along the road's edge on the concrete;
+    what of that still comes that near a building is left out."""
+    for beside, on_road in walls:
+        wl = beside
+        blocked = market.others_near(site, wl, grow=SANDBAG_CLEAR_M)
+        if blocked is not None and blocked.intersects(wl):
+            wl = on_road
+            blocked = market.others_near(site, wl, grow=SANDBAG_CLEAR_M)
+        for part in ([wl] if blocked is None else line_parts(wl.difference(blocked))):
+            if part.length >= 1.5:
+                sandbags(L, part, rng)
+    L.line("interiors", pole, 0.25, 0.45)
+
+
+def line_parts(geom):
+    """The LineStrings of a line geometry."""
+    if geom.is_empty:
+        return []
+    if geom.geom_type == "LineString":
+        return [geom]
+    return [g for g in getattr(geom, "geoms", []) if g.geom_type == "LineString" and not g.is_empty]
 
 
 def sandbag_ring(L, x, y, r, rng):
@@ -163,9 +193,15 @@ def open_spot(site, w, h, rng, avoid, tries=400):
     return None
 
 
+def map_roads(site):
+    """The whole map's roads (full_layout, also in a window run), so a window
+    run puts the checkpoints, roadblocks and convoys where a full run does."""
+    return (site.full_layout or {}).get("roads") or site.roads
+
+
 def main_road_points(site, step=25.0):
     pts = []
-    for _, _, w, _, kind, line in site.roads:
+    for _, _, w, _, kind, line in map_roads(site):
         if kind not in MAIN or line is None:
             continue
         for d in np.arange(step, line.length - step, step):
@@ -219,6 +255,9 @@ def build(site):
         masts += mast
         site_compound(site, area, block_rng(73, area), mast)
 
+    # The road pieces draw from their own stream: how many draws open_spot
+    # takes depends on the buildings a window run has.
+    rng = np.random.default_rng(72)
     pts = main_road_points(site)
     for x, y, a, w in spread(pts, CHECKPOINTS, rng, 500.0):
         r = block_rng(79, Point(x, y))
@@ -230,13 +269,12 @@ def build(site):
                  y + ny * off + np.sin(a) * r.uniform(-3, 3), a + r.uniform(-0.5, 0.5), r)
         if r.random() < 0.35:
             park(site, "tank", x + np.cos(a) * 14, y + np.sin(a) * 14, a + r.uniform(-0.3, 0.3), r)
-        walls = [LineString([(x + np.cos(a) * d - np.sin(a) * s * (w / 2 + 1.5), y + np.sin(a) * d + np.cos(a) * s * (w / 2 + 1.5))
-                             for d in (-6, 6)]) for s in (-1, 1)]
+        walls = [tuple(LineString([(x + np.cos(a) * d - np.sin(a) * s * off, y + np.sin(a) * d + np.cos(a) * s * off)
+                                   for d in (-6, 6)]) for off in (w / 2 + 1.5, w / 2 - 0.9)) for s in (-1, 1)]
         pole = LineString([(x - np.sin(a) * w / 2 - np.cos(a) * 9, y + np.cos(a) * w / 2 - np.sin(a) * 9),
                            (x - np.cos(a) * 9, y - np.sin(a) * 9)])
         site.drawers.append(lambda L, walls=walls, pole=pole, s=int(r.integers(1 << 30)):
-                            ([sandbags(L, wl, np.random.default_rng(s)) for wl in walls],
-                             L.line("interiors", pole, 0.25, 0.45)))
+                            checkpoint_walls(L, site, walls, pole, np.random.default_rng(s)))
     for x, y, a, w in spread(pts, ROADBLOCKS + CHECKPOINTS, rng, 400.0)[CHECKPOINTS:]:
         r = block_rng(83, Point(x, y))
         park(site, "tank", x, y, a + np.pi / 2 + r.uniform(-0.25, 0.25), r)
@@ -245,7 +283,8 @@ def build(site):
             wx, wy = x + r.uniform(-9, 9), y + r.uniform(-9, 9)
             if site.props.clear_of(wx, wy, size[0] / 2):
                 site.props.add("vehicle_wreck", wx, wy, r.uniform(0, 2 * np.pi), size, vv)
-    trunk = [(line, w) for _, _, w, _, kind, line in site.roads if kind in MAIN and line is not None and line.length > 200]
+    trunk = [(line, w) for _, _, w, _, kind, line in map_roads(site)
+             if kind in MAIN and line is not None and line.length > 200]
     for _ in range(CONVOYS):
         if not trunk:
             break

@@ -36,6 +36,7 @@ func run_tests() -> void:
 
 	await _start_expedition()
 	await case("the expedition starts", _test_start)
+	await case("the HUD names a map place the player walks into", _test_landmark_notice)
 	await case("player weapons damage an enemy", _test_shooting)
 	await case("a destroyed enemy leaves a wreck with loot", _test_kill_and_wreck)
 	await case("no part swaps or recycling mid-run", _test_field_rules)
@@ -151,6 +152,42 @@ func _test_start() -> void:
 	map.site_name = ""
 	check_eq(_scene.get_site_name(), "Helwan", "a map with no site name falls back to Helwan")
 	map.site_name = "Helwan"
+
+
+# A named place (Landmarks) 150 m from the player: walking in shows its name
+# as a notice and in the top strip; walking out takes it off the strip. The
+# generated map's own Landmarks node is used when it has one (its places put
+# back after), otherwise one is added for the case.
+func _test_landmark_notice() -> void:
+	var player := _player()
+	var field := Landmarks.find(_scene)
+	var added := field == null
+	var saved: MapLandmarks = null
+	if added:
+		field = Landmarks.new()
+		_scene.get_node("Map").add_child(field)
+	else:
+		saved = field.landmarks
+	var start := player.global_position
+	var place := start + Vector2(3000, 0)
+	var test_places := MapLandmarks.new()
+	test_places.add("Test Garden", "garden", place, 600.0)
+	field.landmarks = test_places
+	_scene._watch_landmarks()
+	await wait_seconds(0.6)
+	var strip: HudTopStrip = _scene.PlayerHUD.top_strip
+	check_eq(strip.get("_place"), "", "outside it, the strip shows no place")
+	player.global_position = place
+	var named := await wait_until(func(): return _scene.PlayerHUD.hud_alerts.get_current() == "TEST GARDEN", 3.0)
+	check(named, "walking in, the HUD names the place (%s)" % _scene.PlayerHUD.hud_alerts.get_current())
+	check_eq(strip.get("_place"), "TEST GARDEN", "and the top strip shows it")
+	player.global_position = start
+	await wait_seconds(0.6)
+	check_eq(strip.get("_place"), "", "walking out takes it off the strip")
+	if added:
+		field.queue_free()
+	else:
+		field.landmarks = saved
 
 
 # The player shoots the left arm; as each shot leaves the barrel the enemy is

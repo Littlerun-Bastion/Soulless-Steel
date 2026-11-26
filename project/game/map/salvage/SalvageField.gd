@@ -49,13 +49,15 @@ extends Node2D
 const KIND_NAMES := {
 	"bus": "BUS", "tank": "TANK", "military_vehicle": "MILITARY VEHICLE",
 	"container_truck": "CONTAINER TRUCK", "shipping_container": "SHIPPING CONTAINER",
-	"tanker": "TANKER", "dump_truck": "DUMP TRUCK",
+	"tanker": "TANKER", "dump_truck": "DUMP TRUCK", "building_materials": "BUILDING MATERIALS",
 	"solar_panels": "SOLAR PANELS", "roof_ac": "AC UNITS",
 	"diesel_generator": "DIESEL GENERATOR", "transformer": "TRANSFORMER",
 	"electric_motor": "ELECTRIC MOTOR", "industrial_pump": "INDUSTRIAL PUMP",
 	"control_cabinet": "CONTROL CABINET", "valve_assembly": "VALVES",
 	"oil_drums": "OIL DRUMS", "cable_drum": "CABLE DRUM", "tractor": "TRACTOR",
 	"relay_mast": "RELAY MAST", "rubble": "RUBBLE", "car_wreck": "WRECKED CAR",
+	"telescope": "TELESCOPE", "lab_equipment": "LAB EQUIPMENT", "medical_store": "MEDICAL STORE",
+	"car_parts": "CAR PARTS",
 }
 const PICKUP_KINDS := ["car_wreck"]
 const WRECK_KIND := "car_wreck"
@@ -435,10 +437,14 @@ func _fill(i: int, stacks: Array) -> void:
 		source_emptied.emit(i)
 
 
+# The kind's loot table, or null (warned once: a source kind with no table,
+# from tools/salvage_loot/make_source_loot.py, comes up empty).
 func _loot_for(kind: String) -> SalvageLoot:
 	if not _loot.has(kind):
 		var path := LOOT_DIR + kind + ".tres"
 		_loot[kind] = load(path) as SalvageLoot if ResourceLoader.exists(path) else null
+		if _loot[kind] == null:
+			push_warning("SalvageField: no loot table for source kind \"%s\" (%s)" % [kind, path])
 	return _loot[kind]
 
 

@@ -70,6 +70,12 @@ VEHICLES = {
     "container_20ft_a": ("container", 6.06, 25000, 0.95, 1.0, "shipping_container"),
     "container_20ft_b": ("container", 6.06, 25000, 0.95, 1.0, "shipping_container"),
     "container_40ft": ("container", 12.19, 30000, 0.95, 0.6, "shipping_container"),
+    "metro_cab": ("railcar", 20.0, 40000, 0.95, 0.0, "railcar"),
+    "metro_car": ("railcar", 20.0, 38000, 0.95, 0.0, "railcar"),
+    "boxcar": ("railcar", 14.0, 28000, 0.95, 0.0, "freight_wagon"),
+    "flatcar": ("railcar", 14.0, 25000, 0.5, 0.0, None),
+    "flatcar_container": ("railcar", 14.0, 52000, 0.95, 0.0, "shipping_container"),
+    "hopper": ("railcar", 12.0, 60000, 0.95, 0.0, "freight_wagon"),
 }
 # name: real counter length (m); the order is the stall variant order.
 STALLS = {"lean_to": 3.2, "canopy": 3.0, "table": 2.5, "hand_cart": 2.2}
@@ -79,7 +85,8 @@ HUTS = {"guard": 2.6, "cabin": 6.0, "shed": 4.0, "shelter": 3.2, "kiosk": 2.5, "
 # name: real length (m); the order is the clutter variant order.
 CLUTTER = {"drums": 1.24, "pallets": 1.2, "reel": 1.84, "cylinders": 2.0, "cabinet": 1.3, "hydrant": 0.8,
            "sleepers": 2.9, "skid": 2.4, "rubbish": 2.0, "tyres": 1.6, "crates": 1.6, "sacks": 1.4, "tarp": 2.5,
-           "washing": 3.0, "genset": 1.6, "haystack": 2.2, "cart": 2.8, "jerrycans": 1.2, "sandbags": 2.6}
+           "washing": 3.0, "genset": 1.6, "haystack": 2.2, "cart": 2.8, "jerrycans": 1.2, "sandbags": 2.6,
+           "fuel_pump": 0.9, "air_post": 0.6, "tyre_stack": 1.8, "engine": 1.3}
 # name: height (m) above the ground, for the light shadow the game draws
 # (PropSpriteLayer.shadow_heights). A ruined hut is HUT_RUIN_HEIGHT of its
 # hut's height; a broken stall casts none. Placeholders.
@@ -88,11 +95,13 @@ HEIGHTS = {
     "minibus": 2.4, "fire_engine": 3.0, "container_truck": 4.0, "tanker": 3.5, "dump_truck": 3.2,
     "bus_city": 3.0, "bus_coach": 3.5, "tank_west": 2.4, "tank_east": 2.3, "apc": 2.4,
     "military_truck": 3.0, "container_20ft_a": 2.6, "container_20ft_b": 2.6, "container_40ft": 2.6,
+    "metro_cab": 3.6, "metro_car": 3.6, "boxcar": 4.0, "flatcar": 1.3, "flatcar_container": 3.9, "hopper": 3.8,
     "lean_to": 2.2, "canopy": 2.5, "table": 1.0, "hand_cart": 1.2,
     "guard": 2.6, "cabin": 2.7, "shed": 2.4, "shelter": 2.2, "kiosk": 2.5, "tent": 2.2,
     "drums": 0.9, "pallets": 1.0, "reel": 1.5, "cylinders": 0.5, "cabinet": 1.9, "hydrant": 0.8,
     "sleepers": 0.5, "skid": 1.0, "rubbish": 0.6, "tyres": 0.8, "crates": 1.0, "sacks": 0.6, "tarp": 0.8,
     "washing": 1.8, "genset": 1.3, "haystack": 1.8, "cart": 1.0, "jerrycans": 0.5, "sandbags": 0.8,
+    "fuel_pump": 1.9, "air_post": 1.2, "tyre_stack": 0.9, "engine": 0.8,
 }
 HUT_RUIN_HEIGHT = 0.5
 FOLIAGE_SIZE = {"tree": 512, "bush": 256}

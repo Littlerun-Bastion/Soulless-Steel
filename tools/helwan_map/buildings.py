@@ -41,6 +41,9 @@ SOLAR_BIG = (0.22, 0.25, 0.2, 0.25)
 ## Chance of a diesel generator (a salvage source) on a flat roof, per
 ## district as above.
 ROOF_GENERATOR = (0.012, 0.03, 0.03, 0.02)
+## Districts whose flat house roofs take the Cairo roof kit (style.CAIRO_ITEMS
+## and unfinished top floors): residential and market.
+CAIRO_DISTRICTS = (0, 2)
 
 
 ## Two footprints overlap when they share more than OVERLAP_M2 or more than
@@ -173,7 +176,8 @@ def roof_house(L, b, rng):
     if b.state != GUTTED and 40 < lot.area < 320 and rng.random() < chance:
         style.draw_tiled_house(L, lot, b.mv, rng, rects, ang, c)
         if rng.random() < SOLAR_TILES[b.district]:
-            got = solar.flush_on_tiles(L, rects, ang, c, rng, style.chunk_key(lot))
+            with L.within("roofs", lot, style.ROOF_BOUND_M):
+                got = solar.flush_on_tiles(L, rects, ang, c, rng, style.chunk_key(lot))
             if got is not None:
                 L.pending_sources.append(("solar_panels", got[0], got[1]))
         return None
@@ -181,9 +185,16 @@ def roof_house(L, b, rng):
     if b.state != GUTTED and rng.random() < SOLAR_HOUSE[b.district]:
         pre = solar_hook(L, solar.house_set, rng)
     gen = roof_generator(L, rng) if b.state != GUTTED and rng.random() < ROOF_GENERATOR[b.district] else None
-    return style.draw_house(L, lot, b.mv, rng, items=b.state != GUTTED, pre=chain(pre, gen))
+    return style.draw_house(L, lot, b.mv, rng, items=b.state != GUTTED, pre=chain(pre, gen),
+                            cairo=b.district in CAIRO_DISTRICTS)
 
 
+# kind -> (roof function, big, halo width m[, draw]). A site module adds its
+# own kinds here. The optional draw(L, b, rng, salvage) draws the whole
+# building itself (halo, interior, roof) in every ruin state, and
+# build_layers skips the standard drawing for it; its rooftop sources go in
+# L.pending_sources as usual. To fix a building's ruin state, set
+# b.opts["state"] (ruins.assign_states keeps it).
 KINDS = {
     "big": (roof_big, True, style.HALO_BIG_M),
     "house": (roof_house, False, style.HALO_HOUSE_M),
@@ -237,16 +248,21 @@ def build_layers(water, roads, buildings, drawers=(), salvage=None, seed=11):
     for b in buildings:
         b.id = L.add_building(b.poly, b.state, b.district)
         rng = block_rng(seed, b.poly)
-        roof_fn, big, halo = KINDS[b.kind]
-        if b.state == COLLAPSED:
+        entry = KINDS[b.kind]
+        roof_fn, big, halo = entry[:3]
+        if len(entry) > 3 and entry[3] is not None:
+            entry[3](L, b, rng, salvage)
+            R = None
+        elif b.state == COLLAPSED:
             ruins.draw_collapsed(L, b, rng, salvage)
             continue
-        style.draw_halo(L, b.poly, halo)
-        style.draw_interior(L, b.poly, big, rng)
-        if b.state == INTACT:
-            R = roof_fn(L, b, rng)
         else:
-            R = ruins.draw_ruined_roof(L, b, rng, roof_fn, big)
+            style.draw_halo(L, b.poly, halo)
+            style.draw_interior(L, b.poly, big, rng)
+            if b.state == INTACT:
+                R = roof_fn(L, b, rng)
+            else:
+                R = ruins.draw_ruined_roof(L, b, rng, roof_fn, big)
         register_roof_sources(L, R, b, salvage, rng)
         for kind, poly, amount in L.pending_sources:
             if salvage is not None and b.state in (INTACT, DAMAGED):

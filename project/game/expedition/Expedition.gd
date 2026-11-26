@@ -370,6 +370,32 @@ func _add_player() -> void:
 	var navpoly = _get_map_nav_polygon()
 	if navpoly:
 		PlayerHUD.set_site(get_site_name(), _get_navpoly_bounds(navpoly))
+	_watch_landmarks()
+
+
+# The map's named places (Landmarks, on generated maps): the HUD names a
+# place as the player enters it, and the top strip shows the one the player
+# is in.
+func _watch_landmarks() -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks == null:
+		return
+	if not landmarks.player_entered.is_connected(_on_landmark_entered):
+		landmarks.player_entered.connect(_on_landmark_entered)
+	if not landmarks.place_changed.is_connected(_on_place_changed):
+		landmarks.place_changed.connect(_on_place_changed)
+
+
+func _on_landmark_entered(index: int) -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks != null and is_instance_valid(PlayerHUD):
+		PlayerHUD.show_place(landmarks.name_of(index))
+
+
+func _on_place_changed(index: int) -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks != null and is_instance_valid(PlayerHUD):
+		PlayerHUD.set_place(landmarks.name_of(index))
 
 
 # A design's "anonymous" and "squad_tag" (add_squad) go on the NPC before

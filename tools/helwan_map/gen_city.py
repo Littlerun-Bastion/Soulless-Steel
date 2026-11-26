@@ -79,12 +79,17 @@ def mask_to_polys(mask, simplify_m=1.0):
     return polys
 
 
-def block_rng(seed, geom):
-    """A random generator for one street block or building, seeded by its
-    position, so a part of the map comes out the same in a window run
+def rng_at(seed, x, y):
+    """A random generator for one place, seeded by its position (map metres,
+    to 0.1 m), so a part of the map comes out the same in a window run
     (run_all.py --window) as in a full run."""
+    return np.random.default_rng([seed, int((x + 100000) * 10), int((y + 100000) * 10)])
+
+
+def block_rng(seed, geom):
+    """rng_at for one street block or building, at its centroid."""
     c = geom.centroid
-    return np.random.default_rng([seed, int((c.x + 100000) * 10), int((c.y + 100000) * 10)])
+    return rng_at(seed, c.x, c.y)
 
 
 def build(feats, f, zone, rects, keep_out=None, seed=7, window=None):

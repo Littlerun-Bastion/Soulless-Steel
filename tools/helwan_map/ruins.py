@@ -251,7 +251,8 @@ def draw_ruined_roof(L, b, rng, roof_fn, big):
                 crack = crack.intersection(poly).difference(cut)
                 L.line("roofs", crack, 0.08, 0.02, chunk=key)
             inside = h.intersection(poly)
-            add_rubble(L, "interiors", inside, RUBBLE_HOLE, (0.35, 1.1), rng, key)
+            with L.within("interiors", poly):
+                add_rubble(L, "interiors", inside, RUBBLE_HOLE, (0.35, 1.1), rng, key)
             if on_edge:
                 spill = h.buffer(1.2).difference(poly.buffer(0.2))
                 add_rubble(L, "groundlines", spill, RUBBLE_SPILL, (0.3, 0.9), rng, key)
@@ -271,9 +272,10 @@ def draw_ruined_roof(L, b, rng, roof_fn, big):
     for seg in wall_segments(poly.exterior, rng):
         L.line("roofs", seg, wall_w, style.OUTLINE_V * 0.85, chunk=key)
     room = poly.buffer(-0.5)
-    add_rubble(L, "interiors", room, RUBBLE_GUTTED[0], (0.4, 1.4), rng, key)
-    for x, y in scatter(room, int(np.clip(poly.area / 60, 1, 6)), rng):
-        scorch(L, "interiors", x, y, rng.uniform(2.0, 4.5), rng, key)
+    with L.within("interiors", poly):
+        add_rubble(L, "interiors", room, RUBBLE_GUTTED[0], (0.4, 1.4), rng, key)
+        for x, y in scatter(room, int(np.clip(poly.area / 60, 1, 6)), rng):
+            scorch(L, "interiors", x, y, rng.uniform(2.0, 4.5), rng, key)
     ring = poly.buffer(1.6).difference(poly)
     add_rubble(L, "groundlines", ring, RUBBLE_GUTTED[1], (0.3, 1.0), rng, key)
     for x, y in points_on_ring(poly.exterior, int(np.clip(poly.exterior.length / 25, 1, 5)), rng):

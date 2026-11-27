@@ -21,8 +21,21 @@ func run_tests() -> void:
 	await case("an older backup is archived", _test_older_backup)
 	await case("a backup without its profile becomes the profile", _test_backup_only)
 	await case("an expedition left running is lost on the next boot", _test_abandoned_on_boot)
+	await case("cleaning up test files that aren't there is no error", _test_clean_missing)
 	await case("the real profile was never touched", func():
 		check_eq(FileAccess.get_modified_time(REAL_PROFILE), real_modified, "user://profile.save unchanged"))
+
+
+# The test runner's own clean-up: a suite's teardown must not fail when the
+# test folder is gone (any engine error would fail it).
+func _test_clean_missing() -> void:
+	remove_test_files()
+	DirAccess.remove_absolute(TEST_DIR)
+	check(not DirAccess.dir_exists_absolute(TEST_DIR), "(the test folder is gone)")
+	remove_test_files()
+	remove_test_files(TEST_DIR + "never_made/")
+	check(true, "cleaning it up again raises no error")
+	DirAccess.make_dir_recursive_absolute(TEST_DIR)
 
 
 func before_each() -> void:

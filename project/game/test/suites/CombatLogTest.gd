@@ -34,6 +34,7 @@ func run_tests() -> void:
 	await case("every hit is remembered: who, where from, lit, shielding", _test_hit_memory)
 	await case("attackers by name: pilots, creatures, swarms, Unknown; own blasts aren't hits", _test_names)
 	await case("register_hit hits count, and the attacker is known when it is announced", _test_register_hit)
+	await case("a melee hit names the weapon it came from", _test_melee)
 	await case("destroyed components say what they did", _test_destroyed)
 	await case("heat damage is marked, isn't a hit, and says so", _test_heat)
 	await case("a part that comes off is one line", _test_part_lost)
@@ -42,7 +43,7 @@ func run_tests() -> void:
 	await case("overheating gets a line, at most every 20 s", _test_overheating)
 	await case("only the last minute is kept", _test_memory)
 	await case("frame lost: who, with what, from where, how", _test_lost_line)
-	await case("frame lost by heat, while exposed, to nobody, to a swarm", _test_lost_causes)
+	await case("frame lost by heat, under the Flag, to nobody, to a swarm", _test_lost_causes)
 	await case("each lesson applies when it should", _test_lessons_apply)
 	await case("a lesson from the frame's state: head, weight, shield", _test_lessons_state)
 	await case("the least shown lesson is picked, and counted", _test_rotation)
@@ -209,6 +210,25 @@ func _test_register_hit() -> void:
 	check_eq(_lines(), ["Hit by Ash (%s)" % _weapon], "a hit with no component: no part")
 	me.emit_signal("took_damage", me, true)
 	check_eq(rec.hits.size(), 1, "status damage (fire, corrosion) isn't a hit")
+
+
+func _test_melee() -> void:
+	var made := _recorded()
+	var me: Mecha = made[0]
+	var rec: CombatRecorder = made[1]
+	var vex := _mecha(Vector2(0, -150), "Vex")
+	var weapon = vex.build.arm_weapon_left
+	check(weapon != null and weapon.get("part_id") != null, "(Vex's arm weapon knows its part id)")
+	if weapon == null or weapon.get("part_id") == null:
+		return
+	var label := KillRecord.weapon_label(weapon.part_id)
+	me.add_lingering_hitbox({"data": weapon, "origin": vex, "id": 1, "priority": 0, "dur": 0.5,
+			"damage_mul": 1.0, "knockback_mul": 0.0})
+	me.process_hitboxes(0.0)
+	check(rec.hits.size() >= 1 and rec.hits.all(func(hit): return hit.name == "Vex" and hit.weapon == label),
+			"every hit it made is Vex's, with %s" % label)
+	check(not _lines().is_empty() and str(_lines()[0]).begins_with("Hit by Vex (%s)" % label), "the line names the weapon")
+	check_eq(me.last_damage_weapon, weapon.part_id, "and it is recorded as what hit")
 
 
 func _test_destroyed() -> void:
@@ -416,10 +436,15 @@ func _test_lost_causes() -> void:
 	var hull: Mecha = exposed[0]
 	var ash := _mecha(Vector2(1000, 0), "Ash")
 	_hit(hull, _source(ash), _weapon_id, "core", "core_shell", 99)
-	check(hull.is_exposed, "(the core shell gives out)")
+	check(hull.is_exposed, "(the core shell gives out: the emergency Flag)")
 	facts = FrameLossReport.gather(hull, exposed[1])
-	check_eq(FrameLossReport.lost_line(facts), "Frame lost to Ash · %s · from 50 m E · finished while exposed" % _weapon,
-			"finished while exposed")
+	check_eq(facts.cause, "", "exposed but still there: no way it was lost yet")
+	hull.flag_grace = 0.0
+	_hit(hull, _source(ash), _weapon_id, "core", "cockpit", 9)
+	check(hull.is_dead, "(then the cockpit goes)")
+	facts = FrameLossReport.gather(hull, exposed[1])
+	check_eq(FrameLossReport.lost_line(facts), "Frame lost to Ash · %s · from 50 m E · cockpit breached" % _weapon,
+			"finished under the Flag: the cockpit")
 	check(facts.flag_up and "flag_ignored" in FrameLossReport.applicable(facts), "a mecha finishing a Flagged frame ignored the Flag")
 
 	var plain := _recorded()

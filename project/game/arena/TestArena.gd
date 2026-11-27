@@ -63,6 +63,7 @@ func _ready() -> void:
 	_setup_wrecks()
 	_setup_entities()
 	_add_player()
+	_start_combat_log()
 	_setup_heatmap()
 	IntroAnimation.play("Entrance")
 	await _prewarm_fx()

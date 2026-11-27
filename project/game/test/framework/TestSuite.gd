@@ -257,8 +257,11 @@ func _restore_state() -> void:
 	TransitionManager.captured.clear()
 
 
-# Deletes everything under TEST_DIR.
+# Deletes everything under TEST_DIR. Nothing to do if it isn't there (listing
+# a missing folder is an engine error, which would fail the suite).
 static func remove_test_files(dir_path := TEST_DIR) -> void:
+	if not DirAccess.dir_exists_absolute(dir_path):
+		return
 	for sub in DirAccess.get_directories_at(dir_path):
 		remove_test_files(dir_path + sub + "/")
 		DirAccess.remove_absolute(dir_path + sub)

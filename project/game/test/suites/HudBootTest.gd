@@ -78,14 +78,18 @@ func _test_flicker() -> void:
 	_hud.go_dark()
 	var changes := [0]
 	var was := [false]
-
-	_hud.boot()
-	await wait_until(func():
+	# Looked at on every change, as it happens: at the suite's speed a flicker
+	# is shorter than a frame, so looking once a frame could miss one.
+	var note := func():
 		var now := _drawn(_hud.hud_status)
 		if now != was[0]:
 			changes[0] += 1
 			was[0] = now
-		return not _hud.is_booting(), 10.0)
+	_hud._boot.lit_changed.connect(note)
+
+	_hud.boot()
+	await wait_until(func(): return not _hud.is_booting(), 10.0)
+	_hud._boot.lit_changed.disconnect(note)
 
 	check(changes[0] >= 3, "the frame readout came on, went off and came on again (%d changes)" % changes[0])
 	check(was[0], "and held on")

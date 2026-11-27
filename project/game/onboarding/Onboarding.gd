@@ -53,6 +53,8 @@ func _ready() -> void:
 	_setup_heatmap()
 	player.hides_flag_marker = true
 	player.cripple_systems()
+	# Only now: the crippling is the boot screen's story, not the combat log's.
+	_start_combat_log()
 	_add_trobairitz()
 	IntroAnimation.inset_text(boot_text_inset)
 	IntroAnimation.play_retold("Entrance", boot_text, boot_card)
@@ -61,6 +63,13 @@ func _ready() -> void:
 	if Debug.get_setting("skip_intro"):
 		await get_tree().create_timer(.01).timeout
 		IntroAnimation.stop_animation()
+
+
+## A throwaway cargo, empty, sized when the mecha is set up: the onboarding
+## risks nothing, so nothing taken in it (Trobairitz's wreck) may reach the
+## saved cargo, and the saved cargo isn't brought into it.
+func _player_cargo() -> Inventory:
+	return Inventory.new()
 
 
 func _add_trobairitz() -> void:

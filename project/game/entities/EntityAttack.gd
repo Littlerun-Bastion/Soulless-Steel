@@ -21,8 +21,11 @@ const PART_WEIGHTS := {"core": 4.0, "chassis": 3.0, "shoulder": 2.0, "head": 1.0
 
 # Returns true when the hit got through the armour and damaged a component.
 # `from`: where the attack comes from for the shield (a splash's centre); the
-# attacker's position when null.
-static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, knockback := 0.0, from = null) -> bool:
+# attacker's position when null. `weapon_name`: the weapon's part id when a
+# mecha's melee weapon hits (Mecha.process_hitboxes), recorded as what hit;
+# else the attacker's name is.
+static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, knockback := 0.0, from = null,
+		weapon_name := "") -> bool:
 	if not is_instance_valid(mecha) or mecha.is_dead:
 		return false
 	var to_attacker: Vector2 = (attacker.global_position - mecha.global_position).normalized()
@@ -43,7 +46,7 @@ static func hit_mecha(attacker: Node2D, mecha: Node2D, damage: int, pen: int, kn
 	if result.penetrated:
 		# Before the damage: a cockpit kill inside damage_component() reads it.
 		mecha.last_damage_source = {"body": attacker, "name": attacker.mecha_name}
-		mecha.last_damage_weapon = attacker.mecha_name
+		mecha.last_damage_weapon = weapon_name if weapon_name != "" else attacker.mecha_name
 		if result.component_name != "":
 			mecha.damage_component(result.part_name, result.component_name, damage, dir)
 	mecha.add_decal(0, impact_point, "bullet_hole", Vector2(40, 40))

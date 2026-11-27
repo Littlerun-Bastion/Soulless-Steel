@@ -1,6 +1,7 @@
 extends TestSuite
 
 const ONBOARDING := preload("res://game/onboarding/Onboarding.tscn")
+const SALVAGE := preload("res://database/items/salvage/servo_assembly.tres")
 const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "FindTheExit", "LowerFlag"]
 const IN_THE_DOORWAY := Vector2(-1000, 2470)
 const CLEAR_OF_THE_PLAYER := 190.0
@@ -87,6 +88,7 @@ func _open() -> void:
 	_camera_on_her_at_the_door = INF
 	_in_frame_when_she_leaves = true
 	_past_frame_when_she_leaves = INF
+	MechLog.clear()
 	_scene = ONBOARDING.instantiate()
 	add_child(_scene)
 	_noise_quality_at_start = INF
@@ -360,6 +362,12 @@ func _test_wakes_up() -> void:
 	check(player.is_exposed and player.is_flagged(), "the player is in the emergency state, Flag up")
 	check(player.disabled_systems.sensors < 1.0 and player.disabled_systems.shield_regen == 0.0, "with its systems down")
 	check(not player.disabled_systems.left_arm_weapon and not player.disabled_systems.right_arm_weapon, "but its weapons up")
+	var cargo: Inventory = player.mech_inventory
+	check(cargo != PlayerProgress.get_mech_inventory(), "its cargo is a throwaway one, not the saved one")
+	check(cargo != null and cargo.is_empty() and cargo.grid_width > 0 and cargo.grid_height > 0, "empty, with room in it")
+	check(CombatRecorder.of(player) != null, "what happens to it goes to the combat log")
+	check(not MechLog.lines.any(func(line): return line.source == CombatRecorder.SOURCE),
+			"but the crippling isn't logged as a fight")
 	check(_trobairitz() != null, "Trobairitz is on the map")
 	await wait_frames(2)
 	check(_scene.PlayerHUD.is_dark(), "the HUD is dark")
@@ -426,12 +434,15 @@ func _test_plays_through() -> void:
 
 func _test_extract() -> void:
 	var player = _scene.player
+	var saved_before: int = PlayerProgress.get_mech_inventory().get_stacks().size()
+	check(player.mech_inventory.add_item(SALVAGE, 1), "(something taken in the onboarding is carried out)")
 	player.emit_signal("mecha_extracted", player)
 	var left := await wait_until(func(): return TransitionManager.captured.has("res://game/start_menu/StartMenu.tscn"), 10.0)
 
 	check(left, "extracting goes to the main menu")
 	check(StoryDirector.has_flag(Onboarding.DONE_FLAG), "and the onboarding is done")
 	check(not PlayerProgress.is_in_expedition(), "it was never an expedition")
+	check_eq(PlayerProgress.get_mech_inventory().get_stacks().size(), saved_before, "and nothing from it reaches the saved cargo")
 
 
 func _test_death() -> void:

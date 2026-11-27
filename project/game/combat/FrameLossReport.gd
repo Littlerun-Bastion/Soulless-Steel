@@ -97,13 +97,12 @@ static func gather(mecha: Mecha, recorder: CombatRecorder) -> Dictionary:
 		for time in recorder.heat_damage:
 			if recorder.now - time <= HEAT_WINDOW:
 				heat = true
+	# A frame is only lost through its cockpit (Mecha.component_destroyed).
 	var cause := ""
 	if by_heat:
 		cause = "cockpit breached by heat"
 	elif breach == "hit":
 		cause = "cockpit breached"
-	elif mecha.is_exposed:
-		cause = "finished while exposed"
 	return {
 		"killer": "" if by_heat else CombatRecorder.attacker_name(source),
 		"is_mecha": valid and body.is_in_group("mecha"),

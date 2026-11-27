@@ -710,6 +710,11 @@ func _on_expedition_extracted() -> void:
 		if gig.progress >= int(gig.count):
 			gig.state = "complete"
 			MechLog.write("NET", "Gig complete: %s" % gig.title, MechLog.Kind.LOOT)
+			# What was brought home for it is handed over (it can only complete
+			# with the count in the cargo now), so it can't complete another.
+			if gig.type == "extract_with":
+				var taken := deliver_from_cargo(str(gig.item), int(gig.count))
+				MechLog.write("NET", "Delivered %d %s" % [taken, str(gig.get("item_name", gig.item))], MechLog.Kind.LOOT)
 	_run_progress.clear()
 	advance_day()
 	gigs_changed.emit()
@@ -1000,13 +1005,40 @@ func cargo_count(item: String) -> int:
 	if cargo == null or cargo.grid.is_empty():
 		return 0
 	for stack in cargo.get_stacks():
-		var res = stack.get_resource()
-		var tags = res.get("tags") if res != null else null
-		var res_id = res.get("id") if res != null else null
-		if str(res_id) == item or str(stack.item_id) == item or str(stack.item_id).get_file().get_basename() == item \
-				or (tags is Array and item in tags):
+		if _is_cargo_item(stack, item):
 			count += stack.quantity
 	return count
+
+
+## Whether a cargo stack is `item` (an item id or a tag).
+func _is_cargo_item(stack: item_stack, item: String) -> bool:
+	var res = stack.get_resource()
+	var tags = res.get("tags") if res != null else null
+	var res_id = res.get("id") if res != null else null
+	return str(res_id) == item or str(stack.item_id) == item or str(stack.item_id).get_file().get_basename() == item \
+			or (tags is Array and item in tags)
+
+
+## Takes `count` of an item (id or tag) out of the mech cargo: what a complete
+## extract_with gig is paid for is handed over, so the same cargo can't
+## complete the next one. Returns how many were taken.
+func deliver_from_cargo(item: String, count: int) -> int:
+	var cargo := PlayerProgress.get_mech_inventory()
+	if cargo == null or cargo.grid.is_empty():
+		return 0
+	var taken := 0
+	for stack in cargo.get_stacks():
+		if taken >= count:
+			break
+		if not _is_cargo_item(stack, item):
+			continue
+		var take := mini(stack.quantity, count - taken)
+		taken += take
+		if take >= stack.quantity:
+			cargo.remove_item_stack(stack)
+		else:
+			stack.quantity -= take
+	return taken
 
 
 ## Pays every complete gig, when the player is at home (the Hangar).

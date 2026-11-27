@@ -79,7 +79,12 @@ func _start_expedition() -> void:
 	var populated := await wait_until(func(): return _enemies().size() > 0, 20.0)
 	check(populated, "enemies spawned")
 	_scene.ExpeditionDirector.set_process(false)
+	# NPCs are held still before the camps wake and right after (the camps'
+	# own NPCs): an NPC's scouting sweep in the frames before _freeze_world
+	# would alert the creatures it just put on the map.
+	_hold_npcs()
 	_wake_camps()
+	_hold_npcs()
 	await wait_frames(2)
 	_freeze_world()
 
@@ -96,9 +101,13 @@ func _wake_camps() -> void:
 		camps.wake(camp)
 
 
-func _freeze_world() -> void:
+func _hold_npcs() -> void:
 	for enemy in _enemies():
 		enemy.set_pause(true)
+
+
+func _freeze_world() -> void:
+	_hold_npcs()
 	for entity in _scene.get_entities():
 		entity.set_pause(true)
 
@@ -229,6 +238,8 @@ func _test_shooting() -> void:
 		check(hits[0][2] < hits[0][3], "the component lost hp (%s %s: %s/%s)" % hits[0])
 		var source = enemy.last_damage_source
 		check(typeof(source) == TYPE_DICTIONARY and source.get("name") == "Player", "the damage is credited to the player")
+		check_eq(_scene.ExpeditionDirector.time_since_player_landed_hit, 0.0,
+				"and the director knows the player landed a hit (a fight, player_in_fight)")
 	player.set_pause(false)
 
 
@@ -451,7 +462,9 @@ func _test_entities_freeze() -> void:
 func _test_entity_kill() -> void:
 	var coyote: Coyote = _coyotes()[0]
 	var kills_before: int = _scene.player_kills.size()
+	_scene.ExpeditionDirector.time_since_player_landed_hit = 999.0
 	coyote.take_hit(100.0, 5, Vector2.ZERO, {"body": _player(), "name": "Player"})
+	check_eq(_scene.ExpeditionDirector.time_since_player_landed_hit, 0.0, "the director knows the player landed a hit")
 	check(coyote.is_dead, "the Coyote died")
 	check(not _scene.get_entities().has(coyote), "it's off the scene's Entity list")
 	check(_scene.player_kills.size() == kills_before + 1 and _scene.player_kills[-1] == "Coyote", "the kill counts for the player")

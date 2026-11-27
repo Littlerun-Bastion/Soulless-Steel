@@ -66,6 +66,9 @@ var npcs: Array = []
 var destination := Vector2.INF
 var squad := {}
 var leave_at := INF
+## A roamer the director sent somewhere (CampField.send_roamer): it hears
+## nothing on the way, so no gunfire turns it aside, until it gets there.
+var sent := false
 ## Never held back by the awake budget, and never dropped (a quest target).
 var pinned := false
 ## Encounters: when the fight began (CampField's clock), how long it lasts.

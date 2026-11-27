@@ -109,7 +109,10 @@ extends Node
 # Camps (CampField) and the encounters the tension (TensionMeter) arms: a
 # fight under way at one of encounter_sites spots laid out over the map at
 # the start, encounter_min_distance..encounter_max_distance px from the
-# player, at most max_armed_encounters at once. Once a check interval, an
+# player but always within earshot of its gunfire (encounter_reach), at a
+# new spot in that ring when no laid-out one is (CampField.add_site); at
+# most max_armed_encounters fights going at once (one that is over doesn't
+# count, CampField.fighting_encounters). Once a check interval, an
 # encounter is armed with a chance of the pressure (TensionMeter.pressure)
 # times encounter_chance, if the pressure is at least min_encounter_pressure.
 # A site's district decides the kind: duel_chance of a duel (two NPCs),
@@ -147,6 +150,13 @@ const TICK_BROOD = preload("res://game/entities/tick/TickBrood.tscn")
 
 ## Random spots tried for one spawn before giving up.
 const SPOT_TRIES := 40
+## How far out an encounter goes, as a share of its gunfire's range
+## (CampField.GUNFIRE_RANGE), so the player hears it even after moving a
+## little (encounter_reach).
+const EARSHOT_SHARE := 0.9
+## Seconds a hit taken or landed keeps the player in a fight
+## (player_in_fight).
+const FIGHT_MEMORY := 5.0
 
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
@@ -186,6 +196,13 @@ var _encounter_timer: float = 0.0
 var total_roamer_arrivals: int = 0
 var time_since_roamer_arrival: float = 0.0
 var _roamer_index: int = 0
+## Seconds since the player last landed a hit on an NPC or an Entity
+## (notify_player_landed_hit).
+var time_since_player_landed_hit: float = 999.0
+# Encounters someone else woke before the player got there: {"position",
+# "until" (elapsed)}. The player coming upon one in time counts as finding
+# it (_check_unfound).
+var _unfound: Array[Dictionary] = []
 
 
 func start(arena_ref) -> void:
@@ -214,7 +231,11 @@ static func uses_camps() -> bool:
 	return Debug.debug_settings.get("entity_camps", true) != false
 
 
+# Heat damage (Mecha.damage_cause "heat") isn't a fight.
 func _on_player_component_damaged(_part, _component, _hp, _max_hp) -> void:
+	var player = arena.get("player") if is_instance_valid(arena) else null
+	if is_instance_valid(player) and str(player.get("damage_cause")) == "heat":
+		return
 	notify_player_damaged()
 
 
@@ -335,12 +356,14 @@ func _process(dt: float) -> void:
 	time_since_last_redirect += dt
 	time_since_pack_respawn += dt
 	time_since_roamer_arrival += dt
+	time_since_player_landed_hit += dt
 	elapsed += dt
 
 	_tension_timer -= dt
 	if _tension_timer <= 0.0:
 		_tension_timer = 1.0
 		tension.advance(1.0, player_in_fight(), elapsed)
+		_check_unfound()
 	if camps != null:
 		_encounter_timer -= dt
 		if _encounter_timer <= 0.0:
@@ -387,7 +410,7 @@ func _print_metrics() -> void:
 		"  frame_ms=", "%.1f" % (1000.0 / max(Engine.get_frames_per_second(), 1)),
 		"  npcs=", npc_count,
 		"  nearest_enemy_dist=", int(nearest),
-		"  quiet_for=", int(time_since_last_player_damage), "s",
+		"  quiet_for=", int(tension.since_fight), "s",
 		"  npc_kills=", npc_vs_npc_kills,
 		"  player_kills=", player_kills,
 		"  player_deaths=", player_deaths,
@@ -428,9 +451,16 @@ func _nearest_enemy_distance() -> float:
 	return best
 
 
-# Called by arena when the player takes damage — resets the quiet timer
+# Called by arena when the player takes damage: that is a fight
+# (player_in_fight), which ends a lull.
 func notify_player_damaged() -> void:
 	time_since_last_player_damage = 0.0
+
+
+## Called by the scene when the player lands a hit on an NPC or an Entity
+## (Expedition): that is a fight too (player_in_fight).
+func notify_player_landed_hit() -> void:
+	time_since_player_landed_hit = 0.0
 
 
 # Called by arena when any mecha dies — categorize so we can tell the difference
@@ -771,14 +801,14 @@ func _redirect_roamer() -> void:
 
 # ---- Tension and encounters ----
 
-## Whether the player is in a fight: hit in the last few seconds, or hunted
-## by something on the map (an NPC with it as its target, an Entity after
-## it).
+## Whether the player is in a fight: hit, or landing hits, in the last
+## FIGHT_MEMORY s, or hunted by something on the map (an NPC with it as its
+## target, an Entity after it).
 func player_in_fight() -> bool:
 	var player = arena.get("player") if is_instance_valid(arena) else null
 	if not is_instance_valid(player) or player.is_dead:
 		return false
-	if time_since_last_player_damage < 5.0:
+	if time_since_last_player_damage < FIGHT_MEMORY or time_since_player_landed_hit < FIGHT_MEMORY:
 		return true
 	for m in arena.all_mechas:
 		if is_instance_valid(m) and m != player and not m.is_dead and is_same(m.get("valid_target"), player):
@@ -807,17 +837,23 @@ func _player_wholeness() -> float:
 	return NPCKnowledge._structural_health(player)
 
 
+## How far out (px) an encounter can be: encounter_max_distance, but never
+## past EARSHOT_SHARE of its gunfire's range, so the player hears it.
+func encounter_reach() -> float:
+	return minf(encounter_max_distance, CampField.GUNFIRE_RANGE * EARSHOT_SHARE)
+
+
 # Arms an encounter when the pressure calls for one (see the Camps exports).
 func _try_arm_encounter() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
-	if camps.armed_encounters().size() >= max_armed_encounters:
+	if camps.fighting_encounters().size() >= max_armed_encounters:
 		return
 	var pressure := tension.pressure(_player_wholeness())
 	if pressure < min_encounter_pressure or randf() >= pressure * encounter_chance:
 		return
-	var site = camps.pick_site(arena.player.global_position, encounter_min_distance, encounter_max_distance)
-	if site == null or _in_player_sight(site.position):
+	var site = _encounter_site()
+	if site == null:
 		return
 	var kind := Camp.DUEL if randf() < float(duel_chance.get(site.district, 0.3)) else Camp.HUNT
 	camps.arm_encounter(kind, site, pressure)
@@ -827,9 +863,40 @@ func _try_arm_encounter() -> void:
 				"%.2f" % pressure, ")")
 
 
-func _on_camp_woken(_camp: Camp, was_encounter: bool) -> void:
-	if was_encounter:
+# A free site in the ring out to encounter_reach, out of the player's
+# sight: a laid-out one, else a new one on open ground there
+# (CampField.add_site). Null when neither is found.
+func _encounter_site():
+	var from: Vector2 = arena.player.global_position
+	var site = camps.pick_site(from, encounter_min_distance, encounter_reach())
+	if site != null and not _in_player_sight(site.position):
+		return site
+	var spot = _pick_open_spot(encounter_min_distance, encounter_reach())
+	return camps.add_site(spot) if spot != null else null
+
+
+# Finding an encounter eases the tension, but only when the player found
+# it. One someone else woke first counts once the player comes upon it
+# (_check_unfound), while its fight's aftermath is still there.
+func _on_camp_woken(camp: Camp, was_encounter: bool, by_player: bool) -> void:
+	if not was_encounter:
+		return
+	if by_player:
 		tension.found_encounter()
+	else:
+		_unfound.append({"position": camp.site, "until": elapsed + CampField.ABANDON_TIME})
+
+
+func _check_unfound() -> void:
+	if camps == null or _unfound.is_empty():
+		return
+	for k in range(_unfound.size() - 1, -1, -1):
+		var entry: Dictionary = _unfound[k]
+		if elapsed > float(entry.until):
+			_unfound.remove_at(k)
+		elif camps.noticed_by_player(entry.position):
+			_unfound.remove_at(k)
+			tension.found_encounter()
 
 
 # ---- Redirect ----
@@ -842,8 +909,9 @@ func _try_redirect() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
 
-	# Quiet check: only intervene during a real lull.
-	if time_since_last_player_damage < quiet_threshold:
+	# Quiet check: only intervene during a real lull, by the same clock as
+	# the tension (time out of a fight, player_in_fight).
+	if tension.since_fight < quiet_threshold:
 		return
 
 	# Cooldown check: the central knob — never redirect more often than this.
@@ -880,8 +948,9 @@ func _try_redirect() -> void:
 
 # Fakes a "loud gunshot" sound at a distant point on the map. NPCs within
 # ambient_event_sound_radius investigate via their normal roam → seek transition,
-# creating emergent action at the spot. The player perceives this as "something
-# happening over there" — life happening independent of them.
+# creating emergent action at the spot: life happening independent of the
+# player, who only hears it from within ambient_event_sound_radius too (most
+# are further away). The fights meant for the player to hear are encounters.
 func _try_ambient_event() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
@@ -940,6 +1009,7 @@ func _pick_ambient_event_position():
 #   - is far enough from the player to need pulling
 #   - isn't already engaged with anyone
 #   - isn't extracting (committed to leaving the world)
+#   - isn't in earshot of an encounter's gunfire (CampField.hears_encounter)
 # Returns null if none qualify.
 func _find_distant_idle_npc():
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
@@ -964,6 +1034,10 @@ func _find_distant_idle_npc():
 				continue
 		# Heard_sound is on Enemy.gd — skip mechas that don't have it (e.g., player).
 		if not m.has_method("heard_sound"):
+			continue
+		# Skip NPCs in earshot of an encounter: its gunfire would draw them
+		# off again, and they are already going to a fight.
+		if camps != null and camps.hears_encounter(m.global_position):
 			continue
 
 		var d = player_pos.distance_to(m.global_position)

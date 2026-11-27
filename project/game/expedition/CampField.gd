@@ -53,9 +53,10 @@ extends Node
 # straight, and picks a new one where it gets there (the scene's
 # get_wander_point); a loud sound within earshot sends it there with chance
 # HEARING_CHANCE (hear), and the director can send it somewhere
-# (send_roamer). Its pilots are in Local all along (PaperPilot). It wakes
-# like any camp, each mecha as it was: its armour, components, lost parts
-# and ammo (snapshot, restore), and the paper hits it took since. It goes
+# (send_roamer; it hears nothing more until it gets there). Its pilots are
+# in Local all along (PaperPilot). It wakes like any camp, each mecha as it
+# was: its armour, components, lost parts and ammo (snapshot, restore), and
+# the paper hits it took since. It goes
 # back to sleep the same way, once nothing but its own members has been
 # near for SLEEP_DELAY s and none of them is fighting, under fire,
 # extracting, scripted or on the player's screen. At leave_at it leaves the
@@ -64,7 +65,7 @@ extends Node
 # for when it wakes (at most PAPER_HITS_KEPT pips a mecha).
 # Encounters' NPCs are in Local the same way from the moment they are armed.
 
-signal camp_woken(camp, was_encounter: bool)
+signal camp_woken(camp, was_encounter: bool, by_player: bool)
 signal camp_slept(camp)
 
 const TICK := 0.5
@@ -268,12 +269,29 @@ func _watched(point: Vector2, wakers: Array, slack: float, own: Array = []) -> b
 	return false
 
 
+## Whether the player would notice `point`: within its own wake reach (its
+## head's sight plus WAKE_MARGIN) or one of its devices', or near its screen.
+## Other NPCs' reach doesn't count.
+func noticed_by_player(point: Vector2) -> bool:
+	var player = arena.get("player")
+	if not is_instance_valid(player) or player.is_dead:
+		return false
+	for w in _wakers():
+		if w[2] == player or (w[2] is Device and w[2].owner_mecha == player):
+			var r: float = w[1]
+			if point.distance_squared_to(w[0]) < r * r:
+				return true
+	return MapSenses.screen_rect(player, WAKE_MARGIN).has_point(point)
+
+
 # ---- Waking ----
 
-## Puts `camp` on the map (see the top).
+## Puts `camp` on the map (see the top). camp_woken says whether the player
+## was the one to notice it (noticed_by_player), or someone else.
 func wake(camp: Camp) -> void:
 	if camp.state != Camp.State.DORMANT:
 		return
+	var by_player := noticed_by_player(camp.site)
 	camp.state = Camp.State.AWAKE
 	camp.quiet = 0.0
 	var encounter := camp.is_encounter()
@@ -285,7 +303,7 @@ func wake(camp: Camp) -> void:
 		_put_remains(camp)
 		_put_members(camp)
 	_listen(camp)
-	camp_woken.emit(camp, encounter)
+	camp_woken.emit(camp, encounter, by_player)
 
 
 # The roster on the map, within the budget, as one pack when it is Coyotes.
@@ -602,10 +620,18 @@ static func paper_hit(mecha, from: Vector2, pips: int, pen: int, attacker_name: 
 ## tagged with its district (MapDistricts) where the map has them.
 func lay_out_sites(points: Array) -> void:
 	sites.clear()
+	for p in points:
+		add_site(p)
+
+
+## One more encounter site at `point` (the director makes one where none
+## laid out at the start is in range), tagged with its district. Returns it.
+func add_site(point: Vector2) -> Dictionary:
 	var field := BuildingField.find(arena)
 	var districts: MapDistricts = field.districts if field != null else null
-	for p in points:
-		sites.append({"position": p, "district": districts.name_at(p) if districts != null else "residential", "used": false})
+	var site := {"position": point, "district": districts.name_at(point) if districts != null else "residential", "used": false}
+	sites.append(site)
+	return site
 
 
 ## An unused site `min_distance`..`max_distance` px from `from`, or null.
@@ -643,6 +669,18 @@ func arm_encounter(kind: String, site: Dictionary, intensity: float, designs: Ar
 ## Encounters armed and not yet woken.
 func armed_encounters() -> Array:
 	return camps.filter(func(c): return c.is_encounter() and c.state == Camp.State.DORMANT)
+
+
+## Armed encounters whose fight is still going (making gunfire); one that
+## is over and only waiting to be given up (ABANDON_TIME) isn't.
+func fighting_encounters() -> Array:
+	return armed_encounters().filter(func(c): return c.progress(clock) < 1.0)
+
+
+## Whether `point` is within earshot of an encounter's gunfire
+## (fighting_encounters, GUNFIRE_RANGE).
+func hears_encounter(point: Vector2) -> bool:
+	return fighting_encounters().any(func(c): return c.site.distance_to(point) <= GUNFIRE_RANGE)
 
 
 func _encounter_clocks(dt: float) -> void:
@@ -772,9 +810,11 @@ func add_roamer(designs: Array, site: Vector2, squad := {}, leave_at := INF) -> 
 	return camp
 
 
-## Sends a dormant roamer toward `point`.
+## Sends a dormant roamer toward `point`; it hears nothing until it gets
+## there (Camp.sent).
 func send_roamer(camp: Camp, point: Vector2) -> void:
 	camp.destination = point
+	camp.sent = true
 
 
 ## Dormant roamers, for the director.
@@ -783,14 +823,15 @@ func dormant_roamers() -> Array:
 
 
 ## A loud sound (the scene's _on_mecha_made_sound) draws dormant roamers in
-## earshot, each with chance HEARING_CHANCE.
+## earshot, each with chance HEARING_CHANCE; not one the director sent
+## somewhere (Camp.sent).
 func hear(sound_data: Dictionary) -> void:
 	if sound_data.get("volume_type") != "loud" or sound_data.get("entities_only", false):
 		return
 	var at: Vector2 = sound_data.position
 	var reach: float = float(sound_data.get("max_distance", 0.0))
 	for camp in dormant_roamers():
-		if camp.site.distance_to(at) <= reach and randf() < HEARING_CHANCE:
+		if not camp.sent and camp.site.distance_to(at) <= reach and randf() < HEARING_CHANCE:
 			camp.destination = at
 
 
@@ -831,6 +872,7 @@ func _travel(camp: Camp, dt: float) -> bool:
 		return false
 	if camp.destination == Vector2.INF or camp.site.distance_to(camp.destination) < PAPER_SPEED * dt:
 		camp.destination = _wander_point(camp.site)
+		camp.sent = false
 	camp.site = camp.site.move_toward(camp.destination, PAPER_SPEED * dt)
 	for m in camp.mechas:
 		m.pilot.global_position = camp.site + m.offset

@@ -38,6 +38,8 @@ class_name Entity
 # Expedition leaves a Carcass holding its bio salvage (roll_loot) instead.
 
 signal died(entity)
+## A hit landed on it (take_hit); last_damage_source says whose.
+signal hit_taken(entity)
 
 const HIT_FLASH_TIME := 0.1
 const CORPSE_TIME := 3.0        # lies there this long, then fades
@@ -514,6 +516,7 @@ func take_hit(damage: float, pen: int, dir := Vector2.ZERO, source_info = null, 
 	if knockback > 0.0 and dir != Vector2.ZERO:
 		velocity += dir.normalized() * knockback * KNOCKBACK_SCALE
 	_flash_timer = HIT_FLASH_TIME
+	hit_taken.emit(self)
 	if hp <= 0.0:
 		die()
 	else:

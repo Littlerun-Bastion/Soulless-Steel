@@ -176,6 +176,44 @@ func _on_player_hit(mecha, is_status) -> void:
 		ExpeditionDirector.notify_player_damaged()
 
 
+# The player landing hits is a fight too (ExpeditionDirector.player_in_fight):
+# every NPC's and Entity's hits are watched for the player's. A round that
+# gets through damages a component (component_damaged); a melee hit goes
+# through register_hit (took_damage).
+func _connect_mecha_signals(mecha) -> void:
+	super._connect_mecha_signals(mecha)
+	if mecha != player:
+		mecha.took_damage.connect(_on_other_hit)
+		mecha.component_damaged.connect(_on_other_component_damaged.bind(mecha))
+
+
+func register_entity(entity) -> void:
+	super.register_entity(entity)
+	if not entity.hit_taken.is_connected(_on_entity_hit):
+		entity.hit_taken.connect(_on_entity_hit)
+
+
+func _on_other_hit(mecha, is_status) -> void:
+	if not is_status:
+		_note_hit_by_player(mecha.last_damage_source)
+
+
+# Heat damage isn't anyone's hit, whoever hit the mecha last.
+func _on_other_component_damaged(_part, _component, _hp, _max_hp, mecha) -> void:
+	if str(mecha.get("damage_cause")) != "heat":
+		_note_hit_by_player(mecha.last_damage_source)
+
+
+func _on_entity_hit(entity) -> void:
+	_note_hit_by_player(entity.last_damage_source)
+
+
+func _note_hit_by_player(source_info) -> void:
+	if typeof(source_info) == TYPE_DICTIONARY and is_instance_valid(player) \
+			and is_same(source_info.get("body"), player):
+		ExpeditionDirector.notify_player_landed_hit()
+
+
 # take_loss_report so the main menu doesn't repeat it.
 func _on_player_destroyed() -> String:
 	# How the frame was lost, and one lesson, to the combat log (LOG › COMBAT).

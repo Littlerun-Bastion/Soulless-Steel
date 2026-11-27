@@ -35,6 +35,14 @@ class FakeArena extends Node2D:
 	var dead: Array = []
 	func get_mechas() -> Array:
 		return mechas
+	# What the ExpeditionDirector reads too (PacingTest): all ground is open.
+	var all_mechas: Array:
+		get:
+			return mechas
+	func is_spawn_spot_open(_pos: Vector2) -> bool:
+		return true
+	func is_near_exit(_pos: Vector2) -> bool:
+		return false
 	func get_entities() -> Array:
 		return entities
 	func get_random_position() -> Vector2:

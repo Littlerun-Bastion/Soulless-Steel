@@ -419,7 +419,7 @@ func _test_gig_delivery() -> void:
 	PlayerProgress.set_mech_inventory(cargo)
 	for i in count + 1:
 		cargo.add_stack_anywhere(item_stack.from_generic(BIO_ITEM))
-	var loom := item_stack.from_generic(load("res://database/items/salvage/wiring_loom.tres"))
+	var loom := item_stack.from_generic(load("res://database/items/salvage/wiring_harness.tres"))
 	cargo.add_stack_anywhere(loom)
 	MechLog.clear()
 	PlayerProgress.begin_expedition()

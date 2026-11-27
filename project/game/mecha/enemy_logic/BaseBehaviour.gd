@@ -1063,17 +1063,24 @@ func _ramp_throttle_full(dt, enemy):
 		enemy.decrease_throttle(1.0, 1.0)
 
 
-# Wander: pick a random map point when we have nowhere to go, clear of the
-# spot it keeps away from (a few tries).
+# Wander: pick a random map point when we have nowhere to go (the arena's
+# get_wander_point, which keeps legs short on a big map, where it has one),
+# clear of the spot it keeps away from (a few tries).
 func _wander_if_idle(enemy):
 	if not enemy.going_to_position:
-		var point: Vector2 = enemy.arena.get_random_position()
+		var point: Vector2 = _wander_point(enemy)
 		for i in 8:
 			if not enemy.knowledge.avoids(point, AVOID_RADIUS):
 				break
-			point = enemy.arena.get_random_position()
+			point = _wander_point(enemy)
 		point_of_interest = point
 		enemy.going_to_position = true
+
+
+func _wander_point(enemy) -> Vector2:
+	if enemy.arena.has_method("get_wander_point"):
+		return enemy.arena.get_wander_point(enemy.global_position)
+	return enemy.arena.get_random_position()
 
 
 # Head toward the most recent loud noise it acts on; on arrival consume it.

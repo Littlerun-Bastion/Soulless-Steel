@@ -8,7 +8,8 @@ extends TestSuite
 # The cases share one Hangar, opened at the start, in order.
 
 const HANGAR := preload("res://game/ui/HangarScreen.tscn")
-const SCRAP := preload("res://database/items/salvage/armor_plate_fragment.tres")   # 3 steel, 2x1
+const SCRAP := preload("res://database/items/salvage/track_links.tres")   # 150 kg Steel, 2x1
+const HIGH_TECH := "res://database/items/salvage/fuel_cassette.tres"   # 40 kg Steel, 2 kg Fissile; 132 ct
 
 var _hangar = null
 var _equipment = null
@@ -53,18 +54,22 @@ func _test_recycling() -> void:
 	var recycle := _action("item", "recycle")
 	var ctx := {"type": "item", "stack": scrap, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled}
 	check(recycle["visible_if"].call(ctx) and recycle["enabled_if"].call(ctx) == "", "Recycle offered on stash salvage")
-	check(recycle["label"].call(ctx) == "Recycle (3 Steel)", "label previews what it gives")
+	check_eq(recycle["label"].call(ctx), "Recycle (150 kg Steel)", "label previews what it gives, in real units")
 	check(recycle["confirm"].call(ctx) == "", "low tech recycles without asking")
 	var menu_ids := MechOS._get_context_actions(ctx).map(func(a): return a["id"])
 	check(not "take" in menu_ids and not "take_all" in menu_ids, "no looting actions on the stash")
 	check(MechOS.is_app_available("materials"), "MAT on the taskbar in the Hangar")
 	check(MechOS.is_app_available("fabricator") and MechOS.is_app_available("facilities"), "FAB and FAC too")
 	var materials_window = MechOS.open_app("materials")
-	check(materials_window != null and materials_window.get_count_text("steel") == "0", "Materials window lists steel at 0")
+	check(materials_window != null and materials_window.get_count_text("steel") == "0 t", "Materials window lists steel at 0 t")
+	check("SCRAP 0/8" in _hangar.materials_label.text and "STRANGE 0/7" in _hangar.materials_label.text,
+			"materials line counts what is held by origin (%s)" % _hangar.materials_label.text)
+	check(not "LOW" in _hangar.materials_label.text, "no tier totals")
 	recycle["run"].call(ctx)
-	check(PlayerProgress.get_material_count("steel") == 3, "recycled into materials")
-	check("LOW 3" in _hangar.materials_label.text, "materials line shows the tier totals")
-	check(materials_window.get_count_text("steel") == "3", "Materials window updates live")
+	check(PlayerProgress.get_material_count("steel") == 150, "recycled into materials, 1 to 1")
+	check("SCRAP 1/8" in _hangar.materials_label.text, "materials line follows (%s)" % _hangar.materials_label.text)
+	check_eq(materials_window.get_count_text("steel"), "150 kg", "Materials window updates live, in real units")
+	check(PlayerProgress.get_stash_inventory().get_stacks().size() == 0, "materials take no stash space")
 	materials_window._show_detail(Materials.get_material("steel"))
 	check(Materials.get_material("steel").description in materials_window.detail_label.text, "hovering shows the description")
 
@@ -81,20 +86,20 @@ func _test_leaving() -> void:
 
 # Through the real menu: the first click only asks, the second recycles.
 func _test_high_tech_confirm(stash: Inventory) -> void:
-	var engine := item_stack.from_generic(load("res://database/items/salvage/damaged_nt_engine.tres"))
+	var engine := item_stack.from_generic(load(HIGH_TECH))
 	stash.add_stack_anywhere(engine)
 	var grid = MechOS.open_windows["stash"].inventory_grid
 	var ctx := {"type": "item", "stack": engine, "inventory": stash, "recycle_allowed": true, "source": grid}
 	var menu: ContextMenu = MechOS.context_menu
 	menu.open([_action("item", "recycle")], ctx, Vector2(400, 400))
 	var button: Button = menu._list.get_child(0)
-	check(button.text == "Recycle (2 NT Fluid, 1 NT Engines)", "high-tech label previews too")
+	check_eq(button.text, "Recycle (40 kg Steel, 2 kg Fissile)", "high-tech label previews too")
 	button.pressed.emit()
 	check(stash.get_stacks().has(engine) and menu.is_open(), "first click only asks")
 	check(button.text.begins_with("Confirm"), "button asks to confirm")
 	button.pressed.emit()
 	check(not stash.get_stacks().has(engine), "second click recycles")
-	check(PlayerProgress.get_material_count("nt_engines") == 1, "high-tech materials added")
+	check(PlayerProgress.get_material_count("fissile_materials") == 2, "high-tech materials added")
 	check(not menu.is_open(), "menu closes after recycling")
 	await wait_frames()
 
@@ -108,16 +113,16 @@ func _test_selling() -> void:
 	var start := PlayerProgress.get_money()
 	check_eq(_hangar.credits_label.text, "%d CT" % int(start), "the Hangar bar shows the credits")
 
-	var engine := item_stack.from_generic(load("res://database/items/salvage/damaged_nt_engine.tres"))
+	var engine := item_stack.from_generic(load(HIGH_TECH))
 	stash.add_stack_anywhere(engine)
 	var ctx := {"type": "item", "stack": engine, "inventory": stash, "recycle_allowed": MechOS.recycling_enabled, "source": grid}
 	menu.open([_action("item", "sell")], ctx, Vector2(400, 400))
 	var button := _menu_button(menu)
-	check_eq(button.text, "Sell (110 ct)", "Sell says what it pays")
+	check_eq(button.text, "Sell (66 ct)", "Sell says what it pays")
 	button.pressed.emit()
 	check(not stash.get_stacks().has(engine), "a small sale goes through on one click")
-	check_eq(PlayerProgress.get_money(), start + 110, "and is paid")
-	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110), "the Hangar bar follows")
+	check_eq(PlayerProgress.get_money(), start + 66, "and is paid")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 66), "the Hangar bar follows")
 	await wait_frames()
 
 	PlayerProgress.add_part("core", "Lancelot-Core", false)
@@ -129,7 +134,7 @@ func _test_selling() -> void:
 	check(stash.get_stacks().has(core) and button.text.begins_with("Confirm"), "a big sale asks first")
 	button.pressed.emit()
 	check(not stash.get_stacks().has(core), "and sells on the second click")
-	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 110 + 1600), "the Hangar bar follows")
+	check_eq(_hangar.credits_label.text, "%d CT" % int(start + 66 + 1600), "the Hangar bar follows")
 	await wait_frames()
 
 	# Debt from repairs shows inverted, and goes back once paid off.

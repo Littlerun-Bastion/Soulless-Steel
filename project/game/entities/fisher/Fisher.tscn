@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/entities/fisher/Fisher.gd" id="1_fisher"]
 [ext_resource type="Script" path="res://game/entities/fisher/FisherBody.gd" id="2_body"]
 [ext_resource type="Resource" path="res://database/loot-tables/entity_fisher.tres" id="3_loot"]
-[ext_resource type="Resource" path="res://database/items/bio/nt_engine_heart.tres" id="4_heart"]
+[ext_resource type="Resource" path="res://database/items/salvage/fisher_heart.tres" id="4_heart"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 83.0
@@ -27,9 +27,9 @@ release_below = 0.04
 memory_time = 10.0
 close_sense = 260.0
 loot_table = ExtResource("3_loot")
-loot_rolls = Vector2i(2, 3)
+loot_rolls = Vector2i(1, 1)
 rare_drop = ExtResource("4_heart")
-rare_chance = 0.15
+rare_chance = 1.0
 carcass_grid = Vector2i(6, 6)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

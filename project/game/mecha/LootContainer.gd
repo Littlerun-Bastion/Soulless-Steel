@@ -19,6 +19,10 @@ signal closed(container)
 
 var inventory: Inventory = null
 var is_open: bool = false  # the player has it open in Mech OS
+# Whether the player's Interact opens the loot window (Player). A container
+# that is picked up instead (Carcass) takes the loot into the cargo itself in
+# interact().
+var opens_window := true
 # An NPC has already been over to it (see BaseBehaviour loot state). NPCs only
 # look for now — they don't take anything — so this just stops repeat visits.
 var npc_searched: bool = false

@@ -124,7 +124,7 @@ func _lines(tracker: MissionTracker) -> Array:
 
 
 func _test_load() -> void:
-	check(HudStatus.format_weight(41.25, 48.0) == "WT 41.3 / 48", "weight text")
+	check(HudStatus.format_weight(41.25, 48.0) == "WT 41.3 / 48 t", "weight text, in tonnes")
 	check(not HudStatus.is_over(48.0, 48.0), "at capacity is not over")
 	check(HudStatus.is_over(48.5, 48.0), "over capacity")
 

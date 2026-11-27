@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SalvageLoot" format=3]
+
+[ext_resource type="Script" path="res://game/map/salvage/SalvageLoot.gd" id="loot"]
+[ext_resource type="Script" path="res://game/map/salvage/SalvageLootEntry.gd" id="entry"]
+[ext_resource type="Resource" path="res://database/items/salvage/cable_drum.tres" id="item_0"]
+
+[sub_resource type="Resource" id="e0"]
+script = ExtResource("entry")
+item = ExtResource("item_0")
+chance = 1.0
+count = Vector2i(1, 1)
+
+[resource]
+script = ExtResource("loot")
+entries = Array[ExtResource("entry")]([SubResource("e0")])

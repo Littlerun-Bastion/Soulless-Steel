@@ -6,5 +6,8 @@
 script = ExtResource("1_material")
 id = "noble_metals"
 display_name = "Noble Metals"
-tech_tier = 2
-description = "Precious metals used in the construction of advanced weapons and SAV internals, highly prized due to their resistance to corrosion and other various chemical attributes. Used as a less labour intensive substitute to AVI-Polymer, but exceedingly hard to come by. Found only in certain salvageable scientific facilities."
+unit = "g"
+display_unit = "g"
+kg_per_unit = 0.001
+value = 6.0
+description = "Precious metals used in the construction of advanced weapons and SAV internals, highly prized due to their resistance to corrosion and other various chemical attributes. A few grams at a time, from catalytic converters, fire control computers and radios. Used in mid-tech electronics."

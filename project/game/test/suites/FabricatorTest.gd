@@ -6,12 +6,16 @@ extends TestSuite
 # composition plus half its price; the Fabricator refuses when it
 # isn't built, without a blueprint, for high tech below Mk II, without the
 # materials, credits or stash room, and then takes nothing; a build puts a Standard part in the stash and
-# pays for it; blueprints save; and the FAB window lists, explains and builds.
+# pays for it; AVI-Polymer fills a shortfall at 3 kg per kg missing (by
+# mass for Oil and Cells), never a part's own AVI-Polymer, and the build then
+# uses what the player has plus the filler; blueprints save; and the FAB
+# window lists, explains (in real units), fills and builds.
 # Each case starts from fresh progress (PlayerProgress.reset).
 
-const CHEAP := ["core", "Null"]             # low tech, price 250
+const CHEAP := ["core", "Null"]             # low tech, price 250: 2 t Steel, 500 kg Copper
 const HIGH := ["core", "Lancelot-Core"]     # high tech
-const PLATE := preload("res://database/items/salvage/armor_plate_fragment.tres")
+const AVI_PART := ["generator", "EGV-P1"]   # Espada: needs AVI-Polymer directly
+const SCRAP := preload("res://database/items/salvage/scrap_metal.tres")
 
 
 func run_tests() -> void:
@@ -19,6 +23,7 @@ func run_tests() -> void:
 	await case("what a build costs", _test_costs)
 	await case("what stops a build", _test_block_reasons)
 	await case("building a part", _test_build)
+	await case("AVI-Polymer fills a shortfall", _test_filler)
 	await case("blueprints save", _test_save)
 	await case("the FAB window", _test_window)
 
@@ -76,9 +81,9 @@ func _test_learning() -> void:
 	check_eq(PlayerProgress.blueprint_progress("arm_weapon", "MA-L127"), 1, "weapons count too; Scrap is a single step")
 
 	var stash := PlayerProgress.get_stash_inventory()
-	var plate := item_stack.from_generic(PLATE)
-	stash.add_stack_anywhere(plate)
-	PlayerProgress.recycle_stack(stash, plate, false)
+	var scrap := item_stack.from_generic(SCRAP)
+	stash.add_stack_anywhere(scrap)
+	PlayerProgress.recycle_stack(stash, scrap, false)
 	check_eq(PlayerProgress.get_blueprints().size(), 3, "salvage teaches nothing")
 	PlayerProgress.blueprints_changed.disconnect(on_changed)
 
@@ -133,7 +138,7 @@ func _test_block_reasons() -> void:
 func _test_build() -> void:
 	_learn(CHEAP)
 	_stock_up(CHEAP)
-	PlayerProgress.add_materials({"steel": 5}, false)
+	PlayerProgress.add_materials({"steel": 5000}, false)
 	PlayerProgress.add_money(100, false)
 	var steel_before := PlayerProgress.get_material_count("steel")
 	var cost := Fabricator.material_cost(CHEAP[0], CHEAP[1])
@@ -148,6 +153,44 @@ func _test_build() -> void:
 	check_eq(PlayerProgress.get_money(), 100.0, "its credits were paid")
 	check_eq(Fabricator.block_reason(CHEAP[0], CHEAP[1]), "NOT ENOUGH MATERIALS", "the materials are gone")
 	check(PlayerProgress.knows_blueprint(CHEAP[0], CHEAP[1]), "the blueprint stays")
+
+
+func _test_filler() -> void:
+	# The rate: 3 kg of AVI-Polymer (stored in g) per kg missing, by mass.
+	check_eq(Fabricator.filler_for("steel", 1000), 3000000, "1 t of Steel takes 3 t of AVI-Polymer")
+	check_eq(Fabricator.filler_for("oil", 1000), 2640, "1 L of Oil (0.88 kg) takes 2.64 kg")
+	check_eq(Fabricator.filler_for("cells", 1000), 75000, "1 kWh of Cells (25 kg of cells) takes 75 kg")
+	check_eq(Fabricator.filler_for("noble_metals", 5), 15, "5 g of Noble Metals takes 15 g")
+
+	_learn(AVI_PART)
+	PlayerProgress.add_money(Fabricator.credit_cost(AVI_PART[0], AVI_PART[1]), false)
+	var cost := Fabricator.material_cost(AVI_PART[0], AVI_PART[1])
+	var direct := int(cost.get(Materials.AVI_POLYMER, 0))
+	check(direct > 0, "an Espada generator needs AVI-Polymer directly (%d g)" % direct)
+
+	# Everything but the AVI-Polymer: that can't be filled.
+	var others := cost.duplicate()
+	others.erase(Materials.AVI_POLYMER)
+	PlayerProgress.add_materials(others, false)
+	check_eq(Fabricator.filler_cost(AVI_PART[0], AVI_PART[1]), -1, "a part's own AVI-Polymer can't be filled")
+	check(not Fabricator.can_fill(AVI_PART[0], AVI_PART[1]), "so there's nothing to fill with")
+	check_eq(Fabricator.block_reason(AVI_PART[0], AVI_PART[1], true), "NOT ENOUGH MATERIALS", "and it can't be built")
+
+	# Its AVI-Polymer, but 1 t of Steel short: the filler covers that.
+	var steel_short := 1000
+	PlayerProgress.add_materials({Materials.AVI_POLYMER: direct, "steel": -steel_short}, false)
+	check_eq(Fabricator.shortfall(AVI_PART[0], AVI_PART[1]), {"steel": steel_short}, "1 t of Steel short")
+	check_eq(Fabricator.block_reason(AVI_PART[0], AVI_PART[1]), "NOT ENOUGH MATERIALS", "short without the filler")
+	check(not Fabricator.can_fill(AVI_PART[0], AVI_PART[1]), "no AVI-Polymer to spare for filling yet")
+	var filler := Fabricator.filler_for("steel", steel_short)
+	PlayerProgress.add_materials({Materials.AVI_POLYMER: filler}, false)
+	check(Fabricator.can_fill(AVI_PART[0], AVI_PART[1]), "with 3 t more, it can be filled")
+	check_eq(Fabricator.block_reason(AVI_PART[0], AVI_PART[1], true), "", "and built with the filler")
+	var stack := Fabricator.build(AVI_PART[0], AVI_PART[1], null, true)
+	check(stack != null, "built with the filler")
+	for material_id in cost:
+		check_eq(PlayerProgress.get_material_count(material_id), 0, "all its %s used" % material_id)
+	check_eq(PlayerProgress.get_money(), 0.0, "and its credits")
 
 
 func _test_save() -> void:
@@ -184,14 +227,35 @@ func _test_window() -> void:
 	check_eq(window.get_selected(), CHEAP, "the first is selected")
 	check(window.build_button.disabled and window.block_label.text == "! NOT ENOUGH MATERIALS", "can't build it yet, and says why")
 	var detail := window.get_detail_text()
-	check("STEEL" in detail and "0 / 4" in detail and "CREDITS" in detail, "the cost shows had / needed (%s)" % detail)
+	check("STEEL" in detail and "0 / 4 t" in detail and "COPPER" in detail and "0 / 1 t" in detail and "CREDITS" in detail,
+			"the cost shows had / needed, in real units (%s)" % detail)
+	check(not window.fill_button.visible or window.fill_button.disabled, "no AVI-Polymer, so nothing to fill with")
 
 	_stock_up(CHEAP)
 	await wait_frames()  # the window refreshes on the next frame
 	check(not window.build_button.disabled, "BUILD once everything's in place")
+	check(not window.fill_button.visible, "nothing short, nothing to fill")
 	window.build_button.pressed.emit()
 	check(PlayerProgress.get_stash_inventory().get_stacks().any(func(s): return s.item_id == CHEAP[1]), "BUILD puts the part in the stash")
 	check(window.build_button.disabled, "and the materials it used are gone")
+
+	# 3 t of the 4 t Steel and none of the 1 t Copper: AVI-Polymer for 1 t of
+	# each fills it (6,000 kg).
+	PlayerProgress.add_materials({"steel": 3000, Materials.AVI_POLYMER: Fabricator.filler_for("steel", 1000)
+			+ Fabricator.filler_for("copper", 1000)}, false)
+	PlayerProgress.add_money(Fabricator.credit_cost(CHEAP[0], CHEAP[1]), false)
+	await wait_frames()
+	check(window.fill_button.visible and not window.fill_button.disabled, "FILL WITH AVI-POLYMER once it covers the shortfall")
+	check(window.build_button.disabled, "BUILD waits for the filler to be switched on")
+	window.fill_button.button_pressed = true
+	await wait_frames()
+	detail = window.get_detail_text()
+	check("AVI-POLYMER FILLER" in detail and "+ 6000 kg" in detail, "the filler shows in the cost (%s)" % detail)
+	check(not window.build_button.disabled, "BUILD with the filler")
+	window.build_button.pressed.emit()
+	check_eq(PlayerProgress.get_material_count(Materials.AVI_POLYMER), 0, "BUILD used the filler")
+	check_eq(PlayerProgress.get_material_count("steel"), 0, "and the Steel there was")
+	window.fill_button.button_pressed = false
 
 	window.select(HIGH[0], HIGH[1])
 	check(window.block_label.text == "! NO BLUEPRINT", "a blueprint still being learned can't be built")

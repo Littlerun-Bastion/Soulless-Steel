@@ -7,7 +7,9 @@ extends TestSuite
 # stopped; a shoved car shunts the next one; a building wall stops a shoved
 # car; a vehicle stops a shot with its shot_block chance and otherwise lets
 # it through with its AP; a real bullet stops in a car that always blocks;
-# and vehicles don't block an Entity's sight.
+# vehicles don't block an Entity's sight; and only the player and NPCs in
+# full simulation give the cars near them boxes, not distant-tier NPCs, dead
+# mechas or ones being taken off the map.
 
 const MECHA := preload("res://game/mecha/Mecha.tscn")
 const STALKER := preload("res://game/entities/Stalker.tscn")
@@ -24,6 +26,16 @@ class FakeArena extends Node2D:
 	var mechas: Array = []
 	func get_mechas() -> Array:
 		return mechas
+
+
+# An NPC as VehicleField sees one: a mecha that may be in the distant tier.
+class FakeNpc extends Node2D:
+	var distant := false
+	var is_dead := false
+	func _init() -> void:
+		add_to_group("mecha")
+	func is_distant() -> bool:
+		return distant
 
 
 var _arena: FakeArena = null
@@ -45,6 +57,8 @@ func run_tests() -> void:
 	await case("a real bullet stops in a car that always blocks", _test_real_bullet)
 	await case("vehicles don't block sight", _test_sight)
 	await case("vehicles only have boxes near a mecha", _test_streaming)
+	await case("only the player and NPCs in full simulation wake cars into boxes", _test_streaming_wakers)
+	await case("kept_share thins a kind's generated spawns, the same ones every time, never set pieces", _test_kept_share)
 
 
 func before_each() -> void:
@@ -157,7 +171,7 @@ func _test_shove_car() -> void:
 	check(_field.awake_count() == 0 and not _field.is_awake(0), "it settles")
 	var placed := _field.vehicle_transform(0).origin
 	check(placed.x > 550.0, "it settled further along (x %.0f)" % placed.x)
-	var sprite_pos: Vector2 = _layer._by_spawn[0][0][2]
+	var sprite_pos: Vector2 = _layer.sprite_position(0)
 	check(sprite_pos.distance_to(_layer.to_local(placed)) < 1.0, "its sprite is back on the layer there")
 	_field._block[0] = 1.0
 	var hit := MapSenses.trace_shot(_arena.get_world_2d(), placed + Vector2(0, -300), placed + Vector2(0, 300), 3)
@@ -281,3 +295,108 @@ func _test_streaming() -> void:
 	check_eq(_field.static_body_count(), 1, "the near car's box went and the far car's came")
 	far = MapSenses.trace_shot(_arena.get_world_2d(), Vector2(20000, -300), Vector2(20000, 300), 3)
 	check(far.by == "vehicle", "the far car now stops shots")
+
+
+func _stream_once() -> void:
+	for _i in VehicleField.STREAM_INTERVAL + 1:
+		await get_tree().physics_frame
+
+
+func _test_streaming_wakers() -> void:
+	await _setup([["vehicle", Vector2(0, 0), 0.0], ["vehicle", Vector2(150, 0), 0.0],
+			["vehicle", Vector2(20000, 0), 0.0], ["truck", Vector2(40000, 0), 0.0]], [], true)
+	var npc := FakeNpc.new()
+	npc.distant = true
+	npc.position = Vector2(0, 300)
+	_arena.add_child(npc)
+	await _stream_once()
+	check_eq(_field.static_body_count(), 0, "a distant NPC beside two cars gives them no boxes")
+	check(not VehicleField.wakes_vehicles(npc), "a distant NPC doesn't wake vehicles")
+	var npc_methods := (load("res://game/mecha/Enemy.gd") as GDScript).get_script_method_list().map(func(m): return m.name)
+	check(npc_methods.has("is_distant"), "real NPCs (Enemy.gd) answer is_distant(), which the field asks")
+	npc.distant = false
+	await _stream_once()
+	check_eq(_field.static_body_count(), 2, "the same NPC in full simulation does")
+	var mecha := _mecha(Vector2(20000, 300))
+	await _stream_once()
+	check_eq(_field.static_body_count(), 3, "so does the player's mecha (a mecha that isn't an NPC)")
+	npc.is_dead = true
+	await _stream_once()
+	check_eq(_field.static_body_count(), 1, "a dead NPC wakes none")
+	npc.is_dead = false
+	var stowed := FakeNpc.new()
+	stowed.position = Vector2(40000, 300)
+	_arena.add_child(stowed)
+	stowed.queue_free()
+	check(not VehicleField.wakes_vehicles(stowed), "a mecha being freed (stowed by a camp) doesn't")
+	var outside := FakeNpc.new()
+	check(not VehicleField.wakes_vehicles(outside), "nor one outside the tree")
+	outside.free()
+	var plain := Node.new()
+	_arena.add_child(plain)
+	check(not VehicleField.wakes_vehicles(null) and not VehicleField.wakes_vehicles(plain),
+			"nor anything that isn't a Node2D")
+	plain.free()
+	mecha.global_position = Vector2(0, -300)
+	await _stream_once()
+	check_eq(_field.static_body_count(), 2, "boxes follow the wakers: the far car's went with the mecha")
+	_field._block[2] = 1.0
+	var far := MapSenses.trace_shot(_arena.get_world_2d(), Vector2(20000, -300), Vector2(20000, 300), 3)
+	check(far.stop == null, "and a shot passes it")
+
+
+func _test_kept_share() -> void:
+	var cars := []
+	for i in 400:
+		cars.append(["vehicle", Vector2(i * 300.0, 0.0), 0.0])
+	for i in 20:
+		cars.append(["truck", Vector2(i * 400.0, 2000.0), 0.0])
+	await _setup(cars)
+	var spawner: PropSpawner = _arena.get_node("PropSpawner")
+	check_eq(_field.vehicle_count(), 420, "every vehicle is there with nothing thinned")
+	spawner.kept_share = {"vehicle": 0.6}
+	spawner._ensure_built()
+	var kept := spawner.indices_of_kinds(PackedStringArray(["vehicle"]))
+	check(kept.size() > 200 and kept.size() < 280, "about 60%% of the cars are kept (%d of 400)" % kept.size())
+	check_eq(spawner.indices_of_kinds(PackedStringArray(["truck"])).size(), 20, "a kind not listed keeps all of its spawns")
+	var first := PackedVector2Array()
+	for i in kept:
+		first.append(spawner.spawn_position(i))
+	spawner.kept_share = {"vehicle": 0.6}
+	spawner._ensure_built()
+	var again := PackedVector2Array()
+	for i in spawner.indices_of_kinds(PackedStringArray(["vehicle"])):
+		again.append(spawner.spawn_position(i))
+	check(again == first, "the same cars are kept on a rebuild")
+	spawner.kept_share = {}
+	spawner._ensure_built()
+	check_eq(spawner.indices_of_kinds(PackedStringArray(["vehicle"])).size(), 400, "an empty kept_share keeps them all")
+	var set_: PropSpawnSet = spawner.spawn_set
+	set_.placed = PackedByteArray()
+	set_.placed.resize(set_.count())
+	for i in 100:
+		set_.placed[i] = 1 if set_.kinds[set_.kind[i]] == "vehicle" else 0
+	var placed_cars := 0
+	for i in set_.count():
+		if set_.placed[i] == 1:
+			placed_cars += 1
+	spawner.kept_share = {"vehicle": 0.6}
+	spawner._ensure_built()
+	var kept_placed := 0
+	for i in spawner.indices_of_kinds(PackedStringArray(["vehicle"])):
+		var p := spawner.spawn_position(i)
+		for j in set_.count():
+			if set_.placed[j] == 1 and set_.position[j] == p:
+				kept_placed += 1
+				break
+	check(placed_cars > 0, "the test marks some cars as set pieces (%d)" % placed_cars)
+	check_eq(kept_placed, placed_cars, "kept_share keeps every set piece")
+	var parsed := PropSpawnSet.from_json({"kinds": ["vehicle"], "items": [
+		[0, 0.0, 0.0, 0.0, 88.0, 36.0, -1], [0, 10.0, 0.0, 0.0, 88.0, 36.0, 2, 1]]})
+	check(parsed.placed.size() == 2 and parsed.placed[0] == 0 and parsed.placed[1] == 1,
+		"from_json reads the set-piece field")
+	var plain := PropSpawnSet.from_json({"kinds": ["vehicle"], "items": [[0, 0.0, 0.0, 0.0, 88.0, 36.0, -1]]})
+	check(plain.placed.is_empty(), "a set with no set pieces has no placed array")
+	spawner.kept_share = {}
+	set_.placed = PackedByteArray()
+	spawner._ensure_built()

@@ -1,7 +1,7 @@
 extends TestSuite
 
 const ONBOARDING := preload("res://game/onboarding/Onboarding.tscn")
-const SALVAGE := preload("res://database/items/salvage/servo_assembly.tres")
+const SALVAGE := preload("res://database/items/salvage/actuator_bundle.tres")
 const ORDER: Array[String] = ["RemoteReboot", "DropKit", "GrabKit", "Drive", "Dash", "Shield", "LeaveMap", "FindTheExit", "LowerFlag"]
 const IN_THE_DOORWAY := Vector2(-1000, 2470)
 const CLEAR_OF_THE_PLAYER := 190.0

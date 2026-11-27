@@ -35,6 +35,9 @@ func _start() -> void:
 	Debug.debug_settings["ai_log"] = true
 	PlayerProgress.reset()
 	_scene = EXPEDITION.instantiate()
+	# The director's starting counts unscaled (6-10 NPCs), so the top-up below
+	# brings exactly NPC_COUNT.
+	_scene.get_node("ExpeditionDirector").max_population_scale = 1.0
 	add_child(_scene)
 	var populated := await wait_until(func(): return _enemies().size() > 0, 20.0)
 	check(populated, "enemies spawned")

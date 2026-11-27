@@ -6,5 +6,8 @@
 script = ExtResource("1_material")
 id = "oil"
 display_name = "Oil"
-tech_tier = 1
-description = "Used as hydraulic fluid, processed into fuel, or as a lubricant for mechanisms, oil is a vitally important fluid for all SAV activities and parts. Used in almost all SAV parts, where not substituted for NT Fluid-based analogues."
+unit = "mL"
+display_unit = "L"
+kg_per_unit = 0.00088
+value = 5e-05
+description = "Used as hydraulic fluid, processed into fuel, or as a lubricant for mechanisms, oil is a vitally important fluid for all SAV activities and parts. Engines, jerry cans, oil drums and transformers give it up. Used in hydraulics, thrusters and coolant systems."

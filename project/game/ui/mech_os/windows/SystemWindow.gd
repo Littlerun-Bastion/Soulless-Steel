@@ -3,9 +3,11 @@ class_name SystemWindow
 
 ## SYS: settings, controls, save and quit.
 ## Works on the options Profile already saves (volume, fullscreen, screen
-## shake, designator look limits, lock head tracking), so changes apply at
-## once and persist. CRT and UI-scale settings from the spec wait until those
-## options exist.
+## shake, designator look limits, lock head tracking, auto-salvage on
+## return), so changes apply at once and persist. CRT and UI-scale settings
+## from the spec wait until those options exist. Auto-salvage only works with
+## Recycler Mk II or better (PlayerProgress.auto_salvage_on); until then its
+## row says so.
 
 const VOLUME_STEP := 0.1
 const AUDIO := [
@@ -19,6 +21,10 @@ const TOGGLES := [
 	{"label": "DESIGNATOR LOOK LIMITS", "option": "designator_look_limits"},
 	{"label": "LOCK HEAD TRACKING", "option": "lock_head_tracking"},
 ]
+const HANGAR_TOGGLES := [
+	{"label": "AUTO-SALVAGE ON RETURN", "option": "auto_salvage"},
+]
+const AUTO_SALVAGE_LOCKED := "NEEDS RECYCLER MK II"
 ## Input actions shown under CONTROLS (missing ones are skipped).
 const CONTROLS := [
 	{"label": "FREE CURSOR", "action": "free_cursor"},
@@ -43,6 +49,7 @@ var _volume_rows: Dictionary = {}  # option -> {"bar": StatBar, "value": Label}
 var _toggle_buttons: Dictionary = {}  # option -> Button
 var quit_button: Button
 var anti_aliasing_button: Button
+var auto_salvage_note: Label
 
 
 func _ready() -> void:
@@ -54,7 +61,11 @@ func _ready() -> void:
 	var area := MechUI.scroll_box(&"StatsColumn")
 	column.add_child(area[0])
 	var sections: VBoxContainer = area[1]
-	sections.add_child(_section("DISPLAY", _toggle_rows() + [_anti_aliasing_row()]))
+	sections.add_child(_section("DISPLAY", _toggle_rows(TOGGLES) + [_anti_aliasing_row()]))
+	var hangar := _toggle_rows(HANGAR_TOGGLES)
+	auto_salvage_note = MechUI.label(&"LabelMeta", AUTO_SALVAGE_LOCKED)
+	hangar.append(auto_salvage_note)
+	sections.add_child(_section("HANGAR", hangar))
 	sections.add_child(_section("AUDIO", _volume_rows_list()))
 	sections.add_child(_section("CONTROLS", _control_rows()))
 
@@ -104,9 +115,9 @@ func _section(title: String, rows: Array) -> VBoxContainer:
 	return group
 
 
-func _toggle_rows() -> Array:
+func _toggle_rows(toggles: Array) -> Array:
 	var rows := []
-	for toggle in TOGGLES:
+	for toggle in toggles:
 		var row := MechUI.hbox()
 		row.add_child(MechUI.label(&"LabelMeta", toggle.label))
 		row.add_child(MechUI.spacer())
@@ -184,6 +195,7 @@ func _refresh() -> void:
 	var level := int(Profile.get_option("anti_aliasing"))
 	anti_aliasing_button.text = Global.ANTI_ALIASING_NAMES[level]
 	anti_aliasing_button.set_pressed_no_signal(level != Global.ANTI_ALIASING_OFF)
+	auto_salvage_note.visible = not Facilities.auto_salvage_unlocked()
 
 
 func _on_save_pressed() -> void:

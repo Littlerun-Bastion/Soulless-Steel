@@ -15,11 +15,20 @@ extends PanelContainer
 ##                        "EXTRACTION CANCELLED"; extracting, with the time
 ##                        left. While extracting a bar fills under whatever
 ##                        alert is on show.
+##   place (outlined)     the name of a place the player has just entered
+##                        (show_place), in the notice style but below every
+##                        notice and the extraction: its NOTICE_TIME s count
+##                        only while it is on show, and it is dropped if
+##                        PLACE_WAIT s pass before it can be, or if the
+##                        player is in another place or none by then
+##                        (set_current_place).
 ## Replaces the old blinking WRN labels, the ECM readout, the exposed banner
 ## and the extracting label. Order of urgency is the order in _pick().
 
 ## Placeholder.
 const NOTICE_TIME := 3.0
+## Placeholder.
+const PLACE_WAIT := 8.0
 
 const CANCELLED := "EXTRACTION CANCELLED"
 const BAR_WIDTH := 320.0
@@ -34,6 +43,10 @@ var extracting := false:
 		extracting = value
 var _notice := ""
 var _notice_time := 0.0
+var _place := ""
+var _place_time := 0.0
+var _place_wait := 0.0
+var _place_shown := false
 
 const STATUS_WORDS := {"fire": "FIRE", "freezing": "FREEZING", "corrosion": "CORROSION",
 	"electrified": "ELECTRIFIED", "overheating": "OVERHEATING"}
@@ -84,6 +97,22 @@ func show_notice(text: String, seconds := NOTICE_TIME) -> void:
 	_notice_time = seconds
 
 
+## The name of a place the player has entered (see place above); a newer
+## one replaces it.
+func show_place(text: String, seconds := NOTICE_TIME) -> void:
+	_place = text
+	_place_time = seconds
+	_place_wait = PLACE_WAIT
+	_place_shown = false
+
+
+## The place the player is in now ("" for none). A place name still waiting
+## to be shown is dropped unless it is this one.
+func set_current_place(text: String) -> void:
+	if _place_time > 0.0 and not _place_shown and _place != text:
+		_place_time = 0.0
+
+
 ## Someone's sweep found the player (Mecha.swept).
 func show_swept() -> void:
 	show_notice("YOU WERE SWEPT")
@@ -92,6 +121,14 @@ func show_swept() -> void:
 func _process(delta: float) -> void:
 	_notice_time = maxf(_notice_time - delta, 0.0)
 	var alert := _pick()
+	if _place_time > 0.0:
+		if alert.get("place", false):
+			_place_shown = true
+			_place_time = maxf(_place_time - delta, 0.0)
+		else:
+			_place_wait -= delta
+			if _place_wait <= 0.0:
+				_place_time = 0.0
 	var progress: float = player.get_extract_progress() if extracting and is_instance_valid(player) else -1.0
 	var bar_shown := progress >= 0.0
 	if _bar.visible != bar_shown:
@@ -140,4 +177,6 @@ func _pick() -> Dictionary:
 	if extracting:
 		var left: float = player.get_extract_time_left() if is_instance_valid(player) else 0.0
 		return {"text": "EXTRACTING  %.1fs" % left, "critical": false}
+	if _place_time > 0.0:
+		return {"text": _place, "critical": false, "place": true}
 	return {}

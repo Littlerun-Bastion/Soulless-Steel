@@ -33,7 +33,10 @@ enum SIDE {LEFT, RIGHT, SINGLE}
 @export var trim_acc = 1.0
 @export var rotation_range = 10.0
 @export var move_heat = 500
+## Tonnes, like every part weight.
 @export var weight := 300.0
+## The total weight (parts and cargo, tonnes) the mecha carries before it
+## slows (Mecha.is_overweight).
 @export var weight_capacity := 1000.0
 ## How big it looks to radar for its size (RadarCrossSection): 0.2 a
 ## stealth part, 1.0 an ordinary one, 3.0 flat, bulky armour. Its shape and

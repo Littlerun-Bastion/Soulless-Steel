@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "oil_drum"
+display_name = "Oil Drum"
+description = "A 200 litre drum of oil."
+icon = ExtResource("2_icon")
+weight = 0.2
+price = 10
+tags = Array[String](["salvage"])
+item_size = [2, 2]
+max_stack = 1
+tech_tier = 1
+composition = Dictionary[String, int]({"steel": 15, "oil": 200000})

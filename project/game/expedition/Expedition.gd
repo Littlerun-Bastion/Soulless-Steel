@@ -2,8 +2,9 @@ extends "res://game/combat/CombatScene.gd"
 
 # Expedition is the big-map living-world game mode. The ExpeditionDirector
 # populates the map with NPCs and Entity packs (creatures, game/entities/) and
-# keeps it alive (respawns, redirects, ambient events). Arena (game/arena/) is
-# the separate ladder mode.
+# keeps it alive (respawns, redirects, ambient events, encounters). Its
+# Entities wait off the map in camps (CampField) until someone could notice
+# them. Arena (game/arena/) is the separate ladder mode.
 #
 # Combat plumbing shared with Arena (effects, deaths, pause, extraction,
 # triggers, intro, prewarm, debug cam) lives in game/combat/CombatScene.gd.
@@ -65,6 +66,7 @@ func _ready() -> void:
 	_setup_wrecks()
 	_setup_entities()
 	_add_player()
+	_preload_map()
 	_start_combat_log()
 	_setup_heatmap()
 	_begin_stakes()
@@ -111,6 +113,24 @@ func _setup_sight_lighting() -> void:
 
 func _on_scene_streamed_in(instance: Node) -> void:
 	MapSenses.join_sight_light(instance)
+
+
+# The map's chunk meshes round the player's start load now, while the
+# loading screen is up (MapStreamer.preload_around), so play never waits
+# for a chunk on screen. How many and how long go to preload_report.
+var preload_report := {}
+
+
+func _preload_map() -> void:
+	var streamer := MapStreamer.find(self)
+	if streamer == null or player == null:
+		return
+	var cam: Camera2D = player.get_cam() if player.has_method("get_cam") else null
+	var zoom: Vector2 = cam.zoom if cam != null else Vector2.ONE
+	var view := get_viewport().get_visible_rect().size / zoom
+	var started := Time.get_ticks_usec()
+	var loaded := streamer.preload_around(player.global_position, view)
+	preload_report = {"chunks": loaded, "ms": (Time.get_ticks_usec() - started) / 1000.0}
 
 
 func _setup_triggers() -> void:
@@ -264,14 +284,46 @@ func _setup_entities() -> void:
 	move_child(Entities, Mechas.get_index())
 
 
-# Spawns one Entity (e.g. Stalker.tscn) on the navmesh near spawn_position.
-func add_entity(scene: PackedScene, spawn_position: Vector2) -> Entity:
+# Spawns one Entity (e.g. Stalker.tscn) on the navmesh near spawn_position,
+# moved out of any building or solid it would start in (_open_spot_near).
+# `prepare`, if given, gets the Entity before it enters the tree.
+func add_entity(scene: PackedScene, spawn_position: Vector2, prepare := Callable()) -> Entity:
 	var entity: Entity = scene.instantiate()
-	entity.position = _ensure_position_on_nav(spawn_position)
+	if prepare.is_valid():
+		prepare.call(entity)
+	entity.position = _open_spot_near(_ensure_position_on_nav(spawn_position))
 	Entities.add_child(entity)
 	entity.setup(self)
 	register_entity(entity)
 	return entity
+
+
+## Takes a living NPC off the map without its dying or leaving Local (a
+## roaming camp going back to sleep, CampField): out of its squad and the
+## mecha list, then freed.
+func stow_mecha(mecha) -> void:
+	for squad in squads.duplicate():
+		if squad.is_in(mecha):
+			squad.remove(mecha)
+			if squad.members.is_empty():
+				squads.erase(squad)
+	all_mechas.erase(mecha)
+	mecha.queue_free()
+
+
+# Sounds reach roaming camps off the map too (CampField.hear).
+func _on_mecha_made_sound(sound_data) -> void:
+	super._on_mecha_made_sound(sound_data)
+	if ExpeditionDirector != null and ExpeditionDirector.camps != null:
+		ExpeditionDirector.camps.hear(sound_data)
+
+
+## What camps off the map add to `sweeper`'s sweep (Mecha.sweep,
+## CampField.sweep_counts): {kind: count}.
+func dormant_sweep_counts(sweeper: Node2D, direction: Vector2, width: float) -> Dictionary:
+	if ExpeditionDirector == null or ExpeditionDirector.camps == null:
+		return {}
+	return ExpeditionDirector.camps.sweep_counts(sweeper, direction, width)
 
 
 # ---- Stakes ----
@@ -330,9 +382,38 @@ func _add_player() -> void:
 	var navpoly = _get_map_nav_polygon()
 	if navpoly:
 		PlayerHUD.set_site(get_site_name(), _get_navpoly_bounds(navpoly))
+	_watch_landmarks()
 
 
-func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
+# The map's named places (Landmarks, on generated maps): the HUD names a
+# place as the player enters it, and the top strip shows the one the player
+# is in.
+func _watch_landmarks() -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks == null:
+		return
+	if not landmarks.player_entered.is_connected(_on_landmark_entered):
+		landmarks.player_entered.connect(_on_landmark_entered)
+	if not landmarks.place_changed.is_connected(_on_place_changed):
+		landmarks.place_changed.connect(_on_place_changed)
+
+
+func _on_landmark_entered(index: int) -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks != null and is_instance_valid(PlayerHUD):
+		PlayerHUD.show_place(landmarks.name_of(index))
+
+
+func _on_place_changed(index: int) -> void:
+	var landmarks := Landmarks.find(self)
+	if landmarks != null and is_instance_valid(PlayerHUD):
+		PlayerHUD.set_place(landmarks.name_of(index))
+
+
+# A design's "anonymous" and "squad_tag" (add_squad) go on the NPC before
+# it joins Local: a tagged squad's members are never Anonymous. With join_local false it doesn't join: the caller hands it
+# a place there (a camp's pilot, CampField).
+func add_enemy(design_data, enemy_name: String, spawn_position = null, join_local := true) -> Mecha:
 	var enemy = ENEMY.instantiate()
 	# Caller can pass an explicit position (used by ExpeditionDirector soft-spawns);
 	# otherwise pick from Map start positions / SpawnZones via the helper.
@@ -350,7 +431,15 @@ func add_enemy(design_data, enemy_name: String, spawn_position = null) -> Mecha:
 	_connect_mecha_signals(enemy)
 	all_mechas.append(enemy)
 	enemy.setup(self, design_data, enemy_name)
-	_join_local(enemy)
+	if design_data is Dictionary:
+		if design_data.has("anonymous"):
+			enemy.is_anonymous = design_data["anonymous"] == true
+		var tag = design_data.get("squad_tag", "")
+		if tag is String and tag != "" and design_data.get("anonymous", false) != true:
+			enemy.squad_tag = tag
+			enemy.is_anonymous = false
+	if join_local:
+		_join_local(enemy)
 	return enemy
 
 
@@ -437,6 +526,29 @@ func get_random_position() -> Vector2:
 		var jitter = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 		return poi.global_position + jitter
 	return global_position
+
+
+## How far (px) an NPC's wander leg goes on a map wider than twice this:
+## get_wander_point keeps its points within this of the NPC, so NPCs explore
+## round where they are instead of crossing the whole map each leg.
+const WANDER_REACH := 20000.0
+
+
+## A point for an NPC at `from` to wander to: within WANDER_REACH of it on
+## the map's navigation outline, or get_random_position() on a map no wider
+## than twice that (or when no point near was found).
+func get_wander_point(from: Vector2) -> Vector2:
+	var navpoly = _get_map_nav_polygon()
+	if navpoly == null:
+		return get_random_position()
+	var bounds := _get_navpoly_bounds(navpoly)
+	if maxf(bounds.size.x, bounds.size.y) <= 2.0 * WANDER_REACH:
+		return get_random_position()
+	for _i in 20:
+		var p := from + Vector2.from_angle(randf() * TAU) * WANDER_REACH * sqrt(randf())
+		if bounds.has_point(p) and Geometry2D.is_point_in_polygon(p, navpoly.get_outline(0)):
+			return p
+	return get_random_position()
 
 
 func _get_navpoly_bounds(navpoly: NavigationPolygon) -> Rect2:
@@ -556,8 +668,9 @@ const SPAWN_VEHICLE_CLEARANCE := 160.0
 const SPAWN_MECHA_CLEARANCE := 450.0
 
 
-# The nearest spot to `pos` (searched in rings out to 2000 px) clear of
-# vehicles and other mechas; `pos` when nothing nearer is clear.
+# The nearest spot to `pos` (searched in rings out to 2000 px) on open
+# ground (is_spawn_spot_open) and clear of vehicles and other mechas; `pos`
+# when nothing nearer is clear.
 func _clear_spawn_spot(pos: Vector2) -> Vector2:
 	var field := VehicleField.find(self)
 	var ring := 0.0
@@ -565,10 +678,54 @@ func _clear_spawn_spot(pos: Vector2) -> Vector2:
 		var count := 1 if ring == 0.0 else maxi(8, ceili(TAU * ring / 300.0))
 		for k in count:
 			var p := pos + Vector2.from_angle(TAU * k / count) * ring
-			if _clear_of_mechas(p) and (field == null or field.is_clear(p, SPAWN_VEHICLE_CLEARANCE)):
+			if _clear_of_mechas(p) and (field == null or field.is_clear(p, SPAWN_VEHICLE_CLEARANCE)) \
+					and is_spawn_spot_open(p):
 				return p
 		ring += 250.0
 	return pos
+
+
+## Whether a mecha or an Entity can be put at a global position: on the
+## map's walkable ground (is_position_on_map), inside the play area
+## (MapBounds), outside every building footprint and solid outline
+## (BuildingField), and, once the route grid is built, on a square of it
+## that can be crossed. Vehicles and other mechas aren't checked here.
+func is_spawn_spot_open(pos: Vector2) -> bool:
+	if not is_position_on_map(pos):
+		return false
+	var bounds := MapBounds.find(self)
+	if bounds != null and not bounds.is_in_play_area(pos):
+		return false
+	var buildings := BuildingField.find(self)
+	if buildings == null:
+		return true
+	if buildings.building_at(pos) >= 0 or buildings.is_in_solid(pos):
+		return false
+	return not is_inf(buildings.route_cost_at(pos))
+
+
+# The nearest spot to `pos` on open ground (is_spawn_spot_open), searched in
+# rings out to 1000 px; `pos` when none is.
+func _open_spot_near(pos: Vector2) -> Vector2:
+	var ring := 0.0
+	while ring <= 1000.0:
+		var count := 1 if ring == 0.0 else maxi(8, ceili(TAU * ring / 150.0))
+		for k in count:
+			var p := pos + Vector2.from_angle(TAU * k / count) * ring
+			if is_spawn_spot_open(p):
+				return p
+		ring += 125.0
+	return pos
+
+
+## Whether a global position is within NPC_EXIT_CLEARANCE of one of the
+## map's exits.
+func is_near_exit(pos: Vector2) -> bool:
+	var exits: Array = $Map.get_exits() if has_node("Map") and $Map.has_method("get_exits") else []
+	for exit in exits:
+		if pos.distance_to(exit.global_position) < NPC_EXIT_CLEARANCE:
+			return true
+	return false
 
 
 func _clear_of_mechas(pos: Vector2) -> bool:
@@ -590,15 +747,8 @@ func _npc_start_positions() -> Array:
 	if not has_node("Map") or not $Map.has_method("get_start_positions"):
 		return out
 	var spots: Array = $Map.get_start_positions()
-	var exits: Array = $Map.get_exits() if $Map.has_method("get_exits") else []
 	for i in range(1, spots.size()):
-		var pos: Vector2 = spots[i].global_position
-		var clear := true
-		for exit in exits:
-			if pos.distance_to(exit.global_position) < NPC_EXIT_CLEARANCE:
-				clear = false
-				break
-		if clear:
+		if not is_near_exit(spots[i].global_position):
 			out.append(spots[i])
 	return out
 

@@ -1,16 +1,22 @@
 extends TestSuite
 
-# LootTableTest: the loot data. Tech tiers, LootTable rolls and rarity,
-# LootEntry parts (weapon drops), LootContainer random contents, and
-# salvage/parts surviving a save in the cargo. Prints the tier spread of a
-# large batch of rolls.
+# LootTableTest: the loot data. The salvage catalogue (brief section 12:
+# every item's weight in tonnes, size, stack, composition in real units,
+# price worth exactly its materials, and what it breaks into weighing no more
+# than it does), the .50 Cartridge as currency, the wreck and Entity loot
+# tables, LootTable rolls and rarity, LootEntry parts (weapon drops),
+# LootContainer random contents, and salvage/parts surviving a save in the
+# cargo. Prints the tier spread of a large batch of rolls.
 #
 # Rolls use a seeded RandomNumberGenerator so results are the same every run.
 # Each case starts from fresh progress (PlayerProgress.reset).
 
 const WRECK_SALVAGE := preload("res://database/loot-tables/wreck_salvage.tres")
-const LOW_ITEM := preload("res://database/items/salvage/armor_plate_fragment.tres")
-const HIGH_ITEM := preload("res://database/items/salvage/damaged_nt_engine.tres")
+const SALVAGE_DIR := "res://database/items/salvage/"
+const LOW_ITEM := preload("res://database/items/salvage/track_links.tres")       # 2x1
+const MID_ITEM := preload("res://database/items/salvage/military_radio.tres")
+const HIGH_ITEM := preload("res://database/items/salvage/fuel_cassette.tres")
+const CARTRIDGE := preload("res://database/items/salvage/cartridge_50.tres")
 const LOOT_CONTAINER := preload("res://game/mecha/LootContainer.tscn")
 
 # Matches the weapon in PlayerProgress.DEFAULT_MECHA.
@@ -18,11 +24,39 @@ const TEST_WEAPON_TYPE := "arm_weapon"
 const TEST_WEAPON_ID := "MA-L127"
 
 const SPREAD_ROLLS := 10000
+## The catalogue's rows (items.csv).
+const CATALOGUE_SIZE := 45
+## Yosqi's engine figures: oil on top of the block's weight.
+const HEAVIER_THAN_ITEM := ["bus_engine", "tank_engine"]
+## A few rows of the catalogue, as the brief has them:
+## id -> [weight t, [w, h], stack, composition in stored units].
+const ROWS := {
+	"scrap_metal": [0.1, [1, 1], 10, {"steel": 100}],
+	"car_battery": [0.02, [1, 1], 10, {"cells": 600}],
+	"catalytic_converter": [0.01, [1, 1], 10, {"noble_metals": 5, "steel": 8}],
+	"bus_engine": [1.1, [1, 2], 1, {"steel": 1100, "oil": 40000}],
+	"cartridge_50": [0.000115, [1, 1], 250, {}],
+	"bulk_steel": [10.0, [3, 3], 1, {"steel": 10000}],
+	"pilot_capsule": [0.8, [2, 2], 1, {"neural_biomatter": 10, "avidendrites": 1, "steel": 600, "electronics": 20}],
+	"entity_residue": [0.01, [1, 1], 20, {"avi_polymer": 8000, "myofibrilium": 500, "nt_fluid": 500}],
+	"mote_cluster": [0.002, [1, 1], 50, {"avi_polymer": 1500, "nt_fluid": 100}],
+	"fisher_heart": [0.15, [2, 2], 1, {"nt_engines": 1, "myofibrilium": 2000, "nt_fluid": 3000, "avi_polymer": 20000}],
+}
+const ENTITY_ITEMS := ["entity_residue", "mote_cluster", "fisher_heart", "fisher_shell"]
+const ENTITY_TABLES := {
+	"entity_coyote": "entity_residue", "entity_coyote_spitter": "entity_residue",
+	"entity_spitter": "entity_residue", "entity_stalker": "entity_residue",
+	"entity_brute": "entity_residue", "entity_cyst": "entity_residue",
+	"entity_fisher": "fisher_shell", "entity_tick_swarm": "mote_cluster",
+}
 
 
 func run_tests() -> void:
-	await case("salvage items have tiers", _test_salvage_tiers)
-	await case("bio salvage and Entity loot tables", _test_bio_salvage)
+	await case("the salvage catalogue", _test_catalogue)
+	await case("catalogue rows as the brief has them", _test_rows)
+	await case("the .50 Cartridge is currency", _test_currency_item)
+	await case("wreck salvage tables", _test_wreck_tables)
+	await case("Entity loot tables", _test_entity_tables)
 	await case("tier chances", _test_tier_chances)
 	await case("roll spread follows weights", _test_roll_spread)
 	await case("empty tier falls back", _test_fallback)
@@ -43,83 +77,110 @@ func _seeded_rng() -> RandomNumberGenerator:
 	return rng
 
 
-func _test_salvage_tiers() -> void:
-	for tier in LootTable.ROLLED_TIERS:
-		check(not WRECK_SALVAGE.get_entries_of_tier(tier).is_empty(),
-				"wreck_salvage has items of tier %d" % tier)
-	for entry in WRECK_SALVAGE.entries:
-		check(entry.get_tech_tier() != item_data.TechTier.NONE,
-				"%s has a tech tier" % entry.item.id)
-		check("salvage" in entry.item.tags, "%s is tagged salvage" % entry.item.id)
-		check(not entry.item.composition.is_empty(), "%s can be recycled" % entry.item.id)
-		for material_id in entry.item.composition:
-			check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [entry.item.id, material_id])
-		var item: item_data = entry.item
-		check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
-		check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
-		check(item.display_name != "" and item.description != "", "%s is named and described" % item.id)
-		check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
-
-	# Every salvage item is in the table, once: 4 low, 4 mid, 3 high.
-	var table_items := WRECK_SALVAGE.entries.map(func(e): return e.item)
-	var files := Array(DirAccess.get_files_at("res://database/items/salvage")).filter(func(f): return f.ends_with(".tres"))
-	check(files.size() == 11 and table_items.size() == 11, "eleven salvage items, all in the table")
-	for file in files:
-		check(load("res://database/items/salvage/" + file) in table_items, "%s is in wreck_salvage" % file)
-	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.LOW).size() == 4, "four low-tech")
-	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).size() == 4, "four mid-tech")
-	check(WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.HIGH).size() == 3, "three high-tech")
+func _salvage_items() -> Array:
+	var items := []
+	for file in DirAccess.get_files_at(SALVAGE_DIR):
+		file = file.trim_suffix(".remap")
+		if file.ends_with(".tres"):
+			items.append(load(SALVAGE_DIR + file))
+	return items
 
 
-# Bio salvage (database/items/bio/) comes from Entity carcasses. Every item is
-# proper salvage, and drops from at least one Entity's table, except the NT
-# Engine Heart, which is a rare extra (Fishers, Brutes, Cysts), never a table
-# roll.
-const BIO_DIR := "res://database/items/bio/"
-const ENTITY_TABLES := ["entity_coyote", "entity_coyote_spitter", "entity_fisher",
-		"entity_stalker", "entity_spitter", "entity_brute", "entity_cyst"]
-const RARE_ONLY := ["nt_engine_heart"]
+func _test_catalogue() -> void:
+	var items := _salvage_items()
+	check_eq(items.size(), CATALOGUE_SIZE, "one item per catalogue row")
+	for item in items:
+		if not check(item is item_data, "%s is an item" % str(item)):
+			continue
+		var id: String = item.id
+		check(item.resource_path.get_file() == id + ".tres", "%s id matches its file" % id)
+		check(item.display_name != "" and item.description != "" and item.icon != null, "%s is named, described and has an icon" % id)
+		check("salvage" in item.tags, "%s is tagged salvage" % id)
+		check(item.tech_tier in LootTable.ROLLED_TIERS, "%s has a tech tier, so loot tables roll it" % id)
+		check(item.weight > 0.0 and item.width() >= 1 and item.height() >= 1 and item.max_stack >= 1,
+				"%s has a weight, a size and a stack" % id)
+		check(("bio" in item.tags) == (id in ENTITY_ITEMS), "%s is tagged bio only if an Entity drops it" % id)
+		if item_data.CURRENCY_TAG in item.tags:
+			continue
+		check(not item.composition.is_empty(), "%s can be recycled" % id)
+		for material_id in item.composition:
+			check(Materials.is_valid(material_id) and int(item.composition[material_id]) > 0,
+					"%s recycles into a known material (%s)" % [id, material_id])
+		var mass := Materials.mass_of(item.composition)
+		if not id in HEAVIER_THAN_ITEM:
+			check(mass <= item.weight * 1000.0 + 0.001, "%s breaks into %.1f kg, no more than its %s" % [id, mass, Units.weight(item.weight)])
+		check_eq(item.price, maxi(1, roundi(Materials.value_of(item.composition))), "%s is worth exactly its materials" % id)
+		check_eq(PlayerProgress.recycle_value(item_stack.from_generic(item, 3)),
+				_times(item.composition, 3), "%s recycles 1 to 1" % id)
 
-func _test_bio_salvage() -> void:
-	var files := Array(DirAccess.get_files_at(BIO_DIR)).filter(func(f): return f.ends_with(".tres"))
-	check_eq(files.size(), 8, "bio items")
-	var dropped := {}
+
+func _times(amounts: Dictionary, n: int) -> Dictionary:
+	var result := {}
+	for material_id in amounts:
+		result[material_id] = int(amounts[material_id]) * n
+	return result
+
+
+func _test_rows() -> void:
+	for id in ROWS:
+		var item: item_data = load(SALVAGE_DIR + id + ".tres")
+		var row: Array = ROWS[id]
+		if not check(item != null, "%s exists" % id):
+			continue
+		check(is_equal_approx(item.weight, row[0]), "%s weighs %s" % [id, Units.weight(row[0])])
+		check_eq(item.item_size, row[1], "%s is %dx%d" % [id, row[1][0], row[1][1]])
+		check_eq(item.max_stack, row[2], "%s stacks to %d" % [id, row[2]])
+		check_eq(Dictionary(item.composition), row[3], "%s breaks into %s" % [id, Materials.describe(row[3])])
+	var engine: item_data = load(SALVAGE_DIR + "bus_engine.tres")
+	check_eq(Materials.describe(engine.composition), "1.1 t Steel, 40 L Oil", "compositions read in real units")
+
+
+func _test_currency_item() -> void:
+	check(item_data.CURRENCY_TAG in CARTRIDGE.tags and CARTRIDGE.price == 1 and CARTRIDGE.composition.is_empty(),
+			"a currency item worth 1 ct, made of nothing")
+	check(is_equal_approx(CARTRIDGE.weight * 1000.0, 0.115), "0.115 kg each")
+	check_eq(Units.weight(CARTRIDGE.weight * 250), "28.75 kg", "a full stack weighs 28.75 kg")
+
+
+func _test_wreck_tables() -> void:
+	for table in [WRECK_SALVAGE] + WreckLoot.PART_TABLES.values():
+		var file: String = table.resource_path.get_file()
+		check(not table.get_entries_of_tier(item_data.TechTier.LOW).is_empty(), "%s has low-tech salvage" % file)
+		for entry in table.entries:
+			check(entry.is_valid() and entry.item.resource_path.begins_with(SALVAGE_DIR) and "salvage" in entry.item.tags,
+					"%s rolls catalogue salvage" % file)
+			check(not entry.item.id in ENTITY_ITEMS, "%s rolls no Entity matter" % file)
+	check(not WRECK_SALVAGE.get_entries_of_tier(item_data.TechTier.MID).is_empty(), "wreck salvage has mid-tech items")
+
+
+func _test_entity_tables() -> void:
 	for table_name in ENTITY_TABLES:
 		var table: LootTable = load("res://database/loot-tables/%s.tres" % table_name)
 		if not check(table != null, "%s loads" % table_name):
 			continue
-		for tier in LootTable.ROLLED_TIERS:
-			check(not table.get_entries_of_tier(tier).is_empty(), "%s has items of tier %d" % [table_name, tier])
-		for entry in table.entries:
-			check(entry.is_valid() and entry.item.resource_path.begins_with(BIO_DIR), "%s only drops bio salvage" % table_name)
-			dropped[entry.item.id] = true
-	for file in files:
-		var item: item_data = load(BIO_DIR + file)
-		check(item.tech_tier != item_data.TechTier.NONE, "%s has a tech tier" % item.id)
-		check("salvage" in item.tags and "bio" in item.tags, "%s is tagged salvage, bio" % item.id)
-		check(not item.composition.is_empty(), "%s can be recycled" % item.id)
-		for material_id in item.composition:
-			check(Materials.is_valid(material_id), "%s recycles into a known material (%s)" % [item.id, material_id])
-		check_eq(PlayerProgress.recycle_value(item_stack.from_generic(item)), Dictionary(item.composition), "%s recycles into its composition" % item.id)
-		check(item.weight >= 0.25 and item.weight <= 2.0, "%s is light salvage (0.25-2)" % item.id)
-		check(item.width() <= 2 and item.height() <= 2, "%s is at most 2x2" % item.id)
-		check(item.display_name != "" and item.description != "" and item.price > 0, "%s is named, described and priced" % item.id)
-		check(item.resource_path.get_file() == item.id + ".tres", "%s id matches its file" % item.id)
-		if item.id in RARE_ONLY:
-			check(not dropped.has(item.id), "%s is a rare extra, not a table roll" % item.id)
-		else:
-			check(dropped.has(item.id), "%s drops from an Entity table" % item.id)
+		var ids := table.entries.map(func(e): return e.item.id if e.item != null else "")
+		check_eq(ids, [ENTITY_TABLES[table_name]], "%s drops %s" % [table_name, ENTITY_TABLES[table_name]])
+		var stack := table.roll_stack(_seeded_rng())
+		check(stack != null and "bio" in stack.item.tags, "%s rolls bio salvage" % table_name)
 
 	# Carried home in cargo, it survives a save like any salvage.
 	var cargo := Inventory.new()
 	cargo.initialize_grid(4, 4)
-	cargo.add_stack_to_first_available_slot(item_stack.from_generic(load(BIO_DIR + "nt_fluid_sac.tres")))
+	cargo.add_stack_to_first_available_slot(item_stack.from_generic(load(SALVAGE_DIR + "entity_residue.tres"), 5))
 	PlayerProgress.set_mech_inventory(cargo)
 	var json := JSON.stringify(PlayerProgress.get_save_data())
 	PlayerProgress.reset()
 	PlayerProgress.set_save_data(JSON.parse_string(json))
-	check(PlayerProgress.get_mech_inventory().get_stacks().any(func(s): return s.item != null and s.item.id == "nt_fluid_sac"),
+	check(PlayerProgress.get_mech_inventory().get_stacks().any(func(s): return s.item != null and s.item.id == "entity_residue" and s.quantity == 5),
 			"bio salvage survives a save in cargo")
+
+
+# A table of one item per tier, for the roll tests.
+func _tiered_table() -> LootTable:
+	var table := LootTable.new()
+	for item in [LOW_ITEM, MID_ITEM, HIGH_ITEM]:
+		table.entries.append(_entry(item))
+	return table
 
 
 func _test_tier_chances() -> void:
@@ -131,9 +192,10 @@ func _test_tier_chances() -> void:
 
 func _test_roll_spread() -> void:
 	var rng := _seeded_rng()
+	var table := _tiered_table()
 	var counts := {item_data.TechTier.LOW: 0, item_data.TechTier.MID: 0, item_data.TechTier.HIGH: 0}
 	for _i in SPREAD_ROLLS:
-		var entry: LootEntry = WRECK_SALVAGE.roll_entry(rng)
+		var entry: LootEntry = table.roll_entry(rng)
 		counts[entry.get_tech_tier()] += 1
 	var low := float(counts[item_data.TechTier.LOW]) / SPREAD_ROLLS
 	var mid := float(counts[item_data.TechTier.MID]) / SPREAD_ROLLS

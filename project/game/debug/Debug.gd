@@ -21,6 +21,8 @@ var debug_settings = {
 	"ai_log": false,  # prints AICombatLog summaries (shot distances, stuck events)
 	"all_contacts": false,  # the HUD draws every mecha's contacts (HudContacts)
 	"verbose_logging": true,  # gates diagnostic prints (ExpeditionDirector metrics, etc.)
+	"distant_tier_m": 500.0,  # NPCs this far (m) from anything that could see them run in the distant tier (Enemy); 0 = off
+	"entity_camps": true,  # Expedition Entities wait off the map in camps until someone could notice them (CampField); off = all on the map from the start
 }
 
 

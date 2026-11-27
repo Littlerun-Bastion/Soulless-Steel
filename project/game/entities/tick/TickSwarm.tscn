@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://game/entities/tick/TickSwarm.gd" id="1_swarm"]
 [ext_resource type="Script" path="res://game/entities/tick/TickSwarmBody.gd" id="2_body"]
+[ext_resource type="Resource" path="res://database/loot-tables/entity_tick_swarm.tres" id="3_loot"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_unused"]
 radius = 4.0
@@ -21,7 +22,9 @@ lose_range = 600.0
 regen_rate = 0.0
 rooted = true
 heat_sense_min = 0.1
-leaves_carcass = false
+loot_table = ExtResource("3_loot")
+loot_rolls = Vector2i(2, 4)
+carcass_grid = Vector2i(3, 3)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_unused")

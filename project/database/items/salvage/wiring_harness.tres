@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c07dvh0fkiip0" path="res://assets/images/ui/player_ui/weapon_types/electrical_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "wiring_harness"
+display_name = "Wiring Harness"
+description = "A loom of copper wiring cut out of a vehicle, with its control modules."
+icon = ExtResource("2_icon")
+weight = 0.03
+price = 2
+tags = Array[String](["salvage"])
+item_size = [1, 1]
+max_stack = 5
+tech_tier = 1
+composition = Dictionary[String, int]({"copper": 25, "electronics": 2})

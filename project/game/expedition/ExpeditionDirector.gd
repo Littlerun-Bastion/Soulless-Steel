@@ -19,6 +19,25 @@ extends Node
 ## mission that provides them. Placeholder.
 @export var starting_companions: int = 0
 
+@export_group("Map Size")
+## The counts here (NPCs, Entities, their targets and caps) are for a map
+## reference_map_size px across. A map with a larger navigation area
+## multiplies them by its area over that one's, up to max_population_scale
+## (population_scale()); the NPCs always on the map (the roaming ones and
+## soft spawns) only up to max_npc_population_scale (scaled_npcs), the
+## rest of a big map's people being roamers in camps.
+@export var reference_map_size: float = 50000.0
+@export var max_population_scale: float = 2.0
+@export var max_npc_population_scale: float = 1.0
+## On a map that tells open ground (Expedition.is_spawn_spot_open),
+## initial_near_share of the starting NPCs and Entities spawn
+## min_spawn_distance_from_player..max_spawn_distance_from_player px from the
+## player, the rest anywhere on the map, and later arrivals (soft spawns and
+## Entity newcomers) all come in that ring. Elsewhere they use the map's
+## start positions and SpawnZones.
+@export var initial_near_share: float = 0.5
+@export var max_spawn_distance_from_player: float = 16000.0
+
 # Soft-spawn tunables — the world replenishes itself as NPCs die or extract.
 @export_group("Soft Spawns")
 @export var target_population: int = 12                  # below this, soft-spawn engages
@@ -57,6 +76,9 @@ extends Node
 # Coyote Spitters) and a Fisher or two roam the map from the start, well
 # away from the player. While the population is low, newcomers wander in now
 # and then: mostly Coyote packs, sometimes a Fisher.
+# With the Debug setting "entity_camps" on (the default), each is a Camp
+# instead (CampField, the `camps` child): off the map until something that
+# could notice it comes near, then on it until everyone has gone again.
 # The first species (Stalker, Spitter, Brute and Cyst) have their scenes in
 # game/entities/, but nothing here spawns them, and the map's cyst sites are
 # unused.
@@ -84,14 +106,51 @@ extends Node
 ## (placeholder).
 @export var entity_population_cap: int = 40
 
+# Camps (CampField) and the encounters the tension (TensionMeter) arms: a
+# fight under way at one of encounter_sites spots laid out over the map at
+# the start, encounter_min_distance..encounter_max_distance px from the
+# player, at most max_armed_encounters at once. Once a check interval, an
+# encounter is armed with a chance of the pressure (TensionMeter.pressure)
+# times encounter_chance, if the pressure is at least min_encounter_pressure.
+# A site's district decides the kind: duel_chance of a duel (two NPCs),
+# else a hunt (an NPC and a Coyote pack). awake_entity_budget is the most
+# Entities on the map before a waking camp holds members back. Placeholders.
+@export_group("Camps")
+@export var awake_entity_budget: int = 24
+@export var encounter_sites: int = 30
+@export var encounter_min_distance: float = 6000.0
+@export var encounter_max_distance: float = 24000.0
+@export var max_armed_encounters: int = 2
+@export var encounter_check_interval: float = 10.0
+@export var min_encounter_pressure: float = 0.2
+@export var encounter_chance: float = 0.5
+@export var duel_chance := {"industrial": 0.6, "market": 0.6, "residential": 0.3, "farmland": 0.2}
+## Roamers (CampField.add_roamer): NPCs and squads that travel the map off
+## it until someone could notice them. min_initial_roamers..
+## max_initial_roamers at the start, anywhere on the map like the starting
+## NPCs; while fewer than target_roamers are dormant, a newcomer arrives
+## every roamer_arrival_cooldown s, out of the player's sight. Each stays
+## roamer_stay s (a random time in that range), then leaves the map. Squads
+## as for NPCs (squad_chance, squad_three_chance). Counts are scaled to the
+## map (scaled). Placeholders.
+@export var min_initial_roamers: int = 2
+@export var max_initial_roamers: int = 4
+@export var target_roamers: int = 4
+@export var roamer_arrival_cooldown: float = 150.0
+@export var roamer_stay := Vector2(480.0, 1200.0)
+
 const COYOTE = preload("res://game/entities/coyote/Coyote.tscn")
 const COYOTE_SPITTER = preload("res://game/entities/coyote/CoyoteSpitter.tscn")
 const FISHER = preload("res://game/entities/fisher/Fisher.tscn")
 const TICK_SWARM = preload("res://game/entities/tick/TickSwarm.tscn")
 const TICK_BROOD = preload("res://game/entities/tick/TickBrood.tscn")
 
+## Random spots tried for one spawn before giving up.
+const SPOT_TRIES := 40
+
 var arena                                   # Ref to Expedition (acts as arena)
 var initial_population_done: bool = false
+var _population_scale: float = 1.0
 var time_since_last_player_damage: float = 0.0
 var print_timer: float = 0.0
 var npc_vs_npc_kills: int = 0
@@ -117,51 +176,154 @@ var entity_kills: int = 0             # Entities the player killed
 var total_pack_respawns: int = 0
 var time_since_pack_respawn: float = 0.0
 
+# Camps and tension
+var camps: CampField = null
+var tension := TensionMeter.new()
+var elapsed: float = 0.0
+var encounters_armed: int = 0
+var _tension_timer: float = 0.0
+var _encounter_timer: float = 0.0
+var total_roamer_arrivals: int = 0
+var time_since_roamer_arrival: float = 0.0
+var _roamer_index: int = 0
+
 
 func start(arena_ref) -> void:
 	arena = arena_ref
+	_population_scale = _measure_population_scale()
+	if uses_camps():
+		camps = CampField.new()
+		camps.name = "Camps"
+		add_child(camps)
+		camps.setup(arena, awake_entity_budget)
+		camps.camp_woken.connect(_on_camp_woken)
+	# Hits on the player's components end a lull (the redirect timer, the
+	# tension).
+	var player = arena.get("player")
+	if is_instance_valid(player) and player.has_signal("component_damaged") \
+			and not player.component_damaged.is_connected(_on_player_component_damaged):
+		player.component_damaged.connect(_on_player_component_damaged)
 	_populate_initial_world()
+	if camps != null:
+		_lay_out_encounter_sites()
 	set_process(true)
 
 
+## Whether Entities wait in camps (the Debug setting "entity_camps").
+static func uses_camps() -> bool:
+	return Debug.debug_settings.get("entity_camps", true) != false
+
+
+func _on_player_component_damaged(_part, _component, _hp, _max_hp) -> void:
+	notify_player_damaged()
+
+
+## What the counts are multiplied by on this map (see reference_map_size).
+func population_scale() -> float:
+	return _population_scale
+
+
+## A count from the exports, scaled to this map.
+func scaled(count: int) -> int:
+	return roundi(count * _population_scale)
+
+
+## An NPC count from the exports, scaled to this map up to
+## max_npc_population_scale.
+func scaled_npcs(count: int) -> int:
+	return roundi(count * minf(_population_scale, maxf(max_npc_population_scale, 0.0)))
+
+
+func _measure_population_scale() -> float:
+	if not arena.has_method("_get_map_nav_polygon"):
+		return 1.0
+	var navpoly = arena._get_map_nav_polygon()
+	if navpoly == null or reference_map_size <= 0.0:
+		return 1.0
+	var size: Vector2 = arena._get_navpoly_bounds(navpoly).size
+	return clampf(size.x * size.y / (reference_map_size * reference_map_size), 1.0, maxf(max_population_scale, 1.0))
+
+
 func _populate_initial_world() -> void:
-	var count = randi_range(min_initial_enemies, max_initial_enemies)
+	var count = randi_range(scaled_npcs(min_initial_enemies), scaled_npcs(max_initial_enemies))
 	var spawned := 0
 	var spawn_index := 0
 	while spawned < count:
+		var pos = _pick_initial_spot(min_spawn_distance_from_player)
 		if arena.has_method("add_squad") and randf() < squad_chance:
 			var size := 3 if randf() < squad_three_chance else 2
-			var squad: Squad = arena.add_squad(size, "NPC_" + str(spawn_index))
+			var squad: Squad = arena.add_squad(size, "NPC_" + str(spawn_index), pos)
 			spawned += squad.members.size()
 		else:
-			arena.add_enemy(NPCManager.random_design_data(), "NPC_" + str(spawn_index))
+			arena.add_enemy(NPCManager.random_design_data(), "NPC_" + str(spawn_index), pos)
 			spawned += 1
 		spawn_index += 1
 	if arena.has_method("add_companion"):
 		for k in starting_companions:
 			arena.add_companion()
 	var packs := 0
-	for i in randi_range(min_initial_packs, max_initial_packs):
+	for i in randi_range(scaled(min_initial_packs), scaled(max_initial_packs)):
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
-			spawn_coyote_pack(pos)
+			add_coyote_pack(pos)
 			packs += 1
 	var fishers := 0
-	for i in randi_range(min_initial_fishers, max_initial_fishers):
+	for i in randi_range(scaled(min_initial_fishers), scaled(max_initial_fishers)):
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
-			spawn_fisher(pos)
+			add_fisher(pos)
 			fishers += 1
 	var swarms := 0
-	for i in randi_range(min_initial_tick_swarms, max_initial_tick_swarms):
+	for i in randi_range(scaled(min_initial_tick_swarms), scaled(max_initial_tick_swarms)):
 		var pos = _pick_entity_spawn_position()
 		if pos != null:
-			spawn_tick_swarm(pos)
+			add_tick_swarm(pos)
 			swarms += 1
+	var roamers := 0
+	if camps != null:
+		for i in randi_range(scaled(min_initial_roamers), scaled(max_initial_roamers)):
+			var pos = _pick_initial_spot(min_spawn_distance_from_player)
+			if pos != null:
+				add_roamer(pos)
+				roamers += 1
 	initial_population_done = true
 	if Debug.get_setting("verbose_logging"):
-		print("[ExpeditionDirector] World populated with ", count, " NPCs, ", packs, " Coyote packs, ",
-				fishers, " Fishers and ", swarms, " tick swarms")
+		print("[ExpeditionDirector] World populated with ", spawned, " NPCs, ", roamers, " roamers, ", packs, " Coyote packs, ",
+				fishers, " Fishers and ", swarms, " tick swarms (population scale ", _population_scale, ")")
+
+
+# A starting spot at least min_distance px from the player: with chance
+# initial_near_share in the ring out to max_spawn_distance_from_player,
+# otherwise anywhere on the map. Null where the map can't tell open ground
+# or nothing open was found, leaving the choice to the arena.
+func _pick_initial_spot(min_distance: float):
+	if randf() < initial_near_share:
+		var near = _pick_open_spot(min_distance, max_spawn_distance_from_player)
+		if near != null:
+			return near
+	return _pick_open_spot(min_distance, INF)
+
+
+# A random spot min_distance..max_distance px from the player (INF: anywhere
+# on the map), outside its sight, on open ground and away from the exits;
+# null after SPOT_TRIES tries, or on a map that can't tell open ground.
+func _pick_open_spot(min_distance: float, max_distance: float):
+	if not is_instance_valid(arena) or not arena.has_method("is_spawn_spot_open") \
+			or not is_instance_valid(arena.player):
+		return null
+	var from: Vector2 = arena.player.global_position
+	for _i in SPOT_TRIES:
+		var p: Vector2
+		if is_inf(max_distance):
+			p = arena.get_random_position()
+			if p.distance_to(from) < min_distance:
+				continue
+		else:
+			var r := sqrt(randf_range(min_distance * min_distance, max_distance * max_distance))
+			p = from + Vector2.from_angle(randf() * TAU) * r
+		if not _in_player_sight(p) and arena.is_spawn_spot_open(p) and not arena.is_near_exit(p):
+			return p
+	return null
 
 
 func _process(dt: float) -> void:
@@ -172,6 +334,18 @@ func _process(dt: float) -> void:
 	time_since_last_spawn += dt
 	time_since_last_redirect += dt
 	time_since_pack_respawn += dt
+	time_since_roamer_arrival += dt
+	elapsed += dt
+
+	_tension_timer -= dt
+	if _tension_timer <= 0.0:
+		_tension_timer = 1.0
+		tension.advance(1.0, player_in_fight(), elapsed)
+	if camps != null:
+		_encounter_timer -= dt
+		if _encounter_timer <= 0.0:
+			_encounter_timer = encounter_check_interval
+			_try_arm_encounter()
 
 	print_timer -= dt
 	if print_timer <= 0.0:
@@ -183,6 +357,7 @@ func _process(dt: float) -> void:
 		soft_spawn_check_timer = soft_spawn_check_interval
 		_try_soft_spawn()
 		_try_pack_respawn()
+		_try_roamer_arrival()
 
 	redirect_check_timer -= dt
 	if redirect_check_timer <= 0.0:
@@ -220,7 +395,23 @@ func _print_metrics() -> void:
 		"  redirects=", total_redirects,
 		"  ambient=", total_ambient_events,
 		"  entities=", arena.get_entities().size(),
-		"  entity_kills=", entity_kills)
+		"  entity_kills=", entity_kills,
+		"  camps=", _camp_summary(),
+		"  tension=", "%.2f" % tension.value,
+		"  encounters=", encounters_armed)
+
+
+func _camp_summary() -> String:
+	if camps == null:
+		return "off"
+	var dormant := 0
+	var awake := 0
+	for camp in camps.camps:
+		if camp.state == Camp.State.AWAKE:
+			awake += 1
+		elif camp.state == Camp.State.DORMANT:
+			dormant += 1
+	return "%d dormant/%d awake (%d roamers dormant)" % [dormant, awake, camps.dormant_roamers().size()]
 
 
 func _nearest_enemy_distance() -> float:
@@ -276,17 +467,17 @@ func notify_mecha_died(mecha) -> void:
 
 # ---- Soft spawns ----
 
-# Replenish the world's NPC population when it dips below target. Picks a
-# SpawnZone that's far from the player so they don't see the spawn happen.
+# Replenish the world's NPC population when it dips below target, at a spot
+# the player can't see (_pick_offscreen_spawn_position).
 # Gated by cooldown + hard cap so it can't spam.
 func _try_soft_spawn() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
-	if total_soft_spawns >= max_total_soft_spawns:
+	if total_soft_spawns >= scaled_npcs(max_total_soft_spawns):
 		return
 
 	var pop = _alive_npc_count()
-	if pop >= target_population:
+	if pop >= scaled_npcs(target_population):
 		return  # population is healthy, leave it alone
 
 	# Tighter cooldown when population gets desperate.
@@ -332,11 +523,16 @@ func _alive_npc_count() -> int:
 	return count
 
 
-# Returns a Vector2 from a SpawnZone that's far from the player, with a small
-# random jitter, or null if no zone qualifies.
+# A spot for a newcomer the player can't see: in the ring round the player
+# (_pick_open_spot) on a map that tells open ground, else a SpawnZone far
+# enough from the player with a small random jitter; null if none qualifies.
 func _pick_offscreen_spawn_position():
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return null
+
+	var near = _pick_open_spot(min_spawn_distance_from_player, max_spawn_distance_from_player)
+	if near != null:
+		return near
 
 	if not arena.has_method("get_spawn_zones"):
 		return null
@@ -389,11 +585,56 @@ func spawn_tick_swarm(pos: Vector2) -> Entity:
 	return arena.add_entity(TICK_SWARM, pos)
 
 
+# The same three as camps when the director has them (a dormant Camp, sized
+# like the spawns above), else on the map straight away.
+func add_coyote_pack(center: Vector2) -> void:
+	if camps == null:
+		spawn_coyote_pack(center)
+		return
+	var size := randi_range(min_pack_size, max_pack_size)
+	camps.add_camp(Camp.PACK, center, size, randi_range(min_pack_spitters, max_pack_spitters))
+
+
+func add_fisher(pos: Vector2) -> void:
+	if camps == null:
+		spawn_fisher(pos)
+	else:
+		camps.add_camp(Camp.FISHER, pos)
+
+
+func add_tick_swarm(pos: Vector2) -> void:
+	if camps == null:
+		spawn_tick_swarm(pos)
+	else:
+		camps.add_camp(Camp.TICK_SWARM, pos)
+
+
+## A camp of `kind` for a quest's target: pinned (never held back, never
+## dropped), at a spot like any Entity's. Null without camps or a spot.
+## CampField.hint_circle gives the area to show the player.
+func add_quest_camp(kind: String) -> Camp:
+	if camps == null:
+		return null
+	var pos = _pick_entity_spawn_position()
+	if pos == null:
+		return null
+	return camps.add_pinned_camp(kind, pos)
+
+
+## Entities in the world: on the map, and in dormant camps' rosters.
+func entity_population() -> int:
+	var count: int = arena.get_entities().size()
+	if camps != null:
+		for camp in camps.camps:
+			count += camp.roster.size()
+	return count
+
+
 # A brood (TickSwarm.spawn_brood), within the population cap: over it, the
 # oldest tick swarm the player can't see fades out first. If the player can
 # see every one, the brood forms anyway.
 func spawn_tick_brood(pos: Vector2) -> Entity:
-	if arena.get_entities().size() + 1 > entity_population_cap:
+	if arena.get_entities().size() + 1 > scaled(entity_population_cap):
 		var oldest: TickSwarm = null
 		for entity in arena.get_entities():
 			if entity is TickSwarm and not entity.is_dead and not _player_sees(entity) \
@@ -423,9 +664,13 @@ func notify_entity_died(entity) -> void:
 		print("[ExpeditionDirector] ", entity.mecha_name, " died")
 
 
-# A random map point far enough from the player and outside its sight, or
-# null after a few tries.
+# A starting spot for an Entity far enough from the player and outside its
+# sight: _pick_initial_spot on a map that tells open ground, else a random
+# map point; null after a few tries.
 func _pick_entity_spawn_position():
+	var open = _pick_initial_spot(min_entity_distance_from_player)
+	if open != null:
+		return open
 	for _i in 20:
 		var pos: Vector2 = arena.get_random_position()
 		if not is_instance_valid(arena.player) \
@@ -447,9 +692,9 @@ func _in_player_sight(pos: Vector2) -> bool:
 func _try_pack_respawn() -> void:
 	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
 		return
-	if total_pack_respawns >= max_pack_respawns:
+	if total_pack_respawns >= scaled(max_pack_respawns):
 		return
-	if arena.get_entities().size() >= target_entity_population:
+	if entity_population() >= scaled(target_entity_population):
 		return
 	if time_since_pack_respawn < pack_respawn_cooldown:
 		return
@@ -458,14 +703,133 @@ func _try_pack_respawn() -> void:
 		return
 	var arrival := "Coyote pack"
 	if randf() < arrival_fisher_chance:
-		spawn_fisher(pos)
+		add_fisher(pos)
 		arrival = "Fisher"
 	else:
-		spawn_coyote_pack(pos)
+		add_coyote_pack(pos)
 	total_pack_respawns += 1
 	time_since_pack_respawn = 0.0
 	if Debug.get_setting("verbose_logging"):
 		print("[ExpeditionDirector] a ", arrival, " arrived at ", pos)
+
+
+# ---- Roamers ----
+
+## A dormant roamer at `pos`: one NPC, or a squad (squad_chance), staying
+## roamer_stay s. Null without camps.
+func add_roamer(pos: Vector2) -> Camp:
+	if camps == null:
+		return null
+	_roamer_index += 1
+	var designs: Array = []
+	var squad := {}
+	if arena.has_method("_free_squad_tag") and randf() < squad_chance:
+		designs = NPCManager.pick_squad_designs(3 if randf() < squad_three_chance else 2)
+		squad = {"tag": arena._free_squad_tag(), "anonymous": randf() < arena.SQUAD_ANONYMOUS_CHANCE}
+		for design in designs:
+			if squad.anonymous:
+				design["anonymous"] = true
+			else:
+				design["squad_tag"] = squad.tag
+	else:
+		designs = [NPCManager.random_design_data()]
+	var stay := randf_range(roamer_stay.x, roamer_stay.y)
+	return camps.add_roamer(designs, pos, squad, camps.clock + stay)
+
+
+# A newcomer, while few roamers are about (see the Camps exports).
+func _try_roamer_arrival() -> void:
+	if camps == null or not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+	if camps.dormant_roamers().size() >= scaled(target_roamers) or time_since_roamer_arrival < roamer_arrival_cooldown:
+		return
+	var pos = _pick_offscreen_spawn_position()
+	if pos == null:
+		return
+	add_roamer(pos)
+	total_roamer_arrivals += 1
+	time_since_roamer_arrival = 0.0
+	if Debug.get_setting("verbose_logging"):
+		print("[ExpeditionDirector] a roamer arrived at ", pos)
+
+
+# With no distant idle NPC to redirect, a dormant roamer far enough away is
+# sent toward the player instead.
+func _redirect_roamer() -> void:
+	if camps == null:
+		return
+	var from: Vector2 = arena.player.global_position
+	var far := camps.dormant_roamers().filter(func(c): return c.site.distance_to(from) >= min_redirect_distance)
+	if far.is_empty():
+		return
+	var dest := from + Vector2(randf_range(-redirect_destination_jitter, redirect_destination_jitter),
+			randf_range(-redirect_destination_jitter, redirect_destination_jitter))
+	camps.send_roamer(far.pick_random(), dest)
+	total_redirects += 1
+	time_since_last_redirect = 0.0
+
+
+# ---- Tension and encounters ----
+
+## Whether the player is in a fight: hit in the last few seconds, or hunted
+## by something on the map (an NPC with it as its target, an Entity after
+## it).
+func player_in_fight() -> bool:
+	var player = arena.get("player") if is_instance_valid(arena) else null
+	if not is_instance_valid(player) or player.is_dead:
+		return false
+	if time_since_last_player_damage < 5.0:
+		return true
+	for m in arena.all_mechas:
+		if is_instance_valid(m) and m != player and not m.is_dead and is_same(m.get("valid_target"), player):
+			return true
+	for entity in arena.get_entities():
+		if is_instance_valid(entity) and not entity.is_dead and entity.target == player:
+			return true
+	return false
+
+
+# Lays out the encounter sites (CampField.lay_out_sites): open ground away
+# from the exits, anywhere on the map.
+func _lay_out_encounter_sites() -> void:
+	var points := []
+	for i in scaled(encounter_sites):
+		var p = _pick_open_spot(0.0, INF)
+		if p != null:
+			points.append(p)
+	camps.lay_out_sites(points)
+
+
+func _player_wholeness() -> float:
+	var player = arena.get("player")
+	if not is_instance_valid(player) or not (player is Mecha):
+		return 1.0
+	return NPCKnowledge._structural_health(player)
+
+
+# Arms an encounter when the pressure calls for one (see the Camps exports).
+func _try_arm_encounter() -> void:
+	if not is_instance_valid(arena) or not is_instance_valid(arena.player):
+		return
+	if camps.armed_encounters().size() >= max_armed_encounters:
+		return
+	var pressure := tension.pressure(_player_wholeness())
+	if pressure < min_encounter_pressure or randf() >= pressure * encounter_chance:
+		return
+	var site = camps.pick_site(arena.player.global_position, encounter_min_distance, encounter_max_distance)
+	if site == null or _in_player_sight(site.position):
+		return
+	var kind := Camp.DUEL if randf() < float(duel_chance.get(site.district, 0.3)) else Camp.HUNT
+	camps.arm_encounter(kind, site, pressure)
+	encounters_armed += 1
+	if Debug.get_setting("verbose_logging"):
+		print("[ExpeditionDirector] a ", kind, " began at ", site.position, " (", site.district, ", pressure ",
+				"%.2f" % pressure, ")")
+
+
+func _on_camp_woken(_camp: Camp, was_encounter: bool) -> void:
+	if was_encounter:
+		tension.found_encounter()
 
 
 # ---- Redirect ----
@@ -488,6 +852,7 @@ func _try_redirect() -> void:
 
 	var candidate = _find_distant_idle_npc()
 	if candidate == null:
+		_redirect_roamer()
 		return
 
 	# Synthesize a "loud" noise event near the player. The NPC will path toward

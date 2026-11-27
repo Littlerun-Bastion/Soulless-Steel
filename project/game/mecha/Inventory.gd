@@ -79,6 +79,7 @@ func add_stack_to_first_available_slot(stack: item_stack) -> bool:
 	return false
 
 
+# What everything in the grid weighs, in tonnes.
 func get_current_weight() -> float:
 	var total := 0.0
 	for y in range(grid_height):

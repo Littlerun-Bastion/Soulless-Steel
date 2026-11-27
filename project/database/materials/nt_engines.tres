@@ -6,5 +6,9 @@
 script = ExtResource("1_material")
 id = "nt_engines"
 display_name = "NT Engines"
-tech_tier = 3
-description = "Non-Thermal Engines, the \"heart\" of the most powerful Entities. The mechanics of NT Engines are an enigma, as they appear to violate the laws of thermodynamics - driving AVIS-based mechanisms without producing any waste energy. Used in advanced SAV Generators to achieve unmatchable performance gains over traditional nuclear-powered Generators."
+origin = 1
+unit = "u"
+display_unit = "u"
+kg_per_unit = 100.0
+value = 200.0
+description = "Non-Thermal Engines, the \"heart\" of the most powerful Entities. The mechanics of NT Engines are an enigma, as they appear to violate the laws of thermodynamics - driving AVIS-based mechanisms without producing any waste energy. Taken from Entity hearts (only the Fisher's, so far). Used in advanced SAV generators and cores."

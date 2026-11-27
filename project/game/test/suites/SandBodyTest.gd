@@ -37,6 +37,7 @@ func run_tests() -> void:
 	await case("the Fisher is half again its first size", _test_fisher_size)
 	await case("faded out of the player's view, its legs and tails fade with it", _test_fades_whole)
 	await case("out of the player's sight it moves on but isn't redrawn", _test_drawn_in_sight)
+	await case("off screen it animates every few frames, and nobody seeing it, every UNSEEN_INTERVAL", _test_step_rates)
 	await case("a braid's strands are where they always were", _test_braid_points)
 	await case("the art bench runs every species", _test_bench)
 
@@ -323,6 +324,35 @@ func _test_drawn_in_sight() -> void:
 	await _drive(plain, Vector2(300.0, 0.0), 1)
 	check(plain.may_be_seen(), "on screen: may be seen")
 	check(_leg_points(plain) != before, "and redrawn every frame")
+
+
+# The physics frames, over `frames` of them, on which the body took an
+# animation step (a step clears _skipped_frames).
+func _step_frames(body: SandBody, frames: int) -> Dictionary:
+	var stepped := {}
+	var start := Engine.get_physics_frames()
+	while Engine.get_physics_frames() - start < frames:
+		await _drive(body, Vector2(300.0, 0.0), 1)
+		if body._skipped_frames == 0.0:
+			stepped[Engine.get_physics_frames()] = true
+	return stepped
+
+
+func _test_step_rates() -> void:
+	var body := _make_seen("Coyote", FAR, FAR + Vector2(20000, 0))
+	await _drive(body, Vector2(300.0, 0.0), 2)
+	check(not body.may_be_seen(), "off screen and past the sight circle")
+	var unseen := await _step_frames(body, SandBody.UNSEEN_INTERVAL * 3)
+	check(unseen.size() >= 2 and unseen.size() <= 4,
+			"unseen: steps on about one frame in %d (%d steps in %d frames)" % [SandBody.UNSEEN_INTERVAL, unseen.size(), SandBody.UNSEEN_INTERVAL * 3])
+	var gait := body.gait_phase
+	var viewer: FakeViewer = body.get_parent().arena.player
+	viewer.global_position = body.global_position + Vector2(2500, 0)
+	check(body.may_be_seen(), "in the sight circle, off screen")
+	var seen := await _step_frames(body, SandBody.OFF_SCREEN_INTERVAL * 6)
+	check(seen.size() >= 5 and seen.size() <= 7,
+			"may be seen: steps on one frame in %d (%d steps in %d frames)" % [SandBody.OFF_SCREEN_INTERVAL, seen.size(), SandBody.OFF_SCREEN_INTERVAL * 6])
+	check(body.gait_phase > gait, "and walks on")
 
 
 # The strands as _update_braid placed them before it shared the per-point

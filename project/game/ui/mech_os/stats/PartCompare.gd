@@ -22,7 +22,7 @@ const ARMOUR := [
 	{"id": "rear_armor", "label": "Rear armour"},
 ]
 const COMMON := [
-	{"id": "weight", "label": "Weight", "lower_better": true},
+	{"id": "weight", "label": "Weight t", "lower_better": true},
 	{"id": "price", "label": "Price CT", "lower_better": true},
 ]
 const WEAPON_FIELDS := [
@@ -70,7 +70,7 @@ const FIELDS := {
 	"chassis": [
 		{"id": "max_speed", "label": "Walk speed"},
 		{"id": "move_acc", "label": "Acceleration"},
-		{"id": "weight_capacity", "label": "Weight capacity"},
+		{"id": "weight_capacity", "label": "Weight capacity t"},
 		{"id": "stability", "label": "Stability"},
 		{"id": "rotation_acc", "label": "Turn rate"},
 		{"id": "move_heat", "label": "Move heat", "lower_better": true},

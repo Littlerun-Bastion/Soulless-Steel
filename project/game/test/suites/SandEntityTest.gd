@@ -563,6 +563,9 @@ func _test_carcasses() -> void:
 		check(corpse != null and corpse.dead, "a %s carcass shows its remains" % entity.species)
 		if entity is Fisher:
 			check(corpse.get_children().any(func(n): return n is Sprite2D), "a Fisher's is its empty shell")
+			var ids := carcass.inventory.get_stacks().map(func(s): return s.item.id)
+			ids.sort()
+			check_eq(ids, ["fisher_heart", "fisher_shell"], "and holds its heart and shell")
 		entity.queue_free()
 		await wait_frames(2)
 		check(is_instance_valid(corpse), "and keeps them when the Entity is gone")
@@ -695,8 +698,18 @@ func _test_swarm_damage() -> void:
 	check_eq(swarm.hp, 3.0, "hp follows")
 	swarm.take_hit(5.0, 1, Vector2.RIGHT, {"body": null, "name": "Player"}, 0.0, false, Vector2.ZERO)
 	check(swarm.is_dead, "with none left on the ground it dies")
-	check(not swarm.leaves_carcass, "leaving no carcass")
-	check(swarm.roll_loot().is_empty(), "and no loot")
+	check(swarm.leaves_carcass, "leaving a carcass")
+	var loot := swarm.roll_loot()
+	check(loot.size() >= swarm.loot_rolls.x and loot.size() <= swarm.loot_rolls.y
+			and loot.all(func(s): return s.item.id == "mote_cluster"), "of Mote Clusters (%d)" % loot.size())
+	var carcass: Carcass = CARCASS.instantiate()
+	carcass.setup_from(swarm)
+	_arena.add_child(carcass)
+	check(carcass.get_corpse() != null and not carcass.inventory.is_empty(), "drawn as dead ticks, holding the clusters")
+	carcass.queue_free()
+	var faded := _swarm(Vector2(800, 0), true)
+	faded.fade_out()
+	check(faded.is_dead and not faded.leaves_carcass, "a swarm that only fades out leaves none")
 
 
 # A real round from an arm weapon, through the gap between two motes and then

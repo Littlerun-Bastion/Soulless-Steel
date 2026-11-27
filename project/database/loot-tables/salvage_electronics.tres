@@ -2,22 +2,22 @@
 
 [ext_resource type="Script" uid="uid://cabun1eqj6ail" path="res://game/items/LootTable.gd" id="1_table"]
 [ext_resource type="Script" uid="uid://dimqn01bu7ay1" path="res://game/items/LootEntry.gd" id="2_entry"]
-[ext_resource type="Resource" path="res://database/items/salvage/avidendrite_lattice.tres" id="item_avidendrite_lattice"]
-[ext_resource type="Resource" path="res://database/items/salvage/circuit_board.tres" id="item_circuit_board"]
-[ext_resource type="Resource" path="res://database/items/salvage/control_module.tres" id="item_control_module"]
+[ext_resource type="Resource" path="res://database/items/salvage/wiring_harness.tres" id="item_wiring_harness"]
+[ext_resource type="Resource" path="res://database/items/salvage/military_radio.tres" id="item_military_radio"]
+[ext_resource type="Resource" path="res://database/items/salvage/fire_control.tres" id="item_fire_control"]
 
-[sub_resource type="Resource" id="LootEntry_circuit_board"]
+[sub_resource type="Resource" id="LootEntry_wiring_harness"]
 script = ExtResource("2_entry")
-item = ExtResource("item_circuit_board")
+item = ExtResource("item_wiring_harness")
 
-[sub_resource type="Resource" id="LootEntry_control_module"]
+[sub_resource type="Resource" id="LootEntry_military_radio"]
 script = ExtResource("2_entry")
-item = ExtResource("item_control_module")
+item = ExtResource("item_military_radio")
 
-[sub_resource type="Resource" id="LootEntry_avidendrite_lattice"]
+[sub_resource type="Resource" id="LootEntry_fire_control"]
 script = ExtResource("2_entry")
-item = ExtResource("item_avidendrite_lattice")
+item = ExtResource("item_fire_control")
 
 [resource]
 script = ExtResource("1_table")
-entries = Array[ExtResource("2_entry")]([SubResource("LootEntry_circuit_board"), SubResource("LootEntry_control_module"), SubResource("LootEntry_avidendrite_lattice")])
+entries = Array[ExtResource("2_entry")]([SubResource("LootEntry_wiring_harness"), SubResource("LootEntry_military_radio"), SubResource("LootEntry_fire_control")])

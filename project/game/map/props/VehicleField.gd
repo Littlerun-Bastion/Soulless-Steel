@@ -11,16 +11,19 @@ extends Node2D
 #
 # Streaming: every ray pays for each body along its path, whatever its mask,
 # so with `stream` on, only vehicles in the CELL_SIZE cells within
-# stream_radius of a mecha have boxes. The cells are checked every
-# STREAM_INTERVAL physics frames. A shot that passes a vehicle far from every
-# mecha (more than stream_radius from both the shooter and the target) goes
-# through it.
+# stream_radius of a mecha that wakes vehicles (wakes_vehicles: the player
+# and NPCs in full simulation, not distant-tier NPCs, which move with no
+# physics) have boxes. The cells are checked every STREAM_INTERVAL physics
+# frames. A shot that passes a vehicle far from every such mecha (more than
+# stream_radius from both the shooter and the target) goes through it.
 #
-# Pushing: Mecha.move() calls push_from() after it moves. A mecha's mass
-# grows faster than its weight (pusher_mass): a mecha of MASS_PIVOT_WEIGHT
-# counts as MECHA_KG_PER_WEIGHT kg per point, and the mass scales with weight
-# to the power MASS_CURVE, so heavy builds are much less held back by what
-# they push. When it first runs into a vehicle, the two collide like bodies
+# Pushing: Mecha.move() calls push_from() after it moves. Mecha weight is in
+# tonnes, but the push uses a feel mass, not the real one: a mecha of
+# MASS_PIVOT_WEIGHT tonnes pushes with MECHA_KG_PER_WEIGHT kg per tonne, and
+# the mass scales with weight to the power MASS_CURVE, so heavy builds are
+# much less held back by what they push. (Real tonnes would be 1000 kg per
+# tonne; with that a mecha barely notices a car.) Vehicle masses (mass_kg)
+# are real kg. When it first runs into a vehicle, the two collide like bodies
 # with RESTITUTION bounce. While it keeps pushing, the vehicle moves at the
 # speed the two would share as one body (the mecha's speed times mecha mass /
 # both masses). The mecha can only follow as fast as the vehicle in front of
@@ -61,8 +64,9 @@ extends Node2D
 # hit, so a shoved car can shunt the next one.
 #
 # Settling: a woken vehicle that has stopped for SETTLE_TIME, with no mecha
-# near it, becomes a static body again where it stopped, and its sprite goes
-# back to the layer there. At most MAX_AWAKE vehicles are awake at once.
+# that wakes vehicles near it, becomes a static body again where it
+# stopped, and its sprite goes back to the layer there. At most MAX_AWAKE
+# vehicles are awake at once.
 #
 # Car alarms: when a mecha first runs into an intact car (each new push
 # contact, not every frame it keeps pushing), the car starts its alarm with
@@ -78,8 +82,10 @@ extends Node2D
 # variant (from sprite_catalogue.json). A shot_block is the chance that a
 # shot passing through the vehicle stops in it (MapSenses.trace_shot).
 
+## Push mass (kg) per tonne of mecha weight, a feel value (see above).
 const MECHA_KG_PER_WEIGHT := 50.0
-## Weight at which a mecha counts as exactly MECHA_KG_PER_WEIGHT kg per point.
+## Weight (t) at which a mecha counts as exactly MECHA_KG_PER_WEIGHT kg per
+## tonne.
 const MASS_PIVOT_WEIGHT := 45.0
 ## Mass grows with weight to this power (1 = linear).
 const MASS_CURVE := 2.5
@@ -239,6 +245,19 @@ static func find(node: Node) -> VehicleField:
 	if node == null or not node.is_inside_tree():
 		return null
 	return node.get_tree().get_first_node_in_group("vehicle_field") as VehicleField
+
+
+## Whether the vehicles near this mecha get boxes (see Streaming): the
+## player and NPCs in full simulation. Not a distant-tier NPC
+## (Enemy.is_distant), a dead mecha, one being freed (a camp stowing it off
+## the map) or one outside the tree.
+static func wakes_vehicles(m: Object) -> bool:
+	var node := m as Node2D
+	if node == null or not node.is_inside_tree() or node.is_queued_for_deletion():
+		return false
+	if node.get("is_dead") == true:
+		return false
+	return not (node.has_method("is_distant") and node.call("is_distant"))
 
 
 func push(mecha: CharacterBody2D, intended: Vector2) -> void:
@@ -419,6 +438,11 @@ func is_destroyed(i: int) -> bool:
 	return _state[i] == DESTROYED
 
 
+# Vehicle i's spawn kind ("vehicle", "truck", "vehicle_wreck", "bus", ...).
+func vehicle_kind(i: int) -> String:
+	return _kind[i]
+
+
 # Whether vehicle i is a car (see trample_max_mass).
 func is_car(i: int) -> bool:
 	return _mass[i] <= trample_max_mass
@@ -504,6 +528,18 @@ func steering_obstacles_into(pos: Vector2, radius: float, out: PackedFloat32Arra
 			_append_obstacle(out, j, p, body.global_rotation)
 
 
+# Appends the global position and mass of every vehicle still standing (not
+# trampled or destroyed), in one pass: the route grid (BuildingField) reads
+# them all at once.
+func standing_vehicles_into(positions: PackedVector2Array, masses: PackedFloat32Array) -> void:
+	var any_awake := not _awake.is_empty()
+	for i in _pos.size():
+		if _state[i] != INTACT:
+			continue
+		positions.append((_awake[i] as Node2D).global_position if any_awake and _awake.has(i) else _pos[i])
+		masses.append(_mass[i])
+
+
 func _append_obstacle(out: PackedFloat32Array, j: int, p: Vector2, rot: float) -> void:
 	var n := out.size()
 	out.resize(n + STEER_STRIDE)
@@ -551,11 +587,14 @@ func _physics_process(delta: float) -> void:
 
 
 func _physics_step(delta: float) -> void:
-	var mechas := get_tree().get_nodes_in_group("mecha")
-	if stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0:
-		_update_streaming(mechas)
+	var stream_now := stream and Engine.get_physics_frames() % STREAM_INTERVAL == 0
 	if not _alarm_left.is_empty():
 		_update_alarms(delta)
+	if not stream_now and _awake.is_empty():
+		return
+	var mechas := get_tree().get_nodes_in_group("mecha")
+	if stream_now:
+		_update_streaming(mechas)
 	if _awake.is_empty():
 		return
 	for i in _awake.keys():
@@ -583,22 +622,19 @@ func _build() -> void:
 		return
 	if not _layer.rebuilt.is_connected(_on_layer_rebuilt):
 		_layer.rebuilt.connect(_on_layer_rebuilt)
-	var spawns := spawner.get_spawns()
-	for si in spawns.size():
-		var s: Dictionary = spawns[si]
-		if not kinds.has(s.kind):
-			continue
-		var variant := _layer.variant_of(s)
-		var kind_masses: PackedFloat32Array = masses.get(s.kind, PackedFloat32Array())
-		var kind_blocks: PackedFloat32Array = shot_blocks.get(s.kind, PackedFloat32Array())
+	for si in spawner.indices_of_kinds(kinds):
+		var kind := spawner.spawn_kind(si)
+		var variant := _layer.variant_of_spawn(si)
+		var kind_masses: PackedFloat32Array = masses.get(kind, PackedFloat32Array())
+		var kind_blocks: PackedFloat32Array = shot_blocks.get(kind, PackedFloat32Array())
 		_spawn_index.append(si)
-		_kind.append(s.kind)
+		_kind.append(kind)
 		_variant.append(variant)
 		_state.append(INTACT)
 		_damage.append(0.0)
-		_pos.append(spawner.to_global(s.position))
-		_rot.append(s.rotation + spawner.global_rotation)
-		_size.append(s.size)
+		_pos.append(spawner.to_global(spawner.spawn_position(si)))
+		_rot.append(spawner.spawn_rotation(si) + spawner.global_rotation)
+		_size.append(spawner.spawn_size(si))
 		_mass.append(kind_masses[variant] if variant >= 0 and variant < kind_masses.size() else default_mass)
 		_block.append(kind_blocks[variant] if variant >= 0 and variant < kind_blocks.size() else default_shot_block)
 		_moved.append(0)
@@ -656,8 +692,9 @@ func _wake(i: int) -> RigidBody2D:
 	body.angular_damp = angular_damp
 	body.collision_layer = _layer_mask(i)
 	# Not layer 1: the physics engine would let a mecha shove the vehicle
-	# like an unstoppable body. Mechas push only through push().
-	body.collision_mask = MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK
+	# like an unstoppable body. Mechas push only through push(). The map's
+	# barriers (pipes, pools, the border band) stop it like walls.
+	body.collision_mask = MapSenses.WALL_MASK | MapSenses.VEHICLE_MASK | MapSenses.BARRIER_MASK
 	body.set_meta("vehicle_index", i)
 	var col := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
@@ -723,7 +760,7 @@ func _mecha_near(body: RigidBody2D, mechas: Array) -> bool:
 	var i: int = body.get_meta("vehicle_index")
 	var reach := _size[i].length() / 2.0 + SETTLE_CLEARANCE
 	for m in mechas:
-		if m is Node2D and (m as Node2D).global_position.distance_to(body.global_position) < reach + 100.0:
+		if wakes_vehicles(m) and (m as Node2D).global_position.distance_to(body.global_position) < reach + 100.0:
 			return true
 	return false
 
@@ -871,13 +908,13 @@ func _flat_texture(i: int) -> Texture2D:
 	return _flat_textures[flat_path]
 
 
-# Gives boxes to the sleeping vehicles in cells near a mecha, and removes
-# them from cells that no mecha is near any more.
+# Gives boxes to the sleeping vehicles in cells near a mecha that wakes
+# vehicles, and removes them from cells that no such mecha is near any more.
 func _update_streaming(mechas: Array) -> void:
 	var wanted := {}
 	var span := ceili(stream_radius / CELL_SIZE)
 	for m in mechas:
-		if not (m is Node2D) or not (m as Node2D).is_inside_tree():
+		if not wakes_vehicles(m):
 			continue
 		var c := _cell_of((m as Node2D).global_position)
 		for cx in range(c.x - span, c.x + span + 1):

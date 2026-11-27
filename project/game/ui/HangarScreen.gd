@@ -193,14 +193,14 @@ func _add_debug_money_button() -> void:
 	credits_label.get_parent().add_child(debug_money_button)
 
 
-# A short total per tech tier; the MAT window has the full list.
+# How many of each origin's materials the player has any of ("SCRAP 3/8");
+# their units differ, so they don't add up. The MAT window has the full list.
 func _on_materials_changed(materials: Dictionary) -> void:
 	var parts := []
-	for tier in Materials.TIERS:
-		var total := 0
-		for mat in Materials.of_tier(tier):
-			total += int(materials.get(mat.id, 0))
-		parts.append("%s %d" % [Materials.tier_name(tier).to_upper(), total])
+	for origin in Materials.ORIGINS:
+		var of_origin := Materials.of_origin(origin)
+		var held := of_origin.filter(func(m): return int(materials.get(m.id, 0)) > 0).size()
+		parts.append("%s %d/%d" % [Materials.origin_name(origin).to_upper(), held, of_origin.size()])
 	materials_label.text = "   ".join(parts)
 
 

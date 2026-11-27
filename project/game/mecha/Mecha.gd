@@ -24,6 +24,8 @@ const SPRINTING_COOLDOWN_SPEED = 2
 const SPRINTING_ACC_MOD = 0.2
 const ENTERING_BUILDING_SPEED_MOD = .96
 const FREEZING_SPEED_MOD = .95
+## Over weight_capacity (both in tonnes), speed is divided by
+## (total weight / capacity) times this.
 const OVERWEIGHT_SPEED_MOD = 4
 const LOCKON_RETICLE_SIZE = 15
 const DASH_DECAY = 4
@@ -322,7 +324,7 @@ var weapon_power_rating := 0.0
 var ecm = 0.0
 var ecm_frequency = 0.0
 var lock_strength = 1.0
-var weight = 0.0
+var weight = 0.0  # tonnes (is_overweight)
 ## Seconds left of the emergency Flag's grace window (0 outside it).
 var flag_grace := 0.0
 ## The Flag: up (weapons locked, others expected to hold fire), whether the
@@ -353,7 +355,7 @@ var spooling = {
 	"shoulder_weapon_right": false,
 }
 
-var weight_capacity = 100.0
+var weight_capacity = 100.0  # tonnes
 
 var movement_type = "free"
 var tank_move_target = Vector2(1,0)
@@ -554,9 +556,11 @@ func _ready():
 	if mech_inventory == null:
 		mech_inventory = Inventory.new()
 
-	# Mechas bump into and push map vehicles (see VehicleField).
+	# Mechas bump into and push map vehicles (see VehicleField), and are
+	# stopped by the map's barriers: the border band, pipes and pools.
 	set_collision_mask_value(MapSenses.VEHICLE_LAYER, true)
 	set_collision_mask_value(MapSenses.HEAVY_VEHICLE_LAYER, true)
+	set_collision_mask_value(MapSenses.BARRIER_LAYER, true)
 	device_destroyed.connect(_on_own_device_destroyed)
 
 
@@ -1360,8 +1364,9 @@ func _aim_light() -> void:
 # It costs SWEEP_HEAT kJ (about a dash) and SWEEP_COOLDOWN s. Every mecha it
 # finds gets the swept signal (the player sees "YOU WERE SWEPT"); creatures
 # hear it as a loud sound at the sweeper (Entity.hears_sweeps), mechas don't.
-# Sweeps never write contacts. The player aims one with the sweep key
-# (Player, "SENSOR SWEEP"); NPC code calls sweep() directly.
+# Sweeps never write contacts. Camps off the map (CampField) count as their
+# rosters would (the scene's dormant_sweep_counts). The player aims one with
+# the sweep key (Player, "SENSOR SWEEP"); NPC code calls sweep() directly.
 
 ## Placeholders.
 const SWEEP_RANGE := 10000.0
@@ -1394,6 +1399,11 @@ func sweep(direction: Vector2, width_deg: float) -> Dictionary:
 	var width := clampf(width_deg, SWEEP_MIN_WIDTH, SWEEP_MAX_WIDTH)
 	var counts := {}
 	var found := sweep_finds(direction, width)
+	# Camps off the map (CampField) answer with their rosters.
+	if arena and arena.has_method("dormant_sweep_counts"):
+		var dormant: Dictionary = arena.dormant_sweep_counts(self, direction, width)
+		for kind in dormant:
+			counts[kind] = counts.get(kind, 0) + dormant[kind]
 	for body in found:
 		if body.has_method("get_mote_count"):
 			counts[TICK_KIND] = counts.get(TICK_KIND, 0) + int(body.get_mote_count())
@@ -2177,7 +2187,7 @@ func get_inventory_weight() -> float:
 
 
 func get_total_weight() -> float:
-	# Parts weight (from build) + cargo weight (inventory). The cargo weight
+	# In tonnes: parts weight (from build) + cargo weight (inventory). The cargo weight
 	# is a walk of the whole inventory grid, so it is read once a physics
 	# frame (the stat cache; a pick-up shows the next frame).
 	var parts_weight = get_stat("weight")

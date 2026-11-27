@@ -85,6 +85,9 @@ var player
 var all_mechas: Array = []
 # Living Entities (creatures; only Expedition spawns them, via register_entity).
 var all_entities: Array = []
+# While set_mechas_block_status holds everyone (the intro), Entities that
+# join are held too.
+var mechas_blocked := false
 # Names of NPCs the player downed (exposed) and killed this match.
 var player_downs: Array = []
 var player_kills: Array = []
@@ -264,6 +267,16 @@ func get_entities() -> Array:
 func register_entity(entity) -> void:
 	all_entities.append(entity)
 	entity.died.connect(_on_entity_died)
+	if mechas_blocked:
+		entity.set_pause(true)
+
+
+# Stops tracking a living Entity that leaves the map without dying (a camp
+# going back to sleep, CampField).
+func unregister_entity(entity) -> void:
+	all_entities.erase(entity)
+	if entity.died.is_connected(_on_entity_died):
+		entity.died.disconnect(_on_entity_died)
 
 
 func get_lock_areas() -> Array:
@@ -756,6 +769,7 @@ func _drop_stage(director) -> void:
 # intro animation and could be reused for cutscenes. When unblocking AFTER the
 # intro, kick off ambient BGM unless the mode opts out.
 func set_mechas_block_status(status: bool) -> void:
+	mechas_blocked = status
 	for mecha in Mechas.get_children():
 		if mecha.has_method("set_pause"):
 			mecha.set_pause(status)

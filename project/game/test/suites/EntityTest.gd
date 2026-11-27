@@ -11,6 +11,8 @@ extends TestSuite
 # guns and never flee; both drop their own loot. Cysts sleep until a mecha
 # comes near, hatch leashed guards (and replace them, up to a limit), set
 # them on whoever hits the nest, can't be shoved, and burst into a rich carcass.
+# An idle Entity far from the player steps every few frames, each step
+# covering the frames between.
 # These are the first species: the Expedition doesn't spawn them, and other
 # suites use the Stalker as a stand-in Entity. The sand species (and heat
 # sensing) are in SandEntityTest.
@@ -25,7 +27,7 @@ const CARCASS := preload("res://game/entities/Carcass.tscn")
 const STALKER_LOOT := preload("res://database/loot-tables/entity_stalker.tres")
 const SPITTER_LOOT := preload("res://database/loot-tables/entity_spitter.tres")
 const BRUTE_LOOT := preload("res://database/loot-tables/entity_brute.tres")
-const HEART := preload("res://database/items/bio/nt_engine_heart.tres")
+const RESIDUE := preload("res://database/items/salvage/entity_residue.tres")
 const LOOT_ROLLS := 300
 
 
@@ -82,6 +84,7 @@ func run_tests() -> void:
 	await case("hitting a Cyst sets its guards on the attacker", _test_cyst_defended)
 	await case("a Cyst replaces lost guards, but not forever", _test_cyst_brood_limit)
 	await case("a Cyst is rooted and bursts into a rich carcass", _test_cyst_death)
+	await case("idle and far from the player, it steps every few frames and keeps time", _test_far_steps)
 	await _clear_arena()
 
 
@@ -151,6 +154,45 @@ func _pack(stalkers: Array) -> EntityPack:
 
 
 # ---- Cases ----
+
+# The physics frames, over `frames` of them, on which `entity` stepped (its
+# clock moved), and the game time those steps covered.
+func _steps_over(entity: Entity, frames: int) -> Array:
+	var steps := 0
+	var clock := entity._clock
+	var last := clock
+	var start := Engine.get_physics_frames()
+	while Engine.get_physics_frames() - start < frames:
+		await get_tree().physics_frame
+		if entity._clock != last:
+			steps += 1
+			last = entity._clock
+	return [steps, entity._clock - clock]
+
+
+func _test_far_steps() -> void:
+	var viewer := Node2D.new()
+	_arena.add_child(viewer)
+	_arena.player = viewer
+	var stalker := _arena.add_entity(STALKER, Vector2(Entity.FAR_FROM_PLAYER + 40000.0, 0))
+	await wait_frames(3)
+	var dt := get_physics_process_delta_time()
+	var frames := Entity.FAR_STEP_INTERVAL * 10
+	var far: Array = await _steps_over(stalker, frames)
+	check(far[0] >= 9 and far[0] <= 11, "far and idle: one step in %d frames (%d steps in %d)" % [Entity.FAR_STEP_INTERVAL, far[0], frames])
+	check(absf(far[1] - frames * dt) <= Entity.FAR_STEP_INTERVAL * dt + 0.001,
+			"the steps cover every frame's time (%.3f s of %.3f s)" % [far[1], frames * dt])
+	viewer.global_position = stalker.global_position - Vector2(Entity.FAR_FROM_PLAYER - 500.0, 0)
+	var near: Array = await _steps_over(stalker, 10)
+	check(near[0] >= 9, "near the player: every frame (%d steps in 10)" % near[0])
+	viewer.global_position = Vector2.ZERO
+	check(stalker._steps_rarely(), "far again: steps rarely")
+	var prey := Node2D.new()
+	_arena.add_child(prey)
+	stalker.target = prey
+	check(not stalker._steps_rarely(), "with a target, far or not: every frame")
+	stalker.target = null
+
 
 func _test_ready() -> void:
 	var stalker := _stalker(Vector2.ZERO)
@@ -369,14 +411,13 @@ func _seeded_rng(seed_value := 777) -> RandomNumberGenerator:
 	return rng
 
 
-# 1-2 items from the Stalker table, low tech mostly.
+# 1-2 Entity Residues from the Stalker table.
 func _test_stalker_loot() -> void:
 	var stalker := _stalker(Vector2.ZERO)
 	check(stalker.loot_table == STALKER_LOOT, "Stalkers use the entity_stalker table")
 	var table_items := STALKER_LOOT.entries.map(func(e): return e.item)
 	var rng := _seeded_rng()
 	var counts := {}
-	var tiers := {}
 	var foreign := 0
 	for _i in LOOT_ROLLS:
 		var stacks := stalker.roll_loot(rng)
@@ -384,14 +425,11 @@ func _test_stalker_loot() -> void:
 		for stack in stacks:
 			if not stack.item in table_items:
 				foreign += 1
-			tiers[stack.get_tech_tier()] = tiers.get(stack.get_tech_tier(), 0) + 1
 	check(counts.keys().all(func(n): return n >= 1 and n <= 2), "always 1 or 2 items (%s)" % str(counts))
 	check(counts.has(1) and counts.has(2), "both happen")
 	check_eq(foreign, 0, "items from outside the table")
-	var low: int = tiers.get(item_data.TechTier.LOW, 0)
-	var high: int = tiers.get(item_data.TechTier.HIGH, 0)
-	check(low > high and high > 0, "mostly low tech, high tech rare but possible (%s)" % str(tiers))
-	print("    Stalker carcass: %s items per carcass, tiers %s" % [str(counts), str(tiers)])
+	check_eq(table_items, [RESIDUE], "Entity Residue, what is left of any Entity")
+	print("    Stalker carcass: %s items per carcass" % str(counts))
 
 
 func _test_carcass() -> void:
@@ -531,21 +569,17 @@ func _test_spitter_brute_loot() -> void:
 	var rng := _seeded_rng(31)
 	var spitter_ok := true
 	var brute_ok := true
-	var hearts := 0
 	for _i in LOOT_ROLLS:
 		var stacks := spitter.roll_loot(rng)
 		spitter_ok = spitter_ok and stacks.size() >= 1 and stacks.size() <= 2 \
 				and stacks.all(func(s): return s.item in spitter_items)
 		stacks = brute.roll_loot(rng)
-		var heart_count := stacks.filter(func(s): return s.item == HEART).size()
-		hearts += heart_count
-		var rolled := stacks.size() - heart_count
-		brute_ok = brute_ok and rolled >= 3 and rolled <= 4 and heart_count <= 1 \
-				and stacks.all(func(s): return s.item == HEART or s.item in brute_items)
+		brute_ok = brute_ok and stacks.size() >= 3 and stacks.size() <= 4 \
+				and stacks.all(func(s): return s.item in brute_items and s.quantity == 2)
 	check(spitter_ok, "a Spitter leaves 1-2 items from its table")
-	check(brute_ok, "a Brute leaves 3-4 items from its table, plus at most one heart")
-	var heart_rate := float(hearts) / LOOT_ROLLS
-	check(heart_rate > 0.15 and heart_rate < 0.35, "about a quarter of Brutes carry an NT Engine Heart (%.2f)" % heart_rate)
+	check(brute_ok, "a Brute leaves 3-4 stacks of 2 Entity Residues")
+	check(spitter_items == [RESIDUE] and brute_items == [RESIDUE], "both Entity Residue")
+	check(brute.rare_drop == null, "no heart: only the Fisher's holds an NT Engine for now")
 	var carcass: Carcass = CARCASS.instantiate()
 	carcass.setup_from(brute, _seeded_rng(5))
 	_arena.add_child(carcass)
@@ -631,17 +665,12 @@ func _test_cyst_death() -> void:
 	var cyst_items := CYST_LOOT.entries.map(func(e): return e.item)
 	var rng := _seeded_rng(17)
 	var loot_ok := true
-	var hearts := 0
 	for _i in LOOT_ROLLS:
 		var stacks := cyst.roll_loot(rng)
-		var heart_count := stacks.filter(func(s): return s.item == HEART).size()
-		hearts += heart_count
-		var rolled := stacks.size() - heart_count
-		loot_ok = loot_ok and rolled >= 4 and rolled <= 5 and heart_count <= 1 \
-				and stacks.all(func(s): return s.item == HEART or s.item in cyst_items)
-	check(loot_ok, "4-5 items from its table, plus at most one heart")
-	var heart_rate := float(hearts) / LOOT_ROLLS
-	check(heart_rate > 0.3 and heart_rate < 0.5, "about 40%% carry an NT Engine Heart (%.2f)" % heart_rate)
+		loot_ok = loot_ok and stacks.size() >= 4 and stacks.size() <= 5 \
+				and stacks.all(func(s): return s.item in cyst_items)
+	check(loot_ok, "4-5 items from its table")
+	check(cyst_items == [RESIDUE] and cyst.rare_drop == null, "Entity Residue, and no heart")
 	var carcass: Carcass = CARCASS.instantiate()
 	carcass.setup_from(cyst, _seeded_rng(3))
 	_arena.add_child(carcass)

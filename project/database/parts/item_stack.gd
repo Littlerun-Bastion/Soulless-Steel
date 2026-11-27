@@ -86,8 +86,8 @@ func get_resource() -> Object:
 	return source
 
 
-# Weight of one item in this stack, so a weapon in cargo weighs what the
-# weapon does.
+# Weight of one item in this stack, in tonnes, so a weapon in cargo weighs
+# what the weapon does.
 func get_unit_weight() -> float:
 	var source = get_resource()
 	var w = source.get("weight") if source != null else null

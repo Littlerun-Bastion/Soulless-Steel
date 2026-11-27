@@ -22,7 +22,7 @@ const SAMPLE_THREAD := "sample_thread"
 const SAMPLE_PINNED := "sample_news_pinned"
 const COYOTE_GIG := "sample_coyote_cull"
 const BIO_GIG := "sample_bio_haul"
-const BIO_ITEM := preload("res://database/items/bio/acid_gland.tres")
+const BIO_ITEM := preload("res://database/items/salvage/entity_residue.tres")
 
 
 func run_tests() -> void:
@@ -399,9 +399,9 @@ func _test_gig_extract() -> void:
 	PlayerProgress.set_mech_inventory(cargo)
 	for i in 2:
 		cargo.add_stack_anywhere(item_stack.from_generic(BIO_ITEM))
-	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/wiring_loom.tres")))
+	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/wiring_harness.tres")))
 	check_eq(PilotNet.cargo_count("bio"), 2, "cargo counted by tag")
-	check_eq(PilotNet.cargo_count("acid_gland"), 2, "or by item id")
+	check_eq(PilotNet.cargo_count("entity_residue"), 2, "or by item id")
 	PlayerProgress.begin_expedition()
 	PlayerProgress.extract_expedition()
 	check_eq(int(PilotNet.get_gig(haul.id).progress), mini(2, haul.count), "extract_with counts the cargo")
@@ -419,7 +419,7 @@ func _test_gig_delivery() -> void:
 	PlayerProgress.set_mech_inventory(cargo)
 	for i in count + 1:
 		cargo.add_stack_anywhere(item_stack.from_generic(BIO_ITEM))
-	var loom := item_stack.from_generic(load("res://database/items/salvage/wiring_loom.tres"))
+	var loom := item_stack.from_generic(load("res://database/items/salvage/wiring_harness.tres"))
 	cargo.add_stack_anywhere(loom)
 	MechLog.clear()
 	PlayerProgress.begin_expedition()

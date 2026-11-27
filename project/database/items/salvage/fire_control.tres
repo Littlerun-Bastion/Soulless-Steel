@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c07dvh0fkiip0" path="res://assets/images/ui/player_ui/weapon_types/electrical_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "fire_control"
+display_name = "Fire Control Computer"
+description = "A tank's fire control computer. Rugged boards with gold contacts."
+icon = ExtResource("2_icon")
+weight = 0.02
+price = 18
+tags = Array[String](["salvage"])
+item_size = [1, 1]
+max_stack = 1
+tech_tier = 2
+composition = Dictionary[String, int]({"copper": 3, "electronics": 12, "noble_metals": 2})

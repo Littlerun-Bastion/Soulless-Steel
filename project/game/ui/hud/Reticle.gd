@@ -35,6 +35,22 @@ static func bracket_lines(half: float) -> PackedVector2Array:
 	return lines
 
 
+## Corner bracket lines round a rectangle of any shape (pairs of points for
+## draw_multiline, on pixel centres): each corner's arms are CORNER_SHARE of
+## the shorter half-side, at least MIN_CORNER.
+static func bracket_rect_lines(rect: Rect2) -> PackedVector2Array:
+	var lo := rect.position.floor() + Vector2(0.5, 0.5)
+	var hi := rect.end.floor() + Vector2(0.5, 0.5)
+	var c := maxf(MIN_CORNER, floorf(minf(hi.x - lo.x, hi.y - lo.y) * 0.5 * CORNER_SHARE))
+	var lines := PackedVector2Array()
+	for corner: Vector2 in [lo, Vector2(hi.x, lo.y), hi, Vector2(lo.x, hi.y)]:
+		var sx := 1.0 if corner.x == lo.x else -1.0
+		var sy := 1.0 if corner.y == lo.y else -1.0
+		lines.append_array([corner, corner + Vector2(c * sx, 0)])
+		lines.append_array([corner, corner + Vector2(0, c * sy)])
+	return lines
+
+
 func _draw() -> void:
 	if lock_size <= 0.0:
 		draw_texture(CURSOR, -CURSOR.get_size() / 2.0)

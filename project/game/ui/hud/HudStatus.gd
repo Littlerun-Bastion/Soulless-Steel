@@ -70,9 +70,9 @@ func _process(delta: float) -> void:
 		_update_load()
 
 
-## "WT 39.8 / 48"
+## "WT 39.8 / 48 t" (tonnes)
 static func format_weight(load_now: float, capacity: float) -> String:
-	return "WT %s / %s" % [MechUI.fmt(snappedf(load_now, 0.1)), MechUI.fmt(snappedf(capacity, 0.1))]
+	return "WT %s / %s t" % [MechUI.fmt(snappedf(load_now, 0.1)), MechUI.fmt(snappedf(capacity, 0.1))]
 
 
 static func is_over(load_now: float, capacity: float) -> bool:

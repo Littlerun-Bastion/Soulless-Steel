@@ -45,6 +45,14 @@ const CORPSE_FADE_TIME := 1.5
 const FAR_FROM_PLAYER := 5000.0
 const NEAR_SENSE_INTERVAL := 0.25
 const FAR_SENSE_INTERVAL := 1.0
+## An idle Entity far from the player (FAR_FROM_PLAYER, and off screen by
+## more than FAR_SCREEN_MARGIN) with no target steps every FAR_STEP_INTERVAL
+## physics frames instead of every frame: each step covers the frames
+## skipped (its dt and its move are that much longer), so it wanders at the
+## same speed. Senses still run on their own timer, so prey that comes near
+## is found as before, and having a target brings it back to every frame.
+const FAR_STEP_INTERVAL := 3
+const FAR_SCREEN_MARGIN := 1000.0
 const KNOCKBACK_SCALE := 20.0   # impact_force -> speed (px/s) added
 ## Frenzy: an Entity whose target has ticks on it (Mecha.get_tick_count)
 ## moves this much faster, waits this fraction of its usual time between
@@ -164,6 +172,10 @@ var _body_frenzy := false  # the body shows frenzy (has a frenzy flag)
 func _ready() -> void:
 	add_to_group("entity")
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	# The map's barriers (border band, pipes, pools) stop Entities too; a
+	# body that collides with nothing stays that way.
+	if collision_mask != 0:
+		set_collision_mask_value(MapSenses.BARRIER_LAYER, true)
 	hp = max_hp
 	if mecha_name == "":
 		mecha_name = species
@@ -188,8 +200,25 @@ func _physics_process(dt: float) -> void:
 	if is_dead or paused:
 		return
 	var profile_start := FrameProfiler.start()
+	if _steps_rarely():
+		_skipped_dt += dt
+		if (Engine.get_physics_frames() + _step_offset) % FAR_STEP_INTERVAL != 0:
+			FrameProfiler.add("entities", profile_start)
+			return
+		dt = _skipped_dt
+	_skipped_dt = 0.0
 	_physics_step(dt)
 	FrameProfiler.add("entities", profile_start)
+
+
+var _step_offset := randi() % FAR_STEP_INTERVAL
+var _skipped_dt := 0.0
+
+
+func _steps_rarely() -> bool:
+	if scripted or target != null or frenzied or not is_inside_tree() or not _far_from_player():
+		return false
+	return not MapSenses.screen_rect(self, FAR_SCREEN_MARGIN).has_point(global_position)
 
 
 func _physics_step(dt: float) -> void:
@@ -211,7 +240,15 @@ func _physics_step(dt: float) -> void:
 		velocity = Vector2.ZERO
 	else:
 		velocity = velocity.move_toward(desired_velocity, acceleration * dt)
-		move_and_slide()
+		# move_and_slide moves one physics frame's worth: a step that covers
+		# skipped frames moves that many times as far.
+		var frames := dt / get_physics_process_delta_time()
+		if frames > 1.5:
+			velocity *= frames
+			move_and_slide()
+			velocity /= frames
+		else:
+			move_and_slide()
 		_turn(dt)
 	_flash_timer = maxf(_flash_timer - dt, 0.0)
 	body_visual.flash = 1.0 if _flash_timer > 0.0 else 0.0

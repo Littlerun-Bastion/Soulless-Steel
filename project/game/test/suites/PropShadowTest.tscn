@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://game/test/suites/PropShadowTest.gd" id="1_propshadow"]
+
+[node name="PropShadowTest" type="Node"]
+script = ExtResource("1_propshadow")

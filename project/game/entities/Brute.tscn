@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://game/entities/Brute.gd" id="1_brute"]
 [ext_resource type="Script" path="res://game/entities/EntityBody.gd" id="2_body"]
 [ext_resource type="Resource" path="res://database/loot-tables/entity_brute.tres" id="3_loot"]
-[ext_resource type="Resource" path="res://database/items/bio/nt_engine_heart.tres" id="4_heart"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 100.0
@@ -24,8 +23,6 @@ lose_range = 2600.0
 regen_rate = 0.5
 loot_table = ExtResource("3_loot")
 loot_rolls = Vector2i(3, 4)
-rare_drop = ExtResource("4_heart")
-rare_chance = 0.25
 carcass_grid = Vector2i(5, 5)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

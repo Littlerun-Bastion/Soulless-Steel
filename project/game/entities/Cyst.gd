@@ -8,7 +8,7 @@ class_name Cyst
 # leashed (Entity.set_leash): they defend the ground around it rather than
 # roam. Hitting it wakes it and sets its guards on the attacker. It regrows
 # slowly, and when destroyed bursts open into a rich carcass (entity_cyst
-# loot, and a good chance of an NT Engine Heart).
+# loot: plenty of Entity Residue).
 #
 # Needs a scene with add_entity(scene, position) to hatch guards (Expedition).
 

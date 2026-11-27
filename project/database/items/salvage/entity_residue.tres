@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4ahiq26oyk8m" path="res://assets/images/ui/player_ui/weapon_types/thermal_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "entity_residue"
+display_name = "Entity Residue"
+description = "What is left of an Entity once it dies: AVI-Polymer, with a little muscle and fluid."
+icon = ExtResource("2_icon")
+weight = 0.01
+price = 60
+tags = Array[String](["salvage", "bio"])
+item_size = [1, 1]
+max_stack = 20
+tech_tier = 1
+composition = Dictionary[String, int]({"avi_polymer": 8000, "nt_fluid": 500, "myofibrilium": 500})

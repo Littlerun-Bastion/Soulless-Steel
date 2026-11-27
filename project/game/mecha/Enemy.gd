@@ -150,16 +150,26 @@ func _physics_process(dt):
 		update_light_shadows()
 	if paused or is_dead:
 		return
+	var frame := Engine.get_physics_frames()
+	if frame - _tiers_frame >= DISTANT_TIER_INTERVAL or frame < _tiers_frame:
+		_tiers_frame = frame
+		if arena != null and arena.has_method("get_mechas"):
+			_update_distant_tiers(arena)
 	# Physics LOD (see lod_tier): a far NPC runs its whole step, the Mecha
 	# base included, every step_interval() frames; the skipped frames' time
 	# is folded into dt and their distance into its moves (Mecha._step_scale).
-	var interval := step_interval()
-	if interval > 1 and (Engine.get_physics_frames() + _think_offset) % interval != 0:
+	# The frame profiler counts each whole step under its tier's key.
+	var tier := lod_tier()
+	_step_frames += 1
+	if not _is_step_frame(_tier_step_interval(tier)):
 		_step_dt += dt
 		return
-	_step_scale = float(interval)
+	_step_scale = float(_step_frames)
+	var profile_start := FrameProfiler.start()
 	_physics_frame(dt + _step_dt)
+	FrameProfiler.add(TIER_PROFILE_KEYS[tier], profile_start)
 	_step_dt = 0.0
+	_step_frames = 0
 	_step_scale = 1.0
 
 
@@ -187,15 +197,19 @@ func _physics_frame(dt):
 	var probe_start := Time.get_ticks_usec() if probing else 0
 	var profile_start := FrameProfiler.start()
 
+	_rough_dt = think_dt
 	if scripted:
 		contacts.advance(dt)
 	elif thinking:
 		# Senses on sensing frames only (is_sensing_frame), over the time
-		# since they last ran.
+		# since they last ran; a distant NPC's are the rough ones.
 		_sense_dt += think_dt
 		if is_sensing_frame():
 			var senses_start := FrameProfiler.start()
-			update_senses(_sense_dt)
+			if _distant:
+				_rough_senses(_sense_dt)
+			else:
+				update_senses(_sense_dt)
 			_sense_dt = 0.0
 			FrameProfiler.add("npc_senses", senses_start)
 		positioning.tick(think_dt)
@@ -229,7 +243,7 @@ func _physics_frame(dt):
 			_tick_provocation(think_dt)
 			_tick_sweep_back(think_dt)
 			if probing:
-				AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "near" if is_near_player() else "far")
+				AICombatLog.record_think(Time.get_ticks_usec() - probe_start, "distant" if _distant else ("near" if is_near_player() else "far"))
 			FrameProfiler.add("npc_think", profile_start)
 		elif _coast_velocity != Vector2.ZERO:
 			# Between thinking frames, keep going the way it was going.
@@ -240,8 +254,9 @@ func _physics_frame(dt):
 	# position (going_to_position == true) but stays near still or makes no
 	# progress. NPCs that are still on purpose (alert/ambush/observing) don't
 	# set going_to_position, and NPCs in a fight move slowly on purpose
-	# (turning tanks, holding range), so neither is reset or teleported.
-	if not scripted and going_to_position and not _combat_target() \
+	# (turning tanks, holding range), so neither is reset or teleported. A
+	# distant NPC has nothing to get stuck on.
+	if not scripted and not _distant and going_to_position and not _combat_target() \
 			and (velocity.length() < STUCK_VELOCITY_THRESHOLD or _steer_blocked):
 		var was_stuck := stuck_timer
 		stuck_timer += dt
@@ -1425,7 +1440,7 @@ func lock_shot_clear(slot: String) -> bool:
 	var target = get_locked_to()
 	if not weapon or not target:
 		return false
-	if weapon.get("is_indirect_fire"):
+	if weapon.get("is_indirect_fire") or _distant:
 		return true
 	return not MapSenses.walls_between(get_world_2d(), global_position, target.global_position)
 
@@ -1693,6 +1708,9 @@ func try_to_shoot(weapon_name, target):
 
 
 func can_see_target(target):
+	if _distant:
+		return target and is_instance_valid(target) \
+				and global_position.distance_squared_to(target.global_position) <= sight_radius() * sight_radius()
 	if target and is_instance_valid(target):
 		var space_state = get_world_2d().direct_space_state
 		# Vehicles don't block sight; building walls do.
@@ -1815,9 +1833,12 @@ func navigate_to_target(dt,direction:=0.0, wander := 0.0, sprint := false):
 func _navigate(dt, direction: float, wander: float, sprint: bool) -> void:
 	#Forward when direction = 0, Backwards when direction = 1,
 	#Clockwise when direction = -0.5, Anticlockwise when direction = 0.5
+	if _distant:
+		_navigate_distant(dt, direction, wander, sprint)
+		return
 	if going_to_position:
 		var pos := global_position
-		var goal: Vector2 = NavAgent.target_position
+		var goal := _goal_in_play_area()
 		# On long trips the NPC follows a planned route (see Routes); on short
 		# ones, a fight's kiting included, it heads straight for the goal and
 		# the context map takes it round what is in the way. The navigation
@@ -1904,7 +1925,7 @@ func _on_NavigationAgent2D_target_reached():
 
 #-------- Physics and thinking LOD
 
-# By its distance to the player an NPC runs at one of three rates:
+# By its distance to the player an NPC runs at one of four rates:
 #   near (within THINK_FULL_DISTANCE, or anywhere the player can see it: on
 #        screen and inside the player's sight circle): steps and thinks
 #        every frame
@@ -1912,6 +1933,8 @@ func _on_NavigationAgent2D_target_reached():
 #        of those steps (every FAR_THINK_INTERVAL frames)
 #   very far (beyond VERY_FAR_DISTANCE): VERY_FAR_STEP_INTERVAL and
 #        VERY_FAR_THINK_STEPS the same way
+#   distant (see Distant tier): steps and thinks every DISTANT_STEP_INTERVAL
+#        frames, with no physics movement and no rays
 # A step is the whole physics callback, the Mecha base included (heat,
 # statuses, collisions, the move); the time of the frames skipped is folded
 # into its dt and its moves cover their distance (Mecha._step_scale), so
@@ -1926,10 +1949,16 @@ const VERY_FAR_STEP_INTERVAL := 3
 const VERY_FAR_THINK_STEPS := 2
 ## Frames between a far NPC's thinks.
 const FAR_THINK_INTERVAL := FAR_STEP_INTERVAL * FAR_THINK_STEPS
+## The frame profiler's key for a whole NPC step, by tier. Indented: the
+## step holds the "mecha", "npc_think" and "npc_drive" keys, so sums of the
+## top-level keys leave it out.
+const TIER_PROFILE_KEYS := [" npc step (near)", " npc step (far)", " npc step (very far)", " npc step (distant)"]
 # Spreads the NPCs' step and think frames so they don't all land together.
 var _think_offset := randi() % (FAR_STEP_INTERVAL * VERY_FAR_STEP_INTERVAL * 2)
 var _think_dt := 0.0
 var _step_dt := 0.0
+# Physics frames since the last step (the step covers them all).
+var _step_frames := 0
 var _coast_velocity := Vector2.ZERO
 
 
@@ -1937,10 +1966,12 @@ func is_near_player() -> bool:
 	return lod_tier() == 0
 
 
-## 0 near, 1 far, 2 very far (see above). An NPC the player can see (on
-## screen, which follows the camera's pan, and inside the player's sight
-## circle) is always near.
+## 0 near, 1 far, 2 very far, 3 distant (see above). An NPC the player can
+## see (on screen, which follows the camera's pan, and inside the player's
+## sight circle) is always near.
 func lod_tier() -> int:
+	if _distant:
+		return 3
 	if arena == null or not ("player" in arena):
 		return 0
 	var p = arena.player
@@ -1958,18 +1989,33 @@ func lod_tier() -> int:
 
 ## Frames between this NPC's physics steps, by its tier.
 func step_interval() -> int:
-	var tier := lod_tier()
+	return _tier_step_interval(lod_tier())
+
+
+func _tier_step_interval(tier: int) -> int:
 	if tier == 1:
 		return FAR_STEP_INTERVAL
 	if tier == 2:
 		return VERY_FAR_STEP_INTERVAL
+	if tier == 3:
+		return DISTANT_STEP_INTERVAL
 	return 1
 
 
-# Asked on step frames only: a far NPC thinks on every Nth of its steps.
+# Whether this physics frame is one of the NPC's steps.
+func _is_step_frame(interval: int) -> bool:
+	if interval <= 1:
+		return true
+	if _distant:
+		return (Engine.get_physics_frames() + _distant_offset) % interval == 0
+	return (Engine.get_physics_frames() + _think_offset) % interval == 0
+
+
+# Asked on step frames only: a far NPC thinks on every Nth of its steps, a
+# distant one on every step.
 func is_thinking_frame() -> bool:
 	var tier := lod_tier()
-	if tier == 0:
+	if tier == 0 or tier == 3:
 		return true
 	var interval := FAR_STEP_INTERVAL if tier == 1 else VERY_FAR_STEP_INTERVAL
 	var steps := FAR_THINK_STEPS if tier == 1 else VERY_FAR_THINK_STEPS
@@ -1999,6 +2045,521 @@ func is_sensing_frame() -> bool:
 
 static func think_interval(near_player: bool) -> int:
 	return 1 if near_player else FAR_THINK_INTERVAL
+
+
+#-------- Distant tier
+
+# An NPC more than the distant line (the Debug setting "distant_tier_m", in
+# metres; DISTANT_DEFAULT_M when unset, 0 turns the tier off) from the
+# player, from every Entity and from every NPC in full simulation runs in the
+# distant tier: it steps and thinks every DISTANT_STEP_INTERVAL frames (four
+# times a second) and follows its route with no physics movement, no
+# steering and no rays:
+#   - moving: Mecha.apply_movement runs as usual (speed, gait, sprint, heat),
+#     but the move itself (move) just sets the position: along the route's
+#     legs while it follows its route (every trip longer than ROUTE_REACH is
+#     routed, and the legs keep clear of walls, pipes and pools), otherwise
+#     straight but never into a solid outline (BuildingField.is_in_solid) or
+#     out of the play area. Vehicles and other mechas don't stop it.
+#   - senses (_rough_senses): every body within its sight circle is seen,
+#     walls, foliage and light or not.
+#   - fights (FireController, rough_shot, rough_fire_at): a weapon that
+#     would fire spends its ammo, heat and cooldown as a real shot does and
+#     makes the same sound, but no round flies: each round hits the target
+#     with a chance by range (ROUGH_HIT_NEAR to ROUGH_HIT_FAR at the weapon's
+#     range, more for a skilled pilot), and a hit goes through the target's
+#     shield and armour checks and damage like a real one, on a random part.
+#     A designator salvo hits every mecha near its point the same way.
+# The line is checked every DISTANT_TIER_INTERVAL frames for every NPC at
+# once (_update_distant_tiers). Anything that could see the NPC counts:
+# the player and every NPC in full simulation, each out to the larger of the
+# line and its own sight circle plus DISTANT_SLACK, and every Entity (always
+# in full simulation) out to how far it senses plus DISTANT_SLACK
+# (_entity_reach). NPCs within the line of each other share their tier
+# (DISTANT_GROUPS): two distant NPCs that meet fight by the rough rules, and
+# a whole group comes back to full simulation as soon as anything in full
+# simulation comes within the line of any of them. An NPC goes distant only
+# DISTANT_SLACK past the line (so the tier doesn't flicker on it), comes
+# back as soon as anything is within it, and never runs distant while on
+# screen or scripted. It comes back at its current position, put clear of
+# solids, vehicles and other mechas (_settle_after_distant), and senses on
+# its first full think, well before anyone can see it.
+const DISTANT_DEFAULT_M := 500.0
+const DISTANT_STEP_INTERVAL := 15
+const DISTANT_TIER_INTERVAL := 10
+const DISTANT_SLACK := 1000.0
+## True: distant NPCs near each other stay distant together, and fight by
+## the rough rules. False: any other mecha within the line keeps an NPC in
+## full simulation, so distant NPCs never meet.
+const DISTANT_GROUPS := true
+## A distant NPC is kept this far (px) inside the play area.
+const PLAY_AREA_MARGIN := 300.0
+## Off its route a distant NPC moves in steps of at most this (px), each
+## checked against the solid outlines.
+const DISTANT_MOVE_STEP := 60.0
+## Rough fights: the hit chance of one round at point blank and at the
+## weapon's range, for a pilot of skill 0.5 (skill moves it by up to
+## ROUGH_SKILL_SPREAD either way); the most rounds one think can stand for;
+## melee reach (px) and the time (s) one swing takes. Placeholders.
+const ROUGH_HIT_NEAR := 0.75
+const ROUGH_HIT_FAR := 0.2
+const ROUGH_SKILL_SPREAD := 0.15
+const ROUGH_MAX_ROUNDS := 8
+const ROUGH_MELEE_REACH := 400.0
+const ROUGH_MELEE_TIME := 0.6
+## Where a rough hit lands, weighted.
+const ROUGH_PARTS := {"core": 3, "chassis": 3, "left_shoulder": 1, "right_shoulder": 1, "head": 1}
+
+static var _tiers_frame := -1000
+var _distant := false
+var _distant_offset := randi() % DISTANT_STEP_INTERVAL
+# The think time of the current distant think (rough fights fire the bursts
+# it stands for).
+var _rough_dt := 0.0
+# Weapon slot -> [damage, armour pen] of its round (read once, see
+# _rough_round).
+var _rough_rounds := {}
+## Rounds this NPC has fired by the rough rules (tests and probes).
+var rough_rounds_fired := 0
+# True while a distant NPC's drive moves it along its route (move).
+var _distant_on_route := false
+var _map_bounds_node: MapBounds = null
+var _map_bounds_look := -1000
+
+
+## Whether the NPC runs in the distant tier.
+func is_distant() -> bool:
+	return _distant
+
+
+## The distant line in px (0: the tier is off).
+static func distant_line() -> float:
+	var metres = Debug.debug_settings.get("distant_tier_m", DISTANT_DEFAULT_M)
+	if not (metres is float or metres is int):
+		return 0.0
+	return maxf(float(metres), 0.0) * MapSenses.PX_PER_METRE
+
+
+# Decides every NPC's tier at once (see Distant tier).
+static func _update_distant_tiers(host) -> void:
+	var npcs: Array = []
+	for m in host.get_mechas():
+		if is_instance_valid(m) and m.has_method("is_distant") and not m.is_dead:
+			npcs.append(m)
+	var line := distant_line()
+	var player = host.get("player")
+	if line <= 0.0 or player == null or not is_instance_valid(player) or player.is_dead:
+		for npc in npcs:
+			npc._set_distant(false)
+		return
+	# Observers in full simulation: where, and how far out they count.
+	var at := PackedVector2Array()
+	var reach := PackedFloat32Array()
+	at.append(player.global_position)
+	reach.append(maxf(line, player.sight_radius() + DISTANT_SLACK))
+	if host.has_method("get_entities"):
+		for entity in host.get_entities():
+			if is_instance_valid(entity) and not entity.get("is_dead"):
+				at.append(entity.global_position)
+				reach.append(_entity_reach(entity, line))
+	var full := {}
+	var pending: Array = []
+	for npc in npcs:
+		if npc._must_stay_full():
+			full[npc] = true
+			at.append(npc.global_position)
+			reach.append(maxf(line, npc.sight_radius() + DISTANT_SLACK))
+		else:
+			pending.append(npc)
+	if not DISTANT_GROUPS:
+		for npc in pending:
+			var slack: float = 0.0 if npc._distant else DISTANT_SLACK
+			for other in npcs:
+				if other != npc and npc.global_position.distance_to(other.global_position) < line + slack:
+					full[npc] = true
+					break
+	var changed := true
+	while changed:
+		changed = false
+		for npc in pending:
+			if full.has(npc):
+				continue
+			var p: Vector2 = npc.global_position
+			var slack: float = 0.0 if npc._distant else DISTANT_SLACK
+			for k in at.size():
+				var r := reach[k] + slack
+				if p.distance_squared_to(at[k]) < r * r:
+					full[npc] = true
+					at.append(p)
+					reach.append(maxf(line, npc.sight_radius() + DISTANT_SLACK))
+					changed = true
+					break
+	for npc in npcs:
+		npc._set_distant(not full.has(npc))
+
+
+# How far an Entity counts as an observer: as far as it can sense a mecha
+# at full heat (Entity.sight_range by the larger heat_sense_scale), plus
+# DISTANT_SLACK, and never further than the line. One with no sight_range
+# counts out to the line.
+static func _entity_reach(entity, line: float) -> float:
+	var sight = entity.get("sight_range")
+	if sight == null:
+		return line
+	var scale = entity.get("heat_sense_scale")
+	var k: float = maxf(scale.x, scale.y) if scale is Vector2 else 1.0
+	return minf(line, float(sight) * k + DISTANT_SLACK)
+
+
+# NPCs that never run distant: scripted ones, paused ones and any on screen.
+func _must_stay_full() -> bool:
+	return scripted or paused or not is_inside_tree() or is_on_screen()
+
+
+func _set_distant(value: bool) -> void:
+	if value == _distant:
+		return
+	if value:
+		_enter_distant()
+	else:
+		_leave_distant()
+
+
+func _enter_distant() -> void:
+	_distant = true
+	fire.cease()
+	is_locking = false
+	_reset_locking()
+	_steer_hard.fill(0.0)
+	_steer_soft.fill(0.0)
+	_steer_car.fill(0.0)
+	_car_burst_time = 0.0
+	stuck_timer = 0.0
+	_coast_velocity = Vector2.ZERO
+
+
+func _leave_distant() -> void:
+	_distant = false
+	_settle_after_distant()
+	_has_sensed = false
+	_sight_cache.clear()
+	_steer_built_frame = -100000
+	_static_probe_frame = -100000
+	_reset_unstick()
+	_progress_has_pos = false
+	stuck_timer = 0.0
+
+
+# Puts an NPC coming back from the distant tier somewhere it can move from:
+# out of any solid outline (along its nearest edge's normal), clear of
+# vehicles (VehicleField.clear_spot) and of other mechas.
+func _settle_after_distant() -> void:
+	var radius := get_steer_radius()
+	var pos := global_position
+	var field := get_building_field()
+	if field and field.solids_ready():
+		for s in field.solids_within(pos, 0.0):
+			if Geometry2D.is_point_in_polygon(pos, field.solid_polygon(s)):
+				pos += field.solid_outward_normal(s, pos) * (field.distance_to_solid(s, pos) + radius)
+	if not is_instance_valid(_vehicle_field):
+		_vehicle_field = VehicleField.find(self)
+	if _vehicle_field:
+		pos = _vehicle_field.clear_spot(pos, radius)
+	if arena != null and arena.has_method("get_mechas"):
+		for m in arena.get_mechas():
+			if m == self or not is_instance_valid(m) or m.is_dead:
+				continue
+			var away: Vector2 = pos - m.global_position
+			var gap := radius + OTHER_MECHA_RADIUS
+			if away.length() < gap:
+				pos = m.global_position + (away.normalized() if away.length() > 0.01 else Vector2.RIGHT) * gap
+	global_position = pos
+
+
+func _play_area() -> MapBounds:
+	if not is_instance_valid(_map_bounds_node):
+		_map_bounds_node = null
+		var frame := Engine.get_physics_frames()
+		if frame - _map_bounds_look >= 120:
+			_map_bounds_look = frame
+			_map_bounds_node = MapBounds.find(self)
+	return _map_bounds_node
+
+
+# Where the NPC is going, kept inside the play area: a goal in the border
+# band (or past the map) is moved PLAY_AREA_MARGIN inside it.
+func _goal_in_play_area() -> Vector2:
+	var goal: Vector2 = NavAgent.target_position
+	var bounds := _play_area()
+	if bounds and not bounds.global_play_rect().grow(-PLAY_AREA_MARGIN).has_point(goal):
+		goal = bounds.clamp_to_play_area(goal, PLAY_AREA_MARGIN)
+		NavAgent.target_position = goal
+	return goal
+
+
+# A distant NPC's move (see Distant tier): the position is set, no physics.
+# Heading along its route it moves along the route's legs themselves, which
+# the route grid keeps clear of solids; otherwise (circling a foe, backing
+# off) it moves straight, in DISTANT_MOVE_STEP px steps, and stops short of
+# any solid outline.
+func move(vec):
+	if not _distant:
+		super.move(vec)
+		return
+	var length: float = vec.length() * _step_scale * get_physics_process_delta_time()
+	if length <= 0.0:
+		return
+	if _distant_on_route and not _route.is_empty():
+		global_position = _along_route(length)
+		return
+	var to: Vector2 = global_position + vec.normalized() * length
+	var bounds := _play_area()
+	if bounds:
+		to = bounds.clamp_to_play_area(to, PLAY_AREA_MARGIN)
+	var field := get_building_field()
+	if field == null or not field.solids_ready():
+		global_position = to
+		return
+	var from := global_position
+	var steps := maxi(ceili(from.distance_to(to) / DISTANT_MOVE_STEP), 1)
+	for k in range(1, steps + 1):
+		var p := from.lerp(to, float(k) / steps)
+		if field.is_in_solid(p):
+			break
+		global_position = p
+
+
+# Where `length` px along the route from here (its next point on) ends,
+# moving the route on past the points it reaches.
+func _along_route(length: float) -> Vector2:
+	var pos := global_position
+	while length > 0.0:
+		var point := _route[_route_index]
+		var d := pos.distance_to(point)
+		if d > length:
+			return pos + (point - pos) / d * length
+		pos = point
+		length -= d
+		if _route_index >= _route.size() - 1:
+			break
+		_route_index += 1
+	return pos
+
+
+# A distant NPC's senses (see Distant tier): distances only.
+func _rough_senses(dt: float) -> void:
+	_has_sensed = true
+	contacts.advance(dt)
+	knowledge.age(dt)
+	var reach: float = sight_radius()
+	var reach_sq := reach * reach
+	for target in _sense_candidates():
+		if target == self or not is_instance_valid(target):
+			continue
+		if "is_dead" in target and target.is_dead:
+			continue
+		if global_position.distance_squared_to(target.global_position) <= reach_sq:
+			knowledge.see(target, target.global_position, target.velocity if "velocity" in target else Vector2.ZERO)
+	knowledge.end_sight_update()
+	knowledge.tick_panic(dt, under_fire_timer > 0.0, _hostiles_seen(), has_status("overheating"))
+	extra_bloom = knowledge.panic * PANIC_BLOOM
+
+
+# A distant NPC's drive (see Distant tier): straight for the next route
+# point, circling a foe as _navigate does, no steering.
+func _navigate_distant(dt, direction: float, wander: float, sprint: bool) -> void:
+	if not going_to_position:
+		return
+	var pos := global_position
+	var goal := _goal_in_play_area()
+	var foe = _combat_target()
+	var target: Vector2 = _route_next(goal, dt)
+	var heading := (target - pos).normalized().rotated(PI * direction)
+	if foe and wander > 0.0:
+		heading = heading.rotated(_orbit_side * acos(clampf(wander, 0.0, 1.0)))
+	if heading == Vector2.ZERO:
+		heading = get_facing()
+	_steer_desired = heading
+	chosen_dir = heading
+	_update_orbit(dt, foe)
+	if sprint or _cruise_sprint(goal, foe):
+		is_sprinting = true
+	elif is_sprinting:
+		stop_sprinting(chosen_dir)
+	var move_dir: Vector2 = chosen_dir if movement_type == "tank" else chosen_dir.rotated(-global_rotation)
+	_distant_on_route = direction == 0.0 and not (foe and wander > 0.0) and not _route.is_empty() 			and target == _route[_route_index]
+	apply_movement(dt, move_dir)
+	_distant_on_route = false
+	if ai_aim_point != null:
+		apply_rotation_by_point(dt, ai_aim_point, false)
+	elif valid_target and is_instance_valid(valid_target) and is_seeing(valid_target):
+		apply_rotation_by_point(dt, get_target_position(valid_target), false)
+	else:
+		apply_rotation_by_point(dt, target, false)
+
+
+# ---- Rough fights (distant tier) ----
+
+## A distant NPC's gun or melee weapon in `slot` fires at `target` (see
+## Distant tier). Returns whether it fired.
+func rough_shot(slot: String, target) -> bool:
+	if not is_instance_valid(target) or not _can_fire_slot(slot):
+		return false
+	var weapon = build[slot]
+	var node = get_weapon_part(slot)
+	var distance := global_position.distance_to(target.global_position)
+	if weapon.is_melee:
+		if distance > ROUGH_MELEE_REACH or not node.can_shoot():
+			return false
+		node.add_time(ROUGH_MELEE_TIME)
+		increase_heat(weapon.muzzle_heat)
+		_rough_hits(target, 1, float(weapon.melee_damage), int(weapon.melee_pen), weapon, distance, ROUGH_MELEE_REACH)
+		return true
+	if node.can_reload() == "yes" and node.is_clip_empty() and not node.is_reloading():
+		node.reload()
+		return false
+	var amount: int = maxi(mini(int(weapon.burst_ammo_cost), int(get_clip_ammo(slot))), 1)
+	if not node.can_shoot(amount):
+		return false
+	# One round, as Mecha.shoot fires one a call (the node runs the burst and
+	# its cooldown), and the rest of the rounds the weapon could fire in the
+	# think's time on top.
+	node.shoot(amount)
+	var shots := 1
+	var size := maxi(int(weapon.burst_size), 1)
+	var per_round: float = (node.get_fire_rate() + node.get_burst_fire_rate() * size) / size
+	var rounds := clampi(floori(_rough_dt / maxf(per_round, 0.05)), 1, ROUGH_MAX_ROUNDS)
+	if rounds > 1 and node.clip_ammo is not bool:
+		var extra := mini((rounds - 1) * amount, maxi(int(node.clip_ammo), 0))
+		node.clip_ammo -= extra
+		@warning_ignore("integer_division")
+		var extra_shots := extra / amount
+		increase_heat(weapon.muzzle_heat * extra_shots)
+		shots += extra_shots
+	var round_info := _rough_round(slot)
+	_rough_hits(target, shots * maxi(int(weapon.number_projectiles), 1), round_info[0], int(round_info[1]),
+			weapon, distance, float(weapon.ai_engage_range))
+	return true
+
+
+## A distant NPC's weapon in `slot` fires at `point` (see Distant tier and
+## Mecha.fire_at_point): a weapon with a designator fires one salvo that hits
+## every mecha near the point by the rough rules; one without shoots at the
+## mecha nearest the point. Returns "" if it fired, else why not.
+func rough_fire_at(slot: String, point: Vector2) -> String:
+	var reason := can_fire_at_point(slot, point)
+	if reason != "":
+		return reason
+	var weapon = build[slot]
+	if not weapon.has_designator():
+		var near = _mecha_near(point, 600.0)
+		if near == null:
+			return "no_target"
+		return "" if rough_shot(slot, near) else "jammed"
+	var node = get_weapon_part(slot)
+	if not node.can_shoot(1):
+		return "jammed"
+	if fires_at_lock(slot):
+		point = get_locked_to().global_position
+	node.shoot_salvo(weapon.muzzle_heat * weapon.barrage_count)
+	if node.is_clip_empty():
+		node.reload()
+	node.play_shot_sound(global_position)
+	var round_info := _rough_round(slot)
+	var info: Dictionary = weapon.get_aoe_info()
+	var radius: float = float(info.get("blast_radius", 0.0)) + float(weapon.scatter_radius) + OTHER_MECHA_RADIUS
+	var distance := global_position.distance_to(point)
+	if arena != null and arena.has_method("get_mechas"):
+		for m in arena.get_mechas():
+			if m == self or not is_instance_valid(m) or m.is_dead:
+				continue
+			if m.global_position.distance_to(point) <= radius:
+				_rough_hits(m, maxi(int(weapon.barrage_count), 1), round_info[0], int(round_info[1]),
+						weapon, distance, float(weapon.max_range))
+	return ""
+
+
+# Why `slot` can't fire, as Mecha.shoot checks it: false when the mecha is
+# dead or shielding, the Flag locks the weapon, the part came off, the
+# weapon is disabled or underpowered.
+func _can_fire_slot(slot: String) -> bool:
+	var weapon = build.get(slot)
+	if weapon == null or get_weapon_part(slot) == null or is_dead or is_shielding:
+		return false
+	if (is_flagged() and not flag_allows(slot)) or is_part_lost(slot):
+		return false
+	if disabled_systems.has(slot) and disabled_systems[slot] == true:
+		return false
+	return not is_weapon_underpowered(slot)
+
+
+# The living mecha (not this one) nearest `point` within `radius`, or null.
+func _mecha_near(point: Vector2, radius: float):
+	var best = null
+	var best_d := radius
+	if arena == null or not arena.has_method("get_mechas"):
+		return null
+	for m in arena.get_mechas():
+		if m == self or not is_instance_valid(m) or m.is_dead:
+			continue
+		var d: float = m.global_position.distance_to(point)
+		if d <= best_d:
+			best = m
+			best_d = d
+	return best
+
+
+# [damage pips, armour pen] of `slot`'s round, read once from its projectile.
+func _rough_round(slot: String) -> Array:
+	if not _rough_rounds.has(slot):
+		var weapon = build[slot]
+		var damage = weapon.get_projectile_stat("base_damage")
+		var pen = weapon.get_projectile_stat("armor_pen")
+		_rough_rounds[slot] = [float(damage) if damage != null else 1.0, int(pen) if pen != null else 1]
+	return _rough_rounds[slot]
+
+
+# `rounds` rounds of `weapon` at `target`, `distance` away, against a range
+# of `reach` (see Distant tier). The target hears the shot whatever it hits.
+func _rough_hits(target, rounds: int, damage: float, pen: int, weapon, distance: float, reach: float) -> void:
+	var t := clampf(distance / maxf(reach, 1.0), 0.0, 1.0)
+	var chance := lerpf(ROUGH_HIT_NEAR, ROUGH_HIT_FAR, t) + (skill() - 0.5) * 2.0 * ROUGH_SKILL_SPREAD
+	chance = clampf(chance, 0.02, 0.98)
+	var dir: Vector2 = (target.global_position - global_position).normalized()
+	var pips := maxi(roundi(damage), 1)
+	rough_rounds_fired += rounds
+	for _i in rounds:
+		if not is_instance_valid(target) or target.get("is_dead") == true:
+			return
+		if randf() >= chance:
+			continue
+		if not target.has_method("armor_check"):
+			if target.has_method("take_hit"):
+				target.take_hit(damage, pen, dir, {"body": self, "name": mecha_name})
+			continue
+		if target.has_method("shield_check") and target.shield_check(global_position, pen, pips) != "":
+			continue
+		var part := _rough_part()
+		var result: Dictionary = target.armor_check(part, target.global_position - dir * 60.0, dir, pen, pips)
+		if bool(result.get("penetrated", false)):
+			target.last_damage_source = {"body": self, "name": mecha_name}
+			target.last_damage_weapon = weapon.part_id
+			if str(result.get("component_name", "")) != "":
+				target.damage_component(str(result.part_name), str(result.component_name), pips, dir)
+	if is_instance_valid(target) and target.has_method("_on_round_hit"):
+		target._on_round_hit(self, global_position)
+
+
+static func _rough_part() -> String:
+	var total := 0
+	for part in ROUGH_PARTS:
+		total += int(ROUGH_PARTS[part])
+	var pick := randi() % total
+	for part in ROUGH_PARTS:
+		pick -= int(ROUGH_PARTS[part])
+		if pick < 0:
+			return part
+	return "core"
 
 
 # Whether the NPC is in or near the current camera's view.
@@ -2145,7 +2706,7 @@ const STEER_TURN_RATE_TANK := 3.0
 ## speed is not an option.
 const HARD_PUSH_FRACTION := 0.35
 ## push_aversion() runs from MAX at AVERSION_LIGHT_WEIGHT down to MIN at
-## AVERSION_HEAVY_WEIGHT.
+## AVERSION_HEAVY_WEIGHT (the mecha's total weight, in tonnes).
 const PUSH_AVERSION_MAX := 2.0
 const PUSH_AVERSION_MIN := 0.7
 const AVERSION_LIGHT_WEIGHT := 45.0
@@ -2781,15 +3342,19 @@ func _open_side() -> float:
 #-------- Routes
 
 # On maps with a BuildingField route grid, an NPC heading somewhere more than
-# ROUTE_MIN_DISTANCE away follows a planned route (BuildingField.find_route):
-# along streets and open ground, round building blocks and parked rows. It
-# heads for one route point at a time and moves on to the next when within
-# ROUTE_REACH of it or past it. It plans again when its goal moves more than
-# ROUTE_REPLAN_MOVE, every ROUTE_REPLAN_TIME seconds, and after a bad stuck.
-# Shorter trips, and maps without the grid, go straight (local steering
-# still goes round what's in the way), except for ROUTE_FORCE_TIME s after the
-# NPC is judged blocked: then it routes even a short trip, which takes it
-# round walls and barriers that local steering can't see past.
+# ROUTE_MIN_DISTANCE away follows a planned route: along streets and open
+# ground, round building blocks and parked rows. It asks the field for one
+# (BuildingField.request_route) and collects it a frame or a few later, once
+# the field's solver thread has it; until then it heads straight for its
+# goal, or keeps to its old route while a new one is solved. It heads for
+# one route point at a time and moves on to the next when within ROUTE_REACH
+# of it or past it. It plans again when its goal moves more than
+# ROUTE_REPLAN_MOVE, every ROUTE_REPLAN_TIME seconds, and after a bad stuck,
+# one route asked for at a time. Shorter trips, and maps without the grid, go
+# straight (local steering still goes round what's in the way), except for
+# ROUTE_FORCE_TIME s after the NPC is judged blocked, and always in the
+# distant tier (it has no local steering): then it routes even a short trip,
+# which takes it round walls and barriers that local steering can't see past.
 const ROUTE_MIN_DISTANCE := 2000.0
 const ROUTE_REACH := 350.0
 const ROUTE_REPLAN_MOVE := 1000.0
@@ -2802,6 +3367,11 @@ var _route_goal := Vector2.INF
 var _route_age := 0.0
 var _route_replan := false
 var _route_force := 0.0
+# The route asked for and not collected yet (0: none), its goal and the field
+# that solves it.
+var _route_ticket := 0
+var _route_ticket_goal := Vector2.INF
+var _route_ticket_field: BuildingField = null
 
 
 func _route_next(goal: Vector2, dt: float) -> Vector2:
@@ -2812,29 +3382,56 @@ func _route_next(goal: Vector2, dt: float) -> Vector2:
 		return NavAgent.get_next_path_position()
 	var pos := global_position
 	_route_force = maxf(_route_force - dt, 0.0)
-	var short := ROUTE_REACH if _route_force > 0.0 else ROUTE_MIN_DISTANCE
+	var short := ROUTE_REACH if _route_force > 0.0 or _distant else ROUTE_MIN_DISTANCE
 	if pos.distance_to(goal) < short:
 		_route.clear()
+		_drop_route_ticket()
 		return goal
 	_route_age += dt
-	if _route.is_empty() or _route_replan or _route_age > ROUTE_REPLAN_TIME \
-			or _route_goal.distance_to(goal) > ROUTE_REPLAN_MOVE:
-		var route := field.find_route(pos, goal)
-		if not route.is_empty():
-			_route = route
-			_route_index = 0
-			_route_goal = goal
-			_route_age = 0.0
-			_route_replan = false
+	_collect_route(field)
+	if _route_ticket == 0 and (_route.is_empty() or _route_replan or _route_age > ROUTE_REPLAN_TIME \
+			or _route_goal.distance_to(goal) > ROUTE_REPLAN_MOVE):
+		_route_ticket = field.request_route(pos, goal)
+		_route_ticket_goal = goal
+		_route_ticket_field = field
+		_route_replan = false
+		_route_age = 0.0
+		_collect_route(field)
 	if _route.is_empty():
 		return goal
+	# A distant NPC walks the route's legs themselves (move), so it moves on
+	# only once it is at a point.
+	var reach := 1.0 if _distant else ROUTE_REACH
 	while _route_index < _route.size() - 1:
 		var point := _route[_route_index]
-		var past := (point - pos).dot(_route[_route_index + 1] - point) < 0.0
-		if pos.distance_to(point) > ROUTE_REACH and not past:
+		var past := not _distant and (point - pos).dot(_route[_route_index + 1] - point) < 0.0
+		if pos.distance_to(point) > reach and not past:
 			break
 		_route_index += 1
 	return _route[_route_index]
+
+
+# Takes the route asked for, once the field has solved it.
+func _collect_route(field: BuildingField) -> void:
+	if _route_ticket == 0:
+		return
+	if not is_same(field, _route_ticket_field):
+		_drop_route_ticket()
+		return
+	var route := field.take_route(_route_ticket)
+	if route.is_empty():
+		return
+	_route = route
+	_route_index = 0
+	_route_goal = _route_ticket_goal
+	_route_ticket = 0
+
+
+func _drop_route_ticket() -> void:
+	if _route_ticket != 0 and is_instance_valid(_route_ticket_field):
+		_route_ticket_field.cancel_route(_route_ticket)
+	_route_ticket = 0
+	_route_ticket_field = null
 
 
 #-------- Orbit

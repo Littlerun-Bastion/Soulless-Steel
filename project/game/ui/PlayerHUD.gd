@@ -35,6 +35,8 @@ const BLINK_PITCH_TARGET_MOD = .40
 @onready var exit_marker: ExitMarker = $SubViewportContainer/SubViewport/ExitMarker
 # Ping contacts (wards, drones) as markers through walls (game/ui/hud/).
 @onready var hud_contacts: HudContacts = $SubViewportContainer/SubViewport/HudContacts
+# Brackets round the salvage sources in sight (game/ui/hud/).
+@onready var hud_salvage: HudSalvage = $SubViewportContainer/SubViewport/HudSalvage
 # Mechas the Seeker covers, outlined (game/ui/hud/).
 @onready var hud_vision_outlines: HudVisionOutlines = $SubViewportContainer/SubViewport/HudVisionOutlines
 # Local: name tags and speech boxes over mechas, the feed (top left) and the
@@ -260,6 +262,7 @@ func setup(player_ref, mechas_ref):
 	hud_alerts.setup(player)
 	interact_prompt.setup(player)
 	hud_contacts.setup(player, mechas)
+	hud_salvage.setup(player)
 	hud_vision_outlines.setup(player)
 	hud_world_labels.setup(player, mechas)
 	hud_quick_chat.setup(player)
@@ -337,6 +340,19 @@ func set_site(site_name: String, bounds: Rect2) -> void:
 	top_strip.set_site(site_name, bounds)
 
 
+# A named place of the map (Landmarks): show_place when the player enters
+# it (a passing notice), set_place for the one the player is in now ("" for
+# none), shown after the site in the top strip; a notice still waiting for
+# a place the player has left is dropped.
+func show_place(place_name: String) -> void:
+	hud_alerts.show_place(place_name.to_upper())
+
+
+func set_place(place_name: String) -> void:
+	top_strip.set_place(place_name)
+	hud_alerts.set_current_place(place_name.to_upper())
+
+
 func set_pause(_value):
 	#Cursor.visible = not value
 	pass
@@ -360,6 +376,7 @@ func player_died():
 	hud_alerts.player_died()
 	interact_prompt.player_died()
 	hud_contacts.player_died()
+	hud_salvage.player_died()
 	hud_vision_outlines.player_died()
 	hud_world_labels.player_died()
 	hud_local_feed.player_died()

@@ -3,7 +3,12 @@ extends RefCounted
 
 # Hangar facilities (the FAC app, FacilitiesWindow): upgrades bought with
 # credits and materials. Their levels live in PlayerProgress (saved).
-#   Recycler    recycling yields more (PlayerProgress.recycle_value)
+#   Recycler    recycling is always 1 to 1 (salvage gives its whole
+#               composition), so the levels never raise the yield. Mk II
+#               adds auto-salvage on return (the SYS setting
+#               "auto_salvage"; PlayerProgress.extract_expedition), Mk III
+#               by-products: recycling salvage also pays a share of its
+#               value in credits (PlayerProgress.recycle_byproducts)
 #   Workshop    repair bills shrink (RepairBill.estimate)
 #   Fabricator  0 = not built; Mk I builds low and mid tech, Mk II high tech
 #               too, and better grades come out (Fabricator)
@@ -21,9 +26,11 @@ const ALL := [RECYCLER, WORKSHOP, FABRICATOR, STASH]
 const DATA := {
 	RECYCLER: {
 		"name": "Recycler", "start": 1, "max": 3,
-		"values": {1: 1.0, 2: 1.25, 3: 1.5},
-		"costs": {2: {"credits": 2500, "materials": {"steel": 20, "copper": 10}},
-				3: {"credits": 8000, "materials": {"nt_fluid": 10, "noble_metals": 5}}},
+		"values": {1: {}, 2: {"auto_salvage": true}, 3: {"auto_salvage": true, "byproducts": 0.1}},
+		# Materials in their stored units: 20 t Steel and 2.5 t Copper; 100 L
+		# NT Fluid and 25 g Noble Metals.
+		"costs": {2: {"credits": 2500, "materials": {"steel": 20000, "copper": 2500}},
+				3: {"credits": 8000, "materials": {"nt_fluid": 100000, "noble_metals": 25}}},
 	},
 	WORKSHOP: {
 		"name": "Workshop", "start": 1, "max": 3,
@@ -69,8 +76,14 @@ static func value(id: String):
 	return value_at(id, level(id))
 
 
-static func recycle_mult() -> float:
-	return value(RECYCLER)
+## Recycler Mk II and up: salvage can turn into materials on return.
+static func auto_salvage_unlocked() -> bool:
+	return bool(value(RECYCLER).get("auto_salvage", false))
+
+
+## Recycler Mk III: the share of a recycled item's value paid in credits.
+static func byproduct_rate() -> float:
+	return float(value(RECYCLER).get("byproducts", 0.0))
 
 
 static func repair_mult() -> float:
@@ -113,12 +126,16 @@ static func upgrade(id: String) -> bool:
 	return true
 
 
-# What a level does, in a line: "Recycling yields x1.25".
+# What a level does, in a line: "Auto-salvage on return".
 static func describe(id: String, at_level: int) -> String:
 	var v = value_at(id, at_level)
 	match id:
 		RECYCLER:
-			return "Recycling yields x%s" % MechUI.fmt(v)
+			if v.has("byproducts"):
+				return "Auto-salvage; by-products pay %d%% of value in CT" % roundi(float(v.byproducts) * 100.0)
+			if v.has("auto_salvage"):
+				return "Auto-salvage on return (SYS setting)"
+			return "Recycles 1 to 1, by hand"
 		WORKSHOP:
 			return "Repair bills x%s" % MechUI.fmt(v)
 		STASH:

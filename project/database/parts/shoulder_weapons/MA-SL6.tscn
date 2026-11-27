@@ -16,10 +16,7 @@ tagline = "Smoke Launcher"
 tags = Array[String](["shoulder_weapon"])
 price = 450.0
 image = ExtResource("2_pv")
-composition = Dictionary[String, int]({
-"oil": 2,
-"steel": 2
-})
+composition = Dictionary[String, int]({"steel": 540, "oil": 54000, "energetics": 5})
 ai_engage_range = 800
 is_indirect_fire = true
 projectile = ExtResource("3_projectile")

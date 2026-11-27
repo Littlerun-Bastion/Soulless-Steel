@@ -128,7 +128,7 @@ func _test_symbols() -> void:
 	var regex := RegEx.create_from_string(FourX.SYMBOL_PATTERN)
 	check(FourX.instruments().all(func(e): return regex.search(e.symbol) != null), "every symbol is 1-5 capitals or digits")
 	check(FourX.search("mrtl").size() >= 1 and FourX.search("mrtl")[0].symbol == "MRTL", "lookup finds a symbol in any case")
-	check(FourX.search("gland").any(func(e): return e.item == "acid_gland"), "and a name")
+	check(FourX.search("residue").any(func(e): return e.item == "entity_residue"), "and a name")
 
 
 # ---- the market ---------------------------------------------------------------
@@ -140,7 +140,7 @@ func _test_days() -> void:
 	PilotNet.advance_day()
 	check_eq(FourX.last_day, PilotNet.day, "a day passes: the market closes it")
 	var second := _prices()
-	for symbol in ["MRTL", FourX.symbol_of_item("acid_gland")]:
+	for symbol in ["MRTL", FourX.symbol_of_item("entity_residue")]:
 		check_eq(second[symbol].slice(0, FourX.HISTORY_DAYS - 1), first[symbol].slice(1), "%s's history moves on one day" % symbol)
 		check_eq(second[symbol].size(), FourX.HISTORY_DAYS, "and keeps its length")
 	var shown := FourX.quote("MRTL")

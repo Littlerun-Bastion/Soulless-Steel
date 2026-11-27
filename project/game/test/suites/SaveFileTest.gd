@@ -80,7 +80,7 @@ func _test_round_trip() -> void:
 	PlayerProgress.add_part("arm_weapon", "Clarent-01", false)
 	var cargo := Inventory.new()
 	cargo.initialize_grid(6, 8)
-	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/control_module.tres")))
+	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/control_cabinet.tres")))
 	PlayerProgress.set_mech_inventory(cargo)
 	PlayerProgress.add_materials({"steel": 12, "avidendrites": 1}, false)
 	var design := PlayerProgress.DEFAULT_MECHA.duplicate()
@@ -98,7 +98,7 @@ func _test_round_trip() -> void:
 	FileManager.load_profile()
 	check_eq(PlayerProgress.get_money(), 4321.0, "money")
 	check_eq(PlayerProgress.count_part("arm_weapon", "Clarent-01"), 1, "stash part")
-	check(PlayerProgress.get_mech_inventory().get_stacks().any(func(s): return s.item != null and s.item.id == "control_module"), "cargo item")
+	check(PlayerProgress.get_mech_inventory().get_stacks().any(func(s): return s.item != null and s.item.id == "control_cabinet"), "cargo item")
 	check_eq(PlayerProgress.get_materials(), {"steel": 12, "avidendrites": 1}, "materials")
 	check_eq(PlayerProgress.get_current_mecha()["arm_weapon_right"], "OM1804", "mecha design")
 	check_eq(StoryDirector.get_flag("save_test"), 7, "story flag")
@@ -152,7 +152,7 @@ func _test_backup_only() -> void:
 func _test_abandoned_on_boot() -> void:
 	var cargo := Inventory.new()
 	cargo.initialize_grid(6, 8)
-	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/control_module.tres")))
+	cargo.add_stack_anywhere(item_stack.from_generic(load("res://database/items/salvage/control_cabinet.tres")))
 	PlayerProgress.set_mech_inventory(cargo)
 	PlayerProgress.begin_expedition()
 	FileManager.profile_loaded = true

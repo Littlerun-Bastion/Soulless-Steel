@@ -8,8 +8,9 @@ class_name TickSwarm
 #
 # Its hp is the motes on the ground, and it has no armour. Each point of
 # damage kills the mote nearest the impact, AOE_MOTES of them for a blast's
-# (take_hit's is_aoe). With no motes left on the ground it dies, leaving no
-# carcass and no loot.
+# (take_hit's is_aoe). With no motes left on the ground it dies, leaving a
+# carcass of Mote Clusters (its loot table). A swarm that only fades out, or
+# whose last mote jumps onto a mecha, leaves none (_vanish).
 #
 # Motes mostly sit still. Now and then one makes a few tiny, quick hops,
 # with pauses between, and now and then two drift apart. They never leave
@@ -450,6 +451,7 @@ func fade_out() -> void:
 
 
 func _vanish() -> void:
+	leaves_carcass = false
 	last_damage_source = null
 	last_attacker = null
 	die()

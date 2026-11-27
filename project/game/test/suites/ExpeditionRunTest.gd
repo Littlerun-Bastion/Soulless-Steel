@@ -10,16 +10,16 @@ extends TestSuite
 #   - pausing and resuming; quitting from the pause menu (warned first)
 #     abandons the run
 #   - Entities: Coyote packs, Fishers and tick swarms spawn away from the
-#     player, none of the first species do, NPCs fight them, gunfire reaches
-#     them, the intro freeze holds them, kills count, and a dead one leaves a
-#     carcass of bio salvage to loot
+#     player (in camps, all woken here), none of the first species do, NPCs
+#     fight them, gunfire reaches them, the intro freeze holds them, kills
+#     count, and a dead one leaves a carcass of bio salvage to loot
 #
 # Enemies and Entities are frozen after spawning and the director stopped, so
 # the player isn't attacked at random and results don't depend on luck. Scene
 # changes (Continue, Return) are captured, not performed (TransitionManager).
 
 const EXPEDITION := preload("res://game/expedition/Expedition.tscn")
-const SALVAGE := preload("res://database/items/salvage/servo_assembly.tres")
+const SALVAGE := preload("res://database/items/salvage/control_cabinet.tres")
 
 var _scene = null
 var _saved_skip_intro = null
@@ -36,6 +36,7 @@ func run_tests() -> void:
 
 	await _start_expedition()
 	await case("the expedition starts", _test_start)
+	await case("the HUD names a map place the player walks into", _test_landmark_notice)
 	await case("player weapons damage an enemy", _test_shooting)
 	await case("a destroyed enemy leaves a wreck with loot", _test_kill_and_wreck)
 	await case("no part swaps or recycling mid-run", _test_field_rules)
@@ -48,6 +49,7 @@ func run_tests() -> void:
 
 	await _start_expedition()
 	await case("Entities roam the map", _test_entities_spawned)
+	await case("newcomers come in a ring round the player, on open ground; NPCs wander near", _test_spawn_ring)
 	await case("NPCs and Coyotes fight", _test_npcs_fight_entities)
 	await case("gunfire reaches Entities", _test_entities_hear)
 	await case("the intro freeze holds Entities too", _test_entities_freeze)
@@ -77,8 +79,21 @@ func _start_expedition() -> void:
 	var populated := await wait_until(func(): return _enemies().size() > 0, 20.0)
 	check(populated, "enemies spawned")
 	_scene.ExpeditionDirector.set_process(false)
+	_wake_camps()
 	await wait_frames(2)
 	_freeze_world()
+
+
+# The director's Entities wait in camps (CampField): every one is put on
+# the map, whole, and the camps stop there.
+func _wake_camps() -> void:
+	var camps: CampField = _scene.ExpeditionDirector.camps
+	if camps == null:
+		return
+	camps.set_process(false)
+	camps.awake_budget = 1000
+	for camp in camps.camps.duplicate():
+		camps.wake(camp)
 
 
 func _freeze_world() -> void:
@@ -139,6 +154,42 @@ func _test_start() -> void:
 	map.site_name = "Helwan"
 
 
+# A named place (Landmarks) 150 m from the player: walking in shows its name
+# as a notice and in the top strip; walking out takes it off the strip. The
+# generated map's own Landmarks node is used when it has one (its places put
+# back after), otherwise one is added for the case.
+func _test_landmark_notice() -> void:
+	var player := _player()
+	var field := Landmarks.find(_scene)
+	var added := field == null
+	var saved: MapLandmarks = null
+	if added:
+		field = Landmarks.new()
+		_scene.get_node("Map").add_child(field)
+	else:
+		saved = field.landmarks
+	var start := player.global_position
+	var place := start + Vector2(3000, 0)
+	var test_places := MapLandmarks.new()
+	test_places.add("Test Garden", "garden", place, 600.0)
+	field.landmarks = test_places
+	_scene._watch_landmarks()
+	await wait_seconds(0.6)
+	var strip: HudTopStrip = _scene.PlayerHUD.top_strip
+	check_eq(strip.get("_place"), "", "outside it, the strip shows no place")
+	player.global_position = place
+	var named := await wait_until(func(): return _scene.PlayerHUD.hud_alerts.get_current() == "TEST GARDEN", 3.0)
+	check(named, "walking in, the HUD names the place (%s)" % _scene.PlayerHUD.hud_alerts.get_current())
+	check_eq(strip.get("_place"), "TEST GARDEN", "and the top strip shows it")
+	player.global_position = start
+	await wait_seconds(0.6)
+	check_eq(strip.get("_place"), "", "walking out takes it off the strip")
+	if added:
+		field.queue_free()
+	else:
+		field.landmarks = saved
+
+
 # The player shoots the left arm; as each shot leaves the barrel the enemy is
 # put in its path (shots have random spread), so the real projectile has to
 # fly, collide and deal damage for this to pass.
@@ -151,9 +202,18 @@ func _test_shooting() -> void:
 	check(MouseManager.is_aiming(), "aim mode is on in combat")
 	player.set_pause(true)
 	var shots := [0]
+	# The enemy goes 400 px down the line of fire, or short of the first
+	# building wall on it: the player starts facing a random way, often at a
+	# building, and walls stop rounds.
+	var world := player.get_world_2d()
 	var into_line_of_fire := func(_mecha, args, _weapon):
 		shots[0] += 1
-		enemy.global_position = args["pos"] + args["dir"] * 400.0
+		var from: Vector2 = args["pos"]
+		var reach := 400.0
+		var walls := MapSenses.wall_hits(world, from, from + args["dir"] * reach)
+		if not walls.is_empty():
+			reach = maxf(from.distance_to(walls[0]) - 60.0, 90.0)
+		enemy.global_position = from + args["dir"] * reach
 	player.create_projectile.connect(into_line_of_fire)
 	# Projectiles hit a component (armour panel, actuator...) and either
 	# penetrate and damage it or deflect; keep firing until one gets through.
@@ -272,11 +332,49 @@ func _coyotes() -> Array:
 	return _scene.get_entities().filter(func(e): return e is Coyote and not e is CoyoteSpitter and not e.is_dead)
 
 
+func _test_spawn_ring() -> void:
+	var director = _scene.ExpeditionDirector
+	check(director.population_scale() > 1.0, "Helwan is bigger than reference_map_size, so the counts grow (x%.2f)" % director.population_scale())
+	var from: Vector2 = _player().global_position
+	var found := 0
+	var good := 0
+	for i in 20:
+		var p = director._pick_open_spot(director.min_spawn_distance_from_player, director.max_spawn_distance_from_player)
+		if p == null:
+			continue
+		found += 1
+		var d: float = p.distance_to(from)
+		if d >= director.min_spawn_distance_from_player and d <= director.max_spawn_distance_from_player \
+				and _scene.is_spawn_spot_open(p) and not _scene.is_near_exit(p) and not director._in_player_sight(p):
+			good += 1
+	check(found >= 18, "a spot in the ring is found nearly every time (%d of 20)" % found)
+	check_eq(good, found, "each is in the ring, on open ground, away from the exits and out of sight")
+	var field := BuildingField.find(_scene)
+	var inside := Vector2.INF
+	for i in field.building_count():
+		var c := field.polygon_centre(i)
+		if field.building_at(c) == i:
+			inside = c
+			break
+	check(inside != Vector2.INF and not _scene.is_spawn_spot_open(inside), "a spot inside a building isn't open ground")
+	var far := 0
+	for i in 20:
+		if _scene.get_wander_point(from).distance_to(from) > _scene.WANDER_REACH:
+			far += 1
+	check_eq(far, 0, "an NPC's wander points stay within WANDER_REACH of it on a map this big")
+
+
 func _test_entities_spawned() -> void:
 	var director = _scene.ExpeditionDirector
+	# The director's counts, scaled to the map's size (ExpeditionDirector.scaled).
+	var packs_min: int = director.scaled(director.min_initial_packs)
+	var fishers_min: int = director.scaled(director.min_initial_fishers)
+	var fishers_max: int = director.scaled(director.max_initial_fishers)
+	var swarms_min: int = director.scaled(director.min_initial_tick_swarms)
+	var swarms_max: int = director.scaled(director.max_initial_tick_swarms)
 	var pack_members: Array = _scene.get_entities().filter(func(e): return e is Coyote)
-	check(pack_members.size() >= director.min_initial_packs * director.min_pack_size,
-			"at least %d packs of %d (%d Coyotes)" % [director.min_initial_packs, director.min_pack_size, pack_members.size()])
+	check(pack_members.size() >= packs_min * director.min_pack_size,
+			"at least %d packs of %d (%d Coyotes)" % [packs_min, director.min_pack_size, pack_members.size()])
 	var packs := {}
 	for coyote in pack_members:
 		if coyote.pack != null:
@@ -284,12 +382,12 @@ func _test_entities_spawned() -> void:
 	check(packs.keys().all(func(p): return p.members.any(func(m): return m is CoyoteSpitter)), "every pack has a Spitter")
 	check(packs.keys().all(func(p): return not p.leader() is CoyoteSpitter), "and a Coyote leads it")
 	var fishers: Array = _scene.get_entities().filter(func(e): return e is Fisher)
-	check(fishers.size() >= director.min_initial_fishers and fishers.size() <= director.max_initial_fishers,
-			"%d-%d Fishers (%d)" % [director.min_initial_fishers, director.max_initial_fishers, fishers.size()])
+	check(fishers.size() >= fishers_min and fishers.size() <= fishers_max,
+			"%d-%d Fishers (%d)" % [fishers_min, fishers_max, fishers.size()])
 	check(fishers.all(func(f): return f.state == Fisher.State.DORMANT), "the Fishers lie dormant at the start")
 	var swarms: Array = _scene.get_entities().filter(func(e): return e is TickSwarm)
-	check(swarms.size() >= director.min_initial_tick_swarms and swarms.size() <= director.max_initial_tick_swarms,
-			"%d-%d tick swarms (%d)" % [director.min_initial_tick_swarms, director.max_initial_tick_swarms, swarms.size()])
+	check(swarms.size() >= swarms_min and swarms.size() <= swarms_max,
+			"%d-%d tick swarms (%d)" % [swarms_min, swarms_max, swarms.size()])
 	check(_scene.get_entities().all(func(e): return e is Coyote or e is Fisher or e is TickSwarm),
 			"none of the first species spawn (Stalker, Spitter, Brute, Cyst)")
 	var player_pos: Vector2 = _player().global_position

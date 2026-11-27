@@ -5,14 +5,17 @@ extends TestSuite
 # view are hidden and shown again when the camera comes near; a StreamedScene
 # loads when a mecha comes near its bounds and is freed when every mecha has
 # gone, its loot crates keeping what they held (so leaving and coming back
-# can't refill them); and an NPC far from the player thinks every
-# FAR_THINK_INTERVAL frames.
+# can't refill them); an NPC far from the player thinks every
+# FAR_THINK_INTERVAL frames; and preloading round a start position (the
+# loading screen's) loads the chunks the first view there wants, so the
+# camera arriving there waits for none.
 
 const STREAMED_PATH := "user://map_streaming_test_scene.tscn"
 const CRATE_SCENE_PATH := "user://map_streaming_test_crates.tscn"
 const LOOT_CONTAINER := preload("res://game/mecha/LootContainer.tscn")
 const SALVAGE_TABLE := preload("res://database/loot-tables/wreck_salvage.tres")
 const ENEMY_SCRIPT := preload("res://game/mecha/Enemy.gd")
+const CHUNK_MESH_PATH := "user://map_streaming_test_chunk.res"
 
 
 class FakeMecha extends Node2D:
@@ -25,9 +28,11 @@ var _root: Node2D = null
 
 func run_tests() -> void:
 	await case("chunks away from the camera are hidden", _test_chunks)
+	await case("chunk meshes load near the camera and are freed far away", _test_chunk_meshes)
 	await case("a streamed scene loads near a mecha and goes when it leaves", _test_streamed_scene)
 	await case("a streamed scene's crates keep their loot when it reloads", _test_crates_remembered)
 	await case("NPCs far from the player think less often", _test_think_interval)
+	await case("preloading round the start loads what the first view wants", _test_preload)
 
 
 func before_each() -> void:
@@ -70,6 +75,42 @@ func _test_chunks() -> void:
 	cam.position = Vector2(30000, 0)
 	await wait_until(func(): return far.visible and not near.visible, 2.0)
 	check(far.visible and not near.visible, "they swap when the camera moves")
+
+
+func _test_chunk_meshes() -> void:
+	var quad := _quad(Vector2.ZERO, 1000)
+	ResourceSaver.save(quad.mesh, CHUNK_MESH_PATH)
+	quad.free()
+	var chunks := Node2D.new()
+	_root.add_child(chunks)
+	var near := ChunkMesh.new()
+	near.mesh_path = CHUNK_MESH_PATH
+	near.bounds = Rect2(-500, -500, 1000, 1000)
+	var mid := ChunkMesh.new()
+	mid.mesh_path = CHUNK_MESH_PATH
+	mid.position = Vector2(6000, 0)
+	mid.bounds = Rect2(-500, -500, 1000, 1000)
+	var far := ChunkMesh.new()
+	far.mesh_path = CHUNK_MESH_PATH
+	far.position = Vector2(60000, 0)
+	far.bounds = Rect2(-500, -500, 1000, 1000)
+	for c in [near, mid, far]:
+		chunks.add_child(c)
+	var cam := Camera2D.new()
+	_root.add_child(cam)
+	cam.make_current()
+	var streamer := MapStreamer.new()
+	streamer.chunks_root = NodePath("../" + String(chunks.name))
+	_root.add_child(streamer)
+	await wait_until(func(): return near.is_loaded() and mid.is_loaded(), 3.0)
+	check(near.is_loaded(), "the chunk in view is loaded")
+	check(mid.is_loaded(), "a chunk just outside the view is loaded in the background")
+	check(not far.is_loaded(), "a far chunk is not loaded")
+	check_eq(streamer.chunk_mesh_count(), 3, "all three chunks are tracked")
+	cam.position = Vector2(60000, 0)
+	var swapped := await wait_until(func(): return far.is_loaded() and not near.is_loaded(), 3.0)
+	check(swapped, "moving the camera loads the far chunk and frees the first")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(CHUNK_MESH_PATH))
 
 
 func _test_streamed_scene() -> void:
@@ -191,3 +232,34 @@ func _test_think_interval() -> void:
 	check_eq(ENEMY_SCRIPT.think_interval(true), 1, "near the player: every frame")
 	check_eq(ENEMY_SCRIPT.think_interval(false), ENEMY_SCRIPT.FAR_THINK_INTERVAL, "far from the player: every few frames")
 	check(ENEMY_SCRIPT.FAR_THINK_INTERVAL > 1, "far NPCs skip frames")
+
+
+func _test_preload() -> void:
+	var quad := _quad(Vector2.ZERO, 1000)
+	ResourceSaver.save(quad.mesh, CHUNK_MESH_PATH)
+	quad.free()
+	var chunks := Node2D.new()
+	_root.add_child(chunks)
+	var start := Vector2(40000, 0)
+	var made := []
+	for offset in [Vector2.ZERO, Vector2(5000, 0), Vector2(40000, 0)]:
+		var chunk := ChunkMesh.new()
+		chunk.mesh_path = CHUNK_MESH_PATH
+		chunk.position = start + offset
+		chunk.bounds = Rect2(-500, -500, 1000, 1000)
+		chunks.add_child(chunk)
+		made.append(chunk)
+	var cam := Camera2D.new()
+	_root.add_child(cam)
+	cam.make_current()
+	var streamer := MapStreamer.new()
+	streamer.chunks_root = NodePath("../" + String(chunks.name))
+	_root.add_child(streamer)
+	var loaded := streamer.preload_around(start, Vector2(4000, 2000))
+	check_eq(loaded, 2, "the chunk at the start and the one within the load margin are loaded")
+	check(made[0].is_loaded() and made[1].is_loaded() and not made[2].is_loaded(), "and not the far one")
+	check_eq(MapStreamer.find(_root), streamer, "the streamer is found from the tree")
+	cam.position = start
+	await wait_frames(30)
+	check_eq(streamer.waited_loads, 0, "the camera arriving at the start waits for no chunk")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(CHUNK_MESH_PATH))

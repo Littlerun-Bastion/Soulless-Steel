@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="item_data" load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://ckrgn8dyju4su" path="res://database/parts/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://djolsmgyvm2qf" path="res://assets/images/ui/player_ui/weapon_types/kinetic_icon.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "catalytic_converter"
+display_name = "Catalytic Converter"
+description = "A car exhaust converter. The honeycomb inside holds a few grams of platinum and palladium."
+icon = ExtResource("2_icon")
+weight = 0.01
+price = 30
+tags = Array[String](["salvage"])
+item_size = [1, 1]
+max_stack = 10
+tech_tier = 2
+composition = Dictionary[String, int]({"steel": 8, "noble_metals": 5})

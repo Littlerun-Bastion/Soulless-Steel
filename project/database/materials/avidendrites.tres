@@ -6,5 +6,9 @@
 script = ExtResource("1_material")
 id = "avidendrites"
 display_name = "Avidendrites"
-tech_tier = 3
-description = "An AVIS-synthesized material found in most Entities, but can only be harvested in workable amounts from larger or smarter Entities. It is a silicon-based substance that exhibits similar properties to neural biomatter, but with a responsiveness and capacitance that far outweighs carbon-based neural biomatter. Used in small amounts in certain SAV hardware and wetware."
+origin = 1
+unit = "kg"
+display_unit = "kg"
+kg_per_unit = 1.0
+value = 33.0
+description = "An AVIS-synthesised substance that behaves like neural biomatter, with a responsiveness and capacitance far beyond it. In a SAV it is grown into the pilot's interface: the only workable source is a dead pilot's capsule. Cores, heads and chipsets above civ grade need 2 to 5 kg."
